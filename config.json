@@ -1,0 +1,7 @@
+{
+  "default_word_length": 5,
+  "default_attempts": 6,
+  "block_old_guesses": true,
+  "available_word_lengths": [5],
+  "dictionary_file_pattern": "lexodle_list_{length}.csv"
+}
