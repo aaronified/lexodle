@@ -8,7 +8,24 @@ import subprocess
 
 
 def load_config():
-    """Load configuration from config.json."""
+    """
+    Load configuration from config.json file.
+    
+    This function attempts to read the configuration file from the current directory.
+    If the file doesn't exist, it returns a default configuration dictionary.
+    
+    Returns:
+        dict: Configuration dictionary containing:
+            - default_word_length (int): The default number of letters for the word to guess
+            - default_attempts (int): The default number of attempts allowed
+            - block_old_guesses (bool): Whether to prevent re-guessing the same word
+            - available_word_lengths (list): List of available word lengths to choose from
+            - dictionary_file_pattern (str): Pattern for the CSV dictionary filename, 
+              where {length} is replaced with the word length
+    
+    Variables:
+        f (file object): The file handle for reading the JSON configuration file
+    """
     try:
         with open("./config.json", "r") as f:
             return json.load(f)
@@ -24,7 +41,34 @@ def load_config():
 
 class GameWindow(Frame):
     def __init__(self, master=None):
-        """Initializes a new GameWindow object."""
+        """
+        Initializes a new GameWindow object and sets up the game state.
+        
+        This constructor initializes all game state variables, loads configuration,
+        sets up the word list, chooses a target word, and creates the UI widgets.
+        
+        Args:
+            master (Tk): The parent Tkinter window/widget
+        
+        Variables:
+            self.master (Tk): Reference to the parent Tkinter window
+            self.config (dict): Configuration dictionary loaded from config.json
+            self.word_length (int): Current word length for the game (number of letters)
+            self.attempts_init (int): Initial number of attempts allowed (from config)
+            self.attempts (int): Current remaining attempts (decremented as player guesses)
+            self.block_old_guesses (bool): If True, prevents player from guessing the same word twice
+            self.available_word_lengths (list): List of available word lengths user can select
+            self.dictionary_file_pattern (str): Filename pattern for CSV dictionary files
+            self.word_usage_df (DataFrame): Pandas DataFrame containing words and their usage counts
+            self.valid_words (set): Set of valid words (lowercase) for O(1) lookup during validation
+            self.target_word (str): The secret word the player needs to guess
+            self.target_row (Series): The DataFrame row containing target word's metadata (definitions, phonetics, etc.)
+            self.eligible_word_list (list): List of words that still match the current guess pattern (for filtering)
+            self.guess_rows (list): List of Frame widgets containing previous guess evaluations
+            self.previous_guesses (list): List of previously guessed words (to block duplicates if enabled)
+            self.audio_player_process (Popen or None): Reference to the subprocess playing audio (if any)
+            self.ffmpeg_location (str): Filesystem path to the ffmpeg binary directory
+        """
         Frame.__init__(self, master)
         self.master = master
         self.pack()
@@ -48,7 +92,23 @@ class GameWindow(Frame):
         self.ffmpeg_location = "C:/ffmpeg-2024-12-04/bin"
 
     def get_word_list(self):
-        """Returns the entire word dataset as a DataFrame."""
+        """
+        Loads and returns the word dataset as a pandas DataFrame.
+        
+        Constructs the filename using the dictionary_file_pattern and current word_length,
+        then attempts to load the CSV file. Handles file not found and other exceptions.
+        
+        Returns:
+            DataFrame: A pandas DataFrame containing the word list with columns like
+                      'word', 'wordcount', 'phonetics', 'meanings', 'audio', etc.
+                      Returns an empty DataFrame if loading fails.
+        
+        Variables:
+            filename (str): The constructed CSV filename based on the current word length
+                           (e.g., "lexodle_list_5.csv" for 5-letter words)
+            word_usage_df (DataFrame): The loaded DataFrame containing all words and their metadata
+            e (Exception): Exception object caught if an unexpected error occurs during file reading
+        """
         filename = self.dictionary_file_pattern.format(length=self.word_length)
         try:
             word_usage_df = pd.read_csv(f"./{filename}")
@@ -61,17 +121,66 @@ class GameWindow(Frame):
             return pd.DataFrame()
 
     def load_word_list_for_length(self, word_length):
-        """Load word list for a specific word length."""
+        """
+        Loads the word list for a specific word length and updates valid words set.
+        
+        This method is called when the user changes the word length from the menu.
+        It updates the word_length attribute, reloads the word list DataFrame,
+        and recreates the valid_words set for fast lookup.
+        
+        Args:
+            word_length (int): The new word length to load (e.g., 4, 5, 6, etc.)
+        
+        Variables:
+            self.word_length (int): Updated to the new word length
+            self.word_usage_df (DataFrame): Reloaded DataFrame for the new word length
+            self.valid_words (set): Rebuilt set of valid words (lowercase) for O(1) validation
+        """
         self.word_length = word_length
         self.word_usage_df = self.get_word_list()
         self.valid_words = set(self.word_usage_df["word"].str.lower())
 
     def is_valid_guess(self, guess):
-        """Checks if the guess is a valid word using O(1) set lookup."""
+        """
+        Checks if the guess is a valid word using O(1) set lookup.
+        
+        Converts the guess to lowercase and checks if it exists in the valid_words set.
+        Using a set provides O(1) average-case lookup time compared to O(n) for lists.
+        
+        Args:
+            guess (str): The player's guessed word
+            
+        Returns:
+            bool: True if the guess is a valid word in the dictionary, False otherwise
+        
+        Variables:
+            guess.lower() (str): The lowercase version of the guess for case-insensitive comparison
+            self.valid_words (set): Pre-computed set of all valid words in lowercase
+        """
         return guess.lower() in self.valid_words
 
     def create_label(self, text, color):
-        """Creates a styled Label."""
+        """
+        Creates a styled Tkinter Label widget for displaying a guessed letter.
+        
+        Creates a label with the specified text (converted to uppercase) and background color.
+        Used to display each letter in the guess with color-coded feedback.
+        
+        Args:
+            text (str): The letter text to display in the label
+            color (str): The background color hex code (e.g., "#C6F4D6" for green,
+                        "#F7DC6F" for yellow, "#FFC5C5" for red)
+        
+        Returns:
+            Label: A configured Tkinter Label widget
+        
+        Variables:
+            text.upper() (str): The uppercase version of the input text for display
+            bg (str): Background color of the label (indicates guess accuracy)
+            width (int): Fixed width of the label (3 characters)
+            borderwidth (float): Width of the label's border
+            relief (str): Border style ("solid" for visible borders)
+        """
         return Label(
             self.master,
             text=text.upper(),
@@ -82,7 +191,26 @@ class GameWindow(Frame):
         )
 
     def choose_word(self):
-        """Chooses a random word with weighted probability based on wordcount."""
+        """
+        Chooses a random word with weighted probability based on word usage count.
+        
+        Uses the wordcount column from the DataFrame to assign probabilities to each word.
+        Words with higher usage counts have a higher chance of being selected.
+        Returns both the chosen word and its corresponding DataFrame row (with metadata).
+        
+        Returns:
+            tuple: (chosen_word (str), chosen_row (Series)) - The selected word and its data row.
+                   Returns ("", None) if the DataFrame is empty.
+        
+        Variables:
+            words (list): List of all words extracted from the 'word' column of the DataFrame
+            word_counts (list): List of usage counts extracted from the 'wordcount' column
+            total_count (int/float): Sum of all word counts, used for normalization
+            weights (list): Normalized probabilities for each word (each weight = count/total_count)
+            chosen_word (str): The randomly selected word based on weighted probability
+            chosen_row (Series): The DataFrame row containing all metadata for the chosen word
+                                (including phonetics, meanings, audio path, etc.)
+        """
         if self.word_usage_df.empty:
             return "", None  # Return empty string and None if DataFrame is empty
 
@@ -106,7 +234,31 @@ class GameWindow(Frame):
         return chosen_word, chosen_row
 
     def createWidgets(self):
-        """Creates the UI widgets."""
+        """
+        Creates and configures all the UI widgets for the game window.
+        
+        This method sets up the menu bar, game controls, input fields, display areas,
+        and information panels. It's called once during initialization.
+        
+        Variables:
+            menubar (Menu): The main menu bar attached to the master window
+            settings_menu (Menu): Dropdown menu for game settings
+            word_length_menu (Menu): Submenu for selecting word length
+            length (int): Iterator variable for available word lengths in the menu
+            attempts_menu (Menu): Submenu for selecting number of attempts
+            attempts (int): Iterator variable for attempt options (4-8) in the menu
+            l (int): Default parameter in lambda for word length callback
+            a (int): Default parameter in lambda for attempts callback
+            self.guessVar (StringVar): Tkinter variable linked to the entry widget for guess input
+            self.resetButton (Button): Button to start a new game
+            self.label (Label): Label displaying the current game status (word length and attempts)
+            self.entry (Entry): Text input field where the player types their guess
+            self.button (Button): Button to submit the guess
+            self.resultText (Text): Read-only text widget for displaying game messages (win/lose/error)
+            self.guesses_frame (Frame): Container frame for displaying all guess evaluation rows
+            self.eligible_label (Label): Label showing how many words still match the current pattern
+            self.word_info_frame (Frame): Hidden frame that displays word definitions when game ends
+        """
         menubar = Menu(self.master)
         self.master.config(menu=menubar)
 
@@ -174,7 +326,21 @@ class GameWindow(Frame):
         # self.word_info_frame.pack() # removed pack
 
     def validate_input(self, event):
-        """Validates and modifies the input in the Entry widget."""
+        """
+        Validates and modifies the input in the Entry widget as the user types.
+        
+        This method is bound to the <KeyRelease> event. It filters out non-alphabetic
+        characters, converts all letters to uppercase, and enforces the maximum length
+        based on the current word length.
+        
+        Args:
+            event (Event): The Tkinter key release event that triggered this callback
+        
+        Variables:
+            current_value (str): The current text in the entry widget (before validation)
+            new_value (str): The filtered and formatted text (only alphabetic chars, uppercase)
+            char (str): Iterator variable representing each character in current_value
+        """
         current_value = self.guessVar.get()
         new_value = ""
 
@@ -191,7 +357,33 @@ class GameWindow(Frame):
         self.guessVar.set(new_value)
 
     def evaluate_guess(self, word, guess):
-        """Evaluates the guess and creates feedback labels."""
+        """
+        Evaluates the player's guess against the target word and creates visual feedback.
+        
+        Implements the Wordle-style color-coding algorithm:
+        - Green (#C6F4D6): Letter is correct and in the correct position
+        - Yellow (#F7DC6F): Letter exists in target word but in wrong position
+        - Red (#FFC5C5): Letter does not exist in target word
+        
+        Uses a two-pass approach with letter counts to handle duplicate letters correctly.
+        
+        Args:
+            word (str): The target word to guess (self.target_word)
+            guess (str): The player's guessed word (lowercase)
+        
+        Returns:
+            list: A list of color hex codes corresponding to each letter position
+        
+        Variables:
+            evaluation_labels (Frame): Container frame for this guess's letter labels
+            result (list): List of Label widgets (or None placeholders) for each letter
+            evaluation_colors (list): List of color hex codes for each letter position
+            target_counts (dict): Counts of each letter in the target word (for tracking remaining matches)
+            guess_counts (dict): Counts of each letter in the guess word (for tracking remaining matches)
+            char (str): Iterator variable for each character in the guess word
+            i (int): Index position of the current character in the guess
+            label (Label): The created label widget for displaying a letter with color coding
+        """
         evaluation_labels = Frame(self.guesses_frame)
         evaluation_labels.pack()
         self.guess_rows.append(evaluation_labels)
@@ -244,7 +436,30 @@ class GameWindow(Frame):
         return evaluation_colors
 
     def filter_word_list(self, guess, evaluation):
-        """Filters the word list based on the guess and evaluation."""
+        """
+        Filters the eligible word list based on the guess and its color evaluation.
+        
+        Removes words that don't match the clues from the player's guess:
+        - Green letters must be in the exact same position
+        - Yellow letters must be in the word but NOT in that position
+        - Red letters must NOT be anywhere in the word
+        
+        This helps narrow down the possible words for the player.
+        
+        Args:
+            guess (str): The player's guessed word
+            evaluation (list): List of color hex codes from evaluate_guess()
+        
+        Returns:
+            list: Filtered list of words that match all the clues from the guess
+        
+        Variables:
+            new_word_list (list): Accumulator for words that pass all filter criteria
+            word (str): Iterator variable for each word in the eligible word list
+            valid (bool): Flag indicating whether the current word matches all criteria
+            i (int): Index position of the current character being evaluated
+            char (str): The character at position i in the guess word
+        """
         new_word_list = []
         for word in self.eligible_word_list:
             valid = True
@@ -266,7 +481,22 @@ class GameWindow(Frame):
         return new_word_list
 
     def reset_game(self):
-        """Resets the game state."""
+        """
+        Resets the game state to start a new game.
+        
+        This method is called when the player starts a new game (via menu or button).
+        It resets all game variables, clears the UI, chooses a new target word,
+        and stops any playing audio.
+        
+        Variables:
+            row (Frame): Iterator variable for each guess row frame to be destroyed
+            self.attempts (int): Reset to initial number of attempts
+            self.guess_rows (list): Cleared after destroying all row widgets
+            self.previous_guesses (list): Cleared to allow fresh guesses
+            self.target_word (str): New randomly chosen word for the new game
+            self.target_row (Series): Data row for the new target word
+            self.eligible_word_list (list): Reset to full word list from DataFrame
+        """
         self.attempts = self.attempts_init
         self.resultText.config(state="normal")
         self.resultText.delete("1.0", "end")
@@ -292,23 +522,72 @@ class GameWindow(Frame):
         self.stop_audio()
 
     def change_word_length(self, length):
-        """Change word length and restart game."""
+        """
+        Changes the word length setting and restarts the game.
+        
+        Called when the user selects a new word length from the Settings menu.
+        Updates the word length, reloads the appropriate word list, and resets the game.
+        
+        Args:
+            length (int): The new word length selected by the user
+        
+        Variables:
+            self.word_length (int): Updated to the new length
+        """
         self.word_length = length
         self.load_word_list_for_length(length)
         self.reset_game()
 
     def change_attempts(self, attempts):
-        """Change number of attempts and restart game."""
+        """
+        Changes the number of attempts allowed and restarts the game.
+        
+        Called when the user selects a new number of attempts from the Settings menu.
+        Updates the initial attempts value and resets the game with the new setting.
+        
+        Args:
+            attempts (int): The new number of attempts selected by the user (4-8)
+        
+        Variables:
+            self.attempts_init (int): Updated to the new number of attempts
+        """
         self.attempts_init = attempts
         self.reset_game()
 
     def open_word_definition(self, word):
-        """Opens the word's definition in a web browser."""
+        """
+        Opens the word's definition in the default web browser.
+        
+        Constructs a URL to Merriam-Webster's online dictionary and opens it
+        in the user's default web browser.
+        
+        Args:
+            word (str): The word to look up (typically the target word when game ends)
+        
+        Variables:
+            url (str): The complete URL to the word's definition page
+        """
         url = f"https://www.merriam-webster.com/dictionary/{word}"
         webbrowser.open(url)
 
     def play_audio(self, audio_path):
-        """Plays the audio file using the default system player."""
+        """
+        Plays the audio file using ffplay (from ffmpeg) in the background.
+        
+        Stops any currently playing audio before starting the new audio.
+        Uses ffplay with -nodisp (no GUI window) and -autoexit (exit when done).
+        Works on Windows (nt) and Unix-based systems (posix).
+        
+        Args:
+            audio_path (str): Relative or absolute path to the audio file to play
+        
+        Variables:
+            absolute_audio_path (str): Absolute path to the audio file (for reliable access)
+            os.name (str): System identifier ("nt" for Windows, "posix" for Unix-like)
+            self.audio_player_process (Popen): Subprocess handle for the ffplay process
+            self.ffmpeg_location (str): Directory path where ffplay executable is located
+            e (Exception): Caught exception if ffplay is not found or fails to run
+        """
         self.stop_audio()  # Stop any currently playing audio
 
         absolute_audio_path = os.path.abspath(audio_path)
@@ -351,18 +630,59 @@ class GameWindow(Frame):
             print(f"Audio file not found: {absolute_audio_path}")
 
     def stop_audio(self):
-        """Stops the currently playing audio."""
+        """
+        Stops the currently playing audio process if one exists.
+        
+        Terminates the ffplay subprocess and resets the process reference to None.
+        Safe to call even if no audio is currently playing.
+        
+        Variables:
+            self.audio_player_process (Popen or None): Reference to the running ffplay process
+        """
         if self.audio_player_process:
             self.audio_player_process.terminate()
             self.audio_player_process = None
 
     def clear_word_info(self):
-        """Clears the word info frame."""
+        """
+        Clears all widgets from the word info frame.
+        
+        Destroys all child widgets in the word_info_frame to prepare for
+        displaying new word information or hiding the frame.
+        
+        Variables:
+            widget (Widget): Iterator variable for each child widget in the frame
+        """
         for widget in self.word_info_frame.winfo_children():
             widget.destroy()
 
     def display_word_info(self, row):
-        """Displays word information (phonetics, definitions, etc.)."""
+        """
+        Displays detailed word information in the word_info_frame.
+        
+        Shows phonetics, definitions with examples, synonyms, antonyms, and
+        an audio playback button (if audio file exists). This is displayed when the game ends.
+        
+        Args:
+            row (Series): The DataFrame row containing the target word's metadata
+        
+        Variables:
+            phonetics_label (Label): Header label for the phonetics section
+            phonetics_data (list): Parsed JSON list of phonetic representations
+            phonetic (dict): Individual phonetic entry with 'text' and 'audio' keys
+            phonetic_text (str): The phonetic text representation (e.g., "/wɜːrd/")
+            definitions_label (Label): Header label for the definitions section
+            meanings_data (list): Parsed JSON list of meaning objects from the dictionary
+            meaning (dict): Individual meaning with partOfSpeech and definitions
+            part_of_speech (str): The grammatical category (noun, verb, etc.)
+            definition (dict): Individual definition entry with text and optional example
+            def_text (str): The definition text
+            example (str): Example sentence using the word (may be empty)
+            synonyms (list): List of synonym words for this meaning
+            antonyms (list): List of antonym words for this meaning
+            audio_path (str): Path to the audio pronunciation file
+            audio_button (Button): Button to play the word's audio pronunciation
+        """
         self.clear_word_info()
 
         # Phonetics
@@ -430,7 +750,27 @@ class GameWindow(Frame):
         self.word_info_frame.pack()
 
     def guess_word(self):
-        """Processes the user's guess."""
+        """
+        Processes the user's guess and updates the game state.
+        
+        This is the main game logic method. It validates the guess (length, duplicates),
+        checks if the guess is correct, updates the UI with feedback, filters the eligible
+        word list, and handles win/lose conditions.
+        
+        Variables:
+            word (str): The target word to guess (self.target_word)
+            guess (str): The player's input guess, converted to lowercase
+            end_game (bool): Flag indicating whether the game has ended (win or lose)
+            colors (list): Color evaluation from evaluate_guess() for each letter position
+            self.guessVar (StringVar): Tkinter variable containing the raw user input
+            self.previous_guesses (list): Updated with the current guess if valid
+            self.attempts (int): Decremented when the guess is incorrect
+            self.eligible_word_list (list): Filtered based on the guess evaluation
+            self.label (Label): Updated to show remaining attempts or final score
+            self.resultText (Text): Updated with win/lose/error messages
+            self.entry (Entry): Disabled when game ends
+            self.button (Button): Disabled when game ends
+        """
         word = self.target_word
         guess = self.guessVar.get().lower()
         end_game = False
@@ -518,6 +858,16 @@ class GameWindow(Frame):
 
 
 if __name__ == "__main__":
+    """
+    Main entry point of the Lexodle game application.
+    
+    Creates the Tkinter root window, configures global settings,
+    instantiates the GameWindow, and starts the Tkinter event loop.
+    
+    Variables:
+        root (Tk): The main Tkinter window instance
+        app (GameWindow): The main game application frame
+    """
     root = Tk()
     root.option_add("*Font", "Roboto 13")
     root.title("Lexodle")
