@@ -1,10 +1,11 @@
-import random
+﻿import random
 import pandas as pd
 from tkinter import *
 import webbrowser
 import json
 import os
 import subprocess
+from lexodle_metrics import MetricsEngine
 
 
 def load_config():
@@ -18,10 +19,9 @@ def load_config():
         dict: Configuration dictionary containing:
             - default_word_length (int): The default number of letters for the word to guess
             - default_attempts (int): The default number of attempts allowed
-            - block_old_guesses (bool): Whether to prevent re-guessing the same word
-            - available_word_lengths (list): List of available word lengths to choose from
-            - dictionary_file_pattern (str): Pattern for the CSV dictionary filename, 
-              where {length} is replaced with the word length
+             - block_old_guesses (bool): Whether to prevent re-guessing the same word
+             - available_word_lengths (list): List of available word lengths to choose from
+             - dictionary_file (str): The CSV dictionary filename (unified, with lettercount column)
     
     Variables:
         f (file object): The file handle for reading the JSON configuration file
@@ -35,7 +35,7 @@ def load_config():
             "default_attempts": 6,
             "block_old_guesses": True,
             "available_word_lengths": [5],
-            "dictionary_file_pattern": "lexodle_list_{length}.csv",
+            "dictionary_file": "lexodle_list.csv",
         }
 
 
@@ -58,7 +58,7 @@ class GameWindow(Frame):
             self.attempts (int): Current remaining attempts (decremented as player guesses)
             self.block_old_guesses (bool): If True, prevents player from guessing the same word twice
             self.available_word_lengths (list): List of available word lengths user can select
-            self.dictionary_file_pattern (str): Filename pattern for CSV dictionary files
+            self.dictionary_file (str): CSV dictionary filename (unified with lettercount column)
             self.word_usage_df (DataFrame): Pandas DataFrame containing words and their usage counts
             self.valid_words (set): Set of valid words (lowercase) for O(1) lookup during validation
             self.target_word (str): The secret word the player needs to guess
@@ -68,6 +68,9 @@ class GameWindow(Frame):
             self.previous_guesses (list): List of previously guessed words (to block duplicates if enabled)
             self.audio_player_process (Popen or None): Reference to the subprocess playing audio (if any)
             self.ffmpeg_location (str): Filesystem path to the ffmpeg binary directory
+            self.metrics_engine (MetricsEngine): Engine for computing skill/luck metrics
+            self.guess_metrics (list): Per-guess metrics dicts with skill/luck scores
+            self.show_metrics_mode (StringVar): Tkinter variable controlling metrics display mode
         """
         Frame.__init__(self, master)
         self.master = master
@@ -78,7 +81,7 @@ class GameWindow(Frame):
         self.attempts_init = self.config["default_attempts"]
         self.block_old_guesses = self.config["block_old_guesses"]
         self.available_word_lengths = self.config["available_word_lengths"]
-        self.dictionary_file_pattern = self.config["dictionary_file_pattern"]
+        self.dictionary_file = self.config["dictionary_file"]
 
         self.attempts = self.attempts_init
         self.word_usage_df = self.get_word_list()
@@ -88,6 +91,9 @@ class GameWindow(Frame):
         self.guess_rows = []
         self.previous_guesses = []
         self.invalid_guesses = set()
+        self.metrics_engine = MetricsEngine(self.word_length, self.dictionary_file)
+        self.guess_metrics = []
+        self.show_metrics_mode = StringVar(value="after_each")
         self.createWidgets()
         self.audio_player_process = None
         self.ffmpeg_location = "C:/ffmpeg-2024-12-04/bin"
@@ -95,25 +101,30 @@ class GameWindow(Frame):
     def get_word_list(self):
         """
         Loads and returns the word dataset as a pandas DataFrame.
-        
-        Constructs the filename using the dictionary_file_pattern and current word_length,
-        then attempts to load the CSV file. Handles file not found and other exceptions.
-        
+
+        Loads the unified dictionary file specified by self.dictionary_file.
+        If the DataFrame contains a 'lettercount' column, filters rows where
+        lettercount equals self.word_length. Otherwise, filters by word length.
+
         Returns:
             DataFrame: A pandas DataFrame containing the word list with columns like
                       'word', 'wordcount', 'phonetics', 'meanings', 'audio', etc.
                       Returns an empty DataFrame if loading fails.
-        
+
         Variables:
-            filename (str): The constructed CSV filename based on the current word length
-                           (e.g., "lexodle_list_5.csv" for 5-letter words)
+            filename (str): The CSV dictionary filename from config (e.g., "lexodle_list.csv")
             word_usage_df (DataFrame): The loaded DataFrame containing all words and their metadata
             e (Exception): Exception object caught if an unexpected error occurs during file reading
         """
-        filename = self.dictionary_file_pattern.format(length=self.word_length)
+        filename = self.dictionary_file
         try:
             word_usage_df = pd.read_csv(f"./{filename}")
-            return word_usage_df
+            # Filter by lettercount column if present, otherwise by word length
+            if "lettercount" in word_usage_df.columns:
+                word_usage_df = word_usage_df[word_usage_df["lettercount"] == self.word_length]
+            else:
+                word_usage_df = word_usage_df[word_usage_df["word"].str.len() == self.word_length]
+            return word_usage_df.reset_index(drop=True)
         except FileNotFoundError:
             print(f"Error: Required file not found. Check path ('./{filename}').")
             return pd.DataFrame()
@@ -284,6 +295,16 @@ class GameWindow(Frame):
                 command=lambda a=attempts: self.change_attempts(a),
             )
 
+        metrics_menu = Menu(settings_menu, tearoff=0)
+        settings_menu.add_cascade(label="Metrics", menu=metrics_menu)
+        for mode, label in [("after_each", "After Each (inline)"), ("end_only", "End Only"), ("skill_during", "Skill During, Luck at End"), ("off", "Off")]:
+            metrics_menu.add_radiobutton(
+                label=label,
+                variable=self.show_metrics_mode,
+                value=mode,
+                command=lambda m=mode: self.change_metrics_mode(m),
+            )
+
         self.guessVar = StringVar()
         self.resetButton = Button(self, text="New Game", command=self.reset_game)
         self.resetButton.pack()
@@ -321,6 +342,9 @@ class GameWindow(Frame):
             self, text=f"Eligible words left: {len(self.eligible_word_list)}"
         )
         self.eligible_label.pack()
+
+        self.metrics_label = Label(self, text="", justify="left")
+        self.metrics_label.pack()
 
         # Frame for word info (initially hidden)
         self.word_info_frame = Frame(self)
@@ -502,16 +526,19 @@ class GameWindow(Frame):
         self.resultText.config(state="normal")
         self.resultText.delete("1.0", "end")
         self.resultText.config(state="disabled")
-        for row in self.guess_rows:
-            row.destroy()
+        # Destroy all children of guesses_frame (guess rows and inline metrics)
+        for child in self.guesses_frame.winfo_children():
+            child.destroy()
         self.guess_rows = []
         self.previous_guesses = []
         self.invalid_guesses = set()
+        self.guess_metrics = []
         self.label.config(
             text=f"Guess the {self.word_length}-letter word, you have {self.attempts} attempts left:"
         )
         self.target_word, self.target_row = self.choose_word()
         self.eligible_word_list = list(self.word_usage_df["word"].values)
+        self.metrics_engine = MetricsEngine(self.word_length, self.dictionary_file)
         self.entry.configure(state="normal")
         self.button.configure(state="normal")
         self.eligible_label.config(
@@ -538,6 +565,7 @@ class GameWindow(Frame):
         """
         self.word_length = length
         self.load_word_list_for_length(length)
+        self.metrics_engine = MetricsEngine(self.word_length, self.dictionary_file)
         self.reset_game()
 
     def change_attempts(self, attempts):
@@ -555,6 +583,119 @@ class GameWindow(Frame):
         """
         self.attempts_init = attempts
         self.reset_game()
+
+    def change_metrics_mode(self, mode):
+        """
+        Changes the metrics display mode.
+
+        Args:
+            mode (str): The new display mode
+        """
+        self.show_metrics_mode.set(mode)
+        self.update_metrics_summary()
+
+    def display_guess_metrics(self, skill, luck, eligible_before, eligible_after):
+        """
+        Returns a formatted metrics string for inline display.
+
+        Args:
+            skill (float): Skill score
+            luck (float): Luck score
+            eligible_before (int): Words before guess
+            eligible_after (int): Words after guess
+
+        Returns:
+            str: Formatted metrics string or empty string
+        """
+        mode = self.show_metrics_mode.get()
+        if mode == "off":
+            return ""
+        parts = []
+        if mode == "after_each" or mode == "skill_during":
+            parts.append(f"Skill: {skill:.1f}")
+        if mode == "after_each":
+            parts.append(f"Luck: {luck:.1f}")
+        parts.append(f"Words: {eligible_before}→{eligible_after}")
+        return " | ".join(parts)
+
+    def update_metrics_on_guess(self, guess, eligible_before_list, eligible_after_list, correct=False):
+        """
+        Updates metrics after a guess.
+
+        Args:
+            guess (str): The guessed word
+            eligible_before_list (list): Eligible words before guess
+            eligible_after_list (list): Eligible words after guess
+            correct (bool): Whether guess was correct
+        """
+        mask_before = self.metrics_engine.get_eligible_mask(eligible_before_list)
+        mask_after = self.metrics_engine.get_eligible_mask(eligible_after_list)
+        N_before = bin(mask_before).count("1")
+        N_after = bin(mask_after).count("1")
+
+        skill = 0.0
+        luck = 0.0
+
+        guess_lower = guess.lower()
+        if guess_lower in self.metrics_engine.guess_partitions and N_before > 0:
+            partitions = self.metrics_engine.guess_partitions[guess_lower]
+            total_size_sq = 0
+            total_count = 0
+            for pattern, partition_mask in partitions.items():
+                eligible_partition = partition_mask & mask_before
+                size = bin(eligible_partition).count("1")
+                if size > 0:
+                    total_size_sq += size * size
+                    total_count += size
+
+            if total_count > 0:
+                expected_n = total_size_sq / N_before
+                if N_before <= 1:
+                    skill = 100.0
+                else:
+                    skill = (N_before - expected_n) / (N_before - 1) * 100.0
+                if N_before - expected_n != 0:
+                    luck = (N_before - N_after) / (N_before - expected_n) * 100.0
+
+        self.guess_metrics.append({
+            "guess": guess,
+            "skill": skill,
+            "luck": luck,
+            "before": N_before,
+            "after": N_after,
+            "correct": correct,
+        })
+        self.update_metrics_summary()
+
+    def update_metrics_summary(self):
+        """
+        Updates the summary metrics label.
+        """
+        mode = self.show_metrics_mode.get()
+        if mode == "off":
+            self.metrics_label.config(text="")
+            return
+        game_over = str(self.entry['state']) == 'disabled'
+        if game_over and mode in ("end_only", "skill_during"):
+            if self.guess_metrics:
+                total_skill = sum(m["skill"] for m in self.guess_metrics) / len(self.guess_metrics)
+                total_luck = sum(m["luck"] for m in self.guess_metrics) / len(self.guess_metrics)
+                self.metrics_label.config(text=f"Cumulative — Skill: {total_skill:.1f} | Luck: {total_luck:.1f}")
+            else:
+                self.metrics_label.config(text="")
+        else:
+            self.metrics_label.config(text="")
+
+    def display_inline_metrics(self, metrics_str):
+        """
+        Displays inline metrics below the current guess row.
+
+        Args:
+            metrics_str (str): Formatted metrics string
+        """
+        if metrics_str:
+            label = Label(self.guesses_frame, text=metrics_str, justify="left")
+            label.pack()
 
     def open_word_definition(self, word):
         """
@@ -741,6 +882,10 @@ class GameWindow(Frame):
 
         # Audio Button
         audio_path = row.get("audio", "")
+        if pd.isna(audio_path):
+            audio_path = ""
+        elif not isinstance(audio_path, str):
+            audio_path = str(audio_path)
         if audio_path and os.path.exists(audio_path):
             audio_button = Button(
                 self.word_info_frame,
@@ -754,11 +899,11 @@ class GameWindow(Frame):
     def guess_word(self):
         """
         Processes the user's guess and updates the game state.
-        
+
         This is the main game logic method. It validates the guess (length, duplicates),
         checks if the guess is correct, updates the UI with feedback, filters the eligible
-        word list, and handles win/lose conditions.
-        
+        word list, and handles win/lose conditions. Also computes and displays metrics.
+
         Variables:
             word (str): The target word to guess (self.target_word)
             guess (str): The player's input guess, converted to lowercase
@@ -777,87 +922,96 @@ class GameWindow(Frame):
         guess = self.guessVar.get().lower()
         end_game = False
 
-        if len(guess) != self.word_length:  # Check if the guess is n letters long
-            self.resultText.config(state="normal")  # Enable editing
+        if len(guess) != self.word_length:
+            self.resultText.config(state="normal")
             self.resultText.delete("1.0", "end")
             self.resultText.insert(
                 "1.0",
                 f"Please enter a valid {self.word_length} letter word!",
                 "center",
             )
-            self.resultText.config(state="disabled")  # Make it read-only
-            return  # stop here
-
-        if self.block_old_guesses and guess in self.previous_guesses:
-            self.resultText.config(state="normal")  # Enable editing
-            self.resultText.delete("1.0", "end")
-            self.resultText.insert("1.0", "You already guessed this word!", "center")
-            self.resultText.config(state="disabled")  # Make it read-only
+            self.resultText.config(state="disabled")
             return
 
-        self.previous_guesses.append(guess)  # only add if the word is good
+        if self.block_old_guesses and guess in self.previous_guesses:
+            self.resultText.config(state="normal")
+            self.resultText.delete("1.0", "end")
+            self.resultText.insert("1.0", "You already guessed this word!", "center")
+            self.resultText.config(state="disabled")
+            return
+
+        eligible_before_list = self.eligible_word_list.copy()
+        self.previous_guesses.append(guess)
 
         if guess == word:
             colors = self.evaluate_guess(word, guess)
             self.label.config(
                 text=f"Score: " + str(self.attempts_init - self.attempts + 1)
             )
-            self.resultText.config(state="normal")  # Enable editing
+            self.resultText.config(state="normal")
             self.resultText.delete("1.0", "end")
             self.resultText.insert("1.0", "You won!", "center")
-            self.resultText.config(state="disabled")  # Make it read-only
+            self.resultText.config(state="disabled")
             end_game = True
+            eligible_after_list = [word]
+            self.update_metrics_on_guess(guess, eligible_before_list, eligible_after_list, correct=True)
+            if self.show_metrics_mode.get() == "after_each":
+                last = self.guess_metrics[-1]
+                inline = self.display_guess_metrics(last["skill"], last["luck"], last["before"], last["after"])
+                self.display_inline_metrics(inline)
+            elif self.show_metrics_mode.get() == "skill_during":
+                last = self.guess_metrics[-1]
+                inline = f"Skill: {last['skill']:.1f} | Words: {last['before']}→{last['after']}"
+                self.display_inline_metrics(inline)
         elif self.attempts > 0 and not self.is_valid_guess(guess):
             if guess in self.invalid_guesses:
                 message = f"'{guess.upper()}' is not a valid word!"
             else:
                 message = f"Please enter a valid {self.word_length} letter word!"
                 self.invalid_guesses.add(guess)
-            self.resultText.config(state="normal")  # Enable editing
+            self.resultText.config(state="normal")
             self.resultText.delete("1.0", "end")
             self.resultText.insert("1.0", message, "center")
-            self.resultText.config(state="disabled")  # Make it read-only
+            self.resultText.config(state="disabled")
         else:
             colors = self.evaluate_guess(word, guess)
             self.eligible_word_list = self.filter_word_list(guess, colors)
+            eligible_after_list = self.eligible_word_list
             self.eligible_label.config(
-                text=f"Eligible words left: {len(self.eligible_word_list)}"
+                text=f"Eligible words left: {len(eligible_after_list)}"
             )
             self.attempts -= 1
             self.label.config(
                 text=f"Guess the {self.word_length}-letter word, you have {self.attempts} attempts left:"
             )
+            self.update_metrics_on_guess(guess, eligible_before_list, eligible_after_list, correct=False)
+            if self.show_metrics_mode.get() == "after_each":
+                last = self.guess_metrics[-1]
+                inline = self.display_guess_metrics(last["skill"], last["luck"], last["before"], last["after"])
+                self.display_inline_metrics(inline)
+            elif self.show_metrics_mode.get() == "skill_during":
+                last = self.guess_metrics[-1]
+                inline = f"Skill: {last['skill']:.1f} | Words: {last['before']}→{last['after']}"
+                self.display_inline_metrics(inline)
 
         if self.attempts == 0:
-            word = word.upper()
-
-            self.resultText.config(state="normal")  # Enable editing
+            target_upper = word.upper()
+            self.resultText.config(state="normal")
             self.resultText.delete("1.0", "end")
-
-            # Insert the initial text
             self.resultText.insert("1.0", "You Lost! Correct word: ", "center")
-
-            # Insert the word as a tag
-            self.resultText.insert("end", word, ("link", "center"))
-
-            # Configure the tag
+            self.resultText.insert("end", target_upper, ("link", "center"))
             self.resultText.tag_config("link", foreground="blue", underline=True)
-
-            # Bind the click event to the tag
             self.resultText.tag_bind(
                 "link", "<Button-1>", lambda event, w=word: self.open_word_definition(w)
             )
-            self.resultText.config(state="disabled")  # Make it read-only
-
+            self.resultText.config(state="disabled")
             end_game = True
 
         if end_game:
             self.entry.configure(state="disabled")
             self.button.configure(state="disabled")
-            self.display_word_info(self.target_row)  # only show when end_game is True
-        else:
-            if self.word_info_frame.winfo_manager():
-                self.word_info_frame.pack_forget()
+            self.display_word_info(self.target_row)
+            self.update_metrics_summary()
 
 
 if __name__ == "__main__":

@@ -157,9 +157,9 @@ def filter_words_by_present_letters_and_positions(
 # Example usage:
 filepath = "./lexodle_list_5.csv"
 # caret bingo dumps xylem wharf
-absent_letters = "rtbhsp"
-present_letters = "cae"  # jkqvz
-letter_positions = "-c---"
+absent_letters = "trnkfhmp"
+present_letters = "lus"  # jkqvz
+letter_positions = "-lu-s"
 # positioning asst '12345'
 
 filtered_words = filter_words_by_absent_letters(filepath, absent_letters)
