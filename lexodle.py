@@ -87,6 +87,7 @@ class GameWindow(Frame):
         self.eligible_word_list = list(self.word_usage_df["word"].values)
         self.guess_rows = []
         self.previous_guesses = []
+        self.invalid_guesses = set()
         self.createWidgets()
         self.audio_player_process = None
         self.ffmpeg_location = "C:/ffmpeg-2024-12-04/bin"
@@ -505,6 +506,7 @@ class GameWindow(Frame):
             row.destroy()
         self.guess_rows = []
         self.previous_guesses = []
+        self.invalid_guesses = set()
         self.label.config(
             text=f"Guess the {self.word_length}-letter word, you have {self.attempts} attempts left:"
         )
@@ -806,13 +808,14 @@ class GameWindow(Frame):
             self.resultText.config(state="disabled")  # Make it read-only
             end_game = True
         elif self.attempts > 0 and not self.is_valid_guess(guess):
+            if guess in self.invalid_guesses:
+                message = f"'{guess.upper()}' is not a valid word!"
+            else:
+                message = f"Please enter a valid {self.word_length} letter word!"
+                self.invalid_guesses.add(guess)
             self.resultText.config(state="normal")  # Enable editing
             self.resultText.delete("1.0", "end")
-            self.resultText.insert(
-                "1.0",
-                f"Please enter a valid {self.word_length} letter word!",
-                "center",
-            )
+            self.resultText.insert("1.0", message, "center")
             self.resultText.config(state="disabled")  # Make it read-only
         else:
             colors = self.evaluate_guess(word, guess)
