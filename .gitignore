@@ -1,5 +1,7 @@
-# huge ngram files used for the words_ngrams.csv
+# huge ngram files and word-guess partition files
 *.gz
+*.pkl
+cache/
 
 # Kilocode planners
 .kilo/
