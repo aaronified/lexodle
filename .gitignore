@@ -8,6 +8,7 @@ dictionary_audio/
 # Kilocode planners
 .kilo/
 IMPLEMENTATION_SUMMARY.md
+next_plans.txt
 
 # backup files
 *.bak

@@ -8,13 +8,14 @@ from typing import Dict, List, Tuple, Optional
 class MetricsEngine:
     """Handles precomputation and caching of partition data for skill/luck metrics."""
 
-    def __init__(self, word_length: int, dictionary_file: str = "lexodle_list.csv"):
+    def __init__(self, word_length: int, dictionary_file: str = "lexodle_list.csv", progress_callback=None):
         self.word_length = word_length
         self.dictionary_file = dictionary_file
         self.words: List[str] = []
         self.guess_partitions: Dict[str, Dict[Tuple[int, ...], int]] = {}
         self.word_to_index: Dict[str, int] = {}
         self.cache_dir = "cache"
+        self.progress_callback = progress_callback
         self._ensure_cache_dir()
         self.load_or_compute_partitions()
 
@@ -113,9 +114,14 @@ class MetricsEngine:
             self.guess_partitions[guess] = partitions
 
             if (guess_idx + 1) % 500 == 0:
+                pct = int((guess_idx + 1) / len(self.words) * 100)
                 print(f"  Processed {guess_idx + 1}/{len(self.words)} guesses...")
+                if self.progress_callback:
+                    self.progress_callback(pct, f"Processing: {guess_idx + 1}/{len(self.words)} words...")
 
         print(f"Partition computation complete!")
+        if self.progress_callback:
+            self.progress_callback(100, "Complete!")
 
     def _evaluate_pattern(self, guess: str, answer: str) -> Tuple[int, ...]:
         """Evaluate the pattern of a guess against an answer.
