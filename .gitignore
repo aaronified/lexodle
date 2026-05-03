@@ -14,6 +14,10 @@ next_plans.txt
 *.bak
 *.backup
 
+# manual change agents
+test.ipynb
+test/
+
 ##### Default py .gitignore #####
 # Byte-compiled / optimized / DLL files
 __pycache__/

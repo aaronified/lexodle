@@ -11,6 +11,10 @@ from lexodle_metrics import MetricsEngine
 from theme import get_theme, set_theme_mode
 from cell_widget import WordGrid, Keyboard
 from settings_dialog import SettingsDialog
+from settings import (
+    HELPER_MODE_OFF, HELPER_MODE_DEBUG, HELPER_MODE_FULL_HELP,
+    HELPER_MODE_SKILL_ONLY, HELPER_MODE_SKILL_AND_LUCK
+)
 
 
 def load_config():
@@ -24,7 +28,13 @@ def load_config():
             "block_old_guesses": True,
             "available_word_lengths": [5],
             "dictionary_file": "lexodle_list.csv",
+            "helper_mode": "Off",
         }
+
+
+def save_config(config):
+    with open("./config.json", "w") as f:
+        json.dump(config, f, indent=2)
 
 
 def get_available_word_lengths(csv_file):
@@ -247,6 +257,7 @@ class GameWindow(Frame):
         self.block_old_guesses = self.config["block_old_guesses"]
         self.available_word_lengths = self.config["available_word_lengths"]
         self.dictionary_file = self.config["dictionary_file"]
+        self.helper_mode = self.config.get("helper_mode", "Off")
         
         self.attempts = self.attempts_init
         self.word_usage_df = self.get_word_list()
@@ -256,7 +267,6 @@ class GameWindow(Frame):
         self.previous_guesses = []
         self.invalid_guesses = set()
         self.guess_metrics = []
-        self.debug_mode = False
         
         # Metrics engine with progress callback
         self.metrics_engine = None
@@ -392,69 +402,6 @@ class GameWindow(Frame):
         content = Frame(self.main_container, bg=self.theme.bg_main)
         content.pack(fill=BOTH, expand=True, padx=24, pady=(16, 24))
         
-        # Word length selector
-        length_frame = Frame(content, bg=self.theme.bg_card, bd=0, relief=FLAT)
-        length_frame.pack(fill=X, pady=(0, 16))
-        
-        Label(
-            length_frame,
-            text="Word Length:",
-            font=(self.theme.font_family, self.theme.font_size_base),
-            bg=self.theme.bg_card,
-            fg=self.theme.text_secondary,
-        ).pack(side=LEFT, padx=(16, 8))
-        
-        # Get truly available lengths from CSV
-        csv_lengths = get_available_word_lengths(self.dictionary_file)
-        self.length_buttons = {}
-        for l in sorted(csv_lengths):
-            state = NORMAL if l in self.available_word_lengths else DISABLED
-            btn = Button(
-                length_frame,
-                text=str(l),
-                font=(self.theme.font_family, self.theme.font_size_base, "bold"),
-                width=3,
-                bg=self.theme.btn_primary_bg if l == self.word_length else self.theme.btn_secondary_bg,
-                fg=self.theme.text_inverse if l == self.word_length else (self.theme.btn_secondary_fg if state == NORMAL else "#666666"),
-                relief=FLAT if l == self.word_length else RAISED,
-                bd=0 if l == self.word_length else 2,
-                padx=8,
-                pady=6,
-                command=lambda ll=l: self.change_word_length(ll),
-            )
-            btn.pack(side=LEFT, padx=2)
-            self.length_buttons[l] = btn
-        
-        # Attempts selector
-        attempts_frame = Frame(content, bg=self.theme.bg_card, bd=0, relief=FLAT)
-        attempts_frame.pack(fill=X, pady=(0, 16))
-        
-        Label(
-            attempts_frame,
-            text="Attempts:",
-            font=(self.theme.font_family, self.theme.font_size_base),
-            bg=self.theme.bg_card,
-            fg=self.theme.text_secondary,
-        ).pack(side=LEFT, padx=(16, 8))
-        
-        self.attempts_buttons = {}
-        for a in [4, 5, 6, 7, 8]:
-            btn = Button(
-                attempts_frame,
-                text=str(a),
-                font=(self.theme.font_family, self.theme.font_size_base, "bold"),
-                width=3,
-                bg=self.theme.btn_primary_bg if a == self.attempts_init else self.theme.btn_secondary_bg,
-                fg=self.theme.text_inverse if a == self.attempts_init else self.theme.btn_secondary_fg,
-                relief=FLAT if a == self.attempts_init else RAISED,
-                bd=0 if a == self.attempts_init else 2,
-                padx=8,
-                pady=6,
-                command=lambda aa=a: self.change_attempts(aa),
-            )
-            btn.pack(side=LEFT, padx=2)
-            self.attempts_buttons[a] = btn
-        
         # Stats row
         stats_frame = Frame(content, bg=self.theme.bg_card)
         stats_frame.pack(fill=X, pady=(0, 12))
@@ -493,7 +440,7 @@ class GameWindow(Frame):
         
         self.word_grid = WordGrid(
             grid_container,
-            rows=6,
+            rows=self.attempts_init,
             cols=self.word_length,
             on_submit=self.handle_guess_submit,
         )
@@ -609,45 +556,54 @@ class GameWindow(Frame):
     def open_settings(self):
         SettingsDialog(self.master, self)
     
-    def update_debug_display(self):
-        """Update the debug display based on debug_mode setting."""
-        if self.debug_mode:
+    def update_helper_display(self):
+        """Update the helper display based on helper_mode setting."""
+        if self.helper_mode == HELPER_MODE_DEBUG:
             self.result_label.config(
                 text=f"Debug: Solution is '{self.target_word.upper()}'",
                 fg=self.theme.text_secondary,
             )
+        elif self.helper_mode in (HELPER_MODE_FULL_HELP, HELPER_MODE_SKILL_AND_LUCK, HELPER_MODE_SKILL_ONLY):
+            # Metrics will be shown via update_metrics_on_guess
+            pass
         else:
-            # Only clear if it's the debug message
             if "Debug:" in self.result_label.cget("text"):
                 self.result_label.config(text="")
     
     def change_word_length(self, length):
         self.word_length = length
         self.load_word_list_for_length(length)
+        # Clear any existing metrics labels before destroying grid
+        if hasattr(self.word_grid, '_metrics_labels'):
+            for lbl in self.word_grid._metrics_labels.values():
+                lbl.destroy()
+        # Rebuild WordGrid with new columns
+        self.word_grid.container.destroy()
+        self.word_grid = WordGrid(
+            self.word_grid.container.master,
+            rows=self.attempts_init,
+            cols=self.word_length,
+            on_submit=self.handle_guess_submit,
+        )
+        self.word_grid.pack(pady=8)
         self.reset_game()
-        # Update button states
-        for l, btn in self.length_buttons.items():
-            is_active = l == self.word_length
-            is_available = l in self.available_word_lengths
-            btn.config(
-                bg=self.theme.btn_primary_bg if is_active else self.theme.btn_secondary_bg,
-                fg=self.theme.text_inverse if is_active else (self.theme.btn_secondary_fg if is_available else "#666666"),
-                relief=FLAT if is_active else RAISED,
-                bd=0 if is_active else 2,
-                state=NORMAL if is_available else DISABLED,
-            )
     
     def change_attempts(self, attempts):
         self.attempts_init = attempts
+        # Clear any existing metrics labels before destroying grid
+        if hasattr(self.word_grid, '_metrics_labels'):
+            for lbl in self.word_grid._metrics_labels.values():
+                lbl.destroy()
+        # Rebuild WordGrid with new rows
+        self.word_grid.container.destroy()
+        self.word_grid = WordGrid(
+            self.word_grid.container.master,
+            rows=self.attempts_init,
+            cols=self.word_length,
+            on_submit=self.handle_guess_submit,
+        )
+        self.word_grid.pack(pady=8)
         self.reset_game()
-        for a, btn in self.attempts_buttons.items():
-            is_active = a == self.attempts_init
-            btn.config(
-                bg=self.theme.btn_primary_bg if is_active else self.theme.btn_secondary_bg,
-                fg=self.theme.text_inverse if is_active else self.theme.btn_secondary_fg,
-                relief=FLAT if is_active else RAISED,
-                bd=0 if is_active else 2,
-            )
     
     def change_metrics_mode(self, mode):
         # This is kept for compatibility; main metrics update happens elsewhere
@@ -707,7 +663,7 @@ class GameWindow(Frame):
         
         self.word_grid.clear_all()
         
-        # Clear inline metrics labels
+        # Clear inline metrics labels (destroy widgets)
         if hasattr(self.word_grid, '_metrics_labels'):
             for lbl in self.word_grid._metrics_labels.values():
                 lbl.destroy()
@@ -726,8 +682,8 @@ class GameWindow(Frame):
         self.result_label.config(text="")
         self.metrics_label.config(text="")
         
-        # Update debug display if active
-        self.update_debug_display()
+        # Update helper display if active
+        self.update_helper_display()
         
         # Clear word info
         for w in self.word_info_frame.winfo_children():
@@ -904,12 +860,22 @@ class GameWindow(Frame):
             "correct": correct,
         })
         
-        # Display inline metrics to the right of the guess row
+        # Display inline metrics to the right of the guess row based on helper mode
         if not is_win and not is_lose:
-            metrics_str = f"Skill: {skill:.1f} | Luck: {luck:.1f} | {N_before}→{N_after}"
             row = self.word_grid.active_row - 1  # Previous row is where guess was entered
             if row >= 0:
-                self.word_grid.display_inline_metrics(metrics_str, row)
+                if self.helper_mode == HELPER_MODE_SKILL_ONLY:
+                    metrics_str = f"Skill: {skill:.1f}"
+                    self.word_grid.display_inline_metrics(metrics_str, row)
+                elif self.helper_mode == HELPER_MODE_SKILL_AND_LUCK:
+                    metrics_str = f"Skill: {skill:.1f} | Luck: {luck:.1f}"
+                    self.word_grid.display_inline_metrics(metrics_str, row)
+                elif self.helper_mode == HELPER_MODE_FULL_HELP:
+                    metrics_str = f"Skill: {skill:.1f} | Luck: {luck:.1f} | {N_before}→{N_after}"
+                    self.word_grid.display_inline_metrics(metrics_str, row)
+                elif self.helper_mode == HELPER_MODE_DEBUG:
+                    metrics_str = f"Skill: {skill:.1f} | Luck: {luck:.1f} | {N_before}→{N_after}"
+                    self.word_grid.display_inline_metrics(metrics_str, row)
         
         self.update_metrics_summary()
     
@@ -919,11 +885,15 @@ class GameWindow(Frame):
             return
         total_skill = sum(m["skill"] for m in self.guess_metrics) / len(self.guess_metrics)
         total_luck = sum(m["luck"] for m in self.guess_metrics) / len(self.guess_metrics)
-        self.metrics_label.config(text=f"Average: Skill {total_skill:.1f} | Luck {total_luck:.1f}")
+        if self.helper_mode in (HELPER_MODE_SKILL_ONLY, HELPER_MODE_SKILL_AND_LUCK, HELPER_MODE_FULL_HELP, HELPER_MODE_DEBUG):
+            self.metrics_label.config(text=f"Average: Skill {total_skill:.1f} | Luck {total_luck:.1f}")
+        else:
+            self.metrics_label.config(text="")
     
     def end_game(self):
         self.display_word_info(self.target_row)
         self.word_grid.clear_after_row(self.word_grid.active_row + 1)
+        self._reveal_all_metrics()
     
     def lose_game(self):
         self.attempts_label.config(
@@ -934,6 +904,18 @@ class GameWindow(Frame):
             fg=self.theme.accent_error,
         )
         self.display_word_info(self.target_row)
+        self._reveal_all_metrics()
+    
+    def _reveal_all_metrics(self):
+        """Reveal all metrics and the solution when game ends."""
+        self.update_metrics_summary()
+        for i, m in enumerate(self.guess_metrics):
+            skill = m["skill"]
+            luck = m["luck"]
+            before = m["before"]
+            after = m["after"]
+            metrics_str = f"Skill: {skill:.1f} | Luck: {luck:.1f} | {before}→{after}"
+            self.word_grid.display_inline_metrics(metrics_str, i)
     
     def display_word_info(self, row):
         self.word_info_frame.pack(fill=X, pady=(16, 0))
