@@ -14,14 +14,54 @@ import 'logic.dart';
         ),
     };
 
+/// One letter tile, coloured by [mark]; tappable when [onTap] is given.
+class MarkTile extends StatelessWidget {
+  const MarkTile(this.ch, {super.key, this.mark, required this.size, this.onTap});
+  final String ch;
+  final Mark? mark;
+  final double size;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    Color? fill;
+    Color fg = c.onSurface;
+    var border = ch.isEmpty ? c.outlineVariant : c.onSurface;
+    if (mark != null) {
+      (fill, fg) = markColors(c, mark!);
+      border = fill;
+    }
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(3),
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: fill,
+          border: Border.all(color: border),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Text(ch,
+            style: TextStyle(
+                fontSize: size * .5, fontWeight: FontWeight.bold, color: fg)),
+      ),
+    );
+  }
+}
+
 /// Small tracked lowercase caption, the section label of the whole app.
 class Caption extends StatelessWidget {
-  const Caption(this.text, {super.key});
+  const Caption(this.text, {super.key, this.textAlign});
   final String text;
+  final TextAlign? textAlign;
 
   @override
   Widget build(BuildContext context) => Text(
         text,
+        textAlign: textAlign,
         style: TextStyle(
           fontSize: 12,
           letterSpacing: 2,

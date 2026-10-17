@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart';
 import 'game.dart';
+import 'solver.dart';
 import 'main.dart';
+import 'store.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -33,13 +35,16 @@ class _HomePageState extends State<HomePage> {
   Language _current(List<Language> langs) =>
       langs.firstWhere((l) => l.code == appState.lang, orElse: () => langs.first);
 
-  Future<void> _start(Language lang) async {
+  Future<void> _start(Language lang, {bool solver = false}) async {
     setState(() => _starting = true);
     final bank = await WordBank.load(lang);
     if (!mounted) return;
     setState(() => _starting = false);
     await Navigator.push(
-        context, MaterialPageRoute(builder: (_) => GamePage(bank: bank)));
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                solver ? SolverPage(bank: bank) : GamePage(bank: bank)));
   }
 
   @override
@@ -113,18 +118,38 @@ class _HomePageState extends State<HomePage> {
                                   selected: n == appState.tries,
                                   onTap: () => appState.setup(tries: n)),
                           ]),
-                          const SizedBox(height: 20),
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('show words left',
-                                style: TextStyle(fontSize: 14)),
-                            value: appState.showWordsLeft,
-                            onChanged: (v) => appState.setup(showWordsLeft: v),
+                          const SizedBox(height: 28),
+                          const Caption('helper'),
+                          const SizedBox(height: 10),
+                          Wrap(spacing: 8, runSpacing: 8, children: [
+                            for (final h in Helper.values)
+                              Choice(h.label,
+                                  sub: h.sub,
+                                  selected: h == appState.helper,
+                                  onTap: () => appState.setup(helper: h)),
+                          ]),
+                          const SizedBox(height: 10),
+                          Text(
+                            'skill: how well a guess narrows the field '
+                            '(100 = best possible). luck: how your result '
+                            'compares with the average outcome (100 = average, '
+                            'above = lucky). everything is revealed when the '
+                            'game ends.',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: c.onSurface.withValues(alpha: .6)),
                           ),
                           const SizedBox(height: 20),
                           FilledButton(
                             onPressed: _starting ? null : () => _start(lang),
                             child: Text(_starting ? 'loading…' : 'play'),
+                          ),
+                          const SizedBox(height: 10),
+                          OutlinedButton(
+                            onPressed: _starting
+                                ? null
+                                : () => _start(lang, solver: true),
+                            child: const Text('solver'),
                           ),
                           const SizedBox(height: 28),
                           const Divider(),

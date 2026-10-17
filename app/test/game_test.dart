@@ -10,7 +10,7 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('play a game through the real UI and lose it', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(420, 900));
+    await tester.binding.setSurfaceSize(const Size(420, 1700)); // tall: the home list builds lazily
     await appState.load();
     appState.setup(lang: 'fr', length: 4, tries: 3);
     await tester.pumpWidget(const LexodleApp());
@@ -38,6 +38,9 @@ void main() {
     }
     await tester.pumpAndSettle();
     expect(find.text('again'), findsOneWidget);
+    // the end of a game reveals the skill and luck report
+    expect(find.text('report'), findsOneWidget);
+    expect(find.text('average'), findsOneWidget);
     expect(appState.stats.played, 1);
   });
 }

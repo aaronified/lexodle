@@ -3,6 +3,22 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// How much the game tells you while you play. Whatever the level, a finished
+/// game reveals everything (as in the original).
+enum Helper {
+  off('off', 'nothing', false, false, false),
+  skill('skill', 'per guess', true, false, false),
+  skillLuck('skill + luck', 'per guess', true, true, false),
+  full('full', 'and words left', true, true, true);
+
+  const Helper(this.label, this.sub, this.showSkill, this.showLuck, this.showWordsLeft);
+  final String label;
+  final String sub;
+  final bool showSkill;
+  final bool showLuck;
+  final bool showWordsLeft;
+}
+
 /// One finished game, as achievements see it.
 class GameResult {
   const GameResult({
@@ -105,7 +121,7 @@ class AppState extends ChangeNotifier {
   String lang = 'en';
   int length = 5;
   int tries = 6;
-  bool showWordsLeft = true;
+  Helper helper = Helper.full;
   Stats stats = Stats();
   Map<String, String> unlocked = {};
 
@@ -117,7 +133,12 @@ class AppState extends ChangeNotifier {
       lang = p.getString('lang') ?? lang;
       length = p.getInt('length') ?? length;
       tries = p.getInt('tries') ?? tries;
-      showWordsLeft = p.getBool('showWordsLeft') ?? showWordsLeft;
+      final h = p.getInt('helper');
+      if (h != null && h >= 0 && h < Helper.values.length) {
+        helper = Helper.values[h];
+      } else if (p.getBool('showWordsLeft') == false) {
+        helper = Helper.off; // the setting this replaced
+      }
       final s = p.getString('stats');
       if (s != null) stats = Stats.fromJson(jsonDecode(s));
       final u = p.getString('unlocked');
@@ -128,17 +149,17 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setup({String? lang, int? length, int? tries, bool? showWordsLeft}) {
+  void setup({String? lang, int? length, int? tries, Helper? helper}) {
     this.lang = lang ?? this.lang;
     this.length = length ?? this.length;
     this.tries = tries ?? this.tries;
-    this.showWordsLeft = showWordsLeft ?? this.showWordsLeft;
+    this.helper = helper ?? this.helper;
     try {
       _prefs
         ?..setString('lang', this.lang)
         ..setInt('length', this.length)
         ..setInt('tries', this.tries)
-        ..setBool('showWordsLeft', this.showWordsLeft);
+        ..setInt('helper', this.helper.index);
     } catch (_) {}
     notifyListeners();
   }

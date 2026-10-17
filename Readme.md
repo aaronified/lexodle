@@ -20,8 +20,33 @@ Before you start, choose:
 | Letters    | 4 to 8                                                                   |
 | Difficulty | easy (8 tries), normal (6), hard (4), brutal (3)                         |
 
-"Show words left" displays how many possible answers remain after each guess.
 Type on a keyboard or use the on-screen one, which adds each language's accented letters.
+
+### Skill and luck
+
+The **helper** setting chooses what the game tells you while you play: *off*,
+*skill*, *skill + luck*, or *full* (which adds how many possible words remain).
+When a game ends, everything is revealed whatever the setting: a report with the
+skill, luck and words-left of every guess, and their averages.
+
+With *N* words still possible, a guess splits them into groups by the feedback they
+would give; the expected number left is *E* = Σ(group size)² / *N*.
+
+- **skill** = (*N* − *E*) / (*N* − 1) × 100. 100 means the guess splits the words into
+  singletons (the best possible), 0 means it tells you nothing.
+- **luck** = (*N* − words left) / (*N* − *E*) × 100. It compares the words your result
+  actually ruled out with the number expected. 100 is average; above is lucky, below unlucky.
+
+These are the measures from the original Python game.
+
+### Solver
+
+The **solver** (on the home screen, for the chosen language and length) helps with a
+game you are playing elsewhere. Type each guess, tap its tiles to match the colours the
+game showed (grey, yellow, green), and add it. It lists the words still possible, most
+likely first, and recommends the next guess: the word that leaves the fewest words in
+expectation, drawn from the 600 most frequent words plus the possible answers. Tap a
+word to use it as the next guess.
 
 When a game ends, the answer's pronunciation (IPA and audio), meaning, synonyms
 and antonyms are fetched from [Wiktionary](https://en.wiktionary.org), with a
@@ -50,7 +75,9 @@ flutter run -d chrome
 
 | Path                     | What it is                                              |
 | ------------------------ | ------------------------------------------------------- |
-| `app/lib/logic.dart`     | Guess scoring, eligible-word filter, weighted word pick |
+| `app/lib/logic.dart`     | Guess scoring, eligible-word filter, skill and luck, solver recommendation, weighted word pick |
+| `app/lib/solver.dart`    | The solver page                                         |
+| `app/lib/keyboard.dart`  | The on-screen keyboard, shared by game and solver       |
 | `app/lib/words.dart`     | Loads the per-language word lists                       |
 | `app/lib/wiktionary.dart`| Wiktionary lookup and parser                            |
 | `app/lib/store.dart`     | Settings, stats and the achievement definitions         |

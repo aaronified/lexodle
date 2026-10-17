@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
 import 'store.dart';
@@ -31,6 +32,7 @@ class _GamePageState extends State<GamePage> {
   late List<String> eligible;
   final guesses = <String>[];
   final marks = <List<Mark>>[];
+  final metrics = <GuessMetrics>[];
   final keyMarks = <String, Mark>{};
   String input = '';
   String message = '';
@@ -60,6 +62,7 @@ class _GamePageState extends State<GamePage> {
     guesses.clear();
     marks.clear();
     keyMarks.clear();
+    metrics.clear();
     input = '';
     message = '';
     over = won = false;
@@ -106,7 +109,9 @@ class _GamePageState extends State<GamePage> {
         // correct beats present beats absent
         if (old == null || m[i].index < old.index) keyMarks[k] = m[i];
       }
-      eligible = filterEligible(eligible, input, m);
+      final after = filterEligible(eligible, input, m);
+      metrics.add(scoreGuess(eligible, input, after.length));
+      eligible = after;
       final solved = input == answer;
       input = '';
       message = '';
@@ -161,7 +166,10 @@ class _GamePageState extends State<GamePage> {
               constraints: const BoxConstraints(maxWidth: 480),
               child: Column(children: [
                 Expanded(child: _grid()),
-                SizedBox(height: 56, child: Center(child: _status(c))),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 56),
+                  child: Center(child: _status(c)),
+                ),
                 if (over) _overPanel(c) else _keyboard(c),
                 const SizedBox(height: 12),
               ]),
@@ -238,13 +246,75 @@ class _GamePageState extends State<GamePage> {
     if (message.isNotEmpty) {
       return Text(message, style: TextStyle(color: c.error));
     }
-    if (appState.showWordsLeft && !over && guesses.isNotEmpty) {
-      return Caption('${eligible.length} possible '
-          '${eligible.length == 1 ? 'word' : 'words'} · '
-          '${tries - guesses.length} left');
-    }
-    if (!over) return Caption('${tries - guesses.length} tries left');
-    return const SizedBox();
+    if (over) return const SizedBox();
+    final h = appState.helper;
+    final left = '${tries - guesses.length} tries left';
+    if (guesses.isEmpty) return Caption(left);
+    final m = metrics.last;
+    final parts = [
+      if (h.showSkill) 'skill ${m.skill.toStringAsFixed(1)}',
+      if (h.showLuck) 'luck ${m.luck.toStringAsFixed(1)}',
+    ];
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      if (parts.isNotEmpty)
+        Caption('last guess · ${parts.join(' · ')}', textAlign: TextAlign.center),
+      Caption(h.showWordsLeft
+          ? '${eligible.length} possible '
+              '${eligible.length == 1 ? 'word' : 'words'} · $left'
+          : left),
+    ]);
+  }
+
+  /// Shown when a game ends, whatever the helper level: skill and luck for
+  /// every guess, their averages, and how many words each guess left.
+  Widget _report(ColorScheme c) {
+    if (metrics.isEmpty) return const SizedBox();
+    double avg(double Function(GuessMetrics) f) =>
+        metrics.map(f).reduce((a, b) => a + b) / metrics.length;
+    const cell = TextStyle(fontSize: 12);
+    TableRow row(List<String> cells, {bool head = false}) => TableRow(children: [
+          for (var i = 0; i < cells.length; i++)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Text(cells[i],
+                  textAlign: i == 0 ? TextAlign.left : TextAlign.right,
+                  style: head
+                      ? TextStyle(
+                          fontSize: 11,
+                          letterSpacing: 1.5,
+                          color: c.onSurface.withValues(alpha: .6))
+                      : cell),
+            ),
+        ]);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Caption('report'),
+      const SizedBox(height: 6),
+      Table(
+        columnWidths: const {0: FlexColumnWidth(2.2)},
+        children: [
+          row(['guess', 'skill', 'luck', 'words'], head: true),
+          for (final m in metrics)
+            row([
+              m.guess,
+              m.skill.toStringAsFixed(1),
+              m.luck.toStringAsFixed(1),
+              '${m.before}→${m.after}',
+            ]),
+          row([
+            'average',
+            avg((m) => m.skill).toStringAsFixed(1),
+            avg((m) => m.luck).toStringAsFixed(1),
+            '',
+          ]),
+        ],
+      ),
+      const SizedBox(height: 6),
+      Text(
+        'skill 100 = the best possible split of the words left. '
+        'luck 100 = an average outcome; above is lucky, below unlucky.',
+        style: TextStyle(fontSize: 11, color: c.onSurface.withValues(alpha: .6)),
+      ),
+    ]);
   }
 
   Widget _overPanel(ColorScheme c) {
@@ -267,6 +337,10 @@ class _GamePageState extends State<GamePage> {
         const SizedBox(height: 10),
         const Divider(),
         const SizedBox(height: 10),
+        _report(c),
+        const SizedBox(height: 10),
+        const Divider(),
+        const SizedBox(height: 10),
         WordInfoView(word: answer, language: widget.bank.language),
         const SizedBox(height: 14),
         Row(children: [
@@ -285,55 +359,11 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  Widget _keyboard(ColorScheme c) {
-    const base = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
-    final extra = _letters.where((l) => !base.join().contains(l)).toList()
-      ..sort();
-    final rows = <List<String>>[
-      for (final r in base) r.split('').where(_letters.contains).toList(),
-      for (var i = 0; i < extra.length; i += 10)
-        extra.sublist(i, min(i + 10, extra.length)),
-    ];
-    Widget key(String label, VoidCallback tap, {Mark? mark, double flex = 1}) {
-      Color? fill;
-      Color fg = c.onSurface;
-      if (mark != null) (fill, fg) = markColors(c, mark);
-      return Expanded(
-        flex: (flex * 10).round(),
-        child: Padding(
-          padding: const EdgeInsets.all(2.5),
-          child: InkWell(
-            onTap: tap,
-            borderRadius: BorderRadius.circular(3),
-            child: Container(
-              height: 46,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: fill,
-                border: Border.all(color: fill ?? c.outline),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: Text(label,
-                  style: TextStyle(
-                      fontSize: label.length > 1 ? 11 : 16,
-                      fontWeight: FontWeight.bold,
-                      color: fg)),
-            ),
-          ),
-        ),
+  Widget _keyboard(ColorScheme c) => LetterKeyboard(
+        letters: _letters,
+        marks: keyMarks,
+        onLetter: _type,
+        onEnter: _submit,
+        onBack: _back,
       );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Column(children: [
-        for (var i = 0; i < rows.length; i++)
-          Row(children: [
-            if (i == 2) key('enter', _submit, flex: 1.6),
-            for (final l in rows[i]) key(l, () => _type(l), mark: keyMarks[l]),
-            if (i == 2) key('⌫', _back, flex: 1.6),
-          ]),
-      ]),
-    );
-  }
 }
