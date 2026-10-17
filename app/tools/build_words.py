@@ -17,9 +17,12 @@ frequency list, since wordfreq has one per language, and differ in the
 dictionary that filters it: colour is accepted by the UK dictionary and not by
 the US one.
 
-Two languages differ: Indonesian uses LibreOffice's dictionary (wooorm has
-none), and Finnish has no Hunspell dictionary in either collection, so it is
-filtered by frequency only (zipf >= 3). That is recorded in languages.json.
+Two things differ: Indonesian uses LibreOffice's dictionary (wooorm has none),
+and the two Portuguese lists get a second filter, because the Portuguese
+dictionary accepts many names in lowercase (paulo, maria, brasil). A word must
+also have its lowercase page on en.wiktionary.org as a Portuguese lemma or
+non-lemma form, which names do not. Finnish was dropped: no Hunspell dictionary
+exists for it in either collection.
 
 Output (assets/words/): <code>.txt, lines of `word<TAB>weight`, sorted by weight
 descending within each length; languages.json (names, flags, lengths, counts,
@@ -34,7 +37,9 @@ Dictionaries are downloaded to tools/dictionaries/ (not committed).
 import json
 import re
 import sys
+import time
 import unicodedata
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -46,6 +51,11 @@ POOL = 6000  # words kept per language and length
 MIN_POOL = 400  # a length with fewer words than this is not offered
 EXAMINE = 80_000  # most candidates tried per length
 FREQUENCY_ONLY_ZIPF = 3.0
+
+# lists that also need a Wiktionary entry (see the module docstring)
+WIKTIONARY_CHECKED = {"pt", "pt-PT"}
+WIKT_API = "https://en.wiktionary.org/w/api.php"
+WIKT_UA = "lexodle-build/1.0 (https://github.com/aaronified/lexodle)"
 
 WOORM = "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/{c}/{f}"
 LIBRE = "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/{c}/{f}"
@@ -68,7 +78,6 @@ LANGS = [
     ("sv", "Svenska", "Swedish", "sv", "sv", "🇸🇪"),
     ("da", "Dansk", "Danish", "da", "da", "🇩🇰"),
     ("nb", "Norsk", "Norwegian Bokmål", "nb", "nb", "🇳🇴"),
-    ("fi", "Suomi", "Finnish", "fi", None, "🇫🇮"),
     ("tr", "Türkçe", "Turkish", "tr", "tr", "🇹🇷"),
     ("ro", "Română", "Romanian", "ro", "ro", "🇷🇴"),
     ("cs", "Čeština", "Czech", "cs", "cs", "🇨🇿"),
@@ -123,6 +132,52 @@ def fetch(dictdir):
     return d / "index", lic.read_text(encoding="utf-8")
 
 
+def wiktionary_get(params):
+    q = urllib.parse.urlencode({"format": "json", "formatversion": "2", **params})
+    for attempt in range(6):
+        try:
+            req = urllib.request.Request(WIKT_API + "?" + q, headers={"User-Agent": WIKT_UA})
+            return json.load(urllib.request.urlopen(req, timeout=60))
+        except Exception as e:  # rate limited or a hiccup: back off and retry
+            print(f"  wiktionary retry {attempt + 1}: {e}", file=sys.stderr)
+            time.sleep(2 ** attempt)
+    raise RuntimeError("Wiktionary did not answer")
+
+
+def wiktionary_members(heading):
+    """The lowercase single-word titles, 4 to 8 letters, that en.wiktionary.org
+    files as a lemma or a non-lemma form of [heading] (for example Portuguese).
+    Names are not among them: their lowercase titles are other languages' words
+    or do not exist. The category listings are fetched once, 500 titles a
+    request, and cached in a text file; the check is then a set lookup."""
+    path = DICTS / f"wiktionary-{heading}-members.txt"
+    if path.exists():
+        return set(path.read_text(encoding="utf-8").split())
+    members, requests = set(), 0
+    for kind in ("lemmas", "non-lemma forms"):
+        cont = None
+        while True:
+            params = {"action": "query", "list": "categorymembers",
+                      "cmtitle": f"Category:{heading} {kind}", "cmlimit": "500", "cmtype": "page"}
+            if cont:
+                params["cmcontinue"] = cont
+            data = wiktionary_get(params)
+            for m in data["query"]["categorymembers"]:
+                t = m["title"]
+                if t == t.lower() and 4 <= len(t) <= 8 and is_latin_word(t):
+                    members.add(t)
+            requests += 1
+            if requests % 100 == 0:
+                print(f"  {heading} {kind}: {requests} requests, {len(members)} words", file=sys.stderr)
+            cont = data.get("continue", {}).get("cmcontinue")
+            if not cont:
+                break
+            time.sleep(0.2)
+    DICTS.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(sorted(members)), encoding="utf-8")
+    return members
+
+
 def is_latin_word(w):
     return w.isalpha() and all(unicodedata.name(c, "").startswith("LATIN") for c in w)
 
@@ -153,7 +208,7 @@ def candidates(wf):
     return out
 
 
-def build(code, wf, dictdir):
+def build(code, wf, dictdir, heading):
     from spylls.hunspell import Dictionary
 
     cands = candidates(wf)
@@ -167,6 +222,11 @@ def build(code, wf, dictdir):
         else:
             accept = lambda w, z: d.lookup(w)  # noqa: E731
         kind = "hunspell"
+    if code in WIKTIONARY_CHECKED:
+        members = wiktionary_members(heading)
+        hunspell_ok = accept
+        accept = lambda w, z: w in members and hunspell_ok(w, z)  # noqa: E731
+        kind = "hunspell+wiktionary"
     lines, lengths, counts = [], [], {}
     for n in LENGTHS:
         kept = []
@@ -182,14 +242,16 @@ def build(code, wf, dictdir):
     return lines, lengths, counts, kind
 
 
-def write_sources():
+def write_sources(manifest):
+    built = {m["code"]: m.get("filter") for m in manifest}
     rows = []
     for code, name, _, _, dictdir, _ in LANGS:
         src = source(dictdir)
         if src is None:
             rows.append(f"| {name} (`{code}`) | frequency only (zipf >= 3) | none (no dictionary) |")
         else:
-            rows.append(f"| {name} (`{code}`) | Hunspell, {src[2]} `{dictdir}` | {fetch(dictdir)[1]} |")
+            extra = " + en.wiktionary.org lemma check" if built.get(code) == "hunspell+wiktionary" else ""
+            rows.append(f"| {name} (`{code}`) | Hunspell, {src[2]} `{dictdir}`{extra} | {fetch(dictdir)[1]} |")
     (OUT / "SOURCES.md").write_text(
         "# Word list sources\n\n"
         "Candidates come from [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0). "
@@ -211,13 +273,13 @@ def main():
             # not rebuilt: keep its word list and counts, refresh the rest
             manifest.append({**old[code], "name": name, "wikt": wikt, "flag": flag})
             continue
-        lines, lengths, counts, kind = build(code, wf, dictdir)
+        lines, lengths, counts, kind = build(code, wf, dictdir, wikt)
         (OUT / f"{code}.txt").write_text("\n".join(lines), encoding="utf-8")
         manifest.append({"code": code, "name": name, "wikt": wikt, "flag": flag,
                          "lengths": lengths, "counts": counts, "filter": kind})
         print(code, name, kind, counts, file=sys.stderr)
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
-    write_sources()
+    write_sources(manifest)
 
 
 if __name__ == "__main__":

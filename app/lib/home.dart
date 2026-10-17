@@ -241,10 +241,11 @@ class _HomePageState extends State<HomePage> {
                                   children: const [
                                     Text(
                                       'Words: wordfreq (CC BY-SA 4.0), '
-                                      'filtered with Hunspell dictionaries '
-                                      '(see assets/words/SOURCES.md). Font: '
-                                      'JetBrains Mono (OFL). Icons: Tabler '
-                                      'Icons (MIT).',
+                                      'filtered with spelling dictionaries. '
+                                      'Definitions: Wiktionary (CC BY-SA 4.0). '
+                                      'Font: JetBrains Mono (OFL). Icons: '
+                                      'Tabler Icons (MIT). Full licences are '
+                                      'under "view licenses".',
                                     ),
                                   ],
                                 ),

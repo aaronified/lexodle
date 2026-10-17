@@ -4,7 +4,7 @@
 
 # Lexodle
 
-A minimal word game in 18 Latin-script languages.
+A minimal word game in 17 Latin-script languages.
 
 **Play: <https://aaronified.github.io/lexodle/>**
 
@@ -20,7 +20,7 @@ Before you start, choose:
 
 | Setting    | Options                                                                  |
 | ---------- | ------------------------------------------------------------------------ |
-| Language   | English (US and UK spelling), Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Swedish, Danish, Norwegian, Finnish, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan; each with its flag |
+| Language   | English (US and UK spelling), Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Swedish, Danish, Norwegian, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan; each with its flag |
 | Letters    | 4 to 8                                                                   |
 | Difficulty | a 4 x 4 grid: tries (easy 8, normal 6, hard 4, brutal 3) by word pool (answers drawn from the 500, 1,500, 3,000 or 6,000 most common words) |
 
@@ -141,13 +141,20 @@ valid guesses, with a weight from their frequency.
 
 Spelling variants (English US / UK, Portuguese Brazil / Portugal) share one frequency list, since
 wordfreq has one per language, and differ in the dictionary that filters it: `colour` passes the UK
-dictionary and not the US one. The Portuguese dictionary lets a few lowercase proper nouns
-(`paulo`, `brasil`) through. Flags are emoji, except Catalan's, which has none and is drawn
+dictionary and not the US one. Flags are emoji, except Catalan's, which has none and is drawn
 (`app/assets/flags/ca.svg`).
 
-Finnish has no Hunspell dictionary in either collection, so it is filtered by frequency only,
-and a few names or abbreviations can appear in it. `app/assets/words/SOURCES.md` lists every
-dictionary and the licence it states; only the filtered word lists are shipped.
+Names are the weak point of a dictionary filter. The Portuguese dictionary stores many names as
+ordinary lowercase entries (`brasil`, `lisboa`, `jorge`), so the two Portuguese lists get a second
+filter: a word must also have its lowercase page on en.wiktionary.org as a Portuguese lemma or
+non-lemma form, which names do not (`paulo`, `maria`, `pedro`). That is the same Wiktionary
+the answer panel links to, so every Portuguese answer has an entry. **The filter is in the
+generator, but the shipped Portuguese lists have not been rebuilt with it yet** and still contain
+those names; run `python app/tools/build_words.py pt pt-PT` (about 15 minutes, mostly the one-off
+download of Wiktionary's category lists). Finnish was removed: it has no
+Hunspell dictionary in either collection, and a frequency-only list let names and abbreviations in.
+`app/assets/words/SOURCES.md` lists every dictionary and the licence it states; only the filtered
+word lists are shipped.
 
 The difficulty grid's pool is the most frequent words at the chosen length, so a smaller pool
 means more familiar answers. Some languages have fewer than 6,000 words at some lengths (for

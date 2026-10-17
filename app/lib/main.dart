@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'home.dart';
+import 'licences.dart';
 import 'store.dart';
 
 /// Dustland-style minimalism on Material 3: flat surfaces, hairline borders,
@@ -70,6 +71,7 @@ final appState = AppState();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  registerLicences();
   appState.load();
   runApp(const LexodleApp());
 }

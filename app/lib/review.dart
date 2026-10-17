@@ -467,30 +467,45 @@ class _ReviewPageState extends State<ReviewPage> {
   }
 
   Widget _picks(ColorScheme c, GuessMetrics m, List<Recommendation>? top) {
+    // Two real columns: the words share one edge, and the skill sits in a
+    // fixed-width column of its own, whatever size the line is set in.
     Widget line(
       String word,
       double skill, {
       bool big = false,
-      bool right = false,
-    }) => Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Text.rich(
-        TextSpan(
-          style: TextStyle(
-            fontSize: big ? 20 : 15,
-            fontWeight: big ? FontWeight.bold : FontWeight.normal,
-          ),
+      bool wordRight = false,
+      String keys = 'pick',
+    }) {
+      final style = TextStyle(
+        fontSize: big ? 20 : 15,
+        fontWeight: big ? FontWeight.bold : FontWeight.normal,
+      );
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Row(
           children: [
-            TextSpan(text: word),
-            TextSpan(
-              text: '  ${skill.round()}',
-              style: TextStyle(color: c.primary),
+            Expanded(
+              child: Text(
+                word,
+                key: ValueKey('$keys-word-$word'),
+                style: style,
+                textAlign: wordRight ? TextAlign.right : TextAlign.left,
+              ),
+            ),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 44,
+              child: Text(
+                '${skill.round()}',
+                key: ValueKey('$keys-skill-$word'),
+                style: style.copyWith(color: c.primary),
+                textAlign: TextAlign.right,
+              ),
             ),
           ],
         ),
-        textAlign: right ? TextAlign.right : TextAlign.left,
-      ),
-    );
+      );
+    }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,22 +516,25 @@ class _ReviewPageState extends State<ReviewPage> {
             children: [
               const Caption('your guess'),
               Divider(color: c.outlineVariant),
-              line(m.guess, m.skill, big: true),
+              line(m.guess, m.skill, big: true, keys: 'yours'),
             ],
           ),
         ),
         const SizedBox(width: 24),
         Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Caption('my picks'),
+              Align(
+                alignment: Alignment.centerRight,
+                child: const Caption('my picks'),
+              ),
               Divider(color: c.outlineVariant),
               if (top == null)
                 const Caption('working it out…')
               else
                 for (var i = 0; i < top.length; i++)
-                  line(top[i].word, top[i].skill, big: i == 0, right: true),
+                  line(top[i].word, top[i].skill, big: i == 0, wordRight: true),
             ],
           ),
         ),

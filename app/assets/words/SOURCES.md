@@ -17,7 +17,6 @@ Candidates come from [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.
 | Svenska (`sv`) | Hunspell, wooorm/dictionaries `sv` | LGPL-3.0 |
 | Dansk (`da`) | Hunspell, wooorm/dictionaries `da` | (GPL-2.0 OR LGPL-2.1 OR MPL-1.1) |
 | Norsk (`nb`) | Hunspell, wooorm/dictionaries `nb` | GPL-2.0 |
-| Suomi (`fi`) | frequency only (zipf >= 3) | none (no dictionary) |
 | Türkçe (`tr`) | Hunspell, wooorm/dictionaries `tr` | MIT |
 | Română (`ro`) | Hunspell, wooorm/dictionaries `ro` | (GPL-2.0 OR LGPL-2.1 OR MPL-1.1) |
 | Čeština (`cs`) | Hunspell, wooorm/dictionaries `cs` | GPL-2.0 |

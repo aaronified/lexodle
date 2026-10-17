@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#141409",
     "theme_color": "#141409",
-    "description": "A minimal word game in 18 Latin-script languages.",
+    "description": "A minimal word game in 17 Latin-script languages.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

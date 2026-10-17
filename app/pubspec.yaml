@@ -27,6 +27,7 @@ flutter:
     - assets/words/
     - assets/icons/
     - assets/flags/
+    - assets/fonts/OFL.txt
   fonts:
     - family: JetBrainsMono
       fonts:

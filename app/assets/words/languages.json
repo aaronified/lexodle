@@ -273,27 +273,6 @@
   "flag": "🇳🇴"
  },
  {
-  "code": "fi",
-  "name": "Suomi",
-  "wikt": "Finnish",
-  "lengths": [
-   4,
-   5,
-   6,
-   7,
-   8
-  ],
-  "counts": {
-   "4": 2173,
-   "5": 4415,
-   "6": 6000,
-   "7": 6000,
-   "8": 6000
-  },
-  "filter": "frequency",
-  "flag": "🇫🇮"
- },
- {
   "code": "tr",
   "name": "Türkçe",
   "wikt": "Turkish",
