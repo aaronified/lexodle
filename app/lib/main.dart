@@ -31,7 +31,10 @@ ThemeData buildTheme(Brightness b) {
         shape: shape,
         minimumSize: const Size(0, 52),
         textStyle: const TextStyle(
-            fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 15),
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+          fontSize: 15,
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -50,7 +53,9 @@ ThemeData buildTheme(Brightness b) {
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
-          borderRadius: _radius, borderSide: BorderSide(color: scheme.outline)),
+        borderRadius: _radius,
+        borderSide: BorderSide(color: scheme.outline),
+      ),
     ),
   );
 }

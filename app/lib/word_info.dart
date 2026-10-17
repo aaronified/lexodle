@@ -19,8 +19,11 @@ class WordInfoView extends StatefulWidget {
 }
 
 class _WordInfoViewState extends State<WordInfoView> {
-  late final Future<WordInfo?> _future = Wiktionary()
-      .lookup(widget.word, widget.language.code, widget.language.wikt);
+  late final Future<WordInfo?> _future = Wiktionary().lookup(
+    widget.word,
+    widget.language.code,
+    widget.language.wikt,
+  );
   AudioPlayer? _player;
 
   @override
@@ -57,16 +60,18 @@ class _WordInfoViewState extends State<WordInfoView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (info.ipa.isNotEmpty || info.audio != null)
-              Row(children: [
-                Flexible(child: Text(info.ipa.join('  '))),
-                if (info.audio != null)
-                  IconButton(
-                    tooltip: 'listen',
-                    visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.volume_up_outlined, size: 20),
-                    onPressed: () => _play(info.audio!),
-                  ),
-              ]),
+              Row(
+                children: [
+                  Flexible(child: Text(info.ipa.join('  '))),
+                  if (info.audio != null)
+                    IconButton(
+                      tooltip: 'listen',
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.volume_up_outlined, size: 20),
+                      onPressed: () => _play(info.audio!),
+                    ),
+                ],
+              ),
             for (final b in info.blocks) ...[
               const SizedBox(height: 8),
               Caption(b.pos),
@@ -74,8 +79,10 @@ class _WordInfoViewState extends State<WordInfoView> {
               for (var i = 0; i < b.definitions.length; i++)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 3),
-                  child: Text('${i + 1}. ${b.definitions[i]}',
-                      style: const TextStyle(fontSize: 13)),
+                  child: Text(
+                    '${i + 1}. ${b.definitions[i]}',
+                    style: const TextStyle(fontSize: 13),
+                  ),
                 ),
             ],
             if (info.synonyms.isNotEmpty) _nyms('synonyms', info.synonyms),
@@ -83,7 +90,9 @@ class _WordInfoViewState extends State<WordInfoView> {
             const SizedBox(height: 4),
             TextButton(
               style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero, minimumSize: const Size(0, 36)),
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 36),
+              ),
               onPressed: () => launchUrl(Uri.parse(info.url)),
               child: Text('wiktionary ↗', style: TextStyle(color: c.primary)),
             ),
@@ -94,11 +103,14 @@ class _WordInfoViewState extends State<WordInfoView> {
   }
 
   Widget _nyms(String label, List<String> words) => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Caption(label),
-          const SizedBox(height: 2),
-          Text(words.join(', '), style: const TextStyle(fontSize: 13)),
-        ]),
-      );
+    padding: const EdgeInsets.only(top: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Caption(label),
+        const SizedBox(height: 2),
+        Text(words.join(', '), style: const TextStyle(fontSize: 13)),
+      ],
+    ),
+  );
 }

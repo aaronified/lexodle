@@ -18,7 +18,8 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="A minimal word game in 18 Latin-script languages.">
+  <meta name="theme-color" content="#16140F">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -31,8 +32,36 @@
 
   <title>lexodle</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- No white flash, and the logo while the app starts -->
+  <style>
+    html, body { margin: 0; height: 100%; background: #16140F; }
+    #splash {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 18px;
+      background: #16140F; color: #E8E2D4;
+      font: 700 22px/1 "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+      letter-spacing: .5px;
+    }
+    #splash svg { width: 84px; height: 54px; }
+  </style>
 </head>
 <body>
+  <div id="splash" aria-label="lexodle">
+    <svg viewBox="9 23 78 50" role="img" aria-hidden="true">
+      <rect x="9" y="51" width="22" height="22" rx="4" fill="#4A453B"/>
+      <rect x="37" y="37" width="22" height="22" rx="4" fill="#E0B83A"/>
+      <rect x="65" y="23" width="22" height="22" rx="4" fill="#4C8C3A"/>
+    </svg>
+    <span>lexodle</span>
+  </div>
+  <script>
+    // Flutter announces its first frame; the splash has done its job by then.
+    window.addEventListener('flutter-first-frame', function () {
+      var s = document.getElementById('splash');
+      if (s) { s.remove(); }
+    });
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="app/assets/logo.svg" alt="lexodle logo: three tiles climbing from grey to yellow to green" width="112">
+</p>
+
 # Lexodle
 
 A minimal word game in 18 Latin-script languages.
@@ -26,18 +30,29 @@ Type on a keyboard or use the on-screen one, which adds each language's accented
 
 The **helper** setting chooses what the game tells you while you play: *off*,
 *skill*, *skill + luck*, or *full* (which adds how many possible words remain).
-When a game ends, everything is revealed whatever the setting: a report with the
-skill, luck and words-left of every guess, and their averages.
+When a game ends, the **review** steps through your guesses one at a time (buttons,
+the progress bar, or the arrow keys). Each step shows the board with a table of skill,
+luck, words left and info gained; your guess beside the best picks at that point; how
+the guess divided the pool of possible words, against the pool you landed in; and a
+short reading of the step. Your guess can be a valid word that the game never uses as an
+answer; the review says so, and nothing more.
 
 With *N* words still possible, a guess splits them into groups by the feedback they
-would give; the expected number left is *E* = Σ(group size)² / *N*.
+would give; the expected pool left is *E* = Σ(group size)² / *N*.
 
 - **skill** = (*N* − *E*) / (*N* − 1) × 100. 100 means the guess splits the words into
-  singletons (the best possible), 0 means it tells you nothing.
-- **luck** = (*N* − words left) / (*N* − *E*) × 100. It compares the words your result
-  actually ruled out with the number expected. 100 is average; above is lucky, below unlucky.
+  singletons (the best possible), 0 means it tells you nothing. With one word left,
+  playing it is 100 and anything else 0.
+- **luck** = (1 − words left / *E*) × 100, a signed percentage: how much smaller (+, green)
+  or larger (−, red) than average the pool you landed in was. 0% is exactly average. With
+  one word left, or a guess that cannot split the words, there is only one pool, so luck is
+  0%.
+- **info gained** = (1 − ln(words left) / ln(words at the start)) × 100, cumulative, as in
+  WordleBot. It reaches 100% when one word is left.
 
-These are the measures from the original Python game.
+Skill is the measure from the original Python game. Luck is not: the original compared
+words removed with words expected to be removed, which saturates near 100 whenever most
+words go either way, so a good result could never read much above average.
 
 ### Solver
 
@@ -55,10 +70,16 @@ carries on without it.
 
 ### Achievements
 
-15 achievements, saved in your browser (nothing is sent anywhere): first light,
-one shot, last breath, no mercy, brevity, long haul, full range, three in a row,
-seven in a row, polyglot, babel, regular, veteran, dustwalker and persistent.
-The achievements screen shows each condition.
+17 achievements, each with its own icon, saved in your browser (nothing is sent
+anywhere): first light, one shot, last breath, no mercy, brevity, long haul, **pure
+skill** (win with every guess above 90 skill), **skill issue** (win 10 games with every
+guess above 95 skill), full range, three in a row, seven in a row, polyglot, babel,
+regular, veteran, dustwalker and persistent.
+
+Numbered achievements show a progress bar. Once earned, they start again from 0 and can
+be earned again; the other achievements can be earned again too (first light aside), and
+every earning is counted. A history table lists each achievement you have earned: how many
+times, the first day and the latest.
 
 ## Develop
 
@@ -119,6 +140,7 @@ abbreviations or names can appear, and a real but rare word may be rejected as a
 - Definitions, IPA, audio, synonyms and antonyms: [Wiktionary](https://en.wiktionary.org),
   CC BY-SA 4.0, fetched live from the browser
 - Font: JetBrains Mono (SIL OFL 1.1)
+- Achievement icons: [Tabler Icons](https://tabler.io/icons) filled set (MIT, `app/assets/icons/LICENSE-tabler.txt`)
 - Code: see [LICENSE](LICENSE)
 
 This project was developed with assistance from [KiloCode](https://kilo.ai) and Claude Code, AI coding assistants.

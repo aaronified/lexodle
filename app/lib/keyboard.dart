@@ -57,11 +57,14 @@ class LetterKeyboard extends StatelessWidget {
                 border: Border.all(color: fill ?? c.outline),
                 borderRadius: BorderRadius.circular(3),
               ),
-              child: Text(label,
-                  style: TextStyle(
-                      fontSize: label.length > 1 ? 11 : 16,
-                      fontWeight: FontWeight.bold,
-                      color: fg)),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: label.length > 1 ? 11 : 16,
+                  fontWeight: FontWeight.bold,
+                  color: fg,
+                ),
+              ),
             ),
           ),
         ),
@@ -70,14 +73,19 @@ class LetterKeyboard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Column(children: [
-        for (var i = 0; i < rows.length; i++)
-          Row(children: [
-            if (i == 2) key(enterLabel, onEnter, flex: 1.6),
-            for (final l in rows[i]) key(l, () => onLetter(l), mark: marks[l]),
-            if (i == 2) key('⌫', onBack, flex: 1.6),
-          ]),
-      ]),
+      child: Column(
+        children: [
+          for (var i = 0; i < rows.length; i++)
+            Row(
+              children: [
+                if (i == 2) key(enterLabel, onEnter, flex: 1.6),
+                for (final l in rows[i])
+                  key(l, () => onLetter(l), mark: marks[l]),
+                if (i == 2) key('⌫', onBack, flex: 1.6),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }

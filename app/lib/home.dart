@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart';
 import 'game.dart';
+import 'how_to.dart';
+import 'logo.dart';
 import 'solver.dart';
 import 'main.dart';
 import 'store.dart';
@@ -26,14 +28,42 @@ class _HomePageState extends State<HomePage> {
   List<Language>? _langs;
   bool _starting = false;
 
+  bool _howToShown = false;
+
   @override
   void initState() {
     super.initState();
     WordBank.languages().then((l) => setState(() => _langs = l));
+    appState.addListener(_maybeShowHowTo);
+    _maybeShowHowTo();
   }
 
-  Language _current(List<Language> langs) =>
-      langs.firstWhere((l) => l.code == appState.lang, orElse: () => langs.first);
+  @override
+  void dispose() {
+    appState.removeListener(_maybeShowHowTo);
+    super.dispose();
+  }
+
+  /// First visit: open how to play once, and remember that it was shown.
+  void _maybeShowHowTo() {
+    if (_howToShown || !appState.loaded || appState.seenHowTo) return;
+    if (!appState.canRemember) return;
+    _howToShown = true;
+    appState.markHowToSeen();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const HowToPage()),
+        );
+      }
+    });
+  }
+
+  Language _current(List<Language> langs) => langs.firstWhere(
+    (l) => l.code == appState.lang,
+    orElse: () => langs.first,
+  );
 
   Future<void> _start(Language lang, {bool solver = false}) async {
     setState(() => _starting = true);
@@ -41,10 +71,11 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     setState(() => _starting = false);
     await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (_) =>
-                solver ? SolverPage(bank: bank) : GamePage(bank: bank)));
+      context,
+      MaterialPageRoute(
+        builder: (_) => solver ? SolverPage(bank: bank) : GamePage(bank: bank),
+      ),
+    );
   }
 
   @override
@@ -65,15 +96,21 @@ class _HomePageState extends State<HomePage> {
                       final length = lang.lengths.contains(appState.length)
                           ? appState.length
                           : lang.lengths.first;
-                      final unlocked = appState.unlocked.length;
+                      final unlocked = appState.unlockedCount;
                       return ListView(
                         padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
                         children: [
-                          Text('lexodle',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .displaySmall
-                                  ?.copyWith(fontWeight: FontWeight.bold)),
+                          Row(
+                            children: [
+                              const LexodleLogo(width: 56),
+                              const SizedBox(width: 16),
+                              Text(
+                                'lexodle',
+                                style: Theme.of(context).textTheme.displaySmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 6),
                           const Caption('a word game, in many tongues'),
                           const SizedBox(height: 40),
@@ -102,42 +139,61 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 28),
                           const Caption('letters'),
                           const SizedBox(height: 10),
-                          Wrap(spacing: 8, runSpacing: 8, children: [
-                            for (final n in lang.lengths)
-                              Choice('$n',
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final n in lang.lengths)
+                                Choice(
+                                  '$n',
                                   selected: n == length,
-                                  onTap: () => appState.setup(length: n)),
-                          ]),
+                                  onTap: () => appState.setup(length: n),
+                                ),
+                            ],
+                          ),
                           const SizedBox(height: 28),
                           const Caption('difficulty · number of tries'),
                           const SizedBox(height: 10),
-                          Wrap(spacing: 8, runSpacing: 8, children: [
-                            for (final (name, n) in difficulties)
-                              Choice(name,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final (name, n) in difficulties)
+                                Choice(
+                                  name,
                                   sub: '$n tries',
                                   selected: n == appState.tries,
-                                  onTap: () => appState.setup(tries: n)),
-                          ]),
+                                  onTap: () => appState.setup(tries: n),
+                                ),
+                            ],
+                          ),
                           const SizedBox(height: 28),
                           const Caption('helper'),
                           const SizedBox(height: 10),
-                          Wrap(spacing: 8, runSpacing: 8, children: [
-                            for (final h in Helper.values)
-                              Choice(h.label,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final h in Helper.values)
+                                Choice(
+                                  h.label,
                                   sub: h.sub,
                                   selected: h == appState.helper,
-                                  onTap: () => appState.setup(helper: h)),
-                          ]),
+                                  onTap: () => appState.setup(helper: h),
+                                ),
+                            ],
+                          ),
                           const SizedBox(height: 10),
                           Text(
                             'skill: how well a guess narrows the field '
-                            '(100 = best possible). luck: how your result '
-                            'compares with the average outcome (100 = average, '
-                            'above = lucky). everything is revealed when the '
-                            'game ends.',
+                            '(100 = best possible). luck: how much smaller (+, '
+                            'green) or larger (-, red) than average the pool '
+                            'you landed in was (0% = average). everything is '
+                            'revealed when the game ends.',
                             style: TextStyle(
-                                fontSize: 11,
-                                color: c.onSurface.withValues(alpha: .6)),
+                              fontSize: 11,
+                              color: c.onSurface.withValues(alpha: .6),
+                            ),
                           ),
                           const SizedBox(height: 20),
                           FilledButton(
@@ -154,36 +210,53 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 28),
                           const Divider(),
                           const SizedBox(height: 12),
-                          Row(children: [
-                            Expanded(
-                              child: TextButton(
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            children: [
+                              TextButton(
                                 onPressed: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const AchievementsPage())),
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                      'achievements  $unlocked/${achievementCount()}'),
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const AchievementsPage(),
+                                  ),
+                                ),
+                                child: Text(
+                                  'achievements  $unlocked/${achievementCount()}',
                                 ),
                               ),
-                            ),
-                            TextButton(
-                              onPressed: () => showAboutDialog(
-                                context: context,
-                                applicationName: 'lexodle',
-                                children: const [
-                                  Text('English 5-letter words: Google Ngrams '
+                              TextButton(
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const HowToPage(),
+                                  ),
+                                ),
+                                child: Text(
+                                  'how to play',
+                                  style: TextStyle(color: c.onSurface),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => showAboutDialog(
+                                  context: context,
+                                  applicationName: 'lexodle',
+                                  children: const [
+                                    Text(
+                                      'English 5-letter words: Google Ngrams '
                                       'and dwyl/english-words. Other words: '
                                       'wordfreq (CC BY-SA 4.0). Font: '
-                                      'JetBrains Mono (OFL).'),
-                                ],
+                                      'JetBrains Mono (OFL). Icons: Tabler '
+                                      'Icons (MIT).',
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  'about',
+                                  style: TextStyle(color: c.onSurface),
+                                ),
                               ),
-                              child: Text('about',
-                                  style: TextStyle(color: c.onSurface)),
-                            ),
-                          ]),
+                            ],
+                          ),
                         ],
                       );
                     },

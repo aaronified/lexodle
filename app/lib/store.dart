@@ -11,7 +11,13 @@ enum Helper {
   skillLuck('skill + luck', 'per guess', true, true, false),
   full('full', 'and words left', true, true, true);
 
-  const Helper(this.label, this.sub, this.showSkill, this.showLuck, this.showWordsLeft);
+  const Helper(
+    this.label,
+    this.sub,
+    this.showSkill,
+    this.showLuck,
+    this.showWordsLeft,
+  );
   final String label;
   final String sub;
   final bool showSkill;
@@ -27,12 +33,20 @@ class GameResult {
     required this.tries,
     required this.used,
     required this.won,
+    this.skills = const [],
   });
   final String lang;
   final int length;
   final int tries;
   final int used;
   final bool won;
+
+  /// The skill score of every guess, in order.
+  final List<double> skills;
+
+  /// A win in which every guess scored above [threshold] skill.
+  bool wonAllAbove(double threshold) =>
+      won && skills.isNotEmpty && skills.every((s) => s > threshold);
 }
 
 class Stats {
@@ -44,13 +58,13 @@ class Stats {
   Set<int> lengthsWon = {};
 
   Map<String, dynamic> toJson() => {
-        'played': played,
-        'wins': wins,
-        'streak': streak,
-        'bestStreak': bestStreak,
-        'langsWon': langsWon.toList(),
-        'lengthsWon': lengthsWon.toList(),
-      };
+    'played': played,
+    'wins': wins,
+    'streak': streak,
+    'bestStreak': bestStreak,
+    'langsWon': langsWon.toList(),
+    'lengthsWon': lengthsWon.toList(),
+  };
 
   static Stats fromJson(Map<String, dynamic> j) => Stats()
     ..played = j['played'] ?? 0
@@ -74,47 +88,277 @@ class Stats {
   }
 }
 
-class Achievement {
-  const Achievement(this.id, this.title, this.description, this.test);
-  final String id;
-  final String title;
-  final String description;
-  final bool Function(Stats s, GameResult r) test;
+/// How an achievement is earned.
+enum Track {
+  /// Earned by a single game meeting a condition.
+  event,
+
+  /// Counts games meeting a condition, up to the target.
+  counter,
+
+  /// Counts wins in a row; a loss starts again.
+  streak,
+
+  /// Counts distinct languages won in, up to the target.
+  languages,
+
+  /// Counts distinct word lengths won at, up to the target.
+  lengths,
 }
 
-/// Tested after every game, with the stats already updated.
+class Achievement {
+  const Achievement(
+    this.id,
+    this.icon,
+    this.title,
+    this.description, {
+    this.track = Track.event,
+    this.target = 0,
+    this.repeat = true,
+    this.qualifies = _always,
+  });
+  final String id;
+
+  /// Name of a Tabler filled icon in assets/icons.
+  final String icon;
+  final String title;
+  final String description;
+  final Track track;
+
+  /// Progress needed to earn a numbered achievement (0 for events).
+  final int target;
+
+  /// Whether it can be earned again. Numbered ones restart from 0 each time.
+  final bool repeat;
+
+  /// For events: the game meets the condition. For counters: the game counts.
+  final bool Function(GameResult r) qualifies;
+
+  bool get numbered => track != Track.event;
+}
+
+bool _always(GameResult r) => true;
+
+/// Every achievement. Numbered ones show a progress bar and, once earned, start
+/// again from 0; events can be earned again too, and every earning is counted.
 final achievements = <Achievement>[
-  Achievement('first_light', 'first light', 'win a game', (s, r) => r.won),
-  Achievement('one_shot', 'one shot', 'win on the first guess',
-      (s, r) => r.won && r.used == 1),
-  Achievement('last_breath', 'last breath',
-      'win on your very last try (4+ tries)',
-      (s, r) => r.won && r.used == r.tries && r.tries >= 4),
-  Achievement('no_mercy', 'no mercy', 'win with 3 tries or fewer',
-      (s, r) => r.won && r.tries <= 3),
-  Achievement('brevity', 'brevity', 'win a 4-letter word',
-      (s, r) => r.won && r.length == 4),
-  Achievement('long_haul', 'long haul', 'win an 8-letter word',
-      (s, r) => r.won && r.length == 8),
-  Achievement('full_range', 'full range', 'win at every length, 4 to 8',
-      (s, r) => {4, 5, 6, 7, 8}.every(s.lengthsWon.contains)),
-  Achievement('streak_3', 'three in a row', 'win 3 games in a row',
-      (s, r) => s.streak >= 3),
-  Achievement('streak_7', 'seven in a row', 'win 7 games in a row',
-      (s, r) => s.streak >= 7),
-  Achievement('polyglot_3', 'polyglot', 'win in 3 languages',
-      (s, r) => s.langsWon.length >= 3),
-  Achievement('polyglot_9', 'babel', 'win in 9 languages',
-      (s, r) => s.langsWon.length >= 9),
-  Achievement('wins_10', 'regular', 'win 10 games', (s, r) => s.wins >= 10),
-  Achievement('wins_50', 'veteran', 'win 50 games', (s, r) => s.wins >= 50),
-  Achievement('wins_100', 'dustwalker', 'win 100 games',
-      (s, r) => s.wins >= 100),
-  Achievement('played_25', 'persistent', 'play 25 games',
-      (s, r) => s.played >= 25),
+  Achievement(
+    'first_light',
+    'sun-high',
+    'first light',
+    'win a game',
+    repeat: false,
+    qualifies: (r) => r.won,
+  ),
+  Achievement(
+    'one_shot',
+    'bolt',
+    'one shot',
+    'win on the first guess',
+    qualifies: (r) => r.won && r.used == 1,
+  ),
+  Achievement(
+    'last_breath',
+    'lungs',
+    'last breath',
+    'win on your very last try (4+ tries)',
+    qualifies: (r) => r.won && r.used == r.tries && r.tries >= 4,
+  ),
+  Achievement(
+    'no_mercy',
+    'bomb',
+    'no mercy',
+    'win with 3 tries or fewer',
+    qualifies: (r) => r.won && r.tries <= 3,
+  ),
+  Achievement(
+    'brevity',
+    'square-number-4',
+    'brevity',
+    'win a 4-letter word',
+    qualifies: (r) => r.won && r.length == 4,
+  ),
+  Achievement(
+    'long_haul',
+    'square-number-8',
+    'long haul',
+    'win an 8-letter word',
+    qualifies: (r) => r.won && r.length == 8,
+  ),
+  Achievement(
+    'pure_skill',
+    'diamond',
+    'pure skill',
+    'win with every guess above 90 skill',
+    qualifies: (r) => r.wonAllAbove(90),
+  ),
+  Achievement(
+    'skill_issue',
+    'mood-crazy-happy',
+    'skill issue',
+    'win 10 games with every guess above 95 skill',
+    track: Track.counter,
+    target: 10,
+    qualifies: (r) => r.wonAllAbove(95),
+  ),
+  Achievement(
+    'full_range',
+    'compass',
+    'full range',
+    'win at every length, 4 to 8',
+    track: Track.lengths,
+    target: 5,
+  ),
+  Achievement(
+    'streak_3',
+    'flame',
+    'three in a row',
+    'win 3 games in a row',
+    track: Track.streak,
+    target: 3,
+  ),
+  Achievement(
+    'streak_7',
+    'sparkles',
+    'seven in a row',
+    'win 7 games in a row',
+    track: Track.streak,
+    target: 7,
+  ),
+  Achievement(
+    'polyglot_3',
+    'world',
+    'polyglot',
+    'win in 3 languages',
+    track: Track.languages,
+    target: 3,
+  ),
+  Achievement(
+    'polyglot_9',
+    'building-broadcast-tower',
+    'babel',
+    'win in 9 languages',
+    track: Track.languages,
+    target: 9,
+  ),
+  Achievement(
+    'wins_10',
+    'award',
+    'regular',
+    'win 10 games',
+    track: Track.counter,
+    target: 10,
+    qualifies: (r) => r.won,
+  ),
+  Achievement(
+    'wins_50',
+    'shield-check',
+    'veteran',
+    'win 50 games',
+    track: Track.counter,
+    target: 50,
+    qualifies: (r) => r.won,
+  ),
+  Achievement(
+    'wins_100',
+    'crown',
+    'dustwalker',
+    'win 100 games',
+    track: Track.counter,
+    target: 100,
+    qualifies: (r) => r.won,
+  ),
+  Achievement(
+    'played_25',
+    'hourglass',
+    'persistent',
+    'play 25 games',
+    track: Track.counter,
+    target: 25,
+  ),
 ];
 
-/// Settings, stats and unlocked achievements, kept in shared_preferences
+/// What one achievement has done so far.
+class AchState {
+  AchState({
+    this.times = 0,
+    List<String>? dates,
+    this.progress = 0,
+    Set<String>? seen,
+  }) : dates = dates ?? [],
+       seen = seen ?? {};
+
+  /// How many times it has been earned, and on which days.
+  int times;
+  final List<String> dates;
+
+  /// Progress towards the next earning (numbered achievements).
+  int progress;
+
+  /// The languages or lengths counted so far, for those tracks.
+  final Set<String> seen;
+
+  String? get first => dates.isEmpty ? null : dates.first;
+  String? get latest => dates.isEmpty ? null : dates.last;
+
+  Map<String, dynamic> toJson() => {
+    'times': times,
+    'dates': dates,
+    'progress': progress,
+    'seen': seen.toList(),
+  };
+
+  static AchState fromJson(Map<String, dynamic> j) => AchState(
+    times: j['times'] ?? 0,
+    dates: [for (final d in j['dates'] ?? []) d as String],
+    progress: j['progress'] ?? 0,
+    seen: {for (final x in j['seen'] ?? []) x as String},
+  );
+}
+
+/// Applies one finished game to every achievement's state and returns the
+/// ones it earned. Pure, so it is tested without any storage.
+List<Achievement> advanceAchievements(
+  Map<String, AchState> states,
+  GameResult r,
+  String today,
+) {
+  final earned = <Achievement>[];
+  for (final a in achievements) {
+    final st = states.putIfAbsent(a.id, AchState.new);
+    var got = false;
+    switch (a.track) {
+      case Track.event:
+        got = a.qualifies(r) && (a.repeat || st.times == 0);
+      case Track.counter:
+        if (a.qualifies(r)) st.progress++;
+        got = st.progress >= a.target;
+      case Track.streak:
+        st.progress = r.won ? st.progress + 1 : 0;
+        got = st.progress >= a.target;
+      case Track.languages:
+      case Track.lengths:
+        if (r.won) {
+          st.seen.add(a.track == Track.languages ? r.lang : '${r.length}');
+        }
+        st.progress = st.seen.length;
+        got = st.progress >= a.target;
+    }
+    if (got) {
+      st.times++;
+      st.dates.add(today);
+      if (a.numbered) {
+        // numbered achievements start again from 0 once earned
+        st.progress = 0;
+        st.seen.clear();
+      }
+      earned.add(a);
+    }
+  }
+  return earned;
+}
+
+/// Settings, stats and achievements, kept in shared_preferences
 /// (localStorage on the web). Every read and write tolerates failure: the
 /// game must still play with storage blocked.
 class AppState extends ChangeNotifier {
@@ -122,8 +366,19 @@ class AppState extends ChangeNotifier {
   int length = 5;
   int tries = 6;
   Helper helper = Helper.full;
+  bool seenHowTo = false;
+
+  /// Whether settings have been read, so first-run decisions wait for them.
+  bool loaded = false;
+
+  /// Whether this browser can remember anything; first-run help is shown only
+  /// when it can, or it would reappear on every visit.
+  bool get canRemember => _prefs != null;
   Stats stats = Stats();
-  Map<String, String> unlocked = {};
+  Map<String, AchState> ach = {};
+
+  /// How many different achievements have been earned at least once.
+  int get unlockedCount => ach.values.where((s) => s.times > 0).length;
 
   SharedPreferences? _prefs;
 
@@ -139,14 +394,39 @@ class AppState extends ChangeNotifier {
       } else if (p.getBool('showWordsLeft') == false) {
         helper = Helper.off; // the setting this replaced
       }
+      seenHowTo = p.getBool('seenHowTo') ?? false;
       final s = p.getString('stats');
       if (s != null) stats = Stats.fromJson(jsonDecode(s));
-      final u = p.getString('unlocked');
-      if (u != null) {
-        unlocked = (jsonDecode(u) as Map).cast<String, String>();
+      final a = p.getString('ach');
+      if (a != null) {
+        ach = {
+          for (final e in (jsonDecode(a) as Map).entries)
+            e.key as String: AchState.fromJson(
+              (e.value as Map).cast<String, dynamic>(),
+            ),
+        };
+      } else {
+        // the earlier format: achievement id -> the day it was earned, once
+        final u = p.getString('unlocked');
+        if (u != null) {
+          for (final e in (jsonDecode(u) as Map).entries) {
+            ach[e.key as String] = AchState(
+              times: 1,
+              dates: [e.value as String],
+            );
+          }
+        }
       }
     } catch (_) {}
+    loaded = true;
     notifyListeners();
+  }
+
+  void markHowToSeen() {
+    seenHowTo = true;
+    try {
+      _prefs?.setBool('seenHowTo', true);
+    } catch (_) {}
   }
 
   void setup({String? lang, int? length, int? tries, Helper? helper}) {
@@ -164,23 +444,20 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Records a finished game; returns the achievements it unlocked.
+  /// Records a finished game; returns the achievements it earned.
   List<Achievement> recordGame(GameResult r) {
     stats.record(r);
-    final fresh = [
-      for (final a in achievements)
-        if (!unlocked.containsKey(a.id) && a.test(stats, r)) a,
-    ];
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    for (final a in fresh) {
-      unlocked[a.id] = today;
-    }
+    final earned = advanceAchievements(ach, r, today);
     try {
       _prefs
         ?..setString('stats', jsonEncode(stats.toJson()))
-        ..setString('unlocked', jsonEncode(unlocked));
+        ..setString(
+          'ach',
+          jsonEncode({for (final e in ach.entries) e.key: e.value.toJson()}),
+        );
     } catch (_) {}
     notifyListeners();
-    return fresh;
+    return earned;
   }
 }

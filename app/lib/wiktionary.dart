@@ -29,18 +29,41 @@ class WordInfo {
 }
 
 const _posIds = {
-  'Noun', 'Proper_noun', 'Verb', 'Adjective', 'Adverb', 'Pronoun',
-  'Preposition', 'Postposition', 'Conjunction', 'Interjection', 'Article',
-  'Determiner', 'Numeral', 'Particle', 'Participle', 'Contraction',
-  'Phrase', 'Prefix', 'Suffix', 'Letter', 'Symbol', 'Abbreviation',
+  'Noun',
+  'Proper_noun',
+  'Verb',
+  'Adjective',
+  'Adverb',
+  'Pronoun',
+  'Preposition',
+  'Postposition',
+  'Conjunction',
+  'Interjection',
+  'Article',
+  'Determiner',
+  'Numeral',
+  'Particle',
+  'Participle',
+  'Contraction',
+  'Phrase',
+  'Prefix',
+  'Suffix',
+  'Letter',
+  'Symbol',
+  'Abbreviation',
 };
 
 String _squash(String s) => s.replaceAll(RegExp(r'\s+'), ' ').trim();
 
 /// Parses one language section of an en.wiktionary page (the HTML returned by
 /// `action=parse&section=N`). Pure, so it is tested against saved responses.
-WordInfo parseSection(String markup, String url,
-    {int maxBlocks = 3, int maxDefs = 4, int maxNyms = 8}) {
+WordInfo parseSection(
+  String markup,
+  String url, {
+  int maxBlocks = 3,
+  int maxDefs = 4,
+  int maxNyms = 8,
+}) {
   final root = html.parseFragment(markup);
   final top = root.querySelector('.mw-parser-output') ?? root;
 
@@ -90,7 +113,10 @@ WordInfo parseSection(String markup, String url,
       }
       continue;
     }
-    if (mode == 'pos' && inPos && node.localName == 'ol' && current != null &&
+    if (mode == 'pos' &&
+        inPos &&
+        node.localName == 'ol' &&
+        current != null &&
         current.definitions.isEmpty) {
       for (final li in node.children.where((c) => c.localName == 'li')) {
         final copy = li.clone(true);
@@ -105,7 +131,10 @@ WordInfo parseSection(String markup, String url,
     } else if ((mode == 'syn' || mode == 'ant') &&
         (node.localName == 'ul' || node.localName == 'div')) {
       for (final li in node.querySelectorAll('li')) {
-        addNym(mode == 'syn' ? syn : ant, li.querySelector('a')?.text ?? li.text);
+        addNym(
+          mode == 'syn' ? syn : ant,
+          li.querySelector('a')?.text ?? li.text,
+        );
       }
     }
   }
@@ -122,7 +151,10 @@ WordInfo parseSection(String markup, String url,
     url: url,
     ipa: ipa,
     audio: audio,
-    blocks: [for (final b in blocks) if (b.definitions.isNotEmpty) b],
+    blocks: [
+      for (final b in blocks)
+        if (b.definitions.isNotEmpty) b,
+    ],
     synonyms: syn.take(maxNyms).toList(),
     antonyms: ant.take(maxNyms).toList(),
   );
@@ -146,13 +178,18 @@ List<String> titleCandidates(String word, String lang) {
 }
 
 /// Combines lookups of the same word under different titles.
-WordInfo mergeInfos(List<WordInfo> infos, {int maxBlocks = 3, int maxNyms = 8}) {
+WordInfo mergeInfos(
+  List<WordInfo> infos, {
+  int maxBlocks = 3,
+  int maxNyms = 8,
+}) {
   List<String> union(Iterable<List<String>> lists) =>
       {for (final l in lists) ...l}.take(maxNyms).toList();
   return WordInfo(
     url: infos.first.url,
-    ipa: infos.map((i) => i.ipa).firstWhere((l) => l.isNotEmpty,
-        orElse: () => const []),
+    ipa: infos
+        .map((i) => i.ipa)
+        .firstWhere((l) => l.isNotEmpty, orElse: () => const []),
     audio: infos.map((i) => i.audio).whereType<String>().firstOrNull,
     blocks: [for (final i in infos) ...i.blocks].take(maxBlocks).toList(),
     synonyms: union(infos.map((i) => i.synonyms)),
@@ -168,12 +205,14 @@ class Wiktionary {
   static const _api = 'https://en.wiktionary.org/w/api.php';
 
   Future<Map<String, dynamic>> _get(Map<String, String> q) async {
-    final uri = Uri.parse(_api).replace(queryParameters: {
-      ...q,
-      'format': 'json',
-      'formatversion': '2',
-      'origin': '*',
-    });
+    final uri = Uri.parse(_api).replace(
+      queryParameters: {
+        ...q,
+        'format': 'json',
+        'formatversion': '2',
+        'origin': '*',
+      },
+    );
     final r = await _client.get(uri).timeout(const Duration(seconds: 12));
     return jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
   }
@@ -186,9 +225,14 @@ class Wiktionary {
     if (_cache.containsKey(key)) return _cache[key];
     final found = <WordInfo>[];
     for (final title in titleCandidates(word, lang)) {
-      final s = await _get({'action': 'parse', 'page': title, 'prop': 'sections'});
+      final s = await _get({
+        'action': 'parse',
+        'page': title,
+        'prop': 'sections',
+      });
       if (s['error'] != null) continue; // missing page
-      final secs = (s['parse']['sections'] as List).cast<Map<String, dynamic>>();
+      final secs = (s['parse']['sections'] as List)
+          .cast<Map<String, dynamic>>();
       final idx = secs
           .where((x) => x['line'] == section && x['toclevel'] == 1)
           .map((x) => x['index'] as String)
@@ -202,7 +246,8 @@ class Wiktionary {
         'disablelimitreport': '1',
         'disableeditsection': '1',
       });
-      final url = 'https://en.wiktionary.org/wiki/'
+      final url =
+          'https://en.wiktionary.org/wiki/'
           '${Uri.encodeComponent(title.replaceAll(' ', '_'))}#'
           '${Uri.encodeComponent(section.replaceAll(' ', '_'))}';
       found.add(parseSection(t['parse']['text'] as String, url));

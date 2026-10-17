@@ -3,9 +3,9 @@
     "short_name": "lexodle",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#16140F",
+    "theme_color": "#16140F",
+    "description": "A minimal word game in 18 Latin-script languages.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

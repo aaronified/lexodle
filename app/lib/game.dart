@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'keyboard.dart';
 import 'logic.dart';
+import 'review.dart';
 import 'main.dart';
 import 'store.dart';
 import 'ui.dart';
@@ -12,15 +13,18 @@ import 'word_info.dart';
 import 'words.dart';
 
 class GamePage extends StatefulWidget {
-  const GamePage({super.key, required this.bank});
+  const GamePage({super.key, required this.bank, this.random});
   final WordBank bank;
+
+  /// Where the answer is drawn from; tests pass a seeded one.
+  final Random? random;
 
   @override
   State<GamePage> createState() => _GamePageState();
 }
 
 class _GamePageState extends State<GamePage> {
-  final _rng = Random();
+  late final Random _rng = widget.random ?? Random();
   final _focus = FocusNode();
 
   late final int length;
@@ -33,6 +37,10 @@ class _GamePageState extends State<GamePage> {
   final guesses = <String>[];
   final marks = <List<Mark>>[];
   final metrics = <GuessMetrics>[];
+
+  /// The words still possible before each guess, for the post-game analysis.
+  final befores = <List<String>>[];
+
   final keyMarks = <String, Mark>{};
   String input = '';
   String message = '';
@@ -63,6 +71,7 @@ class _GamePageState extends State<GamePage> {
     marks.clear();
     keyMarks.clear();
     metrics.clear();
+    befores.clear();
     input = '';
     message = '';
     over = won = false;
@@ -111,6 +120,7 @@ class _GamePageState extends State<GamePage> {
       }
       final after = filterEligible(eligible, input, m);
       metrics.add(scoreGuess(eligible, input, after.length));
+      befores.add(eligible);
       eligible = after;
       final solved = input == answer;
       input = '';
@@ -118,13 +128,16 @@ class _GamePageState extends State<GamePage> {
       if (solved || guesses.length >= tries) {
         over = true;
         won = solved;
-        unlocked = appState.recordGame(GameResult(
-          lang: widget.bank.language.code,
-          length: length,
-          tries: tries,
-          used: guesses.length,
-          won: solved,
-        ));
+        unlocked = appState.recordGame(
+          GameResult(
+            lang: widget.bank.language.code,
+            length: length,
+            tries: tries,
+            used: guesses.length,
+            won: solved,
+            skills: [for (final m in metrics) m.skill],
+          ),
+        );
       }
     });
   }
@@ -157,22 +170,25 @@ class _GamePageState extends State<GamePage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-              '${widget.bank.language.name.toLowerCase()} · $length · $tries tries',
-              style: const TextStyle(fontSize: 14, letterSpacing: 1.5)),
+            '${widget.bank.language.name.toLowerCase()} · $length · $tries tries',
+            style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+          ),
         ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(children: [
-                Expanded(child: _grid()),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 56),
-                  child: Center(child: _status(c)),
-                ),
-                if (over) _overPanel(c) else _keyboard(c),
-                const SizedBox(height: 12),
-              ]),
+              child: Column(
+                children: [
+                  Expanded(child: _grid()),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 56),
+                    child: Center(child: _status(c)),
+                  ),
+                  if (over) _overPanel(c) else _keyboard(c),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
           ),
         ),
@@ -182,45 +198,61 @@ class _GamePageState extends State<GamePage> {
 
   Widget _grid() {
     final c = Theme.of(context).colorScheme;
-    return LayoutBuilder(builder: (context, box) {
-      const gap = 6.0;
-      final tile =
-          min(56.0, (box.maxWidth - 32 - gap * (length - 1)) / length);
-      return SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Center(
-          child: Column(children: [
-            for (var r = 0; r < tries; r++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: gap),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  for (var i = 0; i < length; i++) ...[
-                    if (i > 0) const SizedBox(width: gap),
-                    _tile(
-                      c,
-                      tile,
-                      r < guesses.length
-                          ? guesses[r][i]
-                          : (r == guesses.length && i < input.length
-                              ? input[i]
-                              : ''),
-                      r < marks.length ? marks[r][i] : null,
-                      active: r == guesses.length && !over,
+    return LayoutBuilder(
+      builder: (context, box) {
+        const gap = 6.0;
+        final tile = min(
+          56.0,
+          (box.maxWidth - 32 - gap * (length - 1)) / length,
+        );
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Center(
+            child: Column(
+              children: [
+                for (var r = 0; r < tries; r++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: gap),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (var i = 0; i < length; i++) ...[
+                          if (i > 0) const SizedBox(width: gap),
+                          _tile(
+                            c,
+                            tile,
+                            r < guesses.length
+                                ? guesses[r][i]
+                                : (r == guesses.length && i < input.length
+                                      ? input[i]
+                                      : ''),
+                            r < marks.length ? marks[r][i] : null,
+                            active: r == guesses.length && !over,
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
-                ]),
-              ),
-          ]),
-        ),
-      );
-    });
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
-  Widget _tile(ColorScheme c, double size, String ch, Mark? m,
-      {required bool active}) {
+  Widget _tile(
+    ColorScheme c,
+    double size,
+    String ch,
+    Mark? m, {
+    required bool active,
+  }) {
     Color? fill;
     Color fg = c.onSurface;
-    Color border = active ? c.onSurface.withValues(alpha: .5) : c.outlineVariant;
+    Color border = active
+        ? c.onSurface.withValues(alpha: .5)
+        : c.outlineVariant;
     if (m != null) {
       (fill, fg) = markColors(c, m);
       border = fill;
@@ -236,9 +268,14 @@ class _GamePageState extends State<GamePage> {
         border: Border.all(color: border),
         borderRadius: BorderRadius.circular(3),
       ),
-      child: Text(ch,
-          style: TextStyle(
-              fontSize: size * .5, fontWeight: FontWeight.bold, color: fg)),
+      child: Text(
+        ch,
+        style: TextStyle(
+          fontSize: size * .5,
+          fontWeight: FontWeight.bold,
+          color: fg,
+        ),
+      ),
     );
   }
 
@@ -253,117 +290,131 @@ class _GamePageState extends State<GamePage> {
     final m = metrics.last;
     final parts = [
       if (h.showSkill) 'skill ${m.skill.toStringAsFixed(1)}',
-      if (h.showLuck) 'luck ${m.luck.toStringAsFixed(1)}',
+      if (h.showLuck) 'luck ${luckText(m.luck)}',
     ];
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      if (parts.isNotEmpty)
-        Caption('last guess · ${parts.join(' · ')}', textAlign: TextAlign.center),
-      Caption(h.showWordsLeft
-          ? '${eligible.length} possible '
-              '${eligible.length == 1 ? 'word' : 'words'} · $left'
-          : left),
-    ]);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (parts.isNotEmpty)
+          Caption(
+            'last guess · ${parts.join(' · ')}',
+            textAlign: TextAlign.center,
+          ),
+        Caption(
+          h.showWordsLeft
+              ? '${eligible.length} possible '
+                    '${eligible.length == 1 ? 'word' : 'words'} · $left'
+              : left,
+        ),
+      ],
+    );
   }
 
-  /// Shown when a game ends, whatever the helper level: skill and luck for
-  /// every guess, their averages, and how many words each guess left.
-  Widget _report(ColorScheme c) {
+  GameRecord _record() => GameRecord(
+    bank: widget.bank,
+    length: length,
+    answer: answer,
+    guesses: List.of(guesses),
+    marks: List.of(marks),
+    metrics: List.of(metrics),
+    befores: List.of(befores),
+    finalEligible: eligible,
+    won: won,
+  );
+
+  /// A one-line summary; the helper's step-by-step analysis is in the review.
+  Widget _summary(ColorScheme c) {
     if (metrics.isEmpty) return const SizedBox();
-    double avg(double Function(GuessMetrics) f) =>
-        metrics.map(f).reduce((a, b) => a + b) / metrics.length;
-    const cell = TextStyle(fontSize: 12);
-    TableRow row(List<String> cells, {bool head = false}) => TableRow(children: [
-          for (var i = 0; i < cells.length; i++)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 3),
-              child: Text(cells[i],
-                  textAlign: i == 0 ? TextAlign.left : TextAlign.right,
-                  style: head
-                      ? TextStyle(
-                          fontSize: 11,
-                          letterSpacing: 1.5,
-                          color: c.onSurface.withValues(alpha: .6))
-                      : cell),
-            ),
-        ]);
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Caption('report'),
-      const SizedBox(height: 6),
-      Table(
-        columnWidths: const {0: FlexColumnWidth(2.2)},
-        children: [
-          row(['guess', 'skill', 'luck', 'words'], head: true),
-          for (final m in metrics)
-            row([
-              m.guess,
-              m.skill.toStringAsFixed(1),
-              m.luck.toStringAsFixed(1),
-              '${m.before}→${m.after}',
-            ]),
-          row([
-            'average',
-            avg((m) => m.skill).toStringAsFixed(1),
-            avg((m) => m.luck).toStringAsFixed(1),
-            '',
-          ]),
-        ],
-      ),
-      const SizedBox(height: 6),
-      Text(
-        'skill 100 = the best possible split of the words left. '
-        'luck 100 = an average outcome; above is lucky, below unlucky.',
-        style: TextStyle(fontSize: 11, color: c.onSurface.withValues(alpha: .6)),
-      ),
-    ]);
+    double avg(Iterable<double> v) => v.reduce((a, b) => a + b) / v.length;
+    return Caption(
+      'average skill ${avg(metrics.map((m) => m.skill)).round()}'
+      ' · luck ${luckText(avg(metrics.map((m) => m.luck)))}',
+    );
   }
 
   Widget _overPanel(ColorScheme c) {
     return ConstrainedBox(
-      constraints:
-          BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * .5),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * .5,
+      ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(
-            won
-                ? 'solved in ${guesses.length} of $tries'
-                : 'the word was  $answer',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        if (won) Caption(answer),
-        const SizedBox(height: 10),
-        for (final a in unlocked)
-          Text('★ ${a.title}  —  ${a.description}',
-              style: TextStyle(color: c.primary, fontSize: 13)),
-        const SizedBox(height: 10),
-        const Divider(),
-        const SizedBox(height: 10),
-        _report(c),
-        const SizedBox(height: 10),
-        const Divider(),
-        const SizedBox(height: 10),
-        WordInfoView(word: answer, language: widget.bank.language),
-        const SizedBox(height: 14),
-        Row(children: [
-          Expanded(
-            child: OutlinedButton(
-                onPressed: () => Navigator.pop(context), child: const Text('menu')),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: FilledButton(
-                onPressed: () => setState(_reset), child: const Text('again')),
-          ),
-        ]),
-      ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              won
+                  ? 'solved in ${guesses.length} of $tries'
+                  : 'the word was  $answer',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            if (won) Caption(answer),
+            const SizedBox(height: 10),
+            for (final a in unlocked)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    TablerIcon(a.icon, size: 22, color: c.primary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '${a.title}  —  ${a.description}',
+                        style: TextStyle(color: c.primary, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 10),
+            const Divider(),
+            const SizedBox(height: 10),
+            _summary(c),
+            const SizedBox(height: 10),
+            const Divider(),
+            const SizedBox(height: 10),
+            WordInfoView(word: answer, language: widget.bank.language),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('menu'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReviewPage(record: _record()),
+                      ),
+                    ),
+                    child: const Text('review'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => setState(_reset),
+                    child: const Text('again'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
-        letters: _letters,
-        marks: keyMarks,
-        onLetter: _type,
-        onEnter: _submit,
-        onBack: _back,
-      );
+    letters: _letters,
+    marks: keyMarks,
+    onLetter: _type,
+    onEnter: _submit,
+    onBack: _back,
+  );
 }

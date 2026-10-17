@@ -38,8 +38,9 @@ class WordBank {
   }
 
   /// Letters seen in the words of [length], for the on-screen keyboard.
-  Set<String> letters(int length) =>
-      {for (final w in _words[length] ?? const <String>[]) ...w.split('')};
+  Set<String> letters(int length) => {
+    for (final w in _words[length] ?? const <String>[]) ...w.split(''),
+  };
 
   static final _cache = <String, WordBank>{};
   static List<Language>? _languages;
@@ -49,8 +50,12 @@ class WordBank {
     final raw = await rootBundle.loadString('assets/words/languages.json');
     _languages = [
       for (final m in jsonDecode(raw) as List)
-        Language(m['code'] as String, m['name'] as String, m['wikt'] as String,
-            [for (final n in m['lengths'] as List) n as int]),
+        Language(
+          m['code'] as String,
+          m['name'] as String,
+          m['wikt'] as String,
+          [for (final n in m['lengths'] as List) n as int],
+        ),
     ];
     return _languages!;
   }
