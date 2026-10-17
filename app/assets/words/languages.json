@@ -1,0 +1,218 @@
+[
+ {
+  "code": "en",
+  "name": "English",
+  "wikt": "English",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "es",
+  "name": "Español",
+  "wikt": "Spanish",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "fr",
+  "name": "Français",
+  "wikt": "French",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "de",
+  "name": "Deutsch",
+  "wikt": "German",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "it",
+  "name": "Italiano",
+  "wikt": "Italian",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "pt",
+  "name": "Português",
+  "wikt": "Portuguese",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "nl",
+  "name": "Nederlands",
+  "wikt": "Dutch",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "pl",
+  "name": "Polski",
+  "wikt": "Polish",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "sv",
+  "name": "Svenska",
+  "wikt": "Swedish",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "da",
+  "name": "Dansk",
+  "wikt": "Danish",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "nb",
+  "name": "Norsk",
+  "wikt": "Norwegian Bokmål",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "fi",
+  "name": "Suomi",
+  "wikt": "Finnish",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "tr",
+  "name": "Türkçe",
+  "wikt": "Turkish",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "ro",
+  "name": "Română",
+  "wikt": "Romanian",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "cs",
+  "name": "Čeština",
+  "wikt": "Czech",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "id",
+  "name": "Indonesia",
+  "wikt": "Indonesian",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "hu",
+  "name": "Magyar",
+  "wikt": "Hungarian",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ },
+ {
+  "code": "ca",
+  "name": "Català",
+  "wikt": "Catalan",
+  "lengths": [
+   4,
+   5,
+   6,
+   7,
+   8
+  ]
+ }
+]
