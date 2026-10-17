@@ -2,18 +2,33 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-/// How many of the most frequent words of each length can be the answer.
-/// Every word in the file is still accepted as a guess.
-const answerPoolSize = 2000;
+/// The answer-pool sizes the difficulty matrix offers: how many of the most
+/// frequent words of a length the answer can be. Every word in the file is
+/// still accepted as a guess.
+const poolSizes = [500, 1500, 3000, 6000];
+const defaultPool = 1500;
 
 class Language {
-  const Language(this.code, this.name, this.wikt, this.lengths);
+  const Language(
+    this.code,
+    this.name,
+    this.wikt,
+    this.lengths, [
+    this.counts = const {},
+    this.flag = '',
+  ]);
   final String code;
   final String name;
 
   /// The language's heading on en.wiktionary.org, e.g. "Norwegian Bokmål".
   final String wikt;
   final List<int> lengths;
+
+  /// How many words the language has at each length.
+  final Map<int, int> counts;
+
+  /// A flag emoji, or `svg:<name>` for one drawn in assets/flags.
+  final String flag;
 }
 
 class WordBank {
@@ -24,17 +39,18 @@ class WordBank {
   final Map<int, List<int>> _weights;
   final Set<String> valid;
 
-  List<String> answers(int length) {
+  /// The words an answer can be at [length]: the [size] most frequent.
+  List<String> answers(int length, [int size = defaultPool]) {
     final w = _words[length] ?? const [];
-    return w.length > answerPoolSize ? w.sublist(0, answerPoolSize) : w;
+    return w.length > size ? w.sublist(0, size) : w;
   }
 
   /// Every word accepted as a guess at [length], most frequent first.
   List<String> guessable(int length) => _words[length] ?? const [];
 
-  List<int> answerWeights(int length) {
+  List<int> answerWeights(int length, [int size = defaultPool]) {
     final w = _weights[length] ?? const [];
-    return w.length > answerPoolSize ? w.sublist(0, answerPoolSize) : w;
+    return w.length > size ? w.sublist(0, size) : w;
   }
 
   /// Letters seen in the words of [length], for the on-screen keyboard.
@@ -55,6 +71,11 @@ class WordBank {
           m['name'] as String,
           m['wikt'] as String,
           [for (final n in m['lengths'] as List) n as int],
+          {
+            for (final e in ((m['counts'] ?? {}) as Map).entries)
+              int.parse(e.key as String): e.value as int,
+          },
+          (m['flag'] ?? '') as String,
         ),
     ];
     return _languages!;

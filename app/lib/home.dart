@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 
 import 'achievements_page.dart';
+import 'difficulty.dart';
 import 'game.dart';
 import 'how_to.dart';
 import 'logo.dart';
 import 'solver.dart';
+import 'stepper_choice.dart';
 import 'main.dart';
 import 'store.dart';
 import 'ui.dart';
 import 'words.dart';
 
-const difficulties = <(String, int)>[
-  ('easy', 8),
-  ('normal', 6),
-  ('hard', 4),
-  ('brutal', 3),
-];
+/// A word on each length, the second tier of the letters slider.
+const _lengthNote = {
+  4: 'short and quick',
+  5: 'the classic',
+  6: 'a step up',
+  7: 'long',
+  8: 'very long',
+};
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -121,9 +125,17 @@ class _HomePageState extends State<HomePage> {
                             expandedInsets: EdgeInsets.zero,
                             requestFocusOnTap: false,
                             enableSearch: false,
+                            leadingIcon: Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: FlagBadge(lang.flag),
+                            ),
                             dropdownMenuEntries: [
                               for (final l in langs)
-                                DropdownMenuEntry(value: l.code, label: l.name),
+                                DropdownMenuEntry(
+                                  value: l.code,
+                                  label: l.name,
+                                  leadingIcon: FlagBadge(l.flag),
+                                ),
                             ],
                             onSelected: (v) {
                               if (v == null) return;
@@ -139,57 +151,43 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 28),
                           const Caption('letters'),
                           const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
+                          StepperChoice<int>(
+                            semanticLabel: 'letters',
+                            items: [
                               for (final n in lang.lengths)
-                                Choice(
-                                  '$n',
-                                  selected: n == length,
-                                  onTap: () => appState.setup(length: n),
-                                ),
+                                (n, '$n letters', _lengthNote[n]),
                             ],
+                            selected: length,
+                            onChanged: (n) => appState.setup(length: n),
                           ),
                           const SizedBox(height: 28),
-                          const Caption('difficulty · number of tries'),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              for (final (name, n) in difficulties)
-                                Choice(
-                                  name,
-                                  sub: '$n tries',
-                                  selected: n == appState.tries,
-                                  onTap: () => appState.setup(tries: n),
-                                ),
-                            ],
+                          const Caption(
+                            'difficulty · tries across, word pool down',
+                          ),
+                          const SizedBox(height: 12),
+                          DifficultyMatrix(
+                            tries: appState.tries,
+                            pool: appState.pool,
+                            available: lang.counts[length],
+                            onChanged: (t, pl) =>
+                                appState.setup(tries: t, pool: pl),
                           ),
                           const SizedBox(height: 28),
                           const Caption('helper'),
                           const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
+                          StepperChoice<Helper>(
+                            semanticLabel: 'helper',
+                            items: [
                               for (final h in Helper.values)
-                                Choice(
-                                  h.label,
-                                  sub: h.sub,
-                                  selected: h == appState.helper,
-                                  onTap: () => appState.setup(helper: h),
-                                ),
+                                (h, h.label, h.sub),
                             ],
+                            selected: appState.helper,
+                            onChanged: (h) => appState.setup(helper: h),
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            'skill: how well a guess narrows the field '
-                            '(100 = best possible). luck: how much smaller (+, '
-                            'green) or larger (-, red) than average the pool '
-                            'you landed in was (0% = average). everything is '
-                            'revealed when the game ends.',
+                            'whatever you choose, everything is revealed when '
+                            'the game ends.',
                             style: TextStyle(
                               fontSize: 11,
                               color: c.onSurface.withValues(alpha: .6),
@@ -242,9 +240,9 @@ class _HomePageState extends State<HomePage> {
                                   applicationName: 'lexodle',
                                   children: const [
                                     Text(
-                                      'English 5-letter words: Google Ngrams '
-                                      'and dwyl/english-words. Other words: '
-                                      'wordfreq (CC BY-SA 4.0). Font: '
+                                      'Words: wordfreq (CC BY-SA 4.0), '
+                                      'filtered with Hunspell dictionaries '
+                                      '(see assets/words/SOURCES.md). Font: '
                                       'JetBrains Mono (OFL). Icons: Tabler '
                                       'Icons (MIT).',
                                     ),

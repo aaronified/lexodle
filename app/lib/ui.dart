@@ -3,22 +3,76 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'logic.dart';
 
-/// Fixed feedback colours, the same in light and dark: green is the right
-/// letter in the right place, yellow the right letter in the wrong place.
-/// Absent letters recede into the surface.
+/// Feedback colours, all from the scheme. Green (secondary) is the right
+/// letter in the right place: a solid tile. Yellow (tertiary) is the right
+/// letter in the wrong place: the container tone with a heavier yellow edge,
+/// which differs from green in lightness as well as hue, since the two hues
+/// alone are close in a muted Material You palette. Absent letters recede into
+/// the surface.
 (Color fill, Color fg) markColors(ColorScheme c, Mark m) => switch (m) {
-  Mark.correct => (const Color(0xFF4C8C3A), Colors.white),
-  Mark.present => (const Color(0xFFE0B83A), const Color(0xFF2A2200)),
+  Mark.correct => (c.secondary, c.onSecondary),
+  Mark.present => (c.tertiaryContainer, c.onTertiaryContainer),
   Mark.absent => (c.surfaceContainerHighest, c.onSurface.withValues(alpha: .4)),
 };
+
+/// The edge of a feedback tile: its own colour, but yellow for wrong-place.
+Color markBorder(ColorScheme c, Mark m) => switch (m) {
+  Mark.correct => c.secondary,
+  Mark.present => c.tertiary,
+  Mark.absent => c.surfaceContainerHighest,
+};
+
+double markBorderWidth(Mark m) => m == Mark.present ? 2 : 1;
 
 /// Colour for a luck score: green above average, red below, plain at zero.
 Color luckColor(ColorScheme c, double v) {
   if (v.round() == 0) return c.onSurface;
-  if (v < 0) return c.error;
-  return c.brightness == Brightness.dark
-      ? const Color(0xFF7BC062)
-      : const Color(0xFF3B7A2A);
+  return v < 0 ? c.error : c.secondary;
+}
+
+/// The colour of a difficulty position, [t] from 0 (easiest) to 1 (hardest):
+/// the scheme's green (secondary) turning to its purple (primary) through the
+/// hues between, so it follows the theme.
+Color difficultyColor(ColorScheme c, double t) => HSLColor.lerp(
+  HSLColor.fromColor(c.secondary),
+  HSLColor.fromColor(c.primary),
+  t.clamp(0.0, 1.0),
+)!.toColor();
+
+/// Readable text on [bg]: the lighter or the darker of the scheme's two
+/// surface colours, whichever contrasts more.
+Color onColor(ColorScheme c, Color bg) {
+  final light = c.surface.computeLuminance() > c.onSurface.computeLuminance()
+      ? c.surface
+      : c.onSurface;
+  final dark = identical(light, c.surface) ? c.onSurface : c.surface;
+  return bg.computeLuminance() > .35 ? dark : light;
+}
+
+/// A language's flag: an emoji, or `svg:<name>` for one drawn in assets/flags
+/// (the Catalan senyera has no emoji).
+class FlagBadge extends StatelessWidget {
+  const FlagBadge(this.flag, {super.key, this.size = 20});
+  final String flag;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    if (flag.isEmpty) return SizedBox(width: size * 1.4, height: size);
+    return SizedBox(
+      width: size * 1.4,
+      height: size,
+      child: Center(
+        child: flag.startsWith('svg:')
+            ? SvgPicture.asset(
+                'assets/flags/${flag.substring(4)}.svg',
+                width: size * 1.3,
+                height: size * 0.87,
+              )
+            : Text(flag, style: TextStyle(fontSize: size * .9, height: 1)),
+      ),
+    );
+  }
 }
 
 /// A Tabler filled icon from assets/icons, tinted with [color].
@@ -62,9 +116,11 @@ class MarkTile extends StatelessWidget {
     Color? fill;
     Color fg = c.onSurface;
     var border = ch.isEmpty ? c.outlineVariant : c.onSurface;
+    var borderWidth = 1.0;
     if (mark != null) {
       (fill, fg) = markColors(c, mark!);
-      border = fill;
+      border = markBorder(c, mark!);
+      borderWidth = markBorderWidth(mark!);
     }
     return InkWell(
       onTap: onTap,
@@ -75,7 +131,7 @@ class MarkTile extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: fill,
-          border: Border.all(color: border),
+          border: Border.all(color: border, width: borderWidth),
           borderRadius: BorderRadius.circular(3),
         ),
         child: Text(
@@ -107,65 +163,4 @@ class Caption extends StatelessWidget {
       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .6),
     ),
   );
-}
-
-/// A bordered, selectable text cell used for the length and difficulty rows.
-class Choice extends StatelessWidget {
-  const Choice(
-    this.label, {
-    super.key,
-    required this.selected,
-    required this.onTap,
-    this.sub,
-  });
-  final String label;
-  final String? sub;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(3),
-        child: Container(
-          constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: selected ? c.primary : null,
-            border: Border.all(color: selected ? c.primary : c.outline),
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: selected ? c.onPrimary : c.onSurface,
-                ),
-              ),
-              if (sub != null)
-                Text(
-                  sub!,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: (selected ? c.onPrimary : c.onSurface).withValues(
-                      alpha: .7,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

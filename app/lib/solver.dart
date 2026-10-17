@@ -25,7 +25,9 @@ class SolverPage extends StatefulWidget {
 class _SolverPageState extends State<SolverPage> {
   final _focus = FocusNode();
   late final int length = appState.length;
-  late final List<String> _answers = widget.bank.answers(length);
+  // Every word the game accepts as a guess, not just the common ones it picks
+  // answers from: the game being solved may use any of them.
+  late final List<String> _answers = widget.bank.guessable(length);
   late final Set<String> _letters = widget.bank.letters(length);
 
   final history = <(String, List<Mark>)>[];
@@ -151,9 +153,19 @@ class _SolverPageState extends State<SolverPage> {
       onKeyEvent: _onKey,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            'solver · $lang · $length',
-            style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FlagBadge(widget.bank.language.flag, size: 16),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'solver · $lang · $length',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+                ),
+              ),
+            ],
           ),
         ),
         body: SafeArea(

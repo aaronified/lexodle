@@ -38,10 +38,26 @@ class LetterKeyboard extends StatelessWidget {
         extra.sublist(i, min(i + 10, extra.length)),
     ];
 
-    Widget key(String label, VoidCallback tap, {Mark? mark, double flex = 1}) {
+    // Letters take the feedback colours; the two action keys have colours of
+    // their own, from the scheme: enter is the accent, backspace the error
+    // container, so neither can be mistaken for a letter or its feedback.
+    Widget key(
+      String label,
+      VoidCallback tap, {
+      Mark? mark,
+      double flex = 1,
+      (Color fill, Color fg)? colors,
+    }) {
       Color? fill;
       Color fg = c.onSurface;
-      if (mark != null) (fill, fg) = markColors(c, mark);
+      Color? edge;
+      var edgeWidth = 1.0;
+      if (mark != null) {
+        (fill, fg) = markColors(c, mark);
+        edge = markBorder(c, mark);
+        edgeWidth = markBorderWidth(mark);
+      }
+      if (colors != null) (fill, fg) = colors;
       return Expanded(
         flex: (flex * 10).round(),
         child: Padding(
@@ -54,7 +70,10 @@ class LetterKeyboard extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: fill,
-                border: Border.all(color: fill ?? c.outline),
+                border: Border.all(
+                  color: edge ?? fill ?? c.outline,
+                  width: edgeWidth,
+                ),
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
@@ -78,10 +97,22 @@ class LetterKeyboard extends StatelessWidget {
           for (var i = 0; i < rows.length; i++)
             Row(
               children: [
-                if (i == 2) key(enterLabel, onEnter, flex: 1.6),
+                if (i == 2)
+                  key(
+                    enterLabel,
+                    onEnter,
+                    flex: 1.6,
+                    colors: (c.primary, c.onPrimary),
+                  ),
                 for (final l in rows[i])
                   key(l, () => onLetter(l), mark: marks[l]),
-                if (i == 2) key('⌫', onBack, flex: 1.6),
+                if (i == 2)
+                  key(
+                    '⌫',
+                    onBack,
+                    flex: 1.6,
+                    colors: (c.errorContainer, c.onErrorContainer),
+                  ),
               ],
             ),
         ],

@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'logic.dart';
-import 'ui.dart';
-
 /// The logo mark: three tiles climbing from grey to yellow to green, the
 /// feedback colours of the game itself. The geometry matches
 /// tools/make_icons.py, which draws the favicon and web icons.
@@ -19,8 +16,8 @@ class LexodleLogo extends StatelessWidget {
       size: Size(width, width * 50 / 78),
       painter: _LogoPainter(
         grey: c.onSurface.withValues(alpha: .3),
-        yellow: markColors(c, Mark.present).$1,
-        green: markColors(c, Mark.correct).$1,
+        yellow: c.tertiary,
+        green: c.secondary,
       ),
     );
   }

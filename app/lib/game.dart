@@ -28,6 +28,7 @@ class _GamePageState extends State<GamePage> {
   final _focus = FocusNode();
 
   late final int length;
+  late final int pool = appState.pool;
   late final int tries;
   late final List<String> _pool;
   late final Set<String> _letters;
@@ -53,7 +54,7 @@ class _GamePageState extends State<GamePage> {
     super.initState();
     length = appState.length;
     tries = appState.tries;
-    _pool = widget.bank.answers(length);
+    _pool = widget.bank.answers(length, pool);
     _letters = widget.bank.letters(length);
     _reset();
   }
@@ -65,7 +66,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _reset() {
-    answer = chooseWord(_pool, widget.bank.answerWeights(length), _rng);
+    answer = chooseWord(_pool, widget.bank.answerWeights(length, pool), _rng);
     eligible = List.of(_pool);
     guesses.clear();
     marks.clear();
@@ -169,9 +170,20 @@ class _GamePageState extends State<GamePage> {
       onKeyEvent: _onKey,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            '${widget.bank.language.name.toLowerCase()} · $length · $tries tries',
-            style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FlagBadge(widget.bank.language.flag, size: 16),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  '${widget.bank.language.name.toLowerCase()} · $length · '
+                  '$tries tries',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+                ),
+              ),
+            ],
           ),
         ),
         body: SafeArea(
@@ -253,9 +265,11 @@ class _GamePageState extends State<GamePage> {
     Color border = active
         ? c.onSurface.withValues(alpha: .5)
         : c.outlineVariant;
+    var borderWidth = 1.0;
     if (m != null) {
       (fill, fg) = markColors(c, m);
-      border = fill;
+      border = markBorder(c, m);
+      borderWidth = markBorderWidth(m);
     } else if (ch.isNotEmpty) {
       border = c.onSurface;
     }
@@ -265,7 +279,7 @@ class _GamePageState extends State<GamePage> {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: fill,
-        border: Border.all(color: border),
+        border: Border.all(color: border, width: borderWidth),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Text(
@@ -313,6 +327,7 @@ class _GamePageState extends State<GamePage> {
   GameRecord _record() => GameRecord(
     bank: widget.bank,
     length: length,
+    poolSize: pool,
     answer: answer,
     guesses: List.of(guesses),
     marks: List.of(marks),

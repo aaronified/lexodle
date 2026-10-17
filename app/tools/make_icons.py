@@ -10,8 +10,11 @@ from PIL import Image, ImageDraw
 
 APP = Path(__file__).resolve().parent.parent
 
-BG = "#16140F"
-GREY, YELLOW, GREEN = "#4A453B", "#E0B83A", "#4C8C3A"
+# The dark Material You scheme from lib/main.dart (surface, onSurface at 30%
+# over it, tertiary, secondary). Icons cannot read the theme, so these are
+# copied from it; if the seed in main.dart changes, update them.
+BG = "#141409"
+GREY, YELLOW, GREEN = "#535245", "#C7CB82", "#B4CEA5"
 
 # viewBox 96 x 96: tile size, gap, corner radius, tile top-left positions
 TILE, RADIUS = 22, 4

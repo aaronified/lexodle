@@ -3,13 +3,21 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'words.dart';
+
 /// How much the game tells you while you play. Whatever the level, a finished
 /// game reveals everything (as in the original).
 enum Helper {
-  off('off', 'nothing', false, false, false),
-  skill('skill', 'per guess', true, false, false),
-  skillLuck('skill + luck', 'per guess', true, true, false),
-  full('full', 'and words left', true, true, true);
+  off('off', 'nothing until the game ends', false, false, false),
+  skill('skill only', 'skill after each guess', true, false, false),
+  skillLuck(
+    'skill + luck',
+    'skill and luck after each guess',
+    true,
+    true,
+    false,
+  ),
+  full('full help', 'skill, luck and words left', true, true, true);
 
   const Helper(
     this.label,
@@ -366,6 +374,9 @@ class AppState extends ChangeNotifier {
   int length = 5;
   int tries = 6;
   Helper helper = Helper.full;
+
+  /// How many of the most common words an answer can be drawn from.
+  int pool = defaultPool;
   bool seenHowTo = false;
 
   /// Whether settings have been read, so first-run decisions wait for them.
@@ -388,6 +399,8 @@ class AppState extends ChangeNotifier {
       lang = p.getString('lang') ?? lang;
       length = p.getInt('length') ?? length;
       tries = p.getInt('tries') ?? tries;
+      final pl = p.getInt('pool');
+      if (pl != null && poolSizes.contains(pl)) pool = pl;
       final h = p.getInt('helper');
       if (h != null && h >= 0 && h < Helper.values.length) {
         helper = Helper.values[h];
@@ -429,16 +442,24 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
   }
 
-  void setup({String? lang, int? length, int? tries, Helper? helper}) {
+  void setup({
+    String? lang,
+    int? length,
+    int? tries,
+    int? pool,
+    Helper? helper,
+  }) {
     this.lang = lang ?? this.lang;
     this.length = length ?? this.length;
     this.tries = tries ?? this.tries;
+    this.pool = pool ?? this.pool;
     this.helper = helper ?? this.helper;
     try {
       _prefs
         ?..setString('lang', this.lang)
         ..setInt('length', this.length)
         ..setInt('tries', this.tries)
+        ..setInt('pool', this.pool)
         ..setInt('helper', this.helper.index);
     } catch (_) {}
     notifyListeners();

@@ -3,16 +3,22 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'store.dart';
 
-/// Dustland-style minimalism on Material 3: flat paper surfaces, hairline
-/// borders, near-square corners, lowercase monospace text, one accent.
-const _seed = Color(0xFFB5651D);
+/// Dustland-style minimalism on Material 3: flat surfaces, hairline borders,
+/// near-square corners, lowercase monospace text. Every colour comes from the
+/// generated Material You scheme and nothing is hard-coded.
+///
+/// The seed and the `expressive` variant are chosen for the hues they give the
+/// roles: secondary is green, tertiary yellow and primary purple. The game
+/// reads them as right place, wrong place and the hardest difficulty. On
+/// Android the same roles would come from the wallpaper instead.
+final _seed = HSLColor.fromAHSL(1, 48, .7, .5).toColor();
 const _radius = BorderRadius.all(Radius.circular(3));
 
 ThemeData buildTheme(Brightness b) {
-  final dark = b == Brightness.dark;
-  final scheme = ColorScheme.fromSeed(seedColor: _seed, brightness: b).copyWith(
-    surface: dark ? const Color(0xFF16140F) : const Color(0xFFF1ECE1),
-    onSurface: dark ? const Color(0xFFE8E2D4) : const Color(0xFF1C1A16),
+  final scheme = ColorScheme.fromSeed(
+    seedColor: _seed,
+    dynamicSchemeVariant: DynamicSchemeVariant.expressive,
+    brightness: b,
   );
   const shape = RoundedRectangleBorder(borderRadius: _radius);
   return ThemeData(

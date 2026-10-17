@@ -20,16 +20,19 @@ Before you start, choose:
 
 | Setting    | Options                                                                  |
 | ---------- | ------------------------------------------------------------------------ |
-| Language   | English, Spanish, French, German, Italian, Portuguese, Dutch, Polish, Swedish, Danish, Norwegian, Finnish, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan |
+| Language   | English (US and UK spelling), Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Swedish, Danish, Norwegian, Finnish, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan; each with its flag |
 | Letters    | 4 to 8                                                                   |
-| Difficulty | easy (8 tries), normal (6), hard (4), brutal (3)                         |
+| Difficulty | a 4 x 4 grid: tries (easy 8, normal 6, hard 4, brutal 3) by word pool (answers drawn from the 500, 1,500, 3,000 or 6,000 most common words) |
 
-Type on a keyboard or use the on-screen one, which adds each language's accented letters.
+The letters and the helper are sliders: use the arrows, swipe or drag (the value slides and
+fades with your finger), scroll sideways or hold shift and scroll the wheel, or click one and use
+the arrow keys. Type on a keyboard or use the on-screen one, which adds each language's accented
+letters.
 
 ### Skill and luck
 
 The **helper** setting chooses what the game tells you while you play: *off*,
-*skill*, *skill + luck*, or *full* (which adds how many possible words remain).
+*skill only*, *skill + luck*, or *full help* (which adds how many possible words remain).
 When a game ends, the **review** steps through your guesses one at a time (buttons,
 the progress bar, or the arrow keys). Each step shows the board with a table of skill,
 luck, words left and info gained; your guess beside the best picks at that point; how
@@ -61,7 +64,9 @@ game you are playing elsewhere. Type each guess, tap its tiles to match the colo
 game showed (grey, yellow, green), and add it. It lists the words still possible, most
 likely first, and recommends the next guess: the word that leaves the fewest words in
 expectation, drawn from the 600 most frequent words plus the possible answers. Tap a
-word to use it as the next guess.
+word to use it as the next guess. Unlike the game, which picks its answers from the 2,000
+most common words of a length, the solver considers every word the game accepts as a
+guess (up to 6,000 per length), because the game you are solving may use any of them.
 
 When a game ends, the answer's pronunciation (IPA and audio), meaning, synonyms
 and antonyms are fetched from [Wiktionary](https://en.wiktionary.org), with a
@@ -120,23 +125,40 @@ Pages → Source set to *GitHub Actions*. You can also run it by hand from the A
 
 ```
 python -m venv app/tools/.venv
-app/tools/.venv/Scripts/pip install wordfreq      # bin/pip on macOS/Linux
+app/tools/.venv/Scripts/pip install wordfreq spylls pillow   # bin/pip on macOS/Linux
 app/tools/.venv/Scripts/python app/tools/build_words.py
 ```
 
-English 5-letter words come from the original game's list
-(`app/tools/data/lexodle_list.csv`, Google Ngrams counts); everything else from
-[wordfreq](https://github.com/rspeer/wordfreq), with English filtered against
-`app/tools/data/words_dictionary.json` (dwyl/english-words). Each language keeps its
-6,000 most frequent words per length as valid guesses; answers are drawn, weighted by
-frequency, from the top 2,000.
+Every language is built the same way. The candidates are the words
+[wordfreq](https://github.com/rspeer/wordfreq) knows, Latin letters only, 4 to 8 letters, most
+frequent first. Each is kept only if the language's Hunspell dictionary accepts it, with
+inflected forms included, using [spylls](https://github.com/zverok/spylls) and the
+dictionaries from [wooorm/dictionaries](https://github.com/wooorm/dictionaries) (LibreOffice's
+for Indonesian). Hunspell stores proper nouns capitalised and the candidates are lowercase,
+so names and most abbreviations drop out; German nouns are capitalised in its dictionary, so
+German also tries the capitalised form. Each language keeps up to 6,000 words per length as
+valid guesses, with a weight from their frequency.
 
-The non-English lists are frequency-ranked, not hand-curated, so a few
-abbreviations or names can appear, and a real but rare word may be rejected as a guess.
+Spelling variants (English US / UK, Portuguese Brazil / Portugal) share one frequency list, since
+wordfreq has one per language, and differ in the dictionary that filters it: `colour` passes the UK
+dictionary and not the US one. The Portuguese dictionary lets a few lowercase proper nouns
+(`paulo`, `brasil`) through. Flags are emoji, except Catalan's, which has none and is drawn
+(`app/assets/flags/ca.svg`).
+
+Finnish has no Hunspell dictionary in either collection, so it is filtered by frequency only,
+and a few names or abbreviations can appear in it. `app/assets/words/SOURCES.md` lists every
+dictionary and the licence it states; only the filtered word lists are shipped.
+
+The difficulty grid's pool is the most frequent words at the chosen length, so a smaller pool
+means more familiar answers. Some languages have fewer than 6,000 words at some lengths (for
+example Indonesian has about 2,400 at five letters), and the grid shows each language's real
+count. Words beyond the pool are still accepted as guesses.
 
 ## Credits and licences
 
-- Word data: Google Ngrams; dwyl/english-words (MIT); wordfreq (CC BY-SA 4.0)
+- Word data: [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0), filtered with Hunspell
+  dictionaries from [wooorm/dictionaries](https://github.com/wooorm/dictionaries) and
+  [LibreOffice](https://github.com/LibreOffice/dictionaries); licences in `app/assets/words/SOURCES.md`
 - Definitions, IPA, audio, synonyms and antonyms: [Wiktionary](https://en.wiktionary.org),
   CC BY-SA 4.0, fetched live from the browser
 - Font: JetBrains Mono (SIL OFL 1.1)

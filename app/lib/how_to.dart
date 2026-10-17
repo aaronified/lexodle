@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'logic.dart';
+import 'store.dart';
 import 'ui.dart';
 
 /// How to play, in the manner of the NYT's: the rule, then three worked
@@ -134,8 +135,12 @@ class HowToPage extends StatelessWidget {
                 const SizedBox(height: 18),
                 section(
                   'setup',
-                  'choose a language, 4 to 8 letters, and a difficulty, which is '
-                      'the number of tries: easy 8, normal 6, hard 4, brutal 3.',
+                  'choose a language, 4 to 8 letters (slide or tap the arrows) and a difficulty from the '
+                      '4 x 4 grid. across is the number of tries: easy 8, normal '
+                      '6, hard 4, brutal 3. down is the word pool the answer is '
+                      'drawn from: its 500, 1,500, 3,000 or 6,000 most common '
+                      'words (fewer where a language has fewer). the colour runs '
+                      'from green for the easiest to purple for the hardest.',
                 ),
                 section(
                   'skill and luck',
@@ -162,7 +167,7 @@ class HowToPage extends StatelessWidget {
                 ),
                 section(
                   'achievements',
-                  '15 to collect. they are kept in this browser only.',
+                  '${achievements.length} to collect. they are kept in this browser only.',
                 ),
               ],
             ),

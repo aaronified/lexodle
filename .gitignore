@@ -1,3 +1,4 @@
 # Flutter app build output and tooling live in app/.gitignore.
 # Local venv for tools/build_words.py (pip install wordfreq)
 app/tools/.venv/
+app/tools/dictionaries/

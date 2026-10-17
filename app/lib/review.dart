@@ -12,6 +12,7 @@ class GameRecord {
   const GameRecord({
     required this.bank,
     required this.length,
+    required this.poolSize,
     required this.answer,
     required this.guesses,
     required this.marks,
@@ -23,6 +24,9 @@ class GameRecord {
 
   final WordBank bank;
   final int length;
+
+  /// The answer pool this game was played with.
+  final int poolSize;
   final String answer;
   final List<String> guesses;
   final List<List<Mark>> marks;
@@ -59,7 +63,9 @@ class _ReviewPageState extends State<ReviewPage> {
   late int step = widget.initialStep.clamp(0, r.guesses.length - 1);
   bool explain = false;
   final picks = <int, List<Recommendation>>{};
-  late final Set<String> _answers = r.bank.answers(r.length).toSet();
+  late final Set<String> _answers = r.bank
+      .answers(r.length, r.poolSize)
+      .toSet();
 
   @override
   void initState() {
@@ -368,9 +374,7 @@ class _ReviewPageState extends State<ReviewPage> {
       fontSize: 11,
       color: c.onSurface.withValues(alpha: .6),
     );
-    final landed = m.after <= m.expected + 1e-9
-        ? markColors(c, Mark.correct).$1
-        : markColors(c, Mark.present).$1;
+    final landed = m.after <= m.expected + 1e-9 ? c.secondary : c.tertiary;
 
     Widget bar(String label, double value, Color color, {bool strong = false}) {
       final frac = (value / m.before).clamp(0.015, 1.0);

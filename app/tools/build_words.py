@@ -1,98 +1,223 @@
 """Build the per-language word lists the Flutter app ships.
 
-English reuses the original game's lexodle_list.csv (tools/data) (word + Google Ngrams count).
-Every other language comes from `wordfreq` (pip install wordfreq).
+Every language is built the same way:
 
-Output: assets/words/<code>.txt, lines of `word<TAB>weight`, sorted by weight
-descending within each length. The app treats the first ANSWERS words of each
-length as possible answers and every word as a valid guess.
+1. candidates: the words `wordfreq` knows for the language, Latin letters only,
+   4 to 8 letters long, most frequent first;
+2. filter: a candidate is kept only if the language's Hunspell dictionary
+   accepts it (inflected forms included). Hunspell stores proper nouns
+   capitalised, and the candidates are lowercase, so names (david, texas) and
+   most abbreviations drop out. German nouns are capitalised in its dictionary,
+   so German also tries the capitalised form;
+3. the first POOL accepted words of each length are kept, with a weight from
+   their frequency.
+
+Spelling variants (English US / UK, Portuguese Brazil / Portugal) share one
+frequency list, since wordfreq has one per language, and differ in the
+dictionary that filters it: colour is accepted by the UK dictionary and not by
+the US one.
+
+Two languages differ: Indonesian uses LibreOffice's dictionary (wooorm has
+none), and Finnish has no Hunspell dictionary in either collection, so it is
+filtered by frequency only (zipf >= 3). That is recorded in languages.json.
+
+Output (assets/words/): <code>.txt, lines of `word<TAB>weight`, sorted by weight
+descending within each length; languages.json (names, flags, lengths, counts,
+filter); SOURCES.md (the dictionaries and the licences they state).
+
+Usage:  python build_words.py            build every language
+        python build_words.py en-GB      build just these, keep the rest
+
+Needs:  pip install wordfreq spylls pillow
+Dictionaries are downloaded to tools/dictionaries/ (not committed).
 """
-import csv
 import json
-import math
+import re
 import sys
 import unicodedata
+import urllib.request
 from pathlib import Path
 
-csv.field_size_limit(10**9)
-
 APP = Path(__file__).resolve().parent.parent
-DATA = Path(__file__).resolve().parent / "data"
 OUT = APP / "assets" / "words"
+DICTS = Path(__file__).resolve().parent / "dictionaries"
 LENGTHS = range(4, 9)
 POOL = 6000  # words kept per language and length
 MIN_POOL = 400  # a length with fewer words than this is not offered
+EXAMINE = 80_000  # most candidates tried per length
+FREQUENCY_ONLY_ZIPF = 3.0
 
-# code -> (name shown in the app, language heading used on en.wiktionary.org)
-LANGS = {
-    "en": ("English", "English"), "es": ("Español", "Spanish"),
-    "fr": ("Français", "French"), "de": ("Deutsch", "German"),
-    "it": ("Italiano", "Italian"), "pt": ("Português", "Portuguese"),
-    "nl": ("Nederlands", "Dutch"), "pl": ("Polski", "Polish"),
-    "sv": ("Svenska", "Swedish"), "da": ("Dansk", "Danish"),
-    "nb": ("Norsk", "Norwegian Bokmål"), "fi": ("Suomi", "Finnish"),
-    "tr": ("Türkçe", "Turkish"), "ro": ("Română", "Romanian"),
-    "cs": ("Čeština", "Czech"), "id": ("Indonesia", "Indonesian"),
-    "hu": ("Magyar", "Hungarian"), "ca": ("Català", "Catalan"),
-}
+WOORM = "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/{c}/{f}"
+LIBRE = "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/{c}/{f}"
+
+# code, name shown in the app, language heading on en.wiktionary.org,
+# wordfreq code, dictionary directory (None: no dictionary), flag.
+# A flag is an emoji, or "svg:<name>" for a drawn one in assets/flags/
+# (there is no emoji for the Catalan flag).
+LANGS = [
+    ("en", "English (US)", "English", "en", "en", "🇺🇸"),
+    ("en-GB", "English (UK)", "English", "en", "en-GB", "🇬🇧"),
+    ("es", "Español", "Spanish", "es", "es", "🇪🇸"),
+    ("fr", "Français", "French", "fr", "fr", "🇫🇷"),
+    ("de", "Deutsch", "German", "de", "de", "🇩🇪"),
+    ("it", "Italiano", "Italian", "it", "it", "🇮🇹"),
+    ("pt", "Português (Brasil)", "Portuguese", "pt", "pt", "🇧🇷"),
+    ("pt-PT", "Português (Portugal)", "Portuguese", "pt", "pt-PT", "🇵🇹"),
+    ("nl", "Nederlands", "Dutch", "nl", "nl", "🇳🇱"),
+    ("pl", "Polski", "Polish", "pl", "pl", "🇵🇱"),
+    ("sv", "Svenska", "Swedish", "sv", "sv", "🇸🇪"),
+    ("da", "Dansk", "Danish", "da", "da", "🇩🇰"),
+    ("nb", "Norsk", "Norwegian Bokmål", "nb", "nb", "🇳🇴"),
+    ("fi", "Suomi", "Finnish", "fi", None, "🇫🇮"),
+    ("tr", "Türkçe", "Turkish", "tr", "tr", "🇹🇷"),
+    ("ro", "Română", "Romanian", "ro", "ro", "🇷🇴"),
+    ("cs", "Čeština", "Czech", "cs", "cs", "🇨🇿"),
+    ("id", "Indonesia", "Indonesian", "id", "id", "🇮🇩"),
+    ("hu", "Magyar", "Hungarian", "hu", "hu", "🇭🇺"),
+    ("ca", "Català", "Catalan", "ca", "ca", "svg:ca"),
+]
 
 
-def is_latin_word(w: str) -> bool:
-    return w.isalpha() and all(
-        unicodedata.name(c, "").startswith("LATIN") for c in w
-    )
+def source(dictdir):
+    """(url template, {local: remote}, origin) for a dictionary, or None."""
+    if dictdir is None:
+        return None
+    if dictdir == "id":
+        return LIBRE, {"index.aff": "id_ID.aff", "index.dic": "id_ID.dic"}, "LibreOffice/dictionaries"
+    return WOORM, {"index.aff": "index.aff", "index.dic": "index.dic"}, "wooorm/dictionaries"
 
 
-def english() -> dict[str, int]:
-    out = {}
-    with open(DATA / "lexodle_list.csv", encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            w = row["word"].lower()
-            if w.isascii() and w.isalpha():
-                out[w] = max(1, int(row["wordcount"]))
-    return out
+def get(url, dest):
+    req = urllib.request.Request(url, headers={"User-Agent": "lexodle-build/1.0"})
+    dest.write_bytes(urllib.request.urlopen(req, timeout=120).read())
 
 
-def other(code: str) -> dict[str, int]:
-    from wordfreq import top_n_list, zipf_frequency
+def fetch(dictdir):
+    """Download a dictionary once; return (path, licence text)."""
+    tpl, files, _ = source(dictdir)
+    d = DICTS / dictdir
+    d.mkdir(parents=True, exist_ok=True)
+    for local, remote in files.items():
+        if not (d / local).exists():
+            print(f"  downloading {dictdir}/{local}", file=sys.stderr)
+            get(tpl.format(c=dictdir, f=remote), d / local)
+    lic = d / "licence.txt"
+    if not lic.exists():
+        text = ""
+        try:
+            if tpl is WOORM:
+                get(WOORM.format(c=dictdir, f="readme.md"), d / "readme.md")
+                m = re.search(r"## License\s+(.+?)(\n\n|\Z)", (d / "readme.md").read_text(encoding="utf-8"), re.S)
+                text = " ".join(m.group(1).split()) if m else ""
+                # "Dictionary and affix file: [(GPL-3.0 OR MPL-2.0)](url). Rest: ..."
+                link = re.search(r"\[([^\]]+)\]\(http", text)
+                text = link.group(1) if link else text
+            else:
+                # LibreOffice's Indonesian dictionary ships LICENSE-dict: LGPL-3.0
+                get(LIBRE.format(c=dictdir, f="LICENSE-dict"), d / "LICENSE-dict")
+                head = (d / "LICENSE-dict").read_text(encoding="utf-8", errors="replace")[:200]
+                text = "LGPL-3.0" if "LESSER GENERAL PUBLIC LICENSE" in head and "Version 3" in head else "see LICENSE-dict"
+        except Exception as e:  # a missing licence line must not stop the build
+            print(f"  could not read the licence of {dictdir}: {e}", file=sys.stderr)
+        lic.write_text(text, encoding="utf-8")
+    return d / "index", lic.read_text(encoding="utf-8")
 
-    out = {}
-    for w in top_n_list(code, 250_000):
+
+def is_latin_word(w):
+    return w.isalpha() and all(unicodedata.name(c, "").startswith("LATIN") for c in w)
+
+
+_candidates = {}
+
+
+def candidates(wf):
+    """{length: [(word, zipf)]} for a wordfreq language, most frequent first."""
+    if wf in _candidates:
+        return _candidates[wf]
+    from wordfreq import get_frequency_dict, zipf_frequency
+
+    by_len = {n: [] for n in LENGTHS}
+    for w, _ in sorted(get_frequency_dict(wf).items(), key=lambda x: -x[1]):
         w = w.lower()
-        if is_latin_word(w) and len(w) in LENGTHS:
-            out[w] = max(1, int(10 ** zipf_frequency(w, code)))
+        if len(w) in by_len and is_latin_word(w):
+            by_len[len(w)].append(w)
+    out = {}
+    for n, ws in by_len.items():
+        seen, uniq = set(), []
+        for w in ws:  # the same word can appear twice after lowercasing
+            if w not in seen:
+                seen.add(w)
+                uniq.append((w, zipf_frequency(w, wf)))
+        out[n] = uniq
+    _candidates[wf] = out
     return out
 
 
-def main() -> None:
+def build(code, wf, dictdir):
+    from spylls.hunspell import Dictionary
+
+    cands = candidates(wf)
+    if dictdir is None:
+        accept = lambda w, z: z >= FREQUENCY_ONLY_ZIPF  # noqa: E731
+        kind = "frequency"
+    else:
+        d = Dictionary.from_files(str(fetch(dictdir)[0]))
+        if wf == "de":
+            accept = lambda w, z: d.lookup(w) or d.lookup(w.capitalize())  # noqa: E731
+        else:
+            accept = lambda w, z: d.lookup(w)  # noqa: E731
+        kind = "hunspell"
+    lines, lengths, counts = [], [], {}
+    for n in LENGTHS:
+        kept = []
+        for w, z in cands[n][:EXAMINE]:
+            if accept(w, z):
+                kept.append((w, max(1, int(10 ** z))))
+                if len(kept) >= POOL:
+                    break
+        counts[str(n)] = len(kept)
+        if len(kept) >= MIN_POOL:
+            lengths.append(n)
+            lines += [f"{w}\t{c}" for w, c in kept]
+    return lines, lengths, counts, kind
+
+
+def write_sources():
+    rows = []
+    for code, name, _, _, dictdir, _ in LANGS:
+        src = source(dictdir)
+        if src is None:
+            rows.append(f"| {name} (`{code}`) | frequency only (zipf >= 3) | none (no dictionary) |")
+        else:
+            rows.append(f"| {name} (`{code}`) | Hunspell, {src[2]} `{dictdir}` | {fetch(dictdir)[1]} |")
+    (OUT / "SOURCES.md").write_text(
+        "# Word list sources\n\n"
+        "Candidates come from [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0). "
+        "Each is kept only if the language's Hunspell dictionary accepts it; only the filtered "
+        "word lists are shipped, not the dictionaries. The licence is the one each dictionary "
+        "package states for its dictionary and affix files.\n\n"
+        "| Language | Filter | Dictionary licence |\n| --- | --- | --- |\n" + "\n".join(rows) + "\n",
+        encoding="utf-8")
+
+
+def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    only = set(sys.argv[1:])
+    manifest_path = OUT / "languages.json"
+    old = {m["code"]: m for m in json.loads(manifest_path.read_text(encoding="utf-8"))} if manifest_path.exists() else {}
     manifest = []
-    for code, (name, wikt) in LANGS.items():
-        words = other(code)
-        if code == "en":  # the repo's list is authoritative where it has data
-            repo = english()
-            # wordfreq includes names and fragments; the repo's dictionary
-            # (dwyl/english-words) keeps only real words.
-            with open(DATA / "words_dictionary.json", encoding="utf-8") as f:
-                dictionary = set(json.load(f))
-            words = {w: c for w, c in words.items() if w in dictionary}
-            words ={w: c for w, c in words.items() if len(w) not in {len(r) for r in repo}}
-            words.update(repo)
-        lines, lengths = [], []
-        for n in LENGTHS:
-            pool = sorted(
-                ((w, c) for w, c in words.items() if len(w) == n),
-                key=lambda x: -x[1],
-            )[:POOL]
-            if len(pool) >= MIN_POOL:
-                lengths.append(n)
-                lines += [f"{w}\t{c}" for w, c in pool]
+    for code, name, wikt, wf, dictdir, flag in LANGS:
+        if only and code not in only and code in old:
+            # not rebuilt: keep its word list and counts, refresh the rest
+            manifest.append({**old[code], "name": name, "wikt": wikt, "flag": flag})
+            continue
+        lines, lengths, counts, kind = build(code, wf, dictdir)
         (OUT / f"{code}.txt").write_text("\n".join(lines), encoding="utf-8")
-        manifest.append({"code": code, "name": name, "wikt": wikt, "lengths": lengths})
-        print(code, name, lengths, len(lines), file=sys.stderr)
-    (OUT / "languages.json").write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8"
-    )
+        manifest.append({"code": code, "name": name, "wikt": wikt, "flag": flag,
+                         "lengths": lengths, "counts": counts, "filter": kind})
+        print(code, name, kind, counts, file=sys.stderr)
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
+    write_sources()
 
 
 if __name__ == "__main__":

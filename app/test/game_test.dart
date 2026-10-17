@@ -36,7 +36,7 @@ void main() {
   testWidgets('lose a game, then review it step by step', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
-    appState.setup(lang: 'fr', length: 4, tries: 3);
+    appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
     final bank = (await tester.runAsync(
       () async => WordBank.load(
         (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
@@ -46,11 +46,15 @@ void main() {
     // A seeded game, so the answer is known and the three guesses can all be
     // wrong; the game draws its answer from the same seed the same way.
     final answer = chooseWord(
-      bank.answers(4),
-      bank.answerWeights(4),
+      bank.answers(4, 500),
+      bank.answerWeights(4, 500),
       Random(7),
     );
-    final guesses = bank.answers(4).where((w) => w != answer).take(3).toList();
+    final guesses = bank
+        .answers(4, 500)
+        .where((w) => w != answer)
+        .take(3)
+        .toList();
     await tester.pumpWidget(
       MaterialApp(
         home: GamePage(bank: bank, random: Random(7)),
