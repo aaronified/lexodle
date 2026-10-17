@@ -8,9 +8,9 @@ A minimal word game in 18 Latin-script languages.
 
 Guess the hidden word. After each guess every letter is marked:
 
-- **filled** – right letter, right place
-- **outlined** – in the word, wrong place
-- **faded** – not in the word
+- **green** – right letter, right place
+- **yellow** – in the word, wrong place
+- **grey** – not in the word
 
 Before you start, choose:
 

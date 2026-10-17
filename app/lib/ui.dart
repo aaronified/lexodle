@@ -1,5 +1,19 @@
 import 'package:flutter/material.dart';
 
+import 'logic.dart';
+
+/// Fixed feedback colours, the same in light and dark: green is the right
+/// letter in the right place, yellow the right letter in the wrong place.
+/// Absent letters recede into the surface.
+(Color fill, Color fg) markColors(ColorScheme c, Mark m) => switch (m) {
+      Mark.correct => (const Color(0xFF4C8C3A), Colors.white),
+      Mark.present => (const Color(0xFFE0B83A), const Color(0xFF2A2200)),
+      Mark.absent => (
+          c.surfaceContainerHighest,
+          c.onSurface.withValues(alpha: .4)
+        ),
+    };
+
 /// Small tracked lowercase caption, the section label of the whole app.
 class Caption extends StatelessWidget {
   const Caption(this.text, {super.key});

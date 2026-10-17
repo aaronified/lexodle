@@ -213,21 +213,11 @@ class _GamePageState extends State<GamePage> {
     Color? fill;
     Color fg = c.onSurface;
     Color border = active ? c.onSurface.withValues(alpha: .5) : c.outlineVariant;
-    switch (m) {
-      case Mark.correct:
-        fill = c.primary;
-        fg = c.onPrimary;
-        border = c.primary;
-      case Mark.present:
-        fill = c.tertiaryContainer;
-        fg = c.onTertiaryContainer;
-        border = c.tertiary;
-      case Mark.absent:
-        fill = c.surfaceContainerHighest;
-        fg = c.onSurface.withValues(alpha: .45);
-        border = c.surfaceContainerHighest;
-      case null:
-        if (ch.isNotEmpty) border = c.onSurface;
+    if (m != null) {
+      (fill, fg) = markColors(c, m);
+      border = fill;
+    } else if (ch.isNotEmpty) {
+      border = c.onSurface;
     }
     return Container(
       width: size,
@@ -235,7 +225,7 @@ class _GamePageState extends State<GamePage> {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: fill,
-        border: Border.all(color: border, width: m == Mark.present ? 2 : 1),
+        border: Border.all(color: border),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Text(ch,
@@ -307,18 +297,7 @@ class _GamePageState extends State<GamePage> {
     Widget key(String label, VoidCallback tap, {Mark? mark, double flex = 1}) {
       Color? fill;
       Color fg = c.onSurface;
-      switch (mark) {
-        case Mark.correct:
-          fill = c.primary;
-          fg = c.onPrimary;
-        case Mark.present:
-          fill = c.tertiaryContainer;
-          fg = c.onTertiaryContainer;
-        case Mark.absent:
-          fill = c.surfaceContainerHighest;
-          fg = c.onSurface.withValues(alpha: .35);
-        case null:
-      }
+      if (mark != null) (fill, fg) = markColors(c, mark);
       return Expanded(
         flex: (flex * 10).round(),
         child: Padding(
