@@ -1,18 +1,43 @@
 # Lexodle
 
-A minimal word game in 18 Latin-script languages. Pick the language, the word
-length (4–8) and the difficulty (number of tries). Includes achievements, and
-after each game shows the answer's meaning, pronunciation, synonyms and
-antonyms from Wiktionary.
+A minimal word game in 18 Latin-script languages.
 
-Built with Flutter (Material 3) and published as a static web app on GitHub Pages.
+**Play: <https://aaronified.github.io/lexodle/>**
 
-## Play
+## How to play
 
-The `Deploy web app to GitHub Pages` workflow publishes `app/` on every push to
-`main`. Enable it once under Settings → Pages → Source: *GitHub Actions*.
+Guess the hidden word. After each guess every letter is marked:
+
+- **filled** – right letter, right place
+- **outlined** – in the word, wrong place
+- **faded** – not in the word
+
+Before you start, choose:
+
+| Setting    | Options                                                                  |
+| ---------- | ------------------------------------------------------------------------ |
+| Language   | English, Spanish, French, German, Italian, Portuguese, Dutch, Polish, Swedish, Danish, Norwegian, Finnish, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan |
+| Letters    | 4 to 8                                                                   |
+| Difficulty | easy (8 tries), normal (6), hard (4), brutal (3)                         |
+
+"Show words left" displays how many possible answers remain after each guess.
+Type on a keyboard or use the on-screen one, which adds each language's accented letters.
+
+When a game ends, the answer's pronunciation (IPA and audio), meaning, synonyms
+and antonyms are fetched from [Wiktionary](https://en.wiktionary.org), with a
+link to the full entry. If Wiktionary has no entry or is unreachable, the game
+carries on without it.
+
+### Achievements
+
+15 achievements, saved in your browser (nothing is sent anywhere): first light,
+one shot, last breath, no mercy, brevity, long haul, full range, three in a row,
+seven in a row, polyglot, babel, regular, veteran, dustwalker and persistent.
+The achievements screen shows each condition.
 
 ## Develop
+
+The app is in [`app/`](app) (Flutter, Material 3).
 
 ```
 cd app
@@ -21,7 +46,25 @@ flutter test
 flutter run -d chrome
 ```
 
-`flutter build apk` also works (the `android/` platform is scaffolded).
+`flutter build apk` also works; the `android/` platform is scaffolded.
+
+| Path                     | What it is                                              |
+| ------------------------ | ------------------------------------------------------- |
+| `app/lib/logic.dart`     | Guess scoring, eligible-word filter, weighted word pick |
+| `app/lib/words.dart`     | Loads the per-language word lists                       |
+| `app/lib/wiktionary.dart`| Wiktionary lookup and parser                            |
+| `app/lib/store.dart`     | Settings, stats and the achievement definitions         |
+| `app/assets/words/`      | Generated word lists, one file per language             |
+| `app/tools/`             | Word-list generator and a live Wiktionary check         |
+
+`app/tools/live_check.dart` calls the real Wiktionary API (`dart run tools/live_check.dart`);
+the unit tests use saved responses and need no network.
+
+## Deploy
+
+The `Deploy web app to GitHub Pages` workflow tests, builds and publishes `app/`
+on every push to `main` that touches `app/` or the workflow. It needs Settings →
+Pages → Source set to *GitHub Actions*. You can also run it by hand from the Actions tab.
 
 ## Word lists
 
@@ -36,9 +79,12 @@ app/tools/.venv/Scripts/python app/tools/build_words.py
 English 5-letter words come from the original game's list
 (`app/tools/data/lexodle_list.csv`, Google Ngrams counts); everything else from
 [wordfreq](https://github.com/rspeer/wordfreq), with English filtered against
-`app/tools/data/words_dictionary.json` (dwyl/english-words). The non-English
-lists are frequency-ranked, not hand-curated, so a few abbreviations or names
-can appear.
+`app/tools/data/words_dictionary.json` (dwyl/english-words). Each language keeps its
+6,000 most frequent words per length as valid guesses; answers are drawn, weighted by
+frequency, from the top 2,000.
+
+The non-English lists are frequency-ranked, not hand-curated, so a few
+abbreviations or names can appear, and a real but rare word may be rejected as a guess.
 
 ## Credits and licences
 
@@ -47,3 +93,5 @@ can appear.
   CC BY-SA 4.0, fetched live from the browser
 - Font: JetBrains Mono (SIL OFL 1.1)
 - Code: see [LICENSE](LICENSE)
+
+This project was developed with assistance from [KiloCode](https://kilo.ai) and Claude Code, AI coding assistants.
