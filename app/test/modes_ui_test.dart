@@ -28,7 +28,7 @@ void main() {
     expect(find.text('solver'), findsNothing);
     expect(find.text('play'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.tap(find.byTooltip('settings'));
     await tester.pumpAndSettle();
     expect(find.text('settings'), findsOneWidget);
     expect(find.byType(Dialog), findsOneWidget);

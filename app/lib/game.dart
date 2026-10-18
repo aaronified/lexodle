@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'review.dart';
+import 'routes.dart';
 import 'main.dart';
 import 'store.dart';
 import 'ui.dart';
@@ -365,10 +366,8 @@ class _GamePageState extends State<GamePage> {
         ),
         _smallButton(
           'review',
-          () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => ReviewPage(record: _record())),
-          ),
+          () =>
+              Navigator.pushNamed(context, Routes.review, arguments: _record()),
         ),
       ],
     );

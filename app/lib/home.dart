@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'achievements_page.dart';
+import 'achievements_page.dart' show achievementCount;
 import 'difficulty.dart';
-import 'game.dart';
-import 'how_to.dart';
 import 'logo.dart';
-import 'solver.dart';
 import 'stepper_choice.dart';
 import 'main.dart';
 import 'modes.dart';
-import 'multi_game.dart';
-import 'settings_dialog.dart';
+import 'routes.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -23,6 +19,9 @@ const _lengthNote = {
   8: 'very long',
 };
 
+/// The height of the play button and of the settings button beside it.
+const _buttonHeight = 52.0;
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -32,7 +31,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Language>? _langs;
-  bool _starting = false;
 
   bool _howToShown = false;
 
@@ -58,9 +56,10 @@ class _HomePageState extends State<HomePage> {
     appState.markHowToSeen();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        Navigator.push(
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(builder: (_) => const HowToPage()),
+          Routes.howTo,
+          arguments: onboardingArgument,
         );
       }
     });
@@ -70,23 +69,6 @@ class _HomePageState extends State<HomePage> {
     (l) => l.code == appState.lang,
     orElse: () => langs.first,
   );
-
-  Future<void> _start(Language lang, {bool solver = false}) async {
-    setState(() => _starting = true);
-    final bank = await WordBank.load(lang);
-    if (!mounted) return;
-    setState(() => _starting = false);
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => solver
-            ? SolverPage(bank: bank)
-            : appState.mode.multi
-            ? MultiGamePage(bank: bank)
-            : GamePage(bank: bank),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -179,39 +161,51 @@ class _HomePageState extends State<HomePage> {
                                 appState.setup(tries: t, pool: pl),
                           ),
                           const SizedBox(height: 20),
+                          // play and the gear share one height, set outright
+                          // rather than left to each button's own minimum
                           Row(
                             children: [
                               Expanded(
                                 child: FilledButton(
-                                  onPressed: _starting
-                                      ? null
-                                      : () => _start(lang),
+                                  style: FilledButton.styleFrom(
+                                    fixedSize: const Size.fromHeight(
+                                      _buttonHeight,
+                                    ),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  onPressed: () =>
+                                      Navigator.pushNamed(context, Routes.play),
                                   child: Text(
-                                    _starting
-                                        ? 'loading…'
-                                        : appState.mode == GameMode.classic
+                                    appState.mode == GameMode.classic
                                         ? 'play'
                                         : 'play · ${appState.mode.label}',
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              SizedBox(
-                                height: 52,
-                                width: 52,
+                              Tooltip(
+                                message: 'settings',
                                 child: OutlinedButton(
                                   style: OutlinedButton.styleFrom(
+                                    fixedSize: const Size.square(_buttonHeight),
+                                    minimumSize: Size.zero,
                                     padding: EdgeInsets.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  onPressed: () => showSettings(
+                                  onPressed: () => Navigator.pushNamed(
                                     context,
-                                    onSolver: _starting
-                                        ? null
-                                        : () => _start(lang, solver: true),
+                                    Routes.settings,
                                   ),
-                                  child: const Icon(
-                                    Icons.settings_outlined,
-                                    semanticLabel: 'settings',
+                                  // the app's own icon set, in an explicit colour
+                                  child: Semantics(
+                                    label: 'settings',
+                                    child: TablerIcon(
+                                      'settings',
+                                      size: 24,
+                                      color: c.onSurface,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -224,43 +218,25 @@ class _HomePageState extends State<HomePage> {
                             alignment: WrapAlignment.spaceBetween,
                             children: [
                               TextButton(
-                                onPressed: () => Navigator.push(
+                                onPressed: () => Navigator.pushNamed(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const AchievementsPage(),
-                                  ),
+                                  Routes.achievements,
                                 ),
                                 child: Text(
                                   'achievements  $unlocked/${achievementCount()}',
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const HowToPage(),
-                                  ),
-                                ),
+                                onPressed: () =>
+                                    Navigator.pushNamed(context, Routes.howTo),
                                 child: Text(
                                   'how to play',
                                   style: TextStyle(color: c.onSurface),
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => showAboutDialog(
-                                  context: context,
-                                  applicationName: 'lexodle',
-                                  children: const [
-                                    Text(
-                                      'Words: wordfreq (CC BY-SA 4.0), '
-                                      'filtered with spelling dictionaries. '
-                                      'Definitions: Wiktionary (CC BY-SA 4.0). '
-                                      'Font: JetBrains Mono (OFL). Icons: '
-                                      'Tabler Icons (MIT). Full licences are '
-                                      'under "view licenses".',
-                                    ),
-                                  ],
-                                ),
+                                onPressed: () =>
+                                    Navigator.pushNamed(context, Routes.about),
                                 child: Text(
                                   'about',
                                   style: TextStyle(color: c.onSurface),

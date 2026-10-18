@@ -2,24 +2,17 @@ import 'package:flutter/material.dart';
 
 import 'main.dart';
 import 'modes.dart';
+import 'routes.dart';
 import 'stepper_choice.dart';
 import 'store.dart';
 import 'ui.dart';
 
 /// The settings popup, the same on a phone and on a desktop: game mode, how
 /// often its words share letters, the helper level and the solver. Changes
-/// apply and are saved as they are made. [onSolver] is called after the popup
-/// closes, when the solver button is pressed.
-Future<void> showSettings(BuildContext context, {VoidCallback? onSolver}) {
-  return showDialog<void>(
-    context: context,
-    builder: (_) => _SettingsDialog(onSolver: onSolver),
-  );
-}
-
-class _SettingsDialog extends StatelessWidget {
-  const _SettingsDialog({this.onSolver});
-  final VoidCallback? onSolver;
+/// apply and are saved as they are made. It is a route of its own
+/// ([Routes.settings]), so it has an address like every other screen.
+class SettingsDialog extends StatelessWidget {
+  const SettingsDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +103,7 @@ class _SettingsDialog extends StatelessWidget {
                                 'lower makes them more different.',
                       style: TextStyle(
                         fontSize: 11,
-                        color: c.onSurface.withValues(alpha: .6),
+                        color: c.onSurface.withValues(alpha: dimAlpha),
                       ),
                     ),
                   ],
@@ -132,21 +125,31 @@ class _SettingsDialog extends StatelessWidget {
                               'the game ends.',
                     style: TextStyle(
                       fontSize: 11,
-                      color: c.onSurface.withValues(alpha: .6),
+                      color: c.onSurface.withValues(alpha: dimAlpha),
                     ),
                   ),
-                  if (onSolver != null) ...[
-                    const SizedBox(height: 24),
-                    const Caption('solver'),
-                    const SizedBox(height: 10),
-                    OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        onSolver!();
-                      },
-                      child: const Text('open the solver'),
-                    ),
-                  ],
+                  const SizedBox(height: 24),
+                  const Caption('theme'),
+                  const SizedBox(height: 10),
+                  StepperChoice<ThemeMode>(
+                    semanticLabel: 'theme',
+                    items: const [
+                      (ThemeMode.system, 'system', 'follow the device'),
+                      (ThemeMode.light, 'light', 'a light page'),
+                      (ThemeMode.dark, 'dark', 'a dark page'),
+                    ],
+                    selected: appState.themeMode,
+                    onChanged: (t) => appState.setup(themeMode: t),
+                  ),
+                  const SizedBox(height: 24),
+                  const Caption('solver'),
+                  const SizedBox(height: 10),
+                  OutlinedButton(
+                    // replaces the popup, so back from the solver is home
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, Routes.solver),
+                    child: const Text('open the solver'),
+                  ),
                 ],
               ),
             );

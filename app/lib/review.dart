@@ -125,7 +125,7 @@ class _ReviewPageState extends State<ReviewPage> {
     final top = picks[step];
     final dim = TextStyle(
       fontSize: 11,
-      color: c.onSurface.withValues(alpha: .6),
+      color: c.onSurface.withValues(alpha: dimAlpha),
     );
 
     return Focus(
@@ -294,7 +294,7 @@ class _ReviewPageState extends State<ReviewPage> {
       fontSize: 10,
       letterSpacing: .8,
       height: 1.2,
-      color: c.onSurface.withValues(alpha: .6),
+      color: c.onSurface.withValues(alpha: dimAlpha),
     );
     Widget cell(
       String t, {
@@ -406,7 +406,7 @@ class _ReviewPageState extends State<ReviewPage> {
         v < 10 ? v.toStringAsFixed(1) : v.round().toString();
     final dim = TextStyle(
       fontSize: 11,
-      color: c.onSurface.withValues(alpha: .6),
+      color: c.onSurface.withValues(alpha: dimAlpha),
     );
     final landed = m.after <= m.expected + 1e-9 ? c.secondary : yellowOf(c);
 
@@ -512,7 +512,7 @@ class _ReviewPageState extends State<ReviewPage> {
     final answerAt = words.indexOf(r.answer);
     final dim = TextStyle(
       fontSize: 11,
-      color: c.onSurface.withValues(alpha: .6),
+      color: c.onSurface.withValues(alpha: dimAlpha),
     );
     Widget key(Color color, String label) => Row(
       mainAxisSize: MainAxisSize.min,
@@ -660,7 +660,7 @@ class _ReviewPageState extends State<ReviewPage> {
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     fontSize: 11,
-                    color: c.onSurface.withValues(alpha: .6),
+                    color: c.onSurface.withValues(alpha: dimAlpha),
                   ),
                 ),
               ] else

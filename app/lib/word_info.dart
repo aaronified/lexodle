@@ -147,7 +147,7 @@ class _WordInfoViewState extends State<WordInfoView> {
         if (b.forms.isNotEmpty)
           TextSpan(
             text: '  ${b.forms}',
-            style: TextStyle(color: c.onSurface.withValues(alpha: .6)),
+            style: TextStyle(color: c.onSurface.withValues(alpha: dimAlpha)),
           ),
       ],
     ),

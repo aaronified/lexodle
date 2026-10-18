@@ -224,7 +224,7 @@ class _Bar extends StatelessWidget {
           '$progress/$target',
           style: TextStyle(
             fontSize: 11,
-            color: c.onSurface.withValues(alpha: .6),
+            color: c.onSurface.withValues(alpha: dimAlpha),
           ),
         ),
       ],
@@ -249,7 +249,7 @@ class _History extends StatelessWidget {
         'nothing earned yet.',
         style: TextStyle(
           fontSize: 13,
-          color: c.onSurface.withValues(alpha: .6),
+          color: c.onSurface.withValues(alpha: dimAlpha),
         ),
       );
     }
@@ -257,7 +257,7 @@ class _History extends StatelessWidget {
     final head = TextStyle(
       fontSize: 10,
       letterSpacing: .8,
-      color: c.onSurface.withValues(alpha: .6),
+      color: c.onSurface.withValues(alpha: dimAlpha),
     );
     const cell = TextStyle(fontSize: 11);
     Widget pad(Widget w) =>

@@ -299,7 +299,7 @@ class _SolverPageState extends State<SolverPage> {
             'does not have.',
             style: TextStyle(
               fontSize: 11,
-              color: c.onSurface.withValues(alpha: .6),
+              color: c.onSurface.withValues(alpha: dimAlpha),
             ),
           ),
         ] else if (r == null || busy)
@@ -327,7 +327,7 @@ class _SolverPageState extends State<SolverPage> {
             '${r.canWin ? ' · could be the answer' : ''}  (tap to use)',
             style: TextStyle(
               fontSize: 11,
-              color: c.onSurface.withValues(alpha: .6),
+              color: c.onSurface.withValues(alpha: dimAlpha),
             ),
           ),
         ],
@@ -350,7 +350,7 @@ class _SolverPageState extends State<SolverPage> {
           'length. a game can use a word that is not on it.',
           style: TextStyle(
             fontSize: 11,
-            color: c.onSurface.withValues(alpha: .6),
+            color: c.onSurface.withValues(alpha: dimAlpha),
           ),
         ),
       ],

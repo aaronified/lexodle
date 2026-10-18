@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'home.dart';
 import 'licences.dart';
+import 'routes.dart';
 import 'store.dart';
 
 /// Dustland-style minimalism on Material 3: flat surfaces, hairline borders,
@@ -77,16 +77,27 @@ void main() {
 }
 
 class LexodleApp extends StatelessWidget {
-  const LexodleApp({super.key});
+  /// [initialRoute] is for tests; the app starts at the address it was opened
+  /// at (the browser's, on the web).
+  const LexodleApp({super.key, this.initialRoute, this.observers = const []});
+  final String? initialRoute;
+  final List<NavigatorObserver> observers;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'lexodle',
-      debugShowCheckedModeBanner: false,
-      theme: buildTheme(Brightness.light),
-      darkTheme: buildTheme(Brightness.dark),
-      home: const HomePage(),
+    return ListenableBuilder(
+      listenable: appState,
+      builder: (context, _) => MaterialApp(
+        title: 'lexodle',
+        debugShowCheckedModeBanner: false,
+        theme: buildTheme(Brightness.light),
+        darkTheme: buildTheme(Brightness.dark),
+        themeMode: appState.themeMode,
+        initialRoute: initialRoute,
+        navigatorObservers: observers,
+        onGenerateRoute: onGenerateRoute,
+        onGenerateInitialRoutes: onGenerateInitialRoutes,
+      ),
     );
   }
 }

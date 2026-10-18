@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'difficulty.dart';
@@ -413,6 +414,9 @@ class AppState extends ChangeNotifier {
   Helper helper = Helper.full;
   GameMode mode = GameMode.classic;
 
+  /// Light, dark, or whichever the device is set to.
+  ThemeMode themeMode = ThemeMode.system;
+
   /// Quordle and Sequence: the chance, in percent, that answers share a letter.
   int share = 10;
 
@@ -453,6 +457,10 @@ class AppState extends ChangeNotifier {
         mode = GameMode.values[mi];
       }
       share = (p.getInt('share') ?? share).clamp(0, maxShare);
+      final ti = p.getInt('theme');
+      if (ti != null && ti >= 0 && ti < ThemeMode.values.length) {
+        themeMode = ThemeMode.values[ti];
+      }
       seenHowTo = p.getBool('seenHowTo') ?? false;
       final s = p.getString('stats');
       if (s != null) stats = Stats.fromJson(jsonDecode(s));
@@ -496,6 +504,7 @@ class AppState extends ChangeNotifier {
     Helper? helper,
     GameMode? mode,
     int? share,
+    ThemeMode? themeMode,
   }) {
     this.lang = lang ?? this.lang;
     this.length = length ?? this.length;
@@ -503,6 +512,7 @@ class AppState extends ChangeNotifier {
     this.pool = pool ?? this.pool;
     this.helper = helper ?? this.helper;
     this.mode = mode ?? this.mode;
+    this.themeMode = themeMode ?? this.themeMode;
     this.share = (share ?? this.share).clamp(0, maxShare);
     try {
       _prefs
@@ -512,7 +522,8 @@ class AppState extends ChangeNotifier {
         ..setInt('pool', this.pool)
         ..setInt('helper', this.helper.index)
         ..setInt('mode', this.mode.index)
-        ..setInt('share', this.share);
+        ..setInt('share', this.share)
+        ..setInt('theme', this.themeMode.index);
     } catch (_) {}
     notifyListeners();
   }

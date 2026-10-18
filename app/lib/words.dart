@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 /// frequent words of a length the answer can be. Every word in the file is
 /// still accepted as a guess.
 const poolSizes = [500, 1500, 3000, 6000];
-const defaultPool = 1500;
+const defaultPool = 3000;
 
 class Language {
   const Language(

@@ -64,7 +64,7 @@ class DifficultyMatrix extends StatelessWidget {
       fontSize: 10,
       letterSpacing: .8,
       height: 1.25,
-      color: c.onSurface.withValues(alpha: .6),
+      color: c.onSurface.withValues(alpha: dimAlpha),
     );
 
     return Column(

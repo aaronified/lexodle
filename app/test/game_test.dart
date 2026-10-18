@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/routes.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,6 +59,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: GamePage(bank: bank, random: Random(7)),
+        onGenerateRoute: onGenerateRoute, // the review is opened by name
       ),
     );
     await tester.pump();

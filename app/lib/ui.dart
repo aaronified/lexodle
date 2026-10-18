@@ -3,14 +3,19 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'logic.dart';
 
+/// How strongly secondary text (captions, notes) shows against the page: dim,
+/// but still readable (4.5:1) in both themes.
+const dimAlpha = .66;
+
 /// The wrong-place yellow. The scheme's tertiary is too close to its green in
 /// a muted Material You palette, so the yellow is its own warm hue, kept at a
-/// lightness that reads in both themes.
+/// lightness that reads in both themes: a bright yellow on the dark page, and
+/// a deeper amber on the light one, where a pale yellow would vanish.
 Color yellowOf(ColorScheme c) => HSLColor.fromAHSL(
   1,
   47,
   .88,
-  c.brightness == Brightness.dark ? .52 : .55,
+  c.brightness == Brightness.dark ? .52 : .42,
 ).toColor();
 
 /// Feedback colours. Green (secondary) is the right letter in the right place,
@@ -19,7 +24,10 @@ Color yellowOf(ColorScheme c) => HSLColor.fromAHSL(
 (Color fill, Color fg) markColors(ColorScheme c, Mark m) => switch (m) {
   Mark.correct => (c.secondary, c.onSecondary),
   Mark.present => (yellowOf(c), onColor(c, yellowOf(c))),
-  Mark.absent => (c.surfaceContainerHighest, c.onSurface.withValues(alpha: .4)),
+  Mark.absent => (
+    Color.alphaBlend(c.onSurface.withValues(alpha: .14), c.surface),
+    c.onSurface.withValues(alpha: .55),
+  ),
 };
 
 /// The edge of a feedback tile: the fill itself, so it shows no edge.
@@ -163,7 +171,8 @@ class Caption extends StatelessWidget {
     style: TextStyle(
       fontSize: 12,
       letterSpacing: 2,
-      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .6),
+      color: Theme.of(context).colorScheme.onSurface
+          .withValues(alpha: dimAlpha),
     ),
   );
 }
