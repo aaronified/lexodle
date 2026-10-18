@@ -139,10 +139,16 @@ void main() {
           for (var seed = 0; seed < 4; seed++) {
             final g = play(mode, seed, guesses: 5);
             for (final step in g.steps) {
-              final again = await recommendMulti(step.liveBefore, [step.guess]);
+              // every real guess, the played one included: E* per board
+              final land = await analyseMulti(step.liveBefore, {
+                step.guess,
+                ...multiCandidates(step.liveBefore, words),
+              }, k: 100000);
+              final refined = step.withBests(land.bests);
+              final pick = land.picks.firstWhere((p) => p.word == step.guess);
               expect(
-                again.single.skill,
-                closeTo(step.skill, 1e-9),
+                pick.skill,
+                closeTo(refined.skill, 1e-9),
                 reason: '${step.guess} seed $seed',
               );
             }
@@ -155,15 +161,83 @@ void main() {
         () async {
           final g = play(mode, 3, guesses: 3);
           for (final step in g.steps) {
-            final best = await recommendMulti(step.liveBefore, {
+            final land = await analyseMulti(step.liveBefore, {
               step.guess,
               ...multiCandidates(step.liveBefore, words),
             }, k: 1);
-            expect(best.single.skill, greaterThanOrEqualTo(step.skill - 1e-9));
+            final refined = step.withBests(land.bests);
+            expect(
+              land.picks.single.skill,
+              greaterThanOrEqualTo(refined.skill - 1e-9),
+            );
+            expect(refined.skill, inInclusiveRange(0, 100));
+          }
+        },
+      );
+
+      test(
+        '${mode.label}: skill is measured against each board\'s best',
+        () async {
+          final g = play(mode, 2, guesses: 3);
+          for (final step in g.steps) {
+            final land = await analyseMulti(step.liveBefore, {
+              step.guess,
+              ...multiCandidates(step.liveBefore, words),
+            });
+            expect(land.bests.length, step.boards.length);
+            final refined = step.withBests(land.bests);
+            for (var i = 0; i < refined.boards.length; i++) {
+              final m = refined.boards[i].metrics;
+              expect(m.ready, isTrue);
+              expect(m.best, closeTo(land.bests[i], 1e-12));
+              // never better than the best real guess found, never below 0
+              expect(m.expected, greaterThanOrEqualTo(land.bests[i] - 1e-9));
+              expect(m.skill, inInclusiveRange(0, 100));
+            }
           }
         },
       );
     }
+
+    test('a provisional step is not ready until its bests arrive', () async {
+      final g = MultiGame(
+        GameMode.quartet,
+        ['house', 'light', 'brand', 'dying'],
+        9,
+        words: words,
+        provisional: true,
+      );
+      g.guess('crane');
+      expect(g.steps.single.ready, isFalse);
+      final land = await analyseMulti(
+        g.steps.single.liveBefore,
+        words.take(400),
+      );
+      final refined = g.steps.single.withBests(land.bests);
+      expect(refined.ready, isTrue);
+      expect(refined.skill, inInclusiveRange(0, 100));
+    });
+
+    test(
+      'boards that share their words are scored once, at the start',
+      () async {
+        final g = MultiGame(
+          GameMode.quartet,
+          ['house', 'light', 'brand', 'dying'],
+          9,
+          words: words,
+        );
+        expect(identical(g.eligible[0], g.eligible[1]), isTrue);
+        final land = await analyseMulti([
+          for (final b in g.eligible) b,
+        ], words.take(300));
+        expect(
+          land.bests.toSet().length,
+          1,
+          reason: 'the same words, the same E*',
+        );
+      },
+    );
 
     test('quartet: solved boards drop out of later steps', () {
       final g = MultiGame(
@@ -257,9 +331,12 @@ void main() {
         g.guess('light'); // last try; solves one board of four
         final last = g.steps.last;
         expect(last.finalTry, isTrue);
-        for (final b in last.boards) {
+        for (var i = 0; i < last.boards.length; i++) {
+          final b = last.boards[i];
           final n = b.metrics.before;
-          final expected = ((b.solved ? 1 : 0) - 1 / n) * 100;
+          // the chance of a win is 1 in n if the guess fits the board, else 0
+          final fits = last.liveBefore[i].contains('light');
+          final expected = ((b.solved ? 1 : 0) - (fits ? 1 / n : 0)) * 100;
           expect(b.metrics.luck, closeTo(expected, 1e-9));
         }
         expect(g.steps.first.finalTry, isFalse);

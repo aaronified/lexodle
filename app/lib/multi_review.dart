@@ -33,7 +33,7 @@ class MultiRecord {
   /// The best picks for each step, if they were already being worked out while
   /// the game was played (null for a step whose picks are not needed, such as
   /// the last try's).
-  final List<Future<List<MultiPick>>?>? analysis;
+  final List<Future<MultiLandscape>?>? analysis;
 }
 
 String _n(int v) => v.toString().replaceAllMapped(
@@ -62,12 +62,23 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
   late int step = widget.initialStep.clamp(0, r.steps.length - 1);
   bool explain = false;
   final picks = <int, List<MultiPick>>{};
+
+  /// What the analysis of each step found: the best real split per board, which
+  /// each board's skill is measured against, and the picks.
+  final landscapes = <int, MultiLandscape>{};
   final finals = <int, List<FinalPick>>{};
 
   @override
   void initState() {
     super.initState();
     _analyse();
+  }
+
+  /// Step [i] with each board's skill measured against its best real guess,
+  /// once the analysis has found it; until then as the game had it.
+  MultiStep stepAt(int i) {
+    final land = landscapes[i];
+    return land == null ? r.steps[i] : r.steps[i].withBests(land.bests);
   }
 
   Future<void> _analyse() async {
@@ -77,19 +88,18 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
       if (s.finalTry) {
         // nothing is left to learn: only words that fit a board can win
         setState(() => finals[i] = finalPicks(s.liveBefore));
-        continue;
       }
+      // every step is scored against every real guess, the last try included:
+      // the best of them is what skill is measured against
       final ready = r.analysis != null && i < r.analysis!.length
           ? r.analysis![i]
           : null;
-      final top =
-          await (ready ??
-              recommendMulti(
-                s.liveBefore,
-                multiCandidates(s.liveBefore, guessable),
-              ));
+      final land = await (ready ?? analyseMulti(s.liveBefore, guessable));
       if (!mounted) return;
-      setState(() => picks[i] = top);
+      setState(() {
+        if (!s.finalTry) picks[i] = land.picks;
+        landscapes[i] = land;
+      });
     }
   }
 
@@ -97,7 +107,7 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final n = r.steps.length;
-    final s = r.steps[step];
+    final s = stepAt(step);
     final last = step == n - 1;
     final dim = TextStyle(
       fontSize: 11,
@@ -217,11 +227,15 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
   String get _explanation =>
       'words left: the words still possible on that board, before and after '
       'your guess. a board you solved says so.\n'
-      'skill: for one board, how well the guess split its possible words: '
-      '100 is a perfect split, 0 tells you nothing. '
+      'skill: for one board, how evenly the guess broke up its possible words, '
+      'measured against the best any real guess could do on that board: 100 '
+      'matches it, 0 tells you nothing (on a log scale: cutting the words left '
+      'in half is worth the same whether 2,000 or 20 remain). '
       '${r.mode == GameMode.quartet ? 'the "all boards" line is the average over the boards the guess was made for, each weighted by how much was left to find out on it (the log of its words left, at least one bit), so a board with a thousand words counts far more than one with two, and a board with a single word left counts as one bit: playing that word is rewarded and missing it is not free.' : 'in a relay race a guess is made for the board that is on, so it is judged on that board alone.'}\n'
-      'luck: how much smaller (+, green) or larger (-, red) than average the '
-      'group you landed in was; averaged the same way. on your last try luck is '
+      'luck: where the pool you landed in sits among the pools you could have '
+      'landed in (the chance of a bigger pool less the chance of a smaller '
+      'one, -100% to +100%, 0% the middle outcome); averaged the same way. on '
+      'your last try luck is '
       'the chance of the pick instead: the chance of any one word on a board is '
       '1 in its words left, and you gain what you score above it (+67 for the '
       'right one of three, -33 for a wrong one).'
@@ -288,15 +302,19 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
           InkWell(
             key: ValueKey('guess-row-$i'),
             onTap: () => setState(() => step = i),
+            borderRadius: BorderRadius.circular(6),
             child: Container(
-              color: i == step
-                  ? c.primary.withValues(alpha: .08)
-                  : Colors.transparent,
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+              decoration: BoxDecoration(
+                color: i == step
+                    ? c.primary.withValues(alpha: .08)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
               child: Row(
                 children: [
                   cell(
-                    '${i + 1}  ${r.steps[i].guess}',
+                    '${i + 1}  ${stepAt(i).guess}',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: i == step
@@ -306,27 +324,27 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
                     ),
                   ),
                   cell(
-                    r.steps[i].solvedNow == 0 ? '–' : '${r.steps[i].solvedNow}',
+                    stepAt(i).solvedNow == 0 ? '–' : '${stepAt(i).solvedNow}',
                     w: 56,
                     align: TextAlign.right,
                     style: TextStyle(
                       fontSize: 13,
-                      color: r.steps[i].solvedNow == 0 ? null : c.secondary,
+                      color: stepAt(i).solvedNow == 0 ? null : c.secondary,
                     ),
                   ),
                   cell(
-                    '${r.steps[i].skill.round()}',
+                    stepAt(i).ready ? '${stepAt(i).skill.round()}' : '…',
                     w: 48,
                     align: TextAlign.right,
                     style: const TextStyle(fontSize: 13),
                   ),
                   cell(
-                    luckText(r.steps[i].luck),
+                    luckText(stepAt(i).luck),
                     w: 60,
                     align: TextAlign.right,
                     style: TextStyle(
                       fontSize: 13,
-                      color: luckColor(c, r.steps[i].luck),
+                      color: luckColor(c, stepAt(i).luck),
                     ),
                   ),
                 ],

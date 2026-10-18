@@ -173,13 +173,15 @@ class HowToPage extends StatelessWidget {
                       ),
                       section(
                         'skill and luck',
-                        'skill says how well a guess narrowed the words still '
-                            'possible: 100 is the best split available, 0 tells you '
-                            'nothing. luck says how much smaller (+, green) or larger '
-                            '(-, red) than average the pool you landed in was; 0% is '
-                            'exactly average. the helper setting decides how much of '
-                            'this you see while you play. when the game ends you see '
-                            'all of it.',
+                        'skill says how evenly a guess broke up the words still '
+                            'possible, against the best any real guess could do: 100 '
+                            'matches it, 0 tells you nothing, and halving the words '
+                            'left counts the same whether 2,000 or 20 remain. luck says where the '
+                            'pool you landed in sits among all the pools you could '
+                            'have landed in, from -100% to +100%; 0% is the middle '
+                            'outcome. the helper setting decides how much of this '
+                            'you see while you play. when the game ends you see all '
+                            'of it.',
                       ),
                       section(
                         'review',

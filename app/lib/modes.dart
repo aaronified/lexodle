@@ -111,12 +111,19 @@ class Board {
 /// possible, and per guess its skill, luck and what it did to each board (see
 /// multi_analysis.dart). Without them it is only the rules of the game.
 class MultiGame {
-  MultiGame(this.mode, List<String> answers, this.tries, {List<String>? words})
-    : boards = [for (final a in answers) Board(a)],
-      _words = words,
-      eligible = [
-        for (final _ in answers) words == null ? <String>[] : List.of(words),
-      ] {
+  MultiGame(
+    this.mode,
+    List<String> answers,
+    this.tries, {
+    List<String>? words,
+    this.provisional = false,
+  }) : boards = [for (final a in answers) Board(a)],
+       _words = words,
+       eligible = [
+         // the very same list for every board at the start, so the analysis of
+         // the first guess is worked out once for all of them
+         for (final _ in answers) words ?? <String>[],
+       ] {
     if (words != null) {
       // a quartet opens every board at once, a relay race the first
       for (var i = 0; i < (mode == GameMode.quartet ? boards.length : 1); i++) {
@@ -130,6 +137,10 @@ class MultiGame {
   final List<Board> boards;
   final guesses = <String>[];
   final List<String>? _words;
+
+  /// Whether each guess's skill is provisional until the analysis has found the
+  /// best real guess (see [GuessMetrics.ready]).
+  final bool provisional;
   int _active = 0;
 
   /// The words still possible on each board, given every guess it has had
@@ -240,6 +251,7 @@ class MultiGame {
               eligible[live[k]].length,
               finalTry: finalTry,
               solved: boards[live[k]].solved,
+              provisional: provisional,
             ),
             boards[live[k]].solved,
           ),

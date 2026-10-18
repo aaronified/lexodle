@@ -56,6 +56,9 @@ class _GamePageState extends State<GamePage> {
   var _jobs = JobQueue();
   final _analysis = <Future<Landscape>?>[];
 
+  /// Counts the games begun, so work for an earlier one is ignored.
+  var _epoch = 0;
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +84,7 @@ class _GamePageState extends State<GamePage> {
     eligible = List.of(widget.bank.guessable(length));
     _jobs.close(); // work on the last game's guesses is no longer wanted
     _jobs = JobQueue();
+    _epoch++;
     _analysis.clear();
     guesses.clear();
     marks.clear();
@@ -146,44 +150,71 @@ class _GamePageState extends State<GamePage> {
           after.length,
           finalTry: guesses.length >= tries,
           solved: input == answer,
+          // skill is measured against the best real guess, which the
+          // background analysis is still finding out
+          provisional: analyseWhilePlaying,
         ),
       );
       befores.add(eligible);
       eligible = after;
-      // work the review's picks out now, in the background, one guess at a time
+      // work the guess out now, in the background, one at a time: the best
+      // real split (for its skill) and the picks and plots of the review
       final before = befores.last;
-      _analysis.add(
-        guesses.length >= tries || !analyseWhilePlaying
-            ? null // the last try's picks are only the words that fit
-            : _jobs.add(
-                () => analyseGuesses(
-                  before,
-                  recommendationCandidates(
-                    before,
-                    widget.bank.guessable(length),
-                  ),
-                ),
-              ),
-      );
+      final index = guesses.length - 1;
+      final epoch = _epoch;
+      if (analyseWhilePlaying) {
+        final job = _jobs.add(
+          () => analyseGuesses(before, widget.bank.guessable(length)),
+        );
+        _analysis.add(job);
+        job.then<void>((land) {
+          if (!mounted || epoch != _epoch) return;
+          setState(() {
+            metrics[index] = metrics[index].withBest(land.bestExpected);
+          });
+        }, onError: (_) {});
+      } else {
+        _analysis.add(null);
+      }
       final solved = input == answer;
       input = '';
       message = '';
       if (solved || guesses.length >= tries) {
         over = true;
         won = solved;
-        unlocked = appState.recordGame(
-          GameResult(
-            lang: widget.bank.language.code,
-            length: length,
-            tries: tries,
-            pool: pool,
-            used: guesses.length,
-            won: solved,
-            skills: [for (final m in metrics) m.skill],
-          ),
-        );
+        _finish();
       }
     });
+  }
+
+  /// The finished game counts towards the statistics and achievements. Skill
+  /// is final only once every guess has been analysed, so that is waited for.
+  void _finish() {
+    final epoch = _epoch;
+    void record() {
+      unlocked = appState.recordGame(
+        GameResult(
+          lang: widget.bank.language.code,
+          length: length,
+          tries: tries,
+          pool: pool,
+          used: guesses.length,
+          won: won,
+          skills: [for (final m in metrics) m.skill],
+        ),
+      );
+    }
+
+    final pending = _analysis.nonNulls.toList();
+    if (pending.isEmpty) {
+      record();
+      return;
+    }
+    void done() {
+      if (mounted && epoch == _epoch) setState(record);
+    }
+
+    Future.wait(pending).then<void>((_) => done(), onError: (_) => done());
   }
 
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
@@ -346,7 +377,7 @@ class _GamePageState extends State<GamePage> {
     if (guesses.isEmpty) return Caption(left);
     final m = metrics.last;
     final parts = [
-      if (h.showSkill) 'skill ${m.skill.toStringAsFixed(1)}',
+      if (h.showSkill) 'skill ${m.ready ? m.skill.toStringAsFixed(1) : '…'}',
       if (h.showLuck) 'luck ${luckText(m.luck)}',
     ];
     return Column(
@@ -391,7 +422,7 @@ class _GamePageState extends State<GamePage> {
       children: [
         Expanded(
           child: Caption(
-            'average skill ${avg(metrics.map((m) => m.skill)).round()}'
+            'average skill ${metrics.every((m) => m.ready) ? avg(metrics.map((m) => m.skill)).round() : '…'}'
             ' · luck ${luckText(avg(metrics.map((m) => m.luck)))}',
           ),
         ),

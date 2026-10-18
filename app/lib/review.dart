@@ -96,10 +96,20 @@ class _ReviewPageState extends State<ReviewPage> {
     _analyse();
   }
 
+  /// The metrics of guess [i], with skill measured against the best real guess
+  /// once the analysis of that step has found it; until then the skill is
+  /// provisional ([GuessMetrics.ready] is false, or measured against 1).
+  GuessMetrics metric(int i) => () {
+    final m = r.metrics[i];
+    final land = landscapes[i];
+    return land == null ? m : m.withBest(land.bestExpected);
+  }();
+
   Future<void> _analyse() async {
     final guessable = r.bank.guessable(r.length);
     for (var i = 0; i < r.guesses.length; i++) {
-      if (_isFinalTry(i)) {
+      final finalTry = _isFinalTry(i);
+      if (finalTry) {
         // every possible word, equally likely; the skill field carries that
         // chance, in percent, since no split matters any more
         final fits = r.befores[i];
@@ -114,20 +124,16 @@ class _ReviewPageState extends State<ReviewPage> {
               ),
           ],
         );
-        continue;
       }
+      // every step is scored against every real guess, last try included: the
+      // best of them is what skill is measured against
       final ready = r.analysis != null && i < r.analysis!.length
           ? r.analysis![i]
           : null;
-      final land =
-          await (ready ??
-              analyseGuesses(
-                r.befores[i],
-                recommendationCandidates(r.befores[i], guessable),
-              ));
+      final land = await (ready ?? analyseGuesses(r.befores[i], guessable));
       if (!mounted) return;
       setState(() {
-        picks[i] = land.top;
+        if (!finalTry) picks[i] = land.top;
         landscapes[i] = land;
       });
     }
@@ -138,7 +144,7 @@ class _ReviewPageState extends State<ReviewPage> {
     final c = Theme.of(context).colorScheme;
     final n = r.guesses.length;
     final last = step == n - 1;
-    final m = r.metrics[step];
+    final m = metric(step);
     final top = picks[step];
     final dim = TextStyle(
       fontSize: 11,
@@ -204,13 +210,17 @@ class _ReviewPageState extends State<ReviewPage> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Text(
-                              'skill: how well the guess split the words that were '
-                              'still possible. 100 is a perfect split, 0 tells you '
-                              'nothing.\n'
-                              'luck: how much smaller (+, green) or larger (-, red) than '
-                              'average the pool you landed in was. 0% is exactly '
-                              'average, which is also what it is when only one '
-                              'word was left.\n'
+                              'skill: how evenly the guess broke up the words that '
+                              'were still possible, measured against the best any '
+                              'real guess could do here. 100 matches the best real '
+                              'guess, 0 tells you nothing. It is on a log scale: '
+                              'cutting the words left in half is worth the same '
+                              'whether 2,000 or 20 remain.\n'
+                              'luck: where the pool you landed in sits among all the '
+                              'pools you could have landed in: the chance of a '
+                              'bigger pool less the chance of a smaller one. It runs '
+                              'from -100% to +100%, 0% is the middle outcome, and '
+                              'over every possible answer it averages exactly 0.\n'
                               'words left: the words still possible afterwards.\n'
                               'info gained: the share of the starting uncertainty '
                               'removed so far. It reaches 100% when one word is left.',
@@ -308,6 +318,8 @@ class _ReviewPageState extends State<ReviewPage> {
   Widget _board(ColorScheme c) {
     const colW = 46.0;
     const gap = 2.0;
+    // the highlight of the current row stands off the tiles and the numbers
+    const padX = 10.0, padY = 7.0;
     final head = TextStyle(
       fontSize: 10,
       letterSpacing: .8,
@@ -338,36 +350,46 @@ class _ReviewPageState extends State<ReviewPage> {
 
     return LayoutBuilder(
       builder: (context, box) {
-        final area = box.maxWidth - colW * 4 - 8;
+        final area = box.maxWidth - colW * 4 - 8 - padX * 2;
         final tile = min(30.0, (area - gap * (r.length - 1)) / r.length);
         return Column(
           children: [
-            Row(
-              children: [
-                const Spacer(),
-                for (final h in const [
-                  'skill',
-                  'luck',
-                  'words\nleft',
-                  'info\ngained',
-                ])
-                  SizedBox(
-                    width: colW,
-                    child: Text(h, textAlign: TextAlign.right, style: head),
-                  ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: padX),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  for (final h in const [
+                    'skill',
+                    'luck',
+                    'words\nleft',
+                    'info\ngained',
+                  ])
+                    SizedBox(
+                      width: colW,
+                      child: Text(h, textAlign: TextAlign.right, style: head),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 6),
             for (var i = 0; i < r.guesses.length; i++) ...[
               // a row is a button: tap it to go to that guess
               InkWell(
                 key: ValueKey('row-$i'),
+                borderRadius: BorderRadius.circular(6),
                 onTap: () => setState(() => step = i),
                 child: Container(
-                  color: i == step
-                      ? c.primary.withValues(alpha: .08)
-                      : Colors.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  decoration: BoxDecoration(
+                    color: i == step
+                        ? c.primary.withValues(alpha: .08)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: padX,
+                    vertical: padY,
+                  ),
                   child: Row(
                     children: [
                       for (var k = 0; k < r.length; k++)
@@ -386,23 +408,25 @@ class _ReviewPageState extends State<ReviewPage> {
                       const Spacer(),
                       if (i <= step) ...[
                         cell(
-                          r.metrics[i].skill.round().toString(),
+                          metric(i).ready
+                              ? metric(i).skill.round().toString()
+                              : '…',
                           strong: i == step,
                           dimmed: i < step,
                         ),
                         cell(
-                          luckText(r.metrics[i].luck),
+                          luckText(metric(i).luck),
                           strong: i == step,
                           dimmed: i < step,
-                          color: luckColor(c, r.metrics[i].luck),
+                          color: luckColor(c, metric(i).luck),
                         ),
                         cell(
-                          r.metrics[i].after.toString(),
+                          metric(i).after.toString(),
                           strong: i == step,
                           dimmed: i < step,
                         ),
                         cell(
-                          '${infoGained(r.initial, r.metrics[i].after).round()}%',
+                          '${infoGained(r.initial, metric(i).after).round()}%',
                           strong: i == step,
                           dimmed: i < step,
                         ),
@@ -546,19 +570,16 @@ class _ReviewPageState extends State<ReviewPage> {
     }
     final land = landscapes[step];
     return [
-      if (land != null) ...[
-        SkillPlot(landscape: land, skill: m.skill, guess: m.guess),
-        const SizedBox(height: 18),
-      ] else ...[
-        const Caption('working out how your guess ranked…'),
-        const SizedBox(height: 18),
-      ],
-      LuckPlot(
-        key: ValueKey('luck-$step'),
+      SplitPlot(
+        key: ValueKey('split-$step'),
         outcomes: _outcomes.putIfAbsent(
           step,
           () => outcomesOf(before, m.guess, r.answer),
         ),
+        best: land?.bestExpected ?? m.best,
+        skill: m.skill,
+        luck: m.luck,
+        skillReady: land != null || m.ready,
       ),
       const SizedBox(height: 18),
     ];

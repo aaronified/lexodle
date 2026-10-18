@@ -1,0 +1,28 @@
+English, five letters: N = 4994 possible answers, every one a valid guess.
+Best first guess: tares, E* = 114.36 (leaves about 114 of 4994 words on average)
+
+rank  word   E        groups  largest  skill(linear)  skill(log)
+   1  tares    114.4     184      350        100.00       100.0
+   2  rates    117.0     171      350         99.95        99.4
+   3  tales    118.5     175      339         99.92        99.1
+   4  aloes    118.7     140      251         99.91        99.0
+   5  saner    121.5     162      347         99.85        98.4
+   6  reals    123.4     160      327         99.82        98.0
+   7  roles    124.4     155      342         99.79        97.8
+   8  lanes    126.0     165      328         99.76        97.4
+...
+  24  slate    138.0     174      355         99.51        95.0
+ 534  trace    219.8     155      625         97.84        82.7
+ 628  crane    229.3     155      641         97.64        81.6
+3786  abbey    550.9      78     1069         91.05        58.4
+4907  queue   1218.5      40     2063         77.37        37.4
+4973  mamma   1681.5      49     2693         67.88        28.8
+4987  fuzzy   2076.8      45     3146         59.78        23.2
+4994  xxxix   2828.0      21     3598         44.39        15.1
+
+Distribution over all first guesses (linear skill / logarithmic skill):
+  median              94.3 /   67.4
+  lowest              44.4 /   15.1
+  share above 90    81.1% /   2.7%
+  share above 95    42.7% /   0.5%
+  share above 99     2.2% /   0.1%

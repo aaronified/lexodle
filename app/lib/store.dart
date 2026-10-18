@@ -161,9 +161,6 @@ enum Track {
 
   /// Collects badges that stay earned (one per language mastered); no target.
   badges,
-
-  /// Counts distinct modes in which a game met the condition, up to the target.
-  modes,
 }
 
 class Achievement {
@@ -447,16 +444,14 @@ final achievements = <Achievement>[
     modes: _relayOnly,
     qualifies: (r) => r.won,
   ),
-  // the luckiest of all: one guess for every word, in both multi-board modes.
+  // the luckiest of all: one guess for every word, in either multi-board mode.
   // Four guesses is the least a quartet can take; a relay race can take fewer,
   // when a guess made earlier solves a board the moment it opens.
   Achievement(
     'luckiest',
     'clover',
     'luckiest man alive',
-    'win a quartet and a relay race with one guess for each word',
-    track: Track.modes,
-    target: 2,
+    'win a quartet or a relay race with one guess for each word',
     modes: {GameMode.quartet, GameMode.relay},
     qualifies: (r) => r.won && r.used <= r.mode.boards,
   ),
@@ -555,10 +550,6 @@ List<Achievement> advanceAchievements(
         if (r.won) {
           st.seen.add(a.track == Track.languages ? r.lang : '${r.length}');
         }
-        st.progress = st.seen.length;
-        got = st.progress >= a.target;
-      case Track.modes:
-        if (a.qualifies(r)) st.seen.add(r.mode.name);
         st.progress = st.seen.length;
         got = st.progress >= a.target;
       case Track.badges:
@@ -669,6 +660,65 @@ class AppState extends ChangeNotifier {
       }
     } catch (_) {}
     loaded = true;
+    notifyListeners();
+  }
+
+  /// The settings as they are saved (and as a backup keeps them).
+  Map<String, Object> settingsJson() => {
+    'lang': lang,
+    'length': length,
+    'tries': tries,
+    'pool': pool,
+    'helper': helper.index,
+    'mode': mode.index,
+    'share': share,
+    'theme': themeMode.index,
+    'seenHowTo': seenHowTo,
+  };
+
+  /// Replaces what is kept with a checked backup (see backup.dart): the
+  /// settings it has (the others stay as they are), and all of the statistics
+  /// and achievements. Saved at once, like everything else.
+  void restore({
+    required Map<String, Object> settings,
+    required Stats stats,
+    required Map<String, AchState> ach,
+  }) {
+    lang = settings['lang'] as String? ?? lang;
+    length = settings['length'] as int? ?? length;
+    tries = settings['tries'] as int? ?? tries;
+    pool = settings['pool'] as int? ?? pool;
+    final h = settings['helper'] as int?;
+    if (h != null) helper = Helper.values[h];
+    final m = settings['mode'] as int?;
+    if (m != null) mode = GameMode.values[m];
+    share = settings['share'] as int? ?? share;
+    final t = settings['theme'] as int?;
+    if (t != null) themeMode = ThemeMode.values[t];
+    seenHowTo = settings['seenHowTo'] as bool? ?? seenHowTo;
+    this.stats = stats;
+    this.ach = ach;
+    try {
+      final p = _prefs;
+      if (p != null) {
+        p
+          ..setString('lang', lang)
+          ..setInt('length', length)
+          ..setInt('tries', tries)
+          ..setInt('pool', pool)
+          ..setInt('helper', helper.index)
+          ..setInt('mode', mode.index)
+          ..setInt('share', share)
+          ..setInt('theme', themeMode.index)
+          ..setBool('seenHowTo', seenHowTo)
+          ..setString('stats', jsonEncode(stats.toJson()))
+          ..setString(
+            'ach',
+            jsonEncode({for (final e in ach.entries) e.key: e.value.toJson()}),
+          )
+          ..remove('unlocked'); // the earlier format, now replaced
+      }
+    } catch (_) {}
     notifyListeners();
   }
 

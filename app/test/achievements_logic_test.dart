@@ -304,35 +304,33 @@ void main() {
       expect(earned.last, contains('streak_3'));
     });
 
-    test('luckiest man alive: one guess per word, in both modes', () {
+    test('luckiest man alive: one guess per word, in either mode', () {
       // a quartet takes at least 4 guesses; 5 is not enough
-      final (s0, e0) = play([multi(GameMode.quartet, used: 5)]);
+      final (_, e0) = play([multi(GameMode.quartet, used: 5)]);
       expect(e0.single, isNot(contains('luckiest')));
-      expect(s0['luckiest']!.progress, 0);
-      // 4 in a quartet is half of it
-      final (s1, e1) = play([multi(GameMode.quartet, used: 4)]);
-      expect(e1.single, isNot(contains('luckiest')));
-      expect(s1['luckiest']!.progress, 1);
-      // and a relay race in 4 or fewer finishes it, in either order
-      final (_, e2) = play([
+      // 4 in a quartet is the least it can take: that is the achievement
+      final (_, e1) = play([multi(GameMode.quartet, used: 4)]);
+      expect(e1.single, contains('luckiest'));
+      // a relay race in 4 or fewer is too (a free ride can save a guess)
+      final (_, e2) = play([multi(GameMode.relay, used: 4)]);
+      expect(e2.single, contains('luckiest'));
+      final (_, e3) = play([multi(GameMode.relay, used: 3)]);
+      expect(e3.single, contains('luckiest'));
+      // a relay race in 5 is not
+      final (_, e4) = play([multi(GameMode.relay, used: 5)]);
+      expect(e4.single, isNot(contains('luckiest')));
+      // it has to be won
+      final (_, e5) = play([multi(GameMode.quartet, used: 4, won: false)]);
+      expect(e5.single, isNot(contains('luckiest')));
+      // a classic game is no part of it, even a first-guess win
+      final (_, e6) = play([game(used: 1)]);
+      expect(e6.single, isNot(contains('luckiest')));
+      // and it can be earned again
+      final (st, _) = play([
         multi(GameMode.quartet, used: 4),
-        multi(GameMode.relay, used: 3), // a free ride saved a guess
-      ]);
-      expect(e2.last, contains('luckiest'));
-      final (_, e3) = play([
         multi(GameMode.relay, used: 4),
-        multi(GameMode.quartet, used: 4),
       ]);
-      expect(e3.last, contains('luckiest'));
-      // two quartets are not both modes
-      final (_, e4) = play([
-        multi(GameMode.quartet, used: 4),
-        multi(GameMode.quartet, used: 4),
-      ]);
-      expect(e4.expand((x) => x), isNot(contains('luckiest')));
-      // a classic game is no part of it
-      final (s5, _) = play([game(used: 1)]);
-      expect(s5['luckiest']!.progress, 0);
+      expect(st['luckiest']!.times, 2);
     });
   });
 

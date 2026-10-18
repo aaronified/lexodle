@@ -1,0 +1,36 @@
+ok    Example 1: E = 6.8
+ok    Example 1: skill with E* = 1 is 36.0 (log) and 69.5 (linear)
+ok    Example 1: luck -50, +25, +65, +90
+ok    Example 1: mean luck 0
+ok    20,000 partitions: |mean luck| <= 1e-12   worst 1.04e-16
+ok    20,000 partitions: variance equals (1 - sum q^3)/3   worst 1.39e-16
+ok    20,000 partitions: luck strictly inside (-1, 1)
+ok    20,000 partitions: luck strictly increases as the pool shrinks
+ok    20,000 partitions: scaling every class changes nothing
+ok    expectation luck of the pair among 8 singletons is -(N-2)/2   -4.0
+ok    expectation luck of the pair among 98 singletons is -(N-2)/2   -49.0
+ok    expectation luck of the pair among 998 singletons is -(N-2)/2   -499.0
+ok    rescaled luck of {3,1}: -1 and +1, mean -1/2
+ok    chance luck of {3,1}: -25% and +75%, mean 0
+ok    guess 1: mean luck +0.008 (sd 0.572) is zero within sampling error
+ok    guess 2: mean luck +0.028 (sd 0.533) is zero within sampling error
+ok    guess 3: mean luck -0.005 (sd 0.498) is zero within sampling error
+ok    guess 4: mean luck +0.002 (sd 0.339) is zero within sampling error
+ok    corr(luck 1, skill 1) = +0.016
+ok    corr(luck 2, skill 1) = +0.084
+ok    corr(luck 2, skill 2) = -0.020
+ok    corr(luck 3, skill 1) = -0.029
+ok    corr(luck 3, skill 2) = +0.010
+ok    corr(luck 3, skill 3) = +0.033
+ok    corr(luck 4, skill 1) = +0.004
+ok    corr(luck 4, skill 2) = -0.016
+ok    corr(luck 4, skill 3) = -0.009
+ok    corr(luck 4, skill 4) = -0.030
+ok    corr(luck 2, luck 1) = -0.013
+ok    corr(luck 3, luck 1) = -0.003
+ok    corr(luck 3, luck 2) = -0.008
+ok    corr(luck 4, luck 1) = +0.003
+ok    corr(luck 4, luck 2) = +0.028
+ok    corr(luck 4, luck 3) = +0.008
+
+ALL CHECKS PASSED

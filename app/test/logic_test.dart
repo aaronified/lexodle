@@ -71,12 +71,52 @@ void main() {
         scoreGuess(['aaaa'], 'aaaa', 1, finalTry: true, solved: true).luck,
         0,
       );
-      expect(scoreGuess(['aaaa'], 'zzzz', 1, finalTry: true).luck, -100);
+      // a guess that cannot win has no chance to be lucky about
+      expect(scoreGuess(['aaaa'], 'zzzz', 1, finalTry: true).luck, 0);
     });
-    test('the earlier tries keep the pool-based luck', () {
-      final early = scoreGuess(three, 'aaaa', 1);
-      final late = scoreGuess(three, 'aaaa', 1, finalTry: true, solved: true);
-      expect(early.luck, isNot(closeTo(late.luck, 1)));
+    test('a guess that does not fit has luck 0: the loss is its skill', () {
+      expect(scoreGuess(three, 'zzzz', 3, finalTry: true).luck, 0);
+      expect(scoreGuess(three, 'zzzz', 3, finalTry: true).skill, 0);
+    });
+    test(
+      'over every possible answer it averages exactly 0, fitting or not',
+      () {
+        final rng = Random(21);
+        const alphabet = 'abcdefgh';
+        String word() => String.fromCharCodes([
+          for (var i = 0; i < 4; i++) alphabet.codeUnitAt(rng.nextInt(8)),
+        ]);
+        for (var i = 0; i < 300; i++) {
+          final field = {for (var k = 0; k < 2 + rng.nextInt(8); k++) word()}
+              .toList();
+          final guess = rng.nextBool()
+              ? field[rng.nextInt(field.length)]
+              : word();
+          final mean =
+              field
+                  .map(
+                    (answer) => scoreGuess(
+                      field,
+                      guess,
+                      1,
+                      finalTry: true,
+                      solved: answer == guess,
+                    ).luck,
+                  )
+                  .reduce((a, b) => a + b) /
+              field.length;
+          expect(mean, closeTo(0, 1e-9), reason: '$guess in $field');
+        }
+      },
+    );
+    test('the earlier tries use the pools: where the pool landed in ranks', () {
+      // 'aaaa' splits the three into {aaaa} and {bbbb, cccc}; landing in the
+      // pair is the likelier outcome and the unluckier one
+      expect(scoreGuess(three, 'aaaa', 2).luck, closeTo(-33.33, .01));
+      expect(scoreGuess(three, 'aaaa', 1).luck, closeTo(66.67, .01));
+      // on the last try a miss is -33 as well, but a hit is the chance of it
+      final late = scoreGuess(three, 'bbbb', 1, finalTry: true, solved: true);
+      expect(late.luck, closeTo(66.67, .01));
     });
   });
 
@@ -99,6 +139,196 @@ void main() {
     });
   });
 
+  group('skill against the best real guess', () {
+    test('0 for no split, 100 for as even as the best real word', () {
+      expect(skillAgainst(20, 20, 3), 0);
+      expect(skillAgainst(20, 3, 3), 100);
+      expect(skillAgainst(20, 6.8, 1), closeTo(36.01, .01));
+      // the same guess is worth more when the best a real word can do is worse
+      expect(skillAgainst(20, 6.8, 3), closeTo(56.87, .01));
+    });
+
+    test('it is on a log scale: each factor of two in E is the same step', () {
+      // N = 1024, E* = 1: a guess that leaves 512, 256, ... words on average
+      // is worth 10, 20, ... each a tenth of the way
+      for (var k = 1; k <= 10; k++) {
+        expect(skillAgainst(1024, 1024 / pow(2, k), 1), closeTo(k * 10, 1e-9));
+      }
+      // the guess that leaves 10% and the one that leaves 1% are far apart,
+      // where on a linear scale they would be 99 and 90 apart by a hair
+      expect(
+        skillAgainst(5000, 5000 / 100, 1) - skillAgainst(5000, 5000 / 10, 1),
+        closeTo(100 * log(10) / log(5000), 1e-9),
+      );
+    });
+
+    test('it is the guess\'s collision entropy as a share of the best\'s', () {
+      // H2 = -ln(sum p^2) = ln(N / E), so skill = H2(guess) / H2(best)
+      final rng = Random(4);
+      for (var i = 0; i < 200; i++) {
+        final sizes = [
+          for (var k = 0; k < 2 + rng.nextInt(30); k++) 1 + rng.nextInt(50),
+        ];
+        final n = sizes.fold(0, (a, b) => a + b);
+        final e = sizes.fold<int>(0, (a, s) => a + s * s) / n;
+        final h2 = -log(sizes.fold<double>(0, (a, s) => a + pow(s / n, 2)));
+        final best = 1 + rng.nextDouble() * (e - 1).clamp(0, double.infinity);
+        final h2Best = log(n / best);
+        if (h2Best <= 1e-9) continue;
+        expect(
+          skillAgainst(n, e, best),
+          closeTo((h2 / h2Best * 100).clamp(0, 100), 1e-9),
+        );
+      }
+    });
+
+    test('a finer split is always worth more', () {
+      // refining the partition lowers E, so skill rises (Lemma 1, Proposition 2)
+      expect(skillAgainst(100, 10, 2), lessThan(skillAgainst(100, 9, 2)));
+      expect(skillAgainst(100, 100, 2), 0);
+      expect(skillAgainst(100, 2, 2), 100);
+    });
+
+    test('it is clamped to 0 to 100 and a lone word is 100', () {
+      expect(skillAgainst(20, 2, 3), 100, reason: 'cannot beat the best');
+      expect(skillAgainst(20, 25, 3), 0);
+      expect(skillAgainst(1, 1, 1), 100);
+      expect(skillAgainst(5, 5, 5), 100, reason: 'no guess splits anything');
+    });
+
+    test('scoreGuess takes the best when it knows it', () {
+      const field = ['aa', 'ab', 'ac'];
+      final absolute = scoreGuess(field, 'ab', 2); // best taken as 1
+      expect(absolute.skill, closeTo(53.50, .01));
+      expect(absolute.ready, isTrue);
+      final relative = scoreGuess(field, 'ab', 2, best: 5 / 3);
+      expect(relative.skill, 100, reason: 'it is the best split there is');
+      expect(relative.best, closeTo(5 / 3, 1e-9));
+      final provisional = scoreGuess(field, 'ab', 2, provisional: true);
+      expect(provisional.ready, isFalse);
+      expect(provisional.skill, closeTo(53.50, .01));
+    });
+
+    test('withBest refines the skill and leaves luck alone', () {
+      const field = ['aa', 'ab', 'ac'];
+      final p = scoreGuess(field, 'ab', 2, provisional: true);
+      final r = p.withBest(5 / 3);
+      expect(r.ready, isTrue);
+      expect(r.skill, 100);
+      expect(r.luck, p.luck);
+      expect(r.expected, p.expected);
+      expect(r.withBest(5 / 3).skill, 100, reason: 'idempotent');
+      // a lone word keeps its 100 or 0
+      final hit = scoreGuess(['aa'], 'aa', 1, provisional: true).withBest(1);
+      expect(hit.skill, 100);
+      expect(hit.ready, isTrue);
+      final miss = scoreGuess(['aa'], 'bb', 1, provisional: true).withBest(1);
+      expect(miss.skill, 0);
+    });
+
+    test(
+      'measured against every real guess, the best one scores 100',
+      () async {
+        const eligible = ['crane', 'crate', 'grate', 'grape', 'shape', 'slate'];
+        final land = await analyseGuesses(eligible, [
+          ...eligible,
+          'light',
+          'ounce',
+        ]);
+        expect(land.skills.first, closeTo(100, 1e-9));
+        expect(land.top.first.skill, closeTo(100, 1e-9));
+        // E* is the smallest expected pool among the guesses scored
+        final lowest = [
+          for (final g in [...eligible, 'light', 'ounce'])
+            scoreGuess(eligible, g, 1).expected,
+        ].reduce((a, b) => a < b ? a : b);
+        expect(land.bestExpected, closeTo(lowest, 1e-9));
+        // and every guess's skill is its place between N and E*
+        for (final g in [...eligible, 'light', 'ounce']) {
+          final m = scoreGuess(eligible, g, 1, best: land.bestExpected);
+          expect(m.skill, inInclusiveRange(0, 100));
+        }
+      },
+    );
+  });
+
+  group('luck is the chance-weighted percentile of the pool landed in', () {
+    test('a pool of 19 against a pool of 1', () {
+      expect(chanceLuck([19, 1], 19), closeTo(-5, 1e-9)); // the likely outcome
+      expect(chanceLuck([19, 1], 1), closeTo(95, 1e-9));
+    });
+
+    test('equal pools are all the middle', () {
+      expect(chanceLuck([10, 10], 10), 0);
+      expect(chanceLuck([5, 5, 5, 5], 5), 0);
+      expect(chanceLuck([7], 7), 0, reason: 'only one outcome');
+    });
+
+    test('the biggest pool is unluckiest, the smallest luckiest', () {
+      final sizes = [641, 521, 328, 23, 6, 1, 1];
+      final lucks = [for (final s in sizes) chanceLuck(sizes, s)];
+      for (var i = 0; i + 1 < lucks.length; i++) {
+        expect(lucks[i], lessThanOrEqualTo(lucks[i + 1]));
+      }
+      expect(lucks.first, lessThan(-50));
+      expect(lucks.last, greaterThan(95));
+    });
+
+    test('always between -100 and +100, never reaching either', () {
+      final rng = Random(5);
+      for (var i = 0; i < 500; i++) {
+        final sizes = [
+          for (var k = 0; k < 2 + rng.nextInt(40); k++) 1 + rng.nextInt(300),
+        ];
+        for (final s in sizes) {
+          final l = chanceLuck(sizes, s);
+          expect(l, greaterThan(-100));
+          expect(l, lessThan(100));
+        }
+      }
+    });
+
+    test('over every answer it averages exactly 0, whatever the guess', () {
+      final rng = Random(8);
+      for (var i = 0; i < 500; i++) {
+        final sizes = [
+          for (var k = 0; k < 1 + rng.nextInt(60); k++) 1 + rng.nextInt(500),
+        ];
+        final n = sizes.fold(0, (a, b) => a + b);
+        // each word is equally likely to be the answer: a group of s words is
+        // landed in with chance s / n
+        final mean = sizes.fold<double>(
+          0,
+          (a, s) => a + s / n * chanceLuck(sizes, s),
+        );
+        expect(mean, closeTo(0, 1e-9), reason: '$sizes');
+      }
+    });
+
+    test('scaling every group by the same factor changes nothing', () {
+      // the sizes are the chances, so only their proportions count
+      final a = [100, 40, 40, 9, 3, 1];
+      final b = [for (final s in a) s * 7];
+      for (var i = 0; i < a.length; i++) {
+        expect(chanceLuck(a, a[i]), closeTo(chanceLuck(b, b[i]), 1e-9));
+      }
+    });
+
+    test('the order the groups are listed in does not matter', () {
+      final a = [30, 9, 9, 4, 1];
+      final shuffled = [4, 9, 1, 30, 9];
+      for (final s in a) {
+        expect(chanceLuck(a, s), closeTo(chanceLuck(shuffled, s), 1e-12));
+      }
+    });
+
+    test('scoreGuess uses it, and it is bounded for a real field too', () {
+      const field = ['aa', 'ab', 'ac'];
+      expect(scoreGuess(field, 'ab', 2).luck, chanceLuck([2, 1], 2));
+      expect(scoreGuess([], 'ab', 0).luck, 0);
+    });
+  });
+
   group('scoreGuess (skill and luck)', () {
     const field = ['aa', 'ab', 'ac'];
 
@@ -112,18 +342,18 @@ void main() {
       expect(m.skill, 100);
       expect(m.luck, 0); // landed in a pool of 1, and 1 was the average
     });
-    test(
-      'partial split: skill 66.7; luck is signed against the average pool',
-      () {
-        // groups for guess "ab": {aa, ac} and {ab}  ->  E = 5/3
-        final unlucky = scoreGuess(field, 'ab', 2);
-        expect(unlucky.skill, closeTo(66.67, .01));
-        expect(unlucky.luck, closeTo(-20, .01)); // 20% larger than average
-        final lucky = scoreGuess(field, 'ab', 1);
-        expect(lucky.luck, closeTo(40, .01)); // 40% smaller than average
-        expect((lucky.before, lucky.after), (3, 1));
-      },
-    );
+    test('partial split: skill 53.5 on the log scale; luck is signed against the average pool', () {
+      // groups for guess "ab": {aa, ac} and {ab}  ->  E = 5/3
+      final unlucky = scoreGuess(field, 'ab', 2);
+      expect(unlucky.skill, closeTo(53.50, .01));
+      // groups of 2 and 1: landing in the 2 is the likelier outcome (2 in 3),
+      // so the chance of a bigger pool is 0 and of a smaller one 1 in 3
+      expect(unlucky.luck, closeTo(-33.33, .01));
+      final lucky = scoreGuess(field, 'ab', 1);
+      // landing in the 1: a bigger pool 2 times in 3, a smaller one never
+      expect(lucky.luck, closeTo(66.67, .01));
+      expect((lucky.before, lucky.after), (3, 1));
+    });
     test('the split is described: groups, biggest group, expected pool', () {
       final m = scoreGuess(field, 'ab', 2);
       expect(m.groups, 2);
@@ -193,10 +423,6 @@ void main() {
         expect(infoGained(1, 1), 100);
       },
     );
-    test('expectedLeft inverts skill', () {
-      expect(expectedLeft(3, 66.67), closeTo(5 / 3, .01));
-      expect(expectedLeft(1, 100), 1);
-    });
     test('ordinal', () {
       expect(
         [ordinal(1), ordinal(3), ordinal(10)],
@@ -312,7 +538,8 @@ void main() {
       final r = await recommend(['aa', 'ab', 'ac'], ['ad', 'ab', 'ax']);
       expect(r!.word, 'ab');
       expect(r.expected, closeTo(5 / 3, 1e-9));
-      expect(r.skill, closeTo(66.67, .01));
+      // measured against the best real guess, and this is it
+      expect(r.skill, closeTo(100, 1e-9));
       expect(r.canWin, isTrue);
     });
     test('a possible answer wins a tie against an impossible word', () async {

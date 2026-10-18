@@ -53,7 +53,10 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   /// The analysis of each guess, begun the moment it was made.
   var _jobs = JobQueue();
-  final _analysis = <Future<List<MultiPick>>?>[];
+  final _analysis = <Future<MultiLandscape>?>[];
+
+  /// Counts the games begun, so work for an earlier one is ignored.
+  var _epoch = 0;
 
   @override
   void initState() {
@@ -76,6 +79,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     _jobs.close(); // work on the last game's guesses is no longer wanted
     _jobs = JobQueue();
     _analysis.clear();
+    _epoch++;
     unlocked = [];
     game = MultiGame(
       mode,
@@ -88,6 +92,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       ),
       tries,
       words: widget.bank.guessable(length),
+      provisional: analyseWhilePlaying,
     );
     input = '';
     message = '';
@@ -134,40 +139,59 @@ class _MultiGamePageState extends State<MultiGamePage> {
       game.guess(input);
       input = '';
       message = '';
-      // analyse this guess in the background, at once, so the review is ready
-      final step = game.steps.last;
-      _analysis.add(
-        step.finalTry || !analyseWhilePlaying
-            ? null // its picks are the words that fit, worked out when shown
-            : _jobs.add(
-                () => recommendMulti(
-                  step.liveBefore,
-                  multiCandidates(
-                    step.liveBefore,
-                    widget.bank.guessable(length),
-                  ),
-                ),
-              ),
-      );
+      // analyse this guess in the background, at once: the best real split on
+      // each board (for the skill) and the picks of the review
+      final index = game.steps.length - 1;
+      final step = game.steps[index];
+      final epoch = _epoch;
+      if (analyseWhilePlaying) {
+        final job = _jobs.add(
+          () => analyseMulti(step.liveBefore, widget.bank.guessable(length)),
+        );
+        _analysis.add(job);
+        job.then<void>((land) {
+          if (!mounted || epoch != _epoch) return;
+          setState(() {
+            game.steps[index] = game.steps[index].withBests(land.bests);
+          });
+        }, onError: (_) {});
+      } else {
+        _analysis.add(null);
+      }
       if (game.over) _finish();
     });
   }
 
-  /// The finished game counts towards the achievements of its mode.
+  /// The finished game counts towards the achievements of its mode. Skill is
+  /// final only once every guess has been analysed, so that is waited for.
   void _finish() {
-    unlocked = appState.recordGame(
-      GameResult(
-        lang: widget.bank.language.code,
-        length: length,
-        tries: tries,
-        used: game.guesses.length,
-        won: game.won,
-        pool: appState.pool,
-        mode: mode,
-        skills: [for (final s in game.steps) s.skill],
-        freeRides: game.freeRides,
-      ),
-    );
+    final epoch = _epoch;
+    void record() {
+      unlocked = appState.recordGame(
+        GameResult(
+          lang: widget.bank.language.code,
+          length: length,
+          tries: tries,
+          used: game.guesses.length,
+          won: game.won,
+          pool: appState.pool,
+          mode: mode,
+          skills: [for (final s in game.steps) s.skill],
+          freeRides: game.freeRides,
+        ),
+      );
+    }
+
+    final pending = _analysis.nonNulls.toList();
+    if (pending.isEmpty) {
+      record();
+      return;
+    }
+    void done() {
+      if (mounted && epoch == _epoch) setState(record);
+    }
+
+    Future.wait(pending).then<void>((_) => done(), onError: (_) => done());
   }
 
   MultiRecord _record() => MultiRecord(
@@ -407,7 +431,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       children: [
         Expanded(
           child: Caption(
-            'average skill ${avg((s) => s.skill).round()}'
+            'average skill ${game.steps.every((s) => s.ready) ? avg((s) => s.skill).round() : '…'}'
             ' · luck ${luckText(avg((s) => s.luck))}',
           ),
         ),

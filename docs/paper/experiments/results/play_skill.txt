@@ -1,0 +1,12 @@
+60 games each, answers uniform on 4994 words; skill is the logarithmic one
+
+strong: won 59 of 60; guesses per win 4.1
+  per guess: median 100, mean 90, share above 50/70/80/90: 94% / 91% / 86% / 70%
+  per won game, the average skill: median 94; share of wins above 60/70/80: 98% / 98% / 95%
+  per won game, the lowest guess:  median 83; share of wins with every guess above 50/60/70/80/90: 90% / 81% / 78% / 64% / 27%
+
+casual: won 60 of 60; guesses per win 4.5
+  per guess: median 74, mean 74, share above 50/70/80/90: 89% / 59% / 37% / 26%
+  per won game, the average skill: median 76; share of wins above 60/70/80: 88% / 75% / 30%
+  per won game, the lowest guess:  median 52; share of wins with every guess above 50/60/70/80/90: 60% / 33% / 10% / 0% / 0%
+

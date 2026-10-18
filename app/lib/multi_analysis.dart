@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'dart:typed_data';
+
 import 'logic.dart';
 
 /// The maths of the quartet and the relay race.
@@ -94,6 +96,27 @@ class MultiStep {
   double get luck => _mean((m) => m.luck);
 
   int get solvedNow => boards.where((b) => b.solved).length;
+
+  /// Whether every board's skill is measured against its real best guess; false
+  /// while that is still being worked out.
+  bool get ready => boards.every((b) => b.metrics.ready);
+
+  /// The same step with each board's skill measured against its best real
+  /// guess, [bests] in the order of [boards].
+  MultiStep withBests(List<double> bests) => MultiStep(
+    guess,
+    [
+      for (var i = 0; i < boards.length; i++)
+        BoardStep(
+          boards[i].board,
+          boards[i].metrics.withBest(bests[i]),
+          boards[i].solved,
+        ),
+    ],
+    liveBefore,
+    finalTry: finalTry,
+    opened: opened,
+  );
 }
 
 /// A suggested guess for the live boards, and how it would have scored.
@@ -113,46 +136,88 @@ class MultiPick {
 Set<String> multiCandidates(List<List<String>> live, List<String> guessable) =>
     {for (final board in live) ...board.take(200), ...guessable.take(400)};
 
-/// The best next guesses for [live] (the words still possible on each board
-/// the guess would be made for), best first: the candidates with the highest
-/// combined skill, weighted as in [MultiStep.skill]. A candidate that could be
-/// an answer somewhere wins ties. Yields to the event loop now and then.
-Future<List<MultiPick>> recommendMulti(
+/// What the analysis of one step of a quartet or a relay race found: the best
+/// picks, and for each live board (in the order given) E*, the smallest expected
+/// pool any real guess leaves on it, which that board's skill is measured
+/// against.
+class MultiLandscape {
+  const MultiLandscape(this.picks, this.bests);
+  final List<MultiPick> picks;
+  final List<double> bests;
+}
+
+/// Scores [candidates] (pass every word the game accepts, for E* to be the real
+/// best) against the live boards [live]: the words still possible on each board
+/// the guess would be made for. Each board's skill is measured against its own
+/// best real guess; the picks are the candidates with the highest combined
+/// skill, weighted as in [MultiStep.skill], a candidate that could be an answer
+/// somewhere winning ties. Boards that share the very same list of words (all
+/// of them at the start) are worked out once. Yields to the event loop now and
+/// then.
+Future<MultiLandscape> analyseMulti(
   List<List<String>> live,
   Iterable<String> candidates, {
   int k = 3,
 }) async {
-  final boards = [
-    for (final b in live)
-      if (b.isNotEmpty) b,
+  final cands = candidates.toList();
+  final bests = List<double>.filled(live.length, 1);
+  final active = [
+    for (var i = 0; i < live.length; i++)
+      if (live[i].isNotEmpty) i,
   ];
-  if (boards.isEmpty) return const [];
-  final weights = [for (final b in boards) boardWeight(b.length)];
-  final total = weights.fold<double>(0, (a, b) => a + b);
-  final possible = [for (final b in boards) b.toSet()];
+  if (active.isEmpty || cands.isEmpty) return MultiLandscape(const [], bests);
 
+  // the sum of squared group sizes of every candidate, once per distinct list
+  final sums = Map<List<String>, Int32List>.identity();
+  final sets = Map<List<String>, Set<String>>.identity();
+  var work = 0;
+  for (final i in active) {
+    final board = live[i];
+    if (sums.containsKey(board)) continue;
+    final ss = Int32List(cands.length);
+    for (var c = 0; c < cands.length; c++) {
+      ss[c] = splitSumSquares(board, cands[c]);
+      if (++work % 20 == 0) await Future<void>.delayed(Duration.zero);
+    }
+    sums[board] = ss;
+    sets[board] = board.toSet();
+  }
+  for (final i in active) {
+    final board = live[i];
+    final lowest = sums[board]!.reduce((a, b) => a < b ? a : b);
+    bests[i] = lowest / board.length;
+  }
+
+  final weights = {for (final i in active) i: boardWeight(live[i].length)};
+  final total = weights.values.fold<double>(0, (a, b) => a + b);
   final scored = <MultiPick>[];
-  var count = 0;
-  for (final g in candidates) {
+  for (var c = 0; c < cands.length; c++) {
     var sum = 0.0, fits = 0;
-    for (var i = 0; i < boards.length; i++) {
-      final n = boards[i].length;
-      final fit = possible[i].contains(g);
+    for (final i in active) {
+      final board = live[i];
+      final n = board.length;
+      final fit = sets[board]!.contains(cands[c]);
       if (fit) fits++;
       final skill = n == 1
           ? (fit ? 100.0 : 0.0)
-          : (n - splitSumSquares(boards[i], g) / n) / (n - 1) * 100;
-      sum += weights[i] * skill;
+          : skillAgainst(n, sums[board]![c] / n, bests[i]);
+      sum += weights[i]! * skill;
     }
-    scored.add(MultiPick(g, sum / total, fits));
-    if (++count % 20 == 0) await Future<void>.delayed(Duration.zero);
+    scored.add(MultiPick(cands[c], sum / total, fits));
   }
   scored.sort((a, b) {
     final c = b.skill.compareTo(a.skill);
     return c != 0 ? c : b.possibleOn.compareTo(a.possibleOn);
   });
-  return scored.take(k).toList();
+  return MultiLandscape(scored.take(k).toList(), bests);
 }
+
+/// The best next guesses for [live], best first (see [analyseMulti]).
+Future<List<MultiPick>> recommendMulti(
+  List<List<String>> live,
+  Iterable<String> candidates, {
+  int k = 3,
+}) async => (await analyseMulti(live, candidates, k: k)).picks;
 
 /// A suggested guess for the last try, and how many boards it can be expected
 /// to solve.

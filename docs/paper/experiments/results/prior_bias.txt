@@ -1,0 +1,8 @@
+English five-letter words, N = 4994; the player sees all 4994 as possible.
+mean luck over the answer, by how the answer is drawn
+guess   uniform |  game draw from the most common 500   1500   3000   all
+ tares     -0.0% |                               11.3%   10.6%   10.3%   10.2%
+ slate     +0.0% |                                8.0%    7.8%    7.6%    7.6%
+ crane     +0.0% |                               11.4%   10.9%   10.6%   10.6%
+ abbey     +0.0% |                               -7.5%   -6.6%   -6.5%   -6.4%
+ mamma     +0.0% |                               -9.4%   -8.6%   -8.3%   -8.2%
