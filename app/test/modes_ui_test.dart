@@ -154,6 +154,8 @@ void main() {
       expect(find.text('word 1 of 4 · 10 tries left'), findsOneWidget);
       final a = answers(5);
       await type(tester, a[0]);
+      // whole keys, no four-way split, in a relay race
+      expect(find.byKey(ValueKey('quad-${a[0][0]}')), findsNothing);
       expect(find.text('word 2 of 4 · 9 tries left'), findsOneWidget);
       expect(find.textContaining('1 · solved in 1'), findsOneWidget);
     });

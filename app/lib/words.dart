@@ -64,6 +64,9 @@ class WordBank {
   static final _cache = <String, WordBank>{};
   static List<Language>? _languages;
 
+  /// The languages, once they have been loaded (null before).
+  static List<Language>? get loadedLanguages => _languages;
+
   static Future<List<Language>> languages() async {
     if (_languages != null) return _languages!;
     final raw = await rootBundle.loadString('assets/words/languages.json');

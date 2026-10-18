@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'main.dart';
+import 'routes.dart';
 import 'store.dart';
 import 'ui.dart';
 import 'words.dart';
@@ -41,26 +42,10 @@ class AchievementsPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   for (final a in achievements) ...[
                     const Divider(),
-                    _Row(a, appState.ach[a.id] ?? AchState()),
+                    a.track == Track.badges
+                        ? _BadgeRow(a, appState.ach[a.id] ?? AchState())
+                        : _Row(a, appState.ach[a.id] ?? AchState()),
                   ],
-                  const SizedBox(height: 28),
-                  const Caption('language mastery'),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'win once at every length and every difficulty setting '
-                    '(tries and word pool) of a language.',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  const SizedBox(height: 10),
-                  FutureBuilder<List<Language>>(
-                    future: WordBank.languages(),
-                    builder: (context, snap) => Column(
-                      children: [
-                        for (final l in snap.data ?? const <Language>[])
-                          _MasteryRow(l, s.mastery[l.code]?.length ?? 0),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 28),
                   const Caption('history'),
                   const SizedBox(height: 10),
@@ -140,6 +125,174 @@ class _Row extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// The language mastery achievement: one achievement, a badge for every
+/// language mastered, kept for good. Tap it for the language by language list.
+class _BadgeRow extends StatelessWidget {
+  const _BadgeRow(this.a, this.st);
+  final Achievement a;
+  final AchState st;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final earned = st.seen.isNotEmpty;
+    return InkWell(
+      key: const ValueKey('mastery-row'),
+      onTap: () => Navigator.pushNamed(context, Routes.mastery),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: FutureBuilder<List<Language>>(
+          future: WordBank.languages(),
+          builder: (context, snap) {
+            final langs = snap.data ?? const <Language>[];
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    TablerIcon(
+                      a.icon,
+                      size: 44,
+                      color: earned
+                          ? c.primary
+                          : c.onSurface.withValues(alpha: .22),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Opacity(
+                        opacity: earned ? 1 : .55,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              a.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              a.description,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${st.seen.length}/${langs.length}',
+                          key: const ValueKey('mastery-count'),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: earned ? c.primary : null,
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: c.onSurface.withValues(alpha: dimAlpha),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.only(left: 60),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      // the badges collected: a flag for every language mastered
+                      for (final l in langs)
+                        if (st.seen.contains(l.code))
+                          Container(
+                            key: ValueKey('badge-${l.code}'),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: c.primary),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: FlagBadge(l.flag, size: 18),
+                          ),
+                      if (!earned)
+                        Text(
+                          'no badges yet',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Language by language: how far each language is from mastery. It is a page
+/// of its own ([Routes.mastery]), opened from the language mastery achievement.
+class MasteryPage extends StatelessWidget {
+  const MasteryPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('language mastery')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: ListenableBuilder(
+            listenable: appState,
+            builder: (context, _) {
+              final mastery = appState.stats.mastery;
+              return FutureBuilder<List<Language>>(
+                future: WordBank.languages(),
+                builder: (context, snap) {
+                  final langs = snap.data ?? const <Language>[];
+                  final done = langs
+                      .where(
+                        (l) =>
+                            (mastery[l.code]?.length ?? 0) >= masteryTarget(l),
+                      )
+                      .length;
+                  return ListView(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                    children: [
+                      Caption('$done of ${langs.length} languages mastered'),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'win once at every length and every difficulty '
+                        '(tries and word pool) of a language to earn its '
+                        'badge. only classic games count.',
+                        style: TextStyle(fontSize: 12, height: 1.5),
+                      ),
+                      const SizedBox(height: 14),
+                      for (final l in langs)
+                        _MasteryRow(l, mastery[l.code]?.length ?? 0),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/achievements_page.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/routes.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,7 +47,12 @@ void main() {
       ),
       'wins_10': AchState(times: 1, dates: ['2026-10-03'], progress: 4),
     };
-    await tester.pumpWidget(const MaterialApp(home: AchievementsPage()));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AchievementsPage(),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
     // SVG assets are read with real file IO, which fake-async cannot await
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
@@ -68,9 +74,20 @@ void main() {
     expect(find.text('4/10'), findsOneWidget);
     expect(find.text('0/100'), findsOneWidget);
 
-    // mastery: 3 of English's 5 lengths x 4 tries x 4 pools = 80 settings
+    // language mastery is one achievement, not a list: no badge earned yet
     expect(find.text('language mastery'), findsOneWidget);
+    expect(find.byKey(const ValueKey('mastery-row')), findsOneWidget);
+    expect(find.text('no badges yet'), findsOneWidget);
+    expect(find.text('3/80'), findsNothing, reason: 'the list is on its page');
+
+    // tapping it opens the language by language list: 3 of English's
+    // 5 lengths x 4 tries x 4 pools = 80 settings
+    await tester.tap(find.byKey(const ValueKey('mastery-row')));
+    await tester.pumpAndSettle();
     expect(find.text('3/80'), findsOneWidget);
+    expect(find.textContaining('languages mastered'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
 
     // the history table lists what was earned, how often, first and latest
     expect(find.text('history'), findsOneWidget);
@@ -81,7 +98,12 @@ void main() {
 
   testWidgets('the history says so when nothing is earned yet', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 4200));
-    await tester.pumpWidget(const MaterialApp(home: AchievementsPage()));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AchievementsPage(),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
     expect(find.text('nothing earned yet.'), findsOneWidget);

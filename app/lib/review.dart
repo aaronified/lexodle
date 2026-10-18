@@ -21,6 +21,7 @@ class GameRecord {
     required this.finalEligible,
     required this.won,
     this.tries = 0,
+    this.analysis,
   });
 
   final WordBank bank;
@@ -42,6 +43,10 @@ class GameRecord {
 
   /// How many tries the game allowed (0 when not known).
   final int tries;
+
+  /// The best picks for each guess, if they were already being worked out
+  /// while the game was played (null for a guess that needs none).
+  final List<Future<List<Recommendation>>?>? analysis;
 
   int get initial => befores.first.length;
   List<String> afterOf(int i) =>
@@ -107,10 +112,15 @@ class _ReviewPageState extends State<ReviewPage> {
         );
         continue;
       }
-      final top = await recommendTop(
-        r.befores[i],
-        recommendationCandidates(r.befores[i], guessable),
-      );
+      final ready = r.analysis != null && i < r.analysis!.length
+          ? r.analysis![i]
+          : null;
+      final top =
+          await (ready ??
+              recommendTop(
+                r.befores[i],
+                recommendationCandidates(r.befores[i], guessable),
+              ));
       if (!mounted) return;
       setState(() => picks[i] = top);
     }
@@ -341,49 +351,57 @@ class _ReviewPageState extends State<ReviewPage> {
             ),
             const SizedBox(height: 6),
             for (var i = 0; i < r.guesses.length; i++) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(
-                  children: [
-                    for (var k = 0; k < r.length; k++)
-                      Padding(
-                        padding: EdgeInsets.only(
-                          right: k < r.length - 1 ? gap : 0,
+              // a row is a button: tap it to go to that guess
+              InkWell(
+                key: ValueKey('row-$i'),
+                onTap: () => setState(() => step = i),
+                child: Container(
+                  color: i == step
+                      ? c.primary.withValues(alpha: .08)
+                      : Colors.transparent,
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    children: [
+                      for (var k = 0; k < r.length; k++)
+                        Padding(
+                          padding: EdgeInsets.only(
+                            right: k < r.length - 1 ? gap : 0,
+                          ),
+                          child: i <= step
+                              ? MarkTile(
+                                  r.guesses[i][k],
+                                  mark: r.marks[i][k],
+                                  size: tile,
+                                )
+                              : MarkTile('', size: tile),
                         ),
-                        child: i <= step
-                            ? MarkTile(
-                                r.guesses[i][k],
-                                mark: r.marks[i][k],
-                                size: tile,
-                              )
-                            : MarkTile('', size: tile),
-                      ),
-                    const Spacer(),
-                    if (i <= step) ...[
-                      cell(
-                        r.metrics[i].skill.round().toString(),
-                        strong: i == step,
-                        dimmed: i < step,
-                      ),
-                      cell(
-                        luckText(r.metrics[i].luck),
-                        strong: i == step,
-                        dimmed: i < step,
-                        color: luckColor(c, r.metrics[i].luck),
-                      ),
-                      cell(
-                        r.metrics[i].after.toString(),
-                        strong: i == step,
-                        dimmed: i < step,
-                      ),
-                      cell(
-                        '${infoGained(r.initial, r.metrics[i].after).round()}%',
-                        strong: i == step,
-                        dimmed: i < step,
-                      ),
-                    ] else
-                      for (var k = 0; k < 4; k++) cell('–', dimmed: true),
-                  ],
+                      const Spacer(),
+                      if (i <= step) ...[
+                        cell(
+                          r.metrics[i].skill.round().toString(),
+                          strong: i == step,
+                          dimmed: i < step,
+                        ),
+                        cell(
+                          luckText(r.metrics[i].luck),
+                          strong: i == step,
+                          dimmed: i < step,
+                          color: luckColor(c, r.metrics[i].luck),
+                        ),
+                        cell(
+                          r.metrics[i].after.toString(),
+                          strong: i == step,
+                          dimmed: i < step,
+                        ),
+                        cell(
+                          '${infoGained(r.initial, r.metrics[i].after).round()}%',
+                          strong: i == step,
+                          dimmed: i < step,
+                        ),
+                      ] else
+                        for (var k = 0; k < 4; k++) cell('–', dimmed: true),
+                    ],
+                  ),
                 ),
               ),
               if (i < r.guesses.length - 1)

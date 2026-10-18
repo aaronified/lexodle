@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'background.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'review.dart';
@@ -10,6 +11,7 @@ import 'routes.dart';
 import 'main.dart';
 import 'store.dart';
 import 'ui.dart';
+import 'wiktionary.dart';
 import 'word_info.dart';
 import 'words.dart';
 
@@ -50,6 +52,10 @@ class _GamePageState extends State<GamePage> {
   bool won = false;
   List<Achievement> unlocked = [];
 
+  /// The review's best picks for each guess, begun the moment it was made.
+  var _jobs = JobQueue();
+  final _analysis = <Future<List<Recommendation>>?>[];
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +68,7 @@ class _GamePageState extends State<GamePage> {
 
   @override
   void dispose() {
+    _jobs.close();
     _focus.dispose();
     super.dispose();
   }
@@ -72,6 +79,9 @@ class _GamePageState extends State<GamePage> {
     // the answer is drawn from: a player cannot know that list, and a real
     // word that fits every clue must never be ruled out behind their back.
     eligible = List.of(widget.bank.guessable(length));
+    _jobs.close(); // work on the last game's guesses is no longer wanted
+    _jobs = JobQueue();
+    _analysis.clear();
     guesses.clear();
     marks.clear();
     keyMarks.clear();
@@ -81,6 +91,11 @@ class _GamePageState extends State<GamePage> {
     message = '';
     over = won = false;
     unlocked = [];
+    // look the answer up now, so the end screen has it
+    if (prefetchDefinitions) {
+      final lang = widget.bank.language;
+      Wiktionary.shared.prefetch(answer, lang.code, lang.wikt);
+    }
   }
 
   void _type(String ch) {
@@ -135,6 +150,21 @@ class _GamePageState extends State<GamePage> {
       );
       befores.add(eligible);
       eligible = after;
+      // work the review's picks out now, in the background, one guess at a time
+      final before = befores.last;
+      _analysis.add(
+        guesses.length >= tries || !analyseWhilePlaying
+            ? null // the last try's picks are only the words that fit
+            : _jobs.add(
+                () => recommendTop(
+                  before,
+                  recommendationCandidates(
+                    before,
+                    widget.bank.guessable(length),
+                  ),
+                ),
+              ),
+      );
       final solved = input == answer;
       input = '';
       message = '';
@@ -349,6 +379,7 @@ class _GamePageState extends State<GamePage> {
     finalEligible: eligible,
     won: won,
     tries: tries,
+    analysis: List.of(_analysis),
   );
 
   /// A one-line summary with the review button; the helper's step-by-step

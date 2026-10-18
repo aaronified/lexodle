@@ -3,18 +3,26 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'background.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
+import 'multi_analysis.dart';
+import 'multi_review.dart';
+import 'routes.dart';
+import 'store.dart';
 import 'ui.dart';
+import 'wiktionary.dart';
 import 'word_info.dart';
 import 'words.dart';
 
 /// Quartet and relay race: four boards that share every guess and one pool of
 /// tries. A quartet plays them all at once; a relay race opens them one at a time.
-/// These modes keep no statistics or achievements: skill and luck are defined
-/// for a single hidden word.
+///
+/// While it is played, everything the end screen and the review need is worked
+/// out in the background: the Wiktionary entry of every answer is looked up
+/// and each guess is analysed as soon as it is made.
 class MultiGamePage extends StatefulWidget {
   const MultiGamePage({super.key, required this.bank, this.random});
   final WordBank bank;
@@ -40,6 +48,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
   String input = '';
   String message = '';
 
+  /// What the finished game earned.
+  List<Achievement> unlocked = [];
+
+  /// The analysis of each guess, begun the moment it was made.
+  var _jobs = JobQueue();
+  final _analysis = <Future<List<MultiPick>>?>[];
+
   @override
   void initState() {
     super.initState();
@@ -52,11 +67,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   @override
   void dispose() {
+    _jobs.close();
     _focus.dispose();
     super.dispose();
   }
 
   void _reset() {
+    _jobs.close(); // work on the last game's guesses is no longer wanted
+    _jobs = JobQueue();
+    _analysis.clear();
+    unlocked = [];
     game = MultiGame(
       mode,
       chooseTargets(
@@ -67,9 +87,17 @@ class _MultiGamePageState extends State<MultiGamePage> {
         _rng,
       ),
       tries,
+      words: widget.bank.guessable(length),
     );
     input = '';
     message = '';
+    // look the answers up now, one at a time, so the end screen has them
+    if (prefetchDefinitions) {
+      final lang = widget.bank.language;
+      for (final b in game.boards) {
+        Wiktionary.shared.prefetch(b.answer, lang.code, lang.wikt);
+      }
+    }
   }
 
   void _type(String ch) {
@@ -106,8 +134,53 @@ class _MultiGamePageState extends State<MultiGamePage> {
       game.guess(input);
       input = '';
       message = '';
+      // analyse this guess in the background, at once, so the review is ready
+      final step = game.steps.last;
+      _analysis.add(
+        step.finalTry || !analyseWhilePlaying
+            ? null // its picks are the words that fit, worked out when shown
+            : _jobs.add(
+                () => recommendMulti(
+                  step.liveBefore,
+                  multiCandidates(
+                    step.liveBefore,
+                    widget.bank.guessable(length),
+                  ),
+                ),
+              ),
+      );
+      if (game.over) _finish();
     });
   }
+
+  /// The finished game counts towards the achievements of its mode.
+  void _finish() {
+    unlocked = appState.recordGame(
+      GameResult(
+        lang: widget.bank.language.code,
+        length: length,
+        tries: tries,
+        used: game.guesses.length,
+        won: game.won,
+        pool: appState.pool,
+        mode: mode,
+        skills: [for (final s in game.steps) s.skill],
+        freeRides: game.freeRides,
+      ),
+    );
+  }
+
+  MultiRecord _record() => MultiRecord(
+    bank: widget.bank,
+    mode: mode,
+    length: length,
+    tries: tries,
+    answers: [for (final b in game.boards) b.answer],
+    guesses: List.of(game.guesses),
+    steps: List.of(game.steps),
+    won: game.won,
+    analysis: List.of(_analysis),
+  );
 
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
     if (e is KeyUpEvent) return KeyEventResult.ignored;
@@ -315,11 +388,41 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   Widget _keyboard() => LetterKeyboard(
     letters: _letters,
-    quadMarks: game.letterMarks(),
+    // a quartet splits each key by board; a relay race colours the keys by the
+    // board that is on, as a single game would
+    marks: mode == GameMode.relay ? game.marksOf(game.active!) : const {},
+    quadMarks: mode == GameMode.relay ? const {} : game.letterMarks(),
     onLetter: _type,
     onEnter: _submit,
     onBack: _back,
   );
+
+  /// One line with the review button: the average skill and luck of the
+  /// guesses (see multi_analysis.dart for how a guess is scored).
+  Widget _summary() {
+    if (game.steps.isEmpty) return const SizedBox();
+    double avg(double Function(MultiStep s) f) =>
+        game.steps.map(f).reduce((a, b) => a + b) / game.steps.length;
+    return Row(
+      children: [
+        Expanded(
+          child: Caption(
+            'average skill ${avg((s) => s.skill).round()}'
+            ' · luck ${luckText(avg((s) => s.luck))}',
+          ),
+        ),
+        OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, 36),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+          ),
+          onPressed: () =>
+              Navigator.pushNamed(context, Routes.review, arguments: _record()),
+          child: const Text('review'),
+        ),
+      ],
+    );
+  }
 
   Widget _overPanel(ColorScheme c) {
     return ConstrainedBox(
@@ -355,7 +458,28 @@ class _MultiGamePageState extends State<MultiGamePage> {
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
+            for (final a in unlocked)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    TablerIcon(a.icon, size: 30, color: c.primary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '${a.title}  —  ${a.description}',
+                        style: TextStyle(color: c.primary, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const Divider(),
+            const SizedBox(height: 10),
+            _summary(),
+            const SizedBox(height: 10),
+            const Divider(),
             for (final b in game.boards)
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,

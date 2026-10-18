@@ -166,6 +166,23 @@ void main() {
         expect(marks['z'], isNull);
       });
 
+      test('a relay race colours the keyboard by the active board alone', () {
+        final g = MultiGame(GameMode.relay, four, 10);
+        g.guess('light');
+        g.guess('house'); // solves board 0; board 1 (light) opens, solved too
+        final active = g.active!;
+        expect(active, 2, reason: 'brand is the board on');
+        final m = g.marksOf(active);
+        // 'brand' vs the guesses carried onto it: exactly what evaluate says
+        for (final guess in g.guesses) {
+          final e = evaluate(four[active], guess);
+          for (var i = 0; i < guess.length; i++) {
+            expect(m[guess[i]]!.index, lessThanOrEqualTo(e[i].index));
+          }
+        }
+        expect(m.containsKey('z'), isFalse);
+      });
+
       test('a board that has not seen a letter has no mark for it', () {
         final g = MultiGame(GameMode.relay, four, 10);
         g.guess('light');

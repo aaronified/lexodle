@@ -19,7 +19,7 @@ class WordInfoView extends StatefulWidget {
 }
 
 class _WordInfoViewState extends State<WordInfoView> {
-  late final Future<WordInfo?> _future = Wiktionary().lookup(
+  late final Future<WordInfo?> _future = Wiktionary.shared.lookup(
     widget.word,
     widget.language.code,
     widget.language.wikt,

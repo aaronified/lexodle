@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'logic.dart';
+import 'multi_analysis.dart';
 
 /// How a game is played. Classic is one word; the others have four boards that
 /// share every guess (and one pool of tries).
@@ -104,15 +105,53 @@ class Board {
 }
 
 /// The state of a quartet or relay race game; pure, so it is tested without UI.
+///
+/// Given the [words] the game accepts, it also keeps the analysis the review
+/// needs, step by step as the game is played: per board, the words still
+/// possible, and per guess its skill, luck and what it did to each board (see
+/// multi_analysis.dart). Without them it is only the rules of the game.
 class MultiGame {
-  MultiGame(this.mode, List<String> answers, this.tries)
-    : boards = [for (final a in answers) Board(a)];
+  MultiGame(this.mode, List<String> answers, this.tries, {List<String>? words})
+    : boards = [for (final a in answers) Board(a)],
+      _words = words,
+      eligible = [
+        for (final _ in answers) words == null ? <String>[] : List.of(words),
+      ] {
+    if (words != null) {
+      // a quartet opens every board at once, a relay race the first
+      for (var i = 0; i < (mode == GameMode.quartet ? boards.length : 1); i++) {
+        heads.add(HeadStart(i, 0, words.length, words.length));
+      }
+    }
+  }
 
   final GameMode mode;
   final int tries;
   final List<Board> boards;
   final guesses = <String>[];
+  final List<String>? _words;
   int _active = 0;
+
+  /// The words still possible on each board, given every guess it has had
+  /// (all the words the game accepts, not only the common ones the answer is
+  /// drawn from: a player cannot know that list). Empty lists when the game
+  /// was made without [words].
+  final List<List<String>> eligible;
+
+  /// Relay race: boards that were solved by the guesses made before they
+  /// opened, the moment they opened (a free ride).
+  int get freeRides => heads
+      .where(
+        (h) =>
+            h.opensAfter > 0 &&
+            boards[h.board].solved &&
+            boards[h.board].solvedAt! < h.opensAfter,
+      )
+      .length;
+
+  /// The analysis of each guess so far, and when each board opened.
+  final steps = <MultiStep>[];
+  final heads = <HeadStart>[];
 
   /// The board a relay race is on; null in a quartet, where all are live.
   int? get active => mode == GameMode.relay ? _active : null;
@@ -145,6 +184,24 @@ class MultiGame {
     return out;
   }
 
+  /// What board [i] alone says about each letter (the best mark it has shown),
+  /// for a keyboard coloured like a single game's. In a relay race that is the
+  /// active board's: its colours are the ones that matter, and the earlier
+  /// guesses were already applied to it when it opened.
+  Map<String, Mark> marksOf(int i) {
+    final out = <String, Mark>{};
+    final marks = boards[i].marks;
+    for (var r = 0; r < marks.length; r++) {
+      for (var k = 0; k < marks[r].length; k++) {
+        final old = out[guesses[r][k]];
+        if (old == null || marks[r][k].index < old.index) {
+          out[guesses[r][k]] = marks[r][k];
+        }
+      }
+    }
+    return out;
+  }
+
   /// Whether board [i] takes the next guess.
   bool isLive(int i) =>
       !over && !boards[i].solved && (mode == GameMode.quartet || i == _active);
@@ -153,24 +210,79 @@ class MultiGame {
   bool isLocked(int i) =>
       mode == GameMode.relay && !boards[i].solved && i != _active;
 
-  /// Plays [guess]. In a quartet it goes to every unsolved board. In a relay race it
-  /// goes to the active board; when that is solved the next one opens with
-  /// every earlier guess already applied, which may solve it at once.
+  /// Plays [guess]. In a quartet it goes to every unsolved board. In a relay
+  /// race it goes to the active board; when that is solved the next one opens
+  /// with every earlier guess already applied, which may solve it at once.
   void guess(String guess) {
     if (over) return;
     guesses.add(guess);
-    if (mode == GameMode.quartet) {
-      for (final b in boards) {
-        if (!b.solved) b.apply(guess);
+    final words = _words;
+    final finalTry = guesses.length >= tries;
+    final live = [
+      for (var i = 0; i < boards.length; i++)
+        if (!boards[i].solved && (mode == GameMode.quartet || i == _active)) i,
+    ];
+    final before = [for (final i in live) eligible[i]];
+    for (final i in live) {
+      boards[i].apply(guess);
+      if (words != null) {
+        eligible[i] = filterEligible(eligible[i], guess, boards[i].marks.last);
       }
-      return;
     }
-    boards[_active].apply(guess);
-    while (boards[_active].solved && _active < boards.length - 1) {
-      _active++;
-      for (final g in guesses) {
-        if (boards[_active].apply(g)) break;
+    final stepBoards = [
+      if (words != null)
+        for (var k = 0; k < live.length; k++)
+          BoardStep(
+            live[k],
+            scoreGuess(
+              before[k],
+              guess,
+              eligible[live[k]].length,
+              finalTry: finalTry,
+              solved: boards[live[k]].solved,
+            ),
+            boards[live[k]].solved,
+          ),
+    ];
+
+    final opened = <HeadStart>[];
+    if (mode == GameMode.relay) {
+      while (boards[_active].solved && _active < boards.length - 1) {
+        _active++;
+        for (final g in guesses) {
+          final done = boards[_active].apply(g);
+          if (words != null) {
+            eligible[_active] = filterEligible(
+              eligible[_active],
+              g,
+              boards[_active].marks.last,
+            );
+          }
+          if (done) break;
+        }
+        if (words != null) {
+          opened.add(
+            HeadStart(
+              _active,
+              guesses.length,
+              eligible[_active].length,
+              words.length,
+            ),
+          );
+        }
       }
+    }
+    if (words != null) {
+      heads.addAll(opened);
+      steps.add(
+        MultiStep(
+          guess,
+          stepBoards,
+          before,
+          finalTry: finalTry,
+          opened: opened,
+        ),
+      );
     }
   }
 }

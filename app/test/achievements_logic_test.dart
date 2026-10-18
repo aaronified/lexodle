@@ -1,6 +1,27 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/difficulty.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
+import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+GameResult multi(
+  GameMode mode, {
+  bool won = true,
+  int used = 7,
+  int tries = 9,
+  int freeRides = 0,
+  List<double> skills = const [85, 85, 85],
+}) => GameResult(
+  lang: 'en',
+  length: 5,
+  tries: tries,
+  used: used,
+  won: won,
+  mode: mode,
+  freeRides: freeRides,
+  skills: skills,
+);
 
 GameResult game({
   bool won = true,
@@ -34,6 +55,8 @@ Achievement byId(String id) => achievements.firstWhere((a) => a.id == id);
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('stats: a loss resets the streak, the best is kept', () {
     final s = Stats()
       ..record(game())
@@ -216,6 +239,178 @@ void main() {
       expect(a.ach['first_light']!.dates, ['2026-10-01']);
       expect(a.ach['one_shot']!.latest, '2026-10-02');
       expect(a.unlockedCount, 2);
+    });
+  });
+
+  group('quartet and relay race', () {
+    test('each mode has its own achievements; classic ones ignore them', () {
+      final (_, earned) = play([multi(GameMode.quartet)]);
+      expect(earned.single, contains('quartet_win'));
+      expect(earned.single, isNot(contains('relay_win')));
+      // a single-word achievement does not count a quartet win
+      expect(earned.single, isNot(contains('one_shot')));
+      expect(earned.single, isNot(contains('pure_skill')));
+      // but a general one does: a win is a win
+      expect(earned.single, contains('first_light'));
+    });
+
+    test('quartet: spare tries, last try and sharp skill', () {
+      final (_, e1) = play([multi(GameMode.quartet, used: 6, tries: 9)]);
+      expect(e1.single, contains('quartet_spare'));
+      final (_, e2) = play([multi(GameMode.quartet, used: 9, tries: 9)]);
+      expect(e2.single, contains('quartet_last'));
+      expect(e2.single, isNot(contains('quartet_spare')));
+      final (_, e3) = play([
+        multi(GameMode.quartet, skills: [70, 80]),
+      ]);
+      expect(e3.single, isNot(contains('quartet_sharp')), reason: 'avg 75');
+      final (_, e4) = play([
+        multi(GameMode.quartet, skills: [90, 85]),
+      ]);
+      expect(e4.single, contains('quartet_sharp'));
+    });
+
+    test('relay race: free ride, photo finish, and ten wins', () {
+      final (_, e1) = play([multi(GameMode.relay, freeRides: 1)]);
+      expect(e1.single, contains('relay_free'));
+      final (_, e2) = play([multi(GameMode.relay, used: 10, tries: 10)]);
+      expect(e2.single, contains('relay_last'));
+      final (st, earned) = play([
+        for (var i = 0; i < 10; i++) multi(GameMode.relay),
+      ]);
+      expect(earned.last, contains('relay_10'));
+      expect(st['quartet_10']!.progress, 0, reason: 'other mode untouched');
+    });
+
+    test(
+      'a loss does not count, and a quartet leaves relay counters alone',
+      () {
+        final (st, _) = play([
+          multi(GameMode.quartet, won: false),
+          multi(GameMode.quartet),
+        ]);
+        expect(st['quartet_10']!.progress, 1);
+        expect(st['relay_10']!.progress, 0);
+      },
+    );
+
+    test('a game of another mode neither counts nor breaks a streak', () {
+      // wins 3 in a row across modes: streaks are general
+      final (_, earned) = play([
+        game(),
+        multi(GameMode.quartet),
+        multi(GameMode.relay),
+      ]);
+      expect(earned.last, contains('streak_3'));
+    });
+
+    test('luckiest man alive: one guess per word, in both modes', () {
+      // a quartet takes at least 4 guesses; 5 is not enough
+      final (s0, e0) = play([multi(GameMode.quartet, used: 5)]);
+      expect(e0.single, isNot(contains('luckiest')));
+      expect(s0['luckiest']!.progress, 0);
+      // 4 in a quartet is half of it
+      final (s1, e1) = play([multi(GameMode.quartet, used: 4)]);
+      expect(e1.single, isNot(contains('luckiest')));
+      expect(s1['luckiest']!.progress, 1);
+      // and a relay race in 4 or fewer finishes it, in either order
+      final (_, e2) = play([
+        multi(GameMode.quartet, used: 4),
+        multi(GameMode.relay, used: 3), // a free ride saved a guess
+      ]);
+      expect(e2.last, contains('luckiest'));
+      final (_, e3) = play([
+        multi(GameMode.relay, used: 4),
+        multi(GameMode.quartet, used: 4),
+      ]);
+      expect(e3.last, contains('luckiest'));
+      // two quartets are not both modes
+      final (_, e4) = play([
+        multi(GameMode.quartet, used: 4),
+        multi(GameMode.quartet, used: 4),
+      ]);
+      expect(e4.expand((x) => x), isNot(contains('luckiest')));
+      // a classic game is no part of it
+      final (s5, _) = play([game(used: 1)]);
+      expect(s5['luckiest']!.progress, 0);
+    });
+  });
+
+  group('language mastery badges', () {
+    test('a badge per language, collected and kept', () {
+      final states = <String, AchState>{};
+      var earned = advanceAchievements(states, game(), 'd1', mastered: {'en'});
+      expect([for (final a in earned) a.id], contains('mastery'));
+      expect(states['mastery']!.seen, {'en'});
+      expect(states['mastery']!.times, 1);
+      // nothing new, nothing earned
+      earned = advanceAchievements(states, game(), 'd2', mastered: {'en'});
+      expect([for (final a in earned) a.id], isNot(contains('mastery')));
+      // a second language is a second badge
+      earned = advanceAchievements(
+        states,
+        game(),
+        'd3',
+        mastered: {'en', 'fr'},
+      );
+      expect([for (final a in earned) a.id], contains('mastery'));
+      expect(states['mastery']!.seen, {'en', 'fr'});
+      expect(states['mastery']!.times, 2);
+      expect(states['mastery']!.dates, ['d1', 'd3']);
+      // badges are never taken away
+      advanceAchievements(states, game(), 'd4', mastered: const {});
+      expect(states['mastery']!.seen, {'en', 'fr'});
+    });
+
+    test('mastery has no progress bar of its own, it is a collection', () {
+      expect(byId('mastery').numbered, isFalse);
+      expect(byId('mastery').track, Track.badges);
+    });
+
+    test('the game that completes a language earns its badge', () async {
+      SharedPreferences.setMockInitialValues({});
+      final langs = await WordBank.languages();
+      final en = langs.firstWhere((l) => l.code == 'en');
+      final state = AppState();
+      final cells = {
+        for (final len in en.lengths)
+          for (final t in triesLevels)
+            for (final p in poolSizes) '$len:${t.$2}:$p',
+      };
+      expect(cells.length, masteryTarget(en));
+      // every setting but the last one
+      final last = cells.last;
+      state.stats.mastery['en'] = cells.difference({last});
+      expect(state.masteredLanguages(), isEmpty);
+      final parts = last.split(':').map(int.parse).toList();
+      // a quartet win at the same numbers does not count
+      state.recordGame(
+        GameResult(
+          lang: 'en',
+          length: parts[0],
+          tries: parts[1],
+          pool: parts[2],
+          used: 3,
+          won: true,
+          mode: GameMode.quartet,
+        ),
+      );
+      expect(state.stats.mastery['en']!.length, cells.length - 1);
+      // the classic win does
+      final earned = state.recordGame(
+        GameResult(
+          lang: 'en',
+          length: parts[0],
+          tries: parts[1],
+          pool: parts[2],
+          used: 3,
+          won: true,
+        ),
+      );
+      expect([for (final a in earned) a.id], contains('mastery'));
+      expect(state.masteredLanguages().map((l) => l.code), ['en']);
+      expect(state.lastMastered.map((l) => l.code), ['en']);
+      expect(state.ach['mastery']!.seen, {'en'});
     });
   });
 }

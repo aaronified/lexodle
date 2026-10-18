@@ -6,6 +6,7 @@ import 'home.dart';
 import 'how_to.dart';
 import 'main.dart';
 import 'multi_game.dart';
+import 'multi_review.dart';
 import 'review.dart';
 import 'settings_dialog.dart';
 import 'solver.dart';
@@ -27,6 +28,7 @@ class Routes {
   static const review = '/play/review';
   static const solver = '/solver';
   static const achievements = '/achievements';
+  static const mastery = '/achievements/mastery';
   static const howTo = '/how-to';
   static const settings = '/settings';
   static const about = '/about';
@@ -61,11 +63,15 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       // a finished game cannot be rebuilt from an address
       return record is GameRecord
           ? page(ReviewPage(record: record))
+          : record is MultiRecord
+          ? page(MultiReviewPage(record: record))
           : page(const HomePage());
     case Routes.solver:
       return page(BankGate(builder: (bank) => SolverPage(bank: bank)));
     case Routes.achievements:
       return page(const AchievementsPage());
+    case Routes.mastery:
+      return page(const MasteryPage());
     case Routes.howTo:
       return page(
         HowToPage(onboarding: settings.arguments == onboardingArgument),
@@ -103,6 +109,7 @@ List<Route<dynamic>> onGenerateInitialRoutes(String initial) {
 
 const _known = {
   Routes.play,
+  Routes.mastery,
   Routes.solver,
   Routes.achievements,
   Routes.howTo,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:html/parser.dart' as html;
 import 'package:http/http.dart' as http;
 
@@ -301,10 +302,35 @@ WordInfo mergeInfos(
   );
 }
 
+/// Whether the game screens look up their answers while the game is played.
+/// The tests turn it off (see test/flutter_test_config.dart) so no request is
+/// left pending when one ends; the one test of the behaviour turns it on.
+bool prefetchDefinitions = true;
+
 class Wiktionary {
   Wiktionary({http.Client? client}) : _client = client ?? http.Client();
   final http.Client _client;
-  static final _cache = <String, WordInfo?>{};
+
+  /// The one the app asks, so every screen shares its lookups and its queue.
+  /// Tests put one with a fake client here.
+  static Wiktionary shared = Wiktionary();
+
+  /// Lookups already made or under way, by language and word. Keeping the
+  /// future, not the result, means a lookup started while the game is played
+  /// is the very one the end screen waits on, instead of a second request.
+  static final _cache = <String, Future<WordInfo?>>{};
+
+  /// Wikimedia asks for one request at a time, so every lookup, whoever asked,
+  /// waits for the one before it.
+  static Future<void> _tail = Future.value();
+
+  /// Forgets every lookup and the queue, for tests that each need a clean
+  /// start (a test that ends with a lookup unfinished would hold up the next).
+  @visibleForTesting
+  static void reset() {
+    _cache.clear();
+    _tail = Future.value();
+  }
 
   static const _api = 'https://en.wiktionary.org/w/api.php';
 
@@ -323,10 +349,32 @@ class Wiktionary {
 
   /// Looks [word] up in the [section] language heading (English name, e.g.
   /// "French"). Returns null when Wiktionary has no entry in that language;
-  /// throws on network failure.
-  Future<WordInfo?> lookup(String word, String lang, String section) async {
+  /// throws on network failure (which is not remembered, so asking again
+  /// tries again). Asking twice for the same word shares one lookup.
+  Future<WordInfo?> lookup(String word, String lang, String section) {
     final key = '$lang:$word';
-    if (_cache.containsKey(key)) return _cache[key];
+    final hit = _cache[key];
+    if (hit != null) return hit;
+    final run = _tail.then((_) => _fetch(word, lang, section));
+    _tail = run.then<void>((_) {}, onError: (_) {});
+    // a failure must not stay in the cache; this listener also means nobody
+    // has to await a lookup started ahead of time for its error to be handled
+    run.then<void>(
+      (_) {},
+      onError: (_) {
+        _cache.remove(key);
+      },
+    );
+    return _cache[key] = run;
+  }
+
+  /// Starts a lookup now for a word that may be wanted later, such as the
+  /// answer of the game being played. Never throws.
+  void prefetch(String word, String lang, String section) {
+    lookup(word, lang, section).then<void>((_) {}, onError: (_) {});
+  }
+
+  Future<WordInfo?> _fetch(String word, String lang, String section) async {
     final found = <WordInfo>[];
     for (final title in titleCandidates(word, lang)) {
       final s = await _get({
@@ -356,6 +404,6 @@ class Wiktionary {
           '${Uri.encodeComponent(section.replaceAll(' ', '_'))}';
       found.add(parseSection(t['parse']['text'] as String, url));
     }
-    return _cache[key] = found.isEmpty ? null : mergeInfos(found);
+    return found.isEmpty ? null : mergeInfos(found);
   }
 }

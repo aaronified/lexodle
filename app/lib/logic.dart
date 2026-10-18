@@ -238,7 +238,9 @@ String ordinal(int n) => const [
   'eighth',
   'ninth',
   'tenth',
-][n.clamp(1, 10) - 1];
+  'eleventh',
+  'twelfth',
+][n.clamp(1, 12) - 1];
 
 /// A short plain-English reading of one step, for the review screen.
 /// [picks] is empty while the alternatives are still being worked out.
@@ -324,6 +326,10 @@ Set<String> recommendationCandidates(
   List<String> eligible,
   List<String> guessable,
 ) => {...eligible.take(600), ...guessable.take(600)};
+
+/// The sum of the squared sizes of the groups [guess] splits [eligible] into.
+int splitSumSquares(List<String> eligible, String guess) =>
+    _sumSquares(eligible, guess);
 
 int _sumSquares(List<String> eligible, String guess) {
   final groups = <int, int>{};
