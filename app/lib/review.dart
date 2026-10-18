@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'logic.dart';
+import 'review_plots.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -46,7 +47,7 @@ class GameRecord {
 
   /// The best picks for each guess, if they were already being worked out
   /// while the game was played (null for a guess that needs none).
-  final List<Future<List<Recommendation>>?>? analysis;
+  final List<Future<Landscape>?>? analysis;
 
   int get initial => befores.first.length;
   List<String> afterOf(int i) =>
@@ -72,6 +73,9 @@ class _ReviewPageState extends State<ReviewPage> {
   late int step = widget.initialStep.clamp(0, r.guesses.length - 1);
   bool explain = false;
   final picks = <int, List<Recommendation>>{};
+
+  /// How every guess scored, per step, for the skill plot.
+  final landscapes = <int, Landscape>{};
 
   /// How common each word the game accepts is (its weight in the list).
   late final Map<String, int> _weight = {
@@ -115,14 +119,17 @@ class _ReviewPageState extends State<ReviewPage> {
       final ready = r.analysis != null && i < r.analysis!.length
           ? r.analysis![i]
           : null;
-      final top =
+      final land =
           await (ready ??
-              recommendTop(
+              analyseGuesses(
                 r.befores[i],
                 recommendationCandidates(r.befores[i], guessable),
               ));
       if (!mounted) return;
-      setState(() => picks[i] = top);
+      setState(() {
+        picks[i] = land.top;
+        landscapes[i] = land;
+      });
     }
   }
 
@@ -213,6 +220,7 @@ class _ReviewPageState extends State<ReviewPage> {
                         const SizedBox(height: 14),
                         _picks(c, m, top),
                         const SizedBox(height: 18),
+                        ..._quality(c, m),
                         _frequency(c),
                         const SizedBox(height: 18),
                         if (!_isFinalTry(step)) _pool(c, m, top),
@@ -518,6 +526,47 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
+  /// The plots of how good the guess was: where it ranked among every guess
+  /// I scored (skill) and where among the outcomes it could have had it landed
+  /// (luck). On the last try nothing is left to learn, so they give way to one
+  /// plot of the words that fit, all equally likely. Nothing to plot when one
+  /// word was left.
+  List<Widget> _quality(ColorScheme c, GuessMetrics m) {
+    final before = r.befores[step];
+    if (before.length <= 1) return const [];
+    if (_isFinalTry(step)) {
+      return [
+        EqualChancePlot(
+          fitting: before.length,
+          guessAt: before.indexOf(m.guess),
+          luck: m.luck,
+        ),
+        const SizedBox(height: 18),
+      ];
+    }
+    final land = landscapes[step];
+    return [
+      if (land != null) ...[
+        SkillPlot(landscape: land, skill: m.skill, guess: m.guess),
+        const SizedBox(height: 18),
+      ] else ...[
+        const Caption('working out how your guess ranked…'),
+        const SizedBox(height: 18),
+      ],
+      LuckPlot(
+        key: ValueKey('luck-$step'),
+        outcomes: _outcomes.putIfAbsent(
+          step,
+          () => outcomesOf(before, m.guess, r.answer),
+        ),
+      ),
+      const SizedBox(height: 18),
+    ];
+  }
+
+  /// The outcomes of each step's guess, worked out when first shown.
+  final _outcomes = <int, Outcomes>{};
+
   /// How common the words still possible were, most common first, with your
   /// guess and the answer marked where they stand. Heights are on a log scale
   /// (how common a word is spans orders of magnitude) shared by every step, so
@@ -563,15 +612,21 @@ class _ReviewPageState extends State<ReviewPage> {
           ),
         ),
         const SizedBox(height: 4),
-        Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          spacing: 12,
-          runSpacing: 2,
+        // the two ends of the axis on one line, at its two ends
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('most common', style: dim),
+            Text('rarest', style: dim),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 16,
+          runSpacing: 2,
+          children: [
             if (guessAt >= 0) key(c.primary, 'your guess'),
             if (answerAt >= 0) key(c.secondary, 'the answer'),
-            Text('rarest', style: dim),
           ],
         ),
       ],

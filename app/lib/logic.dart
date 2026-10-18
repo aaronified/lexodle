@@ -157,34 +157,61 @@ class Recommendation {
   final bool canWin;
 }
 
-/// The best next guesses, best first: the candidates leaving the fewest words
-/// in expectation, which is the same measure skill is scored by. A candidate
-/// that could itself be the answer wins ties. [eligible] must be in
-/// descending frequency, so with two or fewer left the likelier one is named
-/// first. Yields to the event loop now and then so a web page stays
-/// responsive.
-Future<List<Recommendation>> recommendTop(
+/// How every guess I scored would have done against the words still possible:
+/// the best few, and the skill of all of them, best first, for the plot of
+/// where a guess ranks.
+class Landscape {
+  const Landscape(this.top, this.skills);
+
+  /// The best picks, best first.
+  final List<Recommendation> top;
+
+  /// The skill of every guess scored, best first.
+  final List<double> skills;
+
+  /// The share of the scored guesses that [skill] beats, in percent: the ones
+  /// that scored less, plus half of those that scored the same.
+  double percentile(double skill) {
+    if (skills.isEmpty) return 0;
+    var less = 0, same = 0;
+    for (final s in skills) {
+      if (s < skill - 1e-9) {
+        less++;
+      } else if ((s - skill).abs() <= 1e-9) {
+        same++;
+      }
+    }
+    return (less + same / 2) / skills.length * 100;
+  }
+
+  /// Where [skill] stands among the scored guesses, from 0 (as good as the
+  /// best): how many scored more.
+  int rankOf(double skill) => skills.where((s) => s > skill + 1e-9).length;
+}
+
+/// Scores [candidates] against the words still possible, [eligible] (which
+/// must be in descending frequency). The picks are the candidates leaving the
+/// fewest words in expectation, which is the same measure skill is scored by; a
+/// candidate that could itself be the answer wins ties, and so with two or
+/// fewer left the likelier one is named first. Yields to the event loop now
+/// and then so a web page stays responsive.
+Future<Landscape> analyseGuesses(
   List<String> eligible,
   Iterable<String> candidates, {
   int k = 3,
 }) async {
   final n = eligible.length;
-  if (n == 0) return const [];
+  if (n == 0) return const Landscape([], []);
   final possible = eligible.toSet();
-  Recommendation make(String w, int sumSq) {
-    final e = sumSq / n;
-    return Recommendation(
-      w,
-      n <= 1 ? 100.0 : (n - e) / (n - 1) * 100,
-      e,
-      possible.contains(w),
-    );
-  }
+  double skillOf(int sumSq) => n <= 1 ? 100.0 : (n - sumSq / n) / (n - 1) * 100;
+  Recommendation make(String w, int sumSq) =>
+      Recommendation(w, skillOf(sumSq), sumSq / n, possible.contains(w));
 
   if (n <= 2) {
-    return [
+    final top = [
       for (final w in eligible.take(k)) make(w, _sumSquares(eligible, w)),
     ];
+    return Landscape(top, [for (final r in top) r.skill]);
   }
 
   final scored = <(String, int)>[];
@@ -200,8 +227,18 @@ Future<List<Recommendation>> recommendTop(
     return (possible.contains(y.$1) ? 1 : 0) -
         (possible.contains(x.$1) ? 1 : 0);
   });
-  return [for (final (w, sq) in scored.take(k)) make(w, sq)];
+  return Landscape(
+    [for (final (w, sq) in scored.take(k)) make(w, sq)],
+    [for (final (_, sq) in scored) skillOf(sq)],
+  );
 }
+
+/// The best next guesses, best first (see [analyseGuesses]).
+Future<List<Recommendation>> recommendTop(
+  List<String> eligible,
+  Iterable<String> candidates, {
+  int k = 3,
+}) async => (await analyseGuesses(eligible, candidates, k: k)).top;
 
 /// The single best next guess, for the solver.
 Future<Recommendation?> recommend(

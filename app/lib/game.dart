@@ -54,7 +54,7 @@ class _GamePageState extends State<GamePage> {
 
   /// The review's best picks for each guess, begun the moment it was made.
   var _jobs = JobQueue();
-  final _analysis = <Future<List<Recommendation>>?>[];
+  final _analysis = <Future<Landscape>?>[];
 
   @override
   void initState() {
@@ -156,7 +156,7 @@ class _GamePageState extends State<GamePage> {
         guesses.length >= tries || !analyseWhilePlaying
             ? null // the last try's picks are only the words that fit
             : _jobs.add(
-                () => recommendTop(
+                () => analyseGuesses(
                   before,
                   recommendationCandidates(
                     before,
