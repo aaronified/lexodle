@@ -6,8 +6,8 @@ import 'logic.dart';
 /// share every guess (and one pool of tries).
 enum GameMode {
   classic('classic', 'one word', 1, 0),
-  quordle('quordle', 'four words at once', 4, 3),
-  sequence('sequence', 'four words, one after the other', 4, 4);
+  quartet('quartet', 'four words at once', 4, 3),
+  relay('relay race', 'four words, one after the other', 4, 4);
 
   const GameMode(this.label, this.sub, this.boards, this.extraTries);
   final String label;
@@ -103,7 +103,7 @@ class Board {
   }
 }
 
-/// The state of a Quordle or Sequence game; pure, so it is tested without UI.
+/// The state of a quartet or relay race game; pure, so it is tested without UI.
 class MultiGame {
   MultiGame(this.mode, List<String> answers, this.tries)
     : boards = [for (final a in answers) Board(a)];
@@ -114,28 +114,52 @@ class MultiGame {
   final guesses = <String>[];
   int _active = 0;
 
-  /// The board a Sequence game is on; null in Quordle, where all are live.
-  int? get active => mode == GameMode.sequence ? _active : null;
+  /// The board a relay race is on; null in a quartet, where all are live.
+  int? get active => mode == GameMode.relay ? _active : null;
 
   bool get won => boards.every((b) => b.solved);
   bool get over => won || guesses.length >= tries;
   int get solvedCount => boards.where((b) => b.solved).length;
 
+  /// What the guesses so far say about each letter on each board, for the
+  /// keyboard: per letter, one entry per board, the best mark that board has
+  /// shown for it (green over yellow over grey), or null if the board has not
+  /// seen the letter yet.
+  Map<String, List<Mark?>> letterMarks() {
+    final out = <String, List<Mark?>>{};
+    for (var b = 0; b < boards.length; b++) {
+      final marks = boards[b].marks;
+      for (var r = 0; r < marks.length; r++) {
+        for (var i = 0; i < marks[r].length; i++) {
+          final per = out[guesses[r][i]] ??= List<Mark?>.filled(
+            boards.length,
+            null,
+          );
+          final old = per[b];
+          if (old == null || marks[r][i].index < old.index) {
+            per[b] = marks[r][i];
+          }
+        }
+      }
+    }
+    return out;
+  }
+
   /// Whether board [i] takes the next guess.
   bool isLive(int i) =>
-      !over && !boards[i].solved && (mode == GameMode.quordle || i == _active);
+      !over && !boards[i].solved && (mode == GameMode.quartet || i == _active);
 
-  /// Whether board [i] is still waiting for its turn (Sequence only).
+  /// Whether board [i] is still waiting for its turn (relay race only).
   bool isLocked(int i) =>
-      mode == GameMode.sequence && !boards[i].solved && i != _active;
+      mode == GameMode.relay && !boards[i].solved && i != _active;
 
-  /// Plays [guess]. In Quordle it goes to every unsolved board. In Sequence it
+  /// Plays [guess]. In a quartet it goes to every unsolved board. In a relay race it
   /// goes to the active board; when that is solved the next one opens with
   /// every earlier guess already applied, which may solve it at once.
   void guess(String guess) {
     if (over) return;
     guesses.add(guess);
-    if (mode == GameMode.quordle) {
+    if (mode == GameMode.quartet) {
       for (final b in boards) {
         if (!b.solved) b.apply(guess);
       }

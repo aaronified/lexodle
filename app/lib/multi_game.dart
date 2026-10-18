@@ -11,8 +11,8 @@ import 'ui.dart';
 import 'word_info.dart';
 import 'words.dart';
 
-/// Quordle and Sequence: four boards that share every guess and one pool of
-/// tries. Quordle plays them all at once; Sequence opens them one at a time.
+/// Quartet and relay race: four boards that share every guess and one pool of
+/// tries. A quartet plays them all at once; a relay race opens them one at a time.
 /// These modes keep no statistics or achievements: skill and luck are defined
 /// for a single hidden word.
 class MultiGamePage extends StatefulWidget {
@@ -238,7 +238,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
                 child: Caption(
                   b.solved
                       ? '${i + 1} · solved in ${b.solvedAt! + 1}'
-                      : (live && mode == GameMode.sequence
+                      : (live && mode == GameMode.relay
                             ? '${i + 1} · now'
                             : '${i + 1}'),
                 ),
@@ -315,6 +315,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   Widget _keyboard() => LetterKeyboard(
     letters: _letters,
+    quadMarks: game.letterMarks(),
     onLetter: _type,
     onEnter: _submit,
     onBack: _back,

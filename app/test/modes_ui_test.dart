@@ -38,8 +38,8 @@ void main() {
     // one word has nothing to share
     expect(find.byKey(const ValueKey('share-slider')), findsNothing);
 
-    // quordle brings the shared-letters slider, 0 to 30
-    appState.setup(mode: GameMode.quordle);
+    // quartet brings the shared-letters slider, 0 to 30
+    appState.setup(mode: GameMode.quartet);
     await tester.pumpAndSettle();
     expect(find.text('shared letters'), findsOneWidget);
     expect(find.text('10%'), findsOneWidget);
@@ -66,19 +66,19 @@ void main() {
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();
     expect(find.byType(Dialog), findsNothing);
-    expect(find.text('play · quordle'), findsOneWidget);
+    expect(find.text('play · quartet'), findsOneWidget);
   });
 
   test('mode and shared letters are kept and bounded', () async {
     SharedPreferences.setMockInitialValues({});
     await appState.load();
-    appState.setup(mode: GameMode.sequence, share: 99);
+    appState.setup(mode: GameMode.relay, share: 99);
     expect(appState.share, 30, reason: 'the slider tops out at 30%');
     appState.setup(share: -5);
     expect(appState.share, 0);
     appState.setup(share: 20);
     final p = await SharedPreferences.getInstance();
-    expect(p.getInt('mode'), GameMode.sequence.index);
+    expect(p.getInt('mode'), GameMode.relay.index);
     expect(p.getInt('share'), 20);
   });
 
@@ -125,15 +125,17 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('quordle: nine tries at normal, solve all four', (
+    testWidgets('quartet: nine tries at normal, solve all four', (
       tester,
     ) async {
-      await open(tester, GameMode.quordle, 3);
+      await open(tester, GameMode.quartet, 3);
       expect(find.text('0 of 4 solved · 9 tries left'), findsOneWidget);
       final a = answers(3);
       expect(a.toSet().length, 4);
 
       await type(tester, a[0]);
+      // the keyboard now carries what each board says about the letters used
+      expect(find.byKey(ValueKey('quad-${a[0][0]}')), findsOneWidget);
       expect(find.text('1 of 4 solved · 8 tries left'), findsOneWidget);
       expect(find.textContaining('1 · solved in 1'), findsOneWidget);
       for (final w in a.skip(1)) {
@@ -147,8 +149,8 @@ void main() {
       }
     });
 
-    testWidgets('sequence: ten tries, boards open in order', (tester) async {
-      await open(tester, GameMode.sequence, 5);
+    testWidgets('relay race: ten tries, boards open in order', (tester) async {
+      await open(tester, GameMode.relay, 5);
       expect(find.text('word 1 of 4 · 10 tries left'), findsOneWidget);
       final a = answers(5);
       await type(tester, a[0]);
@@ -159,7 +161,7 @@ void main() {
     testWidgets('a wrong word is turned away without costing a try', (
       tester,
     ) async {
-      await open(tester, GameMode.quordle, 3);
+      await open(tester, GameMode.quartet, 3);
       await type(tester, 'eeee');
       expect(find.text('not in the word list'), findsOneWidget);
       await tester.sendKeyEvent(LogicalKeyboardKey.backspace);

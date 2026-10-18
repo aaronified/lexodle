@@ -417,7 +417,7 @@ class AppState extends ChangeNotifier {
   /// Light, dark, or whichever the device is set to.
   ThemeMode themeMode = ThemeMode.system;
 
-  /// Quordle and Sequence: the chance, in percent, that answers share a letter.
+  /// Quartet and relay race: the chance, in percent, that answers share a letter.
   int share = 10;
 
   /// How many of the most common words an answer can be drawn from.

@@ -76,7 +76,7 @@ void main() {
       length: 7,
       tries: 3,
       pool: 500,
-      mode: GameMode.quordle,
+      mode: GameMode.quartet,
     );
     await tester.pumpWidget(const LexodleApp());
     await tester.pumpAndSettle();
