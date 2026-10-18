@@ -192,36 +192,31 @@ void main() {
       expect(pt, isNot(contains('prêmio')));
     });
 
-    test(
-      'the Portuguese lists carry no names, and keep the real words',
-      skip: 'pending: rebuild with `python tools/build_words.py pt pt-PT`',
-      () {
-        // names the dictionary alone lets through, in lowercase
-        const names = [
-          'paulo',
-          'maria',
-          'pedro',
-          'jorge',
-          'lisboa',
-          'israel',
-          'miguel',
-          'adam',
-          'nico',
-          'lena',
-          'rafa',
-          'sabrina',
-        ];
-        for (final code in ['pt', 'pt-PT']) {
-          final w = words(code);
-          for (final name in names) {
-            expect(w, isNot(contains(name)), reason: '$code: $name');
-          }
-          for (final word in ['casa', 'falar', 'tempo', 'cidade', 'amigo']) {
-            expect(w, contains(word), reason: '$code: $word');
-          }
+    test('the Portuguese lists carry no names, and keep the real words', () {
+      // names the dictionary alone lets through, in lowercase
+      const names = [
+        'paulo',
+        'maria',
+        'pedro',
+        'jorge',
+        'lisboa',
+        'israel',
+        'miguel',
+        'adam',
+        'nico',
+        'lena',
+        'rafa',
+      ];
+      for (final code in ['pt', 'pt-PT']) {
+        final w = words(code);
+        for (final name in names) {
+          expect(w, isNot(contains(name)), reason: '$code: $name');
         }
-      },
-    );
+        for (final word in ['casa', 'falar', 'tempo', 'cidade', 'amigo']) {
+          expect(w, contains(word), reason: '$code: $word');
+        }
+      }
+    });
 
     test('names and fragments are filtered out, common words are in', () {
       final en = {

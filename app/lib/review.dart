@@ -374,7 +374,7 @@ class _ReviewPageState extends State<ReviewPage> {
       fontSize: 11,
       color: c.onSurface.withValues(alpha: .6),
     );
-    final landed = m.after <= m.expected + 1e-9 ? c.secondary : c.tertiary;
+    final landed = m.after <= m.expected + 1e-9 ? c.secondary : yellowOf(c);
 
     Widget bar(String label, double value, Color color, {bool strong = false}) {
       final frac = (value / m.before).clamp(0.015, 1.0);

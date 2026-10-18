@@ -134,6 +134,7 @@ class _GamePageState extends State<GamePage> {
             lang: widget.bank.language.code,
             length: length,
             tries: tries,
+            pool: pool,
             used: guesses.length,
             won: solved,
             skills: [for (final m in metrics) m.skill],
@@ -337,15 +338,38 @@ class _GamePageState extends State<GamePage> {
     won: won,
   );
 
-  /// A one-line summary; the helper's step-by-step analysis is in the review.
+  /// A one-line summary with the review button; the helper's step-by-step
+  /// analysis is in the review.
   Widget _summary(ColorScheme c) {
     if (metrics.isEmpty) return const SizedBox();
     double avg(Iterable<double> v) => v.reduce((a, b) => a + b) / v.length;
-    return Caption(
-      'average skill ${avg(metrics.map((m) => m.skill)).round()}'
-      ' · luck ${luckText(avg(metrics.map((m) => m.luck)))}',
+    return Row(
+      children: [
+        Expanded(
+          child: Caption(
+            'average skill ${avg(metrics.map((m) => m.skill)).round()}'
+            ' · luck ${luckText(avg(metrics.map((m) => m.luck)))}',
+          ),
+        ),
+        _smallButton(
+          'review',
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => ReviewPage(record: _record())),
+          ),
+        ),
+      ],
     );
   }
+
+  Widget _smallButton(String label, VoidCallback onPressed) => OutlinedButton(
+    style: OutlinedButton.styleFrom(
+      minimumSize: const Size(0, 36),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+    ),
+    onPressed: onPressed,
+    child: Text(label),
+  );
 
   Widget _overPanel(ColorScheme c) {
     return ConstrainedBox(
@@ -357,11 +381,21 @@ class _GamePageState extends State<GamePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              won
-                  ? 'solved in ${guesses.length} of $tries'
-                  : 'the word was  $answer',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    won
+                        ? 'solved in ${guesses.length} of $tries'
+                        : 'the word was  $answer',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                _smallButton('replay', () => setState(_reset)),
+              ],
             ),
             if (won) Caption(answer),
             const SizedBox(height: 10),
@@ -389,36 +423,6 @@ class _GamePageState extends State<GamePage> {
             const Divider(),
             const SizedBox(height: 10),
             WordInfoView(word: answer, language: widget.bank.language),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('menu'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ReviewPage(record: _record()),
-                      ),
-                    ),
-                    child: const Text('review'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => setState(_reset),
-                    child: const Text('again'),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),

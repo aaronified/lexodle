@@ -14,6 +14,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     appState.ach = {};
+    appState.stats = Stats();
   });
 
   test('every achievement has its own icon, and the file exists', () {
@@ -34,6 +35,10 @@ void main() {
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(420, 4200));
+    appState.stats = Stats()
+      ..mastery = {
+        'en': {'5:6:1500', '4:6:1500', '5:3:500'},
+      };
     appState.ach = {
       'one_shot': AchState(
         times: 3,
@@ -46,7 +51,8 @@ void main() {
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
 
-    expect(find.byType(SvgPicture), findsNWidgets(achievements.length));
+    // one glyph per achievement, plus the odd drawn flag in the mastery list
+    expect(find.byType(SvgPicture), findsAtLeastNWidgets(achievements.length));
 
     // earned more than once: the count and the latest date
     expect(find.text('×3'), findsOneWidget);
@@ -54,9 +60,17 @@ void main() {
 
     // numbered achievements carry a bar; the earned one restarted from 0 (4/10)
     final numbered = achievements.where((a) => a.numbered).length;
-    expect(find.byKey(const ValueKey('bar-fill')), findsNWidgets(numbered));
+    // (the language mastery list has a bar of its own for every language)
+    expect(
+      find.byKey(const ValueKey('bar-fill')),
+      findsAtLeastNWidgets(numbered),
+    );
     expect(find.text('4/10'), findsOneWidget);
     expect(find.text('0/100'), findsOneWidget);
+
+    // mastery: 3 of English's 5 lengths x 4 tries x 4 pools = 80 settings
+    expect(find.text('language mastery'), findsOneWidget);
+    expect(find.text('3/80'), findsOneWidget);
 
     // the history table lists what was earned, how often, first and latest
     expect(find.text('history'), findsOneWidget);

@@ -15,6 +15,30 @@ void main() {
     expect(i.blocks.first.definitions.first, 'house');
   });
 
+  test('french: gender, labels, examples with translations', () {
+    final blocks = parse('fr-maison').blocks;
+    final b = blocks.first;
+    expect(b.gender, 'f');
+    expect(b.forms, contains('plural'));
+    expect(b.forms, isNot(contains('maison ')));
+    final senses = [for (final x in blocks) ...x.senses];
+    final withExamples = senses.where((s) => s.examples.isNotEmpty);
+    expect(withExamples, isNotEmpty);
+    final e = withExamples.expand((s) => s.examples).first;
+    expect(e.text, isNotEmpty);
+    expect(e.translation, isNotEmpty);
+    expect(
+      senses.any((s) => s.labels.isNotEmpty),
+      isTrue,
+      reason: 'sense labels are kept apart from the gloss',
+    );
+    for (final s in senses) {
+      for (final l in s.labels) {
+        expect(s.text, isNot(contains(l)));
+      }
+    }
+  });
+
   test('english: definitions plus synonyms from headings and inline spans', () {
     final i = parse('en-about');
     expect(i.blocks.map((b) => b.pos), containsAll(['preposition', 'adverb']));

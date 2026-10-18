@@ -3,10 +3,34 @@ import 'dart:convert';
 import 'package:html/parser.dart' as html;
 import 'package:http/http.dart' as http;
 
+/// A usage example of one sense, with its translation when Wiktionary gives one.
+class Example {
+  const Example(this.text, [this.translation = '']);
+  final String text;
+  final String translation;
+}
+
+/// One numbered sense: its register labels ("informal", "transitive"), the
+/// gloss and a few examples.
+class Sense {
+  Sense(this.text, {this.labels = const [], this.examples = const []});
+  final String text;
+  final List<String> labels;
+  final List<Example> examples;
+}
+
 class PosBlock {
-  PosBlock(this.pos, this.definitions);
+  PosBlock(this.pos, {this.gender = '', this.forms = ''});
   final String pos;
-  final List<String> definitions;
+
+  /// Grammatical gender as Wiktionary abbreviates it ("m", "f", "n"), if any.
+  final String gender;
+
+  /// The rest of the headword line, e.g. "(plural maisons)".
+  final String forms;
+  final List<Sense> senses = [];
+
+  List<String> get definitions => [for (final s in senses) s.text];
 }
 
 class WordInfo {
@@ -17,6 +41,7 @@ class WordInfo {
     this.blocks = const [],
     this.synonyms = const [],
     this.antonyms = const [],
+    this.etymology = '',
   });
   final String url;
   final List<String> ipa;
@@ -24,6 +49,9 @@ class WordInfo {
   final List<PosBlock> blocks;
   final List<String> synonyms;
   final List<String> antonyms;
+
+  /// The first paragraph of the etymology, shortened.
+  final String etymology;
 
   bool get isEmpty => blocks.isEmpty && ipa.isEmpty;
 }
@@ -63,6 +91,7 @@ WordInfo parseSection(
   int maxBlocks = 3,
   int maxDefs = 4,
   int maxNyms = 8,
+  int maxExamples = 2,
 }) {
   final root = html.parseFragment(markup);
   final top = root.querySelector('.mw-parser-output') ?? root;
@@ -88,6 +117,7 @@ WordInfo parseSection(
   var inPos = false;
   var mode = '';
   final syn = <String>[], ant = <String>[];
+  var etymology = '';
 
   void addNym(List<String> into, String t) {
     t = _squash(t);
@@ -100,10 +130,13 @@ WordInfo parseSection(
     if (node.classes.contains('mw-heading') && h != null) {
       final id = (h.id).replaceFirst(RegExp(r'_\d+$'), '');
       if (_posIds.contains(id)) {
-        current = PosBlock(_squash(h.text).toLowerCase(), []);
+        // the headword line follows the heading, so it is read further down
+        current = PosBlock(_squash(h.text).toLowerCase());
         if (blocks.length < maxBlocks) blocks.add(current);
         inPos = true;
         mode = 'pos';
+      } else if (id == 'Etymology') {
+        mode = 'ety';
       } else if (id == 'Synonyms') {
         mode = 'syn';
       } else if (id == 'Antonyms') {
@@ -113,19 +146,49 @@ WordInfo parseSection(
       }
       continue;
     }
-    if (mode == 'pos' &&
+    if (mode == 'ety' && etymology.isEmpty && node.localName == 'p') {
+      etymology = _shorten(_squash(_withoutNoise(node).text), 220);
+    } else if (mode == 'pos' &&
+        inPos &&
+        node.localName == 'p' &&
+        current != null &&
+        node.querySelector('.headword-line, .headword') != null) {
+      current = _withHeadline(current, node, blocks);
+    } else if (mode == 'pos' &&
         inPos &&
         node.localName == 'ol' &&
         current != null &&
-        current.definitions.isEmpty) {
+        current.senses.isEmpty) {
       for (final li in node.children.where((c) => c.localName == 'li')) {
+        if (current.senses.length >= maxDefs) break;
+        final examples = <Example>[];
+        for (final ex in li.querySelectorAll('.h-usage-example')) {
+          if (ex.parent?.localName == 'li' && ex.parent != li) continue;
+          final text = ex.querySelector('.e-example');
+          if (text == null) continue;
+          final tr = ex.querySelector('.e-translation');
+          examples.add(
+            Example(_squash(text.text), tr == null ? '' : _squash(tr.text)),
+          );
+          if (examples.length >= maxExamples) break;
+        }
+        // the sense's own text: without nested lists, notes and its labels
         final copy = li.clone(true);
-        for (final x in copy.querySelectorAll('ul,ol,dl,div,style,sup')) {
+        for (final x in copy.querySelectorAll(
+          'ul,ol,dl,div,style,sup,.defdate',
+        )) {
+          x.remove();
+        }
+        final labels = <String>[
+          for (final l in copy.querySelectorAll('span.usage-label-sense'))
+            ..._labelsOf(l),
+        ];
+        for (final x in copy.querySelectorAll('span.usage-label-sense')) {
           x.remove();
         }
         final t = _squash(copy.text).replaceFirst(RegExp(r'\s*:$'), '');
-        if (t.isNotEmpty && current.definitions.length < maxDefs) {
-          current.definitions.add(t);
+        if (t.isNotEmpty) {
+          current.senses.add(Sense(t, labels: labels, examples: examples));
         }
       }
     } else if ((mode == 'syn' || mode == 'ant') &&
@@ -153,11 +216,49 @@ WordInfo parseSection(
     audio: audio,
     blocks: [
       for (final b in blocks)
-        if (b.definitions.isNotEmpty) b,
+        if (b.senses.isNotEmpty) b,
     ],
     synonyms: syn.take(maxNyms).toList(),
     antonyms: ant.take(maxNyms).toList(),
+    etymology: etymology,
   );
+}
+
+List<String> _labelsOf(dynamic span) => [
+  for (final c in span.querySelectorAll('.ib-content'))
+    if (_squash(c.text).isNotEmpty) _squash(c.text),
+];
+
+/// A copy of [node] without footnote marks and styles, for plain text.
+dynamic _withoutNoise(dynamic node) {
+  final copy = node.clone(true);
+  for (final x in copy.querySelectorAll('sup,style')) {
+    x.remove();
+  }
+  return copy;
+}
+
+String _shorten(String s, int max) {
+  if (s.length <= max) return s;
+  final cut = s.substring(0, max);
+  final end = cut.lastIndexOf(RegExp(r'[.;,] '));
+  return '${(end > max ~/ 2 ? cut.substring(0, end) : cut.trimRight())}…';
+}
+
+/// Reads gender and inflected forms from a headword line into [block].
+PosBlock _withHeadline(PosBlock block, dynamic line, List<PosBlock> blocks) {
+  final gender = _squash(
+    [for (final g in line.querySelectorAll('.gender')) g.text].join(' '),
+  );
+  final copy = line.clone(true);
+  for (final x in copy.querySelectorAll('.headword,.gender,sup,style')) {
+    x.remove();
+  }
+  final forms = _squash(copy.text);
+  final filled = PosBlock(block.pos, gender: gender, forms: forms);
+  final i = blocks.indexOf(block);
+  if (i >= 0) blocks[i] = filled;
+  return filled;
 }
 
 /// Candidate page titles: Wiktionary titles are case-sensitive and German
@@ -192,6 +293,9 @@ WordInfo mergeInfos(
         .firstWhere((l) => l.isNotEmpty, orElse: () => const []),
     audio: infos.map((i) => i.audio).whereType<String>().firstOrNull,
     blocks: [for (final i in infos) ...i.blocks].take(maxBlocks).toList(),
+    etymology: infos
+        .map((i) => i.etymology)
+        .firstWhere((e) => e.isNotEmpty, orElse: () => ''),
     synonyms: union(infos.map((i) => i.synonyms)),
     antonyms: union(infos.map((i) => i.antonyms)),
   );

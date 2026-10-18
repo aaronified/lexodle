@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'store.dart';
 import 'ui.dart';
+import 'words.dart';
 
 int achievementCount() => achievements.length;
 
@@ -42,6 +43,24 @@ class AchievementsPage extends StatelessWidget {
                     const Divider(),
                     _Row(a, appState.ach[a.id] ?? AchState()),
                   ],
+                  const SizedBox(height: 28),
+                  const Caption('language mastery'),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'win once at every length and every difficulty setting '
+                    '(tries and word pool) of a language.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 10),
+                  FutureBuilder<List<Language>>(
+                    future: WordBank.languages(),
+                    builder: (context, snap) => Column(
+                      children: [
+                        for (final l in snap.data ?? const <Language>[])
+                          _MasteryRow(l, s.mastery[l.code]?.length ?? 0),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 28),
                   const Caption('history'),
                   const SizedBox(height: 10),
@@ -120,6 +139,44 @@ class _Row extends StatelessWidget {
               child: _Bar(progress: st.progress, target: a.target),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// One language's mastery: how many of its settings have been won at.
+class _MasteryRow extends StatelessWidget {
+  const _MasteryRow(this.language, this.won);
+  final Language language;
+  final int won;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final target = masteryTarget(language);
+    final done = won >= target;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          FlagBadge(language.flag),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 130,
+            child: Text(
+              language.name,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: done ? FontWeight.bold : FontWeight.normal,
+                color: done ? c.primary : c.onSurface,
+              ),
+            ),
+          ),
+          Expanded(
+            child: _Bar(progress: won, target: target),
+          ),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'difficulty.dart';
 import 'words.dart';
 
 /// How much the game tells you while you play. Whatever the level, a finished
@@ -41,6 +42,7 @@ class GameResult {
     required this.tries,
     required this.used,
     required this.won,
+    this.pool = 0,
     this.skills = const [],
   });
   final String lang;
@@ -48,6 +50,9 @@ class GameResult {
   final int tries;
   final int used;
   final bool won;
+
+  /// The answer-pool size the game was played at (0 when not known).
+  final int pool;
 
   /// The skill score of every guess, in order.
   final List<double> skills;
@@ -65,6 +70,9 @@ class Stats {
   Set<String> langsWon = {};
   Set<int> lengthsWon = {};
 
+  /// Per language, the settings it has been won at; see [masteryCell].
+  Map<String, Set<String>> mastery = {};
+
   Map<String, dynamic> toJson() => {
     'played': played,
     'wins': wins,
@@ -72,6 +80,7 @@ class Stats {
     'bestStreak': bestStreak,
     'langsWon': langsWon.toList(),
     'lengthsWon': lengthsWon.toList(),
+    'mastery': {for (final e in mastery.entries) e.key: e.value.toList()},
   };
 
   static Stats fromJson(Map<String, dynamic> j) => Stats()
@@ -80,7 +89,11 @@ class Stats {
     ..streak = j['streak'] ?? 0
     ..bestStreak = j['bestStreak'] ?? 0
     ..langsWon = {for (final l in j['langsWon'] ?? []) l as String}
-    ..lengthsWon = {for (final l in j['lengthsWon'] ?? []) l as int};
+    ..lengthsWon = {for (final l in j['lengthsWon'] ?? []) l as int}
+    ..mastery = {
+      for (final e in ((j['mastery'] ?? {}) as Map).entries)
+        e.key as String: {for (final x in e.value as List) x as String},
+    };
 
   void record(GameResult r) {
     played++;
@@ -90,11 +103,26 @@ class Stats {
       if (streak > bestStreak) bestStreak = streak;
       langsWon.add(r.lang);
       lengthsWon.add(r.length);
+      final cell = masteryCell(r.length, r.tries, r.pool);
+      if (cell != null) (mastery[r.lang] ??= {}).add(cell);
     } else {
       streak = 0;
     }
   }
 }
+
+/// The settings a win counts towards mastery for: one word length, one tries
+/// level and one pool level of the difficulty matrix. Null for a game played
+/// at settings outside the matrix.
+String? masteryCell(int length, int tries, int pool) =>
+    triesLevels.any((l) => l.$2 == tries) && poolSizes.contains(pool)
+    ? '$length:$tries:$pool'
+    : null;
+
+/// How many settings a language has to be won at for mastery: every length it
+/// offers at every tries level and pool level.
+int masteryTarget(Language l) =>
+    l.lengths.length * triesLevels.length * poolSizes.length;
 
 /// How an achievement is earned.
 enum Track {
@@ -232,6 +260,14 @@ final achievements = <Achievement>[
     'win 7 games in a row',
     track: Track.streak,
     target: 7,
+  ),
+  Achievement(
+    'bilingual',
+    'bubble-text',
+    'bilingual',
+    'win in 2 languages',
+    track: Track.languages,
+    target: 2,
   ),
   Achievement(
     'polyglot_3',

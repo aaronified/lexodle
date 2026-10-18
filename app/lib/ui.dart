@@ -3,26 +3,29 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'logic.dart';
 
-/// Feedback colours, all from the scheme. Green (secondary) is the right
-/// letter in the right place: a solid tile. Yellow (tertiary) is the right
-/// letter in the wrong place: the container tone with a heavier yellow edge,
-/// which differs from green in lightness as well as hue, since the two hues
-/// alone are close in a muted Material You palette. Absent letters recede into
-/// the surface.
+/// The wrong-place yellow. The scheme's tertiary is too close to its green in
+/// a muted Material You palette, so the yellow is its own warm hue, kept at a
+/// lightness that reads in both themes.
+Color yellowOf(ColorScheme c) => HSLColor.fromAHSL(
+  1,
+  47,
+  .88,
+  c.brightness == Brightness.dark ? .52 : .55,
+).toColor();
+
+/// Feedback colours. Green (secondary) is the right letter in the right place,
+/// yellow the right letter in the wrong place; both are solid tiles with no
+/// edge of their own. Absent letters recede into the surface.
 (Color fill, Color fg) markColors(ColorScheme c, Mark m) => switch (m) {
   Mark.correct => (c.secondary, c.onSecondary),
-  Mark.present => (c.tertiaryContainer, c.onTertiaryContainer),
+  Mark.present => (yellowOf(c), onColor(c, yellowOf(c))),
   Mark.absent => (c.surfaceContainerHighest, c.onSurface.withValues(alpha: .4)),
 };
 
-/// The edge of a feedback tile: its own colour, but yellow for wrong-place.
-Color markBorder(ColorScheme c, Mark m) => switch (m) {
-  Mark.correct => c.secondary,
-  Mark.present => c.tertiary,
-  Mark.absent => c.surfaceContainerHighest,
-};
+/// The edge of a feedback tile: the fill itself, so it shows no edge.
+Color markBorder(ColorScheme c, Mark m) => markColors(c, m).$1;
 
-double markBorderWidth(Mark m) => m == Mark.present ? 2 : 1;
+double markBorderWidth(Mark m) => 1;
 
 /// Colour for a luck score: green above average, red below, plain at zero.
 Color luckColor(ColorScheme c, double v) {

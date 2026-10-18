@@ -71,7 +71,7 @@ void main() {
       await tester.pump();
     }
     await tester.pumpAndSettle();
-    expect(find.text('again'), findsOneWidget);
+    expect(find.text('replay'), findsOneWidget);
     expect(find.text('the word was  $answer'), findsOneWidget);
 
     // the end of a game offers a step-by-step review...

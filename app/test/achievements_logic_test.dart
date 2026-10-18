@@ -8,6 +8,7 @@ GameResult game({
   int tries = 6,
   int length = 5,
   String lang = 'en',
+  int pool = 1500,
   List<double> skills = const [80, 80, 80],
 }) => GameResult(
   lang: lang,
@@ -15,6 +16,7 @@ GameResult game({
   tries: tries,
   used: used,
   won: won,
+  pool: pool,
   skills: skills,
 );
 
@@ -139,6 +141,38 @@ void main() {
       expect(st['polyglot_3']!.progress, 1);
       expect(st['polyglot_3']!.seen, {'en'});
     });
+
+    test('bilingual: two languages', () {
+      final (_, earned) = play([
+        game(lang: 'en'),
+        game(lang: 'en'),
+        game(lang: 'fr'),
+      ]);
+      expect(earned[1], isNot(contains('bilingual')));
+      expect(earned[2], contains('bilingual'));
+    });
+
+    test(
+      'mastery counts each length, tries level and pool once, wins only',
+      () {
+        final s = Stats()
+          ..record(game())
+          ..record(game()) // the same setting again
+          ..record(game(length: 6))
+          ..record(game(tries: 3, pool: 500))
+          ..record(game(won: false, length: 7))
+          ..record(game(tries: 5)) // not a level of the matrix
+          ..record(game(pool: 1234)) // nor is this pool
+          ..record(game(lang: 'fr'));
+        expect(s.mastery['en'], {'5:6:1500', '6:6:1500', '5:3:500'});
+        expect(s.mastery['fr'], {'5:6:1500'});
+        expect(
+          Stats.fromJson(s.toJson()).mastery['en'],
+          s.mastery['en'],
+          reason: 'mastery survives a restart',
+        );
+      },
+    );
 
     test('full range: lengths 4 to 8', () {
       final (st, earned) = play([

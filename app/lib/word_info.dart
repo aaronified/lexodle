@@ -62,31 +62,56 @@ class _WordInfoViewState extends State<WordInfoView> {
             if (info.ipa.isNotEmpty || info.audio != null)
               Row(
                 children: [
-                  Flexible(child: Text(info.ipa.join('  '))),
+                  Flexible(
+                    child: Text(
+                      info.ipa.join('   '),
+                      style: TextStyle(color: c.primary, fontSize: 15),
+                    ),
+                  ),
                   if (info.audio != null)
                     IconButton(
                       tooltip: 'listen',
                       visualDensity: VisualDensity.compact,
+                      color: c.primary,
                       icon: const Icon(Icons.volume_up_outlined, size: 20),
                       onPressed: () => _play(info.audio!),
                     ),
                 ],
               ),
             for (final b in info.blocks) ...[
-              const SizedBox(height: 8),
-              Caption(b.pos),
-              const SizedBox(height: 4),
-              for (var i = 0; i < b.definitions.length; i++)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 3),
-                  child: Text(
-                    '${i + 1}. ${b.definitions[i]}',
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                ),
+              const SizedBox(height: 12),
+              _heading(c, b),
+              const SizedBox(height: 6),
+              for (var i = 0; i < b.senses.length; i++)
+                _sense(c, i + 1, b.senses[i]),
             ],
-            if (info.synonyms.isNotEmpty) _nyms('synonyms', info.synonyms),
-            if (info.antonyms.isNotEmpty) _nyms('antonyms', info.antonyms),
+            if (info.etymology.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _label('origin', yellowOf(c)),
+              const SizedBox(height: 2),
+              Text(
+                info.etymology,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: c.onSurface.withValues(alpha: .75),
+                ),
+              ),
+            ],
+            if (info.synonyms.isNotEmpty)
+              _nyms(
+                'synonyms',
+                info.synonyms,
+                c.secondaryContainer,
+                c.onSecondaryContainer,
+              ),
+            if (info.antonyms.isNotEmpty)
+              _nyms(
+                'antonyms',
+                info.antonyms,
+                c.errorContainer,
+                c.onErrorContainer,
+              ),
             const SizedBox(height: 4),
             TextButton(
               style: TextButton.styleFrom(
@@ -102,14 +127,121 @@ class _WordInfoViewState extends State<WordInfoView> {
     );
   }
 
-  Widget _nyms(String label, List<String> words) => Padding(
-    padding: const EdgeInsets.only(top: 8),
+  /// The part of speech in the accent colour, then gender and forms.
+  Widget _heading(ColorScheme c, PosBlock b) => Text.rich(
+    TextSpan(
+      children: [
+        TextSpan(
+          text: b.pos,
+          style: TextStyle(
+            color: c.primary,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
+          ),
+        ),
+        if (b.gender.isNotEmpty)
+          TextSpan(
+            text: '  ${b.gender}',
+            style: TextStyle(color: c.secondary, fontWeight: FontWeight.bold),
+          ),
+        if (b.forms.isNotEmpty)
+          TextSpan(
+            text: '  ${b.forms}',
+            style: TextStyle(color: c.onSurface.withValues(alpha: .6)),
+          ),
+      ],
+    ),
+    style: const TextStyle(fontSize: 12),
+  );
+
+  /// One numbered sense: labels in the warm colour, the gloss, then examples
+  /// under a green rule.
+  Widget _sense(ColorScheme c, int n, Sense s) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Caption(label),
-        const SizedBox(height: 2),
-        Text(words.join(', '), style: const TextStyle(fontSize: 13)),
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: '$n  ',
+                style: TextStyle(color: c.primary, fontWeight: FontWeight.bold),
+              ),
+              if (s.labels.isNotEmpty)
+                TextSpan(
+                  text: '${s.labels.join(', ')}  ',
+                  style: TextStyle(
+                    color: yellowOf(c),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              TextSpan(text: s.text),
+            ],
+          ),
+          style: const TextStyle(fontSize: 13),
+        ),
+        for (final e in s.examples)
+          Container(
+            margin: const EdgeInsets.only(left: 14, top: 4),
+            padding: const EdgeInsets.only(left: 8),
+            decoration: BoxDecoration(
+              border: Border(left: BorderSide(color: c.secondary, width: 2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  e.text,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: c.onSurface.withValues(alpha: .9),
+                  ),
+                ),
+                if (e.translation.isNotEmpty)
+                  Text(
+                    e.translation,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: c.onSurface.withValues(alpha: .55),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+      ],
+    ),
+  );
+
+  Widget _label(String text, Color color) => Text(
+    text,
+    style: TextStyle(fontSize: 12, letterSpacing: 2, color: color),
+  );
+
+  /// Related words as small tinted chips.
+  Widget _nyms(String label, List<String> words, Color bg, Color fg) => Padding(
+    padding: const EdgeInsets.only(top: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label(label, fg.withValues(alpha: .9)),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (final w in words)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: Text(w, style: TextStyle(fontSize: 12, color: fg)),
+              ),
+          ],
+        ),
       ],
     ),
   );
