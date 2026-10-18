@@ -20,6 +20,7 @@ class GameRecord {
     required this.befores,
     required this.finalEligible,
     required this.won,
+    this.tries = 0,
   });
 
   final WordBank bank;
@@ -38,6 +39,9 @@ class GameRecord {
   /// The words still possible after the last guess.
   final List<String> finalEligible;
   final bool won;
+
+  /// How many tries the game allowed (0 when not known).
+  final int tries;
 
   int get initial => befores.first.length;
   List<String> afterOf(int i) =>
@@ -63,9 +67,19 @@ class _ReviewPageState extends State<ReviewPage> {
   late int step = widget.initialStep.clamp(0, r.guesses.length - 1);
   bool explain = false;
   final picks = <int, List<Recommendation>>{};
-  late final Set<String> _answers = r.bank
-      .answers(r.length, r.poolSize)
-      .toSet();
+
+  /// How common each word the game accepts is (its weight in the list).
+  late final Map<String, int> _weight = {
+    for (final (i, w) in r.bank.guessable(r.length).indexed)
+      w: r.bank.guessWeights(r.length)[i],
+  };
+
+  /// How many picks are named, as on every other step.
+  static const _listed = 3;
+
+  /// The last try: there is nothing left to learn from a guess, so only words
+  /// that fit the clues are worth naming.
+  bool _isFinalTry(int i) => r.tries > 0 && i == r.tries - 1;
 
   @override
   void initState() {
@@ -76,6 +90,23 @@ class _ReviewPageState extends State<ReviewPage> {
   Future<void> _analyse() async {
     final guessable = r.bank.guessable(r.length);
     for (var i = 0; i < r.guesses.length; i++) {
+      if (_isFinalTry(i)) {
+        // every possible word, equally likely; the skill field carries that
+        // chance, in percent, since no split matters any more
+        final fits = r.befores[i];
+        setState(
+          () => picks[i] = [
+            for (final w in fits.take(_listed))
+              Recommendation(
+                w,
+                100 / fits.length,
+                fits.length.toDouble(),
+                true,
+              ),
+          ],
+        );
+        continue;
+      }
       final top = await recommendTop(
         r.befores[i],
         recommendationCandidates(r.befores[i], guessable),
@@ -172,7 +203,9 @@ class _ReviewPageState extends State<ReviewPage> {
                         const SizedBox(height: 14),
                         _picks(c, m, top),
                         const SizedBox(height: 18),
-                        _pool(c, m, top),
+                        _frequency(c),
+                        const SizedBox(height: 18),
+                        if (!_isFinalTry(step)) _pool(c, m, top),
                         Text(
                           top == null
                               ? 'Working out the alternatives…'
@@ -181,7 +214,8 @@ class _ReviewPageState extends State<ReviewPage> {
                                   picks: top,
                                   after: r.afterOf(step),
                                   solved: r.guesses[step] == r.answer,
-                                  guessCanBeAnswer: _answers.contains(
+                                  finalTry: _isFinalTry(step),
+                                  guessFits: r.befores[step].contains(
                                     r.guesses[step],
                                   ),
                                 ),
@@ -466,7 +500,72 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
+  /// How common the words still possible were, most common first, with your
+  /// guess and the answer marked where they stand. Heights are on a log scale
+  /// (how common a word is spans orders of magnitude) shared by every step, so
+  /// the shape can be compared as the pool shrinks.
+  Widget _frequency(ColorScheme c) {
+    final words = r.befores[step];
+    if (words.isEmpty) return const SizedBox();
+    final series = frequencySeries(words, _weight, _weight.values);
+    final guessAt = words.indexOf(r.guesses[step]);
+    final answerAt = words.indexOf(r.answer);
+    final dim = TextStyle(
+      fontSize: 11,
+      color: c.onSurface.withValues(alpha: .6),
+    );
+    Widget key(Color color, String label) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(width: 8, height: 8, color: color),
+        const SizedBox(width: 6),
+        Text(label, style: dim),
+      ],
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Caption('the ${words.length} possible words, by how common'),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 72,
+          width: double.infinity,
+          child: CustomPaint(
+            key: const ValueKey('freq-plot'),
+            painter: _FrequencyPainter(
+              series,
+              bars: words.length <= 60,
+              guessAt: guessAt,
+              answerAt: answerAt,
+              base: c.onSurface.withValues(alpha: .3),
+              guess: c.primary,
+              answer: c.secondary,
+              axis: c.outlineVariant,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 12,
+          runSpacing: 2,
+          children: [
+            Text('most common', style: dim),
+            if (guessAt >= 0) key(c.primary, 'your guess'),
+            if (answerAt >= 0) key(c.secondary, 'the answer'),
+            Text('rarest', style: dim),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _picks(ColorScheme c, GuessMetrics m, List<Recommendation>? top) {
+    final finalTry = _isFinalTry(step);
+    final fits = r.befores[step];
+    final chance = fits.isEmpty ? 0.0 : 100 / fits.length;
+    String pct(double v) =>
+        v == 0 ? '0%' : (v < 10 ? '${v.toStringAsFixed(1)}%' : '${v.round()}%');
     // Two real columns: the words share one edge, and the skill sits in a
     // fixed-width column of its own, whatever size the line is set in.
     Widget line(
@@ -475,6 +574,7 @@ class _ReviewPageState extends State<ReviewPage> {
       bool big = false,
       bool wordRight = false,
       String keys = 'pick',
+      String? shown,
     }) {
       final style = TextStyle(
         fontSize: big ? 20 : 15,
@@ -496,7 +596,7 @@ class _ReviewPageState extends State<ReviewPage> {
             SizedBox(
               width: 44,
               child: Text(
-                '${skill.round()}',
+                shown ?? '${skill.round()}',
                 key: ValueKey('$keys-skill-$word'),
                 style: style.copyWith(color: c.primary),
                 textAlign: TextAlign.right,
@@ -516,7 +616,17 @@ class _ReviewPageState extends State<ReviewPage> {
             children: [
               const Caption('your guess'),
               Divider(color: c.outlineVariant),
-              line(m.guess, m.skill, big: true, keys: 'yours'),
+              line(
+                m.guess,
+                m.skill,
+                big: true,
+                keys: 'yours',
+                shown: finalTry
+                    ? pct(
+                        fits.contains(m.guess) ? chance : 0,
+                      ) // pool words only
+                    : null,
+              ),
             ],
           ),
         ),
@@ -532,7 +642,28 @@ class _ReviewPageState extends State<ReviewPage> {
               Divider(color: c.outlineVariant),
               if (top == null)
                 const Caption('working it out…')
-              else
+              else if (finalTry) ...[
+                for (var i = 0; i < top.length; i++)
+                  line(
+                    top[i].word,
+                    top[i].skill,
+                    big: i == 0,
+                    wordRight: true,
+                    shown: pct(chance),
+                  ),
+                Text(
+                  fits.length > top.length
+                      ? 'any of the ${fits.length} words that fit, equally '
+                            'likely'
+                      : 'each equally likely',
+                  key: const ValueKey('pick-each'),
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: c.onSurface.withValues(alpha: .6),
+                  ),
+                ),
+              ] else
                 for (var i = 0; i < top.length; i++)
                   line(top[i].word, top[i].skill, big: i == 0, wordRight: true),
             ],
@@ -541,4 +672,108 @@ class _ReviewPageState extends State<ReviewPage> {
       ],
     );
   }
+}
+
+/// The heights of the plot for [words] (most common first): each word's
+/// log-weight scaled to 0..1 between the rarest and the most common word of
+/// [all], the weights of the whole pool, so that every step shares one scale.
+/// A word missing from [weights] counts as the rarest.
+List<double> frequencySeries(
+  List<String> words,
+  Map<String, int> weights,
+  Iterable<int> all,
+) {
+  double lg(int w) => log(max(w, 1)) / ln10;
+  final lo = all.isEmpty ? 0.0 : all.map(lg).reduce(min);
+  final hi = all.isEmpty ? 1.0 : all.map(lg).reduce(max);
+  final span = hi - lo;
+  return [
+    for (final w in words)
+      span <= 0
+          ? 1.0
+          : ((lg(weights[w] ?? 1) - lo) / span).clamp(0.0, 1.0).toDouble(),
+  ];
+}
+
+class _FrequencyPainter extends CustomPainter {
+  _FrequencyPainter(
+    this.series, {
+    required this.bars,
+    required this.guessAt,
+    required this.answerAt,
+    required this.base,
+    required this.guess,
+    required this.answer,
+    required this.axis,
+  });
+  final List<double> series;
+  final bool bars;
+  final int guessAt, answerAt;
+  final Color base, guess, answer, axis;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final n = series.length;
+    if (n == 0) return;
+    // a floor, so the rarest word still shows as a sliver
+    double h(double v) => (0.06 + 0.94 * v) * size.height;
+    canvas.drawLine(
+      Offset(0, size.height),
+      Offset(size.width, size.height),
+      Paint()
+        ..color = axis
+        ..strokeWidth = 1,
+    );
+    Color colorOf(int i) => i == answerAt
+        ? answer
+        : i == guessAt
+        ? guess
+        : base;
+    if (bars) {
+      final slot = size.width / n;
+      final w = max(1.0, slot * .7);
+      for (var i = 0; i < n; i++) {
+        final x = slot * i + (slot - w) / 2;
+        canvas.drawRect(
+          Rect.fromLTWH(x, size.height - h(series[i]), w, h(series[i])),
+          Paint()..color = colorOf(i),
+        );
+      }
+      return;
+    }
+    // many words: an area, one column per pixel pair, the marks as lines
+    final cols = max(2, (size.width / 2).floor());
+    final path = Path()..moveTo(0, size.height);
+    for (var k = 0; k < cols; k++) {
+      final i = (k / (cols - 1) * (n - 1)).round();
+      path.lineTo(k / (cols - 1) * size.width, size.height - h(series[i]));
+    }
+    path
+      ..lineTo(size.width, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = base);
+    for (final i in [guessAt, answerAt]) {
+      if (i < 0) continue;
+      final x = n == 1 ? 0.0 : i / (n - 1) * size.width;
+      canvas.drawLine(
+        Offset(x, size.height - h(series[i])),
+        Offset(x, size.height),
+        Paint()
+          ..color = colorOf(i)
+          ..strokeWidth = 2,
+      );
+      canvas.drawCircle(
+        Offset(x, size.height - h(series[i])),
+        3,
+        Paint()..color = colorOf(i),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_FrequencyPainter old) =>
+      old.series != series ||
+      old.guessAt != guessAt ||
+      old.answerAt != answerAt ||
+      old.bars != bars;
 }

@@ -100,7 +100,19 @@ String luckText(double v) {
   return r == 0 ? '0%' : (r > 0 ? '+$r%' : '\u2212${-r}%');
 }
 
-GuessMetrics scoreGuess(List<String> eligibleBefore, String guess, int after) {
+/// Scores a guess made when [eligibleBefore] words were possible, leaving
+/// [after]. On the [finalTry] only a word that fits the clues can win, so luck
+/// is no longer about the pool you landed in but about the pick itself: the
+/// outcome (1 if [solved], else 0) less the 1 in n chance of any one word, in
+/// percent. Three possible words give +67 for the right one and -33 for a
+/// wrong one; two give +50 and -50.
+GuessMetrics scoreGuess(
+  List<String> eligibleBefore,
+  String guess,
+  int after, {
+  bool finalTry = false,
+  bool solved = false,
+}) {
   final n = eligibleBefore.length;
   final sizes = <int, int>{};
   for (final w in eligibleBefore) {
@@ -116,7 +128,9 @@ GuessMetrics scoreGuess(List<String> eligibleBefore, String guess, int after) {
       : n == 1
       ? (eligibleBefore.first == guess ? 100.0 : 0.0)
       : (n - expected) / (n - 1) * 100;
-  final luck = expected <= 0 ? 0.0 : (expected - after) / expected * 100;
+  final luck = finalTry && n > 0
+      ? ((solved ? 1.0 : 0.0) - 1 / n) * 100
+      : (expected <= 0 ? 0.0 : (expected - after) / expected * 100);
   return GuessMetrics(
     guess: guess,
     skill: skill,
@@ -233,7 +247,8 @@ String stepComment({
   required List<Recommendation> picks,
   required List<String> after,
   required bool solved,
-  bool guessCanBeAnswer = true,
+  bool finalTry = false,
+  bool guessFits = true,
 }) {
   final out = <String>[];
   if (m.before <= 1) {
@@ -241,6 +256,19 @@ String stepComment({
       solved
           ? 'Only one word was possible, and you played it.'
           : 'Only one word was left, and this was not it.',
+    );
+  } else if (finalTry) {
+    // the last try: nothing is left to learn, only a word that fits the clues
+    // can win, and each of those is as likely as the next
+    final n = m.before;
+    out.add(
+      guessFits
+          ? 'This was your last try, so only a word that fits the clues could '
+                'win, and all $n were equally likely. ${m.guess} was one of '
+                'them: a 1 in $n chance.'
+          : 'This was your last try, but ${m.guess} does not fit the clues, so '
+                'it could not win. Any of the $n possible words had a 1 in $n '
+                'chance.',
     );
   } else if (picks.isNotEmpty) {
     final top = picks.first;
@@ -268,19 +296,16 @@ String stepComment({
       );
     }
   }
-  if (!guessCanBeAnswer && !solved) {
-    out.add(
-      '${m.guess} is accepted as a guess, but the game never uses it as '
-      'an answer, so it could not have won.',
-    );
-  }
-  if (m.luck >= 25) {
+  // (on the last try luck is the chance of the pick, already said above)
+  if (!finalTry && m.luck >= 25) {
     out.add('You got lucky: you landed in a smaller pool than expected.');
-  } else if (m.luck <= -25) {
+  } else if (!finalTry && m.luck <= -25) {
     out.add('Unlucky: you landed in a larger pool than expected.');
   }
   if (solved) {
     out.add('You solved it.');
+  } else if (finalTry) {
+    // the game is over: nothing is coming next turn
   } else if (after.length == 1) {
     out.add(
       "There's only one possible solution left, so you should solve it "

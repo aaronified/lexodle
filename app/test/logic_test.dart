@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/logic.dart';
+import 'package:lexodle/review.dart';
 
 const c = Mark.correct, p = Mark.present, a = Mark.absent;
 
@@ -39,6 +40,62 @@ void main() {
       // The Python filter dropped 'crane' here (second e scored absent).
       final m = evaluate('crane', 'eerie');
       expect(filterEligible(['crane', 'zzzzz'], 'eerie', m), ['crane']);
+    });
+  });
+
+  group('luck on the last try', () {
+    final three = ['aaaa', 'bbbb', 'cccc'];
+    test('three left: +67 for the right one, -33 for a wrong one', () {
+      expect(
+        scoreGuess(three, 'bbbb', 1, finalTry: true, solved: true).luck,
+        closeTo(66.67, .01),
+      );
+      expect(
+        scoreGuess(three, 'aaaa', 2, finalTry: true).luck,
+        closeTo(-33.33, .01),
+      );
+    });
+    test('two left: +50 for the right one, -50 for a wrong one', () {
+      final two = ['aaaa', 'bbbb'];
+      expect(
+        scoreGuess(two, 'aaaa', 1, finalTry: true, solved: true).luck,
+        closeTo(50, 1e-9),
+      );
+      expect(
+        scoreGuess(two, 'bbbb', 1, finalTry: true).luck,
+        closeTo(-50, 1e-9),
+      );
+    });
+    test('one left: nothing to gain for the right one, all lost otherwise', () {
+      expect(
+        scoreGuess(['aaaa'], 'aaaa', 1, finalTry: true, solved: true).luck,
+        0,
+      );
+      expect(scoreGuess(['aaaa'], 'zzzz', 1, finalTry: true).luck, -100);
+    });
+    test('the earlier tries keep the pool-based luck', () {
+      final early = scoreGuess(three, 'aaaa', 1);
+      final late = scoreGuess(three, 'aaaa', 1, finalTry: true, solved: true);
+      expect(early.luck, isNot(closeTo(late.luck, 1)));
+    });
+  });
+
+  group('frequency plot data', () {
+    test('log heights scaled between the rarest and commonest of the pool', () {
+      final w = {'a': 1000, 'b': 100, 'c': 10};
+      final h = frequencySeries(['a', 'b', 'c'], w, w.values);
+      expect(h, [1.0, closeTo(.5, 1e-9), 0.0]);
+    });
+    test(
+      'a subset shares the pool scale, and an unknown word is the rarest',
+      () {
+        final w = {'a': 1000, 'b': 100, 'c': 10};
+        expect(frequencySeries(['b'], w, w.values), [closeTo(.5, 1e-9)]);
+        expect(frequencySeries(['zz'], w, w.values), [0.0]);
+      },
+    );
+    test('a pool of one weight is a flat line', () {
+      expect(frequencySeries(['a', 'b'], {'a': 5, 'b': 5}, [5, 5]), [1.0, 1.0]);
     });
   });
 
@@ -163,6 +220,30 @@ void main() {
     Recommendation rec(String w, double skill, double e) =>
         Recommendation(w, skill, e, false);
 
+    test('comment: on the last try only a fitting word could win', () {
+      final fits = stepComment(
+        m: gm('grout', 40, 0, 12, 1),
+        picks: [rec('turbo', 90, 1.1)],
+        after: ['grout'],
+        solved: false,
+        finalTry: true,
+      );
+      expect(fits, contains('last try'));
+      expect(fits, contains('1 in 12'));
+      expect(fits, isNot(contains('missed chance')));
+      expect(fits, isNot(contains('turbo')));
+      final misses = stepComment(
+        m: gm('mamma', 40, 0, 12, 5),
+        picks: [rec('turbo', 90, 1.1)],
+        after: ['a', 'b', 'c', 'd', 'e'],
+        solved: false,
+        finalTry: true,
+        guessFits: false,
+      );
+      expect(misses, contains('does not fit the clues'));
+      expect(misses, isNot(contains('turbo')));
+    });
+
     test('comment: a top pick is praised', () {
       final t = stepComment(
         m: gm('grout', 98, 0, 7, 1),
@@ -204,21 +285,6 @@ void main() {
       );
       expect(unlucky, contains('Unlucky'));
     });
-    test(
-      'comment: a valid guess that can never be the answer is said so, once',
-      () {
-        final t = stepComment(
-          m: gm('entre', 0, 0, 1, 1),
-          picks: [rec('etude', 100, 1)],
-          after: ['etude'],
-          solved: false,
-          guessCanBeAnswer: false,
-        );
-        expect(t, contains('this was not it'));
-        expect(t, contains('never uses it as an answer'));
-        expect(t, isNot(contains('vocabulary')));
-      },
-    );
     test('comment: solved, and nothing to compare yet', () {
       expect(
         stepComment(

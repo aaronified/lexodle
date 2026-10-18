@@ -48,6 +48,9 @@ class WordBank {
   /// Every word accepted as a guess at [length], most frequent first.
   List<String> guessable(int length) => _words[length] ?? const [];
 
+  /// How common each word of [guessable] is, in the same order.
+  List<int> guessWeights(int length) => _weights[length] ?? const [];
+
   List<int> answerWeights(int length, [int size = defaultPool]) {
     final w = _weights[length] ?? const [];
     return w.length > size ? w.sublist(0, size) : w;

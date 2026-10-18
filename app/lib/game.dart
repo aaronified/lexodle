@@ -67,7 +67,10 @@ class _GamePageState extends State<GamePage> {
 
   void _reset() {
     answer = chooseWord(_pool, widget.bank.answerWeights(length, pool), _rng);
-    eligible = List.of(_pool);
+    // Every word the game accepts counts as possible, not only the common ones
+    // the answer is drawn from: a player cannot know that list, and a real
+    // word that fits every clue must never be ruled out behind their back.
+    eligible = List.of(widget.bank.guessable(length));
     guesses.clear();
     marks.clear();
     keyMarks.clear();
@@ -120,7 +123,15 @@ class _GamePageState extends State<GamePage> {
         if (old == null || m[i].index < old.index) keyMarks[k] = m[i];
       }
       final after = filterEligible(eligible, input, m);
-      metrics.add(scoreGuess(eligible, input, after.length));
+      metrics.add(
+        scoreGuess(
+          eligible,
+          input,
+          after.length,
+          finalTry: guesses.length >= tries,
+          solved: input == answer,
+        ),
+      );
       befores.add(eligible);
       eligible = after;
       final solved = input == answer;
@@ -336,6 +347,7 @@ class _GamePageState extends State<GamePage> {
     befores: List.of(befores),
     finalEligible: eligible,
     won: won,
+    tries: tries,
   );
 
   /// A one-line summary with the review button; the helper's step-by-step

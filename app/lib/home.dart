@@ -8,7 +8,9 @@ import 'logo.dart';
 import 'solver.dart';
 import 'stepper_choice.dart';
 import 'main.dart';
-import 'store.dart';
+import 'modes.dart';
+import 'multi_game.dart';
+import 'settings_dialog.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -77,7 +79,11 @@ class _HomePageState extends State<HomePage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => solver ? SolverPage(bank: bank) : GamePage(bank: bank),
+        builder: (_) => solver
+            ? SolverPage(bank: bank)
+            : appState.mode.multi
+            ? MultiGamePage(bank: bank)
+            : GamePage(bank: bank),
       ),
     );
   }
@@ -172,38 +178,44 @@ class _HomePageState extends State<HomePage> {
                             onChanged: (t, pl) =>
                                 appState.setup(tries: t, pool: pl),
                           ),
-                          const SizedBox(height: 28),
-                          const Caption('helper'),
-                          const SizedBox(height: 10),
-                          StepperChoice<Helper>(
-                            semanticLabel: 'helper',
-                            items: [
-                              for (final h in Helper.values)
-                                (h, h.label, h.sub),
-                            ],
-                            selected: appState.helper,
-                            onChanged: (h) => appState.setup(helper: h),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'whatever you choose, everything is revealed when '
-                            'the game ends.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: c.onSurface.withValues(alpha: .6),
-                            ),
-                          ),
                           const SizedBox(height: 20),
-                          FilledButton(
-                            onPressed: _starting ? null : () => _start(lang),
-                            child: Text(_starting ? 'loading…' : 'play'),
-                          ),
-                          const SizedBox(height: 10),
-                          OutlinedButton(
-                            onPressed: _starting
-                                ? null
-                                : () => _start(lang, solver: true),
-                            child: const Text('solver'),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: FilledButton(
+                                  onPressed: _starting
+                                      ? null
+                                      : () => _start(lang),
+                                  child: Text(
+                                    _starting
+                                        ? 'loading…'
+                                        : appState.mode == GameMode.classic
+                                        ? 'play'
+                                        : 'play · ${appState.mode.label}',
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                height: 52,
+                                width: 52,
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                  onPressed: () => showSettings(
+                                    context,
+                                    onSolver: _starting
+                                        ? null
+                                        : () => _start(lang, solver: true),
+                                  ),
+                                  child: const Icon(
+                                    Icons.settings_outlined,
+                                    semanticLabel: 'settings',
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 28),
                           const Divider(),

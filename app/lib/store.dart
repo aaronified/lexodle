@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'difficulty.dart';
+import 'modes.dart';
 import 'words.dart';
 
 /// How much the game tells you while you play. Whatever the level, a finished
@@ -410,6 +411,10 @@ class AppState extends ChangeNotifier {
   int length = 5;
   int tries = 6;
   Helper helper = Helper.full;
+  GameMode mode = GameMode.classic;
+
+  /// Quordle and Sequence: the chance, in percent, that answers share a letter.
+  int share = 10;
 
   /// How many of the most common words an answer can be drawn from.
   int pool = defaultPool;
@@ -443,6 +448,11 @@ class AppState extends ChangeNotifier {
       } else if (p.getBool('showWordsLeft') == false) {
         helper = Helper.off; // the setting this replaced
       }
+      final mi = p.getInt('mode');
+      if (mi != null && mi >= 0 && mi < GameMode.values.length) {
+        mode = GameMode.values[mi];
+      }
+      share = (p.getInt('share') ?? share).clamp(0, maxShare);
       seenHowTo = p.getBool('seenHowTo') ?? false;
       final s = p.getString('stats');
       if (s != null) stats = Stats.fromJson(jsonDecode(s));
@@ -484,19 +494,25 @@ class AppState extends ChangeNotifier {
     int? tries,
     int? pool,
     Helper? helper,
+    GameMode? mode,
+    int? share,
   }) {
     this.lang = lang ?? this.lang;
     this.length = length ?? this.length;
     this.tries = tries ?? this.tries;
     this.pool = pool ?? this.pool;
     this.helper = helper ?? this.helper;
+    this.mode = mode ?? this.mode;
+    this.share = (share ?? this.share).clamp(0, maxShare);
     try {
       _prefs
         ?..setString('lang', this.lang)
         ..setInt('length', this.length)
         ..setInt('tries', this.tries)
         ..setInt('pool', this.pool)
-        ..setInt('helper', this.helper.index);
+        ..setInt('helper', this.helper.index)
+        ..setInt('mode', this.mode.index)
+        ..setInt('share', this.share);
     } catch (_) {}
     notifyListeners();
   }
