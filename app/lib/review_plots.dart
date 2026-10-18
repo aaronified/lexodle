@@ -190,9 +190,12 @@ class SplitPlot extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           skillReady
-              ? 'skill ${skill.round()}: this guess leaves about ${_w(o.expected)} '
-                    'of the ${_n(o.words)} words on average. no split at all '
-                    'would leave ${_n(o.words)}; the best real guess leaves '
+              ? 'skill ${skill.round()}: how evenly and finely this guess split the '
+                    '${_n(o.words)} possible words. it made ${o.sizes.length} '
+                    'groups, the biggest holding ${_n(o.sizes.first)}; the more '
+                    'even the groups, the fewer words you can expect to be left '
+                    'with. here that is about ${_w(o.expected)}, where no split '
+                    'at all would leave ${_n(o.words)} and the best real guess '
                     'about ${_w(best)}.'
               : 'skill: working out the best real guess…',
           key: const ValueKey('skill-caption'),

@@ -1,0 +1,23 @@
+Bits of reduction: skill + risk + luck = total (exact), by guess
+           tares: N= 4994 groups= 184  skill H2= 5.45  risk H-H2= 0.77  expected reduction H= 6.22 bits | spread of the reduction (sd) 1.71 | mean luck +4.1e-16 | identity error 0.0e+00
+           slate: N= 4994 groups= 174  skill H2= 5.18  risk H-H2= 0.78  expected reduction H= 5.96 bits | spread of the reduction (sd) 1.78 | mean luck -2.8e-16 | identity error 0.0e+00
+           crane: N= 4994 groups= 155  skill H2= 4.44  risk H-H2= 0.97  expected reduction H= 5.42 bits | spread of the reduction (sd) 2.02 | mean luck +5.8e-17 | identity error 0.0e+00
+           abbey: N= 4994 groups=  78  skill H2= 3.18  risk H-H2= 0.70  expected reduction H= 3.88 bits | spread of the reduction (sd) 1.91 | mean luck +1.5e-16 | identity error 1.8e-15
+           queue: N= 4994 groups=  40  skill H2= 2.04  risk H-H2= 0.77  expected reduction H= 2.81 bits | spread of the reduction (sd) 1.99 | mean luck -2.3e-16 | identity error 0.0e+00
+           mamma: N= 4994 groups=  49  skill H2= 1.57  risk H-H2= 0.84  expected reduction H= 2.41 bits | spread of the reduction (sd) 2.18 | mean luck +4.5e-17 | identity error 8.9e-16
+
+Two splits of 100 words with the same number of "small" outcomes available:
+      ten of ten: N=  100 groups=  10  skill H2= 3.32  risk H-H2= 0.00  expected reduction H= 3.32 bits | spread of the reduction (sd) 0.00 | mean luck -4.4e-16 | identity error 0.0e+00
+91 and nine ones: N=  100 groups=  10  skill H2= 0.27  risk H-H2= 0.45  expected reduction H= 0.72 bits | spread of the reduction (sd) 1.86 | mean luck +1.2e-16 | identity error 0.0e+00
+
+The risky split, outcome by outcome (bits):
+  land in 91 (chance   91%): total  0.14 = skill 0.27 + risk 0.45 + luck -0.59
+  land in  1 (chance    9%): total  6.64 = skill 0.27 + risk 0.45 + luck +5.92
+
+Crane, outcome by outcome (bits):
+  land in 641 (chance 12.84%): total  2.96 = skill 4.44 + risk 0.97 + luck -2.46
+  land in 328 (chance  6.57%): total  3.93 = skill 4.44 + risk 0.97 + luck -1.49
+  land in  23 (chance  0.46%): total  7.76 = skill 4.44 + risk 0.97 + luck +2.34
+  land in   6 (chance  0.12%): total  9.70 = skill 4.44 + risk 0.97 + luck +4.28
+  land in   2 (chance  0.04%): total 11.29 = skill 4.44 + risk 0.97 + luck +5.87
+  land in   1 (chance  0.02%): total 12.29 = skill 4.44 + risk 0.97 + luck +6.87

@@ -1,0 +1,10 @@
+N = 4994 five-letter English words, answers uniform; first guesses scanned over all words (49s)
+
+1000 games per valuation, the same answers for all; shares with their standard errors
+valuation  first guess   E     groups  largest | guesses to solve: mean (se)   <=3        <=4        <=5        <=6   | unsolved
+    worst       aloes  118.7     140      251 |          4.01 (0.03) 26.9+-1.4  75.3+-1.4  95.9+-0.6  99.5+-0.2 | 0
+ expected       tares  114.4     184      350 |          3.85 (0.03) 34.3+-1.5  82.1+-1.2  97.0+-0.5  99.4+-0.2 | 0
+  shannon       tares  114.4     184      350 |          3.83 (0.03) 36.2+-1.5  82.5+-1.2  96.9+-0.5  99.1+-0.3 | 0
+   groups       tares  114.4     184      350 |          3.81 (0.03) 37.8+-1.5  82.5+-1.2  97.0+-0.5  99.2+-0.3 | 0
+
+(283s in all)

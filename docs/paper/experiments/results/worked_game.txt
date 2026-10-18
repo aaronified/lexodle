@@ -1,0 +1,13 @@
+after caret against agent: 18 words left: least, meant, agent, beast, dealt, sweat, wheat, feast, yeast, adept, leapt, expat, exalt, beaut, begat, anent, pleat, bleat
+best real guess: E* = 1.56; 1 words reach it, e.g. sepal
+
+least (a possible answer): classes [5, 3, 2, 2, 1, 1, 1, 1, 1, 1]
+  E = 2.67  skill 78  bits: skill H2 = 2.75, risk H-H2 = 0.28, expected H = 3.04
+  the answer lands in a class of 5: total reduction 1.85 bits = 2.75 + 0.28 + luck -1.19;  percentile luck -72%
+  chance of finishing at once: 5.6%
+
+sepal (not a possible answer): classes [3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  E = 1.56  skill 100  bits: skill H2 = 3.53, risk H-H2 = 0.15, expected H = 3.68
+  the answer lands in a class of 2: total reduction 3.17 bits = 3.53 + 0.15 + luck -0.51;  percentile luck -44%
+  chance of finishing at once: 0.0%
+

@@ -281,7 +281,7 @@ void main() {
       final skillText = tester
           .widget<Text>(find.byKey(const ValueKey('skill-caption')))
           .data!;
-      expect(skillText, contains('the best real guess leaves about'));
+      expect(skillText, contains('the best real guess about'));
       expect(
         tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))).data,
         contains('you landed in ${record.metrics[0].after}'),
@@ -401,8 +401,16 @@ void main() {
           .widget<Text>(find.byKey(const ValueKey('skill-caption')))
           .data!;
       expect(skill, contains('skill 62'));
-      expect(skill, contains('about 39 of the 100 words'));
-      expect(skill, contains('the best real guess leaves about 4.0'));
+      // what it is about: how evenly the guess split the words, into how many
+      // groups and how big the biggest, and what that means for the words left
+      expect(skill, contains('how evenly and finely'));
+      expect(skill, contains('split the 100 possible words'));
+      expect(skill, contains('made 5 groups, the biggest holding 60'));
+      expect(skill, contains('about 39'));
+      expect(skill, contains('no split at all would leave 100'));
+      expect(skill, contains('the best real guess about 4.0'));
+      // and it does not read as an average group size
+      expect(skill, isNot(contains('on average')));
       final luck = tester
           .widget<Text>(find.byKey(const ValueKey('luck-caption')))
           .data!;
