@@ -1,0 +1,12 @@
+60 games per player; boldness = percentile of the gap H - H2 among real guesses
+
+strong: 60 games with at least two scored guesses
+  per guess: median 40, mean 42, share above 70 / below 30: 23% / 40%
+  per game, the average: median 37; share above 60/65/70/75: 15% / 5% / 2% / 2%
+  per game, every guess below 30/35/40/45: 17% / 18% / 25% / 27%
+
+casual: 60 games with at least two scored guesses
+  per guess: median 61, mean 58, share above 70 / below 30: 43% / 19%
+  per game, the average: median 60; share above 60/65/70/75: 50% / 30% / 18% / 13%
+  per game, every guess below 30/35/40/45: 3% / 5% / 5% / 8%
+
