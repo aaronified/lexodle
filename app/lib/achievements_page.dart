@@ -96,7 +96,7 @@ class _Row extends StatelessWidget {
               // earned at least once: the accent colour; not yet: a faint ghost
               TablerIcon(
                 a.icon,
-                size: 32,
+                size: 44,
                 color: earned ? c.primary : c.onSurface.withValues(alpha: .22),
               ),
               const SizedBox(width: 16),
@@ -135,7 +135,7 @@ class _Row extends StatelessWidget {
           if (a.numbered) ...[
             const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.only(left: 48),
+              padding: const EdgeInsets.only(left: 60),
               child: _Bar(progress: st.progress, target: a.target),
             ),
           ],

@@ -203,7 +203,7 @@ class _HomePageState extends State<HomePage> {
                                     label: 'settings',
                                     child: TablerIcon(
                                       'settings',
-                                      size: 24,
+                                      size: 28,
                                       color: c.onSurface,
                                     ),
                                   ),

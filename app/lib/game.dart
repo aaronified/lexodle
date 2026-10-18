@@ -415,7 +415,7 @@ class _GamePageState extends State<GamePage> {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
-                    TablerIcon(a.icon, size: 22, color: c.primary),
+                    TablerIcon(a.icon, size: 30, color: c.primary),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
