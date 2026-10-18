@@ -10,8 +10,8 @@ Candidates come from [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.
 | Français (`fr`) | Hunspell, wooorm/dictionaries `fr` | MPL-2.0 |
 | Deutsch (`de`) | Hunspell, wooorm/dictionaries `de` | (GPL-2.0 OR GPL-3.0) |
 | Italiano (`it`) | Hunspell, wooorm/dictionaries `it` | GPL-3.0 |
-| Português (Brasil) (`pt`) | Hunspell, wooorm/dictionaries `pt` | (LGPL-3.0 OR MPL-2.0) |
-| Português (Portugal) (`pt-PT`) | Hunspell, wooorm/dictionaries `pt-PT` | (GPL-2.0 OR LGPL-2.1 OR MPL-1.1) |
+| Português (Brasil) (`pt`) | Hunspell, wooorm/dictionaries `pt` + en.wiktionary.org lemma check | (LGPL-3.0 OR MPL-2.0) |
+| Português (Portugal) (`pt-PT`) | Hunspell, wooorm/dictionaries `pt-PT` + en.wiktionary.org lemma check | (GPL-2.0 OR LGPL-2.1 OR MPL-1.1) |
 | Nederlands (`nl`) | Hunspell, wooorm/dictionaries `nl` | (BSD-3-Clause OR CC-BY-3.0) |
 | Polski (`pl`) | Hunspell, wooorm/dictionaries `pl` | (GPL-3.0 OR LGPL-3.0 OR MPL-2.0) |
 | Svenska (`sv`) | Hunspell, wooorm/dictionaries `sv` | LGPL-3.0 |
