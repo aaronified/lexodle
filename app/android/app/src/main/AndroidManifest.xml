@@ -1,7 +1,12 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Wiktionary lookups and pronunciation audio. Flutter adds this only to the
          debug and profile manifests, so without it a release build is offline. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- ota_update asks for external storage and has not used it since 7.0.1: the
+         update downloads into the app's own storage. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
     <application
         android:label="lexodle"
         android:name="${applicationName}"
@@ -33,6 +38,16 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Lets Android's installer read the update ota_update downloaded. -->
+        <provider
+            android:name="sk.fourq.otaupdate.OtaUpdateFileProvider"
+            android:authorities="${applicationId}.ota_update_provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/ota_update_paths"/>
+        </provider>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -43,6 +58,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Opening a UPI app to donate (url_launcher) on Android 11 and later. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="upi"/>
         </intent>
         <!-- Opening a Wiktionary page (url_launcher) on Android 11 and later. -->
         <intent>

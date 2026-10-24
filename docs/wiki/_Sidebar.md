@@ -14,4 +14,5 @@ Your play
 Behind it
 - [Word lists](Word-lists)
 - [Offline and privacy](Offline-and-privacy)
+- [Updates and support](Updates-and-support)
 - [Developing](Developing)

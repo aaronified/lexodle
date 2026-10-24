@@ -4,10 +4,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import 'backup.dart';
+import 'donate.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'routes.dart';
 import 'stepper_choice.dart';
+import 'update_section.dart';
 import 'store.dart';
 import 'ui.dart';
 
@@ -170,6 +172,16 @@ class SettingsDialog extends StatelessWidget {
                   const Caption('backup'),
                   const SizedBox(height: 10),
                   const _BackupSection(),
+                  const SizedBox(height: 24),
+                  if (updatesSupported) ...[
+                    const Caption('updates'),
+                    const SizedBox(height: 10),
+                    const UpdateSection(),
+                    const SizedBox(height: 24),
+                  ],
+                  const Caption('support lexodle'),
+                  const SizedBox(height: 10),
+                  const DonateSection(),
                   const SizedBox(height: 24),
                   const Caption('play or solve'),
                   const SizedBox(height: 10),

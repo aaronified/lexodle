@@ -138,7 +138,7 @@
   </tr>
 </table>
 
-**And also:** blanks you can pencil in, a backup file for everything, light and dark themes, and nothing
+**And also:** an in-app update check for the Android app, a UPI donation button, blanks you can pencil in, a backup file for everything, light and dark themes, and nothing
 fetched to draw: fonts, flags and icons are in the app
 ([offline and privacy](https://github.com/aaronified/lexodle/wiki/Offline-and-privacy)).
 

@@ -18,5 +18,6 @@ has the highlights; these pages have the detail.
 **Behind it**
 - [Word lists](Word-lists): where the words come from and how they are filtered
 - [Offline and privacy](Offline-and-privacy): nothing is fetched to draw
+- [Updates and support](Updates-and-support): updating the Android app, and chipping in
 - [Developing](Developing): build, test, screenshots, deploy, file map
 - [The maths](https://github.com/aaronified/lexodle/tree/main/docs/paper): the paper, with proofs and experiments

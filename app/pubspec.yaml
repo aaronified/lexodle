@@ -1,7 +1,7 @@
 name: lexodle
 description: "Lexodle: a minimal word game in many Latin-script languages."
 publish_to: 'none'
-version: 0.1.1+1
+version: 0.1.2+1
 
 environment:
   sdk: ^3.13.5
@@ -14,6 +14,7 @@ dependencies:
   flutter_svg: ^2.3.0
   html: ^0.15.7
   http: ^1.6.0
+  ota_update: ^7.1.0
   shared_preferences: ^2.5.6
   url_launcher: ^6.3.3
 
@@ -28,6 +29,7 @@ flutter:
     - assets/words/
     - assets/icons/
     - assets/flags/
+    - assets/donate/
     - assets/fonts/OFL.txt
   fonts:
     - family: JetBrainsMono

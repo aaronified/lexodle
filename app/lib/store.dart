@@ -752,6 +752,35 @@ class AppState extends ChangeNotifier {
   int pool = defaultPool;
   bool seenHowTo = false;
 
+  /// Whether the app looks for a newer version by itself when it opens (at most
+  /// once a day). Off until chosen: each check is a request to GitHub.
+  bool autoUpdateCheck = false;
+
+  /// When the last check that got an answer was, and the newest version it found
+  /// (null when it found none newer).
+  DateTime? lastUpdateCheck;
+  String? latestRelease;
+
+  void setAutoUpdateCheck(bool on) {
+    autoUpdateCheck = on;
+    try {
+      _prefs?.setBool('autoUpdateCheck', on);
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  /// Remembers a check that got an answer, and the version it found.
+  void noteUpdateCheck({required String? latest}) {
+    lastUpdateCheck = DateTime.now();
+    latestRelease = latest;
+    try {
+      _prefs
+        ?..setInt('lastUpdateCheck', lastUpdateCheck!.millisecondsSinceEpoch)
+        ..setString('latestRelease', latest ?? '');
+    } catch (_) {}
+    notifyListeners();
+  }
+
   /// Whether settings have been read, so first-run decisions wait for them.
   bool loaded = false;
 
@@ -1075,6 +1104,13 @@ class AppState extends ChangeNotifier {
         themeMode = ThemeMode.values[ti];
       }
       seenHowTo = p.getBool('seenHowTo') ?? false;
+      autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
+      final last = p.getInt('lastUpdateCheck');
+      if (last != null) {
+        lastUpdateCheck = DateTime.fromMillisecondsSinceEpoch(last);
+      }
+      final found = p.getString('latestRelease');
+      latestRelease = found == null || found.isEmpty ? null : found;
       final s = p.getString('stats');
       if (s != null) stats = Stats.fromJson(jsonDecode(s));
       try {
