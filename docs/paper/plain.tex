@@ -1,0 +1,280 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage[margin=1.15in]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\emergencystretch=2em
+\setlength{\parskip}{.55em}
+\setlength{\parindent}{0pt}
+
+\title{How Lexodle scores a guess, in plain terms}
+\author{The Lexodle project}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+This is the same material as the paper \texttt{main.pdf}, with the notation taken out. You need
+fractions, percentages, averages, and one calculator button (the natural logarithm, explained in
+Section~\ref{sec:skill}). Every number in the examples can be checked by hand.
+
+\tableofcontents
+
+\section{The game, and what is being measured}
+
+A word is hidden. You guess a word of the same length, and each letter comes back green (right
+place), yellow (in the word, wrong place) or grey (not in the word). You keep guessing until you
+find the word or run out of tries.
+
+Every guess is a question, and the colours are the answer. Before a guess some words are still
+possible. After the guess, only the words that would have given \emph{exactly those colours} are
+still possible. A good guess leaves few words. So the natural question is: how many words are
+left, and was that a good number?
+
+Three things decide it, and Lexodle keeps them apart:
+
+\begin{itemize}[nosep]
+\item \textbf{Skill}: how good the \emph{question} was.
+\item \textbf{Luck}: how the \emph{answer} fell, given that question.
+\item \textbf{Daring}: whether you went for the word itself instead of for information.
+\end{itemize}
+
+\section{Groups: the idea everything rests on}
+
+Take the words still possible. Pick a guess. For every possible word, work out the colours the guess
+would show. Words that show the same colours go in the same \emph{group}. When the game answers,
+you learn which group the hidden word is in, and nothing more.
+
+\textbf{Example.} Suppose 18 words are still possible, and a guess splits them into groups of
+sizes
+\[
+5,\ 3,\ 2,\ 2,\ 1,\ 1,\ 1,\ 1,\ 1,\ 1 .
+\]
+(These add up to 18.) If the hidden word is in the group of 5, you are left with 5 words. If it is
+in a group of 1, you are left with just that word.
+
+Each of the 18 words is equally likely to be the hidden one, so the chance of landing in a group is
+its size divided by 18. The group of 5 has chance $5/18$.
+
+\section{The expected number of words left}
+\label{sec:expected}
+
+How many words should you expect to be left with, on average? Multiply each group's size by the
+chance of landing in it, and add up. A group of size $s$ has chance $s/18$, so it contributes
+$s \times s/18 = s^2/18$:
+\[
+\frac{5^2+3^2+2^2+2^2+1+1+1+1+1+1}{18}
+= \frac{25+9+4+4+6}{18} = \frac{48}{18} \approx 2.67 .
+\]
+
+So this guess leaves 2.67 words on average. Call this number $E$ (``expected words left'').
+Smaller is better. If the guess told you nothing (one group of 18), $E$ would be $18^2/18 = 18$.
+If it told everything (18 groups of 1), $E$ would be $18/18 = 1$.
+
+Now compare with the best guess available in this position. The best one splits the 18 words as
+\[
+3,\ 2,\ 2,\ \text{and eleven groups of 1},
+\]
+so
+\[
+E^{*} = \frac{9+4+4+11}{18} = \frac{28}{18} \approx 1.56 .
+\]
+($E^{*}$, ``E star'', means the smallest $E$ that any real guess reaches in this position.) The app
+finds it by trying every word the game accepts.
+
+\section{Skill}
+\label{sec:skill}
+
+Skill compares your $E$ with the two ends: the worst case (nothing learned: $E$ equal to the number
+of words, here 18) and the best case ($E^{*}$). You could do it in a straight line:
+$(18 - 2.67)/(18 - 1.56)$. Lexodle uses logarithms instead, for one reason: most guesses in a real
+game cut the words down by a large factor, and a straight line would put nearly all of them close
+to the top.
+
+\textbf{The one button.} $\ln$ is the natural logarithm key on a calculator. All you need to know is
+that it turns ``how many times smaller'' into a number that adds up: cutting 18 words down to 6 is
+a factor of 3, cutting 6 down to 2 is another factor of 3, and the two cuts' $\ln$ values add to
+the $\ln$ of the total factor 9.
+
+\[
+\text{skill} = \frac{\ln(\text{words left before} \,/\, E)}{\ln(\text{words left before} \,/\, E^{*})} \times 100 .
+\]
+
+\textbf{Worked example.} Words before the guess: 18. $E = 2.67$. $E^{*} = 1.56$.
+\[
+\ln(18/2.67) = \ln 6.75 \approx 1.91, \qquad
+\ln(18/1.56) = \ln 11.54 \approx 2.45, \qquad
+\text{skill} = \frac{1.91}{2.45}\times 100 \approx 78 .
+\]
+
+How to read it: 100 means as good as the best guess available. 0 means the guess told you nothing.
+78 means a good guess that was not the best one. Skill does not depend on the hidden word, only on
+the words that were still possible and the guess you chose.
+
+\textbf{One word left.} Nothing to choose. Playing that word is 100 and anything else is 0.
+
+\section{Luck}
+
+Skill is fixed before the answer comes back. Luck is what the answer did. You guess, and the hidden
+word lands you in a group; the group might be big (bad news) or small (good news).
+
+Luck is the chance that you would have landed in a \emph{bigger} group, minus the chance that you
+would have landed in a \emph{smaller} one. It is a percentage from $-100\%$ to $+100\%$: positive
+means you were luckier than most outcomes, negative unluckier, and 0 is the middle.
+
+\textbf{Worked example,} using the groups $5,3,2,2,1,1,1,1,1,1$ out of 18 words.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+You land in a group of & chance of that & chance of bigger & chance of smaller & luck\\
+\midrule
+5 & $5/18$ & 0 & $13/18$ & $-72\%$\\
+3 & $3/18$ & $5/18$ & $10/18$ & $-28\%$\\
+2 & $4/18$ & $8/18$ & $6/18$ & $+11\%$\\
+1 & $6/18$ & $12/18$ & 0 & $+67\%$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For a group of 5: the chance of a bigger group is 0 (there is none), and the chance of a smaller
+one is $(3+2+2+6)/18 = 13/18$. So luck is $0 - 13/18 = -72\%$.
+
+\textbf{Why this definition.} Weigh each outcome's luck by its chance:
+\[
+\tfrac{5}{18}(-0.72) + \tfrac{3}{18}(-0.28) + \tfrac{4}{18}(0.11) + \tfrac{6}{18}(0.67) = 0 .
+\]
+Luck averages to exactly zero over the possible answers, for \emph{every} possible guess. So a
+guess cannot be made to look lucky by choosing it cleverly; only the answer decides. That also makes
+luck independent of skill. (Two simpler definitions fail this: ``pool you got minus pool expected''
+has no lower limit and ``percent better than expected'' is biased. The paper shows both.)
+
+\textbf{The last try.} With one try left only a word that could still be the answer can win. Luck is
+then about the pick itself: $+100\%$ minus its chance if you win, minus its chance if you lose.
+
+\section{Daring}
+
+Skill and luck say nothing about \emph{what you were trying to do}. A guess that could itself be the
+answer is a try at the word. A guess that cannot be the answer is a probe: you play it for what it
+tells you. Daring measures how much a guess was a try at the word. It multiplies four numbers, each
+between 0 and 1:
+
+\begin{enumerate}[nosep]
+\item \textbf{Could it be the answer?} 1 if yes, 0 if not. A probe has no daring.
+\item \textbf{What did it cost?} $1 - \text{skill}/100$. Going for the word with the best split costs
+nothing.
+\item \textbf{How unlikely was the word?} $1 - $ its chance of being the answer, where the chance
+follows how common each word is. A very likely word is hardly a gamble.
+\item \textbf{Were there tries to spare?} $1 - 1/\text{tries left}$, counting this one. With one try
+left it is 0: going for the word is the only play.
+\end{enumerate}
+
+Daring is 100 times the product.
+
+\textbf{Worked example.} The same guess (skill 78) could itself be the answer, with chance $1/18$,
+and you had 4 tries left:
+\[
+100 \times 1 \times (1 - 0.78) \times \left(1 - \tfrac{1}{18}\right) \times \left(1 - \tfrac14\right)
+= 100 \times 0.22 \times 0.944 \times 0.75 \approx 15.6 .
+\]
+
+Daring is small for almost everyone. In simulated players (Section~\ref{sec:sim}) a player who
+always works the clues scores under 7; one who always plays the commonest word that fits scores
+about 20; a good player seldom goes above 10.
+
+\section{The three add up}
+\label{sec:accounting}
+
+There is an exact bookkeeping identity behind all this, in logarithms: how much a guess cut the
+words (in $\ln$ terms) equals
+
+\[
+\text{skill part} + \text{risk part} + \text{luck part}.
+\]
+
+The skill part is how much the guess is expected to cut. The luck part is the difference between
+what happened and what was expected. The risk part is how lopsided the groups are: a guess whose
+groups are a few huge ones and many tiny ones cuts a lot when lucky and little when not. It is a
+property of the guess, not of the player, which is why daring is a separate idea and is not part of
+this sum. The paper proves the identity and that luck averages to zero.
+
+\section{Expected guesses}
+
+If skill, luck and daring describe a game, they should predict how many guesses it takes. They do,
+partly. Fitting a straight line to simulated games gives, on average over three languages:
+\[
+\text{expected guesses} \approx 8.05 - 0.0413\times\text{skill} - 0.0272\times\text{luck}
+- 0.0316\times\text{daring}.
+\]
+Here skill and daring are on their 0 to 100 scale and luck on its $-100$ to $100$ scale.
+
+Read the signs: more skill means fewer guesses; positive luck means fewer, negative luck more; and
+going for the word more means fewer guesses. In the app, daring is measured from a typical level of
+8, so going for the word less than usual adds guesses. Each term is shown on the history page as the
+number of guesses it adds or takes off.
+
+\textbf{How well it works.} Skill and luck together explain about half of why one game took more
+guesses than another; adding daring explains 1.5 to 4 percentage points more. The rest is the luck
+of the draw in a game of only a few guesses. The numbers come from simulated games, not from people.
+
+\section{Playstyles}
+
+The app reads a style from your recent play in each language: your average skill and average daring
+over your last 100 classic games there, once you have 10.
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+ & works the clues & goes for the word\\
+\midrule
+skill 85 or more (sharp) & analyst & maverick\\
+skill 58 to 85 (solid) & steady & gambler\\
+skill under 58 (loose) & wanderer & wildcard\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The dividing lines for daring are 2.5 for sharp players and 12 for the other two. A margin of 3 skill
+points and 1.5 daring points stops one game on either side of a line from changing your style.
+
+\section{Simulated players}
+\label{sec:sim}
+
+No real players have been measured. To set the lines above, the project plays simulated players
+through the real scoring code, 200 games each (English, five letters):
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+player & average skill & average daring\\
+\midrule
+always the best guess & 100 & 0\\
+one of the three best, at random & 99 & 0.3\\
+best split among words that still fit & 91 & 4.0\\
+commonest word that still fits & 66 & 19.7\\
+any word that still fits & 71 & 21.4\\
+a common word, ignoring the clues & 48 & 6.0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Players who go for the word at any cost (the middle two) have high daring and middling skill. Players
+who work the clues have low daring.
+
+\section{What is not claimed}
+
+\begin{itemize}[nosep]
+\item The playstyle lines and the guesses formula come from simulated players, not people.
+\item Skill is not comparable between word lengths: guessing blindly scores about 48 at five
+letters and 69 at eight.
+\item The word lists are filtered by spelling dictionaries and still contain some oddities (the
+Portuguese lists contain names; see the wiki).
+\item Daring has a fixed form (the product of four numbers); other forms might predict guesses
+better. That is an open question in the paper.
+\end{itemize}
+
+\end{document}

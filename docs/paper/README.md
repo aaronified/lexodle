@@ -93,3 +93,5 @@ The app computes the same quantities in `app/lib/logic.dart` (`scoreGuess`,
 (`analyseMulti`). The properties in the paper are tested in
 `app/test/logic_test.dart`, `review_plots_test.dart` and `multi_analysis_test.dart`
 (bounds, zero mean over random partitions, the last-try rule).
+
+`plain.tex` is the same material for a reader with high-school maths: worked numbers, no notation to learn (build it with `tectonic plain.tex`, as `main.tex`).
