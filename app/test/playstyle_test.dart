@@ -19,7 +19,7 @@ void addGames(
   History h,
   int n, {
   double skill = 70,
-  double? daring = 50,
+  double? daring = 5,
   int guesses = 4,
   int before = 50,
   GameMode mode = GameMode.classic,
@@ -117,11 +117,11 @@ void main() {
   group('reading the traits', () {
     test('they are the means over every guess that had a choice', () {
       final h = History();
-      addGames(h, 5, skill: 60, daring: 20);
-      addGames(h, 5, skill: 80, daring: 40);
+      addGames(h, 5, skill: 60, daring: 4);
+      addGames(h, 5, skill: 80, daring: 8);
       final x = traitsOf(h)!;
       expect(x.skill, 70);
-      expect(x.daring, 30);
+      expect(x.daring, 6);
       expect(x.games, 10);
       expect(x.guesses, 40);
     });
@@ -130,7 +130,7 @@ void main() {
       'a guess with one word left has nothing to choose, so it is left out',
       () {
         final h = History();
-        addGames(h, 5, skill: 50, daring: 30);
+        addGames(h, 5, skill: 50, daring: 6);
         addGames(
           h,
           5,
@@ -140,36 +140,36 @@ void main() {
         ); // the last, sure guess
         final x = traitsOf(h)!;
         expect(x.skill, 50);
-        expect(x.daring, 30);
+        expect(x.daring, 6);
         expect(x.guesses, 20);
       },
     );
 
     test('a guess without a daring still counts for skill, not for daring', () {
       final h = History();
-      addGames(h, 5, skill: 60, daring: 20);
+      addGames(h, 5, skill: 60, daring: 4);
       addGames(h, 5, skill: 80, daring: null);
       final x = traitsOf(h)!;
       expect(x.skill, 70);
-      expect(x.daring, 20);
+      expect(x.daring, 4);
       expect(x.guesses, 20, reason: 'only those with a daring');
     });
 
     test('only the last 100 games are read', () {
       final h = History();
-      addGames(h, 60, skill: 20, daring: 90); // pushed out
-      addGames(h, 100, skill: 90, daring: 10);
+      addGames(h, 60, skill: 20, daring: 30); // pushed out
+      addGames(h, 100, skill: 90, daring: 1);
       final x = traitsOf(h)!;
       expect(x.games, 100);
       expect(x.skill, 90);
-      expect(x.daring, 10);
+      expect(x.daring, 1);
     });
 
     test('only classic games count, a daily among them', () {
       final h = History();
-      addGames(h, 10, skill: 90, daring: 10);
-      addGames(h, 30, skill: 10, daring: 90, mode: GameMode.quartet);
-      addGames(h, 30, skill: 10, daring: 90, mode: GameMode.relay);
+      addGames(h, 10, skill: 90, daring: 1);
+      addGames(h, 30, skill: 10, daring: 30, mode: GameMode.quartet);
+      addGames(h, 30, skill: 10, daring: 30, mode: GameMode.relay);
       final x = traitsOf(h)!;
       expect(x.games, 10);
       expect(x.skill, 90);
@@ -189,7 +189,7 @@ void main() {
             n: 0,
             word: 'crane',
             skill: 90,
-            daring: 10,
+            daring: 1,
             before: 50,
           ),
         ],
@@ -217,12 +217,12 @@ void main() {
     Playstyle? at(double skill, double daring) => classify(t(skill, daring));
 
     test('each skill tier splits into careful and bold', () {
-      expect(at(95, 10), analyst);
-      expect(at(95, 60), maverick);
-      expect(at(70, 30), steady);
-      expect(at(70, 80), gambler);
-      expect(at(40, 20), wanderer);
-      expect(at(40, 80), wildcard);
+      expect(at(95, 1), analyst);
+      expect(at(95, 10), maverick);
+      expect(at(70, 5), steady);
+      expect(at(70, 25), gambler);
+      expect(at(40, 5), wanderer);
+      expect(at(40, 25), wildcard);
     });
 
     test('the lines between the tiers', () {
@@ -235,21 +235,21 @@ void main() {
     });
 
     test('the daring split is a little different in each tier', () {
-      // sharp: 40, solid: 65, loose: 52
-      expect(at(90, 39.99), analyst);
-      expect(at(90, 40), maverick);
-      expect(at(70, 64.99), steady);
-      expect(at(70, 65), gambler);
-      expect(at(40, 51.99), wanderer);
-      expect(at(40, 52), wildcard);
+      // sharp: 2.5, solid: 12, loose: 12
+      expect(at(90, 2.49), analyst);
+      expect(at(90, 2.5), maverick);
+      expect(at(70, 11.99), steady);
+      expect(at(70, 12), gambler);
+      expect(at(40, 11.99), wanderer);
+      expect(at(40, 12), wildcard);
       expect(at(90, 100), maverick);
       expect(at(40, 100), wildcard);
     });
 
     test('a player who is not rated has no style', () {
       expect(classify(null), isNull);
-      expect(classify(t(90, 10, games: 3)), isNull);
-      expect(classify(t(90, 10, guesses: 5)), isNull);
+      expect(classify(t(90, 1, games: 3)), isNull);
+      expect(classify(t(90, 1, guesses: 5)), isNull);
     });
 
     test('simulated players land where the calibration says they do', () {
@@ -257,21 +257,24 @@ void main() {
       // docs/paper/experiments/results/daring_calibration.txt)
       final bots = <String, (double, double, Playstyle)>{
         'best, English': (100, 0, analyst),
-        'near-best, English': (99, 12, analyst),
-        'near-best, French': (98.9, 28.5, analyst),
-        'near-best, German': (97.9, 33.5, analyst),
-        'sharp but safe': (96.4, 0, analyst),
-        'sharp but bold, English': (94.1, 47.9, maverick),
-        'sharp but bold, French': (93.2, 83.4, maverick),
-        'sharp but bold, German': (90.1, 78.2, maverick),
-        'commonest word, English': (67.9, 63.3, steady),
-        'any word that fits, English': (69.9, 62.8, steady),
-        'any word that fits, French': (68.1, 63.6, steady),
-        'any word that fits, German': (64.7, 60.8, steady),
-        'commonest word, German': (62.8, 69.9, gambler),
-        'ignores the clues, English': (47.4, 48.1, wanderer),
-        'ignores the clues, French': (44.1, 42.1, wanderer),
-        'rare words, ignoring the clues': (47.1, 46.7, wanderer),
+        'near-best, English': (99.0, 0.3, analyst),
+        'near-best, French': (98.9, 0.4, analyst),
+        'near-best, German': (97.8, 0.8, analyst),
+        'best fit, eight letters': (99.0, 0.5, analyst),
+        'best fit, English': (91.4, 4.0, maverick),
+        'best fit, French': (87.1, 4.8, maverick),
+        'best fit, German': (88.7, 3.5, maverick),
+        'commonest word, English': (66.3, 19.7, gambler),
+        'commonest word, French': (63.7, 20.7, gambler),
+        'commonest word, German': (62.6, 20.2, gambler),
+        'any word that fits, English': (70.7, 21.4, gambler),
+        'any word that fits, German': (64.6, 24.0, gambler),
+        'commonest word, eight letters': (77.1, 16.7, gambler),
+        'ignores the clues, English': (48.2, 6.0, wanderer),
+        'ignores the clues, French': (45.3, 5.5, wanderer),
+        'ignores the clues, German': (41.5, 7.3, wanderer),
+        'rare words, ignoring the clues': (46.3, 6.5, wanderer),
+        'ignores the clues, eight letters': (68.9, 7.0, steady),
       };
       for (final e in bots.entries) {
         final (skill, daring, want) = e.value;
@@ -302,18 +305,18 @@ void main() {
     );
 
     test('and the same for daring', () {
-      expect(from(analyst, 90, 40 + daringMargin - .5), analyst);
-      expect(from(analyst, 90, 40 + daringMargin + .5), maverick);
-      expect(from(maverick, 90, 40 - daringMargin + .5), maverick);
-      expect(from(maverick, 90, 40 - daringMargin - .5), analyst);
-      expect(from(steady, 70, 65 + daringMargin - .5), steady);
-      expect(from(gambler, 70, 65 - daringMargin + .5), gambler);
-      expect(from(gambler, 70, 65 - daringMargin - .5), steady);
+      expect(from(analyst, 90, 2.5 + daringMargin - .5), analyst);
+      expect(from(analyst, 90, 2.5 + daringMargin + .5), maverick);
+      expect(from(maverick, 90, 2.5 - daringMargin + .5), maverick);
+      expect(from(maverick, 90, 2.5 - daringMargin - .5), analyst);
+      expect(from(steady, 70, 12 + daringMargin - .5), steady);
+      expect(from(gambler, 70, 12 - daringMargin + .5), gambler);
+      expect(from(gambler, 70, 12 - daringMargin - .5), steady);
     });
 
     test('a player far from their style is moved at once', () {
-      expect(from(analyst, 40, 90), wildcard);
-      expect(from(wildcard, 95, 5), analyst);
+      expect(from(analyst, 40, 30), wildcard);
+      expect(from(wildcard, 95, 0), analyst);
     });
 
     test('with no style yet the lines are exact', () {
@@ -323,7 +326,7 @@ void main() {
 
     test('the margins are small next to the tiers', () {
       expect(skillMargin, lessThan((sharpFrom - looseBelow) / 4));
-      expect(daringMargin, lessThan(10));
+      expect(daringMargin, lessThan(3));
     });
   });
 
@@ -347,17 +350,17 @@ void main() {
       }
 
       // not rated until there are games enough
-      play(minRatedGames - 1, skill: 95, daring: 10);
+      play(minRatedGames - 1, skill: 95, daring: 1);
       expect(s.style, isNull);
       expect(s.stylesHeld, isEmpty);
-      play(1, skill: 95, daring: 10);
+      play(1, skill: 95, daring: 1);
       expect(s.style, analyst);
       expect(changes, 0, reason: 'being rated for the first time is no change');
 
       // 100 games at the top, then a long run of bold, middling play
-      play(90, skill: 95, daring: 10);
+      play(90, skill: 95, daring: 1);
       expect(s.style, analyst);
-      play(120, skill: 70, daring: 80);
+      play(120, skill: 70, daring: 30);
       expect(s.style, gambler, reason: 'the last 100 are all gambler');
 
       expect(seen.first, 'analyst');
@@ -380,11 +383,11 @@ void main() {
         }
       }
 
-      play(100, 95, 10);
+      play(100, 95, 1);
       expect(s.style, analyst);
-      play(100, 40, 90);
+      play(100, 40, 30);
       expect(s.style, wildcard);
-      play(100, 95, 10);
+      play(100, 95, 1);
       expect(s.style, analyst);
       expect(s.stylesHeld, {'analyst', 'wildcard', ...s.stylesHeld});
       expect(s.styleChanges, greaterThanOrEqualTo(2));
@@ -394,10 +397,10 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final s = AppState();
       await s.load();
-      addGames(s.history, 20, skill: 95, daring: 10);
+      addGames(s.history, 20, skill: 95, daring: 1);
       s.updateStyle();
       expect(s.style, analyst);
-      addGames(s.history, 50, skill: 10, daring: 90, mode: GameMode.quartet);
+      addGames(s.history, 50, skill: 10, daring: 30, mode: GameMode.quartet);
       final u = s.updateStyle();
       expect(u.style, analyst);
       expect(u.changed, isFalse);
@@ -407,7 +410,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final s = AppState();
       await s.load();
-      addGames(s.history, 20, skill: 95, daring: 10);
+      addGames(s.history, 20, skill: 95, daring: 1);
       s.updateStyle();
       // the history is lost (a damaged save is dropped)
       s.history = History();
@@ -424,9 +427,9 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final s = AppState();
         await s.load();
-        addGames(s.history, 20, skill: 95, daring: 10);
+        addGames(s.history, 20, skill: 95, daring: 1);
         s.updateStyle();
-        addGames(s.history, 200, skill: 40, daring: 90);
+        addGames(s.history, 200, skill: 40, daring: 30);
         for (var i = 0; i < 5; i++) {
           s.updateStyle();
         }
@@ -459,7 +462,7 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final s = AppState();
         await s.load();
-        addGames(s.history, 20, skill: 95, daring: 10);
+        addGames(s.history, 20, skill: 95, daring: 1);
         s.updateStyle();
         final backup = parseBackup(backupToText(s));
         expect(backup.playstyle!.style, 'analyst');
@@ -484,7 +487,7 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final s = AppState();
         await s.load();
-        addGames(s.history, 20, skill: 95, daring: 10);
+        addGames(s.history, 20, skill: 95, daring: 1);
         s.updateStyle();
         final j = jsonDecode(backupToText(s)) as Map<String, dynamic>
           ..remove('playstyle');

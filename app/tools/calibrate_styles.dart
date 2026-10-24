@@ -31,6 +31,10 @@ Future<void> main(List<String> args) async {
 
   // the first position is the same every game: analyse it once
   final first = await analyseGuesses(words, words);
+  final firstFit = await analyseGuesses(words, words);
+  final weightOf = {
+    for (var i = 0; i < words.length; i++) words[i]: weights[i],
+  };
   final rng = Random(2026);
 
   Future<String> pick(String bot, List<String> eligible, bool opening) async {
@@ -48,15 +52,11 @@ Future<void> main(List<String> args) async {
             : await analyseGuesses(eligible, words, k: 3);
         final top = land.top.take(3).toList();
         return top[rng.nextInt(top.length)].word;
-      case 'sharp-bold': // of the 30 best, the riskiest
-      case 'sharp-safe': // of the 30 best, the least risky
+      case 'best-fit': // the best split among the words that still fit
         final land = opening
-            ? first
-            : await analyseGuesses(eligible, words, k: 30);
-        final top = land.top.take(30).map((r) => r.word).toList();
-        double risk(String w) => scoreGuess(eligible, w, 0).risk;
-        top.sort((a, b) => risk(a).compareTo(risk(b)));
-        return bot == 'sharp-bold' ? top.last : top.first;
+            ? firstFit
+            : await analyseGuesses(eligible, eligible);
+        return land.top.first.word;
       case 'wild': // a common word, whatever the clues say
         return words[rng.nextInt(min(words.length, 400))];
       case 'wild-bold': // a rare word, whatever the clues say
@@ -71,8 +71,7 @@ Future<void> main(List<String> args) async {
   for (final bot in [
     'best',
     'near-best',
-    'sharp-safe',
-    'sharp-bold',
+    'best-fit',
     'frequent',
     'random-fit',
     'wild',
@@ -103,6 +102,8 @@ Future<void> main(List<String> args) async {
           after.length,
           finalTry: t == 5,
           solved: guess == answer,
+          triesLeft: 6 - t,
+          weights: weightOf,
         ).withLandscape(land);
         if (m.before > 1) {
           s.add(m.skill);

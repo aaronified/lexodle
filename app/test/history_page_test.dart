@@ -834,7 +834,7 @@ void main() {
       await load(tester);
       final h = History();
       for (var i = 0; i < 12; i++) {
-        game(h, DateTime(2026, 10, 24), skill: 95, daring: 10);
+        game(h, DateTime(2026, 10, 24), skill: 95, daring: 1);
       }
       await show(tester, h);
       expect(text(tester, 'period-style'), 'played like a analyst');

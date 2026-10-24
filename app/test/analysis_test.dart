@@ -278,11 +278,11 @@ void main() {
       final h = History();
       // the last week: 12 sharp, careful games
       for (var i = 0; i < 12; i++) {
-        play(h, today, skill: 95, daring: 10);
+        play(h, today, skill: 95, daring: 1);
       }
       // the week before: 12 loose, bold ones
       for (var i = 0; i < 12; i++) {
-        play(h, '2026-10-15', skill: 40, daring: 90);
+        play(h, '2026-10-15', skill: 40, daring: 30);
       }
       // the one before that: too few to rate
       for (var i = 0; i < 3; i++) {
@@ -358,8 +358,8 @@ void main() {
     test('a month has a style once it has the games to rate it', () {
       final h = History();
       for (var i = 0; i < 6; i++) {
-        play(h, '2026-09-03', skill: 70, daring: 30);
-        play(h, '2026-09-20', skill: 70, daring: 30);
+        play(h, '2026-09-03', skill: 70, daring: 5);
+        play(h, '2026-09-20', skill: 70, daring: 5);
       }
       final m = monthlyPeriods(h, today);
       expect(m[48].stats.games, 12);

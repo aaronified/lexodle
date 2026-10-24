@@ -7,17 +7,18 @@ import 'history.dart';
 /// something to choose between (more than one word still possible):
 ///
 /// * **skill**, 0 to 100: how evenly the guess split the words (see logic.dart);
-/// * **daring**, 0 to 100: of the guesses that scored higher skill, how many were
-///   less risky than the one played; the best guess has nothing better to compare
-///   with, so it has none.
+/// * **daring**, 0 to 100: how much the player went for the whole word instead of
+///   for the clues: a guess that could be the answer, at a cost in skill, at an
+///   unlikely word, with tries to spare (see [daringOf] in logic.dart). A good
+///   player seldom scores above 10.
 ///
 /// Skill gives three tiers and daring splits each in two, which is six styles.
 /// The numbers below were set by playing simulated players through the real
 /// maths (tools/calibrate_styles.dart, results in docs/paper/experiments/results/
 /// daring_calibration.txt): a player who always plays the best guess scores 100
-/// and 0, one who picks at random among the three best 99 and 12, one who plays
-/// the commonest word that fits about 65 and 62, one who ignores the clues about
-/// 47 and 48. They are not measured on people, so they are the first thing to
+/// and 0, one who picks at random among the three best 99 and 0, one who plays the
+/// best split among the words that fit 91 and 4, one who plays the commonest word
+/// that fits about 66 and 20, one who ignores the clues about 48 and 6. They are not measured on people, so they are the first thing to
 /// revisit once there is real play to look at.
 class Playstyle {
   const Playstyle(
@@ -49,7 +50,7 @@ const analyst = Playstyle(
   'microscope',
   2,
   false,
-  'sharp and careful: guesses that split the words well, and few gambles',
+  'sharp and careful: guesses that split the words well, and few stabs at the word',
 );
 const maverick = Playstyle(
   'maverick',
@@ -57,7 +58,7 @@ const maverick = Playstyle(
   'chess-knight',
   2,
   true,
-  'sharp, and happy to take a bolder line than it needs to',
+  'sharp, and quick to go for the word itself when it fits',
 );
 const steady = Playstyle(
   'steady',
@@ -65,7 +66,7 @@ const steady = Playstyle(
   'scale',
   1,
   false,
-  'solid, dependable guesses and no gambles',
+  'solid, dependable guesses that work the clues before going for the word',
 );
 const gambler = Playstyle(
   'gambler',
@@ -73,7 +74,7 @@ const gambler = Playstyle(
   'dice-5',
   1,
   true,
-  'plays the odds: decent guesses with a taste for risk',
+  'plays the odds: decent guesses, and always shooting for the word',
 );
 const wanderer = Playstyle(
   'wanderer',
@@ -81,7 +82,7 @@ const wanderer = Playstyle(
   'feather',
   0,
   false,
-  'plays by feel, lightly and safely',
+  'plays by feel, lightly, working the clues',
 );
 const wildcard = Playstyle(
   'wildcard',
@@ -89,7 +90,7 @@ const wildcard = Playstyle(
   'cards',
   0,
   true,
-  'unpredictable: risky guesses and little method',
+  'unpredictable: stabs at the word with little method',
 );
 
 /// Every playstyle, from the sharpest careful one to the loosest bold one.
@@ -111,20 +112,19 @@ const minRatedGames = 10;
 const minRatedGuesses = 20;
 
 /// Where the tiers and the daring split lie. A guess that is skilled is
-/// [sharpFrom] or more; one below [looseBelow] is loose. The daring split is a
-/// little different in each tier, because daring and skill go together (a weak
-/// guess usually has many safer, better ones above it), so "bold" is bolder
-/// than a typical player of that skill.
+/// [sharpFrom] or more; one below [looseBelow] is loose. The daring split is
+/// different in each tier, because daring and skill go together (a sharp player
+/// seldom pays anything to go for the word, so a little is already bold).
 const sharpFrom = 85.0;
 const looseBelow = 58.0;
-const _splitSharp = 40.0;
-const _splitSolid = 65.0;
-const _splitLoose = 52.0;
+const _splitSharp = 2.5;
+const _splitSolid = 12.0;
+const _splitLoose = 12.0;
 
 /// How far past a line a player must go to leave the style they have, so one
 /// game either side of a line does not swap their style back and forth.
 const skillMargin = 3.0;
-const daringMargin = 5.0;
+const daringMargin = 1.5;
 
 double _splitFor(int tier) => switch (tier) {
   2 => _splitSharp,
