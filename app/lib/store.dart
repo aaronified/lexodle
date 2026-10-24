@@ -774,6 +774,9 @@ class AppState extends ChangeNotifier {
   /// the last 100.
   History history = History();
 
+  /// Tells the screens to redraw (the clock they show a date from changed).
+  void refresh() => notifyListeners();
+
   /// Saves a finished game and its guesses to the [history].
   void recordHistory({
     required String lang,

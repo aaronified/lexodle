@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
+import 'clock.dart';
 import 'daily.dart';
 import 'daily_streak.dart';
 import 'difficulty.dart';
@@ -203,10 +204,19 @@ class _HomePageState extends State<HomePage> {
                                     tapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  onPressed: () => Navigator.pushNamed(
-                                    context,
-                                    Routes.daily,
-                                  ),
+                                  onPressed: () async {
+                                    // the daily goes by the server's time: ask
+                                    // again if it has not been for a while
+                                    if (!TrustedClock.isFresh()) {
+                                      await TrustedClock.sync(
+                                        timeout: const Duration(
+                                          milliseconds: 1500,
+                                        ),
+                                      );
+                                    }
+                                    if (!context.mounted) return;
+                                    Navigator.pushNamed(context, Routes.daily);
+                                  },
                                   child: Text(_dailyLabel(lang.code)),
                                 ),
                               ),

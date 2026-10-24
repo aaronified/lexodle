@@ -1,33 +1,42 @@
+import 'clock.dart';
 import 'difficulty.dart';
 import 'words.dart';
 
-/// The daily word: one word per language per day, the same for everyone.
+/// The daily word: one word per language per day, the same for everyone on that
+/// date.
 ///
-/// It is not drawn at random on the device. The UTC date and the language are
+/// It is not drawn at random on the device. The date and the language are
 /// hashed to a number, and that number picks one word of the fixed pool, so
 /// every device that has the same word list gets the same word with no server.
-/// The difficulty is fixed too, whatever the settings say.
+/// The day is the player's own: it changes at their local midnight (the time
+/// itself comes from the server, see [TrustedClock], so the device clock cannot
+/// be set to another day). The difficulty is fixed too, whatever the settings
+/// say.
 const dailyLength = 5;
 const dailyTries = 6;
 const dailyPool = 3000;
 
-/// The clock the daily reads; tests replace it.
-DateTime Function() dailyClock = DateTime.now;
+/// The clock the daily reads: the server's time when it could be had, else the
+/// device's. Tests replace it.
+DateTime Function() dailyClock = TrustedClock.now;
 
-/// The date of a daily as `2026-10-24`, in UTC: the day changes at the same
-/// instant for everyone, not at each player's own midnight.
-String dailyDate([DateTime? now]) {
-  final u = (now ?? dailyClock()).toUtc();
+String _ymd(DateTime d) {
   String two(int n) => n.toString().padLeft(2, '0');
-  return '${u.year.toString().padLeft(4, '0')}-${two(u.month)}-${two(u.day)}';
+  return '${d.year.toString().padLeft(4, '0')}-${two(d.month)}-${two(d.day)}';
 }
+
+/// The date of a daily as `2026-10-24`, on the player's own calendar: the day
+/// changes at their local midnight, so the word is the same for everyone who is
+/// on the same date, not at the same instant.
+String dailyDate([DateTime? now]) => _ymd((now ?? dailyClock()).toLocal());
 
 /// [date] moved by [days] (negative for earlier), still as `2026-10-24`.
 /// A malformed [date] comes back unchanged.
 String dailyShift(String date, int days) {
   final d = DateTime.tryParse(date);
   if (d == null) return date;
-  return dailyDate(DateTime.utc(d.year, d.month, d.day + days));
+  // plain calendar arithmetic: no time zone is involved in moving a date
+  return _ymd(DateTime.utc(d.year, d.month, d.day + days));
 }
 
 /// How each day of a daily log went: 0 missed, 1 solved, 2 solved with a double

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'clock.dart';
 import 'licences.dart';
 import 'routes.dart';
 import 'store.dart';
@@ -73,6 +74,11 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   registerLicences();
   appState.load();
+  // ask the server the time (for the daily); the screens redraw when it answers,
+  // since the date they show may change by it
+  TrustedClock.sync().then((ok) {
+    if (ok) appState.refresh();
+  });
   runApp(const LexodleApp());
 }
 

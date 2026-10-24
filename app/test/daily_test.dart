@@ -49,14 +49,30 @@ void main() {
   tearDown(() => dailyClock = DateTime.now);
 
   group('the date', () {
-    test('is the UTC date, whatever the local one is', () {
-      expect(dailyDate(DateTime.utc(2026, 10, 24, 23, 59, 59)), '2026-10-24');
-      expect(dailyDate(DateTime.utc(2026, 10, 25)), '2026-10-25');
-      // 01:00 on the 25th at +05:30 is 19:30 on the 24th in UTC
-      expect(
-        dailyDate(DateTime.parse('2026-10-25T01:00:00+05:30')),
-        '2026-10-24',
-      );
+    test(
+      'is the date on the player\'s own calendar, changing at local midnight',
+      () {
+        // local times, so the test means the same in every time zone
+        expect(dailyDate(DateTime(2026, 10, 24, 0, 0, 0)), '2026-10-24');
+        expect(dailyDate(DateTime(2026, 10, 24, 23, 59, 59)), '2026-10-24');
+        expect(dailyDate(DateTime(2026, 10, 25, 0, 0, 0)), '2026-10-25');
+        expect(dailyDate(DateTime(2026, 12, 31, 23, 59)), '2026-12-31');
+        expect(dailyDate(DateTime(2027, 1, 1)), '2027-01-01');
+      },
+    );
+
+    test('an instant given in UTC is read on the local calendar', () {
+      final t = DateTime.utc(2026, 10, 24, 20, 30);
+      final l = t.toLocal();
+      String two(int n) => n.toString().padLeft(2, '0');
+      expect(dailyDate(t), '${l.year}-${two(l.month)}-${two(l.day)}');
+    });
+
+    test('the date a daily is on is read from the clock it goes by', () {
+      dailyClock = () => DateTime(2026, 10, 24, 23, 59, 30);
+      expect(dailyDate(), '2026-10-24');
+      dailyClock = () => DateTime(2026, 10, 25, 0, 0, 5);
+      expect(dailyDate(), '2026-10-25');
     });
 
     test('shifts across month and year ends', () {
@@ -367,7 +383,7 @@ void main() {
       await appState.load();
       // the settings say something else; the daily ignores them
       appState.setup(lang: 'fr', length: 7, tries: 3, pool: 500);
-      dailyClock = () => DateTime.utc(2026, 10, 24, 12);
+      dailyClock = () => DateTime(2026, 10, 24, 12);
       final bank = await _bank(tester, 'fr');
       final daily = Daily.of(bank)!;
       expect(daily.date, '2026-10-24');
@@ -405,9 +421,11 @@ void main() {
         reason: 'a daily is played once',
       );
       expect(
-        find.textContaining('the next word comes at 00:00 utc'),
+        find.textContaining('the next word comes at midnight, your time'),
         findsOneWidget,
       );
+      // the answer is said as the answer, not left bare
+      expect(find.text('the word was ${daily.answer}'), findsOneWidget);
 
       // two guesses is a double fire, and the day is logged
       expect(appState.dailyLog['2026-10-24'], dailyDouble);
@@ -432,7 +450,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
       appState.setup(lang: 'fr');
-      dailyClock = () => DateTime.utc(2026, 10, 24, 12);
+      dailyClock = () => DateTime(2026, 10, 24, 12);
       final bank = await _bank(tester, 'fr');
       final daily = Daily.of(bank)!;
       final wrong = bank
@@ -473,7 +491,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
       appState.setup(lang: 'fr', length: 5);
-      dailyClock = () => DateTime.utc(2026, 10, 24, 12);
+      dailyClock = () => DateTime(2026, 10, 24, 12);
       appState.saveDaily('fr', '2026-10-24', ['crane']);
       await tester.pumpWidget(const LexodleApp());
       await tester.pumpAndSettle();
@@ -533,7 +551,7 @@ void main() {
     ) async {
       final semantics = tester.ensureSemantics();
       await appState.load();
-      dailyClock = () => DateTime.utc(2026, 10, 24, 9); // a Saturday
+      dailyClock = () => DateTime(2026, 10, 24, 9); // a Saturday
       appState.dailyLog = {
         '2026-10-19': dailySolved, // monday
         '2026-10-20': dailyDouble,
@@ -575,7 +593,7 @@ void main() {
       tester,
     ) async {
       await appState.load();
-      dailyClock = () => DateTime.utc(2026, 10, 24, 9);
+      dailyClock = () => DateTime(2026, 10, 24, 9);
       appState.dailyLog = {};
       await show(tester);
       expect(

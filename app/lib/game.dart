@@ -582,9 +582,10 @@ class _GamePageState extends State<GamePage> {
             if (_daily != null)
               Caption(
                 'daily ${_daily.date} · streak ${appState.dailyStreak} · '
-                'the next word comes at 00:00 utc',
+                'the next word comes at midnight, your time',
               ),
-            if (won) Caption(answer),
+            // the answer, said as such (a win used to show it bare)
+            if (won) Caption('the word was $answer'),
             const SizedBox(height: 10),
             for (final a in unlocked)
               Padding(
