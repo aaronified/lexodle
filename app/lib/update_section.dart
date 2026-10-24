@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'apk_install.dart';
+import 'backup.dart';
 import 'main.dart';
 import 'ui.dart';
 import 'update_check.dart';
@@ -185,6 +186,62 @@ class _UpdateSectionState extends State<UpdateSection> {
     super.dispose();
   }
 
+  /// The note under the buttons when a backup was asked for and not made.
+  String _backupNote = '';
+
+  /// Before it installs, offers to save a backup file: an update keeps what is
+  /// saved in the app, but a file the player keeps is the only copy that
+  /// survives if anything goes wrong with the install.
+  Future<void> _askThenUpdate() async {
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        key: const ValueKey('update-backup-dialog'),
+        title: const Text('save a backup first?'),
+        content: const Text(
+          'an update keeps your history, but a backup file is the only copy '
+          'that survives if anything goes wrong. it takes a moment.',
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('update-cancel-dialog'),
+            onPressed: () => Navigator.pop(context, 'cancel'),
+            child: const Text('cancel'),
+          ),
+          TextButton(
+            key: const ValueKey('update-skip-backup'),
+            onPressed: () => Navigator.pop(context, 'skip'),
+            child: const Text('update without a backup'),
+          ),
+          FilledButton(
+            key: const ValueKey('update-save-backup'),
+            onPressed: () => Navigator.pop(context, 'save'),
+            child: const Text('save backup, then update'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || choice == null || choice == 'cancel') return;
+    if (choice == 'save') {
+      bool saved;
+      try {
+        saved = await saveBackupFile(appState);
+      } catch (_) {
+        saved = false;
+      }
+      if (!mounted) return;
+      if (!saved) {
+        // nothing was saved: do not install, and say so
+        setState(
+          () => _backupNote = 'no backup was saved, so nothing was updated',
+        );
+        return;
+      }
+    }
+    setState(() => _backupNote = '');
+    await _c.update();
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
@@ -232,6 +289,14 @@ class _UpdateSectionState extends State<UpdateSection> {
                     : dim,
               ),
             ],
+            if (_backupNote.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                _backupNote,
+                key: const ValueKey('update-backup-note'),
+                style: TextStyle(color: c.error, fontSize: 12),
+              ),
+            ],
             if (_c.step == UpdateStep.downloading) ...[
               const SizedBox(height: 8),
               LinearProgressIndicator(value: _c.percent / 100),
@@ -257,7 +322,7 @@ class _UpdateSectionState extends State<UpdateSection> {
                   Expanded(
                     child: FilledButton(
                       key: const ValueKey('update-install'),
-                      onPressed: busy ? null : _c.update,
+                      onPressed: busy ? null : _askThenUpdate,
                       child: Text(
                         _c.installFailure != null ? 'try again' : 'update',
                       ),

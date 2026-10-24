@@ -95,6 +95,14 @@ String backupToText(AppState state, {DateTime? now}) {
   });
 }
 
+/// Saves a backup of everything [state] keeps to a file the player chooses (the
+/// settings page's "download", and the update's safety net). True when it was
+/// saved, false when the player cancelled. Throws if it could not be written.
+Future<bool> saveBackupFile(AppState state, {DateTime? now}) {
+  final bytes = Uint8List.fromList(utf8.encode(backupToText(state)));
+  return BackupIO.current.save(backupFileName(now ?? DateTime.now()), bytes);
+}
+
 /// The file name for a backup made on [day]: lexodle-backup-2026-10-18.json.
 String backupFileName(DateTime day) =>
     'lexodle-backup-${day.toIso8601String().substring(0, 10)}.json';

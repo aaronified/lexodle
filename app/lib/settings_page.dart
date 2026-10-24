@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
@@ -151,11 +150,7 @@ class _BackupSectionState extends State<_BackupSection> {
       _note = null;
     });
     try {
-      final bytes = Uint8List.fromList(utf8.encode(backupToText(appState)));
-      final saved = await BackupIO.current.save(
-        backupFileName(DateTime.now()),
-        bytes,
-      );
+      final saved = await saveBackupFile(appState);
       if (mounted) _say(saved ? 'backup saved' : 'nothing was saved');
     } catch (_) {
       if (mounted) _say('could not save the backup', error: true);
