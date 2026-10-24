@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import 'auto_backup.dart';
 import 'backup.dart';
 import 'donate.dart';
 import 'haptics.dart';
@@ -137,6 +138,66 @@ class _BackupSectionState extends State<_BackupSection> {
   /// saved.
   Backup? _pending;
 
+  /// The newest automatic backup kept in the app's own storage, if any.
+  ({String name, String text})? _auto;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAuto();
+  }
+
+  Future<void> _loadAuto() async {
+    final latest = await AutoBackup.latest();
+    if (mounted) setState(() => _auto = latest);
+  }
+
+  /// Saves a backup to the Downloads folder now, without asking where.
+  Future<void> _toDownloads() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _pending = null;
+      _note = null;
+    });
+    try {
+      final r = await AutoBackup.run(
+        appState,
+        downloads: true,
+        label: 'manual',
+      );
+      if (!mounted) return;
+      if (r.downloads) {
+        _say('saved to downloads: ${r.name}');
+      } else if (r.internal) {
+        _say(
+          'could not save to downloads on this device; a copy is in the '
+          'app\'s memory',
+          error: true,
+        );
+      } else {
+        _say('could not save a backup', error: true);
+      }
+      await _loadAuto();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Reads the latest automatic backup, for the player to confirm.
+  void _readAuto() {
+    final a = _auto;
+    if (a == null) return;
+    try {
+      setState(() {
+        _pending = parseBackup(a.text);
+        _note = null;
+      });
+    } on FormatException {
+      _say('that backup could not be read', error: true);
+    }
+  }
+
   void _say(String text, {bool error = false}) => setState(() {
     _note = text;
     _error = error;
@@ -219,7 +280,7 @@ class _BackupSectionState extends State<_BackupSection> {
         Text(
           'your progress is kept on this device only. download a backup to '
           'keep it safe or move it to another device, and upload one to '
-          'restore it.',
+          'restore it. every update also backs up by itself.',
           style: dim.copyWith(height: 1.4),
         ),
         const SizedBox(height: 10),
@@ -242,6 +303,33 @@ class _BackupSectionState extends State<_BackupSection> {
             ),
           ],
         ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            key: const ValueKey('backup-downloads'),
+            onPressed: _busy ? null : _toDownloads,
+            child: const Text('save a backup to downloads'),
+          ),
+        ),
+        if (_auto != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            'the latest automatic backup, kept in the app\'s memory: '
+            '${_auto!.name}',
+            key: const ValueKey('backup-auto-name'),
+            style: dim,
+          ),
+          const SizedBox(height: 6),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              key: const ValueKey('backup-restore-auto'),
+              onPressed: _busy ? null : _readAuto,
+              child: const Text('restore the latest automatic backup'),
+            ),
+          ),
+        ],
         if (pending != null) ...[
           const SizedBox(height: 12),
           Text(

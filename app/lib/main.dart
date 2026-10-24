@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'arrow_scroll.dart';
+import 'auto_backup.dart';
 import 'clock.dart';
 import 'haptics.dart';
 import 'licences.dart';
@@ -82,7 +85,11 @@ final appState = AppState();
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   registerLicences();
-  appState.load().then((_) => checkForUpdateAtLaunch());
+  appState.load().then((_) {
+    // a new version keeps a copy of what it found, then looks for a newer one
+    unawaited(AutoBackup.afterUpgrade(appState));
+    return checkForUpdateAtLaunch();
+  });
   // ask the server the time (for the daily); the screens redraw when it answers,
   // since the date they show may change by it
   TrustedClock.sync().then((ok) {

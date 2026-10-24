@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'apk_install.dart';
-import 'backup.dart';
+import 'auto_backup.dart';
 import 'main.dart';
 import 'ui.dart';
 import 'update_check.dart';
@@ -186,59 +186,45 @@ class _UpdateSectionState extends State<UpdateSection> {
     super.dispose();
   }
 
-  /// The note under the buttons when a backup was asked for and not made.
+  /// The note under the buttons about the backup made before the update.
   String _backupNote = '';
+  bool _backupFailed = false;
 
-  /// Before it installs, offers to save a backup file: an update keeps what is
-  /// saved in the app, but a file the player keeps is the only copy that
-  /// survives if anything goes wrong with the install.
-  Future<void> _askThenUpdate() async {
-    final choice = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        key: const ValueKey('update-backup-dialog'),
-        title: const Text('save a backup first?'),
-        content: const Text(
-          'an update keeps your history, but a backup file is the only copy '
-          'that survives if anything goes wrong. it takes a moment.',
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('update-cancel-dialog'),
-            onPressed: () => Navigator.pop(context, 'cancel'),
-            child: const Text('cancel'),
-          ),
-          TextButton(
-            key: const ValueKey('update-skip-backup'),
-            onPressed: () => Navigator.pop(context, 'skip'),
-            child: const Text('update without a backup'),
-          ),
-          FilledButton(
-            key: const ValueKey('update-save-backup'),
-            onPressed: () => Navigator.pop(context, 'save'),
-            child: const Text('save backup, then update'),
-          ),
-        ],
-      ),
+  /// Whether the next press goes ahead although no backup could be saved (set
+  /// once one has failed, so the player is told first and decides).
+  bool _goAhead = false;
+
+  /// Before it installs, saves a backup of everything by itself: in the app's
+  /// own storage, and in Downloads too unless that is turned off. An update
+  /// keeps what is saved in the app, but a copy outside it is what is left if
+  /// anything goes wrong with the install. If no copy could be saved, nothing is
+  /// installed until the player presses again.
+  Future<void> _backupThenUpdate() async {
+    setState(() {
+      _backupNote = 'saving a backup first…';
+      _backupFailed = false;
+    });
+    final r = await AutoBackup.run(
+      appState,
+      downloads: appState.downloadsBackup,
+      label: 'update',
     );
-    if (!mounted || choice == null || choice == 'cancel') return;
-    if (choice == 'save') {
-      bool saved;
-      try {
-        saved = await saveBackupFile(appState);
-      } catch (_) {
-        saved = false;
-      }
-      if (!mounted) return;
-      if (!saved) {
-        // nothing was saved: do not install, and say so
-        setState(
-          () => _backupNote = 'no backup was saved, so nothing was updated',
-        );
-        return;
-      }
+    if (!mounted) return;
+    if (!r.any && !_goAhead) {
+      setState(() {
+        _backupFailed = true;
+        _goAhead = true;
+        _backupNote =
+            'no backup could be saved, so nothing was updated. press update '
+            'again to go ahead without one';
+      });
+      return;
     }
-    setState(() => _backupNote = '');
+    setState(() {
+      _backupFailed = false;
+      _goAhead = false;
+      _backupNote = r.any ? 'backup saved to ${r.where}: ${r.name}' : '';
+    });
     await _c.update();
   }
 
@@ -294,7 +280,9 @@ class _UpdateSectionState extends State<UpdateSection> {
               Text(
                 _backupNote,
                 key: const ValueKey('update-backup-note'),
-                style: TextStyle(color: c.error, fontSize: 12),
+                style: _backupFailed
+                    ? TextStyle(color: c.error, fontSize: 12)
+                    : dim,
               ),
             ],
             if (_c.step == UpdateStep.downloading) ...[
@@ -322,7 +310,7 @@ class _UpdateSectionState extends State<UpdateSection> {
                   Expanded(
                     child: FilledButton(
                       key: const ValueKey('update-install'),
-                      onPressed: busy ? null : _askThenUpdate,
+                      onPressed: busy ? null : _backupThenUpdate,
                       child: Text(
                         _c.installFailure != null ? 'try again' : 'update',
                       ),
@@ -332,6 +320,19 @@ class _UpdateSectionState extends State<UpdateSection> {
               ],
             ),
             const SizedBox(height: 4),
+            SwitchListTile(
+              key: const ValueKey('update-downloads-backup'),
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: const Text('also back up to downloads'),
+              subtitle: Text(
+                'every update saves a backup in the app\'s memory; this adds a '
+                'copy in your downloads folder, which survives anything',
+                style: dim.copyWith(fontSize: 11),
+              ),
+              value: appState.downloadsBackup,
+              onChanged: appState.setDownloadsBackup,
+            ),
             SwitchListTile(
               key: const ValueKey('update-auto'),
               contentPadding: EdgeInsets.zero,

@@ -25,6 +25,20 @@ release key held in repository secrets. The tag is the version: the workflow wri
 so nothing is bumped by hand. A
 build signed with a different key cannot be updated over one signed with another.
 
+## Backups around an update
+
+Before it installs, the update button saves a backup of everything by itself: a copy in the app's own
+memory (kept through an update, newest five kept) and, unless you turn it off with "also back up to
+downloads", a copy in your Downloads folder, which survives anything, even uninstalling. The files are
+named `lexodle-backup-update-v<version>-<date>-<time>.json`. If no copy at all could be saved, nothing
+is installed until you press update a second time. The first start of a new version also keeps a copy
+of what it found, in the app's memory.
+
+In settings, under backup, **save a backup to downloads** does the same on demand, and **restore the
+latest automatic backup** brings back the newest copy kept in the app's memory (after asking, like any
+restore). To restore from a copy in Downloads, use **upload** and pick the file. The Downloads copy
+needs Android 10 or later (no permission is asked).
+
 ## Support
 
 Lexodle is free and has no ads. The settings have a **support lexodle** section with a UPI ID

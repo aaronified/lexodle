@@ -787,6 +787,28 @@ class AppState extends ChangeNotifier {
   int pool = defaultPool;
   bool seenHowTo = false;
 
+  /// Whether an update also saves its backup in the Downloads folder (it always
+  /// saves one in the app's own storage). On until turned off.
+  bool downloadsBackup = true;
+
+  void setDownloadsBackup(bool on) {
+    downloadsBackup = on;
+    try {
+      _prefs?.setBool('downloadsBackup', on);
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  /// The version of the app that last ran, to notice the first start of a new one.
+  String? lastRunVersion;
+
+  void noteRunVersion(String v) {
+    lastRunVersion = v;
+    try {
+      _prefs?.setString('lastRunVersion', v);
+    } catch (_) {}
+  }
+
   /// Whether presses give a short vibration (on a phone). On until turned off.
   bool haptics = true;
 
@@ -1195,6 +1217,8 @@ class AppState extends ChangeNotifier {
       }
       seenHowTo = p.getBool('seenHowTo') ?? false;
       haptics = p.getBool('haptics') ?? true;
+      downloadsBackup = p.getBool('downloadsBackup') ?? true;
+      lastRunVersion = p.getString('lastRunVersion');
       autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
       final last = p.getInt('lastUpdateCheck');
       if (last != null) {

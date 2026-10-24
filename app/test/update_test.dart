@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:lexodle/apk_install.dart';
+import 'package:lexodle/auto_backup.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/update_check.dart';
 import 'package:lexodle/update_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/fake_backup_files.dart';
 
 Map<String, dynamic> release(
   String tag, {
@@ -384,12 +386,10 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.text('version 9.9.9 is available'), findsOneWidget);
+      AutoBackup.files = FakeBackupFiles();
+      addTearDown(() => AutoBackup.files = const PlatformBackupFiles());
       await tester.tap(find.byKey(const ValueKey('update-install')));
       await tester.pumpAndSettle();
-      // it offers a backup first; this player goes ahead without one
-      await tester.tap(find.byKey(const ValueKey('update-skip-backup')));
-      await tester.pump();
-      await tester.pump();
       expect(installer.asked, hasLength(1));
       expect(find.textContaining('Android is installing'), findsOneWidget);
     });
@@ -418,13 +418,14 @@ void main() {
       expect(appState.autoUpdateCheck, isTrue);
     });
 
-    group('the backup offered before it installs', () {
-      late _IO io;
+    group('the backup made by itself before it installs', () {
+      late FakeBackupFiles files;
       setUp(() {
-        io = _IO();
-        BackupIO.current = io;
+        files = FakeBackupFiles();
+        AutoBackup.files = files;
+        appState.downloadsBackup = true;
       });
-      tearDown(() => BackupIO.current = FilePickerBackupIO());
+      tearDown(() => AutoBackup.files = const PlatformBackupFiles());
 
       Future<FixedApkInstaller> ready(WidgetTester tester) async {
         final installer = FixedApkInstaller(const [InstallEvent.installing()]);
@@ -436,89 +437,106 @@ void main() {
         await tester.tap(find.byKey(const ValueKey('update-check')));
         await tester.pump();
         await tester.pump();
-        await tester.tap(find.byKey(const ValueKey('update-install')));
-        await tester.pumpAndSettle();
-        expect(
-          find.byKey(const ValueKey('update-backup-dialog')),
-          findsOneWidget,
-        );
         return installer;
       }
 
-      testWidgets('saving it comes first, and then the update goes ahead', (
+      Future<void> update(WidgetTester tester) async {
+        await tester.tap(find.byKey(const ValueKey('update-install')));
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('saves to the app and to downloads, then installs', (
         tester,
       ) async {
         final installer = await ready(tester);
-        expect(installer.asked, isEmpty, reason: 'nothing installs yet');
-        await tester.tap(find.byKey(const ValueKey('update-save-backup')));
-        await tester.pump();
-        await tester.pump();
-        expect(io.saved, hasLength(1));
-        expect(io.saved.single, startsWith('lexodle-backup-'));
-        expect(installer.asked, hasLength(1));
-      });
-
-      testWidgets('cancelling the dialog does nothing', (tester) async {
-        final installer = await ready(tester);
-        await tester.tap(find.byKey(const ValueKey('update-cancel-dialog')));
-        await tester.pumpAndSettle();
-        expect(io.saved, isEmpty);
-        expect(installer.asked, isEmpty);
-      });
-
-      testWidgets('a backup that was not saved stops the update, and says so', (
-        tester,
-      ) async {
-        io.result = false;
-        final installer = await ready(tester);
-        await tester.tap(find.byKey(const ValueKey('update-save-backup')));
-        await tester.pumpAndSettle();
-        expect(installer.asked, isEmpty);
+        await update(tester);
+        expect(files.internal, hasLength(1));
+        expect(files.downloads, hasLength(1));
+        expect(files.downloads.keys.single, files.internal.keys.single);
         expect(
-          find.byKey(const ValueKey('update-backup-note')),
+          files.internal.keys.single,
+          startsWith('lexodle-backup-update-v'),
+        );
+        expect(installer.asked, hasLength(1));
+        expect(
+          find.textContaining('backup saved to app memory and downloads'),
           findsOneWidget,
         );
       });
 
-      testWidgets('a backup that could not be written stops it too', (
+      testWidgets('with downloads switched off it saves to the app only', (
         tester,
       ) async {
-        io.fail = true;
         final installer = await ready(tester);
-        await tester.tap(find.byKey(const ValueKey('update-save-backup')));
-        await tester.pumpAndSettle();
-        expect(installer.asked, isEmpty);
+        appState.downloadsBackup =
+            false; // (opening the page loaded the settings)
+        await update(tester);
+        expect(files.internal, hasLength(1));
+        expect(files.downloads, isEmpty);
+        expect(installer.asked, hasLength(1));
         expect(
-          find.byKey(const ValueKey('update-backup-note')),
+          find.textContaining('backup saved to app memory:'),
           findsOneWidget,
         );
       });
 
-      testWidgets('updating without a backup is allowed', (tester) async {
+      testWidgets('the copy is a backup that reads back', (tester) async {
+        await ready(tester);
+        await update(tester);
+        final b = parseBackup(utf8.decode(files.internal.values.single));
+        expect(b.settings, isNotEmpty);
+      });
+
+      testWidgets('one place failing does not stop the other or the update', (
+        tester,
+      ) async {
+        files.downloadsFails = true;
         final installer = await ready(tester);
-        await tester.tap(find.byKey(const ValueKey('update-skip-backup')));
-        await tester.pump();
-        await tester.pump();
-        expect(io.saved, isEmpty);
+        await update(tester);
+        expect(files.internal, hasLength(1));
         expect(installer.asked, hasLength(1));
+        expect(
+          find.textContaining('backup saved to app memory:'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('downloads not possible on this phone is not an error', (
+        tester,
+      ) async {
+        files.downloadsSupported = false;
+        final installer = await ready(tester);
+        await update(tester);
+        expect(installer.asked, hasLength(1));
+        expect(find.textContaining('app memory:'), findsOneWidget);
+      });
+
+      testWidgets('no backup at all stops it, and a second press goes ahead', (
+        tester,
+      ) async {
+        files.internalFails = true;
+        files.downloadsFails = true;
+        final installer = await ready(tester);
+        await update(tester);
+        expect(installer.asked, isEmpty, reason: 'nothing installed yet');
+        expect(find.textContaining('no backup could be saved'), findsOneWidget);
+        await update(tester);
+        expect(installer.asked, hasLength(1), reason: 'the player went ahead');
+      });
+
+      testWidgets('the settings have the downloads switch, and it is kept', (
+        tester,
+      ) async {
+        await ready(tester);
+        final sw = find.byKey(const ValueKey('update-downloads-backup'));
+        expect(sw, findsOneWidget);
+        await tester.tap(sw);
+        await tester.pump();
+        expect(appState.downloadsBackup, isFalse);
+        final again = AppState();
+        await again.load();
+        expect(again.downloadsBackup, isFalse);
       });
     });
   });
-}
-
-/// A fake place to save backups to.
-class _IO implements BackupIO {
-  final saved = <String>[];
-  bool result = true;
-  bool fail = false;
-
-  @override
-  Future<bool> save(String fileName, Uint8List bytes) async {
-    if (fail) throw StateError('disk full');
-    if (result) saved.add(fileName);
-    return result;
-  }
-
-  @override
-  Future<BackupFile?> pick() async => null;
 }
