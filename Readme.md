@@ -99,29 +99,30 @@
 
 <table>
   <tr>
+    <td width="40%"><img src="docs/screenshots/features/learn.png" width="100%" alt="Learn mode: the answer shown, a guess graded against the best picks, and the words that still fit"></td>
     <td width="60%">
       <h3>🎓 Learn mode</h3>
       The answer is shown. Find the guess that cuts the words left the most; each guess is graded
       against the best, and the words that still fit are listed at the bottom.
     </td>
-    <td width="40%"><img src="docs/screenshots/features/learn.png" width="100%" alt="Learn mode: the answer shown, a guess graded against the best picks, and the words that still fit"></td>
   </tr>
 </table>
 
 <table>
   <tr>
-    <td width="40%"><img src="docs/screenshots/features/solver.png" width="100%" alt="The solver: a guess entered with its colours, the words left, and the recommended next guess"></td>
     <td width="60%">
       <h3>🧩 A solver for games played elsewhere</h3>
       Type the guesses, tap the colours the other game showed, and get the words left and the next
       guess, aware of the tries you have. It handles the quartet and the relay race too.
       <a href="https://github.com/aaronified/lexodle/wiki/Solver-and-learn-mode">Solver and learn mode</a>.
     </td>
+    <td width="40%"><img src="docs/screenshots/features/solver.png" width="100%" alt="The solver: a guess entered with its colours, the words left, and the recommended next guess"></td>
   </tr>
 </table>
 
 <table>
   <tr>
+    <td width="40%"><img src="docs/screenshots/features/achievements.png" width="100%" alt="Achievements in English, each with its flag; bilingual shows three flags"></td>
     <td width="60%">
       <h3>🏅 Achievements, by language</h3>
       47 achievements, each earned in a language and wearing its flag; the ones that count
@@ -129,7 +130,6 @@
       <a href="https://github.com/aaronified/lexodle/wiki/Languages">Languages</a> ·
       <a href="https://github.com/aaronified/lexodle/wiki/Achievements">Achievements</a>.
     </td>
-    <td width="40%"><img src="docs/screenshots/features/achievements.png" width="100%" alt="Achievements in English, each with its flag; bilingual shows three flags"></td>
   </tr>
 </table>
 
