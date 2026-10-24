@@ -85,6 +85,14 @@ would give; the expected pool left is *E* = Σ(group size)² / *N*. The maths, w
 Skill, luck and daring are all worked out from the guesses alone, so they can be worked out
 again if the maths changes (see History).
 
+### Learn mode
+
+**Learn** (the last button of the settings) shows you the answer and asks you to find the best
+guess at each step. Guess as usual; after each guess it gives the skill of the guess and the best
+guesses there were, and the words that still fit the clues are listed at the bottom (the 120 most
+common; tap one to use it). It uses the language, length and pool you set, has no tries, is not
+scored and is not kept in the history. Solve the word and start another.
+
 ### Solver
 
 The **solver** (open it from the settings, beside play) helps with a game you are playing

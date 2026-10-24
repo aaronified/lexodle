@@ -198,6 +198,16 @@ class SettingsDialog extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      key: const ValueKey('settings-learn'),
+                      onPressed: () =>
+                          Navigator.pushReplacementNamed(context, Routes.learn),
+                      child: const Text('learn: find the best guess'),
+                    ),
+                  ),
                 ],
               ),
             );
