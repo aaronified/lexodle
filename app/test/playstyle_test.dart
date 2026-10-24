@@ -724,38 +724,21 @@ void main() {
       }
     });
 
-    testWidgets('the history is a link in the footer, with how many games', (
+    testWidgets('the playstyle is the way into the history, even unrated', (
       tester,
     ) async {
+      // the style is the history's door: there is no separate link for it
       await home(tester);
-      expect(find.byKey(const ValueKey('history-link')), findsOneWidget);
-      expect(find.text('history  0'), findsOneWidget);
-      addGames(appState.history, 3);
-      appState.refresh();
-      await tester.pumpAndSettle();
-      expect(find.text('history  3'), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('history-link')));
-      await tester.pumpAndSettle();
-      expect(find.byType(HistoryPage), findsOneWidget);
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-      expect(find.byType(HistoryPage), findsNothing);
-    });
-
-    testWidgets('the history opens before any game, and from the style', (
-      tester,
-    ) async {
-      await home(tester);
-      // not rated, nothing played: both ways in work
+      expect(find.text('history'), findsNothing);
+      expect(find.byKey(const ValueKey('history-link')), findsNothing);
+      // not rated, nothing played: it still opens
       await tester.tap(find.byKey(const ValueKey('style-chip')));
       await tester.pumpAndSettle();
       expect(find.byType(HistoryPage), findsOneWidget);
       expect(find.text('no games yet'), findsOneWidget);
       await tester.pageBack();
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('history-link')));
-      await tester.pumpAndSettle();
-      expect(find.byType(HistoryPage), findsOneWidget);
+      expect(find.byType(HistoryPage), findsNothing);
     });
 
     testWidgets('it fits beside the name on the narrowest phone', (

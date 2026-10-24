@@ -164,8 +164,17 @@ class _HistoryPageState extends State<HistoryPage> {
 
 /// The playstyle now, the traits it is read from, and which of the six the
 /// player has been.
-class _Profile extends StatelessWidget {
+class _Profile extends StatefulWidget {
   const _Profile();
+
+  @override
+  State<_Profile> createState() => _ProfileState();
+}
+
+class _ProfileState extends State<_Profile> {
+  /// The style whose description is open: tapped, since a tooltip needs a hover
+  /// or a long press, which a phone does not give.
+  Playstyle? _picked;
 
   @override
   Widget build(BuildContext context) {
@@ -259,18 +268,36 @@ class _Profile extends StatelessWidget {
                     s,
                     held: appState.stylesHeld.contains(s.id),
                     current: s.id == p?.id,
+                    picked: s.id == _picked?.id,
+                    onTap: () =>
+                        setState(() => _picked = _picked == s ? null : s),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            appState.styleChanges == 0
-                ? 'a playstyle moves with the way you play'
-                : 'changed ${appState.styleChanges} '
-                      '${appState.styleChanges == 1 ? 'time' : 'times'}',
-            style: dim.copyWith(fontSize: 11),
-          ),
+          const SizedBox(height: 6),
+          // what the tapped style is, in the card, so it fits any width
+          if (_picked case final s?)
+            Text(
+              '${s.name}: ${s.blurb}'
+              '${s.id == p?.id
+                  ? ' (your style now)'
+                  : appState.stylesHeld.contains(s.id)
+                  ? ' (you have been this)'
+                  : ' (not yet)'}',
+              key: const ValueKey('style-detail'),
+              style: const TextStyle(fontSize: 12, height: 1.4),
+            )
+          else
+            Text(
+              appState.styleChanges == 0
+                  ? 'tap a style to see what it is. it moves with the way you '
+                        'play'
+                  : 'tap a style to see what it is. changed '
+                        '${appState.styleChanges} '
+                        '${appState.styleChanges == 1 ? 'time' : 'times'}',
+              style: dim.copyWith(fontSize: 11),
+            ),
         ],
       ),
     );
@@ -299,48 +326,67 @@ class _Stat extends StatelessWidget {
 /// One of the six playstyles: lit if the player has been it, ringed if it is
 /// their style now.
 class _StyleDot extends StatelessWidget {
-  const _StyleDot(this.style, {required this.held, required this.current});
+  const _StyleDot(
+    this.style, {
+    required this.held,
+    required this.current,
+    required this.picked,
+    required this.onTap,
+  });
   final Playstyle style;
   final bool held;
   final bool current;
 
+  /// Whether its description is open, and what a tap does.
+  final bool picked;
+  final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Tooltip(
-      message:
-          '${style.name}: ${style.blurb}'
-          '${held ? '' : ' (not yet)'}',
-      child: Container(
-        key: ValueKey('dot-${style.id}'),
-        margin: const EdgeInsets.symmetric(horizontal: 1),
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: current ? c.primary : c.outlineVariant.withValues(alpha: 0),
-          ),
-          borderRadius: BorderRadius.circular(3),
-        ),
-        child: Column(
-          children: [
-            TablerIcon(
-              style.icon,
-              size: 24,
-              color: held ? c.primary : c.outlineVariant,
+    return Semantics(
+      button: true,
+      selected: picked,
+      label: '${style.name}${held ? '' : ', not yet'}',
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(3),
+        child: Container(
+          key: ValueKey('dot-${style.id}'),
+          margin: const EdgeInsets.symmetric(horizontal: 1),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: current
+                  ? c.primary
+                  : picked
+                  ? c.outline
+                  : c.outlineVariant.withValues(alpha: 0),
             ),
-            const SizedBox(height: 2),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                style.name,
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 9,
-                  color: c.onSurface.withValues(alpha: held ? 1 : dimAlpha),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Column(
+            children: [
+              TablerIcon(
+                style.icon,
+                size: 24,
+                color: held ? c.primary : c.outlineVariant,
+              ),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  style.name,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: c.onSurface.withValues(alpha: held ? 1 : dimAlpha),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

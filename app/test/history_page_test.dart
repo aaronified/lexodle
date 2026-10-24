@@ -236,16 +236,24 @@ void main() {
         tester.widget<Text>(find.byKey(const ValueKey('stat-games'))).data,
         '12',
       );
-      expect(find.text('changed 1 time'), findsOneWidget);
-      // all six are shown; those held do not say "not yet"
-      String tip(Playstyle p) => tester
-          .widget<Tooltip>(
-            find.ancestor(
-              of: find.byKey(ValueKey('dot-${p.id}')),
-              matching: find.byType(Tooltip),
-            ),
-          )
-          .message!;
+      expect(find.textContaining('changed 1 time'), findsOneWidget);
+      // all six are shown; a tap opens what a style is, and whether you have
+      // been it (no tooltip: a phone has no hover, and a long press is hidden)
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('profile')),
+          matching: find.byType(Tooltip),
+        ),
+        findsNothing,
+      );
+      Future<String> detail(Playstyle p) async {
+        await tester.tap(find.byKey(ValueKey('dot-${p.id}')));
+        await tester.pump();
+        return tester
+            .widget<Text>(find.byKey(const ValueKey('style-detail')))
+            .data!;
+      }
+
       for (final p in playstyles) {
         expect(
           find.byKey(ValueKey('dot-${p.id}')),
@@ -253,12 +261,52 @@ void main() {
           reason: p.id,
         );
       }
-      expect(tip(analyst), isNot(contains('not yet')));
-      expect(tip(maverick), isNot(contains('not yet')));
-      expect(tip(wildcard), contains('not yet'));
-      expect(tip(steady), contains('not yet'));
+      expect(find.byKey(const ValueKey('style-detail')), findsNothing);
+      expect(
+        await detail(analyst),
+        '${analyst.name}: ${analyst.blurb} (your style now)',
+      );
+      expect(
+        await detail(maverick),
+        '${maverick.name}: ${maverick.blurb} (you have been this)',
+      );
+      expect(
+        await detail(wildcard),
+        '${wildcard.name}: ${wildcard.blurb} (not yet)',
+      );
+      expect(await detail(steady), endsWith('(not yet)'));
+      // tapping the open one closes it again
+      await tester.tap(find.byKey(const ValueKey('dot-steady')));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('style-detail')), findsNothing);
     },
   );
+
+  testWidgets('the description of a style fits the narrowest phone', (
+    tester,
+  ) async {
+    await load(tester);
+    tester.view.physicalSize = const Size(320 * 2, 900 * 2);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await appState.load();
+    appState.history = History();
+    appState.styleId = null;
+    appState.stylesHeld = {};
+    await tester.pumpWidget(
+      const MaterialApp(home: HistoryPage(), onGenerateRoute: onGenerateRoute),
+    );
+    await tester.pump();
+    for (final p in playstyles) {
+      await tester.tap(find.byKey(ValueKey('dot-${p.id}')));
+      await tester.pump();
+      final card = tester.getRect(find.byKey(const ValueKey('profile')));
+      final text = tester.getRect(find.byKey(const ValueKey('style-detail')));
+      expect(text.left, greaterThanOrEqualTo(card.left), reason: p.id);
+      expect(text.right, lessThanOrEqualTo(card.right), reason: p.id);
+      expect(tester.takeException(), isNull, reason: p.id);
+    }
+  });
 
   testWidgets('a game opens its review, rebuilt from its guesses', (
     tester,
