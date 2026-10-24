@@ -21,9 +21,6 @@ A minimal word game in 17 Latin-script languages.
   </tr>
 </table>
 
-(Taken from the real screens by a test, so they can be taken again: see
-[Screenshots](#screenshots) below.)
-
 ## How to play
 
 Guess the hidden word. After each guess every letter is marked:

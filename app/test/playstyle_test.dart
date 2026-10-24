@@ -465,8 +465,8 @@ void main() {
         addGames(s.history, 20, skill: 95, daring: 1);
         s.updateStyle();
         final backup = parseBackup(backupToText(s));
-        expect(backup.playstyle!.style, 'analyst');
-        expect(backup.playstyle!.held, {'analyst'});
+        expect(backup.languages!['en']!.style, 'analyst');
+        expect(backup.languages!['en']!.held, {'analyst'});
 
         final other = AppState();
         await other.load();
@@ -474,7 +474,7 @@ void main() {
           settings: backup.settings,
           stats: backup.stats,
           ach: backup.achievements,
-          playstyle: backup.playstyle,
+          languages: backup.languages,
         );
         expect(other.style, analyst);
         expect(other.stylesHeld, {'analyst'});
@@ -490,14 +490,14 @@ void main() {
         addGames(s.history, 20, skill: 95, daring: 1);
         s.updateStyle();
         final j = jsonDecode(backupToText(s)) as Map<String, dynamic>
-          ..remove('playstyle');
+          ..remove('languages');
         final old = parseBackup(jsonEncode(j));
-        expect(old.playstyle, isNull);
+        expect(old.languages, isNull);
         s.restore(
           settings: old.settings,
           stats: old.stats,
           ach: old.achievements,
-          playstyle: old.playstyle,
+          languages: old.languages,
         );
         expect(s.style, analyst);
       },
@@ -506,16 +506,19 @@ void main() {
     test(
       'a style the backup has that this version lacks is dropped, not refused',
       () {
-        final j = jsonDecode(backupToText(AppState())) as Map<String, dynamic>;
+        final j = jsonDecode(backupToText(AppState())) as Map<String, dynamic>
+          ..remove('languages'); // the form before each language had its own
         j['playstyle'] = {
           'current': 'time-traveller',
           'held': ['maverick', 'time-traveller', 5],
           'changes': 2,
         };
         final b = parseBackup(jsonEncode(j));
-        expect(b.playstyle!.style, isNull);
-        expect(b.playstyle!.held, {'maverick'});
-        expect(b.playstyle!.changes, 2);
+        // a backup from before each language had its own is the language it
+        // was made in
+        expect(b.languages!['en']!.style, isNull);
+        expect(b.languages!['en']!.held, {'maverick'});
+        expect(b.languages!['en']!.changes, 2);
       },
     );
 
@@ -528,7 +531,9 @@ void main() {
         {'changes': 'many'},
       ]) {
         final j = jsonDecode(backupToText(AppState())) as Map<String, dynamic>;
-        j['playstyle'] = bad;
+        j['languages'] = {
+          'en': {'playstyle': bad},
+        };
         expect(
           () => parseBackup(jsonEncode(j)),
           throwsFormatException,

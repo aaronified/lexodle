@@ -80,7 +80,12 @@ void main() {
         ]),
       );
       expect((m['stats'] as Map)['played'], 12);
-      expect((m['achievements'] as Map).keys, contains('wins_10'));
+      // the achievements that belong to no language, then each language's own
+      expect((m['achievements'] as Map).keys, contains('mastery'));
+      expect((m['achievements'] as Map).keys, isNot(contains('wins_10')));
+      final en = (m['languages'] as Map)[(m['settings'] as Map)['lang']] as Map;
+      expect((en['achievements'] as Map).keys, contains('wins_10'));
+      expect(en.keys, containsAll(['playstyle', 'daily', 'achievements']));
     });
 
     test('the name carries the day', () {
@@ -96,7 +101,12 @@ void main() {
       expect(b.settings, s.settingsJson());
       expect(b.stats.toJson(), s.stats.toJson());
       expect(
-        {for (final e in b.achievements.entries) e.key: e.value.toJson()},
+        {
+          for (final e in b.achievements.entries) e.key: e.value.toJson(),
+          for (final e
+              in b.languages![b.settings['lang']]!.achievements.entries)
+            e.key: e.value.toJson(),
+        },
         {for (final e in s.ach.entries) e.key: e.value.toJson()},
       );
       expect(b.earned, 2, reason: 'two have been earned, one is in progress');
@@ -111,7 +121,12 @@ void main() {
       final fresh = AppState();
       await fresh.load();
       final b = parseBackup(backupToText(source));
-      fresh.restore(settings: b.settings, stats: b.stats, ach: b.achievements);
+      fresh.restore(
+        settings: b.settings,
+        stats: b.stats,
+        ach: b.achievements,
+        languages: b.languages,
+      );
       expect(fresh.settingsJson(), source.settingsJson());
       expect(fresh.stats.toJson(), source.stats.toJson());
       expect(fresh.unlockedCount, source.unlockedCount);
@@ -135,7 +150,12 @@ void main() {
         s.stats.played = 50;
         final m = valid()..['settings'] = {'length': 4};
         final b = parseBackup(text(m));
-        s.restore(settings: b.settings, stats: b.stats, ach: b.achievements);
+        s.restore(
+          settings: b.settings,
+          stats: b.stats,
+          ach: b.achievements,
+          languages: b.languages,
+        );
         expect(s.length, 4);
         expect(s.lang, 'de', reason: 'not in the file');
         expect(s.tries, 3);
@@ -148,7 +168,12 @@ void main() {
       await s.load();
       s.ach['one_shot'] = AchState(times: 4, dates: ['x']);
       final b = parseBackup(backupToText(sample()));
-      s.restore(settings: b.settings, stats: b.stats, ach: b.achievements);
+      s.restore(
+        settings: b.settings,
+        stats: b.stats,
+        ach: b.achievements,
+        languages: b.languages,
+      );
       expect(s.ach.containsKey('one_shot'), isFalse);
     });
 
@@ -158,7 +183,12 @@ void main() {
       var told = 0;
       s.addListener(() => told++);
       final b = parseBackup(backupToText(sample()));
-      s.restore(settings: b.settings, stats: b.stats, ach: b.achievements);
+      s.restore(
+        settings: b.settings,
+        stats: b.stats,
+        ach: b.achievements,
+        languages: b.languages,
+      );
       expect(told, 1);
     });
   });
@@ -174,7 +204,7 @@ void main() {
     });
 
     test('a version it cannot read', () {
-      expectRefused(text(valid()..['version'] = 2), 'newer version');
+      expectRefused(text(valid()..['version'] = 3), 'newer version');
       expectRefused(text(valid()..['version'] = 0), 'damaged');
       expectRefused(text(valid()..['version'] = '1'), 'damaged');
       expectRefused(text(valid()..remove('version')), 'damaged');
@@ -270,9 +300,15 @@ void main() {
     test('an achievement this version lacks is dropped, not an error', () {
       final m = valid();
       (m['achievements'] as Map)['from_the_future'] = {'times': 3};
+      final code = (m['settings'] as Map)['lang'] as String;
+      final en = (m['languages'] as Map)[code] as Map;
+      (en['achievements'] as Map)['from_the_past'] = {'times': 3};
       final b = parseBackup(text(m));
       expect(b.achievements.containsKey('from_the_future'), isFalse);
-      expect(b.achievements.containsKey('wins_10'), isTrue);
+      expect(b.achievements.containsKey('mastery'), isTrue);
+      final kept = b.languages![code]!.achievements;
+      expect(kept.containsKey('from_the_past'), isFalse);
+      expect(kept.containsKey('wins_10'), isTrue);
     });
 
     test('a file with only some parts is accepted for those parts', () {
@@ -356,7 +392,10 @@ void main() {
       expect(io.saved.single.$1, backupFileName(DateTime.now()));
       final b = parseBackup(utf8.decode(io.saved.single.$2));
       expect(b.stats.played, 3);
-      expect(b.achievements.containsKey('first_light'), isTrue);
+      expect(
+        b.languages!['en']!.achievements.containsKey('first_light'),
+        isTrue,
+      );
       expect(b.settings['lang'], 'en');
       expect(find.text('backup saved'), findsOneWidget);
     });

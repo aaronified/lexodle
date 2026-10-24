@@ -155,8 +155,8 @@ class Traits {
 
 /// The traits over the last [n] classic games of [h]; null when there is no
 /// guess with a daring in them at all.
-Traits? traitsOf(History h, {int n = styleWindow}) =>
-    traitsOfGames(h, h.recentClassic(n));
+Traits? traitsOf(History h, {int n = styleWindow, String? lang}) =>
+    traitsOfGames(h, h.recentClassic(n, lang));
 
 /// The traits over [games] of [h] (classic ones: the others carry no daring),
 /// for any stretch of play: a week, a month, or the last 100.

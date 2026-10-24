@@ -297,16 +297,17 @@ class _GamePageState extends State<GamePage> {
         ],
         daily: d?.date ?? '',
       );
-      final rated = appState.updateStyle();
+      final code = widget.bank.language.code;
+      final rated = appState.updateStyle(lang: code);
       final streak = d == null
           ? 0
-          : appState.recordDaily(d.date, played.dailyTier);
+          : appState.recordDaily(d.date, played.dailyTier, lang: code);
       unlocked = appState.recordGame(
         result(
           streak: streak,
           style: rated.style?.id,
           styleChanged: rated.changed,
-          stylesHeld: appState.stylesHeld.length,
+          stylesHeld: appState.stylesHeldOf(code).length,
         ),
       );
     }

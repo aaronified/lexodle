@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -259,6 +260,11 @@ class Achievement {
 
   /// Whether it has a target and so a progress bar (a badge collection has not).
   bool get numbered => track != Track.event && track != Track.badges;
+
+  /// Whether it spans languages (the ones that count languages, and the mastery
+  /// badges), so belongs to none. Every other is earned, and counted, in one
+  /// language at a time.
+  bool get global => track == Track.languages || track == Track.badges;
 }
 
 bool _always(GameResult r) => true;
@@ -270,6 +276,14 @@ const _relayOnly = {GameMode.relay};
 
 /// Every achievement. Numbered ones show a progress bar and, once earned, start
 /// again from 0; events can be earned again too, and every earning is counted.
+/// The achievement with [id], or null for one this version does not have.
+Achievement? achievementById(String id) {
+  for (final a in achievements) {
+    if (a.id == id) return a;
+  }
+  return null;
+}
+
 final achievements = <Achievement>[
   Achievement(
     'first_light',
@@ -745,7 +759,47 @@ class AppState extends ChangeNotifier {
   /// when it can, or it would reappear on every visit.
   bool get canRemember => _prefs != null;
   Stats stats = Stats();
-  Map<String, AchState> ach = {};
+
+  // Achievements: the global ones (see [Achievement.global]) in one map, and the
+  // rest in a map for each language.
+  final Map<String, AchState> _globalAch = {};
+  final Map<String, Map<String, AchState>> _langAch = {};
+
+  /// The achievement states in view for [l]: the global ones and that
+  /// language's. It is a live view: a state put into it is kept where it
+  /// belongs (a global achievement with the global ones, any other with [l]).
+  Map<String, AchState> achOf(String l) => _AchView(this, l);
+
+  /// The achievements in view for the language being played.
+  Map<String, AchState> get ach => achOf(lang);
+  set ach(Map<String, AchState> all) => setAch(lang, all);
+
+  /// Replaces the achievements: the global ones, and those of [l].
+  void setAch(String l, Map<String, AchState> all) {
+    final ids = {for (final a in achievements.where((a) => a.global)) a.id};
+    _globalAch
+      ..clear()
+      ..addAll({
+        for (final e in all.entries)
+          if (ids.contains(e.key)) e.key: e.value,
+      });
+    _langAch[l] = {
+      for (final e in all.entries)
+        if (!ids.contains(e.key)) e.key: e.value,
+    };
+  }
+
+  /// The languages that have achievements of their own.
+  Iterable<String> get achLanguages => _langAch.keys;
+
+  /// The languages the player has played, from the history and what is kept.
+  Set<String> get playedLanguages => {
+    for (final g in history.games) g.lang,
+    ..._langAch.keys,
+    ..._styles.keys,
+    ..._dailyLogs.keys,
+    lang,
+  };
 
   /// The languages whose mastery the last recorded game completed.
   List<Language> lastMastered = const [];
@@ -782,25 +836,38 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// How each day's daily went (date -> [dailyMissed], [dailySolved] or
-  /// [dailyDouble]), across every language: the streak counts a day on which a
-  /// daily was solved in any of them. A year is kept; [dailyBest] is the longest
-  /// streak ever.
-  Map<String, int> dailyLog = {};
-  int dailyBest = 0;
+  /// How each day's daily went in a language (date -> [dailyMissed],
+  /// [dailySolved] or [dailyDouble]): each language has its own streak and its
+  /// own calendar. A year is kept; the best is the longest streak ever.
+  final Map<String, Map<String, int>> _dailyLogs = {};
+  final Map<String, int> _dailyBests = {};
 
-  /// The daily streak now (see [dailyStreakOf]).
-  int get dailyStreak => dailyStreakOf(dailyLog, dailyDate());
+  Map<String, int> dailyLogOf(String l) => _dailyLogs[l] ??= {};
+  int dailyBestOf(String l) => _dailyBests[l] ?? 0;
 
-  /// Logs how [date]'s daily went and returns the streak it leaves. A day
-  /// already solved is never marked missed by a second language.
-  int recordDaily(String date, int tier) {
-    final old = dailyLog[date];
-    if (old == null || tier > old) dailyLog[date] = tier;
+  /// The log and the best streak of the language being played.
+  Map<String, int> get dailyLog => dailyLogOf(lang);
+  set dailyLog(Map<String, int> v) => _dailyLogs[lang] = v;
+  int get dailyBest => dailyBestOf(lang);
+  set dailyBest(int v) => _dailyBests[lang] = v;
+
+  /// The daily streak in [l] now (see [dailyStreakOf]).
+  int dailyStreakFor(String l) => dailyStreakOf(dailyLogOf(l), dailyDate());
+
+  /// The daily streak of the language being played.
+  int get dailyStreak => dailyStreakFor(lang);
+
+  /// Logs how [date]'s daily went in [l] (the language being played when not
+  /// given) and returns the streak it leaves there.
+  int recordDaily(String date, int tier, {String? lang}) {
+    final l = lang ?? this.lang;
+    final log = dailyLogOf(l);
+    final old = log[date];
+    if (old == null || tier > old) log[date] = tier;
     final oldest = dailyShift(date, -400);
-    dailyLog.removeWhere((k, _) => k.compareTo(oldest) < 0);
-    final streak = dailyStreakOf(dailyLog, date);
-    if (streak > dailyBest) dailyBest = streak;
+    log.removeWhere((k, _) => k.compareTo(oldest) < 0);
+    final streak = dailyStreakOf(log, date);
+    if (streak > dailyBestOf(l)) _dailyBests[l] = streak;
     _saveDailyLog();
     notifyListeners();
     return streak;
@@ -811,25 +878,42 @@ class AppState extends ChangeNotifier {
   /// the last 100.
   History history = History();
 
-  /// The playstyle now (a [Playstyle.id]; null until rated), every one the player
-  /// has been rated, and how many times it has changed. See playstyle.dart.
-  String? styleId;
-  Set<String> stylesHeld = {};
-  int styleChanges = 0;
+  /// The playstyle in each language (a [Playstyle.id]; none until rated),
+  /// every one the player has been rated there, and how many times it has
+  /// changed. See playstyle.dart.
+  final Map<String, String> _styles = {};
+  final Map<String, Set<String>> _stylesHeld = {};
+  final Map<String, int> _styleChanges = {};
 
-  Playstyle? get style => playstyleById(styleId);
+  String? styleIdOf(String l) => _styles[l];
+  Playstyle? styleOf(String l) => playstyleById(_styles[l]);
+  Set<String> stylesHeldOf(String l) => _stylesHeld[l] ??= {};
+  int styleChangesOf(String l) => _styleChanges[l] ?? 0;
 
-  /// Reads the playstyle again from the last 100 games, after a game was saved
-  /// to the [history]. A player not yet rated keeps none; one who has been rated
-  /// keeps their style while the numbers stay near it (see [classify]). Returns
-  /// the style and whether this moved them from one to another.
-  ({Playstyle? style, bool changed}) updateStyle() {
-    final next = classify(traitsOf(history), current: style);
-    if (next == null) return (style: style, changed: false);
-    final changed = styleId != null && styleId != next.id;
-    if (changed) styleChanges++;
-    styleId = next.id;
-    stylesHeld.add(next.id);
+  /// The playstyle, and those held, of the language being played.
+  String? get styleId => styleIdOf(lang);
+  set styleId(String? v) =>
+      v == null ? _styles.remove(lang) : _styles[lang] = v;
+  Set<String> get stylesHeld => stylesHeldOf(lang);
+  set stylesHeld(Set<String> v) => _stylesHeld[lang] = v;
+  int get styleChanges => styleChangesOf(lang);
+  set styleChanges(int v) => _styleChanges[lang] = v;
+  Playstyle? get style => styleOf(lang);
+
+  /// Reads the playstyle in [l] (the language being played when not given)
+  /// again from its last 100 games, after a game was saved to the [history]. A
+  /// player not yet rated keeps none; one who has been rated keeps their style
+  /// while the numbers stay near it (see [classify]). Returns the style and
+  /// whether this moved them from one to another.
+  ({Playstyle? style, bool changed}) updateStyle({String? lang}) {
+    final l = lang ?? this.lang;
+    final current = styleOf(l);
+    final next = classify(traitsOf(history, lang: l), current: current);
+    if (next == null) return (style: current, changed: false);
+    final changed = _styles[l] != null && _styles[l] != next.id;
+    if (changed) _styleChanges[l] = styleChangesOf(l) + 1;
+    _styles[l] = next.id;
+    stylesHeldOf(l).add(next.id);
     _saveStyle();
     notifyListeners();
     return (style: next, changed: changed);
@@ -839,14 +923,19 @@ class AppState extends ChangeNotifier {
     try {
       final p = _prefs;
       if (p == null) return;
-      if (styleId == null) {
-        p.remove('style');
-      } else {
-        p.setString('style', styleId!);
-      }
       p
-        ..setStringList('stylesHeld', stylesHeld.toList())
-        ..setInt('styleChanges', styleChanges);
+        ..setString('styles', jsonEncode(_styles))
+        ..setString(
+          'stylesHeldBy',
+          jsonEncode({
+            for (final e in _stylesHeld.entries) e.key: e.value.toList(),
+          }),
+        )
+        ..setString('styleChangesBy', jsonEncode(_styleChanges))
+        // the forms before each language had its own
+        ..remove('style')
+        ..remove('stylesHeld')
+        ..remove('styleChanges');
     } catch (_) {}
   }
 
@@ -953,8 +1042,10 @@ class AppState extends ChangeNotifier {
   void _saveDailyLog() {
     try {
       _prefs
-        ?..setString('dailyLog', jsonEncode(dailyLog))
-        ..setInt('dailyBest', dailyBest);
+        ?..setString('dailyLogs', jsonEncode(_dailyLogs))
+        ..setString('dailyBests', jsonEncode(_dailyBests))
+        ..remove('dailyLog')
+        ..remove('dailyBest');
     } catch (_) {}
   }
 
@@ -1007,52 +1098,144 @@ class AppState extends ChangeNotifier {
         history = History(); // damaged: start the record again
       }
       try {
-        styleId = playstyleById(p.getString('style'))?.id;
-        stylesHeld = {
-          for (final id in p.getStringList('stylesHeld') ?? const <String>[])
-            if (playstyleById(id) != null) id,
-        };
-        styleChanges = (p.getInt('styleChanges') ?? 0).clamp(0, 1000000);
+        _readStyles(p);
       } catch (_) {
-        styleId = null;
-        stylesHeld = {};
-        styleChanges = 0;
+        _styles.clear();
+        _stylesHeld.clear();
+        _styleChanges.clear();
       }
       try {
-        final log = p.getString('dailyLog');
-        if (log != null) {
-          dailyLog = {
-            for (final e in (jsonDecode(log) as Map).entries)
-              e.key as String: (e.value as int).clamp(dailyMissed, dailyDouble),
+        _readDaily(p);
+      } catch (_) {
+        _dailyLogs.clear();
+        _dailyBests.clear();
+      }
+      _readAchievements(p);
+    } catch (_) {}
+    loaded = true;
+    notifyListeners();
+  }
+
+  // What is kept for each language is read as it was saved; the forms from
+  // before each language had its own go to the language that was being played.
+  void _readStyles(SharedPreferences p) {
+    final by = p.getString('styles');
+    if (by != null) {
+      for (final e in (jsonDecode(by) as Map).entries) {
+        final id = playstyleById(e.value as String?)?.id;
+        if (id != null) _styles[e.key as String] = id;
+      }
+      final held = p.getString('stylesHeldBy');
+      if (held != null) {
+        for (final e in (jsonDecode(held) as Map).entries) {
+          _stylesHeld[e.key as String] = {
+            for (final id in e.value as List)
+              if (playstyleById(id as String) != null) id,
           };
         }
-        dailyBest = p.getInt('dailyBest') ?? 0;
-      } catch (_) {
-        dailyLog = {};
       }
+      final changes = p.getString('styleChangesBy');
+      if (changes != null) {
+        for (final e in (jsonDecode(changes) as Map).entries) {
+          _styleChanges[e.key as String] = (e.value as int).clamp(0, 1000000);
+        }
+      }
+      return;
+    }
+    final id = playstyleById(p.getString('style'))?.id;
+    if (id != null) _styles[lang] = id;
+    _stylesHeld[lang] = {
+      for (final id in p.getStringList('stylesHeld') ?? const <String>[])
+        if (playstyleById(id) != null) id,
+    };
+    _styleChanges[lang] = (p.getInt('styleChanges') ?? 0).clamp(0, 1000000);
+  }
+
+  void _readDaily(SharedPreferences p) {
+    Map<String, int> day(Object? raw) => {
+      for (final e in (raw as Map).entries)
+        e.key as String: (e.value as int).clamp(dailyMissed, dailyDouble),
+    };
+    final logs = p.getString('dailyLogs');
+    if (logs != null) {
+      for (final e in (jsonDecode(logs) as Map).entries) {
+        _dailyLogs[e.key as String] = day(e.value);
+      }
+      final bests = p.getString('dailyBests');
+      if (bests != null) {
+        for (final e in (jsonDecode(bests) as Map).entries) {
+          _dailyBests[e.key as String] = e.value as int;
+        }
+      }
+      return;
+    }
+    final log = p.getString('dailyLog');
+    if (log != null) _dailyLogs[lang] = day(jsonDecode(log));
+    final best = p.getInt('dailyBest');
+    if (best != null) _dailyBests[lang] = best;
+  }
+
+  void _readAchievements(SharedPreferences p) {
+    try {
+      Map<String, AchState> states(Object? raw) => {
+        for (final e in (raw as Map).entries)
+          e.key as String: AchState.fromJson(
+            (e.value as Map).cast<String, dynamic>(),
+          ),
+      };
+      final ids = {for (final a in achievements.where((a) => a.global)) a.id};
       final a = p.getString('ach');
       if (a != null) {
-        ach = {
-          for (final e in (jsonDecode(a) as Map).entries)
-            e.key as String: AchState.fromJson(
-              (e.value as Map).cast<String, dynamic>(),
-            ),
-        };
+        final all = states(jsonDecode(a));
+        for (final e in all.entries) {
+          if (ids.contains(e.key)) {
+            _globalAch[e.key] = e.value;
+          } else {
+            // from before each language had its own
+            (_langAch[lang] ??= {})[e.key] = e.value;
+          }
+        }
+        final by = p.getString('achLang');
+        if (by != null) {
+          for (final e in (jsonDecode(by) as Map).entries) {
+            _langAch[e.key as String] = states(e.value);
+          }
+        }
       } else {
-        // the earlier format: achievement id -> the day it was earned, once
+        // the earliest format: achievement id -> the day it was earned, once
         final u = p.getString('unlocked');
         if (u != null) {
           for (final e in (jsonDecode(u) as Map).entries) {
-            ach[e.key as String] = AchState(
-              times: 1,
-              dates: [e.value as String],
-            );
+            final st = AchState(times: 1, dates: [e.value as String]);
+            if (ids.contains(e.key)) {
+              _globalAch[e.key as String] = st;
+            } else {
+              (_langAch[lang] ??= {})[e.key as String] = st;
+            }
           }
         }
       }
     } catch (_) {}
-    loaded = true;
-    notifyListeners();
+  }
+
+  /// The achievements as they are saved: the global ones, then each language's.
+  void _saveAchievements() {
+    try {
+      _prefs
+        ?..setString(
+          'ach',
+          jsonEncode({
+            for (final e in _globalAch.entries) e.key: e.value.toJson(),
+          }),
+        )
+        ..setString(
+          'achLang',
+          jsonEncode({
+            for (final l in _langAch.entries)
+              l.key: {for (final e in l.value.entries) e.key: e.value.toJson()},
+          }),
+        );
+    } catch (_) {}
   }
 
   /// The settings as they are saved (and as a backup keeps them).
@@ -1075,24 +1258,35 @@ class AppState extends ChangeNotifier {
     required Map<String, Object> settings,
     required Stats stats,
     required Map<String, AchState> ach,
-    Map<String, int>? dailyLog,
-    int? dailyBest,
+    Map<String, LanguageKept>? languages,
     History? history,
-    ({String? style, Set<String> held, int changes})? playstyle,
   }) {
-    // and one from before the playstyles
-    if (playstyle != null) {
-      styleId = playstyleById(playstyle.style)?.id;
-      stylesHeld = {
-        for (final id in playstyle.held)
-          if (playstyleById(id) != null) id,
-      };
-      styleChanges = playstyle.changes;
-      _saveStyle();
+    // the global achievements, then what each language has: its playstyle, its
+    // daily calendar and streak, and its achievements. A backup from before the
+    // daily or the playstyles has none of them, and what is here stays.
+    _globalAch.clear();
+    final code = settings['lang'] as String? ?? lang;
+    for (final e in ach.entries) {
+      if (achievementById(e.key)?.global ?? false) {
+        _globalAch[e.key] = e.value;
+      } else if (languages == null) {
+        // one that is not global, without languages to put it in: the one in use
+        (_langAch[code] ??= {})[e.key] = e.value;
+      }
     }
-    // a backup from before the daily existed has none: what is here stays
-    if (dailyLog != null) this.dailyLog = Map.of(dailyLog);
-    if (dailyBest != null) this.dailyBest = dailyBest;
+    if (languages != null) {
+      _langAch.clear();
+      for (final e in languages.entries) {
+        final k = e.value;
+        if (k.style != null) _styles[e.key] = k.style!;
+        if (k.held != null) _stylesHeld[e.key] = Set.of(k.held!);
+        if (k.changes != null) _styleChanges[e.key] = k.changes!;
+        if (k.dailyLog != null) _dailyLogs[e.key] = Map.of(k.dailyLog!);
+        if (k.dailyBest != null) _dailyBests[e.key] = k.dailyBest!;
+        _langAch[e.key] = Map.of(k.achievements);
+      }
+    }
+    _saveStyle();
     _saveDailyLog();
     // likewise a backup from before the history
     if (history != null) _replaceHistory(history);
@@ -1109,7 +1303,6 @@ class AppState extends ChangeNotifier {
     if (t != null) themeMode = ThemeMode.values[t];
     seenHowTo = settings['seenHowTo'] as bool? ?? seenHowTo;
     this.stats = stats;
-    this.ach = ach;
     try {
       final p = _prefs;
       if (p != null) {
@@ -1124,13 +1317,10 @@ class AppState extends ChangeNotifier {
           ..setInt('theme', themeMode.index)
           ..setBool('seenHowTo', seenHowTo)
           ..setString('stats', jsonEncode(stats.toJson()))
-          ..setString(
-            'ach',
-            jsonEncode({for (final e in ach.entries) e.key: e.value.toJson()}),
-          )
           ..remove('unlocked'); // the earlier format, now replaced
       }
     } catch (_) {}
+    _saveAchievements();
     notifyListeners();
   }
 
@@ -1177,27 +1367,101 @@ class AppState extends ChangeNotifier {
   List<Achievement> recordGame(GameResult r) {
     stats.record(r);
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final had = Set.of(ach['mastery']?.seen ?? const <String>{});
+    final had = Set.of(_globalAch['mastery']?.seen ?? const <String>{});
+    // the achievements of this game's language, with the global ones: the
+    // states are shared, so what the game changes lands in both maps
+    final view = achOf(r.lang);
     final earned = advanceAchievements(
-      ach,
+      view,
       r,
       today,
       mastered: masteredLanguages().map((l) => l.code).toSet(),
     );
-    final fresh = (ach['mastery']?.seen ?? const <String>{}).difference(had);
+    final ids = {for (final a in achievements.where((a) => a.global)) a.id};
+    for (final e in view.entries) {
+      if (ids.contains(e.key)) {
+        _globalAch[e.key] = e.value;
+      } else {
+        (_langAch[r.lang] ??= {})[e.key] = e.value;
+      }
+    }
+    final fresh = (_globalAch['mastery']?.seen ?? const <String>{}).difference(
+      had,
+    );
     lastMastered = [
       for (final l in WordBank.loadedLanguages ?? const <Language>[])
         if (fresh.contains(l.code)) l,
     ];
     try {
-      _prefs
-        ?..setString('stats', jsonEncode(stats.toJson()))
-        ..setString(
-          'ach',
-          jsonEncode({for (final e in ach.entries) e.key: e.value.toJson()}),
-        );
+      _prefs?.setString('stats', jsonEncode(stats.toJson()));
     } catch (_) {}
+    _saveAchievements();
     notifyListeners();
     return earned;
   }
+}
+
+/// The achievements of one language with the global ones, as one map that
+/// writes through to where each belongs.
+class _AchView extends MapBase<String, AchState> {
+  _AchView(this._s, this._lang);
+  final AppState _s;
+  final String _lang;
+
+  bool _global(String id) => achievementById(id)?.global ?? false;
+
+  @override
+  AchState? operator [](Object? key) {
+    if (key is! String) return null;
+    return _global(key) ? _s._globalAch[key] : _s._langAch[_lang]?[key];
+  }
+
+  @override
+  void operator []=(String key, AchState value) {
+    if (_global(key)) {
+      _s._globalAch[key] = value;
+    } else {
+      (_s._langAch[_lang] ??= {})[key] = value;
+    }
+  }
+
+  @override
+  void clear() {
+    _s._globalAch.clear();
+    _s._langAch[_lang]?.clear();
+  }
+
+  @override
+  Iterable<String> get keys => [
+    ..._s._globalAch.keys,
+    ...?_s._langAch[_lang]?.keys,
+  ];
+
+  @override
+  AchState? remove(Object? key) {
+    if (key is! String) return null;
+    return _global(key)
+        ? _s._globalAch.remove(key)
+        : _s._langAch[_lang]?.remove(key);
+  }
+}
+
+/// What is kept for one language besides its games: the playstyle, the daily
+/// calendar and streak, and the achievements that are its own. A field the
+/// backup did not have is null and leaves what is held alone.
+class LanguageKept {
+  const LanguageKept({
+    this.style,
+    this.held,
+    this.changes,
+    this.dailyLog,
+    this.dailyBest,
+    this.achievements = const {},
+  });
+  final String? style;
+  final Set<String>? held;
+  final int? changes;
+  final Map<String, int>? dailyLog;
+  final int? dailyBest;
+  final Map<String, AchState> achievements;
 }

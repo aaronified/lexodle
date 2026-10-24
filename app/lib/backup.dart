@@ -13,7 +13,7 @@ import 'words.dart';
 
 /// The version of the backup file; a file from a later one is refused rather
 /// than half understood.
-const backupVersion = 1;
+const backupVersion = 2;
 
 /// The largest backup read, so a wrong file is turned away before it is parsed.
 /// A full history (10,000 games) is about 7 MB.
@@ -28,34 +28,36 @@ class Backup {
     required this.settings,
     required this.stats,
     required this.achievements,
-    this.dailyLog,
-    this.dailyBest,
+    this.languages,
     this.history,
-    this.playstyle,
   });
 
   final DateTime exported;
 
-  /// The playstyle now, every one held and how often it changed; null in a
-  /// backup from before the playstyles.
-  final ({String? style, Set<String> held, int changes})? playstyle;
+  /// What each language has of its own: its playstyle, daily calendar and
+  /// streak, and achievements. A file from before the daily or the playstyles
+  /// has less of it, and from before each language had its own, all of it
+  /// under one language (the one it was made in). Null for none.
+  final Map<String, LanguageKept>? languages;
 
   /// Every game played, with its guesses; null in a backup from before the
   /// history, which leaves what is saved alone.
   final History? history;
 
-  /// How each daily went and the longest daily streak; null in a backup from
-  /// before the daily, which leaves what is saved alone.
-  final Map<String, int>? dailyLog;
-  final int? dailyBest;
-
   /// The settings present in the file (a missing one keeps its current value).
   final Map<String, Object> settings;
   final Stats stats;
+
+  /// The achievements that belong to no language (see [Achievement.global]).
   final Map<String, AchState> achievements;
 
-  /// How many different achievements it has earned.
-  int get earned => achievements.values.where((s) => s.times > 0).length;
+  /// How many different achievements it has earned, in every language.
+  int get earned =>
+      achievements.values.where((s) => s.times > 0).length +
+      (languages?.values ?? const <LanguageKept>[]).fold(
+        0,
+        (n, k) => n + k.achievements.values.where((s) => s.times > 0).length,
+      );
 }
 
 /// The backup of what [state] holds now, as the text of the file.
@@ -67,17 +69,29 @@ String backupToText(AppState state, {DateTime? now}) {
     'exported': stamp,
     'settings': state.settingsJson(),
     'stats': state.stats.toJson(),
+    // the ones that belong to no language; each language has its own below
     'achievements': {
-      for (final e in state.ach.entries) e.key: e.value.toJson(),
+      for (final e in state.achOf('').entries)
+        if (achievementById(e.key)?.global ?? false) e.key: e.value.toJson(),
     },
-    'daily': {'log': state.dailyLog, 'best': state.dailyBest},
+    'languages': {
+      for (final l in state.playedLanguages.toList()..sort())
+        l: {
+          'playstyle': {
+            'current': state.styleIdOf(l),
+            'held': state.stylesHeldOf(l).toList()..sort(),
+            'changes': state.styleChangesOf(l),
+          },
+          'daily': {'log': state.dailyLogOf(l), 'best': state.dailyBestOf(l)},
+          'achievements': {
+            for (final e in state.achOf(l).entries)
+              if (!(achievementById(e.key)?.global ?? true))
+                e.key: e.value.toJson(),
+          },
+        },
+    },
     // one compact line: indented, a few hundred games would swamp the file
     'history': jsonEncode(state.history.toJson()),
-    'playstyle': {
-      'current': state.styleId,
-      'held': state.stylesHeld.toList()..sort(),
-      'changes': state.styleChanges,
-    },
   });
 }
 
@@ -116,19 +130,64 @@ Backup parseBackup(String text) {
     final exported = DateTime.tryParse('${raw['exported']}') ?? DateTime.now();
     final settings = _settings(raw['settings']);
     final stats = _stats(raw['stats']);
-    final ach = _achievements(raw['achievements']);
-    final daily = _daily(raw['daily']);
+    final all = _achievements(raw['achievements']);
     final history = _history(raw['history']);
-    final playstyle = _playstyle(raw['playstyle']);
+    final isGlobal = {
+      for (final a in achievements.where((a) => a.global)) a.id,
+    };
+    Map<String, LanguageKept>? languages;
+    if (raw['languages'] != null) {
+      // each language's own, and the global achievements beside them
+      final rawLangs = raw['languages'];
+      if (rawLangs is! Map) _bad('languages');
+      languages = {};
+      for (final e in rawLangs.entries) {
+        final code = e.key;
+        if (code is! String || !_langCode.hasMatch(code)) _bad('language');
+        final v = e.value;
+        if (v is! Map) _bad('language $code');
+        final play = _playstyle(v['playstyle']);
+        final daily = _daily(v['daily']);
+        languages[code] = LanguageKept(
+          style: play?.style,
+          held: play?.held,
+          changes: play?.changes,
+          dailyLog: daily?.$1,
+          dailyBest: daily?.$2,
+          achievements: _achievements(v['achievements']),
+        );
+      }
+    } else if (raw['playstyle'] != null ||
+        raw['daily'] != null ||
+        all.keys.any((k) => !isGlobal.contains(k))) {
+      // from before each language had its own: all of it is the language the
+      // backup was made in
+      final play = _playstyle(raw['playstyle']);
+      final daily = _daily(raw['daily']);
+      languages = {
+        (settings['lang'] as String?) ?? 'en': LanguageKept(
+          style: play?.style,
+          held: play?.held,
+          changes: play?.changes,
+          dailyLog: daily?.$1,
+          dailyBest: daily?.$2,
+          achievements: {
+            for (final e in all.entries)
+              if (!isGlobal.contains(e.key)) e.key: e.value,
+          },
+        ),
+      };
+    }
     return Backup(
       exported: exported,
       settings: settings,
       stats: stats,
-      achievements: ach,
-      dailyLog: daily?.$1,
-      dailyBest: daily?.$2,
+      achievements: {
+        for (final e in all.entries)
+          if (isGlobal.contains(e.key)) e.key: e.value,
+      },
+      languages: languages,
       history: history,
-      playstyle: playstyle,
     );
   } on FormatException {
     rethrow;
@@ -185,6 +244,7 @@ Map<String, Object> _settings(Object? raw) {
 }
 
 const _bigCount = 100000000;
+final _langCode = RegExp(r'^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$');
 
 Stats _stats(Object? raw) {
   if (raw == null) return Stats();

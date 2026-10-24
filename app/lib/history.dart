@@ -415,12 +415,14 @@ class History {
     _guesses.removeWhere((g) => gone.contains(g.game));
   }
 
-  /// The last [n] classic games, oldest first: the ones a playstyle is read
-  /// from.
-  List<GameRow> recentClassic([int n = 100]) {
+  /// The last [n] classic games, oldest first (those in [lang] when given): the
+  /// ones a playstyle is read from.
+  List<GameRow> recentClassic([int n = 100, String? lang]) {
     final out = <GameRow>[];
     for (var i = games.length - 1; i >= 0 && out.length < n; i--) {
-      if (games[i].isClassic) out.add(games[i]);
+      if (games[i].isClassic && (lang == null || games[i].lang == lang)) {
+        out.add(games[i]);
+      }
     }
     return out.reversed.toList();
   }

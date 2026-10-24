@@ -299,10 +299,8 @@ class _BackupSectionState extends State<_BackupSection> {
       settings: b.settings,
       stats: b.stats,
       ach: b.achievements,
-      dailyLog: b.dailyLog,
-      dailyBest: b.dailyBest,
+      languages: b.languages,
       history: b.history,
-      playstyle: b.playstyle,
     );
     setState(() {
       _pending = null;
