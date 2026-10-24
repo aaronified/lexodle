@@ -149,34 +149,54 @@ void main() {
     };
     appState.dailyBest = 12;
 
-    // fourteen games, ten of them classic: a sharp player who takes bolder lines
+    // about forty weeks of play, a player getting sharper: skill climbs from the
+    // low sixties to about ninety, daring wanders, luck is luck, and the odd
+    // week is skipped, so the lines have gaps
     final rng = Random(3);
     final pool = bank.answers(5, 3000);
+    final plays = <(DateTime, double)>[]; // when, and how far along (0 to 1)
+    for (var week = 39; week >= 0; week--) {
+      if (week > 3 && rng.nextInt(7) == 0) continue; // a week off
+      for (var k = 0; k < 2 + rng.nextInt(4); k++) {
+        plays.add((
+          DateTime(
+            2026,
+            10,
+            24,
+            19,
+            30,
+          ).subtract(Duration(days: week * 7 + rng.nextInt(7), hours: k)),
+          (39 - week) / 39,
+        ));
+      }
+    }
+    plays.sort((a, b) => a.$1.compareTo(b.$1));
     final h = History();
-    for (var i = 0; i < 14; i++) {
+    for (final (i, (day, along)) in plays.indexed) {
       final guesses = [
         for (var k = 0; k < 3 + i % 3; k++) pool[rng.nextInt(400)],
       ];
-      final won = i % 5 != 4;
       h.add(
-        at: DateTime(2026, 10, 11 + i, 19, 30).toUtc().millisecondsSinceEpoch,
+        at: day.toUtc().millisecondsSinceEpoch,
         lang: lang,
         mode: GameMode.classic,
         length: 5,
         tries: 6,
         pool: 3000,
         answers: [pool[rng.nextInt(400)]],
-        won: won,
-        daily: i > 0 && i % 3 == 0 ? '2026-10-${11 + i}' : '',
+        won: i % 9 != 4,
+        daily: i % 6 == 0 ? '2026-10-${(i % 20) + 1}' : '',
         guesses: [
           for (var k = 0; k < guesses.length; k++)
             GuessRow(
               game: 0,
               n: k,
               word: guesses[k],
-              skill: 84 + rng.nextInt(14).toDouble(),
-              luck: rng.nextInt(120) - 60.0,
-              daring: 45 + rng.nextInt(35).toDouble(),
+              skill: (62 + 28 * along + rng.nextInt(14) - 7)
+                  .clamp(0, 100)
+                  .toDouble(),
+              luck: rng.nextInt(100) - 50.0,
+              daring: (30 + 25 * (1 - along) + rng.nextInt(24)).toDouble(),
               risk: .5,
               before: 600 ~/ (k + 1),
               after: 300 ~/ (k + 1),
@@ -307,6 +327,8 @@ void main() {
 
   testWidgets('the history, with a playstyle', (t) async {
     await prepare(t);
+    // taller than a phone, so the chart and the first games are both in it
+    t.view.physicalSize = const Size(412, 1500) * 2;
     final key = GlobalKey();
     await t.pumpWidget(framed(key, const HistoryPage()));
     await t.pumpAndSettle();

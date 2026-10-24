@@ -230,11 +230,120 @@ void main() {
       expect(back.guesses.single.skill, 87.123);
     });
 
+    test('the rows are lists, in a fixed order, and are small', () {
+      final h = History();
+      final g = addGame(h, daily: '2026-10-24', at: 5);
+      final j = jsonDecode(jsonEncode(h.toJson())) as Map<String, dynamic>;
+      final game = (j['games'] as List).single as List;
+      expect(game, [
+        g.id,
+        5,
+        'en',
+        0,
+        5,
+        6,
+        3000,
+        ['slate'],
+        1,
+        '2026-10-24',
+        metricsVersion,
+      ]);
+      final guess = (j['guesses'] as List).first as List;
+      expect(guess, [g.id, 0, 'crane', 70, 5, 30, .4, 100, 90]);
+      // a guess without a daring has a null in its place
+      h.add(
+        at: 6,
+        lang: 'en',
+        mode: GameMode.classic,
+        length: 5,
+        tries: 6,
+        pool: 3000,
+        answers: ['slate'],
+        won: true,
+        guesses: [const GuessRow(game: 0, n: 0, word: 'slate', skill: 100)],
+      );
+      final k = jsonDecode(jsonEncode(h.toJson())) as Map<String, dynamic>;
+      expect(((k['guesses'] as List).last as List)[5], isNull);
+      // and there is no field name in them: about a third of the named form
+      final named = jsonEncode({
+        'games': [for (final x in h.games) x.toJson()],
+        'guesses': [for (final r in h.guesses) r.toJson()],
+      });
+      expect(jsonEncode(h.toJson()).length, lessThan(named.length * 0.7));
+    });
+
+    test('the earlier form, with named fields, is still read', () {
+      final h = History();
+      addGame(h, daily: '2026-10-24', at: 5);
+      addGame(h, won: false, at: 6);
+      final named = jsonDecode(
+        jsonEncode({
+          'games': [for (final g in h.games) g.toJson()],
+          'guesses': [for (final r in h.guesses) r.toJson()],
+        }),
+      );
+      final back = History.fromJson(named);
+      expect(back.games.length, 2);
+      expect(back.games.first.daily, '2026-10-24');
+      expect(back.games.last.won, isFalse);
+      expect(back.guesses.length, h.guesses.length);
+      expect(back.guesses.first.daring, 30);
+    });
+
+    test('a bad row of the compact form is refused', () {
+      Map<String, dynamic> good() {
+        final h = History();
+        addGame(h);
+        return jsonDecode(jsonEncode(h.toJson())) as Map<String, dynamic>;
+      }
+
+      void refuses(Map<String, dynamic> j, String why) =>
+          expect(() => History.fromJson(j), throwsFormatException, reason: why);
+
+      List game(Map<String, dynamic> j) => (j['games'] as List).first as List;
+      List guess(Map<String, dynamic> j) =>
+          (j['guesses'] as List).first as List;
+
+      var j = good();
+      game(j).removeLast();
+      refuses(j, 'a game row that is too short');
+      j = good();
+      game(j)[7] = ['abc'];
+      refuses(j, 'an answer of the wrong length');
+      j = good();
+      game(j)[3] = 9;
+      refuses(j, 'a mode that is not one');
+      j = good();
+      game(j)[8] = 2;
+      refuses(j, 'won that is neither 0 nor 1');
+      j = good();
+      game(j)[1] = -1;
+      refuses(j, 'a time before the epoch');
+      j = good();
+      guess(j).add(1);
+      refuses(j, 'a guess row that is too long');
+      j = good();
+      guess(j)[3] = 500;
+      refuses(j, 'a skill out of range');
+      j = good();
+      guess(j)[2] = 5;
+      refuses(j, 'a word that is not text');
+      j = good();
+      (j['games'] as List)[0] = 'not a row';
+      refuses(j, 'a game that is not a row');
+    });
+
     test('anything that is not a history is refused, whole', () {
+      // the named form, the one an earlier version wrote
       Map<String, Object?> good() {
         final h = History();
         addGame(h);
-        return jsonDecode(jsonEncode(h.toJson())) as Map<String, Object?>;
+        return jsonDecode(
+          jsonEncode({
+            'games': [for (final g in h.games) g.toJson()],
+            'guesses': [for (final r in h.guesses) r.toJson()],
+          }),
+        ) as Map<String, Object?>;
       }
 
       void refuses(Object? raw, String why) => expect(
@@ -447,6 +556,323 @@ void main() {
       }
       expect(backupToText(s).length, lessThan(maxBackupBytes));
       expect(parseBackup(backupToText(s)).history!.games.length, historyCap);
+    });
+  });
+
+  group('kept a month at a time', () {
+    /// A game ending at [at] (UTC).
+    void record(AppState s, DateTime at, {bool won = true}) => s.recordHistory(
+      lang: 'en',
+      mode: GameMode.classic,
+      length: 5,
+      tries: 6,
+      pool: 3000,
+      answers: ['slate'],
+      won: won,
+      guesses: rows(['crane', 'slate']),
+      now: at,
+    );
+
+    test('a game belongs to the month it ended in', () {
+      final h = History();
+      final a = addGame(
+        h,
+        at: DateTime.utc(2026, 8, 31, 23, 59).millisecondsSinceEpoch,
+      );
+      final b = addGame(h, at: DateTime.utc(2026, 9, 1).millisecondsSinceEpoch);
+      expect(a.month, '2026-08');
+      expect(b.month, '2026-09');
+      expect(
+        monthOf(DateTime.utc(2027, 1, 1).millisecondsSinceEpoch),
+        '2027-01',
+      );
+      expect(h.months(), ['2026-08', '2026-09']);
+    });
+
+    test('a chunk holds one month: its games and only their guesses', () {
+      final h = History();
+      final a = addGame(h, at: DateTime.utc(2026, 8, 5).millisecondsSinceEpoch);
+      final b = addGame(h, at: DateTime.utc(2026, 9, 5).millisecondsSinceEpoch);
+      final aug = h.chunk('2026-08');
+      expect((aug['games'] as List).length, 1);
+      expect((aug['games'] as List).single[0], a.id);
+      expect((aug['guesses'] as List).length, 2);
+      expect(((aug['guesses'] as List).first as List)[0], a.id);
+      expect(((h.chunk('2026-09')['guesses'] as List).first as List)[0], b.id);
+      expect((h.chunk('1999-01')['games'] as List), isEmpty);
+      // chunks put back together are the history
+      final back = History.fromChunks([aug, h.chunk('2026-09')]);
+      expect(back.games.map((g) => g.id), [a.id, b.id]);
+      expect(back.guesses.length, 4);
+    });
+
+    test('only the months that changed are marked, until they are saved', () {
+      final h = History();
+      expect(h.dirtyMonths, isEmpty);
+      final a = addGame(h, at: DateTime.utc(2026, 8, 5).millisecondsSinceEpoch);
+      addGame(h, at: DateTime.utc(2026, 9, 5).millisecondsSinceEpoch);
+      expect(h.dirtyMonths, {'2026-08', '2026-09'});
+      h.dirtyMonths.clear();
+      addGame(h, at: DateTime.utc(2026, 9, 6).millisecondsSinceEpoch);
+      expect(h.dirtyMonths, {'2026-09'}, reason: 'August did not change');
+      h.dirtyMonths.clear();
+      h.replaceGuesses(a.id, rows(['crane', 'slate'], skill: 90));
+      expect(h.dirtyMonths, {'2026-08'}, reason: 'its numbers were replaced');
+      h.dirtyMonths.clear();
+      h.markAllDirty();
+      expect(h.dirtyMonths, {'2026-08', '2026-09'});
+    });
+
+    test('a month is written for each, with an index, and read back', () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = AppState();
+      await s.load();
+      record(s, DateTime.utc(2026, 8, 5));
+      record(s, DateTime.utc(2026, 8, 20));
+      record(s, DateTime.utc(2026, 9, 5), won: false);
+      record(s, DateTime.utc(2026, 10, 24));
+      final p = await SharedPreferences.getInstance();
+      expect(p.getStringList(AppState.historyIndexKey), [
+        '2026-08',
+        '2026-09',
+        '2026-10',
+      ]);
+      for (final m in ['2026-08', '2026-09', '2026-10']) {
+        expect(p.getString(AppState.historyChunkKey(m)), isNotNull, reason: m);
+      }
+      expect(
+        p.getString('history'),
+        isNull,
+        reason: 'no single string any more',
+      );
+      expect(s.history.dirtyMonths, isEmpty);
+
+      final again = AppState();
+      await again.load();
+      expect(
+        again.history.games.map((g) => g.at),
+        s.history.games.map((g) => g.at),
+      );
+      expect(again.history.games.map((g) => g.won), [true, true, false, true]);
+      expect(again.history.guesses.length, 8);
+    });
+
+    test('finishing a game rewrites only its month', () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = AppState();
+      await s.load();
+      record(s, DateTime.utc(2026, 8, 5));
+      record(s, DateTime.utc(2026, 9, 5));
+      // mark August's chunk, to see whether it is touched
+      final p = await SharedPreferences.getInstance();
+      await p.setString(AppState.historyChunkKey('2026-08'), 'UNTOUCHED');
+      final september = p.getString(AppState.historyChunkKey('2026-09'));
+      record(s, DateTime.utc(2026, 10, 24));
+      expect(p.getString(AppState.historyChunkKey('2026-08')), 'UNTOUCHED');
+      expect(p.getString(AppState.historyChunkKey('2026-09')), september);
+      expect(p.getString(AppState.historyChunkKey('2026-10')), isNotNull);
+      expect(p.getStringList(AppState.historyIndexKey)!.length, 3);
+      // a second game in the same month rewrites that month, and only it
+      record(s, DateTime.utc(2026, 10, 25));
+      expect(p.getString(AppState.historyChunkKey('2026-08')), 'UNTOUCHED');
+      final october = jsonDecode(
+        p.getString(AppState.historyChunkKey('2026-10'))!,
+      );
+      expect((october['games'] as List).length, 2);
+    });
+
+    test(
+      'the history of an earlier version, in one string, moves into months',
+      () async {
+        final h = History();
+        addGame(h, at: DateTime.utc(2026, 8, 5).millisecondsSinceEpoch);
+        addGame(h, at: DateTime.utc(2026, 10, 5).millisecondsSinceEpoch);
+        // once as the named rows of the first version
+        final named = jsonEncode({
+          'games': [for (final g in h.games) g.toJson()],
+          'guesses': [for (final r in h.guesses) r.toJson()],
+        });
+        for (final old in [named, jsonEncode(h.toJson())]) {
+          SharedPreferences.setMockInitialValues({'history': old});
+          final s = AppState();
+          await s.load();
+          expect(s.history.games.length, 2);
+          final p = await SharedPreferences.getInstance();
+          expect(p.getString('history'), isNull, reason: 'the old key is gone');
+          expect(p.getStringList(AppState.historyIndexKey), [
+            '2026-08',
+            '2026-10',
+          ]);
+          expect(p.getString(AppState.historyChunkKey('2026-08')), isNotNull);
+          final again = AppState();
+          await again.load();
+          expect(again.history.games.length, 2);
+        }
+      },
+    );
+
+    test('a damaged month is left out and the others are kept', () async {
+      final h = History();
+      addGame(h, at: DateTime.utc(2026, 8, 5).millisecondsSinceEpoch);
+      addGame(h, at: DateTime.utc(2026, 10, 5).millisecondsSinceEpoch);
+      SharedPreferences.setMockInitialValues({
+        AppState.historyIndexKey: ['2026-08', '2026-09', '2026-10', '2026-11'],
+        AppState.historyChunkKey('2026-08'): jsonEncode(h.chunk('2026-08')),
+        AppState.historyChunkKey('2026-09'):
+            '{"games": [[1,2,3]], "guesses": []}',
+        AppState.historyChunkKey('2026-10'): jsonEncode(h.chunk('2026-10')),
+        // 2026-11 is in the index but has no chunk
+        'lang': 'fr',
+      });
+      final s = AppState();
+      await s.load();
+      expect(s.lang, 'fr', reason: 'the rest of the settings still load');
+      expect(s.history.games.length, 2);
+      expect(s.history.months(), ['2026-08', '2026-10']);
+    });
+
+    test(
+      'a restored backup replaces the months, and removes the old ones',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final s = AppState();
+        await s.load();
+        record(s, DateTime.utc(2026, 8, 5));
+        record(s, DateTime.utc(2026, 9, 5));
+        final p = await SharedPreferences.getInstance();
+        expect(p.getString(AppState.historyChunkKey('2026-08')), isNotNull);
+
+        final other = History();
+        addGame(other, at: DateTime.utc(2026, 10, 5).millisecondsSinceEpoch);
+        s.restore(
+          settings: const {},
+          stats: Stats(),
+          ach: const {},
+          history: other,
+        );
+        expect(p.getString(AppState.historyChunkKey('2026-08')), isNull);
+        expect(p.getString(AppState.historyChunkKey('2026-09')), isNull);
+        expect(p.getString(AppState.historyChunkKey('2026-10')), isNotNull);
+        expect(p.getStringList(AppState.historyIndexKey), ['2026-10']);
+        final again = AppState();
+        await again.load();
+        expect(again.history.months(), ['2026-10']);
+      },
+    );
+
+    test('thousands of games are kept, saved and read back', () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = AppState();
+      await s.load();
+      final started = Stopwatch()..start();
+      // 3,000 games over 25 months
+      for (var i = 0; i < 3000; i++) {
+        s.history.add(
+          at: DateTime.utc(
+            2024,
+            9,
+            1,
+          ).add(Duration(hours: i * 6)).millisecondsSinceEpoch,
+          lang: 'en',
+          mode: GameMode.classic,
+          length: 5,
+          tries: 6,
+          pool: 3000,
+          answers: ['slate'],
+          won: i % 4 != 0,
+          guesses: rows(['crane', 'slate', 'slate']),
+        );
+      }
+      expect(s.history.games.length, 3000);
+      s.saveHistory();
+      final p = await SharedPreferences.getInstance();
+      final months = p.getStringList(AppState.historyIndexKey)!;
+      expect(months.length, greaterThan(20));
+      // each month is a chunk of its own, none of them huge
+      for (final m in months) {
+        expect(
+          p.getString(AppState.historyChunkKey(m))!.length,
+          lessThan(150000),
+        );
+      }
+      final again = AppState();
+      await again.load();
+      expect(again.history.games.length, 3000);
+      expect(again.history.guesses.length, 9000);
+      expect(again.history.recentClassic().length, 100);
+      expect(started.elapsed, lessThan(const Duration(seconds: 20)));
+    });
+
+    test('beyond the cap the oldest go, with their guesses and months', () {
+      final h = History();
+      final first = addGame(
+        h,
+        at: DateTime.utc(2020, 1, 1).millisecondsSinceEpoch,
+      );
+      for (var i = 1; i < historyCap + 5; i++) {
+        h.add(
+          at: DateTime.utc(
+            2021,
+            1,
+            1,
+          ).add(Duration(minutes: i)).millisecondsSinceEpoch,
+          lang: 'en',
+          mode: GameMode.classic,
+          length: 5,
+          tries: 6,
+          pool: 3000,
+          answers: ['slate'],
+          won: true,
+          guesses: rows(['slate']),
+        );
+      }
+      expect(h.games.length, historyCap);
+      expect(h.byId(first.id), isNull);
+      expect(h.guessesOf(first.id), isEmpty);
+      expect(h.months(), isNot(contains('2020-01')));
+      expect(h.dirtyMonths, contains('2020-01'), reason: 'its chunk must go');
+      expect(h.guesses.length, historyCap);
+    });
+
+    test('a month that has lost all its games is removed, not left empty', () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = AppState();
+      await s.load();
+      // fill the cap with one month, then add a game: the oldest month is gone
+      s.history.add(
+        at: DateTime.utc(2020, 1, 1).millisecondsSinceEpoch,
+        lang: 'en',
+        mode: GameMode.classic,
+        length: 5,
+        tries: 6,
+        pool: 3000,
+        answers: ['slate'],
+        won: true,
+        guesses: rows(['slate']),
+      );
+      s.saveHistory();
+      final p = await SharedPreferences.getInstance();
+      expect(p.getString(AppState.historyChunkKey('2020-01')), isNotNull);
+      for (var i = 0; i < historyCap; i++) {
+        s.history.add(
+          at: DateTime.utc(
+            2021,
+            1,
+            1,
+          ).add(Duration(minutes: i)).millisecondsSinceEpoch,
+          lang: 'en',
+          mode: GameMode.classic,
+          length: 5,
+          tries: 6,
+          pool: 3000,
+          answers: ['slate'],
+          won: true,
+          guesses: rows(['slate']),
+        );
+      }
+      s.saveHistory();
+      expect(p.getString(AppState.historyChunkKey('2020-01')), isNull);
+      expect(p.getStringList(AppState.historyIndexKey), ['2021-01']);
     });
   });
 

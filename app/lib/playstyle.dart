@@ -155,8 +155,12 @@ class Traits {
 
 /// The traits over the last [n] classic games of [h]; null when there is no
 /// guess with a daring in them at all.
-Traits? traitsOf(History h, {int n = styleWindow}) {
-  final games = h.recentClassic(n);
+Traits? traitsOf(History h, {int n = styleWindow}) =>
+    traitsOfGames(h, h.recentClassic(n));
+
+/// The traits over [games] of [h] (classic ones: the others carry no daring),
+/// for any stretch of play: a week, a month, or the last 100.
+Traits? traitsOfGames(History h, List<GameRow> games) {
   var skill = 0.0, daring = 0.0;
   var skillN = 0, daringN = 0;
   for (final g in games) {

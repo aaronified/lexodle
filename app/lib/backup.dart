@@ -16,7 +16,8 @@ import 'words.dart';
 const backupVersion = 1;
 
 /// The largest backup read, so a wrong file is turned away before it is parsed.
-const maxBackupBytes = 1000000;
+/// A full history (10,000 games) is about 7 MB.
+const maxBackupBytes = 16000000;
 
 /// Everything the app keeps, as a file: the settings, the statistics and every
 /// achievement. It is the persistent storage of the web build, where the

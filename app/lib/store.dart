@@ -882,11 +882,72 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Writes the history out (also after its numbers were worked out again).
+  /// Where the history is kept: a list of the months that have games, and one
+  /// string of rows per month (`history:2026-10`). There can be thousands of
+  /// games, so finishing one rewrites a month, not the whole record.
+  static const historyIndexKey = 'history:months';
+  static String historyChunkKey(String month) => 'history:$month';
+
+  /// Writes out the months of the history that have changed (also after the
+  /// numbers of games were worked out again). A month that could not be written
+  /// stays changed, and is tried again next time.
   void saveHistory() {
     try {
-      _prefs?.setString('history', jsonEncode(history.toJson()));
+      final p = _prefs;
+      if (p == null) return;
+      for (final m in history.dirtyMonths.toList()) {
+        final chunk = history.chunk(m);
+        if ((chunk['games'] as List).isEmpty) {
+          p.remove(historyChunkKey(m));
+        } else {
+          p.setString(historyChunkKey(m), jsonEncode(chunk));
+        }
+      }
+      p.setStringList(historyIndexKey, history.months());
+      p.remove('history'); // the one string of earlier versions
+      history.dirtyMonths.clear();
     } catch (_) {}
+  }
+
+  /// Reads the history back: month by month, skipping one that is damaged
+  /// without losing the rest; or, from an earlier version, the one string.
+  History _readHistory(SharedPreferences p) {
+    final months = p.getStringList(historyIndexKey);
+    if (months != null) {
+      final good = <Object?>[];
+      for (final m in months) {
+        final s = p.getString(historyChunkKey(m));
+        if (s == null) continue;
+        try {
+          final chunk = jsonDecode(s);
+          History.fromJson(chunk); // checked on its own
+          good.add(chunk);
+        } catch (_) {
+          // a damaged month is left out, the others are kept
+        }
+      }
+      return History.fromChunks(good);
+    }
+    final old = p.getString('history');
+    if (old == null) return History();
+    final h = History.fromJson(jsonDecode(old));
+    h.markAllDirty(); // moved to months on the next save
+    return h;
+  }
+
+  /// Replaces the history (a restored backup), removing the months that are no
+  /// longer in it.
+  void _replaceHistory(History h) {
+    final p = _prefs;
+    final before = p?.getStringList(historyIndexKey) ?? const <String>[];
+    history = h;
+    h.markAllDirty();
+    try {
+      for (final m in before) {
+        if (!h.months().contains(m)) p?.remove(historyChunkKey(m));
+      }
+    } catch (_) {}
+    saveHistory();
   }
 
   void _saveDailyLog() {
@@ -940,8 +1001,8 @@ class AppState extends ChangeNotifier {
         daily = {};
       }
       try {
-        final saved = p.getString('history');
-        if (saved != null) history = History.fromJson(jsonDecode(saved));
+        history = _readHistory(p);
+        if (history.dirtyMonths.isNotEmpty) saveHistory(); // from the old form
       } catch (_) {
         history = History(); // damaged: start the record again
       }
@@ -1034,10 +1095,7 @@ class AppState extends ChangeNotifier {
     if (dailyBest != null) this.dailyBest = dailyBest;
     _saveDailyLog();
     // likewise a backup from before the history
-    if (history != null) {
-      this.history = history;
-      saveHistory();
-    }
+    if (history != null) _replaceHistory(history);
     lang = settings['lang'] as String? ?? lang;
     length = settings['length'] as int? ?? length;
     tries = settings['tries'] as int? ?? tries;

@@ -83,16 +83,27 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
 /// The guess rows of the classic game [g] worked out afresh: every guess is
 /// scored against the best real guess in its position, and given its daring.
 /// Slow (it looks at every word the game accepts, for every guess).
+///
+/// The first guess of every game is made against every word, and is the same
+/// position for all of them, so its analysis (the slowest) is kept in [opening]
+/// when one is given, and used again for the next game of that language and
+/// length.
 Future<List<GuessRow>> rescoreClassic(
   WordBank bank,
   GameRow g,
-  List<GuessRow> rows,
-) async {
+  List<GuessRow> rows, {
+  Map<String, Landscape>? opening,
+}) async {
   final rec = replayClassic(bank, g, rows);
   final guessable = bank.guessable(g.length);
   final out = <GuessRow>[];
   for (var i = 0; i < rec.guesses.length; i++) {
-    final land = await analyseGuesses(rec.befores[i], guessable);
+    final key = rec.befores[i].length == guessable.length
+        ? '${bank.language.code}:${g.length}'
+        : null;
+    var land = key == null ? null : opening?[key];
+    land ??= await analyseGuesses(rec.befores[i], guessable);
+    if (key != null) opening?[key] = land;
     out.add(guessRowOf(i, rec.metrics[i].withLandscape(land)));
   }
   return out;
@@ -126,17 +137,21 @@ Future<List<GuessRow>> rescoreMulti(
 }
 
 /// Works out again every game saved under an older [metricsVersion], one after
-/// another, and returns how many were done. [bankFor] gives the word list of a
-/// language (null if it has gone, which leaves that game as it is); [onEach] is
-/// told after each game; [cancelled] stops it between games. A game that cannot
-/// be worked out is left as it was.
+/// another, newest first (the recent ones are what a playstyle and the latest
+/// weeks are read from), and returns how many were done. There can be thousands,
+/// so it can be stopped between games with [cancelled] and picked up later: each
+/// game is replaced as it is done, and [onEach] says after every one so that the
+/// caller can save. [bankFor] gives the word list of a language (null if it has
+/// gone, which leaves that game as it is). A game that cannot be worked out is
+/// left as it was.
 Future<int> rescoreStale(
   History h,
   Future<WordBank?> Function(String lang) bankFor, {
   void Function(int done, int total)? onEach,
   bool Function()? cancelled,
 }) async {
-  final stale = List.of(h.stale());
+  final stale = h.stale().reversed.toList();
+  final opening = <String, Landscape>{};
   var done = 0;
   for (final g in stale) {
     if (cancelled?.call() ?? false) break;
@@ -145,7 +160,7 @@ Future<int> rescoreStale(
       if (bank == null) continue;
       final rows = h.guessesOf(g.id);
       final fresh = g.isClassic
-          ? await rescoreClassic(bank, g, rows)
+          ? await rescoreClassic(bank, g, rows, opening: opening)
           : await rescoreMulti(bank, g, rows);
       h.replaceGuesses(g.id, fresh);
       done++;
