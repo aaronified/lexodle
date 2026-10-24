@@ -123,6 +123,10 @@ class LetterKeyboard extends StatelessWidget {
           for (var i = 0; i < rows.length; i++)
             Row(
               children: [
+                // a short row of a language's extra letters keeps keys of the
+                // same size, centred, not stretched across the whole row
+                if (i > 2 && rows[i].length < 10)
+                  Spacer(flex: (10 - rows[i].length) * 5),
                 if (i == 2)
                   key(
                     enterLabel,
@@ -139,6 +143,8 @@ class LetterKeyboard extends StatelessWidget {
                     flex: 1.6,
                     colors: (c.errorContainer, c.onErrorContainer),
                   ),
+                if (i > 2 && rows[i].length < 10)
+                  Spacer(flex: (10 - rows[i].length) * 5),
               ],
             ),
           if (onBlank != null)

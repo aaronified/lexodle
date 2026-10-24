@@ -249,14 +249,17 @@ class _Profile extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 14),
+          // the six share the card's width, so they fit the narrowest phone,
+          // and a name shrinks before it can touch its neighbour
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               for (final s in playstyles)
-                _StyleDot(
-                  s,
-                  held: appState.stylesHeld.contains(s.id),
-                  current: s.id == p?.id,
+                Expanded(
+                  child: _StyleDot(
+                    s,
+                    held: appState.stylesHeld.contains(s.id),
+                    current: s.id == p?.id,
+                  ),
                 ),
             ],
           ),
@@ -310,8 +313,8 @@ class _StyleDot extends StatelessWidget {
           '${held ? '' : ' (not yet)'}',
       child: Container(
         key: ValueKey('dot-${style.id}'),
-        width: 44,
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 1),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
         decoration: BoxDecoration(
           border: Border.all(
             color: current ? c.primary : c.outlineVariant.withValues(alpha: 0),
@@ -326,13 +329,15 @@ class _StyleDot extends StatelessWidget {
               color: held ? c.primary : c.outlineVariant,
             ),
             const SizedBox(height: 2),
-            Text(
-              style.name,
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              style: TextStyle(
-                fontSize: 8,
-                color: c.onSurface.withValues(alpha: held ? 1 : dimAlpha),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                style.name,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 9,
+                  color: c.onSurface.withValues(alpha: held ? 1 : dimAlpha),
+                ),
               ),
             ),
           ],

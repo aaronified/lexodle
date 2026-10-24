@@ -17,6 +17,9 @@ import 'store.dart';
 final _seed = HSLColor.fromAHSL(1, 48, .7, .5).toColor();
 const _radius = BorderRadius.all(Radius.circular(3));
 
+/// The app's one font (assets/fonts).
+const _font = 'JetBrainsMono';
+
 ThemeData buildTheme(Brightness b) {
   final scheme = ColorScheme.fromSeed(
     seedColor: _seed,
@@ -28,7 +31,7 @@ ThemeData buildTheme(Brightness b) {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
-    fontFamily: 'JetBrainsMono',
+    fontFamily: _font,
     dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
@@ -39,7 +42,10 @@ ThemeData buildTheme(Brightness b) {
       style: FilledButton.styleFrom(
         shape: shape,
         minimumSize: const Size(0, 52),
+        // a button's text style replaces the theme's whole, so the family is
+        // named here too, or the labels are drawn in the platform's own font
         textStyle: const TextStyle(
+          fontFamily: _font,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.5,
           fontSize: 15,
@@ -51,13 +57,13 @@ ThemeData buildTheme(Brightness b) {
         shape: shape,
         minimumSize: const Size(0, 48),
         side: BorderSide(color: scheme.outline),
-        textStyle: const TextStyle(letterSpacing: 1.2),
+        textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1.2),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         shape: shape,
-        textStyle: const TextStyle(letterSpacing: 1.2),
+        textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1.2),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(

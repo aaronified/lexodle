@@ -17,6 +17,58 @@ double contrast(Color fg, Color bg) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  group('the font', () {
+    test(
+      'every button theme names it, as a button\'s style replaces the theme\'s',
+      () {
+        for (final b in Brightness.values) {
+          final t = buildTheme(b);
+          for (final (name, style) in [
+            ('filled', t.filledButtonTheme.style),
+            ('outlined', t.outlinedButtonTheme.style),
+            ('text', t.textButtonTheme.style),
+          ]) {
+            expect(
+              style!.textStyle!.resolve({})!.fontFamily,
+              'JetBrainsMono',
+              reason: '$name button, ${b.name}',
+            );
+          }
+          expect(t.textTheme.bodyMedium!.fontFamily, 'JetBrainsMono');
+        }
+      },
+    );
+
+    testWidgets('a button\'s label is drawn in it', (tester) async {
+      final families = <String, String?>{};
+      Widget label(String name) => Builder(
+        builder: (context) {
+          families[name] = DefaultTextStyle.of(context).style.fontFamily;
+          return Text(name);
+        },
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildTheme(Brightness.dark),
+          home: Scaffold(
+            body: Column(
+              children: [
+                FilledButton(onPressed: () {}, child: label('filled')),
+                OutlinedButton(onPressed: () {}, child: label('outlined')),
+                TextButton(onPressed: () {}, child: label('text')),
+              ],
+            ),
+          ),
+        ),
+      );
+      expect(families, {
+        'filled': 'JetBrainsMono',
+        'outlined': 'JetBrainsMono',
+        'text': 'JetBrainsMono',
+      });
+    });
+  });
+
   for (final brightness in Brightness.values) {
     group('${brightness.name} theme contrast', () {
       final c = buildTheme(brightness).colorScheme;
