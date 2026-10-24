@@ -1,0 +1,55 @@
+name: wiki
+
+# Publish docs/wiki/ to this repository's GitHub wiki. The repository is the
+# source: an edit made in the wiki is overwritten by the next run.
+#
+# The wiki's git repository only exists once its first page has been created
+# (enabling Wikis in Settings is not enough). If the clone below fails, save one
+# page at https://github.com/<owner>/<repo>/wiki and run this again.
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/wiki/**', '.github/workflows/wiki.yml']
+  workflow_dispatch:
+
+# one branch in one repository: queue runs rather than race them
+concurrency:
+  group: wiki
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone the wiki
+        run: |
+          set -euo pipefail
+          git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.wiki.git" wiki
+
+      # copy, then let git work out what changed; removing the old pages first is
+      # what makes a deleted page disappear from the wiki too
+      - name: Copy the pages across
+        run: |
+          set -euo pipefail
+          rm -f wiki/*.md
+          cp docs/wiki/*.md wiki/
+
+      - name: Commit and push, if anything changed
+        working-directory: wiki
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "wiki already matches docs/wiki"
+            exit 0
+          fi
+          git commit -m "docs: mirror docs/wiki from ${GITHUB_SHA::7}"
+          git push origin
