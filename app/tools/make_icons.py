@@ -1,6 +1,8 @@
 """Draw the Lexodle logo: three tiles climbing from grey to yellow to green.
 
-Writes assets/logo.svg and the web icons (favicon, 192/512, maskable 192/512).
+Writes assets/logo.svg, the web icons (favicon, 192/512, maskable 192/512) and the
+Android launcher icons: the rounded tile for phones before Android 8, and an adaptive
+icon (the ground colour and the three tiles inside the safe zone) for the rest.
 Needs Pillow:  pip install pillow
 The same geometry is in lib/logo.dart; change one, change both.
 """
@@ -35,13 +37,18 @@ def svg() -> str:
     )
 
 
-def render(size: int, *, maskable: bool = False, zoom: float = 1.0) -> Image.Image:
-    """Square icon. Maskable icons are full-bleed with the mark inside the safe zone."""
+def render(
+    size: int, *, maskable: bool = False, zoom: float = 1.0, ground: bool = True
+) -> Image.Image:
+    """Square icon. Maskable icons are full-bleed with the mark inside the safe zone.
+    With no [ground] only the three tiles are drawn, on transparent."""
     s = size * SS
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     k = s / 96
-    if maskable:
+    if not ground:
+        pass
+    elif maskable:
         d.rectangle([0, 0, s, s], fill=BG)
         zoom *= 0.8
     else:
@@ -58,8 +65,39 @@ def render(size: int, *, maskable: bool = False, zoom: float = 1.0) -> Image.Ima
     return img.resize((size, size), Image.LANCZOS)
 
 
+RES = APP / "android" / "app" / "src" / "main" / "res"
+
+
+def android() -> None:
+    # legacy launcher icons, by density
+    for name, px in [("mdpi", 48), ("hdpi", 72), ("xhdpi", 96), ("xxhdpi", 144), ("xxxhdpi", 192)]:
+        render(px).save(RES / f"mipmap-{name}" / "ic_launcher.png", optimize=True)
+    # the adaptive icon: a 108 dp canvas of which the middle 66 dp is always seen. The
+    # tiles are 54 dp wide, so their corners stay inside the circle every mask has.
+    for name, px in [("mdpi", 108), ("hdpi", 162), ("xhdpi", 216), ("xxhdpi", 324), ("xxxhdpi", 432)]:
+        render(px, ground=False, zoom=54 / 78).save(
+            RES / f"mipmap-{name}" / "ic_launcher_foreground.png", optimize=True
+        )
+    (RES / "values").mkdir(parents=True, exist_ok=True)
+    (RES / "values" / "ic_launcher_background.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n'
+        f'    <color name="ic_launcher_background">{BG}</color>\n</resources>\n',
+        encoding="utf-8",
+    )
+    (RES / "mipmap-anydpi-v26").mkdir(parents=True, exist_ok=True)
+    (RES / "mipmap-anydpi-v26" / "ic_launcher.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
+        '    <background android:drawable="@color/ic_launcher_background"/>\n'
+        '    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n'
+        "</adaptive-icon>\n",
+        encoding="utf-8",
+    )
+
+
 def main() -> None:
     (APP / "assets" / "logo.svg").write_text(svg(), encoding="utf-8")
+    android()
     web = APP / "web"
     render(32, zoom=1.12).save(web / "favicon.png")
     for n in (192, 512):
