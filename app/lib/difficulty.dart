@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import 'ui.dart';
@@ -22,20 +20,34 @@ final poolLevels = <(String name, int size)>[
 
 const _labelWidth = 104.0;
 
-/// The pool a language really offers at a length: at most the level's size.
-int poolFor(int size, int? available) =>
-    available == null ? size : min(size, available);
+/// How many more words than the level below a language needs to offer a level:
+/// "wide" only if it has 1,000 more than the 1,500 of "familiar", and so on, so
+/// a level is never a sliver more than the one before it.
+const poolStep = 1000;
 
-/// The pool sizes a language offers at a length: only those it has that many
-/// words for, so "obscure" (6,000) is never a shorter list under a bigger name.
-/// All of them when the count is not known, and always at least the smallest.
+/// The pool levels (sizes) a language offers at a length: the smallest always,
+/// then each next one only while there are at least [poolStep] more words than
+/// the level below. All of them when the count is not known.
 List<int> poolsOffered(int? available) {
   if (available == null) return poolSizes;
-  final offered = [
-    for (final s in poolSizes)
-      if (s <= available) s,
-  ];
-  return offered.isEmpty ? [poolSizes.first] : offered;
+  final offered = [poolSizes.first];
+  for (final s in poolSizes.skip(1)) {
+    if (available < offered.last + poolStep) break;
+    offered.add(s);
+  }
+  return offered;
+}
+
+/// How many words a level really draws its answers from. The size of the
+/// level, except that the last level a language offers takes every word it has
+/// (so none is left out: a short list's last level is all of it, and a language
+/// with 4,994 words has an "obscure" of 4,994). [level] is mapped to the
+/// nearest one offered first.
+int poolWords(int level, int? available) {
+  if (available == null) return level;
+  final offered = poolsOffered(available);
+  final l = offered.lastWhere((s) => s <= level, orElse: () => offered.first);
+  return l == offered.last ? available : l;
 }
 
 /// The pool a [preferred] size means for a language and length: the largest
@@ -124,13 +136,21 @@ class DifficultyMatrix extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${_thousands(poolLevels[r].$2)} words',
+                        '${_thousands(poolWords(poolLevels[r].$2, available))} words',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(poolLevels[r].$1, style: head),
+                      Text(
+                        // the last level takes every word the language has
+                        // left, and says so when that is not its round number
+                        poolWords(poolLevels[r].$2, available) !=
+                                poolLevels[r].$2
+                            ? '${poolLevels[r].$1} · all'
+                            : poolLevels[r].$1,
+                        style: head,
+                      ),
                     ],
                   ),
                 ),
@@ -142,7 +162,7 @@ class DifficultyMatrix extends StatelessWidget {
                     selected: r == selLevel && col == selCol,
                     label:
                         '${triesLevels[col].$2} tries, '
-                        '${poolLevels[r].$2} words',
+                        '${poolWords(poolLevels[r].$2, available)} words',
                     onTap: () =>
                         onChanged(triesLevels[col].$2, poolLevels[r].$2),
                   ),
@@ -163,8 +183,9 @@ class DifficultyMatrix extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '${triesLevels[selCol].$1} · ${poolLevels[selLevel].$1}: $tries tries, '
-                'answers from the ${_thousands(shown)} most common words',
+                '${triesLevels[selCol].$1} · ${poolLevels[selLevel].$1}: '
+                '$tries tries, '
+                '${poolWords(shown, available) != shown ? 'answers from all ${_thousands(poolWords(shown, available))} words' : 'answers from the ${_thousands(shown)} most common words'}',
                 style: TextStyle(
                   fontSize: 12,
                   color: c.onSurface.withValues(alpha: .8),

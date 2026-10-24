@@ -46,6 +46,13 @@ class _GamePageState extends State<GamePage> {
       ? effectivePool(appState.pool, widget.bank.language.counts[length])
       : dailyPool;
   late final int tries;
+
+  /// How many words the pool really holds: the level's size, or every word the
+  /// language has when it is the last level offered (see [poolWords]).
+  late final int _poolWords = poolWords(
+    pool,
+    widget.bank.language.counts[length],
+  );
   late final List<String> _pool;
   late final Set<String> _letters;
 
@@ -77,7 +84,7 @@ class _GamePageState extends State<GamePage> {
     super.initState();
     length = _daily == null ? appState.length : dailyLength;
     tries = _daily == null ? appState.tries : dailyTries;
-    _pool = widget.bank.answers(length, pool);
+    _pool = widget.bank.answers(length, _poolWords);
     _letters = widget.bank.letters(length);
     _reset();
     _resume();
@@ -108,7 +115,7 @@ class _GamePageState extends State<GamePage> {
   void _reset() {
     answer =
         _daily?.answer ??
-        chooseWord(_pool, widget.bank.answerWeights(length, pool), _rng);
+        chooseWord(_pool, widget.bank.answerWeights(length, _poolWords), _rng);
     // Every word the game accepts counts as possible, not only the common ones
     // the answer is drawn from: a player cannot know that list, and a real
     // word that fits every clue must never be ruled out behind their back.

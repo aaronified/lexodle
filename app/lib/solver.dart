@@ -33,7 +33,7 @@ class _SolverPageState extends State<SolverPage> {
   // game accepts (see _solve).
   late final List<String> _answers = widget.bank.answers(
     length,
-    effectivePool(appState.pool, widget.bank.language.counts[length]),
+    poolWords(appState.pool, widget.bank.language.counts[length]),
   );
   late final Set<String> _letters = widget.bank.letters(length);
 

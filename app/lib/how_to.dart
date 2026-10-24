@@ -173,9 +173,10 @@ class HowToPage extends StatelessWidget {
                             '4 x 4 grid. across is the number of tries: easy 8, normal '
                             '6, hard 4, brutal 3. down is the word pool the answer is '
                             'drawn from: its 500, 1,500, 3,000 or 6,000 most common '
-                            'words. a language offers only the pools it has enough words '
-                            'for at that length, so 6,000 appears only where there are '
-                            '6,000 words. the colour runs '
+                            'words. a level appears only if the language has at least '
+                            '1,000 more words of that length than the level before it, '
+                            'and the last level takes every word left, so none is '
+                            'wasted. the colour runs '
                             'from green for the easiest to purple for the hardest.',
                       ),
                       section(

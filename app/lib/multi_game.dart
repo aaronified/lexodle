@@ -48,6 +48,12 @@ class _MultiGamePageState extends State<MultiGamePage> {
     widget.bank.language.counts[length],
   );
   late final int tries;
+
+  /// How many words the pool really holds (see [poolWords]).
+  late final int _poolWords = poolWords(
+    pool,
+    widget.bank.language.counts[length],
+  );
   late final List<String> _pool;
   late final Set<String> _letters;
 
@@ -70,7 +76,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     super.initState();
     length = appState.length;
     tries = triesFor(mode, appState.tries);
-    _pool = widget.bank.answers(length, pool);
+    _pool = widget.bank.answers(length, _poolWords);
     _letters = widget.bank.letters(length);
     _reset();
   }
@@ -92,7 +98,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       mode,
       chooseTargets(
         _pool,
-        widget.bank.answerWeights(length, pool),
+        widget.bank.answerWeights(length, _poolWords),
         mode.boards,
         appState.share,
         _rng,

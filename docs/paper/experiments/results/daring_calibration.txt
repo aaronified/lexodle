@@ -1,0 +1,81 @@
+
+=== dart run tools/calibrate_styles.dart en 5 200
+en 5: 4994 words, answers from 3000
+best       win 100%  guesses/game 3.6  skill mean 100.0 (game p10 100 p50 100 p90 100)  daring mean   0.0 (game p10 0 p50 0 p90 0)
+near-best  win 100%  guesses/game 3.7  skill mean  99.0 (game p10 98 p50 100 p90 100)  daring mean  12.0 (game p10 0 p50 0 p90 33)
+sharp-safe win 100%  guesses/game 3.8  skill mean  96.4 (game p10 94 p50 97 p90 100)  daring mean   0.0 (game p10 0 p50 0 p90 0)
+sharp-bold win 100%  guesses/game 3.9  skill mean  94.1 (game p10 91 p50 95 p90 98)  daring mean  47.9 (game p10 33 p50 50 p90 67)
+frequent   win  99%  guesses/game 3.2  skill mean  67.9 (game p10 56 p50 67 p90 81)  daring mean  63.3 (game p10 43 p50 66 p90 80)
+random-fit win  95%  guesses/game 4.3  skill mean  69.9 (game p10 56 p50 73 p90 83)  daring mean  62.8 (game p10 38 p50 66 p90 90)
+wild       win   1%  guesses/game 6.0  skill mean  47.4 (game p10 33 p50 50 p90 68)  daring mean  48.1 (game p10 30 p50 48 p90 78)
+wild-bold  win   0%  guesses/game 6.0  skill mean  47.1 (game p10 35 p50 49 p90 66)  daring mean  46.7 (game p10 25 p50 48 p90 72)
+
+daring by the skill of the guess (all bots, 5640 guesses)
+skill   0-40  n=  819  daring p10   0 p50  16 p90 100
+skill  40-55  n=  597  daring p10  11 p50  82 p90 100
+skill  55-70  n=  889  daring p10  21 p50  62 p90  98
+skill  70-80  n=  477  daring p10  25 p50  83 p90 100
+skill  80-90  n=  477  daring p10   0 p50  89 p90 100
+skill  90-100 n=  758  daring p10   0 p50   0 p90 100
+skill 99.99-101 n= 1623  daring p10   0 p50   0 p90   0
+
+=== dart run tools/calibrate_styles.dart fr 5 100
+fr 5: 6000 words, answers from 3000
+best       win 100%  guesses/game 3.8  skill mean 100.0 (game p10 100 p50 100 p90 100)  daring mean   0.0 (game p10 0 p50 0 p90 0)
+near-best  win 100%  guesses/game 3.9  skill mean  98.9 (game p10 98 p50 99 p90 100)  daring mean  28.5 (game p10 0 p50 33 p90 50)
+sharp-safe win 100%  guesses/game 4.0  skill mean  96.8 (game p10 94 p50 97 p90 100)  daring mean   0.0 (game p10 0 p50 0 p90 0)
+sharp-bold win 100%  guesses/game 3.9  skill mean  93.2 (game p10 89 p50 94 p90 97)  daring mean  83.4 (game p10 67 p50 100 p90 100)
+frequent   win 100%  guesses/game 3.2  skill mean  64.1 (game p10 53 p50 64 p90 75)  daring mean  61.5 (game p10 43 p50 62 p90 79)
+random-fit win  93%  guesses/game 4.5  skill mean  68.1 (game p10 57 p50 70 p90 80)  daring mean  63.6 (game p10 45 p50 65 p90 83)
+wild       win   3%  guesses/game 6.0  skill mean  44.1 (game p10 33 p50 45 p90 62)  daring mean  42.1 (game p10 23 p50 44 p90 66)
+wild-bold  win   0%  guesses/game 6.0  skill mean  45.5 (game p10 31 p50 46 p90 66)  daring mean  45.9 (game p10 30 p50 44 p90 68)
+
+daring by the skill of the guess (all bots, 2953 guesses)
+skill   0-40  n=  439  daring p10   0 p50  11 p90  89
+skill  40-55  n=  337  daring p10  10 p50  72 p90 100
+skill  55-70  n=  453  daring p10  24 p50  57 p90  97
+skill  70-80  n=  288  daring p10  31 p50  77 p90 100
+skill  80-90  n=  222  daring p10   0 p50  96 p90 100
+skill  90-100 n=  367  daring p10   0 p50 100 p90 100
+skill 99.99-101 n=  847  daring p10   0 p50   0 p90   0
+
+=== dart run tools/calibrate_styles.dart de 4 100
+de 4: 1658 words, answers from 1658
+best       win 100%  guesses/game 4.0  skill mean 100.0 (game p10 100 p50 100 p90 100)  daring mean   0.0 (game p10 0 p50 0 p90 0)
+near-best  win 100%  guesses/game 4.2  skill mean  97.9 (game p10 95 p50 99 p90 100)  daring mean  33.5 (game p10 0 p50 33 p90 67)
+sharp-safe win  99%  guesses/game 4.4  skill mean  94.4 (game p10 91 p50 95 p90 98)  daring mean   0.0 (game p10 0 p50 0 p90 0)
+sharp-bold win  96%  guesses/game 4.7  skill mean  90.1 (game p10 86 p50 91 p90 95)  daring mean  78.2 (game p10 60 p50 75 p90 100)
+frequent   win  97%  guesses/game 3.0  skill mean  62.8 (game p10 54 p50 64 p90 71)  daring mean  69.9 (game p10 50 p50 73 p90 95)
+random-fit win  85%  guesses/game 5.0  skill mean  64.7 (game p10 50 p50 66 p90 77)  daring mean  60.8 (game p10 41 p50 62 p90 80)
+wild       win   1%  guesses/game 6.0  skill mean  42.8 (game p10 29 p50 44 p90 63)  daring mean  47.2 (game p10 27 p50 49 p90 72)
+wild-bold  win   0%  guesses/game 6.0  skill mean  42.7 (game p10 32 p50 42 p90 59)  daring mean  40.2 (game p10 21 p50 40 p90 63)
+
+daring by the skill of the guess (all bots, 3226 guesses)
+skill   0-40  n=  554  daring p10   0 p50  24 p90  90
+skill  40-55  n=  353  daring p10  12 p50  69 p90 100
+skill  55-70  n=  502  daring p10  23 p50  81 p90  99
+skill  70-80  n=  288  daring p10   6 p50  78 p90 100
+skill  80-90  n=  303  daring p10   0 p50  80 p90 100
+skill  90-100 n=  341  daring p10   0 p50 100 p90 100
+skill 99.99-101 n=  885  daring p10   0 p50   0 p90   0
+
+=== dart run tools/calibrate_styles.dart en 8 100
+en 8: 6000 words, answers from 3000
+best       win 100%  guesses/game 2.8  skill mean 100.0 (game p10 100 p50 100 p90 100)  daring mean   0.0 (game p10 0 p50 0 p90 0)
+near-best  win 100%  guesses/game 2.8  skill mean  99.4 (game p10 99 p50 100 p90 100)  daring mean  30.4 (game p10 0 p50 25 p90 50)
+sharp-safe win 100%  guesses/game 2.8  skill mean  99.9 (game p10 100 p50 100 p90 100)  daring mean   0.0 (game p10 0 p50 0 p90 0)
+sharp-bold win 100%  guesses/game 3.0  skill mean  98.6 (game p10 97 p50 100 p90 100)  daring mean  68.7 (game p10 50 p50 50 p90 100)
+frequent   win 100%  guesses/game 2.8  skill mean  75.7 (game p10 66 p50 77 p90 83)  daring mean  80.9 (game p10 50 p50 94 p90 100)
+random-fit win 100%  guesses/game 3.1  skill mean  82.6 (game p10 74 p50 84 p90 90)  daring mean  59.1 (game p10 35 p50 59 p90 92)
+wild       win   1%  guesses/game 6.0  skill mean  67.4 (game p10 52 p50 76 p90 88)  daring mean  55.1 (game p10 31 p50 59 p90 90)
+wild-bold  win   0%  guesses/game 6.0  skill mean  64.1 (game p10 52 p50 73 p90 86)  daring mean  54.7 (game p10 32 p50 58 p90 87)
+
+daring by the skill of the guess (all bots, 1880 guesses)
+skill   0-40  n=   98  daring p10   0 p50   0 p90  93
+skill  40-55  n=   75  daring p10  47 p50  97 p90 100
+skill  55-70  n=  276  daring p10  55 p50  97 p90 100
+skill  70-80  n=  233  daring p10  42 p50  84 p90  99
+skill  80-90  n=  173  daring p10  41 p50  89 p90 100
+skill  90-100 n=  263  daring p10  50 p50 100 p90 100
+skill 99.99-101 n=  762  daring p10   0 p50   0 p90   0
+

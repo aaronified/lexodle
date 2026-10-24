@@ -379,16 +379,30 @@ void main() {
       },
     );
 
-    test('a language only offers the pools it has the words for', () async {
+    test('every level has 1,000 more words than the one below, and the last is all', () async {
       final langs = await WordBank.languages();
       for (final l in langs) {
         for (final len in l.lengths) {
-          final n = l.counts[len];
-          for (final p in poolsOffered(n)) {
-            if (p != poolSizes.first) {
-              expect(n, greaterThanOrEqualTo(p), reason: '${l.code} $len $p');
-            }
+          final n = l.counts[len]!;
+          final offered = poolsOffered(n);
+          for (var i = 1; i < offered.length; i++) {
+            expect(
+              n,
+              greaterThanOrEqualTo(offered[i - 1] + poolStep),
+              reason: '${l.code} $len level ${offered[i]}',
+            );
           }
+          // the next level up, if there is one, is out of reach
+          final next = poolSizes.indexOf(offered.last) + 1;
+          if (next < poolSizes.length) {
+            expect(
+              n,
+              lessThan(offered.last + poolStep),
+              reason: '${l.code} $len could offer ${poolSizes[next]}',
+            );
+          }
+          // no word is left behind: the biggest level is every word
+          expect(poolWords(poolSizes.last, n), n, reason: '${l.code} $len');
         }
       }
       // Danish and Indonesian have no obscure pool at any length
@@ -402,6 +416,10 @@ void main() {
           );
         }
       }
+      // English at five letters (4,994 words) does have it, as all of them
+      final en = langs.firstWhere((l) => l.code == 'en');
+      expect(poolsOffered(en.counts[5]), poolSizes);
+      expect(poolWords(6000, en.counts[5]), en.counts[5]);
       // a language with plenty keeps all four
       final cs = langs.firstWhere((l) => l.code == 'cs');
       expect(poolsOffered(cs.counts[5]), poolSizes);

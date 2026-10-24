@@ -1,3 +1,4 @@
+import 'difficulty.dart';
 import 'words.dart';
 
 /// The daily word: one word per language per day, the same for everyone.
@@ -92,7 +93,10 @@ class Daily {
   /// language has no words of the daily's length.
   static Daily? of(WordBank bank, [String? date]) {
     final d = date ?? dailyDate();
-    final pool = bank.answers(dailyLength, dailyPool);
+    final pool = bank.answers(
+      dailyLength,
+      poolWords(dailyPool, bank.language.counts[dailyLength]),
+    );
     if (pool.isEmpty) return null;
     return Daily(d, pool[dailyIndex(bank.language.code, d, pool.length)]);
   }

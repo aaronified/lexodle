@@ -59,17 +59,48 @@ void main() {
           ),
         ),
       );
-      // 2,383 words fill common and familiar only: wide (3,000) and obscure
-      // (6,000) are not offered, and a saved 6,000 shows as the biggest left
+      // 2,383 words are not 1,000 more than familiar's 1,500 and wide's 3,000
+      // is not reachable, so there are two rows, and the last takes every
+      // word: no word is left behind. A saved 6,000 shows as that last row.
       expect(find.text('500 words'), findsOneWidget);
-      expect(find.text('1,500 words'), findsOneWidget);
+      expect(find.text('2,383 words'), findsOneWidget);
+      expect(find.text('familiar · all'), findsOneWidget);
+      expect(find.text('1,500 words'), findsNothing);
       expect(find.text('3,000 words'), findsNothing);
       expect(find.text('6,000 words'), findsNothing);
       expect(find.text('wide'), findsNothing);
       expect(find.text('obscure'), findsNothing);
+      expect(find.bySemanticsLabel('3 tries, 2383 words'), findsOneWidget);
       expect(find.bySemanticsLabel('3 tries, 6000 words'), findsNothing);
       expect(
-        find.textContaining('answers from the 1,500 most common words'),
+        find.textContaining('answers from all 2,383 words'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('English at five letters gets obscure, as all its words', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          DifficultyMatrix(
+            tries: 6,
+            pool: 6000,
+            available: 4994,
+            onChanged: (_, _) {},
+          ),
+        ),
+      );
+      // 4,994 words are 1,000 more than wide's 3,000, so obscure is offered
+      // and is every word English has at that length
+      for (final t in ['500', '1,500', '3,000', '4,994']) {
+        expect(find.text('$t words'), findsOneWidget, reason: t);
+      }
+      expect(find.text('obscure · all'), findsOneWidget);
+      expect(find.text('wide'), findsOneWidget);
+      expect(find.text('6,000 words'), findsNothing);
+      expect(
+        find.textContaining('answers from all 4,994 words'),
         findsOneWidget,
       );
     });
@@ -91,17 +122,50 @@ void main() {
       expect(find.text('obscure'), findsOneWidget);
     });
 
-    test('the pool a saved choice means follows what the language offers', () {
+    test('a level needs 1,000 more words than the level below it', () {
       expect(poolsOffered(null), poolSizes);
-      expect(poolsOffered(2383), [500, 1500]);
-      expect(poolsOffered(3000), [500, 1500, 3000]); // exactly enough counts
-      expect(poolsOffered(2999), [500, 1500]);
       expect(poolsOffered(10), [500], reason: 'always the smallest');
+      expect(poolsOffered(1499), [500]);
+      expect(poolsOffered(1500), [500, 1500]); // exactly 1,000 more than 500
+      expect(poolsOffered(2383), [500, 1500]);
+      expect(poolsOffered(2499), [500, 1500]);
+      expect(poolsOffered(2500), [500, 1500, 3000]); // 1,000 more than 1,500
+      expect(poolsOffered(3999), [500, 1500, 3000]);
+      expect(poolsOffered(4000), poolSizes); // 1,000 more than 3,000
+      expect(poolsOffered(4994), poolSizes);
+      expect(poolsOffered(6000), poolSizes);
+    });
+
+    test('the last level takes every word, so none is left behind', () {
+      // a level that is not the last is its round number
+      expect(poolWords(500, 4994), 500);
+      expect(poolWords(1500, 4994), 1500);
+      expect(poolWords(3000, 4994), 3000);
+      // the last one is everything
+      expect(poolWords(6000, 4994), 4994);
+      expect(poolWords(6000, 6000), 6000);
+      expect(poolWords(1500, 2383), 2383, reason: 'familiar is the last');
+      expect(poolWords(500, 2383), 500);
+      expect(poolWords(3000, 3900), 3900, reason: 'wide is the last');
+      expect(
+        poolWords(500, 1200),
+        1200,
+        reason: 'a short list is all one level',
+      );
+      // a level not offered means the biggest one that is
+      expect(poolWords(6000, 2383), 2383);
+      expect(poolWords(3000, 2383), 2383);
+      expect(poolWords(3000, null), 3000);
+    });
+
+    test('the pool a saved choice means follows what the language offers', () {
       expect(effectivePool(6000, 2383), 1500);
       expect(effectivePool(3000, 2383), 1500);
       expect(effectivePool(1500, 2383), 1500);
       expect(effectivePool(500, 2383), 500);
       expect(effectivePool(6000, 6000), 6000);
+      expect(effectivePool(6000, 4994), 6000);
+      expect(effectivePool(6000, 3999), 3000);
       expect(effectivePool(3000, null), 3000);
       expect(effectivePool(1500, 10), 500);
     });
