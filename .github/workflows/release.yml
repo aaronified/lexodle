@@ -1,0 +1,218 @@
+name: Release
+
+# Builds the Android APK and attaches it to a GitHub Release.
+#
+# Runs for a version tag like v0.1.0: pushing the tag starts it, and a manual run
+# must be started from a tag (choose it under "Use workflow from"). The tag without
+# its "v" becomes versionName and must match the version in app/pubspec.yaml;
+# versionCode is this workflow's run number, which only goes up, so each release
+# installs over the one before. Renaming this file starts a new workflow whose run
+# numbers begin again at 1, and Android refuses to install a lower versionCode
+# over a higher one.
+#
+# SIGNING. With four repository secrets the APK is signed with your release key:
+#   KEYSTORE_BASE64      base64 of your release keystore (base64 -w0 release.jks)
+#   KEYSTORE_PASSWORD    the keystore's store password
+#   KEY_ALIAS            alias of the signing key inside the keystore
+#   KEY_PASSWORD         that key's password
+# Without them the APK is signed with the debug key, which installs fine but cannot
+# be upgraded by a release-signed one later (Android would make you uninstall
+# first), and the release says so. Set the secrets before the release you mean
+# people to keep. Losing the keystore means no installation can ever be upgraded:
+# back it up somewhere you trust, apart from this repository.
+#
+# The keystore is decoded to $RUNNER_TEMP, outside the workspace, and the Android
+# Gradle Plugin's injected signing properties (android.injected.signing.*) are
+# appended to android/gradle.properties; AGP uses them in place of the signing
+# config the build file names, so no Gradle file is edited. Before publishing, the
+# APK's certificate is checked against the keystore's, and the keystore and the
+# properties are removed at the end whether the job passed or failed.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    env:
+      HAS_KEY: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_ALIAS != '' && secrets.KEY_PASSWORD != '' }}
+    steps:
+      # First, so a run that cannot produce a release fails in seconds rather than
+      # after a build. A manual run defaults to main, which has no version.
+      - name: Check this run is for a version tag
+        working-directory: .
+        run: |
+          if [ "$GITHUB_REF_TYPE" != tag ] || ! [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Releases are built from a version tag like v0.1.0, but this run is for the $GITHUB_REF_TYPE '$GITHUB_REF_NAME'. Push a tag (git tag v0.1.0 && git push origin v0.1.0), or run this workflow from a tag by choosing it under 'Use workflow from'."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      # The APK's versionName is the tag; a tag on a commit whose pubspec.yaml was
+      # not bumped would publish an APK that calls itself the previous version.
+      - name: Check the tag matches pubspec.yaml's version
+        run: |
+          want="${GITHUB_REF_NAME#v}"
+          have=$(sed -n -E 's/^version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' pubspec.yaml | head -n 1)
+          if [ "$want" != "$have" ]; then
+            echo "::error::The tag is $GITHUB_REF_NAME but app/pubspec.yaml says version $have. Bump it, commit, and tag that commit."
+            exit 1
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test
+
+      # Secrets come in through env rather than being expanded into the script,
+      # where a quote or $ in a password would become shell syntax.
+      - name: Restore signing key
+        if: env.HAS_KEY == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if ! printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"; then
+            echo "::error::The KEYSTORE_BASE64 secret is not valid base64. Create it with: base64 -w0 release.jks"
+            exit 1
+          fi
+
+          # gradle.properties is a Java .properties file, so values are escaped to
+          # reach AGP exactly as typed: a bare backslash would start an escape
+          # sequence, leading spaces would be dropped, and a newline would end the
+          # value. Anything outside printable ASCII becomes \uXXXX.
+          KEYSTORE_FILE="$RUNNER_TEMP/release.jks" python3 - <<'PY'
+          import os
+
+          def escape(value):
+              out = []
+              for ch in value:
+                  if ch in "\\ =:#!":
+                      out.append("\\" + ch)
+                  elif ch in "\t\n\r\f":
+                      out.append({"\t": "\\t", "\n": "\\n", "\r": "\\r", "\f": "\\f"}[ch])
+                  elif " " < ch <= "~":
+                      out.append(ch)
+                  else:
+                      units = ch.encode("utf-16-be")
+                      out += ["\\u" + units[i:i + 2].hex() for i in range(0, len(units), 2)]
+              return "".join(out)
+
+          props = {
+              "android.injected.signing.store.file": os.environ["KEYSTORE_FILE"],
+              "android.injected.signing.store.password": os.environ["KEYSTORE_PASSWORD"],
+              "android.injected.signing.key.alias": os.environ["KEY_ALIAS"],
+              "android.injected.signing.key.password": os.environ["KEY_PASSWORD"],
+          }
+          path = "android/gradle.properties"
+          with open(path, "rb") as f:
+              ends_with_newline = f.read().endswith(b"\n")
+          with open(path, "a", encoding="ascii") as f:
+              if not ends_with_newline:
+                  f.write("\n")
+              for key, value in props.items():
+                  f.write(f"{key}={escape(value)}\n")
+          PY
+
+      - name: Say the APK is not release-signed
+        if: env.HAS_KEY != 'true'
+        run: >-
+          echo "::warning::The KEYSTORE_* secrets are not set, so this APK is signed
+          with the debug key. See the comment at the top of
+          .github/workflows/release.yml."
+
+      # versionName is the tag without its "v"; versionCode is the run number.
+      - name: Build the APK
+        run: |
+          flutter build apk --release \
+            --build-name="${GITHUB_REF_NAME#v}" \
+            --build-number=${{ github.run_number }}
+
+      # If AGP ever ignored the injected properties, the build above would still
+      # succeed, quietly signed with the debug key. So compare certificates
+      # before publishing.
+      - name: Check the APK is signed with the release key
+        if: env.HAS_KEY == 'true'
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          apk=build/app/outputs/flutter-apk/app-release.apk
+          apksigner=$(printf '%s\n' "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
+          if [ ! -x "$apksigner" ]; then
+            echo "::error::No apksigner under $ANDROID_HOME/build-tools, so the release signature cannot be checked."
+            exit 1
+          fi
+          if ! apk_certs=$("$apksigner" verify --print-certs "$apk" 2>&1); then
+            printf '%s\n' "$apk_certs"
+            echo "::error::apksigner could not verify $apk, so it will not be published."
+            exit 1
+          fi
+          printf '%s\n' "$apk_certs"
+          if ! key_certs=$(keytool -list -v -keystore "$RUNNER_TEMP/release.jks" -storepass:env KEYSTORE_PASSWORD -alias "$KEY_ALIAS" 2>&1); then
+            printf '%s\n' "$key_certs"
+            echo "::error::keytool could not read the key from the keystore. Check the KEYSTORE_PASSWORD and KEY_ALIAS secrets."
+            exit 1
+          fi
+          # apksigner words its signer lines two ways ("Signer #1 certificate
+          # SHA-256 digest:" and "V2 Signer: certificate SHA-256 digest:"); read
+          # both, drop repeats, and compare with keytool's SHA256 in lower case
+          # without colons.
+          normalise() { tr -d ':[:space:]' | tr '[:upper:]' '[:lower:]'; }
+          apk_sha=$(printf '%s\n' "$apk_certs" \
+            | sed -n -E 's/^(Signer #[0-9]+|V[0-9.]+ Signer( #[0-9]+)?:) certificate SHA-256 digest: //p' \
+            | tr -d ': \t\r' | tr '[:upper:]' '[:lower:]' | sort -u | tr -d '\n')
+          key_sha=$(printf '%s\n' "$key_certs" | sed -n 's/^[[:space:]]*SHA256: //p' | head -n 1 | normalise)
+          if [ -z "$apk_sha" ]; then
+            echo "::error::No signer certificate SHA-256 was found in apksigner's output above, so $apk cannot be checked and will not be published."
+            exit 1
+          fi
+          if [ -z "$key_sha" ] || [ "$apk_sha" != "$key_sha" ]; then
+            echo "::error::$apk is not signed with the release key, so it will not be published. APK: ${apk_sha:-none}. Key: ${key_sha:-none}."
+            exit 1
+          fi
+          echo "APK is signed with the release key (certificate SHA-256 $apk_sha)."
+
+      # Named for the app and the version, so a downloaded file says which it is.
+      - name: Name the APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk "lexodle-${GITHUB_REF_NAME}.apk"
+
+      # The universal APK only: it installs on any device.
+      - name: Attach the APK to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/lexodle-${{ github.ref_name }}.apk
+          generate_release_notes: true
+          body: |
+            Install `lexodle-${{ github.ref_name }}.apk` on an Android phone (allow installs from your
+            browser or file manager when asked). It plays offline; the only things it asks the
+            network for are the meaning of the answer and the date (see the wiki).
+            ${{ env.HAS_KEY == 'true' && 'Signed with the release key.' || 'Signed with the debug key: a later release-signed version will need this one uninstalled first.' }}
+
+      # always(), so this runs even when a step above failed: on a self-hosted
+      # runner the workspace, and the passwords in android/gradle.properties,
+      # would persist.
+      - name: Remove signing material
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/release.jks"
+          if [ -f android/gradle.properties ]; then
+            sed -i '/^android\.injected\.signing\./d' android/gradle.properties
+          fi
