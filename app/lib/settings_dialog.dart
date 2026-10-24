@@ -12,7 +12,7 @@ import 'store.dart';
 import 'ui.dart';
 
 /// The settings popup, the same on a phone and on a desktop: game mode, how
-/// often its words share letters, the helper level and the solver. Changes
+/// often its words share letters, the helper level, play and the solver. Changes
 /// apply and are saved as they are made. It is a route of its own
 /// ([Routes.settings]), so it has an address like every other screen.
 class SettingsDialog extends StatelessWidget {
@@ -75,42 +75,49 @@ class SettingsDialog extends StatelessWidget {
                     selected: mode,
                     onChanged: (m) => appState.setup(mode: m),
                   ),
-                  if (mode.multi) ...[
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        const Expanded(child: Caption('shared letters')),
-                        Text(
-                          '${appState.share}%',
-                          key: const ValueKey('share-value'),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: c.primary,
-                          ),
+                  const SizedBox(height: 24),
+                  // always there, so the settings keep one shape; one word has
+                  // nothing to share, so in classic it is greyed and fixed
+                  Row(
+                    children: [
+                      const Expanded(child: Caption('shared letters')),
+                      Text(
+                        '${appState.share}%',
+                        key: const ValueKey('share-value'),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: mode.multi
+                              ? c.primary
+                              : c.onSurface.withValues(alpha: dimAlpha),
                         ),
-                      ],
-                    ),
-                    Slider(
-                      key: const ValueKey('share-slider'),
-                      value: appState.share.toDouble(),
-                      min: 0,
-                      max: maxShare.toDouble(),
-                      divisions: maxShare,
-                      label: '${appState.share}%',
-                      onChanged: (v) => appState.setup(share: v.round()),
-                    ),
-                    Text(
-                      appState.share == 0
-                          ? 'the words never share a letter, as far as the '
-                                'language allows.'
-                          : 'the chance that the words share a letter. '
-                                'lower makes them more different.',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: c.onSurface.withValues(alpha: dimAlpha),
                       ),
+                    ],
+                  ),
+                  Slider(
+                    key: const ValueKey('share-slider'),
+                    value: appState.share.toDouble(),
+                    min: 0,
+                    max: maxShare.toDouble(),
+                    divisions: maxShare,
+                    label: '${appState.share}%',
+                    onChanged: mode.multi
+                        ? (v) => appState.setup(share: v.round())
+                        : null,
+                  ),
+                  Text(
+                    !mode.multi
+                        ? 'one word has nothing to share. this applies to '
+                              'quartet and relay race.'
+                        : appState.share == 0
+                        ? 'the words never share a letter, as far as the '
+                              'language allows.'
+                        : 'the chance that the words share a letter. '
+                              'lower makes them more different.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: c.onSurface.withValues(alpha: dimAlpha),
                     ),
-                  ],
+                  ),
                   const SizedBox(height: 24),
                   const Caption('helper'),
                   const SizedBox(height: 10),
@@ -150,13 +157,32 @@ class SettingsDialog extends StatelessWidget {
                   const SizedBox(height: 10),
                   const _BackupSection(),
                   const SizedBox(height: 24),
-                  const Caption('solver'),
+                  const Caption('play or solve'),
                   const SizedBox(height: 10),
-                  OutlinedButton(
-                    // replaces the popup, so back from the solver is home
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, Routes.solver),
-                    child: const Text('open the solver'),
+                  // both replace the popup, so back from either is home
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton(
+                          key: const ValueKey('settings-play'),
+                          onPressed: () => Navigator.pushReplacementNamed(
+                            context,
+                            Routes.play,
+                          ),
+                          child: const Text('play'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pushReplacementNamed(
+                            context,
+                            Routes.solver,
+                          ),
+                          child: const Text('open the solver'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

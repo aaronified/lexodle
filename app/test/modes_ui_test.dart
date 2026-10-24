@@ -35,8 +35,21 @@ void main() {
     expect(find.text('mode'), findsOneWidget);
     expect(find.text('helper'), findsOneWidget);
     expect(find.text('open the solver'), findsOneWidget);
-    // one word has nothing to share
-    expect(find.byKey(const ValueKey('share-slider')), findsNothing);
+    expect(find.byKey(const ValueKey('settings-play')), findsOneWidget);
+    // one word has nothing to share: the slider is there, greyed and fixed
+    expect(find.text('shared letters'), findsOneWidget);
+    expect(
+      tester
+          .widget<Slider>(find.byKey(const ValueKey('share-slider')))
+          .onChanged,
+      isNull,
+    );
+    await tester.drag(
+      find.byKey(const ValueKey('share-slider')),
+      const Offset(600, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(appState.share, 10, reason: 'a greyed slider does not move');
 
     // quartet brings the shared-letters slider, 0 to 30
     appState.setup(mode: GameMode.quartet);

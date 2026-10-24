@@ -26,9 +26,11 @@ class SolverPage extends StatefulWidget {
 class _SolverPageState extends State<SolverPage> {
   final _focus = FocusNode();
   late final int length = appState.length;
-  // Every word the game accepts as a guess, not just the common ones it picks
-  // answers from: the game being solved may use any of them.
-  late final List<String> _answers = widget.bank.guessable(length);
+  late final int tries = appState.tries;
+  // The words the answer can be, from the difficulty's word pool, exactly as
+  // the game draws its answers. Guesses are still scored over every word the
+  // game accepts (see _solve).
+  late final List<String> _answers = widget.bank.answers(length, appState.pool);
   late final Set<String> _letters = widget.bank.letters(length);
 
   final history = <(String, List<Mark>)>[];
@@ -167,7 +169,7 @@ class _SolverPageState extends State<SolverPage> {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  'solver · $lang · $length',
+                  'solver · $lang · $length · $tries tries',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                 ),
@@ -292,7 +294,18 @@ class _SolverPageState extends State<SolverPage> {
 
   Widget _result(ColorScheme c) {
     final n = eligible.length;
-    final head = Caption('$n ${n == 1 ? 'word' : 'words'} on my list fit');
+    final left = tries - history.length;
+    final head = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Caption('$n ${n == 1 ? 'word' : 'words'} on my list fit'),
+        const SizedBox(height: 4),
+        Caption(
+          'answers from the ${_answers.length} most common words · '
+          '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
+        ),
+      ],
+    );
     if (n == 0) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -132,6 +132,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(names.stack, ['/']);
 
+    // so does play, beside it: back from the game is home too
+    await tester.tap(find.byTooltip('settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('settings-play')));
+    await tester.runAsync(() => Future.delayed(const Duration(seconds: 2)));
+    await tester.pumpAndSettle();
+    expect(names.stack, ['/', Routes.play]);
+    nav(tester).pop();
+    await tester.pumpAndSettle();
+    expect(names.stack, ['/']);
+
     await tester.tap(find.textContaining('achievements'));
     await tester.pumpAndSettle();
     expect(names.stack, ['/', Routes.achievements]);

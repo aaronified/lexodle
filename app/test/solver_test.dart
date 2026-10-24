@@ -45,4 +45,39 @@ void main() {
     expect(undo.onPressed, isNotNull); // the guess is in the history
     expect(find.text('recommended guess'), findsOneWidget);
   });
+
+  testWidgets('solver uses the difficulty: its word pool and its tries', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 900));
+    appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
+    final bank = (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
+      ),
+    ))!;
+
+    await tester.pumpWidget(MaterialApp(home: SolverPage(bank: bank)));
+    await tester.pump(const Duration(seconds: 2));
+    // only the pool's words can be the answer, not every word the game accepts
+    final pool = bank.answers(4, 500).length;
+    expect(pool, lessThan(bank.guessable(4).length));
+    expect(find.textContaining('$pool words on my list fit'), findsOneWidget);
+    expect(
+      find.textContaining('answers from the $pool most common'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('3 tries left'), findsOneWidget);
+    expect(find.textContaining('· 3 tries'), findsWidgets); // the title
+
+    for (final ch in 'mais'.split('')) {
+      await tester.sendKeyEvent(
+        LogicalKeyboardKey(ch.codeUnitAt(0)),
+        character: ch,
+      );
+    }
+    await tester.tap(find.text('add guess'));
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.textContaining('2 tries left'), findsOneWidget);
+  });
 }
