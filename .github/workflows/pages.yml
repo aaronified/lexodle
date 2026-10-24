@@ -29,7 +29,9 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: flutter test
-      - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+      # --no-web-resources-cdn: CanvasKit is served with the app, not fetched
+      # from a CDN, so the page asks no other site for anything it draws with
+      - run: flutter build web --release --no-web-resources-cdn --base-href "/${{ github.event.repository.name }}/"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app/build/web
