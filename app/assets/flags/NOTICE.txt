@@ -1,0 +1,14 @@
+Flags
+
+The flags of 18 countries (us, gb, es, fr, de, it, br, pt, nl, pl, se, dk, no, tr,
+ro, cz, id, hu) are the Twemoji graphics, from https://github.com/jdecked/twemoji
+(assets/svg), copyright Twitter, Inc and other contributors, licensed under
+Creative Commons Attribution 4.0 International (CC BY 4.0), the text of which follows.
+They are unchanged apart from the viewBox, which is cropped to the flag itself.
+
+The Catalan flag (ca.svg) is drawn for this project.
+
+They are kept in the app, not fetched: the flag of a language used to be an emoji,
+which needs an emoji font the device may not have (Windows draws none at all) and
+which a web page fetches from a font server.
+

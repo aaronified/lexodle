@@ -18,13 +18,13 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇺🇸"
+  "flag": "svg:us"
  },
  {
   "code": "en-GB",
   "name": "English (UK)",
   "wikt": "English",
-  "flag": "🇬🇧",
+  "flag": "svg:gb",
   "lengths": [
    4,
    5,
@@ -60,7 +60,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇪🇸"
+  "flag": "svg:es"
  },
  {
   "code": "fr",
@@ -81,7 +81,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇫🇷"
+  "flag": "svg:fr"
  },
  {
   "code": "de",
@@ -102,7 +102,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇩🇪"
+  "flag": "svg:de"
  },
  {
   "code": "it",
@@ -123,13 +123,13 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇮🇹"
+  "flag": "svg:it"
  },
  {
   "code": "pt",
   "name": "Português (Brasil)",
   "wikt": "Portuguese",
-  "flag": "🇧🇷",
+  "flag": "svg:br",
   "lengths": [
    4,
    5,
@@ -150,7 +150,7 @@
   "code": "pt-PT",
   "name": "Português (Portugal)",
   "wikt": "Portuguese",
-  "flag": "🇵🇹",
+  "flag": "svg:pt",
   "lengths": [
    4,
    5,
@@ -186,7 +186,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇳🇱"
+  "flag": "svg:nl"
  },
  {
   "code": "pl",
@@ -207,7 +207,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇵🇱"
+  "flag": "svg:pl"
  },
  {
   "code": "sv",
@@ -228,7 +228,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇸🇪"
+  "flag": "svg:se"
  },
  {
   "code": "da",
@@ -249,7 +249,7 @@
    "8": 3117
   },
   "filter": "hunspell",
-  "flag": "🇩🇰"
+  "flag": "svg:dk"
  },
  {
   "code": "nb",
@@ -270,7 +270,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇳🇴"
+  "flag": "svg:no"
  },
  {
   "code": "tr",
@@ -291,7 +291,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇹🇷"
+  "flag": "svg:tr"
  },
  {
   "code": "ro",
@@ -312,7 +312,7 @@
    "8": 5424
   },
   "filter": "hunspell",
-  "flag": "🇷🇴"
+  "flag": "svg:ro"
  },
  {
   "code": "cs",
@@ -333,7 +333,7 @@
    "8": 6000
   },
   "filter": "hunspell",
-  "flag": "🇨🇿"
+  "flag": "svg:cz"
  },
  {
   "code": "id",
@@ -354,7 +354,7 @@
    "8": 2440
   },
   "filter": "hunspell",
-  "flag": "🇮🇩"
+  "flag": "svg:id"
  },
  {
   "code": "hu",
@@ -375,7 +375,7 @@
    "8": 5902
   },
   "filter": "hunspell",
-  "flag": "🇭🇺"
+  "flag": "svg:hu"
  },
  {
   "code": "ca",

@@ -13,6 +13,11 @@ void registerLicences() {
     yield LicenseEntryWithLineBreaks([
       'Tabler Icons',
     ], await text('assets/icons/LICENSE-tabler.txt'));
+    yield LicenseEntryWithLineBreaks(
+      ['Flags (Twemoji graphics, CC BY 4.0)'],
+      '${await text('assets/flags/NOTICE.txt')}\n'
+      '${await text('assets/flags/LICENSE-twemoji-graphics.txt')}',
+    );
     yield LicenseEntryWithLineBreaks([
       'Word lists (adapted from wordfreq, CC BY-SA 4.0)',
     ], await text('assets/words/LICENSE.md'));

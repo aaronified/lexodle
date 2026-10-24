@@ -252,18 +252,24 @@ void main() {
       }
     });
 
-    testWidgets('every language has a flag; Catalan\'s is drawn', (
-      tester,
-    ) async {
+    testWidgets('every language has a flag, a bundled SVG', (tester) async {
       final langs = (await tester.runAsync(WordBank.languages))!;
       for (final l in langs) {
-        expect(l.flag, isNotEmpty, reason: l.code);
+        expect(l.flag, startsWith('svg:'), reason: l.code);
+        expect(
+          File('assets/flags/${l.flag.substring(4)}.svg').existsSync(),
+          isTrue,
+          reason: l.code,
+        );
       }
-      final ca = langs.firstWhere((l) => l.code == 'ca');
-      expect(ca.flag, 'svg:ca');
-      expect(File('assets/flags/ca.svg').existsSync(), isTrue);
-      expect(langs.firstWhere((l) => l.code == 'en').flag, '🇺🇸');
-      expect(langs.firstWhere((l) => l.code == 'en-GB').flag, '🇬🇧');
+      // the two Englishes and the two Portuguese have a flag each
+      expect(langs.firstWhere((l) => l.code == 'en').flag, 'svg:us');
+      expect(langs.firstWhere((l) => l.code == 'en-GB').flag, 'svg:gb');
+      expect(langs.firstWhere((l) => l.code == 'pt').flag, 'svg:br');
+      expect(langs.firstWhere((l) => l.code == 'pt-PT').flag, 'svg:pt');
+      expect(langs.firstWhere((l) => l.code == 'ca').flag, 'svg:ca');
+      // and no two share one
+      expect({for (final l in langs) l.flag}.length, langs.length);
     });
 
     Set<String> words(String code) => {

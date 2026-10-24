@@ -62,27 +62,28 @@ LIBRE = "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/{c}/{
 
 # code, name shown in the app, language heading on en.wiktionary.org,
 # wordfreq code, dictionary directory (None: no dictionary), flag.
-# A flag is an emoji, or "svg:<name>" for a drawn one in assets/flags/
-# (there is no emoji for the Catalan flag).
+# A flag is "svg:<name>", a file in assets/flags/ (Twemoji graphics, CC BY 4.0,
+# and the Catalan flag drawn for the project). They are not emoji: an emoji
+# needs a font the device may not have, and a web page fetches one.
 LANGS = [
-    ("en", "English (US)", "English", "en", "en", "🇺🇸"),
-    ("en-GB", "English (UK)", "English", "en", "en-GB", "🇬🇧"),
-    ("es", "Español", "Spanish", "es", "es", "🇪🇸"),
-    ("fr", "Français", "French", "fr", "fr", "🇫🇷"),
-    ("de", "Deutsch", "German", "de", "de", "🇩🇪"),
-    ("it", "Italiano", "Italian", "it", "it", "🇮🇹"),
-    ("pt", "Português (Brasil)", "Portuguese", "pt", "pt", "🇧🇷"),
-    ("pt-PT", "Português (Portugal)", "Portuguese", "pt", "pt-PT", "🇵🇹"),
-    ("nl", "Nederlands", "Dutch", "nl", "nl", "🇳🇱"),
-    ("pl", "Polski", "Polish", "pl", "pl", "🇵🇱"),
-    ("sv", "Svenska", "Swedish", "sv", "sv", "🇸🇪"),
-    ("da", "Dansk", "Danish", "da", "da", "🇩🇰"),
-    ("nb", "Norsk", "Norwegian Bokmål", "nb", "nb", "🇳🇴"),
-    ("tr", "Türkçe", "Turkish", "tr", "tr", "🇹🇷"),
-    ("ro", "Română", "Romanian", "ro", "ro", "🇷🇴"),
-    ("cs", "Čeština", "Czech", "cs", "cs", "🇨🇿"),
-    ("id", "Indonesia", "Indonesian", "id", "id", "🇮🇩"),
-    ("hu", "Magyar", "Hungarian", "hu", "hu", "🇭🇺"),
+    ("en", "English (US)", "English", "en", "en", "svg:us"),
+    ("en-GB", "English (UK)", "English", "en", "en-GB", "svg:gb"),
+    ("es", "Español", "Spanish", "es", "es", "svg:es"),
+    ("fr", "Français", "French", "fr", "fr", "svg:fr"),
+    ("de", "Deutsch", "German", "de", "de", "svg:de"),
+    ("it", "Italiano", "Italian", "it", "it", "svg:it"),
+    ("pt", "Português (Brasil)", "Portuguese", "pt", "pt", "svg:br"),
+    ("pt-PT", "Português (Portugal)", "Portuguese", "pt", "pt-PT", "svg:pt"),
+    ("nl", "Nederlands", "Dutch", "nl", "nl", "svg:nl"),
+    ("pl", "Polski", "Polish", "pl", "pl", "svg:pl"),
+    ("sv", "Svenska", "Swedish", "sv", "sv", "svg:se"),
+    ("da", "Dansk", "Danish", "da", "da", "svg:dk"),
+    ("nb", "Norsk", "Norwegian Bokmål", "nb", "nb", "svg:no"),
+    ("tr", "Türkçe", "Turkish", "tr", "tr", "svg:tr"),
+    ("ro", "Română", "Romanian", "ro", "ro", "svg:ro"),
+    ("cs", "Čeština", "Czech", "cs", "cs", "svg:cz"),
+    ("id", "Indonesia", "Indonesian", "id", "id", "svg:id"),
+    ("hu", "Magyar", "Hungarian", "hu", "hu", "svg:hu"),
     ("ca", "Català", "Catalan", "ca", "ca", "svg:ca"),
 ]
 
