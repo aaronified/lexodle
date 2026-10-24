@@ -30,6 +30,8 @@ import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/fonts.dart';
+
 /// A phone, in logical pixels; the pictures are twice that.
 const phone = Size(412, 860);
 
@@ -40,41 +42,9 @@ final skip = Platform.environment.containsKey('LEXODLE_SCREENSHOTS')
 /// The day the screenshots are of (a Saturday), so the week is the same each time.
 final today = DateTime(2026, 10, 24, 10);
 
-Future<ByteData> _bytes(String path) async =>
-    ByteData.view((await File(path).readAsBytes()).buffer);
-
-/// Loads the fonts: a test draws in boxes unless it is given the real ones.
-Future<void> loadFonts() async {
-  final mono = FontLoader('JetBrainsMono')
-    ..addFont(_bytes('assets/fonts/JetBrainsMono-Regular.ttf'))
-    ..addFont(_bytes('assets/fonts/JetBrainsMono-Bold.ttf'));
-  await mono.load();
-  final root = Platform.environment['FLUTTER_ROOT'] ?? 'D:/dev/flutter';
-  final icons = FontLoader('MaterialIcons')
-    ..addFont(
-      _bytes(
-        '$root/bin/cache/artifacts/material_fonts/materialicons-regular.otf',
-      ),
-    );
-  await icons.load();
-  // text with no family of its own (the labels on the buttons) is drawn in the
-  // platform default, Roboto on Android and the web
-  final roboto = FontLoader('Roboto')
-    ..addFont(
-      _bytes('$root/bin/cache/artifacts/material_fonts/roboto-regular.ttf'),
-    )
-    ..addFont(
-      _bytes('$root/bin/cache/artifacts/material_fonts/roboto-medium.ttf'),
-    )
-    ..addFont(
-      _bytes('$root/bin/cache/artifacts/material_fonts/roboto-bold.ttf'),
-    );
-  await roboto.load();
-}
-
-/// The language the pictures are in. Catalan, because its flag is drawn from an
-/// SVG; every other flag is an emoji, which a test has no font to draw.
-const lang = 'ca';
+/// The language the pictures are in. Its flag is an SVG like every other, so
+/// any language would draw.
+const lang = 'en';
 
 /// The words that are only a to z: a test keyboard cannot type an accent.
 List<String> plain(List<String> words) => [
@@ -107,7 +77,7 @@ List<String> plain(List<String> words) => [
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(loadFonts);
+  setUpAll(loadAppFonts);
   tearDown(() {
     analyseWhilePlaying = false;
     dailyClock = DateTime.now;
