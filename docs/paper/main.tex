@@ -43,8 +43,10 @@ has mean zero for every guess, and its increments over a game are martingale
 differences, so luck is uncorrelated with skill. The two simpler luck definitions
 are unbounded or biased. The log-reduction of the candidate set equals skill plus
 risk plus luck exactly, where risk is the gap between Shannon and collision
-entropy. We extend the definitions to games with several boards, give an exact
-algorithm, and report experiments on an English five-letter list ($N=4{,}994$).
+entropy. \emph{Daring} measures the player's choice of risk: of the guesses with
+higher skill, the share that were less risky. We extend the definitions to games with
+several boards, give an exact algorithm, and report experiments on an English
+five-letter list ($N=4{,}994$) and simulated players of several habits.
 The best first guess leaves $114.4$ words on average. \textsc{crane} scores
 $81.6$ ($97.6$ on a linear scale, which puts most openings near $100$). A bound on
 the best conceivable split from the number of feedback patterns is too loose to
@@ -81,6 +83,7 @@ term plus a risk term plus a luck term, exactly (Section~\ref{sec:accounting}).
 
 Section~\ref{sec:setting} fixes the setting, Section~\ref{sec:skill} defines skill,
 Section~\ref{sec:luck} luck, Section~\ref{sec:accounting} the accounting,
+Section~\ref{sec:daring} daring,
 Section~\ref{sec:multi} several boards, Section~\ref{sec:computation} the algorithm,
 Section~\ref{sec:experiments} the experiments, Section~\ref{sec:open} the open
 problems. Code and scripts are listed in Section~\ref{sec:repro}.
@@ -422,6 +425,52 @@ $7.76$ ($=4.44+0.97+2.34$), in a single word by $12.29$ ($=4.44+0.97+6.87$).}
 
 Table~\ref{tab:accounting} gives the terms for some first guesses.
 
+\section{Daring}\label{sec:daring}
+
+Risk is a property of a guess. It does not say whether the player chose it. If the
+best guesses in a position are also the riskiest, taking risk is how one gets skill;
+if safer guesses of higher skill were available, taking risk was a choice. \emph{Daring}
+measures the choice. Fix a position and let $G$ be the set of real guesses, each with a
+skill $S(g')$ and a risk $R(g')=H-H_2$ (Proposition~\ref{prop:accounting}). In bits,
+\[
+R(g)=\log_2E-\frac1N\sum_ic_i\log_2c_i,
+\]
+for classes of sizes $c_i$ summing to $N$: the log of the expected pool less the
+average log of the pool.
+
+\begin{definition}[Daring]\label{def:daring}
+The daring of a guess $g$ is
+\[
+D(g)=\frac{\bigl|\{g'\in G:\ S(g')>S(g),\ R(g')<R(g)\}\bigr|}
+{\bigl|\{g'\in G:\ S(g')>S(g)\}\bigr|},
+\]
+and $0$ when no guess has higher skill. It is quoted in percent.
+\end{definition}
+
+\begin{proposition}\label{prop:daring}
+\begin{enumerate}
+\item $D(g)\in[0,1]$, and it depends on the position and the choice of $g$ only, not on
+the answer, so (R1) holds.
+\item A guess of maximal skill has $D=0$: there is nothing better to compare it with.
+\item $D(g)=1$ iff every guess of higher skill has strictly lower risk than $g$, and
+at least one has higher skill.
+\item $D$ is unchanged by any strictly increasing change of the scale of $S$ or of $R$
+(the log or the linear skill, bits or nats), because it only compares.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+All four follow from the definition: the numerator counts a subset of the set counted by
+the denominator, and only the order relations $S(g')>S(g)$ and $R(g')<R(g)$ enter.
+\end{proof}
+
+\begin{remark}
+Daring is reported beside the accounting and is not a term of it. Adding it to the sum
+would count risk twice, once as a property of the guess and once as a trait of the
+player. It is relative: it depends on the set $G$, so on the language and the word
+length, and equal-skill guesses are not counted as better (ties are strict). The app
+takes $G$ to be every word the game accepts as a guess.
+\end{remark}
+
 \section{Several boards}\label{sec:multi}
 
 Two variants hide several words. In a \emph{quartet} one guess is played on every
@@ -598,6 +647,108 @@ are needed, but the evidence is weak: one greedy policy, a restricted candidate 
 language and length, one run. The three non-worst-case players share the opener
 \textsc{tares}, so their differences come from later guesses.
 
+\subsection{Daring and playstyle: simulated players}\label{sec:styles}
+
+The app reads a playstyle from a player's average skill and average daring. To set
+its thresholds, \texttt{app/tools/calibrate\_styles.dart} plays eight simulated players
+through the app's own code (not the Python of the other experiments), with answers drawn
+by frequency from the $3{,}000$ most common words. The players are:
+\emph{best} (the guess with the smallest $E$ every turn); \emph{near-best} (one of the
+three best at random); \emph{sharp-safe} and \emph{sharp-bold} (of the $30$ best, the
+least and the most risky); \emph{frequent} (the most common word that still fits);
+\emph{random-fit} (any word that still fits); \emph{wild} (a common word, ignoring the
+clues); and \emph{wild-bold} (a rare word, ignoring the clues). Means are over the
+guesses made with more than one word left. Table~\ref{tab:styles} gives English at five
+letters ($200$ games each); the output of this and three more settings is in
+\texttt{results/daring\_calibration.txt}.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+player & won (\%) & guesses & skill & daring\\
+\midrule
+best & 100 & 3.6 & 100.0 & 0.0\\
+near-best & 100 & 3.7 & 99.0 & 12.0\\
+sharp-safe & 100 & 3.8 & 96.4 & 0.0\\
+sharp-bold & 100 & 3.9 & 94.1 & 47.9\\
+frequent & 99 & 3.2 & 67.9 & 63.3\\
+random-fit & 95 & 4.3 & 69.9 & 62.8\\
+wild & 1 & 6.0 & 47.4 & 48.1\\
+wild-bold & 0 & 6.0 & 47.1 & 46.7\\
+\bottomrule
+\end{tabular}
+\caption{Simulated players, English, five letters, $200$ games each. Won within six
+guesses, guesses per game, and the means of skill and daring.}
+\label{tab:styles}
+\end{table}
+
+Three things stand out. First, the best player has daring exactly $0$, as
+Proposition~\ref{prop:daring} says. Second, every player who is not always optimal has a
+high daring ($47$ to $63$), because a weaker guess usually has many better guesses that
+were also safer. Daring and skill are therefore not independent, and only the spread
+within a skill level carries extra information: among guesses of skill $40$ to $55$ the
+daring has $10$th, $50$th and $90$th percentiles of $11$, $82$ and $100$
+(Table~\ref{tab:bands}). Third, among sharp players deliberate boldness shows clearly:
+$12$ for near-best against $48$ for sharp-bold, with sharp-safe at $0$.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+skill of the guess & guesses & daring p10 & p50 & p90\\
+\midrule
+0--40 & 819 & 0 & 16 & 100\\
+40--55 & 597 & 11 & 82 & 100\\
+55--70 & 889 & 21 & 62 & 98\\
+70--80 & 477 & 25 & 83 & 100\\
+80--90 & 477 & 0 & 89 & 100\\
+90--100 & 758 & 0 & 0 & 100\\
+100 & 1623 & 0 & 0 & 0\\
+\bottomrule
+\end{tabular}
+\caption{Daring by the skill of the guess, all eight players pooled (English, five
+letters). Within one skill level it varies from near $0$ to $100$.}
+\label{tab:bands}
+\end{table}
+
+The levels depend on the setting. Table~\ref{tab:settings} gives the means in four
+settings. A daring of $40$ separates near-best from sharp-bold in all four ($12$ to $34$
+against $48$ to $83$), but sharp-bold is $48$ in English and $83$ in French at five
+letters. Skill also depends on length: the player who ignores the clues scores $47$ at
+five letters and $67$ at eight, since a longer word has more feedback patterns and a
+random guess splits better. A skill threshold set at five letters misplaces eight-letter
+play. The app's thresholds are a first calibration, set at five letters, and not
+measured on people.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+ & en, 5 & fr, 5 & de, 4 & en, 8\\
+\midrule
+near-best & 99.0 / 12.0 & 98.9 / 28.5 & 97.9 / 33.5 & 99.4 / 30.4\\
+sharp-bold & 94.1 / 47.9 & 93.2 / 83.4 & 90.1 / 78.2 & 98.6 / 68.7\\
+frequent & 67.9 / 63.3 & 64.1 / 61.5 & 62.8 / 69.9 & 75.7 / 80.9\\
+random-fit & 69.9 / 62.8 & 68.1 / 63.6 & 64.7 / 60.8 & 82.6 / 59.1\\
+wild & 47.4 / 48.1 & 44.1 / 42.1 & 42.8 / 47.2 & 67.4 / 55.1\\
+\bottomrule
+\end{tabular}
+\caption{Mean skill / mean daring in four settings ($200$ games in English at five
+letters, $100$ in the others). The best player is $100 / 0$ everywhere.}
+\label{tab:settings}
+\end{table}
+
+The app turns the two means into a playstyle: skill below $58$, from $58$ to $85$, and
+$85$ or more gives three tiers, and each tier splits by daring at $52$, $65$ and $40$
+respectively, so that \emph{bold} means bolder than a typical player of that skill.
+This gives six styles. The five-letter bots land as follows: best, near-best and
+sharp-safe are in the sharp, careful style; sharp-bold in the sharp, bold one;
+frequent and random-fit in the solid, careful one (daring $63$ against a split of $65$);
+wild and wild-bold in the loose, careful one. A margin of $3$ points of skill and $5$ of
+daring around the player's current style keeps one game either side of a line from
+changing it.
+
 \subsection{A worked game}\label{sec:game}
 
 \texttt{worked\_game.py} follows one game: \textsc{caret}, then \textsc{least}, against
@@ -686,6 +837,17 @@ nonzero mean. Other tie rules exist. Does fairness characterise the mid-rank rul
 \item \textbf{Hard modes, other feedback.} Only the following is used about $f$: a map to
 a finite set with all-green exactly at equality. Do the results and the algorithm extend to
 games where later guesses must obey earlier clues, and how does $E^\ast$ change?
+\item \textbf{Playstyles on real players.} The thresholds of Section~\ref{sec:styles}
+come from simulated players at five letters. They should be set on real play, and
+probably per length: skill is not comparable across lengths (the player who ignores the
+clues scores $47$ at five letters and $67$ at eight). Daring is also relative to the
+language: sharp-bold is $48$ in English and $83$ in French. Is there a normalisation of
+skill and daring, for example by their distribution over a reference set of players, that
+makes one threshold fit all?
+\item \textbf{The set of guesses daring compares with.} $D$ compares with every guess of
+higher skill. Alternatives are the risk gap to the guess of equal skill with least risk,
+or a comparison among the guesses a player of that skill would plausibly consider. Which
+is closest to what players mean by a bold choice?
 \item \textbf{Approximating $E^\ast$.} The exact scan is quadratic in the list size.
 Are there provable shortcuts, such as a lower bound on $E^\ast$ from letter statistics of
 $\Omega$, for very large lists or scripts with more patterns?
@@ -696,12 +858,20 @@ $\Omega$, for very large lists or scripts with more patterns?
 The app computes these quantities in
 \begin{itemize}
 \item \texttt{app/lib/logic.dart}: \texttt{scoreGuess}, \texttt{chanceLuck},
-\texttt{skillAgainst}, \texttt{analyseGuesses};
-\item \texttt{app/lib/multi\_analysis.dart}: \texttt{analyseMulti}.
+\texttt{skillAgainst}, \texttt{analyseGuesses}, \texttt{splitRisk} and
+\texttt{Landscape.daringOf} (risk and daring);
+\item \texttt{app/lib/multi\_analysis.dart}: \texttt{analyseMulti};
+\item \texttt{app/lib/playstyle.dart}: the tiers, the splits and the margins of
+Section~\ref{sec:styles}.
 \end{itemize}
-Tests are in \texttt{logic\_test.dart}, \texttt{review\_plots\_test.dart} and
-\texttt{multi\_analysis\_test.dart} under \texttt{app/test}: bounds, zero mean over $500$
-random partitions, and the plot geometry against the table. The experiments are in
+Tests are in \texttt{logic\_test.dart}, \texttt{review\_plots\_test.dart},
+\texttt{multi\_analysis\_test.dart} and \texttt{playstyle\_test.dart} under
+\texttt{app/test}: bounds, zero mean over $500$ random partitions, the plot geometry
+against the table, the properties of risk and daring, and where the simulated players of
+Table~\ref{tab:settings} fall. The simulated players of Section~\ref{sec:styles} are run
+with \texttt{dart run tools/calibrate\_styles.dart [code] [length] [games]} from
+\texttt{app}, which writes to the console; the saved output is
+\texttt{results/daring\_calibration.txt}. The other experiments are in
 \texttt{docs/paper/experiments}, share \texttt{common.py}, and each states its command and
 output file:
 \begin{itemize}
