@@ -16,9 +16,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/background.dart';
 import 'package:lexodle/daily.dart';
+import 'package:lexodle/achievements_page.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
+import 'package:lexodle/learn.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
@@ -26,6 +28,8 @@ import 'package:lexodle/multi_game.dart';
 import 'package:lexodle/replay.dart';
 import 'package:lexodle/review.dart';
 import 'package:lexodle/routes.dart';
+import 'package:lexodle/solver.dart';
+import 'package:lexodle/ui.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -316,5 +320,57 @@ void main() {
     );
     await t.pumpAndSettle();
     await shot(t, key, 'settings');
+  }, skip: skip != null);
+
+  testWidgets('learn mode', (t) async {
+    final bank = await prepare(t);
+    analyseWhilePlaying = false;
+    final key = GlobalKey();
+    t.view.physicalSize = const Size(412, 1100) * 2;
+    await t.pumpWidget(framed(key, LearnPage(bank: bank, seed: 4)));
+    await t.pump();
+    for (final w in plain(bank.answers(5, 600)).skip(7).take(1)) {
+      await type(t, w);
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+    }
+    await t.pump(const Duration(seconds: 20));
+    await shot(t, key, 'learn');
+  }, skip: skip != null);
+
+  testWidgets('the solver', (t) async {
+    final bank = await prepare(t);
+    final key = GlobalKey();
+    t.view.physicalSize = const Size(412, 1100) * 2;
+    await t.pumpWidget(framed(key, SolverPage(bank: bank)));
+    await t.pump(const Duration(seconds: 2));
+    await type(t, 'crane');
+    // the colours the other game showed: c grey, r yellow, a green, n, e grey
+    final tiles = find.byType(MarkTile);
+    for (final i in [1, 2, 2]) {
+      await t.tap(tiles.at(i), warnIfMissed: false);
+      await t.pump();
+    }
+    await t.tap(find.text('add guess'));
+    await t.pump(const Duration(seconds: 20));
+    await shot(t, key, 'solver');
+  }, skip: skip != null);
+
+  testWidgets('the achievements, with their flags', (t) async {
+    await prepare(t);
+    appState.setAch(lang, {
+      'first_light': AchState(times: 1, dates: ['2026-09-02']),
+      'one_shot': AchState(times: 2, dates: ['2026-09-20', '2026-10-11']),
+      'wins_10': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
+      'streak_3': AchState(times: 3, dates: ['2026-10-01']),
+      'daily_3': AchState(times: 1, dates: ['2026-10-05'], progress: 6),
+      'bilingual': AchState(times: 1, dates: ['2026-10-02']),
+    });
+    appState.stats.langsWon = {'en', 'fr', 'de'};
+    final key = GlobalKey();
+    t.view.physicalSize = const Size(412, 1500) * 2;
+    await t.pumpWidget(framed(key, const AchievementsPage()));
+    await t.pump(const Duration(seconds: 1));
+    await shot(t, key, 'achievements');
   }, skip: skip != null);
 }

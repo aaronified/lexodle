@@ -147,34 +147,24 @@ class _Row extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              a.title,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          if (badges.isNotEmpty) ...[
-                            const SizedBox(width: 8),
-                            Flexible(
-                              flex: 3,
-                              child: Wrap(
-                                key: ValueKey('badges-${a.id}'),
-                                spacing: 2,
-                                children: [
-                                  for (final code in badges)
-                                    languageBadge(code, size: 11),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
+                      Text(
+                        a.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 2),
                       Text(a.description, style: const TextStyle(fontSize: 12)),
+                      if (badges.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        Wrap(
+                          key: ValueKey('badges-${a.id}'),
+                          spacing: 3,
+                          runSpacing: 3,
+                          children: [
+                            for (final code in badges)
+                              languageBadge(code, size: 11),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
