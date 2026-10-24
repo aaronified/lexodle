@@ -12,6 +12,7 @@ import 'multi_game.dart';
 import 'multi_review.dart';
 import 'multi_solver.dart';
 import 'review.dart';
+import 'game_modes_dialog.dart';
 import 'settings_dialog.dart';
 import 'solver.dart';
 import 'ui.dart';
@@ -38,6 +39,7 @@ class Routes {
   static const mastery = '/achievements/mastery';
   static const howTo = '/how-to';
   static const settings = '/settings';
+  static const gameModes = '/game-modes';
   static const about = '/about';
 }
 
@@ -108,6 +110,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       );
     case Routes.settings:
       return _dialog(s, const SettingsDialog());
+    case Routes.gameModes:
+      return _dialog(s, const GameModesDialog());
     case Routes.about:
       return _dialog(
         s,
@@ -147,6 +151,7 @@ const _known = {
   Routes.achievements,
   Routes.howTo,
   Routes.settings,
+  Routes.gameModes,
   Routes.about,
 };
 

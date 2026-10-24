@@ -19,7 +19,7 @@ void main() {
     expect(poolLevels[2].$1, 'wide');
   });
 
-  testWidgets('the home screen says so, and play and the gear match', (
+  testWidgets('game modes says the default, and the icon buttons match play', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
@@ -27,30 +27,41 @@ void main() {
     await appState.load();
     await tester.pumpWidget(const LexodleApp());
     await tester.pumpAndSettle();
+
+    // the difficulty is chosen on the game modes screen, not on home
+    expect(find.textContaining('normal · wide'), findsNothing);
+    await tester.tap(find.byTooltip('game modes'));
+    await tester.pumpAndSettle();
     expect(
       find.textContaining('normal · wide: 6 tries, answers from the 3,000'),
       findsOneWidget,
     );
+    await tester.tapAt(const Offset(5, 5)); // the scrim closes it
+    await tester.pumpAndSettle();
 
-    // the gear is as tall as play and square
+    // the two icon buttons are as tall as play, and square
     final play = tester.getSize(find.widgetWithText(FilledButton, 'play'));
-    final gear = tester.getSize(
-      find.descendant(
-        of: find.byTooltip('settings'),
-        matching: find.byType(OutlinedButton),
-      ),
-    );
-    expect(gear.height, play.height);
-    expect(gear.width, gear.height);
+    for (final tip in ['game modes', 'settings']) {
+      final size = tester.getSize(
+        find.descendant(
+          of: find.byTooltip(tip),
+          matching: find.byType(OutlinedButton),
+        ),
+      );
+      expect(size.height, play.height, reason: tip);
+      expect(size.width, size.height, reason: tip);
+    }
 
-    // and its icon is drawn, in a colour that shows on the page
+    // and their icons are drawn, in a colour that shows on the page
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
-    final icon = find.descendant(
-      of: find.byTooltip('settings'),
-      matching: find.byType(SvgPicture),
-    );
-    expect(icon, findsOneWidget);
-    expect(tester.getSize(icon).width, greaterThan(16));
+    for (final tip in ['game modes', 'settings']) {
+      final icon = find.descendant(
+        of: find.byTooltip(tip),
+        matching: find.byType(SvgPicture),
+      );
+      expect(icon, findsOneWidget, reason: tip);
+      expect(tester.getSize(icon).width, greaterThan(16), reason: tip);
+    }
   });
 }

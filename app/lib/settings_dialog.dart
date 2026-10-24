@@ -6,17 +6,17 @@ import 'package:flutter/material.dart';
 import 'backup.dart';
 import 'donate.dart';
 import 'main.dart';
+import 'routes.dart';
 import 'stepper_choice.dart';
 import 'update_section.dart';
-import 'store.dart';
 import 'ui.dart';
 
-/// The settings popup, the same on a phone and on a desktop: game mode, how
-/// often its words share letters, the helper level, play and the solver. Changes
 /// The settings popup, the same on a phone and on a desktop: theme, backup,
 /// updates and support. Changes apply and are saved as they are made. It is a
 /// route of its own ([Routes.settings]), so it has an address like every other
 /// screen. The game options are in [Routes.gameModes].
+class SettingsDialog extends StatelessWidget {
+  const SettingsDialog({super.key});
 
   @override
   Widget build(BuildContext context) {

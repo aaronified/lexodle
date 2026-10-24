@@ -5,6 +5,7 @@ import 'main.dart';
 import 'modes.dart';
 import 'routes.dart';
 import 'stepper_choice.dart';
+import 'store.dart' show Helper;
 import 'ui.dart';
 import 'words.dart';
 
@@ -57,12 +58,10 @@ class _GameModesDialogState extends State<GameModesDialog> {
           listenable: appState,
           builder: (context, _) {
             final mode = appState.mode;
-            final lang = langs == null
-                ? null
-                : langs.firstWhere(
-                    (l) => l.code == appState.lang,
-                    orElse: () => langs.first,
-                  );
+            final lang = langs?.firstWhere(
+              (l) => l.code == appState.lang,
+              orElse: () => langs.first,
+            );
             final length = lang == null
                 ? appState.length
                 : lang.lengths.contains(appState.length)

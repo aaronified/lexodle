@@ -169,7 +169,9 @@ class HowToPage extends StatelessWidget {
                       const SizedBox(height: 18),
                       section(
                         'setup',
-                        'choose a language, 4 to 8 letters (slide or tap the arrows) and a difficulty from the '
+                        'choose a language on the home screen. the game modes '
+                            'button (the grid beside play) has the rest: the mode, '
+                            '4 to 8 letters (slide or tap the arrows) and a difficulty from the '
                             '4 x 4 grid. across is the number of tries: easy 8, normal '
                             '6, hard 4, brutal 3. down is the word pool the answer is '
                             'drawn from: its 500, 1,500, 3,000 or 6,000 most common '
@@ -177,7 +179,9 @@ class HowToPage extends StatelessWidget {
                             '1,000 more words of that length than the level before it, '
                             'and the last level takes every word left, so none is '
                             'wasted. the colour runs '
-                            'from green for the easiest to purple for the hardest.',
+                            'from green for the easiest to purple for the hardest. '
+                            'theme, backup, updates and support are in settings, '
+                            'the gear beside it.',
                       ),
                       section(
                         'skill and luck',
@@ -187,7 +191,7 @@ class HowToPage extends StatelessWidget {
                             'left counts the same whether 2,000 or 20 remain. luck says where the '
                             'pool you landed in sits among all the pools you could '
                             'have landed in, from -100% to +100%; 0% is the middle '
-                            'outcome. the helper setting decides how much of this '
+                            'outcome. the helper setting (in game modes) decides how much of this '
                             'you see while you play. when the game ends you see all '
                             'of it.',
                       ),
@@ -200,9 +204,10 @@ class HowToPage extends StatelessWidget {
                       ),
                       section(
                         'solver',
-                        'playing somewhere else? the solver narrows the words that '
-                            'fit the guesses you tell it about, and suggests the next '
-                            'one.',
+                        'playing somewhere else? the solver (open it from game '
+                            'modes) narrows the words that fit the guesses you tell '
+                            'it about, and suggests the next one. learn, beside it, '
+                            'shows you the answer and grades each guess.',
                       ),
                       section(
                         'achievements',

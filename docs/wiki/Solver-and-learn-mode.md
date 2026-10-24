@@ -2,7 +2,7 @@
 
 ## Solver
 
-The **solver** (open it from the settings, beside play) helps with a game you are playing
+The **solver** (open it from game modes) helps with a game you are playing
 elsewhere. It uses the same settings as the game: the language, the letters and the difficulty
 (the answer is one of the words of the chosen pool, and it counts the tries). Type each guess, tap
 its tiles to match the colours the game showed (grey, yellow, green), and add it. It lists the
@@ -25,7 +25,7 @@ in the colours that board showed for each of them; any row can be corrected by t
 
 ## Learn mode
 
-**Learn** (the last button of the settings) shows you the answer and asks you to find the best
+**Learn** (the last button of game modes) shows you the answer and asks you to find the best
 guess at each step. Guess as usual; after each guess it gives the skill of the guess and the best
 guesses there were, and the words that still fit the clues are listed at the bottom (the 120 most
 common; tap one to use it). It uses the language, length and pool you set, has no tries, is not

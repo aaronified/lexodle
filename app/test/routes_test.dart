@@ -56,6 +56,7 @@ void main() {
       (Routes.achievements, find.text('achievements')),
       (Routes.howTo, find.text(_rule)),
       (Routes.settings, find.text('settings')),
+      (Routes.gameModes, find.text('game modes')),
       (Routes.about, find.byType(AboutDialog)),
     ]) {
       await open(tester, route);
@@ -122,6 +123,12 @@ void main() {
     await tester.tap(find.byTooltip('settings'));
     await tester.pumpAndSettle();
     expect(names.stack, ['/', Routes.settings]);
+    await tester.tapAt(const Offset(5, 5)); // the scrim closes it
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('game modes'));
+    await tester.pumpAndSettle();
+    expect(names.stack, ['/', Routes.gameModes]);
 
     // the solver replaces the popup: back from it is home, not the popup
     await tester.tap(find.text('open the solver'));
@@ -133,7 +140,7 @@ void main() {
     expect(names.stack, ['/']);
 
     // so does play, beside it: back from the game is home too
-    await tester.tap(find.byTooltip('settings'));
+    await tester.tap(find.byTooltip('game modes'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('settings-play')));
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 2)));
@@ -149,7 +156,7 @@ void main() {
     nav(tester).pop();
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('about'));
+    await tester.tap(find.byTooltip('about'));
     await tester.pumpAndSettle();
     expect(names.stack, ['/', Routes.about]);
     await tester.tapAt(const Offset(5, 5)); // the scrim closes it

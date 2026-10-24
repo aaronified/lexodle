@@ -6,7 +6,12 @@ Guess the hidden word. After each guess every letter is marked:
 - **yellow**: in the word, wrong place
 - **grey**: not in the word
 
-## Settings
+## Game modes and settings
+
+The home screen has the language, the daily streak, **play** and **daily**, and two square buttons:
+**game modes** (the grid) and **settings** (the gear). **About** is the "i" at the top. Game modes holds
+the mode, the letters, the difficulty, shared letters and the helper, with play, the solver and learn.
+Settings holds the theme, backup, updates (Android) and support.
 
 | Setting    | Options |
 | ---------- | ------- |

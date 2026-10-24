@@ -6,7 +6,7 @@ Lexodle is a minimal word game in 17 Latin-script languages. Try the browser dem
 has the highlights; these pages have the detail.
 
 **Playing**
-- [How to play](How-to-play): the rules, the settings, blanks, the three modes
+- [How to play](How-to-play): the rules, game modes and settings, blanks, the three modes
 - [Daily word](Daily-word): one word a day, the streak, the trusted clock
 - [Solver and learn mode](Solver-and-learn-mode): help for a game played elsewhere, and practising the best guess
 

@@ -8,7 +8,6 @@ import 'package:lexodle/daily_streak.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/routes.dart';
-import 'package:lexodle/stepper_choice.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -546,7 +545,7 @@ void main() {
     });
   });
 
-  testWidgets('the streak card sits below the language and above the letters', (
+  testWidgets('the streak card sits below the language and above play', (
     tester,
   ) async {
     // (the cards carry no header text, so they are found by what they are)
@@ -559,9 +558,11 @@ void main() {
     final card = tester
         .getTopLeft(find.byKey(const ValueKey('daily-streak')))
         .dy;
-    final letters = tester.getTopLeft(find.byType(StepperChoice<int>)).dy;
+    final play = tester
+        .getTopLeft(find.widgetWithText(FilledButton, 'play'))
+        .dy;
     expect(language, lessThan(card));
-    expect(card, lessThan(letters));
+    expect(card, lessThan(play));
     // and no header text over the cards
     for (final header in ['language', 'letters']) {
       expect(find.text(header), findsNothing, reason: header);

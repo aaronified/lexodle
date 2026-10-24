@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/arrow_scroll.dart';
-import 'package:lexodle/difficulty.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,21 +21,23 @@ void main() {
     return g;
   }
 
-  /// The home page on a short window, so that it scrolls.
+  /// The home page on a short window, so that it scrolls (and the play row is
+  /// pinned below it).
   Future<void> home(WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(420, 700));
+    await tester.binding.setSurfaceSize(const Size(420, 420));
     await appState.load();
     await tester.pumpWidget(const LexodleApp());
     await tester.pumpAndSettle();
   }
 
+  // the last button of the page: where it is says how far the page has scrolled
   double top(WidgetTester tester) =>
-      tester.getTopLeft(find.byType(DifficultyMatrix)).dy;
+      tester.getTopLeft(find.byKey(const ValueKey('how-to-button'))).dy;
 
   group('down and up scroll what the mouse is over', () {
     testWidgets('the page moves by a step a press, and back', (tester) async {
       await home(tester);
-      await mouseAt(tester, const Offset(210, 400));
+      await mouseAt(tester, const Offset(210, 200));
       final start = top(tester);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pump();
@@ -54,7 +55,7 @@ void main() {
 
     testWidgets('it stops at the top, and at the bottom', (tester) async {
       await home(tester);
-      await mouseAt(tester, const Offset(210, 400));
+      await mouseAt(tester, const Offset(210, 200));
       final start = top(tester);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
       await tester.pump();
@@ -72,7 +73,7 @@ void main() {
 
     testWidgets('a key held down keeps scrolling', (tester) async {
       await home(tester);
-      await mouseAt(tester, const Offset(210, 400));
+      await mouseAt(tester, const Offset(210, 200));
       final start = top(tester);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowDown);
       await tester.sendKeyRepeatEvent(LogicalKeyboardKey.arrowDown);
@@ -84,7 +85,7 @@ void main() {
 
     testWidgets('the release of the key does nothing', (tester) async {
       await home(tester);
-      await mouseAt(tester, const Offset(210, 400));
+      await mouseAt(tester, const Offset(210, 200));
       final start = top(tester);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowDown);
       await tester.pump();
@@ -109,7 +110,7 @@ void main() {
       tester,
     ) async {
       await home(tester);
-      await mouseAt(tester, const Offset(210, 400));
+      await mouseAt(tester, const Offset(210, 200));
       final start = top(tester);
       for (final mod in [
         LogicalKeyboardKey.control,
@@ -126,12 +127,30 @@ void main() {
 
     testWidgets('left and right are not touched', (tester) async {
       await home(tester);
-      await mouseAt(tester, const Offset(210, 400));
-      final start = top(tester);
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
-      await tester.pump();
-      expect(top(tester), start);
+      // the keys are left for focus to use (which may scroll the page to the
+      // button it lands on): the scroller itself does not take them
+      final focus = tester.widget<Focus>(
+        find
+            .descendant(
+              of: find.byType(ArrowScroll),
+              matching: find.byType(Focus),
+            )
+            .first,
+      );
+      for (final key in [
+        LogicalKeyboardKey.arrowLeft,
+        LogicalKeyboardKey.arrowRight,
+      ]) {
+        final result = focus.onKeyEvent!(
+          FocusNode(),
+          KeyDownEvent(
+            physicalKey: PhysicalKeyboardKey.arrowRight,
+            logicalKey: key,
+            timeStamp: Duration.zero,
+          ),
+        );
+        expect(result, KeyEventResult.ignored, reason: key.keyLabel);
+      }
     });
   });
 
@@ -143,10 +162,9 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(420, 500));
         await tester.pumpAndSettle();
         final pageTop = top(tester);
-        // (the gear is built lazily, off the bottom of a short window)
         tester
             .state<NavigatorState>(find.byType(Navigator))
-            .pushNamed(Routes.settings);
+            .pushNamed(Routes.gameModes);
         await tester.pumpAndSettle();
         // the dialog is a scroll view of its own, in the middle of the window
         final dialog = find.byType(Dialog);

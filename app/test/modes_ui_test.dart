@@ -15,7 +15,7 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
 
-  testWidgets('settings popup: mode, shared letters, helper and solver', (
+  testWidgets('game modes: mode, shared letters, helper, play and the solver', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
@@ -29,9 +29,9 @@ void main() {
     expect(find.text('solver'), findsNothing);
     expect(find.text('play'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('settings'));
+    await tester.tap(find.byTooltip('game modes'));
     await tester.pumpAndSettle();
-    expect(find.text('settings'), findsOneWidget);
+    expect(find.text('game modes'), findsWidgets);
     expect(find.byType(Dialog), findsOneWidget);
     expect(find.text('mode'), findsOneWidget);
     expect(find.text('helper'), findsOneWidget);
@@ -94,7 +94,7 @@ void main() {
     );
     await tester.pumpWidget(const LexodleApp());
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('settings'));
+    await tester.tap(find.byTooltip('game modes'));
     await tester.pumpAndSettle();
 
     final fade = find.byKey(const ValueKey('helper-fade'));
