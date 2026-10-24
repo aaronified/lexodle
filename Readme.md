@@ -16,6 +16,7 @@
 
 <p align="center">
   <a href="https://aaronified.github.io/lexodle/"><strong>Play it</strong></a> ·
+  <a href="https://github.com/aaronified/lexodle/releases/latest"><strong>Android APK</strong></a> ·
   <a href="https://github.com/aaronified/lexodle/wiki">Wiki</a> ·
   <a href="docs/paper">The maths</a>
 </p>
@@ -138,7 +139,7 @@ flutter test
 flutter run -d chrome
 ```
 
-`flutter build apk` also works. The [wiki](https://github.com/aaronified/lexodle/wiki) has the file map,
+`flutter build apk` also works; a version tag (`v0.1.0`) makes the [release workflow](.github/workflows/release.yml) build and attach the APK. The [wiki](https://github.com/aaronified/lexodle/wiki) has the file map,
 how the [word lists](https://github.com/aaronified/lexodle/wiki/Word-lists) are built, the screenshots and the
 deploy ([developing](https://github.com/aaronified/lexodle/wiki/Developing)); the
 [paper](docs/paper) has the maths of skill, risk, luck and daring with its experiments.
