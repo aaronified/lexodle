@@ -2,8 +2,10 @@ name: Release
 
 # Builds the Android APK and attaches it to a GitHub Release.
 #
-# Runs for a version tag like v0.1.0: pushing the tag starts it, and a manual run
-# must be started from a tag (choose it under "Use workflow from"). The tag without
+# Runs for a version tag like v0.1.0: pushing the tag starts it. Or run it by hand
+# from the Actions tab with a version (0.1.5): it makes the tag v0.1.5 on the
+# branch chosen under "Use workflow from" (main), then releases it; a manual run
+# from an existing tag needs no version. The tag without
 # its "v" becomes the app's version: this workflow writes it into app/pubspec.yaml
 # and the app's own version constant (lib/update_check.dart) before building, and
 # afterwards records it in main, so nobody bumps it by hand. versionCode is this
@@ -34,6 +36,11 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to release, such as 0.1.5 (the tag v0.1.5 is made on the chosen branch)"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -48,19 +55,45 @@ jobs:
       HAS_KEY: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_ALIAS != '' && secrets.KEY_PASSWORD != '' }}
     steps:
       # First, so a run that cannot produce a release fails in seconds rather than
-      # after a build. A manual run defaults to main, which has no version.
-      - name: Check this run is for a version tag
+      # after a build. The tag is the one pushed, or the version typed into a manual
+      # run (which makes the tag below).
+      - name: Work out the version
         working-directory: .
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ "$GITHUB_REF_TYPE" != tag ] || ! [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Releases are built from a version tag like v0.1.0, but this run is for the $GITHUB_REF_TYPE '$GITHUB_REF_NAME'. Push a tag (git tag v0.1.0 && git push origin v0.1.0), or run this workflow from a tag by choosing it under 'Use workflow from'."
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"
+          elif [ -n "${INPUT_VERSION:-}" ]; then
+            tag="v${INPUT_VERSION#v}"
+          else
+            echo "::error::Give a version (such as 0.1.5) when running this by hand from a branch, or push a tag like v0.1.5, or run it from an existing tag."
             exit 1
           fi
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$tag' is not a version tag like v0.1.5."
+            exit 1
+          fi
+          echo "TAG=$tag" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v4
         with:
           # every tag and commit, so the notes can list what changed since the last tag
           fetch-depth: 0
+
+      # A run by hand names the version: tag the commit it runs on, so the release
+      # points at the code that was built. (A push made with the workflow's own
+      # token starts no other run, so this does not release twice.)
+      - name: Tag this commit
+        if: github.ref_type != 'tag'
+        working-directory: .
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::${TAG} already exists. Pick a later version."
+            exit 1
+          fi
+          git tag "$TAG"
+          git push -q origin "$TAG"
 
       # The tag is the version. It is written into pubspec.yaml and into the
       # constant the app reports and compares with the newest release, so the APK
@@ -68,7 +101,7 @@ jobs:
       # after this.)
       - name: Set the version from the tag
         run: |
-          v="${GITHUB_REF_NAME#v}"
+          v="${TAG#v}"
           sed -i -E "s/^version:.*/version: ${v}+${{ github.run_number }}/" pubspec.yaml
           sed -i -E "s/^const appVersion = '[^']*';/const appVersion = '${v}';/" lib/update_check.dart
           grep -n '^version:' pubspec.yaml
@@ -150,7 +183,7 @@ jobs:
       - name: Build the APK
         run: |
           flutter build apk --release \
-            --build-name="${GITHUB_REF_NAME#v}" \
+            --build-name="${TAG#v}" \
             --build-number=${{ github.run_number }}
 
       # If AGP ever ignored the injected properties, the build above would still
@@ -200,7 +233,7 @@ jobs:
 
       # Named for the app and the version, so a downloaded file says which it is.
       - name: Name the APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk "lexodle-${GITHUB_REF_NAME}.apk"
+        run: cp build/app/outputs/flutter-apk/app-release.apk "lexodle-${TAG}.apk"
 
       # The release notes: every commit since the previous version tag, subject and
       # body (the co-author trailer left out), so the notes list every change made
@@ -209,10 +242,10 @@ jobs:
       - name: Write the release notes
         working-directory: .
         run: |
-          prev=$(git describe --tags --abbrev=0 --match 'v*' "${GITHUB_REF_NAME}^" 2>/dev/null || true)
-          range=${prev:+$prev..}${GITHUB_REF_NAME}
+          prev=$(git describe --tags --abbrev=0 --match 'v*' "${TAG}^" 2>/dev/null || true)
+          range=${prev:+$prev..}${TAG}
           {
-            echo "Install \`lexodle-${GITHUB_REF_NAME}.apk\` on an Android phone (allow installs from your"
+            echo "Install \`lexodle-${TAG}.apk\` on an Android phone (allow installs from your"
             echo "browser or file manager when asked). It plays offline; the only things it asks the"
             echo "network for are the meaning of the answer and the date (see the wiki)."
             if [ "$HAS_KEY" = true ]; then
@@ -228,7 +261,7 @@ jobs:
             echo
             echo
             if [ -n "$prev" ]; then
-              echo "Full diff: https://github.com/${GITHUB_REPOSITORY}/compare/${prev}...${GITHUB_REF_NAME}"
+              echo "Full diff: https://github.com/${GITHUB_REPOSITORY}/compare/${prev}...${TAG}"
             fi
           } > release-notes.md
           cat release-notes.md
@@ -237,7 +270,9 @@ jobs:
       - name: Attach the APK to the release
         uses: softprops/action-gh-release@v2
         with:
-          files: app/lexodle-${{ github.ref_name }}.apk
+          # (the tag, not the branch a manual run starts from)
+          tag_name: ${{ env.TAG }}
+          files: app/lexodle-${{ env.TAG }}.apk
           body_path: release-notes.md
 
       # Keeps main in step: the version of this release goes into main too, unless
@@ -248,7 +283,7 @@ jobs:
         working-directory: .
         run: |
           set -euo pipefail
-          v="${GITHUB_REF_NAME#v}"
+          v="${TAG#v}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do
@@ -262,12 +297,12 @@ jobs:
             sed -i -E "s/^version:.*/version: ${v}+1/" app/pubspec.yaml
             sed -i -E "s/^const appVersion = '[^']*';/const appVersion = '${v}';/" app/lib/update_check.dart
             git add app/pubspec.yaml app/lib/update_check.dart
-            git commit -q -m "Version ${v}" -m "Set by the release workflow from the tag ${GITHUB_REF_NAME}."
+            git commit -q -m "Version ${v}" -m "Set by the release workflow from the tag ${TAG}."
             if git push -q origin main; then exit 0; fi
             echo "push failed (attempt ${attempt}); trying again"
             sleep $((attempt * 5))
           done
-          echo "::warning::Could not record version ${v} in main. Release ${GITHUB_REF_NAME} is published; set the version in main by hand."
+          echo "::warning::Could not record version ${v} in main. Release ${TAG} is published; set the version in main by hand."
 
       # always(), so this runs even when a step above failed: on a self-hosted
       # runner the workspace, and the passwords in android/gradle.properties,

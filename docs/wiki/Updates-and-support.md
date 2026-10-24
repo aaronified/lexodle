@@ -18,7 +18,8 @@ version and has:
 - **check automatically**: off until you choose it. When on, the app looks once a day, when it opens,
   and remembers what it found. Each check is a request to GitHub, which is why it is off by default.
 
-Releases are built by a workflow when a version tag like `v0.1.2` is pushed, and signed with the
+Releases are built by a workflow when a version tag like `v0.1.2` is pushed (or when it is run by hand
+from the Actions tab with a version such as `0.1.5`, which makes the tag on `main` first), and signed with the
 release key held in repository secrets. The tag is the version: the workflow writes it into
 `app/pubspec.yaml` and the app's version constant before building, and records it in `main` afterwards,
 so nothing is bumped by hand. A
