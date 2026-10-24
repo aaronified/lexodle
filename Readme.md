@@ -21,8 +21,8 @@ A minimal word game in 17 Latin-script languages.
   </tr>
 </table>
 
-(The pictures are in Catalan, whose flag is drawn from an SVG; every other flag is an emoji,
-which the screenshot harness has no font for. See [Screenshots](#screenshots) below.)
+(Taken from the real screens by a test, so they can be taken again: see
+[Screenshots](#screenshots) below.)
 
 ## How to play
 
@@ -234,8 +234,29 @@ cd app
 LEXODLE_SCREENSHOTS=1 flutter test test/screenshots_test.dart      # PowerShell: $env:LEXODLE_SCREENSHOTS = 1
 ```
 
-It writes `docs/screenshots/*.png`. A test has no emoji font, so the pictures are in Catalan, whose
-flag is an SVG.
+It writes `docs/screenshots/*.png`. A test draws every glyph as a box unless it is given the app's
+fonts, so the harness loads them from files in the repository (`test/support/fonts.dart`): the
+app's own font from `assets/fonts`, and a few Material icons from `test/fonts`. It reads nothing
+from the Flutter SDK, the system or the network, and any test can use it.
+
+### Nothing is fetched to draw
+
+Everything the app draws with is in the app, so a page or a phone asks no other site for a font, an
+emoji, an icon or a flag:
+
+- **Text** is JetBrains Mono, bundled. `python app/tools/check_glyphs.py` (needs `pip install fonttools`)
+  checks that it has every character the app can show: all the letters of every word list, the
+  language names and the interface text. A character it lacked would be drawn from a fallback font,
+  which a web page fetches from a font server.
+- **Flags** are SVG files in `app/assets/flags` (the [Twemoji](https://github.com/jdecked/twemoji)
+  graphics, CC BY 4.0, and the Catalan flag drawn for the project), not emoji: an emoji needs a font
+  the device may not have, Windows draws no flags, and a web page fetches an emoji font.
+- **Icons** are the Tabler SVGs in `app/assets/icons`; the Material icons font ships with Flutter.
+- **The web build** is made with `--no-web-resources-cdn` (see the deploy workflow), so CanvasKit is
+  served with the app instead of from a CDN.
+
+What the app does ask for is Wiktionary, for the meaning of the answer when a game ends, and the
+time, from the site it is hosted on (see the daily word).
 
 ## Deploy
 
@@ -265,8 +286,8 @@ valid guesses, with a weight from their frequency.
 
 Spelling variants (English US / UK, Portuguese Brazil / Portugal) share one frequency list, since
 wordfreq has one per language, and differ in the dictionary that filters it: `colour` passes the UK
-dictionary and not the US one. Flags are emoji, except Catalan's, which has none and is drawn
-(`app/assets/flags/ca.svg`).
+dictionary and not the US one. Flags are the SVGs in `app/assets/flags`, one per language, set in the
+table of `build_words.py` (they are not emoji; see "Nothing is fetched to draw").
 
 Names are the weak point of a dictionary filter. The Portuguese dictionary stores many names as
 ordinary lowercase entries (`brasil`, `lisboa`, `jorge`), so the two Portuguese lists get a second
@@ -295,7 +316,10 @@ guesses.
 - Definitions, IPA, audio, synonyms and antonyms: [Wiktionary](https://en.wiktionary.org),
   CC BY-SA 4.0, fetched live from the browser
 - Font: JetBrains Mono (SIL OFL 1.1)
-- Achievement icons: [Tabler Icons](https://tabler.io/icons) filled set (MIT, `app/assets/icons/LICENSE-tabler.txt`)
+- Achievement and playstyle icons: [Tabler Icons](https://tabler.io/icons) filled set (MIT, `app/assets/icons/LICENSE-tabler.txt`)
+- Flags: [Twemoji](https://github.com/jdecked/twemoji) graphics, © Twitter, Inc and other contributors,
+  CC BY 4.0 (`app/assets/flags/NOTICE.txt`), cropped to the flag; the Catalan flag is drawn for this project
+- A few Material icons (Apache 2.0, `app/test/fonts`) are used by the tests and the screenshots only
 - Code: see [LICENSE](LICENSE)
 
 This project was developed with assistance from [KiloCode](https://kilo.ai) and Claude Code, AI coding assistants.
