@@ -1,7 +1,8 @@
 # Lexodle wiki
 
-Lexodle is a minimal word game in 17 Latin-script languages. Play it at
-<https://aaronified.github.io/lexodle/>. The [README](https://github.com/aaronified/lexodle#readme)
+Lexodle is a minimal word game in 17 Latin-script languages. Try the browser demo at
+<https://aaronified.github.io/lexodle/> or install the Android APK from the
+[releases](https://github.com/aaronified/lexodle/releases/latest). The [README](https://github.com/aaronified/lexodle#readme)
 has the highlights; these pages have the detail.
 
 **Playing**

@@ -10,13 +10,23 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/aaronified/lexodle/actions/workflows/pages.yml"><img alt="Deploy" src="https://github.com/aaronified/lexodle/actions/workflows/pages.yml/badge.svg"></a>
+  <a href="https://github.com/aaronified/lexodle/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/aaronified/lexodle?sort=semver&label=release&color=blue"></a>
+  <a href="https://github.com/aaronified/lexodle/releases/latest"><img alt="Android APK" src="https://img.shields.io/badge/Android-APK-3DDC84?logo=android&logoColor=white"></a>
+  <a href="https://github.com/aaronified/lexodle/releases"><img alt="APK downloads" src="https://img.shields.io/github/downloads/aaronified/lexodle/total?label=APK%20downloads&color=3DDC84"></a>
+  <a href="https://aaronified.github.io/lexodle/"><img alt="Live demo" src="https://img.shields.io/badge/demo-in%20your%20browser-blue?logo=googlechrome&logoColor=white"></a>
+  <img alt="Platforms" src="https://img.shields.io/badge/platforms-Android%20%C2%B7%20Web-lightgrey">
+  <a href="https://flutter.dev"><img alt="Built with Flutter" src="https://img.shields.io/badge/built%20with-Flutter-02569B?logo=flutter&logoColor=white"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/aaronified/lexodle?color=blue"></a>
 </p>
 
 <p align="center">
-  <a href="https://aaronified.github.io/lexodle/"><strong>Play it</strong></a> ·
-  <a href="https://github.com/aaronified/lexodle/releases/latest"><strong>Android APK</strong></a> ·
+  <a href="https://github.com/aaronified/lexodle/actions/workflows/pages.yml"><img alt="Demo build" src="https://img.shields.io/github/actions/workflow/status/aaronified/lexodle/pages.yml?label=demo%20build"></a>
+  <a href="https://github.com/aaronified/lexodle/actions/workflows/release.yml"><img alt="APK build" src="https://img.shields.io/github/actions/workflow/status/aaronified/lexodle/release.yml?label=APK%20build"></a>
+</p>
+
+<p align="center">
+  <a href="https://aaronified.github.io/lexodle/"><strong>Try the demo</strong></a> ·
+  <a href="https://github.com/aaronified/lexodle/releases/latest"><strong>Get the Android APK</strong></a> ·
   <a href="https://github.com/aaronified/lexodle/wiki">Wiki</a> ·
   <a href="docs/paper">The maths</a>
 </p>
