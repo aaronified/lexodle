@@ -131,6 +131,11 @@ class HowToPage extends StatelessWidget {
                         'the colour of the tiles shows how close your guess was '
                         'to the word.',
                       ),
+                      bullet(
+                        'not sure of a letter? type a blank with the _ key (or '
+                        'the space bar) to pencil in a pattern like a_ode. tap a '
+                        'tile to move the cursor. a blank cannot be submitted.',
+                      ),
                       const SizedBox(height: 14),
                       const Text(
                         'examples',

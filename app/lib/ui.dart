@@ -115,11 +115,15 @@ class MarkTile extends StatelessWidget {
     this.mark,
     required this.size,
     this.onTap,
+    this.cursor = false,
   });
   final String ch;
   final Mark? mark;
   final double size;
   final VoidCallback? onTap;
+
+  /// Whether this is the slot the next typed letter goes into.
+  final bool cursor;
 
   @override
   Widget build(BuildContext context) {
@@ -133,6 +137,12 @@ class MarkTile extends StatelessWidget {
       border = markBorder(c, mark!);
       borderWidth = markBorderWidth(mark!);
     }
+    if (cursor) {
+      border = c.primary;
+      borderWidth = 2;
+    }
+    // a blank is a space typed as a pencil mark, shown as a dim underscore
+    final isBlank = ch == ' ';
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(3),
@@ -146,11 +156,11 @@ class MarkTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(3),
         ),
         child: Text(
-          ch,
+          isBlank ? '_' : ch,
           style: TextStyle(
             fontSize: size * .5,
             fontWeight: FontWeight.bold,
-            color: fg,
+            color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
           ),
         ),
       ),

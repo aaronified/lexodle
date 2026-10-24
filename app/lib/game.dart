@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'background.dart';
+import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'review.dart';
@@ -46,7 +47,7 @@ class _GamePageState extends State<GamePage> {
   final befores = <List<String>>[];
 
   final keyMarks = <String, Mark>{};
-  String input = '';
+  late final input = GuessInput(length);
   String message = '';
   bool over = false;
   bool won = false;
@@ -91,7 +92,7 @@ class _GamePageState extends State<GamePage> {
     keyMarks.clear();
     metrics.clear();
     befores.clear();
-    input = '';
+    input.clear();
     message = '';
     over = won = false;
     unlocked = [];
@@ -103,53 +104,61 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _type(String ch) {
-    if (over || input.length >= length || !_letters.contains(ch)) return;
+    if (over) return;
     setState(() {
-      input += ch;
-      message = '';
+      if (input.type(ch, _letters) >= 0) message = '';
     });
   }
 
   void _back() {
-    if (over || input.isEmpty) return;
+    if (over) return;
     setState(() {
-      input = input.substring(0, input.length - 1);
-      message = '';
+      if (input.back() >= 0) message = '';
     });
+  }
+
+  void _select(int i) {
+    if (over) return;
+    setState(() => input.select(i));
   }
 
   void _submit() {
     if (over) return;
-    if (input.length != length) {
-      setState(() => message = 'need $length letters');
+    if (!input.complete) {
+      setState(
+        () => message = input.hasBlank
+            ? 'fill the blanks'
+            : 'need $length letters',
+      );
       return;
     }
-    if (guesses.contains(input)) {
+    final word = input.word;
+    if (guesses.contains(word)) {
       setState(() => message = 'already guessed');
       return;
     }
-    if (!widget.bank.valid.contains(input)) {
+    if (!widget.bank.valid.contains(word)) {
       setState(() => message = 'not in the word list');
       return;
     }
-    final m = evaluate(answer, input);
+    final m = evaluate(answer, word);
     setState(() {
-      guesses.add(input);
+      guesses.add(word);
       marks.add(m);
       for (var i = 0; i < length; i++) {
-        final k = input[i];
+        final k = word[i];
         final old = keyMarks[k];
         // correct beats present beats absent
         if (old == null || m[i].index < old.index) keyMarks[k] = m[i];
       }
-      final after = filterEligible(eligible, input, m);
+      final after = filterEligible(eligible, word, m);
       metrics.add(
         scoreGuess(
           eligible,
-          input,
+          word,
           after.length,
           finalTry: guesses.length >= tries,
-          solved: input == answer,
+          solved: word == answer,
           // skill is measured against the best real guess, which the
           // background analysis is still finding out
           provisional: analyseWhilePlaying,
@@ -176,8 +185,8 @@ class _GamePageState extends State<GamePage> {
       } else {
         _analysis.add(null);
       }
-      final solved = input == answer;
-      input = '';
+      final solved = word == answer;
+      input.clear();
       message = '';
       if (solved || guesses.length >= tries) {
         over = true;
@@ -309,11 +318,16 @@ class _GamePageState extends State<GamePage> {
                             tile,
                             r < guesses.length
                                 ? guesses[r][i]
-                                : (r == guesses.length && i < input.length
-                                      ? input[i]
-                                      : ''),
+                                : (r == guesses.length ? input.slot(i) : ''),
                             r < marks.length ? marks[r][i] : null,
                             active: r == guesses.length && !over,
+                            cursor:
+                                r == guesses.length &&
+                                !over &&
+                                i == input.cursor,
+                            onTap: r == guesses.length && !over
+                                ? () => _select(i)
+                                : null,
                           ),
                         ],
                       ],
@@ -333,6 +347,8 @@ class _GamePageState extends State<GamePage> {
     String ch,
     Mark? m, {
     required bool active,
+    bool cursor = false,
+    VoidCallback? onTap,
   }) {
     Color? fill;
     Color fg = c.onSurface;
@@ -347,21 +363,29 @@ class _GamePageState extends State<GamePage> {
     } else if (ch.isNotEmpty) {
       border = c.onSurface;
     }
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: fill,
-        border: Border.all(color: border, width: borderWidth),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Text(
-        ch,
-        style: TextStyle(
-          fontSize: size * .5,
-          fontWeight: FontWeight.bold,
-          color: fg,
+    if (cursor) {
+      border = c.primary;
+      borderWidth = 2;
+    }
+    final isBlank = ch == GuessInput.blank;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: fill,
+          border: Border.all(color: border, width: borderWidth),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Text(
+          isBlank ? '_' : ch,
+          style: TextStyle(
+            fontSize: size * .5,
+            fontWeight: FontWeight.bold,
+            color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
+          ),
         ),
       ),
     );
@@ -506,6 +530,7 @@ class _GamePageState extends State<GamePage> {
     letters: _letters,
     marks: keyMarks,
     onLetter: _type,
+    onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,
     onBack: _back,
   );

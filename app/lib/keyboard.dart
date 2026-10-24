@@ -15,6 +15,7 @@ class LetterKeyboard extends StatelessWidget {
     required this.onLetter,
     required this.onEnter,
     required this.onBack,
+    this.onBlank,
     this.marks = const {},
     this.quadMarks = const {},
     this.enterLabel = 'enter',
@@ -31,6 +32,10 @@ class LetterKeyboard extends StatelessWidget {
   final void Function(String) onLetter;
   final VoidCallback onEnter;
   final VoidCallback onBack;
+
+  /// Types a blank, a pencil mark for a letter not worked out yet. When set, a
+  /// wide key for it sits on a row of its own under the letters.
+  final VoidCallback? onBlank;
   final String enterLabel;
 
   @override
@@ -134,6 +139,14 @@ class LetterKeyboard extends StatelessWidget {
                     flex: 1.6,
                     colors: (c.errorContainer, c.onErrorContainer),
                   ),
+              ],
+            ),
+          if (onBlank != null)
+            Row(
+              children: [
+                const Spacer(flex: 20),
+                key('_', onBlank!, flex: 6),
+                const Spacer(flex: 20),
               ],
             ),
         ],

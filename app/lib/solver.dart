@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
@@ -31,8 +32,8 @@ class _SolverPageState extends State<SolverPage> {
   late final Set<String> _letters = widget.bank.letters(length);
 
   final history = <(String, List<Mark>)>[];
-  String input = '';
-  final inputMarks = <Mark>[];
+  late final input = GuessInput(length);
+  late final inputMarks = List.filled(length, Mark.absent);
   String message = '';
   late List<String> eligible = _answers;
   Recommendation? rec;
@@ -74,21 +75,26 @@ class _SolverPageState extends State<SolverPage> {
   }
 
   void _type(String ch) {
-    if (input.length >= length || !_letters.contains(ch)) return;
     setState(() {
-      input += ch;
-      inputMarks.add(Mark.absent);
+      final at = input.type(ch, _letters);
+      if (at < 0) return;
+      inputMarks[at] = Mark.absent; // a new letter starts unmarked
       message = '';
     });
   }
 
   void _back() {
-    if (input.isEmpty) return;
     setState(() {
-      input = input.substring(0, input.length - 1);
-      inputMarks.removeLast();
+      final at = input.back();
+      if (at < 0) return;
+      inputMarks[at] = Mark.absent;
       message = '';
     });
+  }
+
+  void _resetInput() {
+    input.clear();
+    inputMarks.fillRange(0, length, Mark.absent);
   }
 
   void _cycle(int i) => setState(() {
@@ -100,13 +106,16 @@ class _SolverPageState extends State<SolverPage> {
   });
 
   void _add() {
-    if (input.length != length) {
-      setState(() => message = 'need $length letters');
+    if (!input.complete) {
+      setState(
+        () => message = input.hasBlank
+            ? 'fill the blanks'
+            : 'need $length letters',
+      );
       return;
     }
-    history.add((input, List.of(inputMarks)));
-    input = '';
-    inputMarks.clear();
+    history.add((input.word, List.of(inputMarks)));
+    _resetInput();
     message = '';
     _solve();
   }
@@ -118,10 +127,8 @@ class _SolverPageState extends State<SolverPage> {
   }
 
   void _use(String word) => setState(() {
-    input = word;
-    inputMarks
-      ..clear()
-      ..addAll(List.filled(word.length, Mark.absent));
+    input.setWord(word);
+    inputMarks.fillRange(0, length, Mark.absent);
     message = '';
   });
 
@@ -190,10 +197,13 @@ class _SolverPageState extends State<SolverPage> {
                               48.0,
                               (box.maxWidth - gap * (length - 1)) / length,
                             );
+                            // a row's tiles, one string per slot ('' empty, a
+                            // blank, or a letter); only letters take a colour
                             Widget row(
-                              String word,
+                              List<String> chars,
                               List<Mark> marks, {
                               void Function(int)? tap,
+                              int? cursor,
                             }) => Padding(
                               padding: const EdgeInsets.only(bottom: gap),
                               child: Row(
@@ -201,10 +211,18 @@ class _SolverPageState extends State<SolverPage> {
                                   for (var i = 0; i < length; i++) ...[
                                     if (i > 0) const SizedBox(width: gap),
                                     MarkTile(
-                                      i < word.length ? word[i] : '',
-                                      mark: i < marks.length ? marks[i] : null,
+                                      chars[i],
+                                      mark:
+                                          chars[i].isEmpty ||
+                                              chars[i] == GuessInput.blank
+                                          ? null
+                                          : marks[i],
                                       size: size,
-                                      onTap: tap != null && i < word.length
+                                      cursor: i == cursor,
+                                      onTap:
+                                          tap != null &&
+                                              chars[i].isNotEmpty &&
+                                              chars[i] != GuessInput.blank
                                           ? () => tap(i)
                                           : null,
                                     ),
@@ -215,8 +233,14 @@ class _SolverPageState extends State<SolverPage> {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                for (final (g, m) in history) row(g, m),
-                                row(input, inputMarks, tap: _cycle),
+                                for (final (g, m) in history)
+                                  row(g.split(''), m),
+                                row(
+                                  input.slots,
+                                  inputMarks,
+                                  tap: _cycle,
+                                  cursor: input.cursor,
+                                ),
                               ],
                             );
                           },
@@ -251,6 +275,7 @@ class _SolverPageState extends State<SolverPage> {
                   LetterKeyboard(
                     letters: _letters,
                     onLetter: _type,
+                    onBlank: () => _type(GuessInput.blank),
                     onEnter: _add,
                     onBack: _back,
                     enterLabel: 'add',

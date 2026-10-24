@@ -34,6 +34,44 @@ void main() {
     expect(find.text('3 tries left'), findsOneWidget);
   });
 
+  testWidgets('a blank can be typed but not submitted', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
+    final bank = (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
+      ),
+    ))!;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GamePage(bank: bank, random: Random(7)),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    await tester.pump();
+
+    // the on-screen blank key is the only underscore before anything is typed
+    await tester.tap(find.text('_'));
+    await tester.pump();
+    for (final ch in ['a', ' ', 'b']) {
+      await tester.sendKeyEvent(
+        ch == ' ' ? LogicalKeyboardKey.space : _key(ch),
+        character: ch,
+      );
+    }
+    // the row is _a_b: full, but with blanks, so it is not a guess yet
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(find.text('fill the blanks'), findsOneWidget);
+
+    // editing the row clears the message; nothing was spent on the attempt
+    await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+    await tester.pump();
+    expect(find.text('fill the blanks'), findsNothing);
+    expect(find.text('3 tries left'), findsOneWidget);
+  });
+
   testWidgets('lose a game, then review it step by step', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'background.dart';
+import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
@@ -45,7 +46,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   late final Set<String> _letters;
 
   late MultiGame game;
-  String input = '';
+  late final input = GuessInput(length);
   String message = '';
 
   /// What the finished game earned.
@@ -94,7 +95,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       words: widget.bank.guessable(length),
       provisional: analyseWhilePlaying,
     );
-    input = '';
+    input.clear();
     message = '';
     // look the answers up now, one at a time, so the end screen has them
     if (prefetchDefinitions) {
@@ -106,38 +107,46 @@ class _MultiGamePageState extends State<MultiGamePage> {
   }
 
   void _type(String ch) {
-    if (game.over || input.length >= length || !_letters.contains(ch)) return;
+    if (game.over) return;
     setState(() {
-      input += ch;
-      message = '';
+      if (input.type(ch, _letters) >= 0) message = '';
     });
   }
 
   void _back() {
-    if (game.over || input.isEmpty) return;
+    if (game.over) return;
     setState(() {
-      input = input.substring(0, input.length - 1);
-      message = '';
+      if (input.back() >= 0) message = '';
     });
+  }
+
+  void _select(int i) {
+    if (game.over) return;
+    setState(() => input.select(i));
   }
 
   void _submit() {
     if (game.over) return;
-    if (input.length != length) {
-      setState(() => message = 'need $length letters');
+    if (!input.complete) {
+      setState(
+        () => message = input.hasBlank
+            ? 'fill the blanks'
+            : 'need $length letters',
+      );
       return;
     }
-    if (game.guesses.contains(input)) {
+    final word = input.word;
+    if (game.guesses.contains(word)) {
       setState(() => message = 'already guessed');
       return;
     }
-    if (!widget.bank.valid.contains(input)) {
+    if (!widget.bank.valid.contains(word)) {
       setState(() => message = 'not in the word list');
       return;
     }
     setState(() {
-      game.guess(input);
-      input = '';
+      game.guess(word);
+      input.clear();
       message = '';
       // analyse this guess in the background, at once: the best real split on
       // each board (for the skill) and the picks of the review
@@ -355,13 +364,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
                       tile,
                       r < b.marks.length
                           ? game.guesses[r][k]
-                          : (live &&
-                                    r == game.guesses.length &&
-                                    k < input.length
-                                ? input[k]
+                          : (live && r == game.guesses.length
+                                ? input.slot(k)
                                 : ''),
                       r < b.marks.length ? b.marks[r][k] : null,
                       active: live && r == game.guesses.length,
+                      cursor:
+                          live && r == game.guesses.length && k == input.cursor,
+                      onTap: live && r == game.guesses.length
+                          ? () => _select(k)
+                          : null,
                     ),
                   ],
                 ],
@@ -378,6 +390,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
     String ch,
     Mark? m, {
     required bool active,
+    bool cursor = false,
+    VoidCallback? onTap,
   }) {
     Color? fill;
     Color fg = c.onSurface;
@@ -390,21 +404,26 @@ class _MultiGamePageState extends State<MultiGamePage> {
     } else if (ch.isNotEmpty) {
       border = c.onSurface;
     }
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: fill,
-        border: Border.all(color: border),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Text(
-        ch,
-        style: TextStyle(
-          fontSize: size * .5,
-          fontWeight: FontWeight.bold,
-          color: fg,
+    if (cursor) border = c.primary;
+    final isBlank = ch == GuessInput.blank;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: fill,
+          border: Border.all(color: border, width: cursor ? 2 : 1),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Text(
+          isBlank ? '_' : ch,
+          style: TextStyle(
+            fontSize: size * .5,
+            fontWeight: FontWeight.bold,
+            color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
+          ),
         ),
       ),
     );
@@ -417,6 +436,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     marks: mode == GameMode.relay ? game.marksOf(game.active!) : const {},
     quadMarks: mode == GameMode.relay ? const {} : game.letterMarks(),
     onLetter: _type,
+    onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,
     onBack: _back,
   );
