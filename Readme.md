@@ -8,6 +8,22 @@ A minimal word game in 17 Latin-script languages.
 
 **Play: <https://aaronified.github.io/lexodle/>**
 
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home.png" alt="The home screen: language, daily streak with a week of fires, letters, difficulty grid, and the player's playstyle at the top right" width="230"><br><sub>home: language, daily streak, difficulty, playstyle</sub></td>
+    <td align="center"><img src="docs/screenshots/game.png" alt="A daily in play, with a blank pencilled into the third tile of the next guess" width="230"><br><sub>the daily, with a blank pencilled in</sub></td>
+    <td align="center"><img src="docs/screenshots/quartet.png" alt="A quartet: four boards sharing every guess, with split keys on the keyboard" width="230"><br><sub>quartet: four words, one set of guesses</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/review.png" alt="The review of a game: skill, luck and words left per guess, the best picks, and the plot of every outcome" width="230"><br><sub>review: skill and luck, step by step</sub></td>
+    <td align="center"><img src="docs/screenshots/history.png" alt="The history: the playstyle and what it is read from, then every game played" width="230"><br><sub>history: playstyle and every game</sub></td>
+    <td align="center"><img src="docs/screenshots/settings.png" alt="The settings: mode, shared letters (greyed in classic), helper, theme and backup" width="230"><br><sub>settings</sub></td>
+  </tr>
+</table>
+
+(The pictures are in Catalan, whose flag is drawn from an SVG; every other flag is an emoji,
+which the screenshot harness has no font for. See [Screenshots](#screenshots) below.)
+
 ## How to play
 
 Guess the hidden word. After each guess every letter is marked:
@@ -22,12 +38,17 @@ Before you start, choose:
 | ---------- | ------------------------------------------------------------------------ |
 | Language   | English (US and UK spelling), Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Swedish, Danish, Norwegian, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan; each with its flag |
 | Letters    | 4 to 8                                                                   |
-| Difficulty | a 4 x 4 grid: tries (easy 8, normal 6, hard 4, brutal 3) by word pool (answers drawn from the 500, 1,500, 3,000 or 6,000 most common words) |
+| Difficulty | a grid: tries (easy 8, normal 6, hard 4, brutal 3) by word pool: answers drawn from the 500, 1,500, 3,000 or 6,000 most common words of that length. A pool level is offered only if the language has at least 1,000 more words of that length than the level below it, and the last level offered takes every word left, so none is wasted: English at five letters has 4,994 words, so its "obscure" row is all 4,994; Danish and Indonesian never get "obscure" |
 
 The letters and the helper are sliders: use the arrows, swipe or drag (the value slides and
 fades with your finger), scroll sideways or hold shift and scroll the wheel, or click one and use
 the arrow keys. Type on a keyboard or use the on-screen one, which adds each language's accented
-letters.
+letters. The up and down arrow keys scroll whatever the mouse is over, as the wheel does.
+
+**Blanks.** Not sure of a letter? Type a blank with the `_` key (or the space bar) to pencil in a
+pattern like `a_ode`. Tap a tile, or use the left and right arrow keys, to move the cursor; typing
+fills the selected tile and moves on to the next one that is not a letter. A blank can be typed
+but not submitted, so it never reaches the scoring.
 
 ### Skill and luck
 
@@ -41,45 +62,111 @@ short reading of the step. Your guess can be a valid word that the game never us
 answer; the review says so, and nothing more.
 
 With *N* words still possible, a guess splits them into groups by the feedback they
-would give; the expected pool left is *E* = Σ(group size)² / *N*.
+would give; the expected pool left is *E* = Σ(group size)² / *N*. The maths, with proofs, is in
+[`docs/paper`](docs/paper).
 
-- **skill** = (*N* − *E*) / (*N* − 1) × 100. 100 means the guess splits the words into
-  singletons (the best possible), 0 means it tells you nothing. With one word left,
-  playing it is 100 and anything else 0.
-- **luck** = (1 − words left / *E*) × 100, a signed percentage: how much smaller (+, green)
-  or larger (−, red) than average the pool you landed in was. 0% is exactly average. With
-  one word left, or a guess that cannot split the words, there is only one pool, so luck is
-  0%.
+- **skill** = ln(*N* / *E*) / ln(*N* / *E*\*) × 100, where *E*\* is the smallest *E* any real
+  guess reaches. 100 means as good as the best real guess, 0 means the guess tells you
+  nothing. The logarithm keeps most guesses from crowding near 100. With one word left,
+  playing it is 100 and anything else 0. Skill shows as dots until the best real guess has been
+  found in the background.
+- **luck**, from −100% to +100%: the chance of landing in a bigger pool than you did, less the
+  chance of landing in a smaller one. 0% is the middle outcome, and over every possible answer
+  it averages exactly 0. On the last try only a word that fits the clues can win, so luck is
+  then about the pick itself.
+- **daring**, from 0 to 100: of the guesses that scored strictly higher skill, the share that were
+  *less risky* than yours (risk is how much more weight the split puts on a few big groups). It
+  says you chose a bolder guess than you needed to, rather than showing skill. The best guess has
+  nothing better to compare with, so it has none.
 - **info gained** = (1 − ln(words left) / ln(words at the start)) × 100, cumulative, as in
   WordleBot. It reaches 100% when one word is left.
 
-Skill is the measure from the original Python game. Luck is not: the original compared
-words removed with words expected to be removed, which saturates near 100 whenever most
-words go either way, so a good result could never read much above average.
+Skill, luck and daring are all worked out from the guesses alone, so they can be worked out
+again if the maths changes (see History).
 
 ### Solver
 
-The **solver** (on the home screen, for the chosen language and length) helps with a
-game you are playing elsewhere. Type each guess, tap its tiles to match the colours the
-game showed (grey, yellow, green), and add it. It lists the words still possible, most
-likely first, and recommends the next guess: the word that leaves the fewest words in
-expectation, drawn from the 600 most frequent words plus the possible answers. Tap a
-word to use it as the next guess. Unlike the game, which picks its answers from the 2,000
-most common words of a length, the solver considers every word the game accepts as a
-guess (up to 6,000 per length), because the game you are solving may use any of them.
+The **solver** (open it from the settings, beside play) helps with a game you are playing
+elsewhere. It uses the same settings as the game: the language, the letters and the difficulty
+(the answer is one of the words of the chosen pool, and it counts the tries). Type each guess, tap
+its tiles to match the colours the game showed (grey, yellow, green), and add it. It lists the
+words still possible, most likely first, and recommends the next guess: the word that leaves the
+fewest words in expectation, drawn from the 600 most frequent words plus the possible answers.
+Tap a word to use it as the next guess. Guesses are scored over every word the game accepts
+(up to 6,000 per length), while the answer is looked for in the pool, so raise the pool if the
+game you are solving uses rarer words.
 
 When a game ends, the answer's pronunciation (IPA and audio), meaning, synonyms
 and antonyms are fetched from [Wiktionary](https://en.wiktionary.org), with a
 link to the full entry. If Wiktionary has no entry or is unreachable, the game
 carries on without it.
 
+### Modes
+
+**Classic** is one word. In a **quartet** four words are hidden and every guess is played on all
+four boards at once (the keyboard splits each key in four, one part per board); a **relay race**
+plays the four boards one after the other, each starting with every earlier guess already
+applied. Quartet and relay race get extra tries, and the *shared letters* setting says how often
+their words may share a letter. The helper shows in classic only, so it is greyed out for the
+others, and shared letters is greyed out in classic.
+
+### Daily word
+
+Everyone gets the same word on the same date, in every language: the date and the language are
+hashed to pick one word of the 3,000-word pool, with no server involved. A daily is always five
+letters and six tries, whatever the settings say. It is saved as you go, so closing the page
+cannot reroll it, and it is played once a day.
+
+- **The day** is the player's own calendar date, changing at their local midnight.
+- **The clock.** So that the device clock cannot be set to another day, the app asks the server it
+  is hosted on for the time (the `Date` header of one request, nothing else, no other service)
+  when it starts, and again before opening the daily if the last answer is over ten minutes old.
+  After that the time moves on by a monotonic clock that the player cannot change, so changing the
+  device date afterwards does nothing. **If the server cannot be reached, the system time is used**,
+  quietly, so the daily still plays offline. Anything saved on the device can of course still be
+  edited by the person who owns it.
+- **The streak** counts the days in a row on which a daily was solved, in any language. A day not
+  played yet does not break it; a day missed does. The home page shows it as a fire with the week
+  (Monday first). A **double fire** is a daily solved in three guesses or fewer, or with every guess
+  at 80 skill or more.
+
+### History and playstyles
+
+Every finished game is kept (the last 300) as two tables, so that nothing is lost if the maths
+changes: a row per game (when, language, mode, length, tries, pool, the answers, won, the daily
+date) and a row per guess (the word, with its skill, luck, daring, risk and pool sizes cached
+under the version of the maths that made them). The guesses are the facts; the scores can be
+thrown away and worked out again, which happens, game by game, when the history is opened after
+the maths has changed. The **history** page (tap your playstyle on the home screen) lists every
+game, newest first, and each one opens its review, rebuilt from the guesses alone. The history is
+in the backup.
+
+Your **playstyle** is read from your last 100 classic games (a daily is one): the means of skill
+and of daring over the guesses that had a choice to make, once you have 10 games. Skill gives three
+tiers (loose, solid, sharp) and daring splits each in two, which makes six styles, each with an
+icon shown on the home page:
+
+|           | careful   | bold     |
+| --------- | --------- | -------- |
+| **sharp** | analyst   | maverick |
+| **solid** | steady    | gambler  |
+| **loose** | wanderer  | wildcard |
+
+It moves as you play, and a margin around the line keeps one game either side of it from
+changing your style. The thresholds come from simulated players of eight habits played through the
+app's own maths, in [`docs/paper`](docs/paper) (Section 9.5); they are **not measured on people
+yet**, and skill is not comparable across word lengths, so treat the style as a first reading.
+
 ### Achievements
 
-17 achievements, each with its own icon, saved in your browser (nothing is sent
+47 achievements, each with its own icon, saved in your browser (nothing is sent
 anywhere): first light, one shot, last breath, no mercy, brevity, long haul, **pure
 skill** (win with every guess above 90 skill), **skill issue** (win 10 games with every
 guess above 95 skill), full range, three in a row, seven in a row, polyglot, babel,
-regular, veteran, dustwalker and persistent.
+regular, veteran, dustwalker and persistent; ones for the quartet and the relay race; language
+mastery; and, for the daily, a **streak ladder** (3, 7, 14, 30, 60, 100, 200 and 365 days),
+**double fire** and **twice as hot** (ten double fires). Each playstyle has one, there is one for
+changing playstyle (**chameleon**) and one for having been all six (**many hats**).
 
 Numbered achievements show a progress bar. Once earned, they start again from 0 and can
 be earned again; the other achievements can be earned again too (first light aside), and
@@ -101,17 +188,40 @@ flutter run -d chrome
 
 | Path                     | What it is                                              |
 | ------------------------ | ------------------------------------------------------- |
-| `app/lib/logic.dart`     | Guess scoring, eligible-word filter, skill and luck, solver recommendation, weighted word pick |
+| `app/lib/logic.dart`     | Guess scoring, eligible-word filter, skill, luck, risk and daring, solver recommendation, weighted word pick |
 | `app/lib/solver.dart`    | The solver page                                         |
 | `app/lib/keyboard.dart`  | The on-screen keyboard, shared by game and solver       |
+| `app/lib/guess_input.dart` | The row a guess is typed into: slots, cursor, blanks  |
 | `app/lib/words.dart`     | Loads the per-language word lists                       |
+| `app/lib/difficulty.dart`| The difficulty grid and which pool levels a language offers |
+| `app/lib/daily.dart`, `clock.dart` | The daily word, its streak helpers, and the trusted clock |
+| `app/lib/history.dart`, `replay.dart`, `history_page.dart` | The history tables, rebuilding a game from them, and the page |
+| `app/lib/playstyle.dart` | The six playstyles and how a player is placed in one    |
+| `app/lib/arrow_scroll.dart` | Up and down arrow keys scroll what the mouse is over |
 | `app/lib/wiktionary.dart`| Wiktionary lookup and parser                            |
 | `app/lib/store.dart`     | Settings, stats and the achievement definitions         |
 | `app/assets/words/`      | Generated word lists, one file per language             |
-| `app/tools/`             | Word-list generator and a live Wiktionary check         |
+| `app/tools/`             | Word-list generator, a live Wiktionary check, and `calibrate_styles.dart` (simulated players for the playstyle thresholds) |
+| `docs/paper/`            | The maths of skill, risk, luck and daring, with the experiments |
+| `docs/screenshots/`      | The pictures above                                      |
 
 `app/tools/live_check.dart` calls the real Wiktionary API (`dart run tools/live_check.dart`);
 the unit tests use saved responses and need no network.
+
+### Screenshots
+
+The pictures at the top are taken from the real screens, rendered at phone size in a dark theme
+with the app's own fonts and seeded state (a player a few weeks in, with a streak, a playstyle
+and some games), so they can be taken again whenever the interface changes. It is a test that
+only runs when asked:
+
+```
+cd app
+LEXODLE_SCREENSHOTS=1 flutter test test/screenshots_test.dart      # PowerShell: $env:LEXODLE_SCREENSHOTS = 1
+```
+
+It writes `docs/screenshots/*.png`. A test has no emoji font, so the pictures are in Catalan, whose
+flag is an SVG.
 
 ## Deploy
 
@@ -158,8 +268,10 @@ word lists are shipped.
 
 The difficulty grid's pool is the most frequent words at the chosen length, so a smaller pool
 means more familiar answers. Some languages have fewer than 6,000 words at some lengths (for
-example Indonesian has about 2,400 at five letters), and the grid shows each language's real
-count. Words beyond the pool are still accepted as guesses.
+example Indonesian has about 2,400 at five letters), so a level is offered only if the language has
+at least 1,000 more words than the level below it, the last level offered takes every word left,
+and the grid shows the real count of each row. Words beyond the pool are still accepted as
+guesses.
 
 ## Credits and licences
 

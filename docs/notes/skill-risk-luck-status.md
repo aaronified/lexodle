@@ -36,40 +36,47 @@ are in `docs/paper/` (see its README); this file is what was *decided* and what 
    gets every guess above 90 in 27% of won games, a casual one never).
 5. Paper style: direct and succinct, no rhetoric.
 
-## Boldness: the definition to use (not implemented yet)
+## Daring (the owner's word for boldness): built, 2026-10-24
 
-First idea (written into `boldness_calibration.py` and its results): risk of a guess =
-`H - H2` (bits, Shannon minus collision entropy), boldness = its percentile among *every*
-real guess in that position.
+Risk of a guess = `H - H2` (Shannon minus collision entropy, in bits). **Daring** = of the
+guesses with *strictly higher skill*, the share that were less risky than the one played;
+the best-skill guess has nothing better to compare with, so it has none. It is in
+`logic.dart` (`splitRisk`, `Landscape.daringOf`, `GuessMetrics.daring`), in the review under
+"the pool", in the history rows, and in the paper (Section 6). The first definition
+(`boldness_calibration.py`, percentile among every guess) is superseded and kept for the record.
+The calibration is `app/tools/calibrate_styles.dart`; results in
+`docs/paper/experiments/results/daring_calibration.txt`.
 
-**Owner's correction, to implement:** compare against the guesses of **higher skill**
-only. Boldness should say the player *chose* to be bold instead of showing skill: of the
-guesses that were better, how many were less risky than the one played? The best-skill
-guess has nothing better to compare with, so it carries no boldness. The calibration
-script and its thresholds must be redone under this definition (the results file is for
-the old one).
+## Also built (2026-10-24)
 
-## Plan for tomorrow, in order
+- **History** as two tables (games, guesses) with the cached scores stamped by
+  `metricsVersion`; games saved under an older one are scored again when the history page
+  opens (`replay.dart`). In the backup as one compact line. Last 300 games.
+- **Playstyles**: six (analyst, maverick, steady, gambler, wanderer, wildcard) from the means of
+  skill and daring over the last 100 classic games, with a margin against flapping; shown on the
+  home page; 8 achievements. **Thresholds come from simulated players at five letters, not from
+  people.**
+- **Daily word**, streaks and the double fire, with the trusted clock (server `Date` header,
+  then a monotonic clock; the system time if the server cannot be reached).
 
-1. Boldness as above in `analyseGuesses` (`Landscape` keeps each candidate's skill and
-   risk; boldness = share of strictly higher-skill candidates that are less risky).
-2. Review: under the plot, `cut X bits (A -> B words) = expected Y + luck Z`, and a
-   boldness line. Last-try steps keep their own plot.
-3. `GameResult` carries per-guess boldness and total luck bits; recalibrate thresholds
-   by simulation, then two achievements: `daredevil` (bold games, count) and
-   `safe hands` (wins without a bold guess).
-4. Play history (capped, in the backup file) and a profile page: skill, first-guess
-   quality, boldness tendency, dependence on luck (share of wins that needed positive
-   luck), net luck against expectation, and rule-based suggestions (for example the best
-   opener for the language, play safer when bold guesses lose, try a guess that can win
-   when few words remain).
-5. Paper: say that risk is reported as a trait, not a reduction term; redo the risk
-   section with the new boldness; add the profile idea as future work.
+## Next (not done)
+
+1. Review: under the plot, `cut X bits (A -> B words) = expected Y + luck Z`. Last-try steps keep
+   their own plot.
+2. A profile of tendencies and rule-based suggestions (best opener for the language, play safer
+   when bold guesses lose, try a guess that can win when few words remain), on the history page.
+3. **Recalibrate the playstyle thresholds on real play, and per word length**: skill is not
+   comparable across lengths (a player who ignores the clues scores 47 at five letters and 67 at
+   eight), and daring is relative to the language (sharp-bold is 48 in English, 83 in French).
+4. Boldness for quartet and relay race (history rows have none; the playstyle reads classic only).
 
 ## Open
 
-- Indic languages (which, and how a "letter" works in Devanagari and similar scripts).
-- Quartet and relay race: bits breakdown and boldness per board.
+- Indic languages: wordfreq has Hindi, Bengali, Tamil and Urdu (Marathi falls back to Hindi, and
+  Telugu, Malayalam, Kannada and Nepali silently to English). Which, and how a "letter" works in
+  Devanagari and similar scripts (a tile is a grapheme cluster), the keyboard, and whether the
+  Hunspell collections have dictionaries for them.
+- Quartet and relay race: bits breakdown.
 - Whether to show the paper PDF anywhere other than the repo owner's machine.
 
 ## Not for this repo
