@@ -576,68 +576,95 @@ void main() {
       }
     });
 
-    test('daring is the share of better guesses that were less risky', () {
-      // skills best first, each with its risk
-      const land = Landscape([], [100, 90, 80, 70], 1, [3.0, 1.0, 2.0, 0.5]);
-      // 80 / risk 2: better are 100 (risk 3) and 90 (risk 1); only 90 is safer
-      expect(land.daringOf(80, 2), 50);
-      // the best guess has nothing better to compare with
-      expect(land.daringOf(100, 3), 0);
-      // 70 / risk 4: all three better guesses were less risky
-      expect(land.daringOf(70, 4), 100);
-      // 70 / risk 0.5: none of the better ones was safer: a careful choice
-      expect(land.daringOf(70, 0.5), 0);
-      // 90 / risk 5: only the 100 is better, and it is safer
-      expect(land.daringOf(90, 5), 100);
-    });
+    test(
+      'daring is going for the whole word, at a cost, with tries to spare',
+      () {
+        double d(bool p, double w, double s, int t) =>
+            daringOf(possible: p, winChance: w, skill: s, triesLeft: t);
+        // a probe is not an attempt at the word
+        expect(d(false, 0, 40, 5), 0);
+        // the last try is the only play
+        expect(d(true, 0.1, 40, 1), 0);
+        // going for an unlikely word with a poor split, six tries left
+        expect(d(true, 0, 0, 6), closeTo(100 * 5 / 6, 1e-9));
+        // the best split costs nothing; a sure word is no gamble
+        expect(d(true, 0.1, 100, 6), 0);
+        expect(d(true, 1, 0, 6), 0);
+        // fewer tries to spare, less daring
+        expect(d(true, 0.2, 50, 2), closeTo(100 * .5 * .8 * .5, 1e-9));
+        expect(d(true, 0.2, 50, 4), greaterThan(d(true, 0.2, 50, 2)));
+        // a more likely word is a smaller gamble
+        expect(d(true, 0.5, 50, 4), lessThan(d(true, 0.1, 50, 4)));
+      },
+    );
 
-    test('daring is unknown when the risks were not worked out', () {
-      const land = Landscape([], [100, 90], 1);
-      expect(land.daringOf(90, 1), isNull);
-      expect(const Landscape([], []).daringOf(90, 1), isNull);
-    });
-
-    test('a position scored for real carries risks that line up', () async {
-      const words = [
-        'crane',
-        'crate',
-        'trace',
-        'brace',
-        'grace',
-        'slate',
-        'stare',
-        'share',
-        'shale',
-        'whale',
-        'while',
-        'white',
-        'write',
-        'wrote',
-        'quote',
-        'quite',
-      ];
-      final land = await analyseGuesses(words, words);
-      expect(land.risks.length, land.skills.length);
-      expect(land.risks.every((r) => r >= 0), isTrue);
-      // the best guess carries no daring
-      expect(land.daringOf(land.skills.first, land.risks.first), 0);
-
-      final eligible = List.of(words);
-      final after = filterEligible(
-        eligible,
-        'crane',
-        evaluate('trace', 'crane'),
+    test('a guess knows if it could win, and its chance by frequency', () {
+      const field = ['aa', 'ab', 'ac', 'bd'];
+      final probe = scoreGuess(field, 'zz', 4, triesLeft: 3);
+      expect(probe.possible, isFalse);
+      expect(probe.winChance, 0);
+      expect(probe.triesLeft, 3);
+      final even = scoreGuess(field, 'ab', 1, triesLeft: 3);
+      expect(even.possible, isTrue);
+      expect(even.winChance, closeTo(.25, 1e-9));
+      final weighted = scoreGuess(
+        field,
+        'ab',
+        1,
+        triesLeft: 3,
+        weights: {'aa': 1, 'ab': 6, 'ac': 2, 'bd': 1},
       );
-      final m = scoreGuess(eligible, 'crane', after.length, provisional: true);
-      expect(m.risk, greaterThanOrEqualTo(0));
-      expect(m.daring, isNull, reason: 'not known until the analysis lands');
-      final done = m.withLandscape(land);
-      expect(done.ready, isTrue);
-      expect(done.daring, isNotNull);
-      expect(done.daring, inInclusiveRange(0, 100));
-      expect(done.best, land.bestExpected);
-      expect(done.risk, m.risk, reason: 'the risk is a fact of the guess');
+      expect(weighted.winChance, closeTo(.6, 1e-9));
     });
+
+    test(
+      'a position scored for real carries its daring once analysed',
+      () async {
+        const words = [
+          'crane',
+          'crate',
+          'trace',
+          'brace',
+          'grace',
+          'slate',
+          'stare',
+          'share',
+          'shale',
+          'whale',
+          'while',
+          'white',
+          'write',
+          'wrote',
+          'quote',
+          'quite',
+        ];
+        final land = await analyseGuesses(words, words);
+        final eligible = List.of(words);
+        final after = filterEligible(
+          eligible,
+          'crane',
+          evaluate('trace', 'crane'),
+        );
+        final m = scoreGuess(
+          eligible,
+          'crane',
+          after.length,
+          provisional: true,
+          triesLeft: 5,
+        );
+        expect(m.risk, greaterThanOrEqualTo(0));
+        expect(m.daring, isNull, reason: 'not known until the analysis lands');
+        final done = m.withLandscape(land);
+        expect(done.ready, isTrue);
+        expect(done.daring, isNotNull);
+        expect(done.daring, inInclusiveRange(0, 100));
+        expect(done.best, land.bestExpected);
+        expect(done.risk, m.risk, reason: 'the risk is a fact of the guess');
+        // without the tries left, daring is not known
+        final unknown = scoreGuess(eligible, 'crane', after.length);
+        expect(unknown.withLandscape(land).daring, isNull);
+      },
+    );
 
     test('with one word left there is no choice to be daring about', () async {
       const words = ['crane', 'crate', 'trace'];

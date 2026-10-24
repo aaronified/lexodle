@@ -145,7 +145,9 @@ Future<void> main(List<String> args) async {
     );
   }
 
-  stdout.writeln('\ndaring by the skill of the guess (all bots, ${pairs.length} guesses)');
+  stdout.writeln(
+    '\ndaring by the skill of the guess (all bots, ${pairs.length} guesses)',
+  );
   for (final (lo, hi) in [
     (0, 40),
     (40, 55),

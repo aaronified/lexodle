@@ -250,6 +250,7 @@ class MultiGame {
               guess,
               eligible[live[k]].length,
               finalTry: finalTry,
+              triesLeft: tries - (guesses.length - 1),
               solved: boards[live[k]].solved,
               provisional: provisional,
             ),

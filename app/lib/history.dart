@@ -5,7 +5,7 @@ import 'modes.dart';
 /// and the pool sizes). Bump it whenever the maths in logic.dart changes: every
 /// game saved under an older one is then stale and is worked out again from its
 /// guesses, which are the facts (see [History.stale]).
-const metricsVersion = 1;
+const metricsVersion = 2;
 
 /// The most games kept. A player can have thousands; the oldest go beyond this,
 /// which keeps what is saved (a browser allows about 5 MB) and what a backup

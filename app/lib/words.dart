@@ -51,6 +51,16 @@ class WordBank {
   /// How common each word of [guessable] is, in the same order.
   List<int> guessWeights(int length) => _weights[length] ?? const [];
 
+  final _weightMaps = <int, Map<String, int>>{};
+
+  /// [guessWeights] by word, for the daring of a guess (how likely it was).
+  Map<String, int> weightMap(int length) => _weightMaps[length] ??= {
+    for (var i = 0; i < guessable(length).length; i++)
+      guessable(length)[i]: i < guessWeights(length).length
+          ? guessWeights(length)[i]
+          : 1,
+  };
+
   List<int> answerWeights(int length, [int size = defaultPool]) {
     final w = _weights[length] ?? const [];
     return w.length > size ? w.sublist(0, size) : w;

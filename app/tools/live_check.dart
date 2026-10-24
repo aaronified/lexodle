@@ -22,10 +22,12 @@ Future<void> main() async {
         print('$code $word: no entry');
         continue;
       }
-      print('$code $word: ipa=${i.ipa.take(1)} audio=${i.audio != null} '
-          'pos=${i.blocks.map((b) => b.pos).toList()} '
-          'def="${i.blocks.firstOrNull?.definitions.firstOrNull}" '
-          'syn=${i.synonyms.length} ant=${i.antonyms.length}');
+      print(
+        '$code $word: ipa=${i.ipa.take(1)} audio=${i.audio != null} '
+        'pos=${i.blocks.map((b) => b.pos).toList()} '
+        'def="${i.blocks.firstOrNull?.definitions.firstOrNull}" '
+        'syn=${i.synonyms.length} ant=${i.antonyms.length}',
+      );
     } catch (e) {
       print('$code $word: ERROR $e');
     }

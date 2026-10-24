@@ -206,6 +206,8 @@ class _GamePageState extends State<GamePage> {
         after.length,
         finalTry: guesses.length >= tries,
         solved: word == answer,
+        triesLeft: tries - (guesses.length - 1),
+        weights: widget.bank.weightMap(length),
         // skill is measured against the best real guess, which the
         // background analysis is still finding out
         provisional: analyseWhilePlaying,
