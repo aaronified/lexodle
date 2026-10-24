@@ -53,6 +53,13 @@ Tries: `app/tools/predict_tries.dart` (`results/predict_tries.txt`): skill + luc
 
 ## Also built (2026-10-24)
 
+- **Solver follows the settings** (2026-10-24): advice depends on the tries left (`recommendWithin`:
+  two left, best chance of solving by the last try, weighted by frequency; one left, only the
+  likeliest word that fits), and the quartet and relay race have their own solver
+  (`multi_solver.dart`: shared guesses, per-board colours, relay boards open with blank rows to
+  colour in; uses `recommendMulti` and `finalPicks`). Not done: two-tries-left advice for the
+  multi-board modes, and the daring of the solver's advice.
+
 - **History** as two tables (games, guesses) with the cached scores stamped by
   `metricsVersion`; games saved under an older one are scored again when the history page
   opens (`replay.dart`). In the backup as one compact line. Up to 10,000 games, saved by month.

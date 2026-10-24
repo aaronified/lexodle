@@ -9,6 +9,7 @@ import 'how_to.dart';
 import 'main.dart';
 import 'multi_game.dart';
 import 'multi_review.dart';
+import 'multi_solver.dart';
 import 'review.dart';
 import 'settings_dialog.dart';
 import 'solver.dart';
@@ -85,7 +86,14 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           ? page(MultiReviewPage(record: record))
           : page(const HomePage());
     case Routes.solver:
-      return page(BankGate(builder: (bank) => SolverPage(bank: bank)));
+      // the solver follows the mode: one board, or four that share the guesses
+      return page(
+        BankGate(
+          builder: (bank) => appState.mode.multi
+              ? MultiSolverPage(bank: bank)
+              : SolverPage(bank: bank),
+        ),
+      );
     case Routes.achievements:
       return page(const AchievementsPage());
     case Routes.mastery:

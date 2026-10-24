@@ -99,6 +99,14 @@ likeliest word that fits, since nothing else can win. Tap a word to use it as th
 (up to 6,000 per length), while the answer is looked for in the pool, so raise the pool if the
 game you are solving uses rarer words.
 
+In the **quartet** and the **relay race** the solver follows the mode too (and counts the extra
+tries those modes give). Type each guess once. In a quartet, tap the colours each unsolved board
+showed; in a relay race, those of the board that is on. It narrows every board and recommends the
+next guess for them together, the one with the best skill across the boards (each weighted by how
+much is left to find out on it, as in the review), and on the last try the word that fits the most
+boards. When a relay race opens the next board it already has every earlier guess applied, so tap
+in the colours that board showed for each of them; any row can be corrected by tapping its tiles.
+
 When a game ends, the answer's pronunciation (IPA and audio), meaning, synonyms
 and antonyms are fetched from [Wiktionary](https://en.wiktionary.org), with a
 link to the full entry. If Wiktionary has no entry or is unreachable, the game
