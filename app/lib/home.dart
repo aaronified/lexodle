@@ -115,9 +115,9 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 6),
                           const Caption('a word game, in many tongues'),
-                          const SizedBox(height: 40),
-                          const Caption('language'),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 28),
+                          // the cards say what they are (a flag and a name,
+                          // "5 letters", tries and words), so none has a header
                           DropdownMenu<String>(
                             initialSelection: lang.code,
                             expandedInsets: EdgeInsets.zero,
@@ -148,9 +148,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 20),
                           const DailyStreak(),
-                          const SizedBox(height: 28),
-                          const Caption('letters'),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 20),
                           StepperChoice<int>(
                             semanticLabel: 'letters',
                             items: [
@@ -160,11 +158,7 @@ class _HomePageState extends State<HomePage> {
                             selected: length,
                             onChanged: (n) => appState.setup(length: n),
                           ),
-                          const SizedBox(height: 28),
-                          const Caption(
-                            'difficulty · tries across, word pool down',
-                          ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 20),
                           DifficultyMatrix(
                             tries: appState.tries,
                             pool: effectivePool(
