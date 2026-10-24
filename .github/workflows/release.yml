@@ -223,7 +223,7 @@ jobs:
             echo
             echo "## Changes${prev:+ since $prev}"
             echo
-            git log --no-merges --pretty=format:'- **%s** (%h)%n%w(0,4,4)%b' "$range" \
+            git log --no-merges --invert-grep --grep='^Version [0-9]' --pretty=format:'- **%s** (%h)%n%w(0,4,4)%b' "$range" \
               | sed '/^ *Co-Authored-By:/Id' | sed '/^ *$/d'
             echo
             echo
