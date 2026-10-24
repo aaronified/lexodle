@@ -11,82 +11,81 @@ import 'stepper_choice.dart';
 import 'update_section.dart';
 import 'ui.dart';
 
-/// The settings popup, the same on a phone and on a desktop: theme, backup,
-/// updates and support. Changes apply and are saved as they are made. It is a
-/// route of its own ([Routes.settings]), so it has an address like every other
-/// screen. The game options are in [Routes.gameModes].
-class SettingsDialog extends StatelessWidget {
-  const SettingsDialog({super.key});
+/// The settings page: theme, backup, updates, support, and about. Changes apply
+/// and are saved as they are made. It is a route of its own ([Routes.settings]),
+/// so it has an address like every other screen. The game options are in
+/// [Routes.gameModes].
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(3),
-        side: BorderSide(color: c.outline),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
-        child: ListenableBuilder(
-          listenable: appState,
-          builder: (context, _) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'settings',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'close',
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Caption('theme'),
-                  const SizedBox(height: 10),
-                  StepperChoice<ThemeMode>(
-                    semanticLabel: 'theme',
-                    items: const [
-                      (ThemeMode.system, 'system', 'follow the device'),
-                      (ThemeMode.light, 'light', 'a light page'),
-                      (ThemeMode.dark, 'dark', 'a dark page'),
-                    ],
-                    selected: appState.themeMode,
-                    onChanged: (t) => appState.setup(themeMode: t),
-                  ),
-                  const SizedBox(height: 24),
-                  const Caption('backup'),
-                  const SizedBox(height: 10),
-                  const _BackupSection(),
-                  const SizedBox(height: 24),
-                  if (updatesSupported) ...[
-                    const Caption('updates'),
+    return Scaffold(
+      appBar: AppBar(title: const Text('settings')),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: ListenableBuilder(
+              listenable: appState,
+              builder: (context, _) {
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                  children: [
+                    const Caption('theme'),
                     const SizedBox(height: 10),
-                    const UpdateSection(),
+                    StepperChoice<ThemeMode>(
+                      semanticLabel: 'theme',
+                      items: const [
+                        (ThemeMode.system, 'system', 'follow the device'),
+                        (ThemeMode.light, 'light', 'a light page'),
+                        (ThemeMode.dark, 'dark', 'a dark page'),
+                      ],
+                      selected: appState.themeMode,
+                      onChanged: (t) => appState.setup(themeMode: t),
+                    ),
                     const SizedBox(height: 24),
+                    const Caption('backup'),
+                    const SizedBox(height: 10),
+                    const _BackupSection(),
+                    const SizedBox(height: 24),
+                    if (updatesSupported) ...[
+                      const Caption('updates'),
+                      const SizedBox(height: 10),
+                      const UpdateSection(),
+                      const SizedBox(height: 24),
+                    ],
+                    const Caption('support lexodle'),
+                    const SizedBox(height: 10),
+                    const DonateSection(),
+                    const SizedBox(height: 24),
+                    const Caption('about'),
+                    const SizedBox(height: 10),
+                    Text(
+                      aboutText,
+                      key: const ValueKey('about-text'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.5,
+                        color: c.onSurface.withValues(alpha: dimAlpha),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        key: const ValueKey('licences-button'),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, Routes.about),
+                        child: const Text('about and licences'),
+                      ),
+                    ),
                   ],
-                  const Caption('support lexodle'),
-                  const SizedBox(height: 10),
-                  const DonateSection(),
-                ],
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

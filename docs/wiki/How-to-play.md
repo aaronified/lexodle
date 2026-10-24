@@ -8,10 +8,12 @@ Guess the hidden word. After each guess every letter is marked:
 
 ## Game modes and settings
 
-The home screen has the language, the daily streak, **play** and **daily**, and two square buttons:
-**game modes** (the grid) and **settings** (the gear). **About** is the "i" at the top. Game modes holds
-the mode, the letters, the difficulty, shared letters and the helper, with play, the solver and learn.
-Settings holds the theme, backup, updates (Android) and support.
+The home screen has the language, the daily streak, **achievements** and **how to play**, and the
+last row: your **playstyle** (a box with its icon; it opens the history), **play**, **daily** and
+**game modes** (the grid). On a phone the last row sticks to the bottom of the screen; on a desktop it
+is the last row of the page. The gear at the top right is **settings**. Game modes holds the mode, the
+letters, the difficulty, shared letters and the helper, with play, the solver and learn. Settings holds
+the theme, backup, updates (Android), support and about.
 
 | Setting    | Options |
 | ---------- | ------- |

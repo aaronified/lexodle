@@ -15,11 +15,10 @@ import 'words.dart';
 /// The height of the play button, the buttons beside it and the menu buttons.
 const _buttonHeight = 52.0;
 
-/// The space the play row takes in the page: its height and the gap above it.
-const _playBlock = _buttonHeight + 20;
-
-/// The room around the page's content (the list's top and bottom padding).
-const _pagePadding = 40.0 + 24.0;
+/// The narrowest window that counts as a desktop. Narrower is a phone, where the
+/// play row sticks to the bottom of the screen; on a desktop it floats, as the
+/// last row of the page.
+const _desktopWidth = 600.0;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,27 +31,6 @@ class _HomePageState extends State<HomePage> {
   List<Language>? _langs;
 
   bool _howToShown = false;
-
-  // The play row is pinned to the bottom of the screen when the rest of the page
-  // does not fit without scrolling, and otherwise sits in the page. Whether it
-  // fits is judged from the page without that row (these two keys), so pinning
-  // the row cannot flip the answer back.
-  final _topKey = GlobalKey();
-  final _bottomKey = GlobalKey();
-  bool _pinned = false;
-
-  void _judge(double room) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      double height(GlobalKey k) =>
-          (k.currentContext?.findRenderObject() as RenderBox?)?.size.height ??
-          0;
-      final need =
-          height(_topKey) + height(_bottomKey) + _pagePadding + _playBlock;
-      final pin = need > room;
-      if (pin != _pinned) setState(() => _pinned = pin);
-    });
-  }
 
   @override
   void initState() {
@@ -113,39 +91,34 @@ class _HomePageState extends State<HomePage> {
     orElse: () => langs.first,
   );
 
-  /// Play, the daily, and the two icon buttons: game modes and settings.
+  /// The play row, the last row of the page: the playstyle, play, the daily, and
+  /// game modes. The playstyle and game modes are square, like the settings
+  /// button at the top.
   Widget _playRow(BuildContext context, Language lang) {
     final c = Theme.of(context).colorScheme;
-    Widget square(String tip, String icon, String route) => Tooltip(
-      message: tip,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          fixedSize: const Size.square(_buttonHeight),
-          minimumSize: Size.zero,
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        onPressed: () => Navigator.pushNamed(context, route),
-        // the app's own icon set, in an explicit colour
-        child: Semantics(
-          label: tip,
-          child: TablerIcon(icon, size: 28, color: c.onSurface),
-        ),
-      ),
-    );
+    // a label that does not fit shrinks, so a long mode name never wraps
+    Widget fit(Widget w) => FittedBox(fit: BoxFit.scaleDown, child: w);
     return Row(
       children: [
+        StyleChip(
+          size: _buttonHeight,
+          onTap: () => Navigator.pushNamed(context, Routes.history),
+        ),
+        const SizedBox(width: 8),
         Expanded(
           child: FilledButton(
             style: FilledButton.styleFrom(
               fixedSize: const Size.fromHeight(_buttonHeight),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
             ),
             onPressed: () => Navigator.pushNamed(context, Routes.play),
-            child: Text(
-              appState.mode == GameMode.classic
-                  ? 'play'
-                  : 'play · ${appState.mode.label}',
+            child: fit(
+              Text(
+                appState.mode == GameMode.classic
+                    ? 'play'
+                    : 'play · ${appState.mode.label}',
+              ),
             ),
           ),
         ),
@@ -156,6 +129,7 @@ class _HomePageState extends State<HomePage> {
             style: OutlinedButton.styleFrom(
               fixedSize: const Size.fromHeight(_buttonHeight),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
             ),
             onPressed: () async {
               // the daily goes by the server's time: ask again if it has not
@@ -168,13 +142,27 @@ class _HomePageState extends State<HomePage> {
               if (!context.mounted) return;
               Navigator.pushNamed(context, Routes.daily);
             },
-            child: _dailyChild(lang.code),
+            child: fit(_dailyChild(lang.code)),
           ),
         ),
         const SizedBox(width: 8),
-        square('game modes', 'layout-grid', Routes.gameModes),
-        const SizedBox(width: 8),
-        square('settings', 'settings', Routes.settings),
+        Tooltip(
+          message: 'game modes',
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              fixedSize: const Size.square(_buttonHeight),
+              minimumSize: Size.zero,
+              padding: EdgeInsets.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            onPressed: () => Navigator.pushNamed(context, Routes.gameModes),
+            // the app's own icon set, in an explicit colour
+            child: Semantics(
+              label: 'game modes',
+              child: TablerIcon('layout-grid', size: 28, color: c.onSurface),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -193,29 +181,31 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final langs = _langs;
+    final c = Theme.of(context).colorScheme;
+    // a phone sticks the play row to the bottom of the screen; a desktop lets it
+    // float as the last row of the page
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: langs == null
-                ? const SizedBox()
-                : ListenableBuilder(
-                    listenable: appState,
-                    builder: (context, _) {
-                      final lang = _current(langs);
-                      final length = lang.lengths.contains(appState.length)
-                          ? appState.length
-                          : lang.lengths.first;
-                      final unlocked = appState.unlockedCount;
-                      return LayoutBuilder(
-                        builder: (context, box) {
-                          _judge(box.maxHeight);
+        // (the width the page is given, so a window and a test both decide it)
+        child: LayoutBuilder(
+          builder: (context, outer) {
+            final phone = outer.maxWidth < _desktopWidth;
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: langs == null
+                    ? const SizedBox()
+                    : ListenableBuilder(
+                        listenable: appState,
+                        builder: (context, _) {
+                          final lang = _current(langs);
+                          final length = lang.lengths.contains(appState.length)
+                              ? appState.length
+                              : lang.lengths.first;
+                          final unlocked = appState.unlockedCount;
                           return Column(
                             children: [
                               Expanded(
-                                // (not a ListView: that builds only what is near the
-                                // window, and the page's height is measured)
                                 child: SingleChildScrollView(
                                   padding: const EdgeInsets.fromLTRB(
                                     24,
@@ -227,149 +217,121 @@ class _HomePageState extends State<HomePage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.stretch,
                                     children: [
-                                      Column(
-                                        key: _topKey,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
+                                      Row(
                                         children: [
-                                          Row(
-                                            children: [
-                                              const LexodleLogo(width: 56),
-                                              const SizedBox(width: 16),
-                                              // the name shrinks before it can
-                                              // crowd the style
-                                              Expanded(
-                                                child: FittedBox(
-                                                  fit: BoxFit.scaleDown,
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Text(
-                                                    'lexodle',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .displaySmall
-                                                        ?.copyWith(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                              StyleChip(
-                                                onTap: () =>
-                                                    Navigator.pushNamed(
-                                                      context,
-                                                      Routes.history,
+                                          const LexodleLogo(width: 56),
+                                          const SizedBox(width: 16),
+                                          // the name shrinks before it can crowd the
+                                          // settings button
+                                          Expanded(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                'lexodle',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .displaySmall
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                               ),
-                                              IconButton(
-                                                tooltip: 'about',
-                                                constraints:
-                                                    const BoxConstraints(
-                                                      minWidth: 48,
-                                                      minHeight: 48,
-                                                    ),
-                                                // the app's own icon set, like
-                                                // the buttons below
-                                                icon: Semantics(
-                                                  label: 'about',
-                                                  child: TablerIcon(
-                                                    'info-circle',
-                                                    size: 26,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                                ),
-                                                onPressed: () =>
-                                                    Navigator.pushNamed(
-                                                      context,
-                                                      Routes.about,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 6),
-                                          const Caption(
-                                            'a word game, in many tongues',
-                                          ),
-                                          const SizedBox(height: 28),
-                                          // the card says what it is (a flag and
-                                          // a name), so it has no header
-                                          DropdownMenu<String>(
-                                            initialSelection: lang.code,
-                                            expandedInsets: EdgeInsets.zero,
-                                            requestFocusOnTap: false,
-                                            enableSearch: false,
-                                            leadingIcon: Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 12,
-                                              ),
-                                              child: FlagBadge(lang.flag),
                                             ),
-                                            dropdownMenuEntries: [
-                                              for (final l in langs)
-                                                DropdownMenuEntry(
-                                                  value: l.code,
-                                                  label: l.name,
-                                                  leadingIcon: FlagBadge(
-                                                    l.flag,
-                                                  ),
-                                                ),
-                                            ],
-                                            onSelected: (v) {
-                                              if (v == null) return;
-                                              final nl = langs.firstWhere(
-                                                (l) => l.code == v,
-                                              );
-                                              appState.setup(
-                                                lang: v,
-                                                length:
-                                                    nl.lengths.contains(length)
-                                                    ? length
-                                                    : nl.lengths.first,
-                                              );
-                                            },
                                           ),
-                                          const SizedBox(height: 20),
-                                          const DailyStreak(),
+                                          // settings, with about inside it
+                                          IconButton(
+                                            tooltip: 'settings',
+                                            constraints: const BoxConstraints(
+                                              minWidth: 48,
+                                              minHeight: 48,
+                                            ),
+                                            // the app's own icon set, like the
+                                            // buttons below
+                                            icon: Semantics(
+                                              label: 'settings',
+                                              child: TablerIcon(
+                                                'settings',
+                                                size: 28,
+                                                color: c.onSurface,
+                                              ),
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.pushNamed(
+                                                  context,
+                                                  Routes.settings,
+                                                ),
+                                          ),
                                         ],
                                       ),
-                                      // in the page unless it is pinned below
-                                      if (!_pinned) ...[
+                                      const SizedBox(height: 6),
+                                      const Caption(
+                                        'a word game, in many tongues',
+                                      ),
+                                      const SizedBox(height: 28),
+                                      // the card says what it is (a flag and a
+                                      // name), so it has no header
+                                      DropdownMenu<String>(
+                                        initialSelection: lang.code,
+                                        expandedInsets: EdgeInsets.zero,
+                                        requestFocusOnTap: false,
+                                        enableSearch: false,
+                                        leadingIcon: Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 12,
+                                          ),
+                                          child: FlagBadge(lang.flag),
+                                        ),
+                                        dropdownMenuEntries: [
+                                          for (final l in langs)
+                                            DropdownMenuEntry(
+                                              value: l.code,
+                                              label: l.name,
+                                              leadingIcon: FlagBadge(l.flag),
+                                            ),
+                                        ],
+                                        onSelected: (v) {
+                                          if (v == null) return;
+                                          final nl = langs.firstWhere(
+                                            (l) => l.code == v,
+                                          );
+                                          appState.setup(
+                                            lang: v,
+                                            length: nl.lengths.contains(length)
+                                                ? length
+                                                : nl.lengths.first,
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(height: 20),
+                                      const DailyStreak(),
+                                      const SizedBox(height: 28),
+                                      const Divider(),
+                                      const SizedBox(height: 12),
+                                      _menuButton(
+                                        'achievements  $unlocked/${achievementCount()}',
+                                        Routes.achievements,
+                                        key: const ValueKey(
+                                          'achievements-button',
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      _menuButton(
+                                        'how to play',
+                                        Routes.howTo,
+                                        key: const ValueKey('how-to-button'),
+                                      ),
+                                      // on a desktop the row floats: the last row
+                                      if (!phone) ...[
                                         const SizedBox(height: 20),
                                         _playRow(context, lang),
                                       ],
-                                      Column(
-                                        key: _bottomKey,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          const SizedBox(height: 28),
-                                          const Divider(),
-                                          const SizedBox(height: 12),
-                                          _menuButton(
-                                            'achievements  $unlocked/${achievementCount()}',
-                                            Routes.achievements,
-                                            key: const ValueKey(
-                                              'achievements-button',
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          _menuButton(
-                                            'how to play',
-                                            Routes.howTo,
-                                            key: const ValueKey(
-                                              'how-to-button',
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                     ],
                                   ),
                                 ),
                               ),
-                              if (_pinned)
+                              // on a phone it sticks to the bottom
+                              if (phone)
                                 Padding(
                                   key: const ValueKey('pinned-play'),
                                   padding: const EdgeInsets.fromLTRB(
@@ -383,10 +345,10 @@ class _HomePageState extends State<HomePage> {
                             ],
                           );
                         },
-                      );
-                    },
-                  ),
-          ),
+                      ),
+              ),
+            );
+          },
         ),
       ),
     );

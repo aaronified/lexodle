@@ -123,8 +123,16 @@ void main() {
     await tester.tap(find.byTooltip('settings'));
     await tester.pumpAndSettle();
     expect(names.stack, ['/', Routes.settings]);
+    // about is inside it
+    await tester.ensureVisible(find.byKey(const ValueKey('licences-button')));
+    await tester.tap(find.byKey(const ValueKey('licences-button')));
+    await tester.pumpAndSettle();
+    expect(names.stack, ['/', Routes.settings, Routes.about]);
     await tester.tapAt(const Offset(5, 5)); // the scrim closes it
     await tester.pumpAndSettle();
+    nav(tester).pop(); // and back from settings is home
+    await tester.pumpAndSettle();
+    expect(names.stack, ['/']);
 
     await tester.tap(find.byTooltip('game modes'));
     await tester.pumpAndSettle();
@@ -155,13 +163,6 @@ void main() {
     expect(names.stack, ['/', Routes.achievements]);
     nav(tester).pop();
     await tester.pumpAndSettle();
-
-    await tester.tap(find.byTooltip('about'));
-    await tester.pumpAndSettle();
-    expect(names.stack, ['/', Routes.about]);
-    await tester.tapAt(const Offset(5, 5)); // the scrim closes it
-    await tester.pumpAndSettle();
-    expect(names.stack, ['/']);
 
     await tester.tap(find.text('play'));
     await tester.pumpAndSettle();

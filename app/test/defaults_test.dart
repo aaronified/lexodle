@@ -39,29 +39,40 @@ void main() {
     await tester.tapAt(const Offset(5, 5)); // the scrim closes it
     await tester.pumpAndSettle();
 
-    // the two icon buttons are as tall as play, and square
+    // the playstyle and game modes boxes are as tall as play, and square
     final play = tester.getSize(find.widgetWithText(FilledButton, 'play'));
-    for (final tip in ['game modes', 'settings']) {
-      final size = tester.getSize(
-        find.descendant(
-          of: find.byTooltip(tip),
-          matching: find.byType(OutlinedButton),
-        ),
-      );
-      expect(size.height, play.height, reason: tip);
-      expect(size.width, size.height, reason: tip);
+    final boxes = {
+      'playstyle': find.byKey(const ValueKey('style-chip')),
+      'game modes': find.descendant(
+        of: find.byTooltip('game modes'),
+        matching: find.byType(OutlinedButton),
+      ),
+    };
+    for (final e in boxes.entries) {
+      final size = tester.getSize(e.value);
+      expect(size.height, play.height, reason: e.key);
+      expect(size.width, size.height, reason: e.key);
     }
 
-    // and their icons are drawn, in a colour that shows on the page
+    // and their icons, and the gear's, are drawn, in a colour that shows
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
-    for (final tip in ['game modes', 'settings']) {
-      final icon = find.descendant(
-        of: find.byTooltip(tip),
+    for (final f in [
+      find.descendant(
+        of: boxes['playstyle']!,
         matching: find.byType(SvgPicture),
-      );
-      expect(icon, findsOneWidget, reason: tip);
-      expect(tester.getSize(icon).width, greaterThan(16), reason: tip);
+      ),
+      find.descendant(
+        of: boxes['game modes']!,
+        matching: find.byType(SvgPicture),
+      ),
+      find.descendant(
+        of: find.byTooltip('settings'),
+        matching: find.byType(SvgPicture),
+      ),
+    ]) {
+      expect(f, findsOneWidget);
+      expect(tester.getSize(f).width, greaterThan(16));
     }
   });
 }

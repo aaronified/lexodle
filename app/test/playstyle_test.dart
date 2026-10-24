@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
-import 'package:lexodle/logo.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/playstyle.dart';
@@ -656,35 +655,32 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    String tip(WidgetTester tester) => tester
+        .widget<Tooltip>(
+          find.ancestor(
+            of: find.byKey(const ValueKey('style-chip')),
+            matching: find.byType(Tooltip),
+          ),
+        )
+        .message!;
+
     testWidgets('a player not yet rated sees how many games to go', (
       tester,
     ) async {
       await home(tester);
       expect(find.byKey(const ValueKey('style-icon-unrated')), findsOneWidget);
-      expect(
-        tester.widget<Text>(find.byKey(const ValueKey('style-label'))).data,
-        '0/$minRatedGames',
-      );
+      expect(tip(tester), contains('0/$minRatedGames'));
       addGames(appState.history, 4);
       appState.refresh();
       await tester.pumpAndSettle();
+      expect(tip(tester), contains('4/$minRatedGames'));
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('style-label'))).data,
-        '4/$minRatedGames',
-      );
-      // enough games but nothing to read a daring from
-      addGames(appState.history, 20, daring: null);
-      appState.refresh();
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<Text>(find.byKey(const ValueKey('style-label'))).data,
-        'unrated',
+        find.bySemanticsLabel(RegExp('not rated yet, 4/')),
+        findsOneWidget,
       );
     });
 
-    testWidgets('a rated player sees the icon and name of their style', (
-      tester,
-    ) async {
+    testWidgets('a rated player sees the icon of their style', (tester) async {
       for (final p in playstyles) {
         await home(tester, style: p.id);
         expect(
@@ -692,10 +688,7 @@ void main() {
           findsOneWidget,
           reason: p.id,
         );
-        expect(
-          tester.widget<Text>(find.byKey(const ValueKey('style-label'))).data,
-          p.name,
-        );
+        expect(tip(tester), contains(p.name), reason: p.id);
         expect(find.byKey(const ValueKey('style-icon-unrated')), findsNothing);
         await tester.pumpWidget(const SizedBox());
       }
@@ -703,30 +696,36 @@ void main() {
 
     testWidgets('the tooltip says what the style means', (tester) async {
       await home(tester, style: 'maverick');
-      final tip = tester.widget<Tooltip>(
-        find.ancestor(
-          of: find.byKey(const ValueKey('style-chip')),
-          matching: find.byType(Tooltip),
-        ),
-      );
-      expect(tip.message, contains('maverick'));
-      expect(tip.message, contains(maverick.blurb));
+      expect(tip(tester), contains('maverick'));
+      expect(tip(tester), contains(maverick.blurb));
     });
 
-    testWidgets('the icon is on the middle of the header row', (tester) async {
-      // the name hangs below it: only the icon is centred, level with the logo
+    testWidgets('it is a box at the left of the play row, like the others', (
+      tester,
+    ) async {
       for (final style in [null, 'analyst', 'wildcard']) {
         await home(tester, style: style);
-        final icon = find.byKey(ValueKey('style-icon-${style ?? 'unrated'}'));
-        final iconY = tester.getCenter(icon).dy;
-        final logoY = tester.getCenter(find.byType(LexodleLogo)).dy;
-        final titleY = tester.getCenter(find.text('lexodle')).dy;
-        expect(iconY, closeTo(logoY, 1), reason: '$style: level with the logo');
-        expect(iconY, closeTo(titleY, 1), reason: '$style: and with the name');
-        // and the style's name is under the icon, not beside it
+        final chip = find.byKey(const ValueKey('style-chip'));
+        expect(tester.widget(chip), isA<OutlinedButton>());
+        final box = tester.getRect(chip);
+        final play = tester.getRect(find.widgetWithText(FilledButton, 'play'));
+        final modes = tester.getRect(
+          find.descendant(
+            of: find.byTooltip('game modes'),
+            matching: find.byType(OutlinedButton),
+          ),
+        );
+        expect(box.width, box.height, reason: '$style: square');
+        expect(box.size, modes.size, reason: '$style: as big as the other box');
+        expect(box.top, play.top, reason: '$style: on the play row');
+        expect(box.height, play.height, reason: '$style: as tall as play');
+        expect(box.right, lessThan(play.left), reason: '$style: to its left');
+        expect(box.left, lessThan(modes.left));
+        // and it is no longer in the header
         expect(
-          tester.getTopLeft(find.byKey(const ValueKey('style-label'))).dy,
-          greaterThan(tester.getBottomLeft(icon).dy - 1),
+          box.top,
+          greaterThan(tester.getBottomLeft(find.text('lexodle')).dy),
+          reason: '$style: below the title',
         );
         await tester.pumpWidget(const SizedBox());
       }
@@ -749,16 +748,19 @@ void main() {
       expect(find.byType(HistoryPage), findsNothing);
     });
 
-    testWidgets('it fits beside the name on the narrowest phone', (
-      tester,
-    ) async {
+    testWidgets('the row fits the narrowest phone', (tester) async {
       await home(tester, size: const Size(320, 1700), style: 'wanderer');
       // (the text of the error, so a failure says which widget overflowed)
       expect(tester.takeException()?.toString(), isNull);
-      final title = tester.getRect(find.text('lexodle'));
       final chip = tester.getRect(find.byKey(const ValueKey('style-chip')));
-      expect(title.right, lessThanOrEqualTo(chip.left));
-      expect(chip.right, lessThanOrEqualTo(320));
+      final modes = tester.getRect(
+        find.descendant(
+          of: find.byTooltip('game modes'),
+          matching: find.byType(OutlinedButton),
+        ),
+      );
+      expect(chip.left, greaterThanOrEqualTo(0));
+      expect(modes.right, lessThanOrEqualTo(320));
     });
   });
 }

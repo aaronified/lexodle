@@ -170,7 +170,7 @@ class HowToPage extends StatelessWidget {
                       section(
                         'setup',
                         'choose a language on the home screen. the game modes '
-                            'button (the grid beside play) has the rest: the mode, '
+                            'button (the grid at the right of the last row) has the rest: the mode, '
                             '4 to 8 letters (slide or tap the arrows) and a difficulty from the '
                             '4 x 4 grid. across is the number of tries: easy 8, normal '
                             '6, hard 4, brutal 3. down is the word pool the answer is '
@@ -180,8 +180,8 @@ class HowToPage extends StatelessWidget {
                             'and the last level takes every word left, so none is '
                             'wasted. the colour runs '
                             'from green for the easiest to purple for the hardest. '
-                            'theme, backup, updates and support are in settings, '
-                            'the gear beside it.',
+                            'theme, backup, updates, support and about are in settings, '
+                            'the gear at the top right.',
                       ),
                       section(
                         'skill and luck',

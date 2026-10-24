@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/difficulty.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/stepper_choice.dart';
 import 'package:lexodle/words.dart';
@@ -44,45 +45,65 @@ void main() {
     });
 
     testWidgets(
-      'has game modes and settings as two square buttons side by side',
+      'has the playstyle and game modes as square buttons on the play row',
       (tester) async {
         await home(tester);
+        final style = tester.getRect(find.byKey(const ValueKey('style-chip')));
+        final play = tester.getRect(find.widgetWithText(FilledButton, 'play'));
+        final daily = tester.getRect(
+          find.byKey(const ValueKey('daily-button')),
+        );
         final modes = tester.getRect(
           find.descendant(
             of: find.byTooltip('game modes'),
             matching: find.byType(OutlinedButton),
           ),
         );
-        final settings = tester.getRect(
-          find.descendant(
-            of: find.byTooltip('settings'),
-            matching: find.byType(OutlinedButton),
-          ),
-        );
-        expect(modes.width, modes.height);
-        expect(settings.size, modes.size);
-        expect(modes.top, settings.top, reason: 'on one row');
-        expect(modes.right, lessThan(settings.left), reason: 'side by side');
+        expect(style.width, style.height);
+        expect(modes.size, style.size);
+        // one row, in this order: playstyle, play, daily, game modes
+        expect(style.top, play.top);
+        expect(daily.top, play.top);
+        expect(modes.top, play.top);
+        expect(style.right, lessThan(play.left));
+        expect(play.right, lessThan(daily.left));
+        expect(daily.right, lessThan(modes.left));
       },
     );
 
-    testWidgets('about is an i button, at least 48 dp, that opens about', (
-      tester,
-    ) async {
-      await home(tester);
-      final about = find.byTooltip('about');
-      expect(about, findsOneWidget);
-      expect(find.text('about'), findsNothing, reason: 'no text link');
-      final size = tester.getSize(
-        find.byWidgetPredicate((w) => w is IconButton && w.tooltip == 'about'),
-      );
-      expect(size.width, greaterThanOrEqualTo(48));
-      expect(size.height, greaterThanOrEqualTo(48));
-      expect(find.bySemanticsLabel('about'), findsWidgets);
-      await tester.tap(about);
-      await tester.pumpAndSettle();
-      expect(find.byType(AboutDialog), findsOneWidget);
-    });
+    testWidgets(
+      'settings is the gear at the top, where the i used to be, with about inside',
+      (tester) async {
+        await home(tester);
+        // no about button on home, and no gear on the play row
+        expect(find.byTooltip('about'), findsNothing);
+        expect(find.text('about'), findsNothing);
+        final gear = find.byWidgetPredicate(
+          (w) => w is IconButton && w.tooltip == 'settings',
+        );
+        expect(gear, findsOneWidget);
+        final size = tester.getSize(gear);
+        expect(size.width, greaterThanOrEqualTo(48));
+        expect(size.height, greaterThanOrEqualTo(48));
+        // at the top, level with the title
+        expect(
+          tester.getCenter(gear).dy,
+          closeTo(tester.getCenter(find.text('lexodle')).dy, 8),
+        );
+        expect(find.bySemanticsLabel('settings'), findsWidgets);
+        await tester.tap(gear);
+        await tester.pumpAndSettle();
+        // a page of its own, with about in it
+        expect(find.byType(Dialog), findsNothing);
+        expect(find.byKey(const ValueKey('about-text')), findsOneWidget);
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('licences-button')),
+        );
+        await tester.tap(find.byKey(const ValueKey('licences-button')));
+        await tester.pumpAndSettle();
+        expect(find.byType(AboutDialog), findsOneWidget);
+      },
+    );
 
     testWidgets(
       'has achievements and how to play as full buttons with a count',
@@ -205,60 +226,61 @@ void main() {
     );
   });
 
-  group('the play row is pinned only when the page does not fit', () {
+  group('the play row', () {
     Finder pinned() => find.byKey(const ValueKey('pinned-play'));
     Finder inPage() => find.descendant(
       of: find.byType(SingleChildScrollView),
       matching: find.widgetWithText(FilledButton, 'play'),
     );
 
-    testWidgets('a tall screen keeps it in the page', (tester) async {
-      await home(tester, const Size(420, 1700));
-      expect(pinned(), findsNothing);
-      expect(inPage(), findsOneWidget);
-    });
-
-    testWidgets(
-      'a short screen pins it to the bottom, off the scrolling page',
-      (tester) async {
-        await home(tester, const Size(420, 480));
-        expect(pinned(), findsOneWidget);
-        expect(inPage(), findsNothing);
-        final bar = tester.getRect(pinned());
-        expect(bar.bottom, closeTo(480, 1));
-        // and both play and daily are there, tappable
-        expect(
-          find.descendant(
-            of: pinned(),
-            matching: find.widgetWithText(FilledButton, 'play'),
-          ),
-          findsOneWidget,
-        );
-        expect(
-          find.descendant(
-            of: pinned(),
-            matching: find.byKey(const ValueKey('daily-button')),
-          ),
-          findsOneWidget,
-        );
-      },
-    );
-
-    testWidgets('a narrow, short screen pins it without overflowing', (
+    testWidgets('sticks to the bottom on a phone, tall or short', (
       tester,
     ) async {
+      for (final h in [480.0, 1700.0]) {
+        await home(tester, Size(420, h));
+        expect(pinned(), findsOneWidget, reason: 'height $h');
+        expect(inPage(), findsNothing, reason: 'height $h');
+        expect(tester.getRect(pinned()).bottom, closeTo(h, 1), reason: '$h');
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets('floats on a desktop, as the last row of the page', (
+      tester,
+    ) async {
+      await home(tester, const Size(1000, 900));
+      expect(pinned(), findsNothing);
+      expect(inPage(), findsOneWidget);
+      final play = tester.getRect(find.widgetWithText(FilledButton, 'play'));
+      final howTo = tester.getRect(find.byKey(const ValueKey('how-to-button')));
+      expect(play.top, greaterThan(howTo.bottom), reason: 'below everything');
+    });
+
+    testWidgets('is the last row on a phone too', (tester) async {
+      await home(tester, const Size(420, 900));
+      final play = tester.getRect(find.widgetWithText(FilledButton, 'play'));
+      final howTo = tester.getRect(find.byKey(const ValueKey('how-to-button')));
+      expect(play.top, greaterThan(howTo.bottom));
+    });
+
+    testWidgets('fits a narrow phone with a long mode name', (tester) async {
+      appState.setup(mode: GameMode.relay);
       await home(tester, const Size(320, 480));
       expect(pinned(), findsOneWidget);
       expect(tester.takeException(), isNull);
       final bar = tester.getRect(pinned());
       expect(bar.left, greaterThanOrEqualTo(0));
       expect(bar.right, lessThanOrEqualTo(320));
+      expect(find.text('play · relay race'), findsOneWidget);
+      appState.setup(mode: GameMode.classic);
     });
 
-    testWidgets('growing the window puts it back in the page', (tester) async {
-      await home(tester, const Size(420, 480));
+    testWidgets('moves into the page when the window grows to a desktop', (
+      tester,
+    ) async {
+      await home(tester, const Size(420, 700));
       expect(pinned(), findsOneWidget);
-      await tester.binding.setSurfaceSize(const Size(420, 1700));
+      await tester.binding.setSurfaceSize(const Size(1000, 900));
       await tester.pumpAndSettle();
       expect(pinned(), findsNothing);
       expect(inPage(), findsOneWidget);

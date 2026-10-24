@@ -13,7 +13,7 @@ import 'multi_review.dart';
 import 'multi_solver.dart';
 import 'review.dart';
 import 'game_modes_dialog.dart';
-import 'settings_dialog.dart';
+import 'settings_page.dart';
 import 'solver.dart';
 import 'ui.dart';
 import 'words.dart';
@@ -109,7 +109,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         HowToPage(onboarding: settings.arguments == onboardingArgument),
       );
     case Routes.settings:
-      return _dialog(s, const SettingsDialog());
+      return page(const SettingsPage());
     case Routes.gameModes:
       return _dialog(s, const GameModesDialog());
     case Routes.about:
