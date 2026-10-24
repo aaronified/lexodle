@@ -56,6 +56,9 @@ jobs:
           fi
 
       - uses: actions/checkout@v4
+        with:
+          # every tag and commit, so the notes can list what changed since the last tag
+          fetch-depth: 0
 
       # The APK's versionName is the tag; a tag on a commit whose pubspec.yaml was
       # not bumped would publish an APK that calls itself the previous version.
@@ -194,17 +197,43 @@ jobs:
       - name: Name the APK
         run: cp build/app/outputs/flutter-apk/app-release.apk "lexodle-${GITHUB_REF_NAME}.apk"
 
+      # The release notes: every commit since the previous version tag, subject and
+      # body (the co-author trailer left out), so the notes list every change made
+      # and need no pull requests or hand-kept file. The first release lists
+      # everything.
+      - name: Write the release notes
+        working-directory: .
+        run: |
+          prev=$(git describe --tags --abbrev=0 --match 'v*' "${GITHUB_REF_NAME}^" 2>/dev/null || true)
+          range=${prev:+$prev..}${GITHUB_REF_NAME}
+          {
+            echo "Install \`lexodle-${GITHUB_REF_NAME}.apk\` on an Android phone (allow installs from your"
+            echo "browser or file manager when asked). It plays offline; the only things it asks the"
+            echo "network for are the meaning of the answer and the date (see the wiki)."
+            if [ "$HAS_KEY" = true ]; then
+              echo "Signed with the release key."
+            else
+              echo "Signed with the debug key: a later release-signed version will need this one uninstalled first."
+            fi
+            echo
+            echo "## Changes${prev:+ since $prev}"
+            echo
+            git log --no-merges --pretty=format:'- **%s** (%h)%n%w(0,4,4)%b' "$range" \
+              | sed '/^ *Co-Authored-By:/Id' | sed '/^ *$/d'
+            echo
+            echo
+            if [ -n "$prev" ]; then
+              echo "Full diff: https://github.com/${GITHUB_REPOSITORY}/compare/${prev}...${GITHUB_REF_NAME}"
+            fi
+          } > release-notes.md
+          cat release-notes.md
+
       # The universal APK only: it installs on any device.
       - name: Attach the APK to the release
         uses: softprops/action-gh-release@v2
         with:
           files: app/lexodle-${{ github.ref_name }}.apk
-          generate_release_notes: true
-          body: |
-            Install `lexodle-${{ github.ref_name }}.apk` on an Android phone (allow installs from your
-            browser or file manager when asked). It plays offline; the only things it asks the
-            network for are the meaning of the answer and the date (see the wiki).
-            ${{ env.HAS_KEY == 'true' && 'Signed with the release key.' || 'Signed with the debug key: a later release-signed version will need this one uninstalled first.' }}
+          body_path: release-notes.md
 
       # always(), so this runs even when a step above failed: on a self-hosted
       # runner the workspace, and the passwords in android/gradle.properties,
