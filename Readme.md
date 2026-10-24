@@ -29,11 +29,6 @@
     <td align="center"><img src="docs/screenshots/game.png" alt="A daily in play, with a blank pencilled into the third tile of the next guess" width="230"></td>
     <td align="center"><img src="docs/screenshots/quartet.png" alt="A quartet: four boards sharing every guess, with split keys on the keyboard" width="230"></td>
   </tr>
-  <tr>
-    <td align="center"><img src="docs/screenshots/review.png" alt="The review of a game: skill, luck and words left per guess, the best picks, and the plot of every outcome" width="230"></td>
-    <td align="center"><img src="docs/screenshots/history.png" alt="The history: the playstyle, an overall analysis, a line chart over the last 50 weeks, then the last ten games" width="230"></td>
-    <td align="center"><img src="docs/screenshots/settings.png" alt="The settings: mode, shared letters, helper, theme and backup" width="230"></td>
-  </tr>
 </table>
 
 ## What it does
