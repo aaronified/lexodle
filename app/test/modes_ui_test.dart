@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/multi_game.dart';
+import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -80,6 +81,63 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(Dialog), findsNothing);
     expect(find.text('play · quartet'), findsOneWidget);
+  });
+
+  testWidgets('the helper is greyed and fixed outside classic', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    appState.setup(
+      lang: 'fr',
+      length: 4,
+      mode: GameMode.classic,
+      helper: Helper.off,
+    );
+    await tester.pumpWidget(const LexodleApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('settings'));
+    await tester.pumpAndSettle();
+
+    final fade = find.byKey(const ValueKey('helper-fade'));
+    final next = find.descendant(
+      of: fade,
+      matching: find.byIcon(Icons.chevron_right),
+    );
+    Opacity opacity() => tester.widget<Opacity>(fade);
+
+    // classic: the helper is live and a chevron changes it
+    expect(opacity().opacity, 1);
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    expect(appState.helper, Helper.skill);
+
+    // quartet and relay race: dimmed, and nothing changes it
+    for (final m in [GameMode.quartet, GameMode.relay]) {
+      appState.setup(mode: m);
+      await tester.pumpAndSettle();
+      expect(opacity().opacity, lessThan(1), reason: '$m');
+      await tester.tap(next, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(appState.helper, Helper.skill, reason: '$m: a tap does nothing');
+      // nor does the keyboard: it cannot even focus the stepper
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(appState.helper, Helper.skill, reason: '$m: nor a key');
+      expect(
+        find.text(
+          'the helper shows in classic mode only. whatever you '
+          'choose, everything is revealed when the game ends.',
+        ),
+        findsOneWidget,
+      );
+    }
+
+    // back to classic and it is live again
+    appState.setup(mode: GameMode.classic);
+    await tester.pumpAndSettle();
+    expect(opacity().opacity, 1);
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    expect(appState.helper, Helper.skillLuck);
   });
 
   test('mode and shared letters are kept and bounded', () async {

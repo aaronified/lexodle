@@ -121,11 +121,25 @@ class SettingsDialog extends StatelessWidget {
                   const SizedBox(height: 24),
                   const Caption('helper'),
                   const SizedBox(height: 10),
-                  StepperChoice<Helper>(
-                    semanticLabel: 'helper',
-                    items: [for (final h in Helper.values) (h, h.label, h.sub)],
-                    selected: appState.helper,
-                    onChanged: (h) => appState.setup(helper: h),
+                  // the helper only shows in classic, so for the other modes
+                  // it is greyed: dimmed, and out of reach of touch and keys
+                  Opacity(
+                    key: const ValueKey('helper-fade'),
+                    opacity: mode.multi ? .38 : 1,
+                    child: AbsorbPointer(
+                      absorbing: mode.multi,
+                      child: ExcludeFocus(
+                        excluding: mode.multi,
+                        child: StepperChoice<Helper>(
+                          semanticLabel: 'helper',
+                          items: [
+                            for (final h in Helper.values) (h, h.label, h.sub),
+                          ],
+                          selected: appState.helper,
+                          onChanged: (h) => appState.setup(helper: h),
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Text(

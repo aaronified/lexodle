@@ -115,9 +115,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 6),
                           const Caption('a word game, in many tongues'),
-                          const SizedBox(height: 24),
-                          const DailyStreak(),
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 40),
                           const Caption('language'),
                           const SizedBox(height: 10),
                           DropdownMenu<String>(
@@ -148,6 +146,8 @@ class _HomePageState extends State<HomePage> {
                               );
                             },
                           ),
+                          const SizedBox(height: 20),
+                          const DailyStreak(),
                           const SizedBox(height: 28),
                           const Caption('letters'),
                           const SizedBox(height: 10),

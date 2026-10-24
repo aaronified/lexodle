@@ -493,6 +493,23 @@ void main() {
     });
   });
 
+  testWidgets('the streak card sits below the language and above the letters', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    appState.setup(lang: 'fr', length: 5);
+    await tester.pumpWidget(const LexodleApp());
+    await tester.pumpAndSettle();
+    final language = tester.getTopLeft(find.text('language')).dy;
+    final card = tester
+        .getTopLeft(find.byKey(const ValueKey('daily-streak')))
+        .dy;
+    final letters = tester.getTopLeft(find.text('letters')).dy;
+    expect(language, lessThan(card));
+    expect(card, lessThan(letters));
+  });
+
   group('the home streak', () {
     Future<void> show(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
