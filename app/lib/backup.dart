@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'daily.dart';
 import 'history.dart';
 import 'modes.dart';
+import 'playstyle.dart';
 import 'store.dart';
 import 'words.dart';
 
@@ -29,9 +30,14 @@ class Backup {
     this.dailyLog,
     this.dailyBest,
     this.history,
+    this.playstyle,
   });
 
   final DateTime exported;
+
+  /// The playstyle now, every one held and how often it changed; null in a
+  /// backup from before the playstyles.
+  final ({String? style, Set<String> held, int changes})? playstyle;
 
   /// Every game played, with its guesses; null in a backup from before the
   /// history, which leaves what is saved alone.
@@ -66,6 +72,11 @@ String backupToText(AppState state, {DateTime? now}) {
     'daily': {'log': state.dailyLog, 'best': state.dailyBest},
     // one compact line: indented, a few hundred games would swamp the file
     'history': jsonEncode(state.history.toJson()),
+    'playstyle': {
+      'current': state.styleId,
+      'held': state.stylesHeld.toList()..sort(),
+      'changes': state.styleChanges,
+    },
   });
 }
 
@@ -107,6 +118,7 @@ Backup parseBackup(String text) {
     final ach = _achievements(raw['achievements']);
     final daily = _daily(raw['daily']);
     final history = _history(raw['history']);
+    final playstyle = _playstyle(raw['playstyle']);
     return Backup(
       exported: exported,
       settings: settings,
@@ -115,6 +127,7 @@ Backup parseBackup(String text) {
       dailyLog: daily?.$1,
       dailyBest: daily?.$2,
       history: history,
+      playstyle: playstyle,
     );
   } on FormatException {
     rethrow;
@@ -199,6 +212,29 @@ Map<String, AchState> _achievements(Object? raw) {
     out[e.key as String] = s;
   }
   return out;
+}
+
+/// The playstyle, or null when the file has none. A style this version does not
+/// have is left out rather than refused, as an unknown achievement is.
+({String? style, Set<String> held, int changes})? _playstyle(Object? raw) {
+  if (raw == null) return null;
+  if (raw is! Map) _bad('playstyle');
+  final current = raw['current'];
+  if (current != null && current is! String) _bad('playstyle');
+  final held = raw['held'] ?? const [];
+  if (held is! List || held.length > 100) _bad('playstyle');
+  final changes = raw['changes'] ?? 0;
+  if (changes is! int || changes < 0 || changes > _bigCount) {
+    _bad('playstyle changes');
+  }
+  return (
+    style: playstyleById(current as String?)?.id,
+    held: {
+      for (final h in held)
+        if (h is String && playstyleById(h) != null) h,
+    },
+    changes: changes,
+  );
 }
 
 /// The history, or null when the file has none. It is a line of JSON inside the

@@ -12,8 +12,14 @@ class DailyStreak extends StatelessWidget {
 
   static const _letters = ['m', 't', 'w', 't', 'f', 's', 's'];
 
+  // it listens for itself: the home page builds it as a const, which Flutter
+  // does not rebuild when the page does, so a daily finished in front of it
+  // would leave the streak and the week as they were
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ListenableBuilder(listenable: appState, builder: _build);
+
+  Widget _build(BuildContext context, Widget? _) {
     final c = Theme.of(context).colorScheme;
     final today = dailyDate();
     final week = dailyWeek(today);
@@ -142,8 +148,14 @@ class DailyStreak extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Caption('day streak'),
-                const Spacer(),
+                // the caption gives way before the card can overflow
+                const Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Caption('day streak'),
+                  ),
+                ),
                 Text(
                   'best ${appState.dailyBest}',
                   key: const ValueKey('streak-best'),

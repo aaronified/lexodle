@@ -292,6 +292,7 @@ class _BackupSectionState extends State<_BackupSection> {
       dailyLog: b.dailyLog,
       dailyBest: b.dailyBest,
       history: b.history,
+      playstyle: b.playstyle,
     );
     setState(() {
       _pending = null;

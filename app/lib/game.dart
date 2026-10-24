@@ -257,7 +257,12 @@ class _GamePageState extends State<GamePage> {
     final epoch = _epoch;
     void record() {
       final d = _daily;
-      GameResult result([int streak = 0]) => GameResult(
+      GameResult result({
+        int streak = 0,
+        String? style,
+        bool styleChanged = false,
+        int stylesHeld = 0,
+      }) => GameResult(
         lang: widget.bank.language.code,
         length: length,
         tries: tries,
@@ -267,12 +272,16 @@ class _GamePageState extends State<GamePage> {
         skills: [for (final m in metrics) m.skill],
         daily: d != null,
         dailyStreak: streak,
+        style: style,
+        styleChanged: styleChanged,
+        stylesHeld: stylesHeld,
       );
-      var r = result();
+      final played = result();
       // the game goes in the history as it was played (the guesses are the
-      // facts, the scores can be worked out again), and the day goes in the
-      // log first, so the streak it leaves is known to the achievements; skill
-      // is final here, so the double fire can be judged
+      // facts, the scores can be worked out again), then the playstyle is read
+      // from the last 100 games with this one in them, and the day goes in the
+      // log, so the streak and the style it leaves are known to the
+      // achievements; skill is final here, so the double fire can be judged
       appState.recordHistory(
         lang: widget.bank.language.code,
         mode: GameMode.classic,
@@ -286,8 +295,18 @@ class _GamePageState extends State<GamePage> {
         ],
         daily: d?.date ?? '',
       );
-      if (d != null) r = result(appState.recordDaily(d.date, r.dailyTier));
-      unlocked = appState.recordGame(r);
+      final rated = appState.updateStyle();
+      final streak = d == null
+          ? 0
+          : appState.recordDaily(d.date, played.dailyTier);
+      unlocked = appState.recordGame(
+        result(
+          streak: streak,
+          style: rated.style?.id,
+          styleChanged: rated.changed,
+          stylesHeld: appState.stylesHeld.length,
+        ),
+      );
     }
 
     final pending = _analysis.nonNulls.toList();

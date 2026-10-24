@@ -535,6 +535,33 @@ void main() {
     expect(find.textContaining('tries across'), findsNothing);
   });
 
+  testWidgets('the streak card follows the daily while the home page is open', (
+    tester,
+  ) async {
+    // the home page builds the card as a const, which Flutter does not rebuild
+    // with the page: the card must listen for itself, or a daily finished in
+    // front of it leaves it showing the old streak
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    dailyClock = () => DateTime(2026, 10, 24, 9);
+    appState.dailyLog = {};
+    await tester.pumpWidget(const LexodleApp());
+    await tester.pumpAndSettle();
+    String streak() =>
+        tester.widget<Text>(find.byKey(const ValueKey('streak-count'))).data!;
+    expect(streak(), '0');
+    expect(find.byKey(const ValueKey('flame-2026-10-24-1')), findsNothing);
+
+    appState.recordDaily('2026-10-24', dailyDouble);
+    await tester.pumpAndSettle();
+    expect(streak(), '1');
+    expect(
+      find.byKey(const ValueKey('flame-2026-10-24-1')),
+      findsOneWidget,
+      reason: 'a double fire shows two flames',
+    );
+  });
+
   group('the home streak', () {
     Future<void> show(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));

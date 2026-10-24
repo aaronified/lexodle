@@ -8,6 +8,7 @@ import 'daily.dart';
 import 'difficulty.dart';
 import 'history.dart';
 import 'modes.dart';
+import 'playstyle.dart';
 import 'words.dart';
 
 /// How much the game tells you while you play. Whatever the level, a finished
@@ -52,6 +53,9 @@ class GameResult {
     this.freeRides = 0,
     this.daily = false,
     this.dailyStreak = 0,
+    this.style,
+    this.styleChanged = false,
+    this.stylesHeld = 0,
   });
   final String lang;
   final int length;
@@ -78,6 +82,13 @@ class GameResult {
   /// daily was missed).
   final bool daily;
   final int dailyStreak;
+
+  /// The playstyle the player is rated as once this game is counted (a
+  /// [Playstyle.id], null while they are not rated), whether this game moved
+  /// them to another one, and how many different ones they have been rated.
+  final String? style;
+  final bool styleChanged;
+  final int stylesHeld;
 
   /// A double fire: a win in three guesses or fewer, or with every guess at 80
   /// skill or more.
@@ -540,6 +551,32 @@ final achievements = <Achievement>[
     target: 10,
     qualifies: (r) => r.daily && r.isDouble,
   ),
+  // playstyles: one for being rated each, one for changing, one for all
+  for (final p in playstyles)
+    Achievement(
+      'style_${p.id}',
+      p.icon,
+      p.name,
+      'have the ${p.name} playstyle: ${p.blurb}',
+      repeat: false,
+      qualifies: (r) => r.style == p.id,
+    ),
+  Achievement(
+    'chameleon',
+    'butterfly',
+    'chameleon',
+    'change your playstyle',
+    repeat: false,
+    qualifies: (r) => r.styleChanged,
+  ),
+  Achievement(
+    'many_hats',
+    'rosette',
+    'many hats',
+    'have been every one of the ${playstyles.length} playstyles',
+    repeat: false,
+    qualifies: (r) => r.stylesHeld >= playstyles.length,
+  ),
   // one achievement for every language: a badge each, kept for good
   Achievement(
     'mastery',
@@ -774,6 +811,45 @@ class AppState extends ChangeNotifier {
   /// the last 100.
   History history = History();
 
+  /// The playstyle now (a [Playstyle.id]; null until rated), every one the player
+  /// has been rated, and how many times it has changed. See playstyle.dart.
+  String? styleId;
+  Set<String> stylesHeld = {};
+  int styleChanges = 0;
+
+  Playstyle? get style => playstyleById(styleId);
+
+  /// Reads the playstyle again from the last 100 games, after a game was saved
+  /// to the [history]. A player not yet rated keeps none; one who has been rated
+  /// keeps their style while the numbers stay near it (see [classify]). Returns
+  /// the style and whether this moved them from one to another.
+  ({Playstyle? style, bool changed}) updateStyle() {
+    final next = classify(traitsOf(history), current: style);
+    if (next == null) return (style: style, changed: false);
+    final changed = styleId != null && styleId != next.id;
+    if (changed) styleChanges++;
+    styleId = next.id;
+    stylesHeld.add(next.id);
+    _saveStyle();
+    notifyListeners();
+    return (style: next, changed: changed);
+  }
+
+  void _saveStyle() {
+    try {
+      final p = _prefs;
+      if (p == null) return;
+      if (styleId == null) {
+        p.remove('style');
+      } else {
+        p.setString('style', styleId!);
+      }
+      p
+        ..setStringList('stylesHeld', stylesHeld.toList())
+        ..setInt('styleChanges', styleChanges);
+    } catch (_) {}
+  }
+
   /// Tells the screens to redraw (the clock they show a date from changed).
   void refresh() => notifyListeners();
 
@@ -870,6 +946,18 @@ class AppState extends ChangeNotifier {
         history = History(); // damaged: start the record again
       }
       try {
+        styleId = playstyleById(p.getString('style'))?.id;
+        stylesHeld = {
+          for (final id in p.getStringList('stylesHeld') ?? const <String>[])
+            if (playstyleById(id) != null) id,
+        };
+        styleChanges = (p.getInt('styleChanges') ?? 0).clamp(0, 1000000);
+      } catch (_) {
+        styleId = null;
+        stylesHeld = {};
+        styleChanges = 0;
+      }
+      try {
         final log = p.getString('dailyLog');
         if (log != null) {
           dailyLog = {
@@ -929,7 +1017,18 @@ class AppState extends ChangeNotifier {
     Map<String, int>? dailyLog,
     int? dailyBest,
     History? history,
+    ({String? style, Set<String> held, int changes})? playstyle,
   }) {
+    // and one from before the playstyles
+    if (playstyle != null) {
+      styleId = playstyleById(playstyle.style)?.id;
+      stylesHeld = {
+        for (final id in playstyle.held)
+          if (playstyleById(id) != null) id,
+      };
+      styleChanges = playstyle.changes;
+      _saveStyle();
+    }
     // a backup from before the daily existed has none: what is here stays
     if (dailyLog != null) this.dailyLog = Map.of(dailyLog);
     if (dailyBest != null) this.dailyBest = dailyBest;

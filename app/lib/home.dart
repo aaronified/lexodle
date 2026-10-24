@@ -7,6 +7,7 @@ import 'daily_streak.dart';
 import 'difficulty.dart';
 import 'logo.dart';
 import 'stepper_choice.dart';
+import 'style_chip.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'routes.dart';
@@ -107,11 +108,21 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               const LexodleLogo(width: 56),
                               const SizedBox(width: 16),
-                              Text(
-                                'lexodle',
-                                style: Theme.of(context).textTheme.displaySmall
-                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              // the name shrinks before it can crowd the style
+                              Expanded(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'lexodle',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .displaySmall
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
                               ),
+                              const StyleChip(),
                             ],
                           ),
                           const SizedBox(height: 6),
