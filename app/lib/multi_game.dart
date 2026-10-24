@@ -125,6 +125,11 @@ class _MultiGamePageState extends State<MultiGamePage> {
     setState(() => input.select(i));
   }
 
+  void _move(int by) {
+    if (game.over) return;
+    setState(() => input.move(by));
+  }
+
   void _submit() {
     if (game.over) return;
     if (!input.complete) {
@@ -225,6 +230,10 @@ class _MultiGamePageState extends State<MultiGamePage> {
       _submit();
     } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
       _back();
+    } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      _move(-1);
+    } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
+      _move(1);
     } else if (e.character != null) {
       _type(e.character!.toLowerCase());
     } else {

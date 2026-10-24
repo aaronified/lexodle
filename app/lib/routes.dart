@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'achievements_page.dart';
+import 'daily.dart';
 import 'game.dart';
 import 'home.dart';
 import 'how_to.dart';
@@ -25,6 +26,7 @@ class Routes {
   const Routes._();
   static const home = '/';
   static const play = '/play';
+  static const daily = '/daily';
   static const review = '/play/review';
   static const solver = '/solver';
   static const achievements = '/achievements';
@@ -56,6 +58,18 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           builder: (bank) => appState.mode.multi
               ? MultiGamePage(bank: bank)
               : GamePage(bank: bank),
+        ),
+      );
+    case Routes.daily:
+      // today's word for the saved language, at the fixed daily difficulty
+      return page(
+        BankGate(
+          builder: (bank) {
+            final d = Daily.of(bank);
+            return d == null
+                ? const HomePage()
+                : GamePage(bank: bank, daily: d);
+          },
         ),
       );
     case Routes.review:
@@ -109,6 +123,7 @@ List<Route<dynamic>> onGenerateInitialRoutes(String initial) {
 
 const _known = {
   Routes.play,
+  Routes.daily,
   Routes.mastery,
   Routes.solver,
   Routes.achievements,

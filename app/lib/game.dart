@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'background.dart';
+import 'daily.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -17,11 +18,15 @@ import 'word_info.dart';
 import 'words.dart';
 
 class GamePage extends StatefulWidget {
-  const GamePage({super.key, required this.bank, this.random});
+  const GamePage({super.key, required this.bank, this.random, this.daily});
   final WordBank bank;
 
   /// Where the answer is drawn from; tests pass a seeded one.
   final Random? random;
+
+  /// Set to play the daily word: its answer, and the fixed difficulty, instead
+  /// of a random word at the chosen settings. Read once, when the game begins.
+  final Daily? daily;
 
   @override
   State<GamePage> createState() => _GamePageState();
@@ -31,8 +36,9 @@ class _GamePageState extends State<GamePage> {
   late final Random _rng = widget.random ?? Random();
   final _focus = FocusNode();
 
+  late final Daily? _daily = widget.daily;
   late final int length;
-  late final int pool = appState.pool;
+  late final int pool = _daily == null ? appState.pool : dailyPool;
   late final int tries;
   late final List<String> _pool;
   late final Set<String> _letters;
@@ -63,11 +69,27 @@ class _GamePageState extends State<GamePage> {
   @override
   void initState() {
     super.initState();
-    length = appState.length;
-    tries = appState.tries;
+    length = _daily == null ? appState.length : dailyLength;
+    tries = _daily == null ? appState.tries : dailyTries;
     _pool = widget.bank.answers(length, pool);
     _letters = widget.bank.letters(length);
     _reset();
+    _resume();
+  }
+
+  /// A daily left half played, or finished, comes back as it was, so that
+  /// closing the page cannot reroll it. Nothing is recorded again: the game was
+  /// counted when it ended.
+  void _resume() {
+    final d = _daily;
+    if (d == null) return;
+    final saved = appState.dailyFor(widget.bank.language.code, d.date);
+    if (saved == null) return;
+    for (final g in saved.guesses) {
+      // a damaged save stops the replay rather than breaking the game
+      if (over || g.length != length || !widget.bank.valid.contains(g)) break;
+      _apply(g, restoring: true);
+    }
   }
 
   @override
@@ -78,7 +100,9 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _reset() {
-    answer = chooseWord(_pool, widget.bank.answerWeights(length, pool), _rng);
+    answer =
+        _daily?.answer ??
+        chooseWord(_pool, widget.bank.answerWeights(length, pool), _rng);
     // Every word the game accepts counts as possible, not only the common ones
     // the answer is drawn from: a player cannot know that list, and a real
     // word that fits every clue must never be ruled out behind their back.
@@ -122,6 +146,11 @@ class _GamePageState extends State<GamePage> {
     setState(() => input.select(i));
   }
 
+  void _move(int by) {
+    if (over) return;
+    setState(() => input.move(by));
+  }
+
   void _submit() {
     if (over) return;
     if (!input.complete) {
@@ -141,59 +170,72 @@ class _GamePageState extends State<GamePage> {
       setState(() => message = 'not in the word list');
       return;
     }
+    setState(() => _apply(word));
+  }
+
+  /// Plays [word], which has been checked. [restoring] replays a saved daily
+  /// guess: it is not saved or recorded again.
+  void _apply(String word, {bool restoring = false}) {
     final m = evaluate(answer, word);
-    setState(() {
-      guesses.add(word);
-      marks.add(m);
-      for (var i = 0; i < length; i++) {
-        final k = word[i];
-        final old = keyMarks[k];
-        // correct beats present beats absent
-        if (old == null || m[i].index < old.index) keyMarks[k] = m[i];
-      }
-      final after = filterEligible(eligible, word, m);
-      metrics.add(
-        scoreGuess(
-          eligible,
-          word,
-          after.length,
-          finalTry: guesses.length >= tries,
-          solved: word == answer,
-          // skill is measured against the best real guess, which the
-          // background analysis is still finding out
-          provisional: analyseWhilePlaying,
-        ),
+    guesses.add(word);
+    marks.add(m);
+    for (var i = 0; i < length; i++) {
+      final k = word[i];
+      final old = keyMarks[k];
+      // correct beats present beats absent
+      if (old == null || m[i].index < old.index) keyMarks[k] = m[i];
+    }
+    final after = filterEligible(eligible, word, m);
+    metrics.add(
+      scoreGuess(
+        eligible,
+        word,
+        after.length,
+        finalTry: guesses.length >= tries,
+        solved: word == answer,
+        // skill is measured against the best real guess, which the
+        // background analysis is still finding out
+        provisional: analyseWhilePlaying,
+      ),
+    );
+    befores.add(eligible);
+    eligible = after;
+    // work the guess out now, in the background, one at a time: the best
+    // real split (for its skill) and the picks and plots of the review
+    final before = befores.last;
+    final index = guesses.length - 1;
+    final epoch = _epoch;
+    if (analyseWhilePlaying) {
+      final job = _jobs.add(
+        () => analyseGuesses(before, widget.bank.guessable(length)),
       );
-      befores.add(eligible);
-      eligible = after;
-      // work the guess out now, in the background, one at a time: the best
-      // real split (for its skill) and the picks and plots of the review
-      final before = befores.last;
-      final index = guesses.length - 1;
-      final epoch = _epoch;
-      if (analyseWhilePlaying) {
-        final job = _jobs.add(
-          () => analyseGuesses(before, widget.bank.guessable(length)),
-        );
-        _analysis.add(job);
-        job.then<void>((land) {
-          if (!mounted || epoch != _epoch) return;
-          setState(() {
-            metrics[index] = metrics[index].withBest(land.bestExpected);
-          });
-        }, onError: (_) {});
-      } else {
-        _analysis.add(null);
-      }
-      final solved = word == answer;
-      input.clear();
-      message = '';
-      if (solved || guesses.length >= tries) {
-        over = true;
-        won = solved;
-        _finish();
-      }
-    });
+      _analysis.add(job);
+      job.then<void>((land) {
+        if (!mounted || epoch != _epoch) return;
+        setState(() {
+          metrics[index] = metrics[index].withBest(land.bestExpected);
+        });
+      }, onError: (_) {});
+    } else {
+      _analysis.add(null);
+    }
+    final solved = word == answer;
+    input.clear();
+    message = '';
+    if (solved || guesses.length >= tries) {
+      over = true;
+      won = solved;
+      if (!restoring) _finish();
+    }
+    final d = _daily;
+    if (d != null && !restoring) {
+      appState.saveDaily(
+        widget.bank.language.code,
+        d.date,
+        guesses,
+        won: over ? won : null,
+      );
+    }
   }
 
   /// The finished game counts towards the statistics and achievements. Skill
@@ -201,17 +243,23 @@ class _GamePageState extends State<GamePage> {
   void _finish() {
     final epoch = _epoch;
     void record() {
-      unlocked = appState.recordGame(
-        GameResult(
-          lang: widget.bank.language.code,
-          length: length,
-          tries: tries,
-          pool: pool,
-          used: guesses.length,
-          won: won,
-          skills: [for (final m in metrics) m.skill],
-        ),
+      final d = _daily;
+      GameResult result([int streak = 0]) => GameResult(
+        lang: widget.bank.language.code,
+        length: length,
+        tries: tries,
+        pool: pool,
+        used: guesses.length,
+        won: won,
+        skills: [for (final m in metrics) m.skill],
+        daily: d != null,
+        dailyStreak: streak,
       );
+      var r = result();
+      // the day goes in the log first, so the streak it leaves is known to the
+      // achievements; skill is final here, so the double fire can be judged
+      if (d != null) r = result(appState.recordDaily(d.date, r.dailyTier));
+      unlocked = appState.recordGame(r);
     }
 
     final pending = _analysis.nonNulls.toList();
@@ -236,6 +284,10 @@ class _GamePageState extends State<GamePage> {
       _submit();
     } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
       _back();
+    } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      _move(-1);
+    } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
+      _move(1);
     } else if (e.character != null) {
       _type(e.character!.toLowerCase());
     } else {
@@ -260,8 +312,11 @@ class _GamePageState extends State<GamePage> {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  '${widget.bank.language.name.toLowerCase()} · $length · '
-                  '$tries tries',
+                  _daily == null
+                      ? '${widget.bank.language.name.toLowerCase()} · '
+                            '$length · $tries tries'
+                      : '${widget.bank.language.name.toLowerCase()} · '
+                            'daily · ${_daily.date}',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                 ),
@@ -491,9 +546,16 @@ class _GamePageState extends State<GamePage> {
                     ),
                   ),
                 ),
-                _smallButton('replay', () => setState(_reset)),
+                // a daily is played once: the next word comes tomorrow
+                if (_daily == null)
+                  _smallButton('replay', () => setState(_reset)),
               ],
             ),
+            if (_daily != null)
+              Caption(
+                'daily ${_daily.date} · streak ${appState.dailyStreak} · '
+                'the next word comes at 00:00 utc',
+              ),
             if (won) Caption(answer),
             const SizedBox(height: 10),
             for (final a in unlocked)

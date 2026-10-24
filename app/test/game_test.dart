@@ -72,6 +72,70 @@ void main() {
     expect(find.text('3 tries left'), findsOneWidget);
   });
 
+  testWidgets('the left and right arrows move the cursor', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
+    final bank = (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
+      ),
+    ))!;
+    // a word whose last two letters swapped is not a word, so a wrongly placed
+    // letter cannot pass by luck
+    final w = bank
+        .answers(4, 500)
+        .firstWhere(
+          (w) =>
+              w[2] != w[3] &&
+              !bank.valid.contains('${w.substring(0, 2)}${w[3]}${w[2]}'),
+        );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GamePage(bank: bank, random: Random(7)),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    await tester.pump();
+
+    Future<void> type(String s) async {
+      for (final ch in s.split('')) {
+        await tester.sendKeyEvent(_key(ch), character: ch);
+      }
+    }
+
+    // the last two letters typed the wrong way round, then put right with the
+    // left arrow: from a full row it selects the last letter, and steps back
+    await type('${w[0]}${w[1]}${w[3]}${w[2]}');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await type(w[2]); // replaces the third letter, and the row is full again
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await type(w[3]);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(find.text('not in the word list'), findsNothing);
+    expect(find.text('need 4 letters'), findsNothing);
+    // with a guess made the status line leads with the words left
+    expect(
+      find.textContaining('2 tries left'),
+      findsOneWidget,
+      reason: '$w was played',
+    );
+
+    // the right arrow skips a slot: the fourth letter goes in first, and the
+    // cursor then wraps back to the one skipped
+    await type(w.substring(0, 2));
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await type(w[3]);
+    await type(w[2]);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    // the same word again, so it is refused, which proves it was complete and
+    // in the right order
+    expect(find.text('already guessed'), findsOneWidget);
+  });
+
   testWidgets('lose a game, then review it step by step', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();

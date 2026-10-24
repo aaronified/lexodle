@@ -66,6 +66,16 @@ class GuessInput {
     if (i >= 0 && i < length) _cursor = i;
   }
 
+  /// Moves the cursor [by] slots (the arrow keys): -1 left, 1 right. It stops
+  /// at the ends, and from the parked position left selects the last slot.
+  void move(int by) {
+    if (_cursor >= length) {
+      if (by < 0) _cursor = length - 1;
+      return;
+    }
+    _cursor = (_cursor + by).clamp(0, length - 1);
+  }
+
   void clear() {
     _slots.fillRange(0, length, '');
     _cursor = 0;

@@ -271,7 +271,13 @@ class _BackupSectionState extends State<_BackupSection> {
   }
 
   void _restore(Backup b) {
-    appState.restore(settings: b.settings, stats: b.stats, ach: b.achievements);
+    appState.restore(
+      settings: b.settings,
+      stats: b.stats,
+      ach: b.achievements,
+      dailyLog: b.dailyLog,
+      dailyBest: b.dailyBest,
+    );
     setState(() {
       _pending = null;
       _error = false;

@@ -94,6 +94,8 @@ class _SolverPageState extends State<SolverPage> {
     });
   }
 
+  void _move(int by) => setState(() => input.move(by));
+
   void _resetInput() {
     input.clear();
     inputMarks.fillRange(0, length, Mark.absent);
@@ -144,6 +146,10 @@ class _SolverPageState extends State<SolverPage> {
       _add();
     } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
       _back();
+    } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      _move(-1);
+    } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
+      _move(1);
     } else if (e.character != null) {
       _type(e.character!.toLowerCase());
     } else {

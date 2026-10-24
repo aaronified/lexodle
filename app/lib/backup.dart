@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+import 'daily.dart';
 import 'modes.dart';
 import 'store.dart';
 import 'words.dart';
@@ -24,9 +25,16 @@ class Backup {
     required this.settings,
     required this.stats,
     required this.achievements,
+    this.dailyLog,
+    this.dailyBest,
   });
 
   final DateTime exported;
+
+  /// How each daily went and the longest daily streak; null in a backup from
+  /// before the daily, which leaves what is saved alone.
+  final Map<String, int>? dailyLog;
+  final int? dailyBest;
 
   /// The settings present in the file (a missing one keeps its current value).
   final Map<String, Object> settings;
@@ -49,6 +57,7 @@ String backupToText(AppState state, {DateTime? now}) {
     'achievements': {
       for (final e in state.ach.entries) e.key: e.value.toJson(),
     },
+    'daily': {'log': state.dailyLog, 'best': state.dailyBest},
   });
 }
 
@@ -88,11 +97,14 @@ Backup parseBackup(String text) {
     final settings = _settings(raw['settings']);
     final stats = _stats(raw['stats']);
     final ach = _achievements(raw['achievements']);
+    final daily = _daily(raw['daily']);
     return Backup(
       exported: exported,
       settings: settings,
       stats: stats,
       achievements: ach,
+      dailyLog: daily?.$1,
+      dailyBest: daily?.$2,
     );
   } on FormatException {
     rethrow;
@@ -177,6 +189,27 @@ Map<String, AchState> _achievements(Object? raw) {
     out[e.key as String] = s;
   }
   return out;
+}
+
+/// The daily log and best streak, or null when the file has none.
+(Map<String, int>, int)? _daily(Object? raw) {
+  if (raw == null) return null;
+  if (raw is! Map) _bad('daily');
+  final log = <String, int>{};
+  final rawLog = raw['log'];
+  if (rawLog != null) {
+    if (rawLog is! Map) _bad('daily log');
+    final date = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+    for (final e in rawLog.entries) {
+      final k = e.key, v = e.value;
+      if (k is! String || !date.hasMatch(k)) _bad('daily date');
+      if (v is! int || v < dailyMissed || v > dailyDouble) _bad('daily day');
+      log[k] = v;
+    }
+  }
+  final best = raw['best'] ?? 0;
+  if (best is! int || best < 0 || best > _bigCount) _bad('best streak');
+  return (log, best);
 }
 
 /// A file the player chose to restore.

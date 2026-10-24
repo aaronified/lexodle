@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
+import 'daily.dart';
+import 'daily_streak.dart';
 import 'difficulty.dart';
 import 'logo.dart';
 import 'stepper_choice.dart';
@@ -65,6 +67,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  /// The daily button's text: where today's daily word stands for [lang].
+  String _dailyLabel(String lang) {
+    final e = appState.dailyFor(lang, dailyDate());
+    if (e == null) return 'daily';
+    if (!e.over) return 'daily · ${e.guesses.length}/$dailyTries';
+    return e.won! ? 'daily · solved in ${e.guesses.length}' : 'daily · missed';
+  }
+
   Language _current(List<Language> langs) => langs.firstWhere(
     (l) => l.code == appState.lang,
     orElse: () => langs.first,
@@ -105,7 +115,9 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 6),
                           const Caption('a word game, in many tongues'),
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 24),
+                          const DailyStreak(),
+                          const SizedBox(height: 28),
                           const Caption('language'),
                           const SizedBox(height: 10),
                           DropdownMenu<String>(
@@ -181,6 +193,24 @@ class _HomePageState extends State<HomePage> {
                                         ? 'play'
                                         : 'play · ${appState.mode.label}',
                                   ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton(
+                                  key: const ValueKey('daily-button'),
+                                  style: OutlinedButton.styleFrom(
+                                    fixedSize: const Size.fromHeight(
+                                      _buttonHeight,
+                                    ),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  onPressed: () => Navigator.pushNamed(
+                                    context,
+                                    Routes.daily,
+                                  ),
+                                  child: Text(_dailyLabel(lang.code)),
                                 ),
                               ),
                               const SizedBox(width: 8),

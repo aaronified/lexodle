@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show ThemeMode;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'daily.dart';
 import 'difficulty.dart';
 import 'modes.dart';
 import 'words.dart';
@@ -48,6 +49,8 @@ class GameResult {
     this.skills = const [],
     this.mode = GameMode.classic,
     this.freeRides = 0,
+    this.daily = false,
+    this.dailyStreak = 0,
   });
   final String lang;
   final int length;
@@ -69,6 +72,23 @@ class GameResult {
   /// Relay race: boards that were solved the moment they opened, by the
   /// guesses made before.
   final int freeRides;
+
+  /// Whether it was the daily word, and the daily streak it left (0 when the
+  /// daily was missed).
+  final bool daily;
+  final int dailyStreak;
+
+  /// A double fire: a win in three guesses or fewer, or with every guess at 80
+  /// skill or more.
+  bool get isDouble =>
+      won && (used <= 3 || (skills.isNotEmpty && skills.every((s) => s >= 80)));
+
+  /// How the day went, for the daily log (see [dailyMissed]).
+  int get dailyTier => !won
+      ? dailyMissed
+      : isDouble
+      ? dailyDouble
+      : dailySolved;
 
   double get avgSkill =>
       skills.isEmpty ? 0 : skills.reduce((a, b) => a + b) / skills.length;
@@ -161,6 +181,10 @@ enum Track {
 
   /// Collects badges that stay earned (one per language mastered); no target.
   badges,
+
+  /// The daily streak reaching the target. It is earned once, and its bar
+  /// follows the streak instead of starting again.
+  dailyStreak,
 }
 
 class Achievement {
@@ -455,6 +479,42 @@ final achievements = <Achievement>[
     modes: {GameMode.quartet, GameMode.relay},
     qualifies: (r) => r.won && r.used <= r.mode.boards,
   ),
+  // the daily word: a streak ladder, and the double fire
+  for (final (id, icon, title, days) in const [
+    ('daily_3', 'candle', 'kindling', 3),
+    ('daily_7', 'campfire', 'campfire', 7),
+    ('daily_14', 'meteor', 'bonfire', 14),
+    ('daily_30', 'sun', 'furnace', 30),
+    ('daily_60', 'mountain', 'forge', 60),
+    ('daily_100', 'star', 'inferno', 100),
+    ('daily_200', 'stars', 'phoenix', 200),
+    ('daily_365', 'moon', 'eternal flame', 365),
+  ])
+    Achievement(
+      id,
+      icon,
+      title,
+      'solve the daily word $days days in a row',
+      track: Track.dailyStreak,
+      target: days,
+      repeat: false,
+    ),
+  Achievement(
+    'double_fire',
+    'confetti',
+    'double fire',
+    'solve the daily in 3 guesses, or with every guess at 80 skill or more',
+    qualifies: (r) => r.daily && r.isDouble,
+  ),
+  Achievement(
+    'double_10',
+    'bulb',
+    'twice as hot',
+    'earn 10 double fires',
+    track: Track.counter,
+    target: 10,
+    qualifies: (r) => r.daily && r.isDouble,
+  ),
   // one achievement for every language: a badge each, kept for good
   Achievement(
     'mastery',
@@ -552,13 +612,18 @@ List<Achievement> advanceAchievements(
         }
         st.progress = st.seen.length;
         got = st.progress >= a.target;
+      case Track.dailyStreak:
+        // only a daily moves it: a win carries the streak on, a miss ends it
+        if (!r.daily) continue;
+        st.progress = r.dailyStreak;
+        got = r.won && st.progress >= a.target && st.times == 0;
       case Track.badges:
         break; // collected above
     }
     if (got) {
       st.times++;
       st.dates.add(today);
-      if (a.numbered) {
+      if (a.numbered && a.track != Track.dailyStreak) {
         // numbered achievements start again from 0 once earned
         st.progress = 0;
         st.seen.clear();
@@ -567,6 +632,28 @@ List<Achievement> advanceAchievements(
     }
   }
   return earned;
+}
+
+/// How far a player has got with one daily word: the guesses so far (so that
+/// leaving and coming back resumes it, and cannot reroll it) and, once it is
+/// over, whether it was won.
+class DailyEntry {
+  const DailyEntry(this.guesses, [this.won]);
+  final List<String> guesses;
+
+  /// Null while the daily is still being played.
+  final bool? won;
+
+  bool get over => won != null;
+
+  Map<String, dynamic> toJson() => {
+    'g': guesses,
+    if (won != null) 'w': won! ? 1 : 0,
+  };
+
+  static DailyEntry fromJson(Map<String, dynamic> j) => DailyEntry([
+    for (final g in j['g'] ?? []) g as String,
+  ], j['w'] == null ? null : j['w'] == 1);
 }
 
 /// Settings, stats and achievements, kept in shared_preferences
@@ -610,6 +697,61 @@ class AppState extends ChangeNotifier {
   /// How many different achievements have been earned at least once.
   int get unlockedCount => ach.values.where((s) => s.times > 0).length;
 
+  /// Progress on the daily words, keyed `<language>|<date>`. Only the last few
+  /// days are kept.
+  Map<String, DailyEntry> daily = {};
+
+  DailyEntry? dailyFor(String lang, String date) => daily['$lang|$date'];
+
+  /// Saves the progress of the daily [lang] has on [date], and forgets days
+  /// more than a week older than it.
+  void saveDaily(String lang, String date, List<String> guesses, {bool? won}) {
+    daily['$lang|$date'] = DailyEntry(List.of(guesses), won);
+    final oldest = dailyShift(date, -7);
+    daily.removeWhere(
+      (k, _) => k.substring(k.indexOf('|') + 1).compareTo(oldest) < 0,
+    );
+    try {
+      _prefs?.setString(
+        'daily',
+        jsonEncode({for (final e in daily.entries) e.key: e.value.toJson()}),
+      );
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  /// How each day's daily went (date -> [dailyMissed], [dailySolved] or
+  /// [dailyDouble]), across every language: the streak counts a day on which a
+  /// daily was solved in any of them. A year is kept; [dailyBest] is the longest
+  /// streak ever.
+  Map<String, int> dailyLog = {};
+  int dailyBest = 0;
+
+  /// The daily streak now (see [dailyStreakOf]).
+  int get dailyStreak => dailyStreakOf(dailyLog, dailyDate());
+
+  /// Logs how [date]'s daily went and returns the streak it leaves. A day
+  /// already solved is never marked missed by a second language.
+  int recordDaily(String date, int tier) {
+    final old = dailyLog[date];
+    if (old == null || tier > old) dailyLog[date] = tier;
+    final oldest = dailyShift(date, -400);
+    dailyLog.removeWhere((k, _) => k.compareTo(oldest) < 0);
+    final streak = dailyStreakOf(dailyLog, date);
+    if (streak > dailyBest) dailyBest = streak;
+    _saveDailyLog();
+    notifyListeners();
+    return streak;
+  }
+
+  void _saveDailyLog() {
+    try {
+      _prefs
+        ?..setString('dailyLog', jsonEncode(dailyLog))
+        ..setInt('dailyBest', dailyBest);
+    } catch (_) {}
+  }
+
   SharedPreferences? _prefs;
 
   Future<void> load() async {
@@ -638,6 +780,32 @@ class AppState extends ChangeNotifier {
       seenHowTo = p.getBool('seenHowTo') ?? false;
       final s = p.getString('stats');
       if (s != null) stats = Stats.fromJson(jsonDecode(s));
+      try {
+        // its own guard: a damaged daily must not stop the rest being read
+        final dl = p.getString('daily');
+        if (dl != null) {
+          daily = {
+            for (final e in (jsonDecode(dl) as Map).entries)
+              e.key as String: DailyEntry.fromJson(
+                (e.value as Map).cast<String, dynamic>(),
+              ),
+          };
+        }
+      } catch (_) {
+        daily = {};
+      }
+      try {
+        final log = p.getString('dailyLog');
+        if (log != null) {
+          dailyLog = {
+            for (final e in (jsonDecode(log) as Map).entries)
+              e.key as String: (e.value as int).clamp(dailyMissed, dailyDouble),
+          };
+        }
+        dailyBest = p.getInt('dailyBest') ?? 0;
+      } catch (_) {
+        dailyLog = {};
+      }
       final a = p.getString('ach');
       if (a != null) {
         ach = {
@@ -683,7 +851,13 @@ class AppState extends ChangeNotifier {
     required Map<String, Object> settings,
     required Stats stats,
     required Map<String, AchState> ach,
+    Map<String, int>? dailyLog,
+    int? dailyBest,
   }) {
+    // a backup from before the daily existed has none: what is here stays
+    if (dailyLog != null) this.dailyLog = Map.of(dailyLog);
+    if (dailyBest != null) this.dailyBest = dailyBest;
+    _saveDailyLog();
     lang = settings['lang'] as String? ?? lang;
     length = settings['length'] as int? ?? length;
     tries = settings['tries'] as int? ?? tries;

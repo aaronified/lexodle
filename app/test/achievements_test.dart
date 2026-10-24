@@ -35,7 +35,7 @@ void main() {
   testWidgets('the screen shows icons, counts, bars and the history table', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(420, 4200));
+    await tester.binding.setSurfaceSize(const Size(420, 6200));
     appState.stats = Stats()
       ..mastery = {
         'en': {'5:6:1500', '4:6:1500', '5:3:500'},
@@ -72,7 +72,8 @@ void main() {
       findsAtLeastNWidgets(numbered),
     );
     expect(find.text('4/10'), findsOneWidget);
-    expect(find.text('0/100'), findsOneWidget);
+    // 100 wins, and the 100-day daily streak
+    expect(find.text('0/100'), findsNWidgets(2));
 
     // language mastery is one achievement, not a list: no badge earned yet
     expect(find.text('language mastery'), findsOneWidget);
@@ -97,7 +98,7 @@ void main() {
   });
 
   testWidgets('the history says so when nothing is earned yet', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(420, 4200));
+    await tester.binding.setSurfaceSize(const Size(420, 6200));
     await tester.pumpWidget(
       const MaterialApp(
         home: AchievementsPage(),

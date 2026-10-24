@@ -111,6 +111,42 @@ void main() {
     expect(g.cursor, 0);
   });
 
+  test('move steps the cursor and stops at both ends', () {
+    final g = typed('ab');
+    expect(g.cursor, 2);
+    g.move(-1);
+    expect(g.cursor, 1);
+    g.move(-1);
+    g.move(-1);
+    g.move(-1);
+    expect(g.cursor, 0, reason: 'stops at the left end');
+    for (var i = 0; i < 9; i++) {
+      g.move(1);
+    }
+    expect(g.cursor, 4, reason: 'stops on the last slot, not past it');
+    expect(g.slots, ['a', 'b', '', '', ''], reason: 'moving writes nothing');
+  });
+
+  test('left from a full row selects the last letter; right does nothing', () {
+    final g = typed('abcde');
+    expect(g.cursor, 5);
+    g.move(1);
+    expect(g.cursor, 5);
+    g.move(-1);
+    expect(g.cursor, 4);
+    g.type('z', letters);
+    expect(g.word, 'abcdz');
+  });
+
+  test('moving onto a letter then typing replaces it', () {
+    final g = typed('abc');
+    g.move(-1);
+    g.move(-1);
+    g.type('x', letters);
+    expect(g.slots, ['a', 'x', 'c', '', '']);
+    expect(g.cursor, 3, reason: 'on to the next slot that is not a letter');
+  });
+
   test('select ignores slots outside the row', () {
     final g = typed('ab');
     g.select(9);
