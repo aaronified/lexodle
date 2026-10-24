@@ -69,12 +69,27 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  /// The daily button's text: where today's daily word stands for [lang].
-  String _dailyLabel(String lang) {
+  /// The small second line under "daily": where today's daily word stands for
+  /// [lang], or null before it is started.
+  String? _dailyStatus(String lang) {
     final e = appState.dailyFor(lang, dailyDate());
-    if (e == null) return 'daily';
-    if (!e.over) return 'daily · ${e.guesses.length}/$dailyTries';
-    return e.won! ? 'daily · solved in ${e.guesses.length}' : 'daily · missed';
+    if (e == null) return null;
+    if (!e.over) return '${e.guesses.length}/$dailyTries';
+    return e.won! ? 'solved in ${e.guesses.length}' : 'missed';
+  }
+
+  /// "daily", with the status in a smaller font under it so a long status
+  /// never wraps the button label onto three rows.
+  Widget _dailyChild(String lang) {
+    final status = _dailyStatus(lang);
+    if (status == null) return const Text('daily');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('daily'),
+        Text(status, style: const TextStyle(fontSize: 11, height: 1.1)),
+      ],
+    );
   }
 
   Language _current(List<Language> langs) => langs.firstWhere(
@@ -233,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                                     if (!context.mounted) return;
                                     Navigator.pushNamed(context, Routes.daily);
                                   },
-                                  child: Text(_dailyLabel(lang.code)),
+                                  child: _dailyChild(lang.code),
                                 ),
                               ),
                               const SizedBox(width: 8),

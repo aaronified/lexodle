@@ -526,11 +526,13 @@ void main() {
       appState.saveDaily('fr', '2026-10-24', ['crane']);
       await tester.pumpWidget(const LexodleApp());
       await tester.pumpAndSettle();
-      expect(find.text('daily · 1/6'), findsOneWidget);
+      expect(find.text('daily'), findsOneWidget);
+      expect(find.text('1/6'), findsOneWidget);
 
       appState.saveDaily('fr', '2026-10-24', ['crane', 'slate'], won: true);
       await tester.pumpAndSettle();
-      expect(find.text('daily · solved in 2'), findsOneWidget);
+      expect(find.text('daily'), findsOneWidget);
+      expect(find.text('solved in 2'), findsOneWidget);
 
       appState.saveDaily(
         'fr',
@@ -539,7 +541,8 @@ void main() {
         won: false,
       );
       await tester.pumpAndSettle();
-      expect(find.text('daily · missed'), findsOneWidget);
+      expect(find.text('daily'), findsOneWidget);
+      expect(find.text('missed'), findsOneWidget);
     });
   });
 
