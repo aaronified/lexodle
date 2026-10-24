@@ -35,7 +35,7 @@ void main() {
   testWidgets('the screen shows icons, counts, bars and the history table', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(420, 6200));
+    await tester.binding.setSurfaceSize(const Size(420, 7400));
     appState.stats = Stats()
       ..mastery = {
         'en': {'5:6:1500', '4:6:1500', '5:3:500'},
@@ -99,7 +99,7 @@ void main() {
   });
 
   testWidgets('the history says so when nothing is earned yet', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(420, 6200));
+    await tester.binding.setSurfaceSize(const Size(420, 7400));
     await tester.pumpWidget(
       const MaterialApp(
         home: AchievementsPage(),
@@ -110,4 +110,45 @@ void main() {
     await tester.pump();
     expect(find.text('nothing earned yet.'), findsOneWidget);
   });
+
+  testWidgets(
+    'each language shows its own, with its flag; shared ones show theirs',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(420, 7400));
+      appState.lang = 'en';
+      appState.stats = Stats()..langsWon = {'en', 'fr'};
+      appState.setAch('en', {
+        'one_shot': AchState(times: 3, dates: ['2026-10-01']),
+      });
+      appState.setAch('fr', {
+        'wins_10': AchState(times: 1, dates: ['2026-10-03']),
+      });
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: AchievementsPage(),
+          onGenerateRoute: onGenerateRoute,
+        ),
+      );
+      await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
+      await tester.pump();
+      // English: the one shot, not "regular"
+      expect(find.text('×3'), findsOneWidget);
+      expect(find.text('×1'), findsNothing);
+      // every achievement of the language wears its flag
+      expect(find.byKey(const ValueKey('badges-one_shot')), findsOneWidget);
+      expect(find.byKey(const ValueKey('badges-wins_10')), findsOneWidget);
+      // the one that counts languages wears every flag won in
+      final shared = find.descendant(
+        of: find.byKey(const ValueKey('badges-bilingual')),
+        matching: find.byType(SvgPicture),
+      );
+      expect(shared, findsNWidgets(2));
+      // picking French shows French's
+      await tester.tap(find.byKey(const ValueKey('lang-fr')));
+      await tester.pump();
+      expect(find.text('×1'), findsOneWidget);
+      expect(find.text('×3'), findsNothing);
+      appState.lang = 'en';
+    },
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'language_picker.dart';
 import 'main.dart';
 import 'routes.dart';
 import 'store.dart';
@@ -8,8 +9,45 @@ import 'words.dart';
 
 int achievementCount() => achievements.length;
 
-class AchievementsPage extends StatelessWidget {
+/// The achievements. Each language has its own (except the few that count
+/// languages, and the mastery badges), so the page is about one language at a
+/// time, with its flag on every one of its achievements; the ones that span
+/// languages carry the flags of the languages they count.
+class AchievementsPage extends StatefulWidget {
   const AchievementsPage({super.key});
+
+  @override
+  State<AchievementsPage> createState() => _AchievementsPageState();
+}
+
+class _AchievementsPageState extends State<AchievementsPage> {
+  String _lang = appState.lang;
+  Map<String, Language> _langs = {};
+
+  @override
+  void initState() {
+    super.initState();
+    WordBank.languages().then((ls) {
+      if (mounted) setState(() => _langs = {for (final l in ls) l.code: l});
+    });
+  }
+
+  /// Played, won, and the win streak now and best, in [lang]'s games.
+  ({int played, int wins, int streak, int best}) _record(String lang) {
+    var played = 0, wins = 0, streak = 0, best = 0;
+    for (final g in appState.history.games) {
+      if (g.lang != lang) continue;
+      played++;
+      if (g.won) {
+        wins++;
+        streak++;
+        if (streak > best) best = streak;
+      } else {
+        streak = 0;
+      }
+    }
+    return (played: played, wins: wins, streak: streak, best: best);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +60,22 @@ class AchievementsPage extends StatelessWidget {
           child: ListenableBuilder(
             listenable: appState,
             builder: (context, _) {
-              final s = appState.stats;
+              final s = _record(_lang);
+              final mine = appState.achOf(_lang);
+              final won = appState.stats.langsWon.toList()..sort();
               return ListView(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                 children: [
+                  LanguagePicker(
+                    codes: appState.playedLanguages.toList()..sort(),
+                    languages: _langs,
+                    selected: _lang,
+                    onSelect: (code) => setState(() => _lang = code),
+                  ),
+                  const SizedBox(height: 12),
                   Caption(
-                    '${appState.unlockedCount} of '
-                    '${achievements.length} earned',
+                    '${mine.values.where((x) => x.times > 0).length} of '
+                    '${achievements.length} earned in $_lang',
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -36,20 +83,26 @@ class AchievementsPage extends StatelessWidget {
                       _Stat('played', s.played),
                       _Stat('won', s.wins),
                       _Stat('streak', s.streak),
-                      _Stat('best', s.bestStreak),
+                      _Stat('best', s.best),
                     ],
                   ),
                   const SizedBox(height: 20),
                   for (final a in achievements) ...[
                     const Divider(),
                     a.track == Track.badges
-                        ? _BadgeRow(a, appState.ach[a.id] ?? AchState())
-                        : _Row(a, appState.ach[a.id] ?? AchState()),
+                        ? _BadgeRow(a, mine[a.id] ?? AchState())
+                        : _Row(
+                            a,
+                            mine[a.id] ?? AchState(),
+                            // one language's own wears its flag; one that counts
+                            // languages wears theirs
+                            badges: a.global ? won : [_lang],
+                          ),
                   ],
                   const SizedBox(height: 28),
                   const Caption('history'),
                   const SizedBox(height: 10),
-                  _History(c),
+                  _History(c, mine),
                 ],
               );
             },
@@ -63,9 +116,12 @@ class AchievementsPage extends StatelessWidget {
 /// One achievement: its glyph, what it asks for, how often it has been earned
 /// and, for numbered ones, a bar showing progress towards the next time.
 class _Row extends StatelessWidget {
-  const _Row(this.a, this.st);
+  const _Row(this.a, this.st, {this.badges = const []});
   final Achievement a;
   final AchState st;
+
+  /// The languages whose flags it wears.
+  final List<String> badges;
 
   @override
   Widget build(BuildContext context) {
@@ -91,9 +147,31 @@ class _Row extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        a.title,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              a.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (badges.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            Flexible(
+                              flex: 3,
+                              child: Wrap(
+                                key: ValueKey('badges-${a.id}'),
+                                spacing: 2,
+                                children: [
+                                  for (final code in badges)
+                                    languageBadge(code, size: 11),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(a.description, style: const TextStyle(fontSize: 12)),
@@ -387,14 +465,15 @@ class _Bar extends StatelessWidget {
 
 /// When each earned achievement was first and last earned, and how many times.
 class _History extends StatelessWidget {
-  const _History(this.c);
+  const _History(this.c, this.states);
   final ColorScheme c;
+  final Map<String, AchState> states;
 
   @override
   Widget build(BuildContext context) {
     final rows = [
       for (final a in achievements)
-        if ((appState.ach[a.id]?.times ?? 0) > 0) (a, appState.ach[a.id]!),
+        if ((states[a.id]?.times ?? 0) > 0) (a, states[a.id]!),
     ]..sort((x, y) => y.$2.latest!.compareTo(x.$2.latest!));
 
     if (rows.isEmpty) {
