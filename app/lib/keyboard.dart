@@ -2,8 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'haptics.dart';
 import 'logic.dart';
 import 'ui.dart';
+
+/// The widest screen that counts as a phone: below it the keyboard is bigger.
+const phoneWidth = 600.0;
 
 /// The on-screen keyboard: QWERTY for the letters the language uses, then the
 /// language's own extra letters (accents and the like), with keys coloured by
@@ -39,8 +43,16 @@ class LetterKeyboard extends StatelessWidget {
   final String enterLabel;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => _build(context, box.maxWidth < phoneWidth),
+  );
+
+  Widget _build(BuildContext context, bool phone) {
     final c = Theme.of(context).colorScheme;
+    // on a phone the keys are taller and wider (the keys of the phone's own
+    // keyboard are about this size), with the letters bigger
+    final keyHeight = phone ? 58.0 : 46.0;
+    final gap = phone ? 2.0 : 2.5;
     const base = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
     final extra = letters.where((l) => !base.join().contains(l)).toList()
       ..sort();
@@ -60,16 +72,23 @@ class LetterKeyboard extends StatelessWidget {
       double flex = 1,
       (Color fill, Color fg)? colors,
       List<Mark?>? quad,
+      Haptic feel = Haptic.key,
     }) {
+      // each press has its own feel (see [Haptic])
+      void press() {
+        Haptics.fire(feel);
+        tap();
+      }
+
       if (quad != null && quad.any((m) => m != null)) {
         return Expanded(
           flex: (flex * 10).round(),
           child: Padding(
-            padding: const EdgeInsets.all(2.5),
+            padding: EdgeInsets.all(gap),
             child: InkWell(
-              onTap: tap,
+              onTap: press,
               borderRadius: BorderRadius.circular(3),
-              child: _QuadKey(label: label, marks: quad),
+              child: _QuadKey(label: label, marks: quad, height: keyHeight),
             ),
           ),
         );
@@ -87,12 +106,12 @@ class LetterKeyboard extends StatelessWidget {
       return Expanded(
         flex: (flex * 10).round(),
         child: Padding(
-          padding: const EdgeInsets.all(2.5),
+          padding: EdgeInsets.all(gap),
           child: InkWell(
-            onTap: tap,
+            onTap: press,
             borderRadius: BorderRadius.circular(3),
             child: Container(
-              height: 46,
+              height: keyHeight,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: fill,
@@ -105,7 +124,9 @@ class LetterKeyboard extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  fontSize: label.length > 1 ? 11 : 16,
+                  fontSize: label.length > 1
+                      ? (phone ? 13 : 11)
+                      : (phone ? 21 : 16),
                   fontWeight: FontWeight.bold,
                   color: fg,
                 ),
@@ -117,7 +138,7 @@ class LetterKeyboard extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: EdgeInsets.symmetric(horizontal: phone ? 2 : 6),
       child: Column(
         children: [
           for (var i = 0; i < rows.length; i++)
@@ -133,6 +154,7 @@ class LetterKeyboard extends StatelessWidget {
                     onEnter,
                     flex: 1.6,
                     colors: (c.primary, c.onPrimary),
+                    feel: Haptic.submit,
                   ),
                 for (final l in rows[i])
                   key(l, () => onLetter(l), mark: marks[l], quad: quadMarks[l]),
@@ -142,6 +164,7 @@ class LetterKeyboard extends StatelessWidget {
                     onBack,
                     flex: 1.6,
                     colors: (c.errorContainer, c.onErrorContainer),
+                    feel: Haptic.erase,
                   ),
                 if (i > 2 && rows[i].length < 10)
                   Spacer(flex: (10 - rows[i].length) * 5),
@@ -166,9 +189,14 @@ class LetterKeyboard extends StatelessWidget {
 /// average. The parts are painted without anti-aliasing at their shared edges,
 /// so no seam shows between them.
 class _QuadKey extends StatelessWidget {
-  const _QuadKey({required this.label, required this.marks});
+  const _QuadKey({
+    required this.label,
+    required this.marks,
+    required this.height,
+  });
   final String label;
   final List<Mark?> marks;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +218,7 @@ class _QuadKey extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),
       child: SizedBox(
-        height: 46,
+        height: height,
         child: Stack(
           fit: StackFit.expand,
           children: [

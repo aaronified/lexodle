@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'background.dart';
 import 'difficulty.dart';
 import 'guess_input.dart';
+import 'haptics.dart';
 import 'history.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -145,6 +146,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   void _submit() {
     if (game.over) return;
     if (!input.complete) {
+      Haptics.fire(Haptic.reject);
       setState(
         () => message = input.hasBlank
             ? 'fill the blanks'
@@ -158,6 +160,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       return;
     }
     if (!widget.bank.valid.contains(word)) {
+      Haptics.fire(Haptic.reject);
       setState(() => message = 'not in the word list');
       return;
     }
@@ -184,7 +187,10 @@ class _MultiGamePageState extends State<MultiGamePage> {
       } else {
         _analysis.add(null);
       }
-      if (game.over) _finish();
+      if (game.over) {
+        Haptics.fire(game.won ? Haptic.win : Haptic.lose);
+        _finish();
+      }
     });
   }
 

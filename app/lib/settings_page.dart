@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'backup.dart';
 import 'donate.dart';
+import 'haptics.dart';
 import 'main.dart';
 import 'routes.dart';
 import 'stepper_choice.dart';
@@ -44,6 +45,30 @@ class SettingsPage extends StatelessWidget {
                       ],
                       selected: appState.themeMode,
                       onChanged: (t) => appState.setup(themeMode: t),
+                    ),
+                    const SizedBox(height: 24),
+                    const Caption('touch'),
+                    const SizedBox(height: 6),
+                    SwitchListTile(
+                      key: const ValueKey('haptics-switch'),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: const Text('vibrate on press'),
+                      subtitle: Text(
+                        'a light tap for a letter, a click for backspace, a '
+                        'medium one for enter, a knock for a word that is not '
+                        'allowed. phones only',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: c.onSurface.withValues(alpha: dimAlpha),
+                        ),
+                      ),
+                      value: appState.haptics,
+                      onChanged: (on) {
+                        appState.setHaptics(on);
+                        // so the player feels what was just turned on
+                        if (on) Haptics.fire(Haptic.submit);
+                      },
                     ),
                     const SizedBox(height: 24),
                     const Caption('backup'),

@@ -66,7 +66,8 @@ void main() {
     final last = tester.getTopRight(
       find.ancestor(of: find.text('ú'), matching: find.byType(InkWell)),
     );
-    expect(last.dx - first.dx, closeTo(420 - 12 - 5, 3));
+    // a phone: 2 dp beside the row, 2 dp round each key
+    expect(last.dx - first.dx, closeTo(420 - 4 - 4, 3));
   });
 
   testWidgets('a language with no extra letters has no extra row', (

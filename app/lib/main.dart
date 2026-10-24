@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'arrow_scroll.dart';
 import 'clock.dart';
+import 'haptics.dart';
 import 'licences.dart';
 import 'routes.dart';
 import 'store.dart';
@@ -126,7 +127,9 @@ class LexodleApp extends StatelessWidget {
         initialRoute: initialRoute,
         navigatorObservers: observers,
         // up and down scroll whatever the mouse is over, on every screen
-        builder: (context, child) => ArrowScroll(child: child!),
+        // and a press anywhere gives a short vibration on a phone
+        builder: (context, child) =>
+            TapHaptics(child: ArrowScroll(child: child!)),
         onGenerateRoute: onGenerateRoute,
         onGenerateInitialRoutes: onGenerateInitialRoutes,
       ),

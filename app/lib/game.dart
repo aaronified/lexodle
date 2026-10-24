@@ -7,6 +7,7 @@ import 'background.dart';
 import 'daily.dart';
 import 'difficulty.dart';
 import 'guess_input.dart';
+import 'haptics.dart';
 import 'history.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -167,6 +168,7 @@ class _GamePageState extends State<GamePage> {
   void _submit() {
     if (over) return;
     if (!input.complete) {
+      Haptics.fire(Haptic.reject);
       setState(
         () => message = input.hasBlank
             ? 'fill the blanks'
@@ -176,10 +178,12 @@ class _GamePageState extends State<GamePage> {
     }
     final word = input.word;
     if (guesses.contains(word)) {
+      Haptics.fire(Haptic.reject);
       setState(() => message = 'already guessed');
       return;
     }
     if (!widget.bank.valid.contains(word)) {
+      Haptics.fire(Haptic.reject);
       setState(() => message = 'not in the word list');
       return;
     }
@@ -240,7 +244,10 @@ class _GamePageState extends State<GamePage> {
     if (solved || guesses.length >= tries) {
       over = true;
       won = solved;
-      if (!restoring) _finish();
+      if (!restoring) {
+        Haptics.fire(solved ? Haptic.win : Haptic.lose);
+        _finish();
+      }
     }
     final d = _daily;
     if (d != null && !restoring) {
@@ -501,7 +508,8 @@ class _GamePageState extends State<GamePage> {
       return Text(message, style: TextStyle(color: c.error));
     }
     if (over) return const SizedBox();
-    final h = appState.helper;
+    // the daily never shows the helper: only the tries left
+    final h = _daily != null ? Helper.off : appState.helper;
     final left = '${tries - guesses.length} tries left';
     if (guesses.isEmpty) return Caption(left);
     final m = metrics.last;

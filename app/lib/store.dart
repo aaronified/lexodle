@@ -787,6 +787,17 @@ class AppState extends ChangeNotifier {
   int pool = defaultPool;
   bool seenHowTo = false;
 
+  /// Whether presses give a short vibration (on a phone). On until turned off.
+  bool haptics = true;
+
+  void setHaptics(bool on) {
+    haptics = on;
+    try {
+      _prefs?.setBool('haptics', on);
+    } catch (_) {}
+    notifyListeners();
+  }
+
   /// Whether the app looks for a newer version by itself when it opens (at most
   /// once a day). Off until chosen: each check is a request to GitHub.
   bool autoUpdateCheck = false;
@@ -1183,6 +1194,7 @@ class AppState extends ChangeNotifier {
         themeMode = ThemeMode.values[ti];
       }
       seenHowTo = p.getBool('seenHowTo') ?? false;
+      haptics = p.getBool('haptics') ?? true;
       autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
       final last = p.getInt('lastUpdateCheck');
       if (last != null) {

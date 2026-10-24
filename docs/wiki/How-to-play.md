@@ -52,6 +52,16 @@ guess beside the best picks at that point; how the guess divided the pool of pos
 against the pool you landed in; and a short reading of the step. Your guess can be a valid word
 that the game never uses as an answer; the review says so, and nothing more.
 
+The **daily** never shows the helper, whatever the setting is: only the tries left. 
+
+## Touch
+
+On a phone the on-screen keyboard has bigger keys, and every press gives a short vibration, each with
+its own feel: a light tap for a letter, a click for backspace, a medium tap for enter and for the
+buttons, a heavy knock for a word that is not allowed, a double knock for a win and a long buzz for a
+loss. A press that is only a scroll gives nothing. The settings have a switch ("vibrate on press") to turn
+it off. Phones only; it does nothing on a desktop or the web.
+
 When a game ends, the answer's pronunciation (IPA and audio), meaning, synonyms and antonyms are
 fetched from [Wiktionary](https://en.wiktionary.org), with a link to the full entry. If
 Wiktionary has no entry or is unreachable, the game carries on without it.
