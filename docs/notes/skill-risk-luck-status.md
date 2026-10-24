@@ -36,22 +36,26 @@ are in `docs/paper/` (see its README); this file is what was *decided* and what 
    gets every guess above 90 in 27% of won games, a casual one never).
 5. Paper style: direct and succinct, no rhetoric.
 
-## Daring (the owner's word for boldness): built, 2026-10-24
+## Daring (the owner's word for boldness): redefined 2026-10-24
 
-Risk of a guess = `H - H2` (Shannon minus collision entropy, in bits). **Daring** = of the
-guesses with *strictly higher skill*, the share that were less risky than the one played;
-the best-skill guess has nothing better to compare with, so it has none. It is in
-`logic.dart` (`splitRisk`, `Landscape.daringOf`, `GuessMetrics.daring`), in the review under
-"the pool", in the history rows, and in the paper (Section 6). The first definition
-(`boldness_calibration.py`, percentile among every guess) is superseded and kept for the record.
-The calibration is `app/tools/calibrate_styles.dart`; results in
-`docs/paper/experiments/results/daring_calibration.txt`.
+Risk of a guess = `H - H2` (Shannon minus collision entropy, in bits) is a property of the guess
+and stays in the accounting. **Daring** is now about going for the whole word: `100 * [guess could
+be the answer] * (1 - skill/100) * (1 - chance it is the answer, by frequency) * (1 - 1/tries
+left)`. It is 0 for a probe, on the last try, and for a best-split guess that also fits. It is in
+`logic.dart` (`daringOf`, `GuessMetrics.daring/possible/winChance/triesLeft`); stored games carry
+`metricsVersion` 2 and older ones are scored again. The share-of-safer-guesses daring and the first
+(percentile) one are superseded; the latter is kept for the record in `boldness_calibration.py`.
+Calibration: `app/tools/calibrate_styles.dart` (`results/daring_calibration.txt`): frequent and
+random-fit about 20, best-fit about 4, wild about 6, best 0. Splits 2.5 / 12 / 12.
+Tries: `app/tools/predict_tries.dart` (`results/predict_tries.txt`): skill + luck explain 0.46 to
+0.60 of the variance in tries, daring adds 0.015 to 0.04. Quartet and relay have no daring weights
+(every possible word is as likely as the next).
 
 ## Also built (2026-10-24)
 
 - **History** as two tables (games, guesses) with the cached scores stamped by
   `metricsVersion`; games saved under an older one are scored again when the history page
-  opens (`replay.dart`). In the backup as one compact line. Last 300 games.
+  opens (`replay.dart`). In the backup as one compact line. Up to 10,000 games, saved by month.
 - **Playstyles**: six (analyst, maverick, steady, gambler, wanderer, wildcard) from the means of
   skill and daring over the last 100 classic games, with a margin against flapping; shown on the
   home page; 8 achievements. **Thresholds come from simulated players at five letters, not from
@@ -66,8 +70,8 @@ The calibration is `app/tools/calibrate_styles.dart`; results in
 2. A profile of tendencies and rule-based suggestions (best opener for the language, play safer
    when bold guesses lose, try a guess that can win when few words remain), on the history page.
 3. **Recalibrate the playstyle thresholds on real play, and per word length**: skill is not
-   comparable across lengths (a player who ignores the clues scores 47 at five letters and 67 at
-   eight), and daring is relative to the language (sharp-bold is 48 in English, 83 in French).
+   comparable across lengths (a player who ignores the clues scores 48 at five letters and 69 at
+   eight).
 4. Boldness for quartet and relay race (history rows have none; the playstyle reads classic only).
 
 ## Open

@@ -19,12 +19,12 @@ it, tighten it and extend it.
   uncorrelated with skill and with itself.
 - Why the two more obvious luck definitions fail (unbounded below, or biased), with
   explicit counterexamples.
-- **Daring**: of the guesses with higher skill, the share that were less risky than the
-  one played (0 for the best guess, which has nothing better to compare with). It is
-  rank-based, so it does not depend on the scale of skill or risk. It is reported as a
-  trait of the player, not added to the accounting. Simulated players of eight habits
-  show where each lands on skill and daring, which sets the thresholds of the app's six
-  playstyles.
+- **Daring**: how far a guess went for the whole word instead of the clues: zero for a guess
+  that cannot be the answer, else the product of what it cost in skill, how unlikely the word
+  was, and the tries to spare. It is a trait of the player, not added to the accounting.
+  Simulated players of seven habits show where each lands on skill and daring, which sets the
+  thresholds of the app's six playstyles, and a regression on simulated games shows daring adds
+  1.5 to 4 points of R^2 to skill and luck when predicting the tries a game takes.
 - Extensions to the quartet and relay-race modes (log-weighted combination, head
   start), an exact algorithm and its cost, experiments on a real word list, a
   negative result on a capacity bound, and a list of open problems.
@@ -40,6 +40,7 @@ it, tighten it and extend it.
 | Last-try luck | Proposition 6 |
 | Reduction = skill + risk + luck, exactly | Proposition 7 |
 | Daring: definition and properties | Definition 5, Proposition 8 (Section 6) |
+| Do skill, luck and daring predict the tries? | Section 9.6, Table `tab:tries` |
 | Several boards | Proposition 9 |
 | Simulated players, playstyle thresholds | Section 9.5 |
 | Open problems | Section 10 |
@@ -77,7 +78,8 @@ the word list the app ships (`app/assets/words/en.txt`). Python 3, no packages.
 | `reduction_accounting.py` | skill + risk + luck = total reduction, checked on real guesses | `results/reduction_accounting.txt` |
 | `worked_game.py` | one real game (caret, least, agent) priced in skill, risk and luck | `results/worked_game.txt` |
 | `play_skill.py` | log skill of a strong and a casual simulated player, for calibrating thresholds (a few minutes) | `results/play_skill.txt` |
-| `../../app/tools/calibrate_styles.dart` | eight simulated players through the app's own skill and daring maths, in four settings (Dart, run from `app`: `dart run tools/calibrate_styles.dart en 5 200`, about 2 minutes) | `results/daring_calibration.txt` |
+| `../../app/tools/calibrate_styles.dart` | seven simulated players through the app's own skill and daring maths, in four settings (Dart, run from `app`: `dart run tools/calibrate_styles.dart en 5 200`, about 2 minutes) | `results/daring_calibration.txt` |
+| `../../app/tools/predict_tries.dart` | tries a game takes on its skill, luck and daring, by least squares over simulated games (Dart, from `app`: `dart run tools/predict_tries.dart en 5 400`, about 3 minutes) | `results/predict_tries.txt` |
 | `boldness_calibration.py` | the first definition of boldness (every guess, not only the better ones); superseded by daring and kept for the record | `results/boldness_calibration.txt` |
 | `verify_theorems.py` | numerical checks of the theorems, independent of the app (about a minute) | `results/verify_theorems.txt` |
 

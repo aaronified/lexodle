@@ -74,10 +74,11 @@ would give; the expected pool left is *E* = Σ(group size)² / *N*. The maths, w
   chance of landing in a smaller one. 0% is the middle outcome, and over every possible answer
   it averages exactly 0. On the last try only a word that fits the clues can win, so luck is
   then about the pick itself.
-- **daring**, from 0 to 100: of the guesses that scored strictly higher skill, the share that were
-  *less risky* than yours (risk is how much more weight the split puts on a few big groups). It
-  says you chose a bolder guess than you needed to, rather than showing skill. The best guess has
-  nothing better to compare with, so it has none.
+- **daring**, from 0 to 100: how much your guess went for the whole word instead of the clues. A
+  guess that cannot be the answer has none. One that can scores higher the more it cost in skill,
+  the less likely that word was (by how common it is), and the more tries you had left. With one
+  try left going for the word is the only play, so it has none; neither does a guess that is both
+  the best split and a possible answer. Good players seldom go above 10.
 - **info gained** = (1 − ln(words left) / ln(words at the start)) × 100, cumulative, as in
   WordleBot. It reaches 100% when one word is left.
 
@@ -155,7 +156,7 @@ The **history** page (tap your playstyle on the home screen) has:
   review, rebuilt from the guesses alone.
 
 Your **playstyle** is read from your last 100 classic games (a daily is one): the means of skill
-and of daring over the guesses that had a choice to make, once you have 10 games. Skill gives three
+and of daring (how much you go for the word itself) over the guesses that had a choice to make, once you have 10 games. Skill gives three
 tiers (loose, solid, sharp) and daring splits each in two, which makes six styles, each with an
 icon shown on the home page:
 
@@ -166,8 +167,8 @@ icon shown on the home page:
 | **loose** | wanderer  | wildcard |
 
 It moves as you play, and a margin around the line keeps one game either side of it from
-changing your style. The thresholds come from simulated players of eight habits played through the
-app's own maths, in [`docs/paper`](docs/paper) (Section 9.5); they are **not measured on people
+changing your style. The thresholds come from simulated players of seven habits played through the
+app's own maths, in [`docs/paper`](docs/paper) (Section 9.5, and 9.6 for how daring predicts the tries); they are **not measured on people
 yet**, and skill is not comparable across word lengths, so treat the style as a first reading.
 
 ### Achievements
