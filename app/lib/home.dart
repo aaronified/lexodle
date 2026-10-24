@@ -167,7 +167,10 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 12),
                           DifficultyMatrix(
                             tries: appState.tries,
-                            pool: appState.pool,
+                            pool: effectivePool(
+                              appState.pool,
+                              lang.counts[length],
+                            ),
                             available: lang.counts[length],
                             onChanged: (t, pl) =>
                                 appState.setup(tries: t, pool: pl),

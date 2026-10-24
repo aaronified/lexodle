@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'difficulty.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -30,7 +31,10 @@ class _SolverPageState extends State<SolverPage> {
   // The words the answer can be, from the difficulty's word pool, exactly as
   // the game draws its answers. Guesses are still scored over every word the
   // game accepts (see _solve).
-  late final List<String> _answers = widget.bank.answers(length, appState.pool);
+  late final List<String> _answers = widget.bank.answers(
+    length,
+    effectivePool(appState.pool, widget.bank.language.counts[length]),
+  );
   late final Set<String> _letters = widget.bank.letters(length);
 
   final history = <(String, List<Mark>)>[];

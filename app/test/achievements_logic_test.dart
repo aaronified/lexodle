@@ -360,6 +360,53 @@ void main() {
       expect(states['mastery']!.seen, {'en', 'fr'});
     });
 
+    test(
+      'a win at a setting the language does not offer does not count',
+      () async {
+        final langs = await WordBank.languages();
+        final id = langs.firstWhere((l) => l.code == 'id');
+        expect(masteryWon(id, null), 0);
+        // 6,000 words is more than Indonesian has at any length
+        final obscure = {
+          for (final len in id.lengths) '$len:6:6000',
+          '5:6:500', // offered
+          '5:6:1500', // offered
+          '9:6:500', // a length it does not have
+          '5:2:500', // not a tries level
+          'junk',
+        };
+        expect(masteryWon(id, obscure), 2);
+      },
+    );
+
+    test('a language only offers the pools it has the words for', () async {
+      final langs = await WordBank.languages();
+      for (final l in langs) {
+        for (final len in l.lengths) {
+          final n = l.counts[len];
+          for (final p in poolsOffered(n)) {
+            if (p != poolSizes.first) {
+              expect(n, greaterThanOrEqualTo(p), reason: '${l.code} $len $p');
+            }
+          }
+        }
+      }
+      // Danish and Indonesian have no obscure pool at any length
+      for (final code in ['da', 'id']) {
+        final l = langs.firstWhere((l) => l.code == code);
+        for (final len in l.lengths) {
+          expect(
+            poolsOffered(l.counts[len]),
+            isNot(contains(6000)),
+            reason: '$code $len',
+          );
+        }
+      }
+      // a language with plenty keeps all four
+      final cs = langs.firstWhere((l) => l.code == 'cs');
+      expect(poolsOffered(cs.counts[5]), poolSizes);
+    });
+
     test('mastery has no progress bar of its own, it is a collection', () {
       expect(byId('mastery').numbered, isFalse);
       expect(byId('mastery').track, Track.badges);
@@ -370,10 +417,12 @@ void main() {
       final langs = await WordBank.languages();
       final en = langs.firstWhere((l) => l.code == 'en');
       final state = AppState();
+      // every length at every tries level and at every pool English has the
+      // words for (not 6,000 four-letter words: it has fewer)
       final cells = {
         for (final len in en.lengths)
           for (final t in triesLevels)
-            for (final p in poolSizes) '$len:${t.$2}:$p',
+            for (final p in poolsOffered(en.counts[len])) '$len:${t.$2}:$p',
       };
       expect(cells.length, masteryTarget(en));
       // every setting but the last one

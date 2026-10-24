@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'background.dart';
+import 'difficulty.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -41,6 +42,10 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   late final GameMode mode = appState.mode;
   late final int length;
+  late final int pool = effectivePool(
+    appState.pool,
+    widget.bank.language.counts[length],
+  );
   late final int tries;
   late final List<String> _pool;
   late final Set<String> _letters;
@@ -64,7 +69,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     super.initState();
     length = appState.length;
     tries = triesFor(mode, appState.tries);
-    _pool = widget.bank.answers(length, appState.pool);
+    _pool = widget.bank.answers(length, pool);
     _letters = widget.bank.letters(length);
     _reset();
   }
@@ -86,7 +91,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       mode,
       chooseTargets(
         _pool,
-        widget.bank.answerWeights(length, appState.pool),
+        widget.bank.answerWeights(length, pool),
         mode.boards,
         appState.share,
         _rng,
@@ -188,7 +193,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
           tries: tries,
           used: game.guesses.length,
           won: game.won,
-          pool: appState.pool,
+          pool: pool,
           mode: mode,
           skills: [for (final s in game.steps) s.skill],
           freeRides: game.freeRides,

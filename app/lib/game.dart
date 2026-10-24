@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'background.dart';
 import 'daily.dart';
+import 'difficulty.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -38,7 +39,10 @@ class _GamePageState extends State<GamePage> {
 
   late final Daily? _daily = widget.daily;
   late final int length;
-  late final int pool = _daily == null ? appState.pool : dailyPool;
+  // the saved pool, or the biggest this language has words for at this length
+  late final int pool = _daily == null
+      ? effectivePool(appState.pool, widget.bank.language.counts[length])
+      : dailyPool;
   late final int tries;
   late final List<String> _pool;
   late final Set<String> _letters;

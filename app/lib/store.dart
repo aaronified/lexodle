@@ -158,9 +158,33 @@ String? masteryCell(int length, int tries, int pool) =>
     : null;
 
 /// How many settings a language has to be won at for mastery: every length it
-/// offers at every tries level and pool level.
-int masteryTarget(Language l) =>
-    l.lengths.length * triesLevels.length * poolSizes.length;
+/// offers at every tries level and at every pool level it has the words for
+/// (see [poolsOffered]).
+int masteryTarget(Language l) => [
+  for (final n in l.lengths)
+    triesLevels.length * poolsOffered(l.counts[n]).length,
+].fold(0, (a, b) => a + b);
+
+/// How many of [cells] (`length:tries:pool`) are settings [l] still offers. A
+/// win at a setting a language no longer offers stays recorded but does not
+/// count towards its mastery.
+int masteryWon(Language l, Set<String>? cells) {
+  if (cells == null) return 0;
+  var n = 0;
+  for (final cell in cells) {
+    final p = cell.split(':');
+    if (p.length != 3) continue;
+    final length = int.tryParse(p[0]), tries = int.tryParse(p[1]);
+    final pool = int.tryParse(p[2]);
+    if (length == null || tries == null || pool == null) continue;
+    if (l.lengths.contains(length) &&
+        triesLevels.any((t) => t.$2 == tries) &&
+        poolsOffered(l.counts[length]).contains(pool)) {
+      n++;
+    }
+  }
+  return n;
+}
 
 /// How an achievement is earned.
 enum Track {
@@ -691,7 +715,7 @@ class AppState extends ChangeNotifier {
   /// The languages mastered so far: every length at every difficulty won once.
   List<Language> masteredLanguages() => [
     for (final l in WordBank.loadedLanguages ?? const <Language>[])
-      if ((stats.mastery[l.code]?.length ?? 0) >= masteryTarget(l)) l,
+      if (masteryWon(l, stats.mastery[l.code]) >= masteryTarget(l)) l,
   ];
 
   /// How many different achievements have been earned at least once.

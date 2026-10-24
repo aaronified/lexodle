@@ -79,13 +79,14 @@ void main() {
     expect(find.text('language mastery'), findsOneWidget);
     expect(find.byKey(const ValueKey('mastery-row')), findsOneWidget);
     expect(find.text('no badges yet'), findsOneWidget);
-    expect(find.text('3/80'), findsNothing, reason: 'the list is on its page');
+    expect(find.text('3/68'), findsNothing, reason: 'the list is on its page');
 
     // tapping it opens the language by language list: 3 of English's
-    // 5 lengths x 4 tries x 4 pools = 80 settings
+    // 4 tries x 17 pools = 68 settings: English has the words for 2 pools at 4
+    // letters, 3 at 5, and all 4 at 6, 7 and 8
     await tester.tap(find.byKey(const ValueKey('mastery-row')));
     await tester.pumpAndSettle();
-    expect(find.text('3/80'), findsOneWidget);
+    expect(find.text('3/68'), findsOneWidget);
     expect(find.textContaining('languages mastered'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();

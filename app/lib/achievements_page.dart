@@ -269,7 +269,7 @@ class MasteryPage extends StatelessWidget {
                   final done = langs
                       .where(
                         (l) =>
-                            (mastery[l.code]?.length ?? 0) >= masteryTarget(l),
+                            masteryWon(l, mastery[l.code]) >= masteryTarget(l),
                       )
                       .length;
                   return ListView(
@@ -285,7 +285,7 @@ class MasteryPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       for (final l in langs)
-                        _MasteryRow(l, mastery[l.code]?.length ?? 0),
+                        _MasteryRow(l, masteryWon(l, mastery[l.code])),
                     ],
                   );
                 },

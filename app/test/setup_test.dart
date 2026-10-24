@@ -59,15 +59,51 @@ void main() {
           ),
         ),
       );
-      // wide and obscure both offer all 2,383; common and familiar are intact
-      expect(find.text('2,383 words'), findsNWidgets(2));
-      expect(find.text('wide · all'), findsOneWidget);
-      expect(find.text('obscure · all'), findsOneWidget);
+      // 2,383 words fill common and familiar only: wide (3,000) and obscure
+      // (6,000) are not offered, and a saved 6,000 shows as the biggest left
       expect(find.text('500 words'), findsOneWidget);
+      expect(find.text('1,500 words'), findsOneWidget);
+      expect(find.text('3,000 words'), findsNothing);
+      expect(find.text('6,000 words'), findsNothing);
+      expect(find.text('wide'), findsNothing);
+      expect(find.text('obscure'), findsNothing);
+      expect(find.bySemanticsLabel('3 tries, 6000 words'), findsNothing);
       expect(
-        find.textContaining('answers from all 2,383 most common words'),
+        find.textContaining('answers from the 1,500 most common words'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('a language with plenty offers all four rows', (tester) async {
+      await tester.pumpWidget(
+        host(
+          DifficultyMatrix(
+            tries: 6,
+            pool: 3000,
+            available: 6000,
+            onChanged: (_, _) {},
+          ),
+        ),
+      );
+      for (final t in ['500', '1,500', '3,000', '6,000']) {
+        expect(find.text('$t words'), findsOneWidget, reason: t);
+      }
+      expect(find.text('obscure'), findsOneWidget);
+    });
+
+    test('the pool a saved choice means follows what the language offers', () {
+      expect(poolsOffered(null), poolSizes);
+      expect(poolsOffered(2383), [500, 1500]);
+      expect(poolsOffered(3000), [500, 1500, 3000]); // exactly enough counts
+      expect(poolsOffered(2999), [500, 1500]);
+      expect(poolsOffered(10), [500], reason: 'always the smallest');
+      expect(effectivePool(6000, 2383), 1500);
+      expect(effectivePool(3000, 2383), 1500);
+      expect(effectivePool(1500, 2383), 1500);
+      expect(effectivePool(500, 2383), 500);
+      expect(effectivePool(6000, 6000), 6000);
+      expect(effectivePool(3000, null), 3000);
+      expect(effectivePool(1500, 10), 500);
     });
 
     testWidgets('tapping a cell chooses that tries and pool', (tester) async {
