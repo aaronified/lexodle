@@ -59,12 +59,17 @@ int dailyStreakOf(Map<String, int> log, String today) {
   return n;
 }
 
-/// The seven dates of the week that [today] falls in, Monday first.
-List<String> dailyWeek(String today) {
-  final d = DateTime.tryParse(today);
-  if (d == null) return const [];
-  final monday = -(d.weekday - DateTime.monday);
-  return [for (var i = 0; i < 7; i++) dailyShift(today, monday + i)];
+/// The last [days] dates ending with [today], oldest first: a rolling week,
+/// not a calendar one, so today is always the last of them.
+List<String> dailyRolling(String today, [int days = 7]) {
+  if (DateTime.tryParse(today) == null) return const [];
+  return [for (var i = days - 1; i >= 0; i--) dailyShift(today, -i)];
+}
+
+/// The weekday of [date] as one letter (m t w t f s s), for the calendar.
+String dailyLetter(String date) {
+  final d = DateTime.tryParse(date);
+  return d == null ? '' : 'mtwtfss'[d.weekday - 1];
 }
 
 const _prime = 2147483647; // 2^31 - 1

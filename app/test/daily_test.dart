@@ -82,19 +82,50 @@ void main() {
       expect(dailyShift('nonsense', 3), 'nonsense');
     });
 
-    test('the week runs Monday to Sunday', () {
-      // 2026-10-24 is a Saturday
-      expect(dailyWeek('2026-10-24'), [
+    test('the week is the last seven days, today last', () {
+      expect(dailyRolling('2026-10-24'), [
+        '2026-10-18',
         '2026-10-19',
         '2026-10-20',
         '2026-10-21',
         '2026-10-22',
         '2026-10-23',
         '2026-10-24',
-        '2026-10-25',
       ]);
-      expect(dailyWeek('2026-10-19').first, '2026-10-19'); // a Monday
-      expect(dailyWeek('2026-10-25').first, '2026-10-19'); // a Sunday
+      // whatever the weekday, today is the last, and there are seven
+      for (var d = 0; d < 14; d++) {
+        final today = dailyShift('2026-10-19', d);
+        final week = dailyRolling(today);
+        expect(week.length, 7, reason: today);
+        expect(week.last, today);
+        expect(week.first, dailyShift(today, -6));
+      }
+      // across the end of a month and of a year
+      expect(dailyRolling('2026-11-02').first, '2026-10-27');
+      expect(dailyRolling('2027-01-03'), [
+        '2026-12-28',
+        '2026-12-29',
+        '2026-12-30',
+        '2026-12-31',
+        '2027-01-01',
+        '2027-01-02',
+        '2027-01-03',
+      ]);
+      expect(dailyRolling('2026-10-24', 3), [
+        '2026-10-22',
+        '2026-10-23',
+        '2026-10-24',
+      ]);
+      expect(dailyRolling('nonsense'), isEmpty);
+    });
+
+    test('each day has the letter of its weekday', () {
+      // 2026-10-24 is a Saturday
+      expect(
+        [for (final d in dailyRolling('2026-10-24')) dailyLetter(d)],
+        ['s', 'm', 't', 'w', 't', 'f', 's'],
+      );
+      expect(dailyLetter('nonsense'), '');
     });
   });
 
@@ -573,47 +604,113 @@ void main() {
       );
     }
 
-    testWidgets('shows the streak and this week, double fires doubled', (
+    testWidgets(
+      'shows the streak and the last seven days, double fires doubled',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        await appState.load();
+        dailyClock = () => DateTime(2026, 10, 24, 9); // a Saturday
+        appState.dailyLog = {
+          '2026-10-19': dailySolved, // the day after the week's first
+          '2026-10-20': dailyDouble,
+          '2026-10-21': dailySolved,
+          '2026-10-22': dailyMissed,
+          '2026-10-23': dailySolved,
+          '2026-10-24': dailyDouble,
+        };
+        await show(tester);
+        expect(find.byKey(const ValueKey('daily-streak')), findsOneWidget);
+        // 23rd and 24th solved, the 22nd missed
+        expect(
+          tester.widget<Text>(find.byKey(const ValueKey('streak-count'))).data,
+          '2',
+        );
+        // a rolling week: the seven days up to today, today last, none after it
+        for (final d in ['18', '19', '20', '21', '22', '23', '24']) {
+          expect(
+            find.byKey(ValueKey('daily-day-2026-10-$d')),
+            findsOneWidget,
+            reason: d,
+          );
+        }
+        expect(
+          find.byKey(const ValueKey('daily-day-2026-10-25')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('daily-day-2026-10-17')),
+          findsNothing,
+        );
+        final lefts = [
+          for (final d in ['18', '19', '20', '21', '22', '23', '24'])
+            tester.getTopLeft(find.byKey(ValueKey('daily-day-2026-10-$d'))).dx,
+        ];
+        expect(
+          lefts,
+          orderedEquals([...lefts]..sort()),
+          reason: 'oldest first',
+        );
+        // each day is headed by the letter of its weekday: s m t w t f s
+        String letterOf(String d) => tester
+            .widget<Text>(
+              find.descendant(
+                of: find.byKey(ValueKey('daily-day-2026-10-$d')),
+                matching: find.byType(Text),
+              ),
+            )
+            .data!;
+        expect(
+          [
+            for (final d in ['18', '19', '20', '21', '22', '23', '24'])
+              letterOf(d),
+          ],
+          ['s', 'm', 't', 'w', 't', 'f', 's'],
+        );
+        // one flame a day, two on a double fire (the 20th and the 24th)
+        for (final d in ['18', '19', '21', '22', '23']) {
+          expect(find.byKey(ValueKey('flame-2026-10-$d-0')), findsOneWidget);
+          expect(find.byKey(ValueKey('flame-2026-10-$d-1')), findsNothing);
+        }
+        for (final d in ['20', '24']) {
+          expect(find.byKey(ValueKey('flame-2026-10-$d-0')), findsOneWidget);
+          expect(find.byKey(ValueKey('flame-2026-10-$d-1')), findsOneWidget);
+        }
+        expect(
+          find.bySemanticsLabel('2026-10-24: double fire'),
+          findsOneWidget,
+        );
+        expect(find.bySemanticsLabel('2026-10-22: missed'), findsOneWidget);
+        expect(find.bySemanticsLabel('2026-10-18: not played'), findsOneWidget);
+        semantics.dispose();
+      },
+    );
+
+    testWidgets('the next day the week moves on, and the oldest drops off', (
       tester,
     ) async {
-      final semantics = tester.ensureSemantics();
       await appState.load();
-      dailyClock = () => DateTime(2026, 10, 24, 9); // a Saturday
       appState.dailyLog = {
-        '2026-10-19': dailySolved, // monday
-        '2026-10-20': dailyDouble,
-        '2026-10-21': dailySolved,
-        '2026-10-22': dailyMissed,
-        '2026-10-23': dailySolved,
-        '2026-10-24': dailyDouble,
+        '2026-10-18': dailySolved,
+        '2026-10-24': dailySolved,
       };
+      dailyClock = () => DateTime(2026, 10, 24, 9);
       await show(tester);
-      expect(find.byKey(const ValueKey('daily-streak')), findsOneWidget);
-      // 23rd and 24th solved, the 22nd missed
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('streak-count'))).data,
-        '2',
+        find.byKey(const ValueKey('daily-day-2026-10-18')),
+        findsOneWidget,
       );
-      for (final d in ['19', '20', '21', '22', '23', '24', '25']) {
-        expect(
-          find.byKey(ValueKey('daily-day-2026-10-$d')),
-          findsOneWidget,
-          reason: d,
-        );
-      }
-      // one flame a day, two on a double fire (the 20th and the 24th)
-      for (final d in ['19', '21', '22', '23', '25']) {
-        expect(find.byKey(ValueKey('flame-2026-10-$d-0')), findsOneWidget);
-        expect(find.byKey(ValueKey('flame-2026-10-$d-1')), findsNothing);
-      }
-      for (final d in ['20', '24']) {
-        expect(find.byKey(ValueKey('flame-2026-10-$d-0')), findsOneWidget);
-        expect(find.byKey(ValueKey('flame-2026-10-$d-1')), findsOneWidget);
-      }
-      expect(find.bySemanticsLabel('2026-10-24: double fire'), findsOneWidget);
-      expect(find.bySemanticsLabel('2026-10-22: missed'), findsOneWidget);
-      expect(find.bySemanticsLabel('2026-10-25: not played'), findsOneWidget);
-      semantics.dispose();
+      dailyClock = () => DateTime(2026, 10, 25, 9);
+      appState.refresh(); // what coming back to the app does
+      await tester.pump();
+      expect(find.byKey(const ValueKey('daily-day-2026-10-18')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('daily-day-2026-10-25')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('daily-day-2026-10-24')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('no history is a streak of 0 and an unlit week', (

@@ -280,6 +280,17 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               TextButton(
+                                key: const ValueKey('history-link'),
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  Routes.history,
+                                ),
+                                child: Text(
+                                  'history  ${appState.history.games.length}',
+                                  style: TextStyle(color: c.onSurface),
+                                ),
+                              ),
+                              TextButton(
                                 onPressed: () =>
                                     Navigator.pushNamed(context, Routes.howTo),
                                 child: Text(

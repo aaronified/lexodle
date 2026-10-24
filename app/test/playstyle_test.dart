@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/history.dart';
+import 'package:lexodle/history_page.dart';
+import 'package:lexodle/logo.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/playstyle.dart';
@@ -701,6 +703,59 @@ void main() {
       );
       expect(tip.message, contains('maverick'));
       expect(tip.message, contains(maverick.blurb));
+    });
+
+    testWidgets('the icon is on the middle of the header row', (tester) async {
+      // the name hangs below it: only the icon is centred, level with the logo
+      for (final style in [null, 'analyst', 'wildcard']) {
+        await home(tester, style: style);
+        final icon = find.byKey(ValueKey('style-icon-${style ?? 'unrated'}'));
+        final iconY = tester.getCenter(icon).dy;
+        final logoY = tester.getCenter(find.byType(LexodleLogo)).dy;
+        final titleY = tester.getCenter(find.text('lexodle')).dy;
+        expect(iconY, closeTo(logoY, 1), reason: '$style: level with the logo');
+        expect(iconY, closeTo(titleY, 1), reason: '$style: and with the name');
+        // and the style's name is under the icon, not beside it
+        expect(
+          tester.getTopLeft(find.byKey(const ValueKey('style-label'))).dy,
+          greaterThan(tester.getBottomLeft(icon).dy - 1),
+        );
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets('the history is a link in the footer, with how many games', (
+      tester,
+    ) async {
+      await home(tester);
+      expect(find.byKey(const ValueKey('history-link')), findsOneWidget);
+      expect(find.text('history  0'), findsOneWidget);
+      addGames(appState.history, 3);
+      appState.refresh();
+      await tester.pumpAndSettle();
+      expect(find.text('history  3'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('history-link')));
+      await tester.pumpAndSettle();
+      expect(find.byType(HistoryPage), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(HistoryPage), findsNothing);
+    });
+
+    testWidgets('the history opens before any game, and from the style', (
+      tester,
+    ) async {
+      await home(tester);
+      // not rated, nothing played: both ways in work
+      await tester.tap(find.byKey(const ValueKey('style-chip')));
+      await tester.pumpAndSettle();
+      expect(find.byType(HistoryPage), findsOneWidget);
+      expect(find.text('no games yet'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('history-link')));
+      await tester.pumpAndSettle();
+      expect(find.byType(HistoryPage), findsOneWidget);
     });
 
     testWidgets('it fits beside the name on the narrowest phone', (

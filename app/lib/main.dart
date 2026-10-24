@@ -86,7 +86,23 @@ void main() {
   TrustedClock.sync().then((ok) {
     if (ok) appState.refresh();
   });
+  WidgetsBinding.instance.addObserver(AppResume());
   runApp(const LexodleApp());
+}
+
+/// Coming back to the app after it was left, perhaps over midnight: the day it
+/// shows (the daily, the streak and its week) may have changed, so everything
+/// that reads the date is drawn again, and the server's time is asked for
+/// again if the last answer is old.
+class AppResume with WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    appState.refresh();
+    if (!TrustedClock.isFresh()) {
+      TrustedClock.sync().then((_) => appState.refresh());
+    }
+  }
 }
 
 class LexodleApp extends StatelessWidget {

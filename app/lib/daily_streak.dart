@@ -4,13 +4,12 @@ import 'daily.dart';
 import 'main.dart';
 import 'ui.dart';
 
-/// The home page's daily streak: a fire with the days in a row, and this week
-/// (Monday first) with a fire on each day the daily was solved, two when it was
-/// a double fire. Unlit fires are days not solved; today has a border.
+/// The home page's daily streak: a fire with the days in a row, and the last
+/// seven days (a rolling week, today last) with a fire on each day the daily was
+/// solved, two when it was a double fire. Unlit fires are days not solved; today
+/// has a border.
 class DailyStreak extends StatelessWidget {
   const DailyStreak({super.key});
-
-  static const _letters = ['m', 't', 'w', 't', 'f', 's', 's'];
 
   // it listens for itself: the home page builds it as a const, which Flutter
   // does not rebuild when the page does, so a daily finished in front of it
@@ -22,7 +21,7 @@ class DailyStreak extends StatelessWidget {
   Widget _build(BuildContext context, Widget? _) {
     final c = Theme.of(context).colorScheme;
     final today = dailyDate();
-    final week = dailyWeek(today);
+    final week = dailyRolling(today);
     final streak = appState.dailyStreak;
     final lit = c.tertiary;
     final unlit = c.outlineVariant;
@@ -101,7 +100,7 @@ class DailyStreak extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                _letters[i],
+                dailyLetter(date),
                 style: TextStyle(
                   fontSize: 11,
                   color: c.onSurface.withValues(alpha: dimAlpha),
