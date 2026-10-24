@@ -93,7 +93,9 @@ elsewhere. It uses the same settings as the game: the language, the letters and 
 its tiles to match the colours the game showed (grey, yellow, green), and add it. It lists the
 words still possible, most likely first, and recommends the next guess: the word that leaves the
 fewest words in expectation, drawn from the 600 most frequent words plus the possible answers.
-Tap a word to use it as the next guess. Guesses are scored over every word the game accepts
+The advice follows the tries left: with two left it picks the guess most likely to solve it by the
+last try (the most groups, weighted by how common each word is), and with one left only the
+likeliest word that fits, since nothing else can win. Tap a word to use it as the next guess. Guesses are scored over every word the game accepts
 (up to 6,000 per length), while the answer is looked for in the pool, so raise the pool if the
 game you are solving uses rarer words.
 

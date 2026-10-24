@@ -72,7 +72,14 @@ class _SolverPageState extends State<SolverPage> {
       left,
       widget.bank.guessable(length),
     );
-    final r = await recommend(left, candidates);
+    // the tries left shape the advice: with two, the guess most likely to solve
+    // it in time; with one, only a word that fits
+    final r = await recommendWithin(
+      left,
+      candidates,
+      max(tries - history.length, 1),
+      weights: widget.bank.weightMap(length),
+    );
     if (!mounted || run != _run) return; // a newer guess superseded this one
     setState(() {
       rec = r;
@@ -353,7 +360,11 @@ class _SolverPageState extends State<SolverPage> {
         ] else if (r == null || busy)
           const Caption('working out the best guess…')
         else ...[
-          const Caption('recommended guess'),
+          Caption(switch (tries - history.length) {
+            <= 1 => 'last try: the likeliest word that fits',
+            2 => 'two tries left: the guess most likely to solve it in time',
+            _ => 'recommended guess',
+          }),
           const SizedBox(height: 4),
           InkWell(
             onTap: () => _use(r.word),
@@ -370,7 +381,8 @@ class _SolverPageState extends State<SolverPage> {
             ),
           ),
           Text(
-            'skill ${r.skill.toStringAsFixed(1)} · expect about '
+            '${r.winChance == null ? 'skill ${r.skill.toStringAsFixed(1)}' : 'about ${(r.winChance! * 100).toStringAsFixed(0)}% to solve it'}'
+            ' · expect about '
             '${r.expected.toStringAsFixed(1)} words left'
             '${r.canWin ? ' · could be the answer' : ''}  (tap to use)',
             style: TextStyle(

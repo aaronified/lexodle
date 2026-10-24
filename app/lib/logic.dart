@@ -345,8 +345,19 @@ GuessMetrics scoreGuess(
 }
 
 class Recommendation {
-  const Recommendation(this.word, this.skill, this.expected, this.canWin);
+  const Recommendation(
+    this.word,
+    this.skill,
+    this.expected,
+    this.canWin, {
+    this.winChance,
+  });
   final String word;
+
+  /// The chance that the tries left are enough to solve it with this guess,
+  /// when it was picked for that (see [recommendWithin]); null otherwise. Skill
+  /// is then not worked out and is 0.
+  final double? winChance;
 
   /// Skill the guess would score now (see [GuessMetrics]).
   final double skill;
@@ -471,6 +482,83 @@ Future<Recommendation?> recommend(
   return top.isEmpty ? null : top.first;
 }
 
+/// The best next guess for the tries left, [triesLeft] counting this one.
+///
+/// With three or more it is [recommend]'s: the split that leaves fewest words.
+/// With two, the guess that gives the best chance of solving it by the last try
+/// (its own chance of being the answer, plus the chance that the likeliest word
+/// of the group the answer falls in is it; with every word as likely as the
+/// next, that is the guess with the most groups). With one, the likeliest word
+/// that fits: only a word that can be the answer can win, so nothing else is
+/// worth a try. [weights] is how common each word is, to weigh the chances;
+/// without it they are equal.
+Future<Recommendation?> recommendWithin(
+  List<String> eligible,
+  Iterable<String> candidates,
+  int triesLeft, {
+  Map<String, int>? weights,
+}) async {
+  if (eligible.isEmpty) return null;
+  if (triesLeft >= 3) return recommend(eligible, candidates);
+  int weightOf(String w) => max(weights?[w] ?? 1, 1);
+  var total = 0;
+  for (final w in eligible) {
+    total += weightOf(w);
+  }
+  final n = eligible.length;
+  if (triesLeft <= 1) {
+    var pick = eligible.first;
+    for (final w in eligible) {
+      if (weightOf(w) > weightOf(pick)) pick = w;
+    }
+    return Recommendation(
+      pick,
+      0,
+      _sumSquares(eligible, pick) / n,
+      true,
+      winChance: weightOf(pick) / total,
+    );
+  }
+  final possible = eligible.toSet();
+  String? pick;
+  var bestChance = -1.0;
+  var scored = 0;
+  for (final g in candidates) {
+    var seen = 0;
+    for (final w in eligible) {
+      final k = patternCode(w, g);
+      final x = weightOf(w);
+      if (_maxWeight[k] == 0) _touched[seen++] = k;
+      if (x > _maxWeight[k]) _maxWeight[k] = x;
+    }
+    var sum = 0;
+    for (var i = 0; i < seen; i++) {
+      sum += _maxWeight[_touched[i]];
+      _maxWeight[_touched[i]] = 0;
+    }
+    final chance = sum / total;
+    // a word that could be the answer wins a tie; otherwise the first (the
+    // more common) stays
+    if (chance > bestChance + 1e-12 ||
+        (chance > bestChance - 1e-12 &&
+            pick != null &&
+            !possible.contains(pick) &&
+            possible.contains(g))) {
+      bestChance = chance;
+      pick = g;
+    }
+    if (++scored % 40 == 0) await Future<void>.delayed(Duration.zero);
+  }
+  if (pick == null) return null;
+  return Recommendation(
+    pick,
+    0,
+    _sumSquares(eligible, pick) / n,
+    possible.contains(pick),
+    winChance: bestChance,
+  );
+}
+
 /// Share of the starting uncertainty removed, as in WordleBot's "info gained":
 /// 1 - ln(words left) / ln(words at the start), in percent. Cumulative: it
 /// reaches 100 when one word is left.
@@ -590,6 +678,7 @@ int splitSumSquares(List<String> eligible, String guess) =>
 /// and the patterns seen, so each guess costs one pass and no allocation.
 final _counts = Int32List(6561);
 final _touched = Int32List(6561);
+final _maxWeight = List<int>.filled(6561, 0);
 
 int _sumSquares(List<String> eligible, String guess) {
   var seen = 0;

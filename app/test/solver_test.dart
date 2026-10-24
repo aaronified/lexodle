@@ -80,4 +80,30 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     expect(find.textContaining('2 tries left'), findsOneWidget);
   });
+
+  for (final (tries, caption) in [
+    (2, 'two tries left: the guess most likely to solve it in time'),
+    (1, 'last try: the likeliest word that fits'),
+    (6, 'recommended guess'),
+  ]) {
+    testWidgets('solver with $tries tries left advises for them', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(420, 900));
+      appState.setup(lang: 'fr', length: 4, tries: tries);
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
+        ),
+      ))!;
+      await tester.pumpWidget(MaterialApp(home: SolverPage(bank: bank)));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text(caption), findsOneWidget);
+      if (tries <= 2) {
+        expect(find.textContaining('% to solve it'), findsOneWidget);
+      } else {
+        expect(find.textContaining('skill '), findsOneWidget);
+      }
+    });
+  }
 }

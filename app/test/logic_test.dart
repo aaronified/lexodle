@@ -674,6 +674,74 @@ void main() {
     });
   });
 
+  group('recommend for the tries left', () {
+    const field = ['ab', 'ac', 'ad', 'bc'];
+
+    test(
+      'with one try only a word that fits is worth it, the likeliest',
+      () async {
+        final r = await recommendWithin(
+          field,
+          ['zz', 'ab', 'ac'],
+          1,
+          weights: {'ab': 1, 'ac': 5, 'ad': 1, 'bc': 1},
+        );
+        expect(r!.word, 'ac');
+        expect(r.canWin, isTrue);
+        expect(r.winChance, closeTo(5 / 8, 1e-9));
+        // even when the candidates hold a better splitter that cannot win
+        final probe = await recommendWithin(field, ['zz'], 1);
+        expect(field, contains(probe!.word));
+      },
+    );
+
+    test(
+      'with two tries it is the guess with the best chance by the last',
+      () async {
+        // ab splits the four into {ab}, {ac, ad}, {bc}: 3 of 4 solved in time
+        final r = await recommendWithin(field, ['zz', 'ab', 'ac'], 2);
+        expect(r!.word, 'ab');
+        expect(r.winChance, closeTo(.75, 1e-9));
+        expect(r.canWin, isTrue);
+        // a guess that tells nothing is not chosen over one that does
+        final dull = await recommendWithin(field, ['zz', 'ab'], 2);
+        expect(dull!.word, 'ab');
+        // with weights the likelier word of each group is the one tried next
+        final w = await recommendWithin(
+          field,
+          ['zz', 'ab'],
+          2,
+          weights: {'ab': 1, 'ac': 1, 'ad': 6, 'bc': 1},
+        );
+        expect(w!.winChance, closeTo((1 + 6 + 1) / 9, 1e-9));
+      },
+    );
+
+    test(
+      'a guess that cannot be the answer can still be the one for two tries',
+      () async {
+        // two words that no word of the field can split as well as a probe does
+        const two = ['aab', 'aba', 'baa', 'bbb'];
+        final r = await recommendWithin(two, ['aab', 'zzz', 'abz'], 2);
+        expect(r!.winChance, greaterThanOrEqualTo(.5));
+        expect(r.canWin, two.contains(r.word));
+      },
+    );
+
+    test('with three or more it is the plain recommendation', () async {
+      final plain = await recommend(field, ['zz', 'ab', 'ac']);
+      for (final t in [3, 6]) {
+        final r = await recommendWithin(field, ['zz', 'ab', 'ac'], t);
+        expect(r!.word, plain!.word);
+        expect(r.winChance, isNull);
+      }
+    });
+
+    test('nothing left, nothing to recommend', () async {
+      expect(await recommendWithin([], ['ab'], 2), isNull);
+    });
+  });
+
   group('recommend', () {
     test('picks the guess that splits the field best', () async {
       final r = await recommend(['aa', 'ab', 'ac'], ['ad', 'ab', 'ax']);
