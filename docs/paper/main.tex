@@ -795,6 +795,13 @@ discreteness of the tries and what the game means lose (the number of guesses wi
 choice, and when the luck came). Luck explains more than skill alone because a game that
 ends early did so by a lucky split.
 
+The history page uses the fits to draw the expected guesses of a period. It takes the mean
+of the three fits, $8.05-0.0413\,\text{skill}-0.0272\,\text{luck}-0.0316\,\text{daring}$, and
+shows each term as what it does to a base. Skill, which is never negative, can only take
+guesses off; luck can do either; daring is measured from a typical level of $8$ so that it
+too can add or take off. The weights come from simulated players and are a first reading,
+not measured on people.
+
 \subsection{A worked game}\label{sec:game}
 
 \texttt{worked\_game.py} follows one game: \textsc{caret}, then \textsc{least}, against

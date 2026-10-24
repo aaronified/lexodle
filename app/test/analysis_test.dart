@@ -173,11 +173,40 @@ void main() {
       daring: daring,
     );
 
+    test('the expected guesses come from skill, luck and daring', () {
+      final good = stats(skill: 95, luck: 0, daring: 8);
+      final bad = stats(skill: 40, luck: 0, daring: 8);
+      final b = guessBreakdown(good)!;
+      // a typical daring adds nothing, and skill only takes guesses off
+      expect(b.daring, closeTo(0, 1e-9));
+      expect(b.skill, lessThan(0));
+      expect(b.luck, closeTo(0, 1e-9));
+      expect(b.total, closeTo(b.base + b.skill, 1e-9));
+      expect(b.total, lessThan(guessBreakdown(bad)!.total));
+      // luck takes guesses off when good and adds them when bad
+      expect(guessBreakdown(stats(luck: 40))!.luck, lessThan(0));
+      expect(guessBreakdown(stats(luck: -40))!.luck, greaterThan(0));
+      // daring below the typical level adds, above takes off
+      expect(guessBreakdown(stats(daring: 0))!.daring, greaterThan(0));
+      expect(guessBreakdown(stats(daring: 30))!.daring, lessThan(0));
+      // it stays within what a game can take, and is plotted 1 to 7
+      expect(
+        guessBreakdown(stats(skill: 100, luck: 100, daring: 100))!.total,
+        1,
+      );
+      expect(
+        PeriodSeries.guesses.plot(stats(skill: 0, luck: -100, daring: 0)),
+        100,
+      );
+      expect(guessBreakdown(stats(daring: null)), isNull);
+    });
+
     test('each has a name, and skill and daring are drawn as they are', () {
       expect(PeriodSeries.values.map((s) => s.label), [
         'skill',
         'luck',
         'daring',
+        'guesses',
       ]);
       expect(PeriodSeries.skill.plot(stats(skill: 83)), 83);
       expect(PeriodSeries.daring.plot(stats(daring: 12)), 12);

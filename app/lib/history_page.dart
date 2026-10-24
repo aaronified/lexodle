@@ -538,10 +538,13 @@ class _TrendState extends State<_Trend> {
       for (var j = sel - 1; j >= 0; j--) {
         final before = series.of(periods[j].stats);
         if (before == null) continue;
-        final d = (now - before).round();
+        final tenths = series == PeriodSeries.guesses;
+        final d = tenths
+            ? ((now - before) * 10).round() / 10
+            : (now - before).round();
         changes[series] = d == 0
             ? 'no change'
-            : '${d > 0 ? '+' : '−'}${d.abs()}'
+            : '${d > 0 ? '+' : '−'}${tenths ? d.abs().toStringAsFixed(1) : d.abs().round()}'
                   '${series == PeriodSeries.luck ? '%' : ''}';
         break;
       }
@@ -596,7 +599,11 @@ class _TrendState extends State<_Trend> {
             children: [
               for (final series in PeriodSeries.values)
                 _Choice(
-                  series == PeriodSeries.luck ? 'luck (50 = 0%)' : series.label,
+                  switch (series) {
+                    PeriodSeries.luck => 'luck (50 = 0%)',
+                    PeriodSeries.guesses => 'guesses (right scale)',
+                    _ => series.label,
+                  },
                   key: ValueKey('series-${series.name}'),
                   selected: _shown.contains(series),
                   color: seriesColors(c)[series],
@@ -624,6 +631,14 @@ class _TrendState extends State<_Trend> {
             key: const ValueKey('period-detail'),
             style: const TextStyle(fontSize: 12, height: 1.4),
           ),
+          if (guessBreakdown(s) case final b?) ...[
+            const SizedBox(height: 6),
+            Text(
+              _guessLine(b, s),
+              key: const ValueKey('period-guesses'),
+              style: const TextStyle(fontSize: 12, height: 1.4),
+            ),
+          ],
           if (p.style != null) ...[
             const SizedBox(height: 6),
             Row(
@@ -651,6 +666,20 @@ class _TrendState extends State<_Trend> {
       ),
     );
   }
+}
+
+/// "expected guesses 4.4 = 7.8 − 3.6 skill + 0.3 luck + 0.0 daring": what each
+/// of skill, luck and daring did to the guesses a game was expected to take,
+/// with what the won games really took beside it.
+String _guessLine(GuessBreakdown b, PlayStats s) {
+  String term(double v, String name) =>
+      '${v < 0 ? '−' : '+'} ${v.abs().toStringAsFixed(1)} $name';
+  final actual = s.meanTries == null
+      ? ''
+      : ' · won games took ${s.meanTries!.toStringAsFixed(1)}';
+  return 'expected guesses ${b.total.toStringAsFixed(1)} = '
+      '${b.base.toStringAsFixed(1)} ${term(b.skill, 'skill')} '
+      '${term(b.luck, 'luck')} ${term(b.daring, 'daring')}$actual';
 }
 
 /// A small switch of the trend card.

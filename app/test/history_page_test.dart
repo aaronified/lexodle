@@ -79,7 +79,7 @@ void main() {
   }
 
   Future<void> show(WidgetTester tester, History h) async {
-    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await tester.binding.setSurfaceSize(const Size(420, 1900));
     await appState.load();
     appState.history = h;
     await tester.pumpWidget(
@@ -688,6 +688,8 @@ void main() {
       expect(detail, contains('skill 85'));
       expect(detail, contains('daring 30'));
       expect(detail, contains('luck −5%'));
+      expect(text(tester, 'period-guesses'), startsWith('expected guesses '));
+      expect(text(tester, 'period-guesses'), contains('skill'));
       expect(find.byType(PeriodChart), findsOneWidget);
     });
 
@@ -722,20 +724,26 @@ void main() {
       await show(tester, h);
       Set<PeriodSeries> shown() =>
           tester.widget<PeriodChart>(find.byType(PeriodChart)).shown;
-      expect(shown(), {
-        PeriodSeries.skill,
-        PeriodSeries.luck,
-        PeriodSeries.daring,
-      });
+      expect(shown(), {...PeriodSeries.values});
       await tester.tap(find.byKey(const ValueKey('series-luck')));
       await tester.pump();
-      expect(shown(), {PeriodSeries.skill, PeriodSeries.daring});
+      expect(shown(), {
+        PeriodSeries.skill,
+        PeriodSeries.daring,
+        PeriodSeries.guesses,
+      });
       await tester.tap(find.byKey(const ValueKey('series-skill')));
       await tester.pump();
-      expect(shown(), {PeriodSeries.daring});
+      expect(shown(), {PeriodSeries.daring, PeriodSeries.guesses});
       await tester.tap(find.byKey(const ValueKey('series-skill')));
       await tester.pump();
-      expect(shown(), {PeriodSeries.skill, PeriodSeries.daring});
+      expect(shown(), {
+        PeriodSeries.skill,
+        PeriodSeries.daring,
+        PeriodSeries.guesses,
+      });
+      // the guesses have a scale of their own at the right
+      expect(find.text('guesses (right scale)'), findsOneWidget);
       // luck says where its middle is
       expect(find.text('luck (50 = 0%)'), findsOneWidget);
     });
@@ -750,8 +758,9 @@ void main() {
       await show(tester, h);
       final chart = find.byKey(const ValueKey('period-chart'));
       final rect = tester.getRect(chart);
-      // the plot starts after the axis (26 px) and holds 50 slots
-      final slot = (rect.width - 26) / 50;
+      // the plot starts after the axis (26 px), stops before the guesses' scale
+      // (16 px) and holds 50 slots
+      final slot = (rect.width - 26 - 16) / 50;
       Offset at(int i) =>
           Offset(rect.left + 26 + slot * (i + .5), rect.center.dy);
 
@@ -783,7 +792,7 @@ void main() {
       game(h, DateTime(2026, 10, 14), skill: 55);
       await show(tester, h);
       final rect = tester.getRect(find.byKey(const ValueKey('period-chart')));
-      final slot = (rect.width - 26) / 50;
+      final slot = (rect.width - 26 - 16) / 50;
       final g = await tester.startGesture(
         Offset(rect.left + 26 + slot * 49.5, rect.center.dy),
       );

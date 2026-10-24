@@ -197,11 +197,60 @@ List<Period> monthlyPeriods(History h, String today, {int count = 50}) {
   ];
 }
 
-/// The three measures the chart of periods follows, each a line.
+/// The expected number of guesses a game takes, read from skill, luck and
+/// daring by the linear fit of tools/predict_tries.dart (the mean of its fits
+/// in English, French and German, docs/paper Section 9.6):
+///
+///   guesses = 8.05 - 0.0413 skill - 0.0272 luck - 0.0316 daring
+///
+/// with skill and daring from 0 to 100 and luck from -100 to 100. It is an
+/// estimate from simulated players, not measured on people. The terms are shown
+/// as what each one does to a base: skill is never worse than none, so it only
+/// takes guesses off; luck takes off when positive and adds when negative; daring
+/// is measured from a typical level, [daringTypical], so going for the word less
+/// than usual adds guesses and more takes them off.
+const guessIntercept = 8.05;
+const guessPerSkill = -0.0413;
+const guessPerLuck = -0.0272;
+const guessPerDaring = -0.0316;
+const daringTypical = 8.0;
+
+/// What skill, luck and daring did to the expected guesses of a period.
+class GuessBreakdown {
+  const GuessBreakdown(this.base, this.skill, this.luck, this.daring);
+
+  /// What a player with no skill, average luck and typical daring is expected
+  /// to need.
+  final double base;
+
+  /// Each term, in guesses: negative takes guesses off.
+  final double skill, luck, daring;
+
+  /// The expected guesses, kept within the 1 to 7 a game can take (7 for a
+  /// game not solved).
+  double get total => (base + skill + luck + daring).clamp(1.0, 7.0);
+}
+
+/// The breakdown for [s], or null when it lacks a score or a daring.
+GuessBreakdown? guessBreakdown(PlayStats s) {
+  final d = s.daring;
+  if (s.isEmpty || s.scored == 0 || d == null) return null;
+  return GuessBreakdown(
+    guessIntercept + guessPerDaring * daringTypical,
+    guessPerSkill * s.skill,
+    guessPerLuck * s.luck,
+    guessPerDaring * (d - daringTypical),
+  );
+}
+
+/// The measures the chart of periods follows, each a line. The first three are
+/// drawn on a scale from 0 to 100; the expected guesses are drawn against their
+/// own scale, from 1 to 7, at the right edge.
 enum PeriodSeries {
   skill('skill'),
   luck('luck'),
-  daring('daring');
+  daring('daring'),
+  guesses('guesses');
 
   const PeriodSeries(this.label);
   final String label;
@@ -211,10 +260,12 @@ enum PeriodSeries {
   /// daring to average.
   double? of(PlayStats s) {
     if (s.isEmpty || s.scored == 0) return null;
+    if (this == PeriodSeries.guesses) return guessBreakdown(s)?.total;
     return switch (this) {
       PeriodSeries.skill => s.skill,
       PeriodSeries.luck => s.luck,
       PeriodSeries.daring => s.daring,
+      PeriodSeries.guesses => null,
     };
   }
 
@@ -224,6 +275,8 @@ enum PeriodSeries {
   double? plot(PlayStats s) {
     final v = of(s);
     if (v == null) return null;
+    // the guesses run from 1 (the bottom) to 7 (the top) on the right scale
+    if (this == PeriodSeries.guesses) return (v - 1) / 6 * 100;
     return this == PeriodSeries.luck ? (v + 100) / 2 : v;
   }
 }

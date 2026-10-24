@@ -7,11 +7,14 @@ Map<PeriodSeries, Color> seriesColors(ColorScheme c) => {
   PeriodSeries.skill: c.primary,
   PeriodSeries.luck: c.secondary,
   PeriodSeries.daring: c.tertiary,
+  PeriodSeries.guesses: c.onSurface,
 };
 
 /// How skill, luck and daring changed over the periods (50 weeks or months,
 /// oldest first), a line for each of the [shown], on one axis from 0 to 100.
-/// Luck is drawn about the middle (a faint line marks a luck of 0%). A period
+/// Luck is drawn about the middle (a faint line marks a luck of 0%). The
+/// expected guesses, when shown, have a scale of their own at the right edge,
+/// from 1 to 7. A period
 /// with nothing to show breaks the line, and a period alone is a dot, so a
 /// quiet stretch is seen as one. The [selected] period is picked out, and
 /// tapping or dragging along the chart picks another.
@@ -38,8 +41,13 @@ class PeriodChart extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         void pick(Offset at) {
-          if (periods.isEmpty || box.maxWidth <= _ChartPainter.axis) return;
-          final plotW = box.maxWidth - _ChartPainter.axis;
+          final right = shown.contains(PeriodSeries.guesses)
+              ? _ChartPainter.rightAxis
+              : 0.0;
+          if (periods.isEmpty || box.maxWidth <= _ChartPainter.axis + right) {
+            return;
+          }
+          final plotW = box.maxWidth - _ChartPainter.axis - right;
           final i = ((at.dx - _ChartPainter.axis) / plotW * periods.length)
               .floor();
           onSelect(i.clamp(0, periods.length - 1));
@@ -83,8 +91,10 @@ class _ChartPainter extends CustomPainter {
     required this.font,
   });
 
-  /// Room at the left for the numbers of the axis.
+  /// Room at the left for the numbers of the axis, and at the right for those
+  /// of the guesses (only when they are drawn).
   static const axis = 26.0;
+  static const rightAxis = 16.0;
 
   /// Per line, its value at each period (0 to 100, null for none).
   final Map<PeriodSeries, List<double?>> lines;
@@ -96,7 +106,9 @@ class _ChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     const top = 6.0, bottom = 4.0;
-    final plotW = size.width - axis;
+    final guessed = lines.containsKey(PeriodSeries.guesses);
+    final right = guessed ? rightAxis : 0.0;
+    final plotW = size.width - axis - right;
     final plotH = size.height - top - bottom;
     double y(double v) => top + plotH * (1 - v / 100);
 
@@ -104,7 +116,7 @@ class _ChartPainter extends CustomPainter {
     for (final v in const [0.0, 50.0, 100.0]) {
       canvas.drawLine(
         Offset(axis, y(v)),
-        Offset(size.width, y(v)),
+        Offset(size.width - right, y(v)),
         Paint()
           ..color = v == 0 ? base : grid
           ..strokeWidth = 1,
@@ -117,6 +129,21 @@ class _ChartPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(axis - tp.width - 4, y(v) - tp.height / 2));
+      if (guessed) {
+        // the right scale: 1, 4 and 7 guesses on the same three lines
+        final g = TextPainter(
+          text: TextSpan(
+            text: (1 + v / 100 * 6).round().toString(),
+            style: TextStyle(
+              fontSize: 9,
+              color: colors[PeriodSeries.guesses],
+              fontFamily: font,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        g.paint(canvas, Offset(size.width - right + 4, y(v) - g.height / 2));
+      }
     }
 
     final n = lines.values.isEmpty ? 0 : lines.values.first.length;

@@ -169,7 +169,13 @@ The **history** page (tap your playstyle on the home screen) has:
   seven-day windows ending today) or the last 50 months, with a gap where nothing was played. Tap
   or drag along it to pick a period and see its games, its numbers, the change on the last period
   you played, and the playstyle that period alone would have. Luck is drawn about the middle line,
-  which is a luck of 0%;
+  which is a luck of 0%. A fourth line, **guesses**, is the number of guesses a game is expected to
+  take, on its own scale (1 to 7) at the right edge, and the period's details break it down:
+  `expected guesses 4.4 = 7.8 − 3.6 skill + 0.3 luck + 0.0 daring`. Skill only ever takes guesses
+  off; luck takes them off when good and adds them when bad; daring is measured from a typical
+  level (8), so going for the word more takes guesses off and less adds them. The weights are the
+  mean of three linear fits on simulated games (`app/tools/predict_tries.dart`, paper Section 9.6),
+  **not measured on people**;
 - your games, newest first: **the last ten, and "load 10 more" as you need them**. Each opens its
   review, rebuilt from the guesses alone.
 
