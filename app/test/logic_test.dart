@@ -533,6 +533,120 @@ void main() {
     });
   });
 
+  group('risk and daring', () {
+    test('a split into equal groups has no risk', () {
+      // 8 words in 4 groups of 2: sum c^2 = 16, sum c log2 c = 8
+      expect(splitRisk(8, 16, 8), closeTo(0, 1e-12));
+      expect(splitRisk(1, 1, 0), 0);
+    });
+
+    test('a tail of one big group is risky', () {
+      // 8 words as 7 + 1: usually nearly everything is left, once nothing
+      final sumSq = 7 * 7 + 1;
+      final clogc = 7 * (log(7) / ln2);
+      expect(splitRisk(8, sumSq, clogc), closeTo(0.1868, 1e-3));
+      // at a fixed size, the more lopsided the two groups, the more risk
+      double two(int big) {
+        final small = 8 - big;
+        return splitRisk(
+          8,
+          big * big + small * small,
+          big * (log(big) / ln2) + (small > 1 ? small * (log(small) / ln2) : 0),
+        );
+      }
+
+      expect(two(4), closeTo(0, 1e-12)); // equal halves
+      expect(two(5), greaterThan(two(4)));
+      expect(two(6), greaterThan(two(5)));
+      expect(two(7), greaterThan(two(6)));
+    });
+
+    test('risk is never negative', () {
+      for (final sizes in [
+        [1, 1, 1],
+        [5],
+        [3, 3, 3],
+        [10, 1, 1, 1],
+        [2, 2, 1, 1, 1, 1],
+      ]) {
+        final n = sizes.reduce((a, b) => a + b);
+        final sq = sizes.fold<int>(0, (a, s) => a + s * s);
+        final cl = sizes.fold<double>(0, (a, s) => a + s * (log(s) / ln2));
+        expect(splitRisk(n, sq, cl), greaterThanOrEqualTo(0), reason: '$sizes');
+      }
+    });
+
+    test('daring is the share of better guesses that were less risky', () {
+      // skills best first, each with its risk
+      const land = Landscape([], [100, 90, 80, 70], 1, [3.0, 1.0, 2.0, 0.5]);
+      // 80 / risk 2: better are 100 (risk 3) and 90 (risk 1); only 90 is safer
+      expect(land.daringOf(80, 2), 50);
+      // the best guess has nothing better to compare with
+      expect(land.daringOf(100, 3), 0);
+      // 70 / risk 4: all three better guesses were less risky
+      expect(land.daringOf(70, 4), 100);
+      // 70 / risk 0.5: none of the better ones was safer: a careful choice
+      expect(land.daringOf(70, 0.5), 0);
+      // 90 / risk 5: only the 100 is better, and it is safer
+      expect(land.daringOf(90, 5), 100);
+    });
+
+    test('daring is unknown when the risks were not worked out', () {
+      const land = Landscape([], [100, 90], 1);
+      expect(land.daringOf(90, 1), isNull);
+      expect(const Landscape([], []).daringOf(90, 1), isNull);
+    });
+
+    test('a position scored for real carries risks that line up', () async {
+      const words = [
+        'crane',
+        'crate',
+        'trace',
+        'brace',
+        'grace',
+        'slate',
+        'stare',
+        'share',
+        'shale',
+        'whale',
+        'while',
+        'white',
+        'write',
+        'wrote',
+        'quote',
+        'quite',
+      ];
+      final land = await analyseGuesses(words, words);
+      expect(land.risks.length, land.skills.length);
+      expect(land.risks.every((r) => r >= 0), isTrue);
+      // the best guess carries no daring
+      expect(land.daringOf(land.skills.first, land.risks.first), 0);
+
+      final eligible = List.of(words);
+      final after = filterEligible(
+        eligible,
+        'crane',
+        evaluate('trace', 'crane'),
+      );
+      final m = scoreGuess(eligible, 'crane', after.length, provisional: true);
+      expect(m.risk, greaterThanOrEqualTo(0));
+      expect(m.daring, isNull, reason: 'not known until the analysis lands');
+      final done = m.withLandscape(land);
+      expect(done.ready, isTrue);
+      expect(done.daring, isNotNull);
+      expect(done.daring, inInclusiveRange(0, 100));
+      expect(done.best, land.bestExpected);
+      expect(done.risk, m.risk, reason: 'the risk is a fact of the guess');
+    });
+
+    test('with one word left there is no choice to be daring about', () async {
+      const words = ['crane', 'crate', 'trace'];
+      final land = await analyseGuesses(['crane'], words);
+      final m = scoreGuess(['crane'], 'crane', 0, solved: true);
+      expect(m.withLandscape(land).daring, isNull);
+    });
+  });
+
   group('recommend', () {
     test('picks the guess that splits the field best', () async {
       final r = await recommend(['aa', 'ab', 'ac'], ['ad', 'ab', 'ax']);

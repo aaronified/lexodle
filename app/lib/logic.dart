@@ -84,12 +84,25 @@ class GuessMetrics {
     this.largest = 0,
     this.best = 1,
     this.ready = true,
+    this.risk = 0,
+    this.daring,
   });
   final String guess;
   final double skill;
   final double luck;
   final int before;
   final int after;
+
+  /// How risky the guess is, in bits: its split's Shannon entropy less its
+  /// collision entropy, which is the log of the expected pool less the average
+  /// log of the pool (see [splitRisk]). 0 for a split with no tail.
+  final double risk;
+
+  /// How daring the choice was, 0 to 100: of the guesses that scored strictly
+  /// higher skill, the share that were less risky than this one (see
+  /// [Landscape.daringOf]). The best guess has nothing better to compare with,
+  /// so it has none. Null until the analysis of the position has landed.
+  final double? daring;
 
   /// The words expected to be left on average after this guess (E).
   final double expected;
@@ -119,7 +132,43 @@ class GuessMetrics {
     largest: largest,
     best: best,
     ready: true,
+    risk: risk,
+    daring: daring,
   );
+
+  /// The same metrics once the position has been analysed: skill against the
+  /// real best guess, and how daring the choice was among the guesses scored.
+  GuessMetrics withLandscape(Landscape land) {
+    final measured = withBest(land.bestExpected);
+    return GuessMetrics(
+      guess: guess,
+      skill: measured.skill,
+      luck: luck,
+      before: before,
+      after: after,
+      expected: expected,
+      groups: groups,
+      largest: largest,
+      best: land.bestExpected,
+      ready: true,
+      risk: risk,
+      // with one word left, or none, there is no choice to be daring about
+      daring: before <= 1 ? null : land.daringOf(measured.skill, risk),
+    );
+  }
+}
+
+/// The risk of a split, in bits: the Shannon entropy of the group sizes less
+/// their collision (Renyi order 2) entropy. With [n] words split into groups of
+/// size c, [sumSquares] = sum c^2 and [sumClogC] = sum c log2 c, it is
+/// log2(sumSquares / n) - sumClogC / n: the log of the pool you expect to be
+/// left with, less the average log of the pool you are left with. It is 0 when
+/// every group is the same size and grows with a tail of a few big groups (a
+/// guess that usually does well and sometimes leaves nearly everything).
+double splitRisk(int n, int sumSquares, double sumClogC) {
+  if (n <= 1) return 0;
+  final r = log(sumSquares / n) / ln2 - sumClogC / n;
+  return r < 0 ? 0 : r; // rounding can leave -1e-16
 }
 
 /// Skill from the expected pool [expected] (E) of [n] words, against the best
@@ -187,6 +236,7 @@ GuessMetrics scoreGuess(
     sizes[key] = (sizes[key] ?? 0) + 1;
   }
   final sumSq = sizes.values.fold<int>(0, (a, s) => a + s * s);
+  final clogc = sizes.values.fold<double>(0, (a, s) => a + s * log(s) / ln2);
   final expected = n == 0 ? 0.0 : sumSq / n;
   // With one word left a guess cannot split anything; it is either that word
   // (100) or a wasted turn (0). The original gave 100 to both.
@@ -211,6 +261,7 @@ GuessMetrics scoreGuess(
     largest: sizes.values.fold<int>(0, (a, s) => s > a ? s : a),
     best: best ?? 1,
     ready: !provisional,
+    risk: splitRisk(n, sumSq, clogc),
   );
 }
 
@@ -232,13 +283,39 @@ class Recommendation {
 /// the best few, the skill of all of them (best first), and E*, the smallest
 /// expected pool any of them leaves, which skill is measured against.
 class Landscape {
-  const Landscape(this.top, this.skills, [this.bestExpected = 1]);
+  const Landscape(
+    this.top,
+    this.skills, [
+    this.bestExpected = 1,
+    this.risks = const [],
+  ]);
 
   /// The best picks, best first.
   final List<Recommendation> top;
 
   /// The skill of every guess scored, best first; the best is 100.
   final List<double> skills;
+
+  /// The risk (see [splitRisk]) of each guess in [skills], in the same order.
+  /// Empty when it was not worked out.
+  final List<double> risks;
+
+  /// How daring a guess of [skill] and [risk] was in this position, 0 to 100:
+  /// of the guesses scored that have strictly higher skill, the share that are
+  /// less risky. It says the player chose a bolder guess than they needed to,
+  /// rather than showing skill: the best guess has nothing better to compare
+  /// with, so it is 0. Null when the risks are not known.
+  double? daringOf(double skill, double risk) {
+    if (risks.length != skills.length || skills.isEmpty) return null;
+    var better = 0, safer = 0;
+    for (var i = 0; i < skills.length; i++) {
+      if (skills[i] > skill + 1e-9) {
+        better++;
+        if (risks[i] < risk - 1e-9) safer++;
+      }
+    }
+    return better == 0 ? 0 : safer / better * 100;
+  }
 
   /// E*: the smallest expected pool among the guesses scored.
   final double bestExpected;
@@ -300,12 +377,19 @@ Future<Landscape> analyseGuesses(
     final top = [
       for (final w in eligible.take(k)) make(w, _sumSquares(eligible, w), 1),
     ];
-    return Landscape(top, [for (final r in top) r.skill], 1);
+    // two words in two groups of one: nothing can be risky about that
+    return Landscape(
+      top,
+      [for (final r in top) r.skill],
+      1,
+      [for (final _ in top) 0.0],
+    );
   }
 
-  final scored = <(String, int)>[];
+  final scored = <(String, int, double)>[];
   for (final w in candidates) {
-    scored.add((w, _sumSquares(eligible, w)));
+    final (sq, clogc) = _splitStats(eligible, w);
+    scored.add((w, sq, splitRisk(n, sq, clogc)));
     if (scored.length % 40 == 0) await Future<void>.delayed(Duration.zero);
   }
   if (scored.isEmpty) return const Landscape([], []);
@@ -319,9 +403,10 @@ Future<Landscape> analyseGuesses(
   });
   final best = scored.first.$2 / n;
   return Landscape(
-    [for (final (w, sq) in scored.take(k)) make(w, sq, best)],
-    [for (final (_, sq) in scored) skillAgainst(n, sq / n, best)],
+    [for (final (w, sq, _) in scored.take(k)) make(w, sq, best)],
+    [for (final (_, sq, _) in scored) skillAgainst(n, sq / n, best)],
     best,
+    [for (final (_, _, risk) in scored) risk],
   );
 }
 
@@ -460,6 +545,25 @@ int splitSumSquares(List<String> eligible, String guess) =>
 /// and the patterns seen, so each guess costs one pass and no allocation.
 final _counts = Int32List(6561);
 final _touched = Int32List(6561);
+
+/// [_sumSquares] and the sum of c log2 c over the groups, in one pass: what the
+/// risk of a split needs (see [splitRisk]).
+(int, double) _splitStats(List<String> eligible, String guess) {
+  var seen = 0;
+  for (final w in eligible) {
+    final k = patternCode(w, guess);
+    if (_counts[k]++ == 0) _touched[seen++] = k;
+  }
+  var sum = 0;
+  var clogc = 0.0;
+  for (var i = 0; i < seen; i++) {
+    final c = _counts[_touched[i]];
+    sum += c * c;
+    clogc += c * log(c) / ln2;
+    _counts[_touched[i]] = 0;
+  }
+  return (sum, clogc);
+}
 
 int _sumSquares(List<String> eligible, String guess) {
   var seen = 0;

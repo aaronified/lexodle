@@ -217,7 +217,7 @@ class _GamePageState extends State<GamePage> {
       job.then<void>((land) {
         if (!mounted || epoch != _epoch) return;
         setState(() {
-          metrics[index] = metrics[index].withBest(land.bestExpected);
+          metrics[index] = metrics[index].withLandscape(land);
         });
       }, onError: (_) {});
     } else {

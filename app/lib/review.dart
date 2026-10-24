@@ -102,7 +102,7 @@ class _ReviewPageState extends State<ReviewPage> {
   GuessMetrics metric(int i) => () {
     final m = r.metrics[i];
     final land = landscapes[i];
-    return land == null ? m : m.withBest(land.bestExpected);
+    return land == null ? m : m.withLandscape(land);
   }();
 
   Future<void> _analyse() async {
@@ -544,6 +544,19 @@ class _ReviewPageState extends State<ReviewPage> {
           ...[
             const SizedBox(height: 6),
             Text(landing, style: const TextStyle(fontSize: 13, height: 1.4)),
+          ],
+          if (m.daring != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              m.skill >= 100 - 1e-9
+                  ? 'Nothing scored higher than this guess, so there was '
+                        'nothing daring about it.'
+                  : 'Daring ${m.daring!.round()}%: of the guesses that scored '
+                        'higher skill, ${m.daring!.round()}% were less risky '
+                        'than yours.',
+              key: const ValueKey('daring-line'),
+              style: const TextStyle(fontSize: 13, height: 1.4),
+            ),
           ],
         ],
       ),
