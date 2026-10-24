@@ -122,7 +122,12 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
-                              const StyleChip(),
+                              StyleChip(
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  Routes.history,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 6),

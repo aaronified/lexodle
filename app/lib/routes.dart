@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'achievements_page.dart';
 import 'daily.dart';
 import 'game.dart';
+import 'history_page.dart';
 import 'home.dart';
 import 'how_to.dart';
 import 'main.dart';
@@ -27,6 +28,7 @@ class Routes {
   static const home = '/';
   static const play = '/play';
   static const daily = '/daily';
+  static const history = '/history';
   static const review = '/play/review';
   static const solver = '/solver';
   static const achievements = '/achievements';
@@ -72,6 +74,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           },
         ),
       );
+    case Routes.history:
+      return page(const HistoryPage());
     case Routes.review:
       final record = settings.arguments;
       // a finished game cannot be rebuilt from an address
@@ -124,6 +128,7 @@ List<Route<dynamic>> onGenerateInitialRoutes(String initial) {
 const _known = {
   Routes.play,
   Routes.daily,
+  Routes.history,
   Routes.mastery,
   Routes.solver,
   Routes.achievements,
