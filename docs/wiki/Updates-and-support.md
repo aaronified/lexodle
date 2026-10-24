@@ -19,7 +19,9 @@ version and has:
   and remembers what it found. Each check is a request to GitHub, which is why it is off by default.
 
 Releases are built by a workflow when a version tag like `v0.1.2` is pushed, and signed with the
-release key held in repository secrets; the version in `app/pubspec.yaml` must match the tag. A
+release key held in repository secrets. The tag is the version: the workflow writes it into
+`app/pubspec.yaml` and the app's version constant before building, and records it in `main` afterwards,
+so nothing is bumped by hand. A
 build signed with a different key cannot be updated over one signed with another.
 
 ## Support

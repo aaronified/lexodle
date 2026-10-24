@@ -4,8 +4,10 @@ name: Release
 #
 # Runs for a version tag like v0.1.0: pushing the tag starts it, and a manual run
 # must be started from a tag (choose it under "Use workflow from"). The tag without
-# its "v" becomes versionName and must match the version in app/pubspec.yaml;
-# versionCode is this workflow's run number, which only goes up, so each release
+# its "v" becomes the app's version: this workflow writes it into app/pubspec.yaml
+# and the app's own version constant (lib/update_check.dart) before building, and
+# afterwards records it in main, so nobody bumps it by hand. versionCode is this
+# workflow's run number, which only goes up, so each release
 # installs over the one before. Renaming this file starts a new workflow whose run
 # numbers begin again at 1, and Android refuses to install a lower versionCode
 # over a higher one.
@@ -60,16 +62,19 @@ jobs:
           # every tag and commit, so the notes can list what changed since the last tag
           fetch-depth: 0
 
-      # The APK's versionName is the tag; a tag on a commit whose pubspec.yaml was
-      # not bumped would publish an APK that calls itself the previous version.
-      - name: Check the tag matches pubspec.yaml's version
+      # The tag is the version. It is written into pubspec.yaml and into the
+      # constant the app reports and compares with the newest release, so the APK
+      # calls itself what it is called here. (The test that the two agree runs
+      # after this.)
+      - name: Set the version from the tag
         run: |
-          want="${GITHUB_REF_NAME#v}"
-          have=$(sed -n -E 's/^version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' pubspec.yaml | head -n 1)
-          if [ "$want" != "$have" ]; then
-            echo "::error::The tag is $GITHUB_REF_NAME but app/pubspec.yaml says version $have. Bump it, commit, and tag that commit."
-            exit 1
-          fi
+          v="${GITHUB_REF_NAME#v}"
+          sed -i -E "s/^version:.*/version: ${v}+${{ github.run_number }}/" pubspec.yaml
+          sed -i -E "s/^const appVersion = '[^']*';/const appVersion = '${v}';/" lib/update_check.dart
+          grep -n '^version:' pubspec.yaml
+          grep -n '^const appVersion' lib/update_check.dart
+          grep -q "^version: ${v}+" pubspec.yaml
+          grep -q "^const appVersion = '${v}';" lib/update_check.dart
 
       - uses: actions/setup-java@v4
         with:
@@ -234,6 +239,35 @@ jobs:
         with:
           files: app/lexodle-${{ github.ref_name }}.apk
           body_path: release-notes.md
+
+      # Keeps main in step: the version of this release goes into main too, unless
+      # main already has a later one (an older tag run again). A push made with
+      # the workflow's own token starts no other workflow, so this cannot loop; it
+      # retries if someone pushed meanwhile.
+      - name: Record the version in main
+        working-directory: .
+        run: |
+          set -euo pipefail
+          v="${GITHUB_REF_NAME#v}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            git fetch -q origin main
+            git checkout -q -f -B main origin/main
+            have=$(sed -n -E 's/^version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' app/pubspec.yaml | head -n 1)
+            if [ "$have" = "$v" ] || [ "$(printf '%s\n%s\n' "$have" "$v" | sort -V | tail -n 1)" != "$v" ]; then
+              echo "main is at $have already; nothing to record for $v"
+              exit 0
+            fi
+            sed -i -E "s/^version:.*/version: ${v}+1/" app/pubspec.yaml
+            sed -i -E "s/^const appVersion = '[^']*';/const appVersion = '${v}';/" app/lib/update_check.dart
+            git add app/pubspec.yaml app/lib/update_check.dart
+            git commit -q -m "Version ${v}" -m "Set by the release workflow from the tag ${GITHUB_REF_NAME}."
+            if git push -q origin main; then exit 0; fi
+            echo "push failed (attempt ${attempt}); trying again"
+            sleep $((attempt * 5))
+          done
+          echo "::warning::Could not record version ${v} in main. Release ${GITHUB_REF_NAME} is published; set the version in main by hand."
 
       # always(), so this runs even when a step above failed: on a self-hosted
       # runner the workspace, and the passwords in android/gradle.properties,
