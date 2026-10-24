@@ -33,6 +33,7 @@ void main() {
       bank = await WordBank.load(langs.firstWhere((l) => l.code == 'fr'));
     });
     pool = bank.answers(4, 500);
+    appState.lang = 'fr'; // the language of the games these tests add
   }
 
   GameRow addGame(
@@ -365,10 +366,44 @@ void main() {
     expect(page.record.guesses, [pool[100], pool[101]]);
   });
 
+  testWidgets('each language has its own page: picking one shows its games', (
+    tester,
+  ) async {
+    await load(tester);
+    final h = History();
+    for (final (day, lang) in [(24, 'fr'), (23, 'fr'), (22, 'xx')]) {
+      h.add(
+        at: DateTime(2026, 10, day).millisecondsSinceEpoch,
+        lang: lang,
+        mode: GameMode.classic,
+        length: 4,
+        tries: 6,
+        pool: 500,
+        answers: ['abcd'],
+        won: true,
+        guesses: const [GuessRow(game: 0, n: 0, word: 'abcd', skill: 50)],
+      );
+    }
+    await show(tester, h);
+    String overall() =>
+        tester.widget<Text>(find.byKey(const ValueKey('overall-games'))).data!;
+    // the language being played to begin with
+    expect(overall(), '2');
+    expect(find.byKey(const ValueKey('lang-fr')), findsOneWidget);
+    expect(find.byKey(const ValueKey('lang-xx')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('lang-xx')));
+    await tester.pump();
+    expect(overall(), '1');
+    await tester.tap(find.byKey(const ValueKey('lang-fr')));
+    await tester.pump();
+    expect(overall(), '2');
+  });
+
   testWidgets('a game in a language that has gone does not open', (
     tester,
   ) async {
     await load(tester);
+    appState.lang = 'xx';
     final h = History();
     final row = h.add(
       at: ms(24),
@@ -897,9 +932,10 @@ void main() {
       (tester) async {
         await load(tester);
         final h = History();
-        game(h, DateTime(2026, 10, 24), skill: 90);
         // in a language that is not loaded, so the page has nothing to score it
         // with and leaves it as it is (it would otherwise score it again)
+        appState.lang = 'xx';
+        game(h, DateTime(2026, 10, 24), skill: 90, lang: 'xx');
         game(h, DateTime(2026, 10, 24), skill: 10, lang: 'xx');
         h.games[1] = h.games[1].withVersion(0);
         await show(tester, h);

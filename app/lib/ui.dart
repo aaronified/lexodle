@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'logic.dart';
+import 'words.dart';
 
 /// How strongly secondary text (captions, notes) shows against the page: dim,
 /// but still readable (4.5:1) in both themes.
@@ -84,6 +85,15 @@ class FlagBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The badge (the flag) of the language with this [code], or nothing while the
+/// languages are not read yet or there is no such language.
+Widget languageBadge(String code, {double size = 14}) {
+  for (final l in WordBank.loadedLanguages ?? const <Language>[]) {
+    if (l.code == code) return FlagBadge(l.flag, size: size);
+  }
+  return const SizedBox.shrink();
 }
 
 /// A Tabler filled icon from assets/icons, tinted with [color].

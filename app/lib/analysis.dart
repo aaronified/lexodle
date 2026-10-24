@@ -146,10 +146,16 @@ Period _period(
 /// the past seven days, and each earlier one the seven before it). Weeks with no
 /// games are there, empty. Games dated after [today] (a clock that was wrong)
 /// are counted in the last.
-List<Period> weeklyPeriods(History h, String today, {int count = 50}) {
+List<Period> weeklyPeriods(
+  History h,
+  String today, {
+  int count = 50,
+  String? lang,
+}) {
   final todayN = _dayNumber(today);
   final buckets = List.generate(count, (_) => <GameRow>[]);
   for (final g in h.games) {
+    if (lang != null && g.lang != lang) continue;
     final ago = todayN - _dayNumber(_localDate(g.at));
     final i = (ago < 0 ? 0 : ago) ~/ 7;
     if (i < count) buckets[i].add(g);
@@ -168,11 +174,17 @@ List<Period> weeklyPeriods(History h, String today, {int count = 50}) {
 
 /// The last [count] calendar months, oldest first, the last of them the month
 /// of [today] (so far). Months with no games are there, empty.
-List<Period> monthlyPeriods(History h, String today, {int count = 50}) {
+List<Period> monthlyPeriods(
+  History h,
+  String today, {
+  int count = 50,
+  String? lang,
+}) {
   final t = DateTime.parse(today);
   final todayKey = t.year * 12 + t.month - 1;
   final buckets = List.generate(count, (_) => <GameRow>[]);
   for (final g in h.games) {
+    if (lang != null && g.lang != lang) continue;
     final d = DateTime.parse(_localDate(g.at));
     final ago = todayKey - (d.year * 12 + d.month - 1);
     final i = ago < 0 ? 0 : ago;

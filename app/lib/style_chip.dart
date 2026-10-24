@@ -27,7 +27,7 @@ class StyleChip extends StatelessWidget {
   Widget _build(BuildContext context, Widget? _) {
     final c = Theme.of(context).colorScheme;
     final p = appState.style;
-    final games = appState.history.recentClassic().length;
+    final games = appState.history.recentClassic(100, appState.lang).length;
     final label =
         p?.name ??
         (games < minRatedGames ? '$games/$minRatedGames' : 'unrated');

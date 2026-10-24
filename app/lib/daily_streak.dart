@@ -155,6 +155,9 @@ class DailyStreak extends StatelessWidget {
                     child: Caption('day streak'),
                   ),
                 ),
+                // the streak is the language's own: say whose
+                languageBadge(appState.lang, size: 13),
+                const SizedBox(width: 8),
                 Text(
                   'best ${appState.dailyBest}',
                   key: const ValueKey('streak-best'),

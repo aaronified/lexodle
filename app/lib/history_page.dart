@@ -6,6 +6,7 @@ import 'analysis.dart';
 import 'daily.dart';
 import 'history.dart';
 import 'logic.dart';
+import 'language_picker.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'period_chart.dart';
@@ -40,6 +41,10 @@ class _HistoryPageState extends State<HistoryPage> {
   /// How many of the newest games the list shows.
   int _shown = historyPageSize;
 
+  /// The language the page is about: each has its own games, playstyle and
+  /// calendar. The one being played to begin with.
+  String _lang = appState.lang;
+
   @override
   void initState() {
     super.initState();
@@ -72,9 +77,11 @@ class _HistoryPageState extends State<HistoryPage> {
       },
       cancelled: () => !mounted,
     );
-    // the numbers moved, so the playstyle is read again from them
+    // the numbers moved, so each language's playstyle is read again from them
     appState.saveHistory();
-    appState.updateStyle();
+    for (final l in appState.playedLanguages) {
+      appState.updateStyle(lang: l);
+    }
     appState.refresh();
     if (mounted) setState(() => _total = 0);
   }
@@ -114,12 +121,17 @@ class _HistoryPageState extends State<HistoryPage> {
               listenable: appState,
               builder: (context, _) {
                 final h = appState.history;
-                final total = h.games.length;
+                // the games of the language in view, oldest first
+                final mine = [
+                  for (final g in h.games)
+                    if (g.lang == _lang) g,
+                ];
+                final total = mine.length;
                 final shown = min(_shown, total);
                 final more = total - shown;
                 // the cards, the note about the games, then the games (built
                 // as they scroll into view), then the button for more
-                const fixed = 4;
+                const fixed = 5;
                 return Stack(
                   children: [
                     ListView.builder(
@@ -130,12 +142,28 @@ class _HistoryPageState extends State<HistoryPage> {
                         // when this builder runs, and they must follow the
                         // history as it changes, after games are scored again)
                         // ignore: prefer_const_constructors
-                        if (i == 0) return _Block(_Profile());
+                        if (i == 0) {
+                          return _Block(
+                            LanguagePicker(
+                              codes: appState.playedLanguages.toList()..sort(),
+                              languages: _langs,
+                              selected: _lang,
+                              onSelect: (code) => setState(() {
+                                _lang = code;
+                                _shown = historyPageSize;
+                              }),
+                            ),
+                          );
+                        }
+                        if (i == 1) return _Block(_Profile(_lang));
                         // ignore: prefer_const_constructors
-                        if (i == 1) return _Block(_Overall());
-                        // ignore: prefer_const_constructors
-                        if (i == 2) return _Block(_Trend());
+                        if (i == 2) return _Block(_Overall(_lang));
                         if (i == 3) {
+                          return _Block(
+                            _Trend(_lang, key: ValueKey('trend-$_lang')),
+                          );
+                        }
+                        if (i == 4) {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 6),
                             child: Column(
@@ -181,7 +209,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         final k = i - fixed;
                         if (k < shown) {
                           // newest first: the list is the history read backwards
-                          final g = h.games[total - 1 - k];
+                          final g = mine[total - 1 - k];
                           return _GameTile(
                             key: ValueKey('game-${g.id}'),
                             game: g,
@@ -244,7 +272,10 @@ Widget _card(BuildContext context, {Key? key, required Widget child}) {
 /// The playstyle now, the traits it is read from, and which of the six the
 /// player has been.
 class _Profile extends StatefulWidget {
-  const _Profile();
+  const _Profile(this.lang);
+
+  /// The language it is for.
+  final String lang;
 
   @override
   State<_Profile> createState() => _ProfileState();
@@ -258,9 +289,10 @@ class _ProfileState extends State<_Profile> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final p = appState.style;
-    final t = traitsOf(appState.history);
-    final games = appState.history.recentClassic().length;
+    final lang = widget.lang;
+    final p = appState.styleOf(lang);
+    final t = traitsOf(appState.history, lang: lang);
+    final games = appState.history.recentClassic(100, lang).length;
     final dim = TextStyle(
       fontSize: 12,
       color: c.onSurface.withValues(alpha: dimAlpha),
@@ -341,7 +373,7 @@ class _ProfileState extends State<_Profile> {
                 Expanded(
                   child: _StyleDot(
                     s,
-                    held: appState.stylesHeld.contains(s.id),
+                    held: appState.stylesHeldOf(lang).contains(s.id),
                     current: s.id == p?.id,
                     picked: s.id == _picked?.id,
                     onTap: () =>
@@ -357,7 +389,7 @@ class _ProfileState extends State<_Profile> {
               '${s.name}: ${s.blurb}'
               '${s.id == p?.id
                   ? ' (your style now)'
-                  : appState.stylesHeld.contains(s.id)
+                  : appState.stylesHeldOf(lang).contains(s.id)
                   ? ' (you have been this)'
                   : ' (not yet)'}',
               key: const ValueKey('style-detail'),
@@ -365,12 +397,12 @@ class _ProfileState extends State<_Profile> {
             )
           else
             Text(
-              appState.styleChanges == 0
+              appState.styleChangesOf(lang) == 0
                   ? 'tap a style to see what it is. it moves with the way you '
                         'play'
                   : 'tap a style to see what it is. changed '
-                        '${appState.styleChanges} '
-                        '${appState.styleChanges == 1 ? 'time' : 'times'}',
+                        '${appState.styleChangesOf(lang)} '
+                        '${appState.styleChangesOf(lang) == 1 ? 'time' : 'times'}',
               style: dim.copyWith(fontSize: 11),
             ),
         ],
@@ -404,13 +436,19 @@ class _Stat extends StatelessWidget {
 
 /// Every game kept, added up: always there, however many there are.
 class _Overall extends StatelessWidget {
-  const _Overall();
+  const _Overall(this.lang);
+
+  /// The language it adds up.
+  final String lang;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final h = appState.history;
-    final s = summarise(h, h.games);
+    final s = summarise(h, [
+      for (final g in h.games)
+        if (g.lang == lang) g,
+    ]);
     final dim = TextStyle(
       fontSize: 11,
       color: c.onSurface.withValues(alpha: dimAlpha),
@@ -471,7 +509,10 @@ class _Overall extends StatelessWidget {
 /// How play changed over time: a bar for each of the last 50 weeks or months,
 /// for skill, daring, share won or games, and what was in the one picked.
 class _Trend extends StatefulWidget {
-  const _Trend();
+  const _Trend(this.lang, {super.key});
+
+  /// The language whose periods it draws.
+  final String lang;
 
   @override
   State<_Trend> createState() => _TrendState();
@@ -500,9 +541,12 @@ class _TrendState extends State<_Trend> {
       h.stale().length,
       _weekly,
       today,
+      widget.lang,
     );
     if (_periods == null || _key != key) {
-      _periods = _weekly ? weeklyPeriods(h, today) : monthlyPeriods(h, today);
+      _periods = _weekly
+          ? weeklyPeriods(h, today, lang: widget.lang)
+          : monthlyPeriods(h, today, lang: widget.lang);
       _key = key;
     }
     return _periods!;
