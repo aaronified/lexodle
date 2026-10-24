@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'daily.dart';
+import 'history.dart';
 import 'modes.dart';
 import 'store.dart';
 import 'words.dart';
@@ -27,9 +28,14 @@ class Backup {
     required this.achievements,
     this.dailyLog,
     this.dailyBest,
+    this.history,
   });
 
   final DateTime exported;
+
+  /// Every game played, with its guesses; null in a backup from before the
+  /// history, which leaves what is saved alone.
+  final History? history;
 
   /// How each daily went and the longest daily streak; null in a backup from
   /// before the daily, which leaves what is saved alone.
@@ -58,6 +64,8 @@ String backupToText(AppState state, {DateTime? now}) {
       for (final e in state.ach.entries) e.key: e.value.toJson(),
     },
     'daily': {'log': state.dailyLog, 'best': state.dailyBest},
+    // one compact line: indented, a few hundred games would swamp the file
+    'history': jsonEncode(state.history.toJson()),
   });
 }
 
@@ -98,6 +106,7 @@ Backup parseBackup(String text) {
     final stats = _stats(raw['stats']);
     final ach = _achievements(raw['achievements']);
     final daily = _daily(raw['daily']);
+    final history = _history(raw['history']);
     return Backup(
       exported: exported,
       settings: settings,
@@ -105,6 +114,7 @@ Backup parseBackup(String text) {
       achievements: ach,
       dailyLog: daily?.$1,
       dailyBest: daily?.$2,
+      history: history,
     );
   } on FormatException {
     rethrow;
@@ -189,6 +199,17 @@ Map<String, AchState> _achievements(Object? raw) {
     out[e.key as String] = s;
   }
   return out;
+}
+
+/// The history, or null when the file has none. It is a line of JSON inside the
+/// file (or, as a plain object, the same thing).
+History? _history(Object? raw) {
+  if (raw == null) return null;
+  try {
+    return History.fromJson(raw is String ? jsonDecode(raw) : raw);
+  } on FormatException {
+    _bad('history');
+  }
 }
 
 /// The daily log and best streak, or null when the file has none.

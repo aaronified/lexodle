@@ -7,8 +7,10 @@ import 'background.dart';
 import 'daily.dart';
 import 'difficulty.dart';
 import 'guess_input.dart';
+import 'history.dart';
 import 'keyboard.dart';
 import 'logic.dart';
+import 'modes.dart';
 import 'review.dart';
 import 'routes.dart';
 import 'main.dart';
@@ -260,8 +262,23 @@ class _GamePageState extends State<GamePage> {
         dailyStreak: streak,
       );
       var r = result();
-      // the day goes in the log first, so the streak it leaves is known to the
-      // achievements; skill is final here, so the double fire can be judged
+      // the game goes in the history as it was played (the guesses are the
+      // facts, the scores can be worked out again), and the day goes in the
+      // log first, so the streak it leaves is known to the achievements; skill
+      // is final here, so the double fire can be judged
+      appState.recordHistory(
+        lang: widget.bank.language.code,
+        mode: GameMode.classic,
+        length: length,
+        tries: tries,
+        pool: pool,
+        answers: [answer],
+        won: won,
+        guesses: [
+          for (var i = 0; i < metrics.length; i++) guessRowOf(i, metrics[i]),
+        ],
+        daily: d?.date ?? '',
+      );
       if (d != null) r = result(appState.recordDaily(d.date, r.dailyTier));
       unlocked = appState.recordGame(r);
     }

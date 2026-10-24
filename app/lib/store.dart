@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'daily.dart';
 import 'difficulty.dart';
+import 'history.dart';
 import 'modes.dart';
 import 'words.dart';
 
@@ -768,6 +769,47 @@ class AppState extends ChangeNotifier {
     return streak;
   }
 
+  /// Every game played, as tables (see history.dart): kept so skill, luck and
+  /// daring can be worked out again, games reviewed, and a playstyle read from
+  /// the last 100.
+  History history = History();
+
+  /// Saves a finished game and its guesses to the [history].
+  void recordHistory({
+    required String lang,
+    required GameMode mode,
+    required int length,
+    required int tries,
+    required int pool,
+    required List<String> answers,
+    required bool won,
+    required List<GuessRow> guesses,
+    String daily = '',
+    DateTime? now,
+  }) {
+    history.add(
+      at: (now ?? DateTime.now()).toUtc().millisecondsSinceEpoch,
+      lang: lang,
+      mode: mode,
+      length: length,
+      tries: tries,
+      pool: pool,
+      answers: answers,
+      won: won,
+      guesses: guesses,
+      daily: daily,
+    );
+    saveHistory();
+    notifyListeners();
+  }
+
+  /// Writes the history out (also after its numbers were worked out again).
+  void saveHistory() {
+    try {
+      _prefs?.setString('history', jsonEncode(history.toJson()));
+    } catch (_) {}
+  }
+
   void _saveDailyLog() {
     try {
       _prefs
@@ -817,6 +859,12 @@ class AppState extends ChangeNotifier {
         }
       } catch (_) {
         daily = {};
+      }
+      try {
+        final saved = p.getString('history');
+        if (saved != null) history = History.fromJson(jsonDecode(saved));
+      } catch (_) {
+        history = History(); // damaged: start the record again
       }
       try {
         final log = p.getString('dailyLog');
@@ -877,11 +925,17 @@ class AppState extends ChangeNotifier {
     required Map<String, AchState> ach,
     Map<String, int>? dailyLog,
     int? dailyBest,
+    History? history,
   }) {
     // a backup from before the daily existed has none: what is here stays
     if (dailyLog != null) this.dailyLog = Map.of(dailyLog);
     if (dailyBest != null) this.dailyBest = dailyBest;
     _saveDailyLog();
+    // likewise a backup from before the history
+    if (history != null) {
+      this.history = history;
+      saveHistory();
+    }
     lang = settings['lang'] as String? ?? lang;
     length = settings['length'] as int? ?? length;
     tries = settings['tries'] as int? ?? tries;

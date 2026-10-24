@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'background.dart';
 import 'difficulty.dart';
 import 'guess_input.dart';
+import 'history.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
@@ -186,6 +187,27 @@ class _MultiGamePageState extends State<MultiGamePage> {
   void _finish() {
     final epoch = _epoch;
     void record() {
+      // a step's skill and luck are the means over the boards it was made for;
+      // a quartet or relay race has no daring or pool sizes of its own
+      appState.recordHistory(
+        lang: widget.bank.language.code,
+        mode: mode,
+        length: length,
+        tries: tries,
+        pool: pool,
+        answers: [for (final b in game.boards) b.answer],
+        won: game.won,
+        guesses: [
+          for (var i = 0; i < game.steps.length; i++)
+            GuessRow(
+              game: 0,
+              n: i,
+              word: game.guesses[i],
+              skill: game.steps[i].skill,
+              luck: game.steps[i].luck,
+            ),
+        ],
+      );
       unlocked = appState.recordGame(
         GameResult(
           lang: widget.bank.language.code,
