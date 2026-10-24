@@ -358,7 +358,7 @@ final achievements = <Achievement>[
   ),
   Achievement(
     'streak_3',
-    'flame',
+    'square-number-3',
     'three in a row',
     'win 3 games in a row',
     track: Track.streak,
@@ -367,7 +367,7 @@ final achievements = <Achievement>[
   ),
   Achievement(
     'streak_7',
-    'sparkles',
+    'square-number-7',
     'seven in a row',
     'win 7 games in a row',
     track: Track.streak,
@@ -533,12 +533,12 @@ final achievements = <Achievement>[
   for (final (id, icon, title, days) in const [
     ('daily_3', 'candle', 'kindling', 3),
     ('daily_7', 'campfire', 'campfire', 7),
-    ('daily_14', 'meteor', 'bonfire', 14),
-    ('daily_30', 'sun', 'furnace', 30),
-    ('daily_60', 'mountain', 'forge', 60),
-    ('daily_100', 'star', 'inferno', 100),
-    ('daily_200', 'stars', 'phoenix', 200),
-    ('daily_365', 'moon', 'eternal flame', 365),
+    ('daily_14', 'flame', 'bonfire', 14),
+    ('daily_30', 'temperature-plus', 'furnace', 30),
+    ('daily_60', 'flare', 'forge', 60),
+    ('daily_100', 'boom', 'inferno', 100),
+    ('daily_200', 'butterfly', 'phoenix', 200),
+    ('daily_365', 'sparkles', 'eternal flame', 365),
   ])
     Achievement(
       id,
@@ -577,7 +577,7 @@ final achievements = <Achievement>[
     ),
   Achievement(
     'chameleon',
-    'butterfly',
+    'replace',
     'chameleon',
     'change your playstyle',
     repeat: false,
@@ -585,7 +585,7 @@ final achievements = <Achievement>[
   ),
   Achievement(
     'many_hats',
-    'rosette',
+    'chef-hat',
     'many hats',
     'have been every one of the ${playstyles.length} playstyles',
     repeat: false,

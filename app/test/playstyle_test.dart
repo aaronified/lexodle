@@ -553,8 +553,8 @@ void main() {
         expect(a.title, p.name);
         expect(a.repeat, isFalse);
       }
-      expect(byId('chameleon').icon, 'butterfly');
-      expect(byId('many_hats').icon, 'rosette');
+      expect(byId('chameleon').icon, 'replace');
+      expect(byId('many_hats').icon, 'chef-hat');
     });
 
     test(
