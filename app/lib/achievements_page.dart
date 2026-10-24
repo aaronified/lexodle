@@ -12,7 +12,10 @@ int achievementCount() => achievements.length;
 /// The achievements. Each language has its own (except the few that count
 /// languages, and the mastery badges), so the page is about one language at a
 /// time, with its flag on every one of its achievements; the ones that span
-/// languages carry the flags of the languages they count.
+/// languages carry the flags of the languages they count. "All" shows every
+/// language at once: each achievement wears the flag of every language played,
+/// bright where it was earned there and dim where not, with the times, first and
+/// latest days added up across them.
 class AchievementsPage extends StatefulWidget {
   const AchievementsPage({super.key});
 
@@ -32,11 +35,12 @@ class _AchievementsPageState extends State<AchievementsPage> {
     });
   }
 
-  /// Played, won, and the win streak now and best, in [lang]'s games.
-  ({int played, int wins, int streak, int best}) _record(String lang) {
+  /// Played, won, and the win streak now and best, in [lang]'s games (every
+  /// game when null).
+  ({int played, int wins, int streak, int best}) _record(String? lang) {
     var played = 0, wins = 0, streak = 0, best = 0;
     for (final g in appState.history.games) {
-      if (g.lang != lang) continue;
+      if (lang != null && g.lang != lang) continue;
       played++;
       if (g.won) {
         wins++;
@@ -47,6 +51,33 @@ class _AchievementsPageState extends State<AchievementsPage> {
       }
     }
     return (played: played, wins: wins, streak: streak, best: best);
+  }
+
+  /// Every language's achievements added up: the times, the days (in order), and
+  /// for a global one (which no language owns) its own state.
+  Map<String, AchState> _merged(List<String> codes) {
+    final out = <String, AchState>{};
+    for (final a in achievements) {
+      if (a.global) {
+        final st = appState.achOf(
+          codes.isEmpty ? appState.lang : codes.first,
+        )[a.id];
+        if (st != null) out[a.id] = st;
+        continue;
+      }
+      var times = 0;
+      final dates = <String>[];
+      for (final l in codes) {
+        final st = appState.achOf(l)[a.id];
+        if (st == null) continue;
+        times += st.times;
+        dates.addAll(st.dates);
+      }
+      if (times > 0) {
+        out[a.id] = AchState(times: times, dates: dates..sort());
+      }
+    }
+    return out;
   }
 
   @override
@@ -60,22 +91,26 @@ class _AchievementsPageState extends State<AchievementsPage> {
           child: ListenableBuilder(
             listenable: appState,
             builder: (context, _) {
-              final s = _record(_lang);
-              final mine = appState.achOf(_lang);
+              final all = _lang == allLanguages;
+              final codes = appState.playedLanguages.toList()..sort();
+              final s = _record(all ? null : _lang);
+              final mine = all ? _merged(codes) : appState.achOf(_lang);
               final won = appState.stats.langsWon.toList()..sort();
               return ListView(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                 children: [
                   LanguagePicker(
-                    codes: appState.playedLanguages.toList()..sort(),
+                    codes: codes,
                     languages: _langs,
                     selected: _lang,
+                    showAll: true,
                     onSelect: (code) => setState(() => _lang = code),
                   ),
                   const SizedBox(height: 12),
                   Caption(
                     '${mine.values.where((x) => x.times > 0).length} of '
-                    '${achievements.length} earned in $_lang',
+                    '${achievements.length} earned '
+                    '${all ? 'in any language' : 'in $_lang'}',
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -90,13 +125,41 @@ class _AchievementsPageState extends State<AchievementsPage> {
                   for (final a in achievements) ...[
                     const Divider(),
                     a.track == Track.badges
-                        ? _BadgeRow(a, mine[a.id] ?? AchState())
+                        ? _BadgeRow(
+                            a,
+                            mine[a.id] ?? AchState(),
+                            mastery: a.id == 'mastery',
+                          )
                         : _Row(
                             a,
                             mine[a.id] ?? AchState(),
                             // one language's own wears its flag; one that counts
                             // languages wears theirs
-                            badges: a.global ? won : [_lang],
+                            badges: a.id == towerOfBabelId
+                                // every language there is, bright once completed
+                                ? (_langs.keys.toList()..sort())
+                                : a.global
+                                ? won
+                                : all
+                                ? codes
+                                : [_lang],
+                            // "all": the languages it is not yet earned in are dim
+                            dimmed: a.id == towerOfBabelId
+                                ? {
+                                    for (final l in _langs.keys)
+                                      if (!appState.completedIn(l)) l,
+                                  }
+                                : all && !a.global
+                                ? {
+                                    for (final l in codes)
+                                      if ((appState.achOf(l)[a.id]?.times ??
+                                              0) ==
+                                          0)
+                                        l,
+                                  }
+                                : const {},
+                            // progress is a language's own
+                            showBar: !(all && !a.global),
                           ),
                   ],
                   const SizedBox(height: 28),
@@ -116,9 +179,20 @@ class _AchievementsPageState extends State<AchievementsPage> {
 /// One achievement: its glyph, what it asks for, how often it has been earned
 /// and, for numbered ones, a bar showing progress towards the next time.
 class _Row extends StatelessWidget {
-  const _Row(this.a, this.st, {this.badges = const []});
+  const _Row(
+    this.a,
+    this.st, {
+    this.badges = const [],
+    this.dimmed = const {},
+    this.showBar = true,
+  });
   final Achievement a;
   final AchState st;
+
+  /// Of those, the ones drawn dim (where it has not been earned), and whether
+  /// the progress bar is shown.
+  final Set<String> dimmed;
+  final bool showBar;
 
   /// The languages whose flags it wears.
   final List<String> badges;
@@ -161,7 +235,11 @@ class _Row extends StatelessWidget {
                           runSpacing: 3,
                           children: [
                             for (final code in badges)
-                              languageBadge(code, size: 11),
+                              Opacity(
+                                key: ValueKey('badge-${a.id}-$code'),
+                                opacity: dimmed.contains(code) ? .3 : 1,
+                                child: languageBadge(code, size: 11),
+                              ),
                           ],
                         ),
                       ],
@@ -185,7 +263,7 @@ class _Row extends StatelessWidget {
                 ),
             ],
           ),
-          if (a.numbered) ...[
+          if (a.numbered && showBar) ...[
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 60),
@@ -201,17 +279,23 @@ class _Row extends StatelessWidget {
 /// The language mastery achievement: one achievement, a badge for every
 /// language mastered, kept for good. Tap it for the language by language list.
 class _BadgeRow extends StatelessWidget {
-  const _BadgeRow(this.a, this.st);
+  const _BadgeRow(this.a, this.st, {this.mastery = true});
   final Achievement a;
   final AchState st;
+
+  /// The language mastery (which opens its list) or the completionist (which
+  /// only collects its badges).
+  final bool mastery;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final earned = st.seen.isNotEmpty;
     return InkWell(
-      key: const ValueKey('mastery-row'),
-      onTap: () => Navigator.pushNamed(context, Routes.mastery),
+      key: ValueKey('${a.id}-row'),
+      onTap: mastery
+          ? () => Navigator.pushNamed(context, Routes.mastery)
+          : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: FutureBuilder<List<Language>>(
@@ -257,17 +341,18 @@ class _BadgeRow extends StatelessWidget {
                       children: [
                         Text(
                           '${st.seen.length}/${langs.length}',
-                          key: const ValueKey('mastery-count'),
+                          key: ValueKey('${a.id}-count'),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: earned ? c.primary : null,
                           ),
                         ),
-                        Icon(
-                          Icons.chevron_right,
-                          size: 18,
-                          color: c.onSurface.withValues(alpha: dimAlpha),
-                        ),
+                        if (mastery)
+                          Icon(
+                            Icons.chevron_right,
+                            size: 18,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
+                          ),
                       ],
                     ),
                   ],

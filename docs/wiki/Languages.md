@@ -9,7 +9,7 @@ showing, picked with the row of flags):
 - the **achievements**, with their progress.
 
 Only a few things span languages: the achievements that count languages (bilingual, polyglot,
-babel) and the language-mastery badges. Every achievement wears the flag of its language; the ones
+nine tongues), the language-mastery and completionist badges and the tower of babel. Every achievement wears the flag of its language; the ones
 that count languages wear the flags of the languages they count.
 
 **Older data.** What was kept before each language had its own (one playstyle, one streak, one set

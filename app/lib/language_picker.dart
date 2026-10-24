@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'ui.dart';
 import 'words.dart';
 
+/// What [LanguagePicker.selected] is when every language is picked.
+const allLanguages = '*';
+
 /// A row of language badges (the flags) to pick which language a page is about.
 /// Each language has its own history, playstyle, streak and achievements, so the
 /// pages that show them say which it is and let the player look at another.
@@ -13,7 +16,11 @@ class LanguagePicker extends StatelessWidget {
     required this.languages,
     required this.selected,
     required this.onSelect,
+    this.showAll = false,
   });
+
+  /// Offers "all" before the languages: every language at once.
+  final bool showAll;
 
   /// The languages to offer, in the order shown.
   final List<String> codes;
@@ -31,6 +38,41 @@ class LanguagePicker extends StatelessWidget {
       spacing: 6,
       runSpacing: 6,
       children: [
+        if (showAll)
+          Semantics(
+            button: true,
+            selected: selected == allLanguages,
+            label: 'all languages',
+            excludeSemantics: true,
+            child: InkWell(
+              key: const ValueKey('lang-all'),
+              onTap: () => onSelect(allLanguages),
+              borderRadius: BorderRadius.circular(3),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: selected == allLanguages
+                        ? c.primary
+                        : c.outlineVariant,
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: Text(
+                  'all',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: selected == allLanguages
+                        ? FontWeight.bold
+                        : null,
+                  ),
+                ),
+              ),
+            ),
+          ),
         for (final code in codes)
           Semantics(
             button: true,

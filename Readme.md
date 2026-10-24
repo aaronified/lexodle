@@ -135,7 +135,8 @@
     <td width="40%"><img src="docs/screenshots/features/achievements.png" width="100%" alt="Achievements in English, each with its flag; bilingual shows three flags"></td>
     <td width="60%">
       <h3>🏅 Achievements, by language</h3>
-      47 achievements, each earned in a language and wearing its flag; the ones that count
+      49 achievements, each earned in a language and wearing its flag, with an all-languages
+      view and a tower of babel for completing every language; the ones that count
       languages wear theirs. Playstyle, streak and history are kept per language too.
       <a href="https://github.com/aaronified/lexodle/wiki/Languages">Languages</a> ·
       <a href="https://github.com/aaronified/lexodle/wiki/Achievements">Achievements</a>.

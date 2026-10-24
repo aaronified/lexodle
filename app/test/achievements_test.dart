@@ -7,6 +7,7 @@ import 'package:lexodle/achievements_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/store.dart';
+import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -78,7 +79,8 @@ void main() {
     // language mastery is one achievement, not a list: no badge earned yet
     expect(find.text('language mastery'), findsOneWidget);
     expect(find.byKey(const ValueKey('mastery-row')), findsOneWidget);
-    expect(find.text('no badges yet'), findsOneWidget);
+    // the mastery badges and the completionist's: neither has one yet
+    expect(find.text('no badges yet'), findsNWidgets(2));
     expect(find.text('3/76'), findsNothing, reason: 'the list is on its page');
 
     // tapping it opens the language by language list: 3 of English's
@@ -151,4 +153,108 @@ void main() {
       appState.lang = 'en';
     },
   );
+
+  testWidgets('all languages: every flag, bright where earned, dim where not', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 7400));
+    appState.lang = 'en';
+    appState.stats = Stats()..langsWon = {'en', 'fr'};
+    appState.setAch('en', {
+      'one_shot': AchState(times: 3, dates: ['2026-10-01', '2026-10-05']),
+    });
+    appState.setAch('fr', {
+      'one_shot': AchState(times: 2, dates: ['2026-10-03']),
+      'wins_10': AchState(times: 1, dates: ['2026-10-04']),
+    });
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AchievementsPage(),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('lang-all')));
+    await tester.pump();
+    // the times are added up across the languages
+    expect(find.text('×5'), findsOneWidget);
+    expect(find.textContaining('in any language'), findsOneWidget);
+    double opacity(String id, String code) =>
+        tester.widget<Opacity>(find.byKey(ValueKey('badge-$id-$code'))).opacity;
+    // one shot was earned in both; regular only in French
+    expect(opacity('one_shot', 'en'), 1);
+    expect(opacity('one_shot', 'fr'), 1);
+    expect(opacity('wins_10', 'fr'), 1);
+    expect(opacity('wins_10', 'en'), lessThan(1));
+    appState.lang = 'en';
+  });
+
+  group('completing a language', () {
+    GameResult won(String lang) => GameResult(
+      lang: lang,
+      length: 5,
+      tries: 6,
+      pool: 3000,
+      used: 3,
+      won: true,
+      skills: const [90, 90, 90],
+    );
+
+    void finish(AppState s, String lang) {
+      for (final a in achievements.where((a) => !a.global)) {
+        s.achOf(lang)[a.id] = AchState(times: 1, dates: ['2026-10-01']);
+      }
+    }
+
+    test('the achievements that count languages do not stand in the way', () {
+      expect(achievementById(completionistId)!.global, isTrue);
+      expect(achievementById(towerOfBabelId)!.global, isTrue);
+      expect(achievementById('polyglot_9')!.title, 'nine tongues');
+      expect(achievementById(towerOfBabelId)!.title, 'tower of babel');
+    });
+
+    test(
+      'every achievement of a language earns its completionist badge',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final s = AppState();
+        await s.load();
+        expect(s.completedIn('en'), isFalse);
+        s.recordGame(won('en'));
+        expect(s.achOf('en')[completionistId]?.seen ?? {}, isEmpty);
+        finish(s, 'en');
+        expect(s.completedIn('en'), isTrue);
+        expect(s.completedLanguages(), {'en'});
+        final earned = s.recordGame(won('en'));
+        expect(earned.map((a) => a.id), contains(completionistId));
+        expect(s.achOf('en')[completionistId]!.seen, {'en'});
+        // kept, and earned once for that language
+        final again = s.recordGame(won('en'));
+        expect(again.map((a) => a.id), isNot(contains(completionistId)));
+        expect(s.achOf('en')[completionistId]!.times, 1);
+      },
+    );
+
+    test('the tower of babel waits for every language', () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = AppState();
+      await s.load();
+      final langs = (await WordBank.languages()).map((l) => l.code).toList();
+      expect(langs.length, greaterThan(2));
+      for (final l in langs.take(langs.length - 1)) {
+        finish(s, l);
+        s.recordGame(won(l));
+      }
+      expect(s.achOf('en')[towerOfBabelId]?.times ?? 0, 0);
+      finish(s, langs.last);
+      final earned = s.recordGame(won(langs.last));
+      expect(earned.map((a) => a.id), contains(towerOfBabelId));
+      expect(s.achOf('en')[towerOfBabelId]!.times, 1);
+      expect(s.achOf('en')[completionistId]!.seen, langs.toSet());
+      // once
+      final more = s.recordGame(won(langs.last));
+      expect(more.map((a) => a.id), isNot(contains(towerOfBabelId)));
+    });
+  });
 }

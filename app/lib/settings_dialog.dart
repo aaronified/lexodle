@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'backup.dart';
 import 'donate.dart';
 import 'main.dart';
-import 'modes.dart';
-import 'routes.dart';
 import 'stepper_choice.dart';
 import 'update_section.dart';
 import 'store.dart';
@@ -15,10 +13,10 @@ import 'ui.dart';
 
 /// The settings popup, the same on a phone and on a desktop: game mode, how
 /// often its words share letters, the helper level, play and the solver. Changes
-/// apply and are saved as they are made. It is a route of its own
-/// ([Routes.settings]), so it has an address like every other screen.
-class SettingsDialog extends StatelessWidget {
-  const SettingsDialog({super.key});
+/// The settings popup, the same on a phone and on a desktop: theme, backup,
+/// updates and support. Changes apply and are saved as they are made. It is a
+/// route of its own ([Routes.settings]), so it has an address like every other
+/// screen. The game options are in [Routes.gameModes].
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +32,6 @@ class SettingsDialog extends StatelessWidget {
         child: ListenableBuilder(
           listenable: appState,
           builder: (context, _) {
-            final mode = appState.mode;
             return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               child: Column(
@@ -60,102 +57,6 @@ class SettingsDialog extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Caption('mode'),
-                  const SizedBox(height: 10),
-                  StepperChoice<GameMode>(
-                    semanticLabel: 'mode',
-                    items: [
-                      for (final m in GameMode.values)
-                        (
-                          m,
-                          m.label,
-                          m.extraTries == 0
-                              ? m.sub
-                              : '${m.sub} · +${m.extraTries} tries',
-                        ),
-                    ],
-                    selected: mode,
-                    onChanged: (m) => appState.setup(mode: m),
-                  ),
-                  const SizedBox(height: 24),
-                  // always there, so the settings keep one shape; one word has
-                  // nothing to share, so in classic it is greyed and fixed
-                  Row(
-                    children: [
-                      const Expanded(child: Caption('shared letters')),
-                      Text(
-                        '${appState.share}%',
-                        key: const ValueKey('share-value'),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: mode.multi
-                              ? c.primary
-                              : c.onSurface.withValues(alpha: dimAlpha),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Slider(
-                    key: const ValueKey('share-slider'),
-                    value: appState.share.toDouble(),
-                    min: 0,
-                    max: maxShare.toDouble(),
-                    divisions: maxShare,
-                    label: '${appState.share}%',
-                    onChanged: mode.multi
-                        ? (v) => appState.setup(share: v.round())
-                        : null,
-                  ),
-                  Text(
-                    !mode.multi
-                        ? 'one word has nothing to share. this applies to '
-                              'quartet and relay race.'
-                        : appState.share == 0
-                        ? 'the words never share a letter, as far as the '
-                              'language allows.'
-                        : 'the chance that the words share a letter. '
-                              'lower makes them more different.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: c.onSurface.withValues(alpha: dimAlpha),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Caption('helper'),
-                  const SizedBox(height: 10),
-                  // the helper only shows in classic, so for the other modes
-                  // it is greyed: dimmed, and out of reach of touch and keys
-                  Opacity(
-                    key: const ValueKey('helper-fade'),
-                    opacity: mode.multi ? .38 : 1,
-                    child: AbsorbPointer(
-                      absorbing: mode.multi,
-                      child: ExcludeFocus(
-                        excluding: mode.multi,
-                        child: StepperChoice<Helper>(
-                          semanticLabel: 'helper',
-                          items: [
-                            for (final h in Helper.values) (h, h.label, h.sub),
-                          ],
-                          selected: appState.helper,
-                          onChanged: (h) => appState.setup(helper: h),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    mode.multi
-                        ? 'the helper shows in classic mode only. whatever you '
-                              'choose, everything is revealed when the game ends.'
-                        : 'whatever you choose, everything is revealed when '
-                              'the game ends.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: c.onSurface.withValues(alpha: dimAlpha),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
                   const Caption('theme'),
                   const SizedBox(height: 10),
                   StepperChoice<ThemeMode>(
@@ -182,44 +83,6 @@ class SettingsDialog extends StatelessWidget {
                   const Caption('support lexodle'),
                   const SizedBox(height: 10),
                   const DonateSection(),
-                  const SizedBox(height: 24),
-                  const Caption('play or solve'),
-                  const SizedBox(height: 10),
-                  // both replace the popup, so back from either is home
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton(
-                          key: const ValueKey('settings-play'),
-                          onPressed: () => Navigator.pushReplacementNamed(
-                            context,
-                            Routes.play,
-                          ),
-                          child: const Text('play'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pushReplacementNamed(
-                            context,
-                            Routes.solver,
-                          ),
-                          child: const Text('open the solver'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      key: const ValueKey('settings-learn'),
-                      onPressed: () =>
-                          Navigator.pushReplacementNamed(context, Routes.learn),
-                      child: const Text('learn: find the best guess'),
-                    ),
-                  ),
                 ],
               ),
             );

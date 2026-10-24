@@ -222,6 +222,10 @@ enum Track {
   /// The daily streak reaching the target. It is earned once, and its bar
   /// follows the streak instead of starting again.
   dailyStreak,
+
+  /// Earned once, when the app finds a condition over everything kept to be true
+  /// (see [AppState.recordGame]), not by a game.
+  granted,
 }
 
 class Achievement {
@@ -259,12 +263,16 @@ class Achievement {
   final Set<GameMode> modes;
 
   /// Whether it has a target and so a progress bar (a badge collection has not).
-  bool get numbered => track != Track.event && track != Track.badges;
+  bool get numbered =>
+      track != Track.event && track != Track.badges && track != Track.granted;
 
   /// Whether it spans languages (the ones that count languages, and the mastery
   /// badges), so belongs to none. Every other is earned, and counted, in one
   /// language at a time.
-  bool get global => track == Track.languages || track == Track.badges;
+  bool get global =>
+      track == Track.languages ||
+      track == Track.badges ||
+      track == Track.granted;
 }
 
 bool _always(GameResult r) => true;
@@ -394,8 +402,8 @@ final achievements = <Achievement>[
   ),
   Achievement(
     'polyglot_9',
-    'building-broadcast-tower',
-    'babel',
+    'trophy',
+    'nine tongues',
     'win in 9 languages',
     track: Track.languages,
     target: 9,
@@ -601,7 +609,31 @@ final achievements = <Achievement>[
     track: Track.badges,
     modes: _anyMode,
   ),
+  // every other achievement of a language: a badge each, kept for good
+  Achievement(
+    completionistId,
+    'laurel-wreath',
+    'completionist',
+    'earn every achievement of one language (not the ones that count languages), '
+        'and keep its badge',
+    track: Track.badges,
+    modes: _anyMode,
+  ),
+  // completionist, in every language
+  Achievement(
+    towerOfBabelId,
+    'building-broadcast-tower',
+    'tower of babel',
+    'be a completionist in every language',
+    track: Track.granted,
+    repeat: false,
+    modes: _anyMode,
+  ),
 ];
+
+/// The two achievements of completing a language, and all of them.
+const completionistId = 'completionist';
+const towerOfBabelId = 'tower_of_babel';
 
 /// What one achievement has done so far.
 class AchState {
@@ -655,6 +687,8 @@ List<Achievement> advanceAchievements(
   final earned = <Achievement>[];
   for (final a in achievements) {
     final st = states.putIfAbsent(a.id, AchState.new);
+    // earned by the app itself, from everything kept: see AppState.recordGame
+    if (a.track == Track.granted || a.id == completionistId) continue;
     if (a.track == Track.badges) {
       final fresh = mastered.difference(st.seen);
       if (fresh.isNotEmpty) {
@@ -694,7 +728,8 @@ List<Achievement> advanceAchievements(
         st.progress = r.dailyStreak;
         got = r.won && st.progress >= a.target && st.times == 0;
       case Track.badges:
-        break; // collected above
+      case Track.granted:
+        break; // collected above, or by the app
     }
     if (got) {
       st.times++;
@@ -832,6 +867,50 @@ class AppState extends ChangeNotifier {
 
   /// The languages whose mastery the last recorded game completed.
   List<Language> lastMastered = const [];
+
+  /// Whether every achievement that belongs to one language (the global ones,
+  /// which count languages, aside) has been earned in [l].
+  bool completedIn(String l) {
+    final mine = achOf(l);
+    return achievements
+        .where((a) => !a.global)
+        .every((a) => (mine[a.id]?.times ?? 0) > 0);
+  }
+
+  /// The languages every one of whose own achievements has been earned.
+  Set<String> completedLanguages() => {
+    for (final l in playedLanguages)
+      if (completedIn(l)) l,
+  };
+
+  /// Adds the badge of each language newly completed to the completionist, and
+  /// earns the tower of babel once every language there is has one. Returns what
+  /// was earned.
+  List<Achievement> _grantCompletion(String today) {
+    final earned = <Achievement>[];
+    final done = completedLanguages();
+    final badges = _globalAch.putIfAbsent(completionistId, AchState.new);
+    final fresh = done.difference(badges.seen);
+    if (fresh.isNotEmpty) {
+      badges.seen.addAll(fresh);
+      badges.progress = badges.seen.length;
+      for (final _ in fresh) {
+        badges.times++;
+        badges.dates.add(today);
+      }
+      earned.add(achievementById(completionistId)!);
+    }
+    final all = WordBank.loadedLanguages ?? const <Language>[];
+    final tower = _globalAch.putIfAbsent(towerOfBabelId, AchState.new);
+    if (tower.times == 0 &&
+        all.isNotEmpty &&
+        all.every((l) => badges.seen.contains(l.code))) {
+      tower.times++;
+      tower.dates.add(today);
+      earned.add(achievementById(towerOfBabelId)!);
+    }
+    return earned;
+  }
 
   /// The languages mastered so far: every length at every difficulty won once.
   List<Language> masteredLanguages() => [
@@ -1421,6 +1500,7 @@ class AppState extends ChangeNotifier {
         (_langAch[r.lang] ??= {})[e.key] = e.value;
       }
     }
+    earned.addAll(_grantCompletion(today));
     final fresh = (_globalAch['mastery']?.seen ?? const <String>{}).difference(
       had,
     );
