@@ -79,14 +79,26 @@
 
 <table>
   <tr>
-    <td width="40%"><img src="docs/screenshots/history.png" width="100%" alt="The history: playstyle, overall analysis and a line chart of skill, luck, daring and expected guesses"></td>
+    <td width="40%"><img src="docs/screenshots/features/history.png" width="100%" alt="The overall numbers and a line chart of skill, luck, daring and expected guesses over 50 weeks"></td>
     <td width="60%">
       <h3>📈 A history that explains your play</h3>
       Every game is kept, however many, with a chart over the last 50 weeks or months of skill,
-      luck, daring and the guesses a game is expected to take, broken into what each contributed.
-      Six playstyles, from analyst to wildcard, are read from how you play.
-      <a href="https://github.com/aaronified/lexodle/wiki/History-and-playstyles">History and playstyles</a>.
+      luck, daring and the guesses a game is expected to take, broken into what each one added
+      or took off.
+      <a href="https://github.com/aaronified/lexodle/wiki/History-and-playstyles">History</a>.
     </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="60%">
+      <h3>🎭 Six playstyles</h3>
+      From analyst to wildcard: skill tells how sharp you are, daring whether you work the clues or
+      go for the word. It moves as you play, and each language has its own.
+      <a href="https://github.com/aaronified/lexodle/wiki/History-and-playstyles#playstyles">The six</a>.
+    </td>
+    <td width="40%"><img src="docs/screenshots/features/playstyle.png" width="100%" alt="The playstyle card: a maverick, its skill and daring, and the six styles with those held marked"></td>
   </tr>
 </table>
 
@@ -97,13 +109,13 @@
       The answer is shown. Find the guess that cuts the words left the most; each guess is graded
       against the best, and the words that still fit are listed at the bottom.
     </td>
-    <td width="40%"><img src="docs/screenshots/learn.png" width="100%" alt="Learn mode: the answer shown, a guess graded against the best picks, and the words that still fit"></td>
+    <td width="40%"><img src="docs/screenshots/features/learn.png" width="100%" alt="Learn mode: the answer shown, a guess graded against the best picks, and the words that still fit"></td>
   </tr>
 </table>
 
 <table>
   <tr>
-    <td width="40%"><img src="docs/screenshots/solver.png" width="100%" alt="The solver: a guess entered with its colours, the words left, and the recommended next guess"></td>
+    <td width="40%"><img src="docs/screenshots/features/solver.png" width="100%" alt="The solver: a guess entered with its colours, the words left, and the recommended next guess"></td>
     <td width="60%">
       <h3>🧩 A solver for games played elsewhere</h3>
       Type the guesses, tap the colours the other game showed, and get the words left and the next
@@ -122,7 +134,7 @@
       <a href="https://github.com/aaronified/lexodle/wiki/Languages">Languages</a> ·
       <a href="https://github.com/aaronified/lexodle/wiki/Achievements">Achievements</a>.
     </td>
-    <td width="40%"><img src="docs/screenshots/achievements.png" width="100%" alt="Achievements in English, each with its flag; bilingual shows three flags"></td>
+    <td width="40%"><img src="docs/screenshots/features/achievements.png" width="100%" alt="Achievements in English, each with its flag; bilingual shows three flags"></td>
   </tr>
 </table>
 

@@ -170,7 +170,7 @@ void main() {
                   .clamp(0, 100)
                   .toDouble(),
               luck: rng.nextInt(100) - 50.0,
-              daring: (30 + 25 * (1 - along) + rng.nextInt(24)).toDouble(),
+              daring: (3 + 9 * (1 - along) + rng.nextInt(7)).toDouble(),
               risk: .5,
               before: 600 ~/ (k + 1),
               after: 300 ~/ (k + 1),
@@ -186,12 +186,39 @@ void main() {
   }
 
   /// Draws what is on screen, once its assets have been read, to a PNG.
-  Future<void> shot(WidgetTester t, GlobalKey key, String name) async {
+  ///
+  /// With [crop], a rectangle of the screen in logical pixels, only that part:
+  /// the pictures of the README's feature list show the feature, not the page.
+  Future<void> shot(
+    WidgetTester t,
+    GlobalKey key,
+    String name, {
+    Rect? crop,
+  }) async {
     // the icons are SVG assets, read with real file IO
     await t.runAsync(() => Future<void>.delayed(const Duration(seconds: 1)));
     await t.pump();
     final boundary = t.renderObject<RenderRepaintBoundary>(find.byKey(key));
-    final image = (await t.runAsync(() => boundary.toImage(pixelRatio: 2)))!;
+    var image = (await t.runAsync(() => boundary.toImage(pixelRatio: 2)))!;
+    if (crop != null) {
+      final r = Rect.fromLTRB(
+        crop.left * 2,
+        crop.top * 2,
+        min(crop.right * 2, image.width.toDouble()),
+        min(crop.bottom * 2, image.height.toDouble()),
+      );
+      final recorder = ui.PictureRecorder();
+      ui.Canvas(recorder).drawImageRect(
+        image,
+        r,
+        Rect.fromLTWH(0, 0, r.width, r.height),
+        ui.Paint(),
+      );
+      image = await recorder.endRecording().toImage(
+        r.width.round(),
+        r.height.round(),
+      );
+    }
     final data = (await t.runAsync(
       () => image.toByteData(format: ui.ImageByteFormat.png),
     ))!;
@@ -307,6 +334,25 @@ void main() {
     await t.pumpWidget(framed(key, const HistoryPage()));
     await t.pumpAndSettle();
     await shot(t, key, 'history');
+    // the playstyle on its own, and the chart with the overall numbers
+    Rect card(String k) => t.getRect(find.byKey(ValueKey(k)));
+    await shot(
+      t,
+      key,
+      'features/playstyle',
+      crop: Rect.fromLTRB(0, 0, 412, card('profile').bottom + 14),
+    );
+    await shot(
+      t,
+      key,
+      'features/history',
+      crop: Rect.fromLTRB(
+        0,
+        card('overall').top - 12,
+        412,
+        card('trend').bottom + 14,
+      ),
+    );
   }, skip: skip != null);
 
   testWidgets('the settings', (t) async {
@@ -336,6 +382,17 @@ void main() {
     }
     await t.pump(const Duration(seconds: 20));
     await shot(t, key, 'learn');
+    await shot(
+      t,
+      key,
+      'features/learn',
+      crop: Rect.fromLTRB(
+        0,
+        0,
+        412,
+        t.getTopLeft(find.byKey(const ValueKey('learn-words'))).dy + 150,
+      ),
+    );
   }, skip: skip != null);
 
   testWidgets('the solver', (t) async {
@@ -354,6 +411,17 @@ void main() {
     await t.tap(find.text('add guess'));
     await t.pump(const Duration(seconds: 20));
     await shot(t, key, 'solver');
+    await shot(
+      t,
+      key,
+      'features/solver',
+      crop: Rect.fromLTRB(
+        0,
+        0,
+        412,
+        t.getRect(find.text('recommended guess')).bottom + 70,
+      ),
+    );
   }, skip: skip != null);
 
   testWidgets('the achievements, with their flags', (t) async {
@@ -361,6 +429,7 @@ void main() {
     appState.setAch(lang, {
       'first_light': AchState(times: 1, dates: ['2026-09-02']),
       'one_shot': AchState(times: 2, dates: ['2026-09-20', '2026-10-11']),
+      'last_breath': AchState(times: 1, dates: ['2026-10-03']),
       'wins_10': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
       'streak_3': AchState(times: 3, dates: ['2026-10-01']),
       'daily_3': AchState(times: 1, dates: ['2026-10-05'], progress: 6),
@@ -372,5 +441,17 @@ void main() {
     await t.pumpWidget(framed(key, const AchievementsPage()));
     await t.pump(const Duration(seconds: 1));
     await shot(t, key, 'achievements');
+    // just the first three, as the feature list shows
+    await shot(
+      t,
+      key,
+      'features/achievements',
+      crop: Rect.fromLTRB(
+        0,
+        0,
+        412,
+        t.getRect(find.byKey(const ValueKey('badges-last_breath'))).bottom + 22,
+      ),
+    );
   }, skip: skip != null);
 }

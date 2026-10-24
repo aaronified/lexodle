@@ -1,5 +1,7 @@
 # Skill and luck in feedback-guessing games
 
+> **The maths here is mostly AI-generated and has not been peer reviewed.** The definitions, proofs and experiments were written with an AI assistant and checked by running the code and the experiments, not by a mathematician. Treat it as a working draft: read it critically, and expect mistakes.
+
 `main.tex` is a working paper on the maths behind the **skill** and **luck**
 scores in Lexodle's reviews. It is written to a submission standard but is **not
 for submission**: it is here so that you, or someone better at maths, can check
@@ -94,4 +96,4 @@ The app computes the same quantities in `app/lib/logic.dart` (`scoreGuess`,
 `app/test/logic_test.dart`, `review_plots_test.dart` and `multi_analysis_test.dart`
 (bounds, zero mean over random partitions, the last-try rule).
 
-`plain.tex` is the same material for a reader with high-school maths: worked numbers, no notation to learn (build it with `tectonic plain.tex`, as `main.tex`).
+`plain.pdf` (source `plain.tex`) and `main.pdf` (source `main.tex`) are in this folder. `plain.tex` is the same material for a reader with high-school maths: worked numbers, no notation to learn (build it with `tectonic plain.tex`, as `main.tex`).

@@ -6,6 +6,4 @@
 *.synctex.gz
 *.fls
 *.fdb_latexmk
-main.pdf
 __pycache__/
-plain.pdf
