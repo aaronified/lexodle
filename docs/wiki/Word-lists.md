@@ -24,12 +24,9 @@ filters it differently (`colour` passes the UK dictionary and not the US one), s
 keeps a word if **any** of its dictionaries accepts it, and its weight is the **average of the
 weights the variants give it**: the full weight when both accept the word, half of it when only one
 does (the other variant never uses it). The first 6,000 by that averaged weight are kept, so
-`color` and `colour` are both words, each with half the weight of a word both spell alike. Saved
-progress under the old codes (`en-GB`, `pt-PT`) is moved to the merged language when the app reads
-its storage or a backup: the statistics, the history, the daily calendar (the better result on a
-day both were played), the playstyle, and the achievements (earned as often as the more often
-earned of the two). A daily in progress under an old code is dropped; that the day was played is
-kept. Flags are the SVGs in `app/assets/flags`, one per language (two side by side, each cropped
+`color` and `colour` are both words, each with half the weight of a word both spell alike.
+There is no migration of progress saved under the old codes `en-GB` and `pt-PT`: the app
+falls back to the first language for a code it does not know, and that data is ignored. Flags are the SVGs in `app/assets/flags`, one per language (two side by side, each cropped
 to half, for a merged one), set in the table of `build_words.py`.
 
 ## Known gaps
