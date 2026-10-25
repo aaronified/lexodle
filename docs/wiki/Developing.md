@@ -62,3 +62,12 @@ Actions*. You can also run it by hand from the Actions tab. The `wiki` workflow 
 
 `app/tools/calibrate_styles.dart` and `predict_tries.dart` (run from `app`, see the head of each)
 write their results to `docs/paper/experiments/results`, where the paper reads them.
+
+## The release build does not shrink code
+
+The release build keeps the Android code shrinker (R8) off (`android/app/build.gradle.kts`). With it
+on, the release APK lost a method of the `shared_preferences` plugin (`getAll`): every save and
+load failed with a `NoSuchMethodError`, which the app swallowed, so no progress survived a restart
+(updates and force-stops both looked like data loss). Debug builds do not shrink, so it only showed
+in the release APK. `test/release_config_test.dart` fails if the shrinker is turned back on. To turn
+it on again, first show with a release build that progress is saved and read after a force-stop.

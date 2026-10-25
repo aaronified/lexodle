@@ -36,6 +36,12 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // The code shrinker (R8) stays off: with it on, the release build lost a
+            // method of the shared_preferences plugin (getAll), so nothing was ever
+            // saved or read and all progress was gone at the next start. Debug
+            // builds do not shrink, which is why only the release build failed.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
