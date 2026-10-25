@@ -125,7 +125,7 @@ class _LearnPageState extends State<LearnPage> {
       input.clear();
       message = '';
     });
-    _grade(game, index, before, word, after.length);
+    _grade(game, index, before, word, after);
   }
 
   Future<void> _grade(
@@ -133,18 +133,22 @@ class _LearnPageState extends State<LearnPage> {
     int index,
     List<String> before,
     String word,
-    int after,
+    List<String> after,
   ) async {
+    final law = appState.useFrequency ? widget.bank.weightMap(length) : null;
     final land = await analyseGuesses(
       before,
       widget.bank.guessable(length),
       k: 3,
+      weights: law,
     );
     if (!mounted || game != _game || index >= feedback.length) return;
     final measured = scoreGuess(
       before,
       word,
-      after,
+      after.length,
+      weights: law,
+      afterWords: after,
       provisional: true,
     ).withBest(land.bestExpected);
     setState(() {

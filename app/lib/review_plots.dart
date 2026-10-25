@@ -12,8 +12,11 @@ import 'ui.dart';
 class Outcomes {
   const Outcomes(this.sizes, this.expected, this.landed);
 
-  /// The size of each outcome's group, largest first.
-  final List<int> sizes;
+  /// The size of each outcome's group, largest first. When the words are not
+  /// equally likely a group counts for its words' weights, scaled so that the
+  /// sizes still add up to the number of words: a pool of equally likely words
+  /// that would be as likely to land in.
+  final List<double> sizes;
 
   /// E, the average pool you would land in: the sum of the squared group
   /// sizes over the number of words.
@@ -23,19 +26,19 @@ class Outcomes {
   final int landed;
 
   /// N, the words that were possible.
-  int get words => sizes.fold(0, (a, b) => a + b);
+  int get words => sizes.fold(0.0, (a, b) => a + b).round();
 
   /// The pool you landed in.
-  int get pool => sizes[landed];
+  double get pool => sizes[landed];
 
   /// The chance of landing in a bigger pool than you did, and in a smaller
   /// one, in percent. Luck is the first less the second.
   double get chanceBigger => _share((s) => s > pool);
   double get chanceSmaller => _share((s) => s < pool);
 
-  double _share(bool Function(int s) test) {
-    final n = words;
-    return n == 0 ? 0 : sizes.where(test).fold(0, (a, b) => a + b) / n * 100;
+  double _share(bool Function(double s) test) {
+    final n = sizes.fold(0.0, (a, b) => a + b);
+    return n == 0 ? 0 : sizes.where(test).fold(0.0, (a, b) => a + b) / n * 100;
   }
 
   /// Luck as in the table: [chanceLuck] of the pool landed in.
@@ -43,20 +46,31 @@ class Outcomes {
 }
 
 /// The outcomes of [guess] against [eligible], and which one [answer] gave.
-Outcomes outcomesOf(List<String> eligible, String guess, String answer) {
+Outcomes outcomesOf(
+  List<String> eligible,
+  String guess,
+  String answer, {
+  Map<String, int>? weights,
+}) {
   final groups = <int, int>{};
   for (final w in eligible) {
     final key = patternCode(w, guess);
-    groups[key] = (groups[key] ?? 0) + 1;
+    final x = weights == null ? 1 : max(weights[w] ?? 1, 1);
+    groups[key] = (groups[key] ?? 0) + x;
   }
   final order = groups.keys.toList()
     ..sort((a, b) {
       final c = groups[b]!.compareTo(groups[a]!);
       return c != 0 ? c : a.compareTo(b);
     });
-  final sizes = [for (final k in order) groups[k]!];
   final n = eligible.length;
-  final expected = n == 0 ? 0.0 : sizes.fold<int>(0, (a, s) => a + s * s) / n;
+  final total = groups.values.fold<int>(0, (a, b) => a + b);
+  final sizes = [
+    for (final k in order) total == 0 ? 0.0 : groups[k]! * n / total,
+  ];
+  final expected = n == 0
+      ? 0.0
+      : sizes.fold<double>(0, (a, s) => a + s * s) / n;
   final landed = max(0, order.indexOf(patternCode(answer, guess)));
   return Outcomes(sizes, expected, landed);
 }
@@ -192,7 +206,7 @@ class SplitPlot extends StatelessWidget {
           skillReady
               ? 'skill ${skill.round()}: how evenly and finely this guess split the '
                     '${_n(o.words)} possible words. it made ${o.sizes.length} '
-                    'groups, the biggest holding ${_n(o.sizes.first)}; the more '
+                    'groups, the biggest holding ${_n(o.sizes.first.round())}; the more '
                     'even the groups, the fewer words you can expect to be left '
                     'with. here that is about ${_w(o.expected)}, where no split '
                     'at all would leave ${_n(o.words)} and the best real guess '
@@ -203,7 +217,7 @@ class SplitPlot extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'you landed in ${_n(o.pool)} ${o.pool == 1 ? 'word' : 'words'}: luck '
+          'you landed in ${_n(o.pool.round())} ${o.pool.round() == 1 ? 'word' : 'words'}: luck '
           '${luckText(luck)}. you would have landed in a bigger pool '
           '${o.chanceBigger.round()}% of the time and in a smaller one '
           '${o.chanceSmaller.round()}%.',
@@ -304,12 +318,17 @@ class EqualChancePlot extends StatelessWidget {
     required this.fitting,
     required this.guessAt,
     required this.luck,
+    this.chances,
   });
 
   /// How many words fit the clues, and where the guess is among them (-1 if
   /// it does not fit).
   final int fitting;
   final int guessAt;
+
+  /// The chance of each word that fits, in the order of the list, when they
+  /// are not equal (null: every word is as likely as the next).
+  final List<double>? chances;
 
   /// The luck of the last try: its chance, not a pool.
   final double luck;
@@ -319,11 +338,20 @@ class EqualChancePlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final chance = fitting == 0 ? 0.0 : 100 / fitting;
+    final ch = chances;
+    final chance = fitting == 0
+        ? 0.0
+        : ch == null
+        ? 100 / fitting
+        : (guessAt >= 0 && guessAt < ch.length ? ch[guessAt] * 100 : 0.0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Caption('every word that fits was as likely'),
+        Caption(
+          ch == null
+              ? 'every word that fits was as likely'
+              : 'the words that fit, by how likely each was',
+        ),
         const SizedBox(height: 8),
         SizedBox(
           height: 56,
@@ -333,6 +361,7 @@ class EqualChancePlot extends StatelessWidget {
             painter: EqualChancePainter(
               fitting,
               guessAt,
+              chances: ch,
               base: c.onSurface.withValues(alpha: .3),
               yours: c.primary,
               axis: c.outlineVariant,
@@ -342,7 +371,7 @@ class EqualChancePlot extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           '${_n(fitting)} ${fitting == 1 ? 'word fits' : 'words fit'} the '
-          'clues, each with the same chance: 1 in ${_n(fitting)} '
+          '${ch == null ? 'clues, each with the same chance: 1 in ${_n(fitting)} ' : 'clues, the commoner ones likelier. '}'
           '(${chance < 10 ? chance.toStringAsFixed(1) : chance.round()}%). '
           '${guessAt >= 0 ? 'your guess was one of them' : 'your guess did not fit the clues, so it had no chance'}'
           '. luck ${luckText(luck)}: the outcome, less that chance.',
@@ -358,11 +387,13 @@ class EqualChancePainter extends CustomPainter {
   EqualChancePainter(
     this.count,
     this.guessAt, {
+    this.chances,
     required this.base,
     required this.yours,
     required this.axis,
   });
   final int count, guessAt;
+  final List<double>? chances;
   final Color base, yours, axis;
 
   @override
@@ -378,8 +409,12 @@ class EqualChancePainter extends CustomPainter {
     final slot = size.width / shown;
     if (slot >= 3) {
       for (var i = 0; i < shown; i++) {
+        final ch = chances;
+        final hi = ch == null || ch.isEmpty
+            ? h
+            : max(2.0, ch[i] / ch.first * h);
         canvas.drawRect(
-          Rect.fromLTWH(slot * i + slot * .1, size.height - h, slot * .8, h),
+          Rect.fromLTWH(slot * i + slot * .1, size.height - hi, slot * .8, hi),
           Paint()..color = i == guessAt ? yours : base,
         );
       }

@@ -119,10 +119,15 @@ class _GamePageState extends State<GamePage> {
           widget.bank.answerWeights(length, frequency: freq),
           _rng,
         );
-    // Every word the game accepts counts as possible, not only the common ones
-    // the answer is drawn from: a player cannot know that list, and a real
-    // word that fits every clue must never be ruled out behind their back.
-    eligible = List.of(widget.bank.guessable(length));
+    // Every word the game accepts counts as possible, so a real word that fits
+    // every clue is never ruled out behind the player's back. A daily is the
+    // exception: only its 3,000 words can be the answer, and the scores
+    // (against the chance of each possible answer) are of those.
+    eligible = List.of(
+      _daily == null
+          ? widget.bank.guessable(length)
+          : widget.bank.answers(length).take(dailyAnswers),
+    );
     _jobs.close(); // work on the last game's guesses is no longer wanted
     _jobs = JobQueue();
     _epoch++;
@@ -213,7 +218,8 @@ class _GamePageState extends State<GamePage> {
         finalTry: guesses.length >= tries,
         solved: word == answer,
         triesLeft: tries - (guesses.length - 1),
-        weights: freq ? widget.bank.weightMap(length) : null,
+        weights: _law,
+        afterWords: after,
         // skill is measured against the best real guess, which the
         // background analysis is still finding out
         provisional: analyseWhilePlaying,
@@ -228,7 +234,11 @@ class _GamePageState extends State<GamePage> {
     final epoch = _epoch;
     if (analyseWhilePlaying) {
       final job = _jobs.add(
-        () => analyseGuesses(before, widget.bank.guessable(length)),
+        () => analyseGuesses(
+          before,
+          widget.bank.guessable(length),
+          weights: _law,
+        ),
       );
       _analysis.add(job);
       job.then<void>((land) {
@@ -538,6 +548,10 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
+  /// The law the answer was drawn by, as weights; null when every possible
+  /// word was as likely as the next (frequency off, and every daily).
+  Map<String, int>? get _law => freq ? widget.bank.weightMap(length) : null;
+
   GameRecord _record() => GameRecord(
     bank: widget.bank,
     length: length,
@@ -550,6 +564,7 @@ class _GamePageState extends State<GamePage> {
     finalEligible: eligible,
     won: won,
     tries: tries,
+    weights: _law,
     analysis: List.of(_analysis),
   );
 

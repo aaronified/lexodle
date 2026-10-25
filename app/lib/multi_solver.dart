@@ -174,6 +174,10 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
   bool busy = false;
   int _run = 0;
 
+  /// The law the answers are drawn by, as weights; null for equal chances.
+  Map<String, int>? get _law =>
+      appState.useFrequency ? widget.bank.weightMap(length) : null;
+
   @override
   void initState() {
     super.initState();
@@ -198,7 +202,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
     if (!busy) return;
     if (state.triesLeft <= 1) {
       // nothing is left to learn: only a word that fits a board can win one
-      final picks = finalPicks(lists, k: 1);
+      final picks = finalPicks(lists, k: 1, weights: _law);
       setState(() {
         finalPick = picks.isEmpty ? null : picks.first;
         busy = false;
@@ -209,6 +213,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
       lists,
       multiCandidates(lists, widget.bank.guessable(length)),
       k: 1,
+      weights: _law,
     );
     if (!mounted || run != _run) return;
     setState(() {

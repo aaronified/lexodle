@@ -22,6 +22,7 @@ class GameRecord {
     required this.finalEligible,
     required this.won,
     this.tries = 0,
+    this.weights,
     this.analysis,
   });
 
@@ -44,6 +45,10 @@ class GameRecord {
 
   /// How many tries the game allowed (0 when not known).
   final int tries;
+
+  /// The law the answer was drawn by, as weights; null when every possible
+  /// word was as likely as the next.
+  final Map<String, int>? weights;
 
   /// The best picks for each guess, if they were already being worked out
   /// while the game was played (null for a guess that needs none).
@@ -105,20 +110,31 @@ class _ReviewPageState extends State<ReviewPage> {
     return land == null ? m : m.withLandscape(land);
   }();
 
+  /// The chance each of [fits] is the answer: equal, or by the weights of the
+  /// law the game drew its answer by.
+  List<double> _chances(List<String> fits) {
+    final w = r.weights;
+    if (w == null) return List.filled(fits.length, 1 / fits.length);
+    int weightOf(String x) => max(w[x] ?? 1, 1);
+    final total = fits.fold<int>(0, (a, x) => a + weightOf(x));
+    return [for (final x in fits) weightOf(x) / total];
+  }
+
   Future<void> _analyse() async {
     final guessable = r.bank.guessable(r.length);
     for (var i = 0; i < r.guesses.length; i++) {
       final finalTry = _isFinalTry(i);
       if (finalTry) {
-        // every possible word, equally likely; the skill field carries that
-        // chance, in percent, since no split matters any more
+        // every possible word, each with its chance; the skill field carries
+        // that chance, in percent, since no split matters any more
         final fits = r.befores[i];
+        final shares = _chances(fits);
         setState(
           () => picks[i] = [
-            for (final w in fits.take(_listed))
+            for (var k = 0; k < fits.length && k < _listed; k++)
               Recommendation(
-                w,
-                100 / fits.length,
+                fits[k],
+                shares[k] * 100,
                 fits.length.toDouble(),
                 true,
               ),
@@ -130,7 +146,9 @@ class _ReviewPageState extends State<ReviewPage> {
       final ready = r.analysis != null && i < r.analysis!.length
           ? r.analysis![i]
           : null;
-      final land = await (ready ?? analyseGuesses(r.befores[i], guessable));
+      final land =
+          await (ready ??
+              analyseGuesses(r.befores[i], guessable, weights: r.weights));
       if (!mounted) return;
       setState(() {
         if (!finalTry) picks[i] = land.top;
@@ -246,6 +264,7 @@ class _ReviewPageState extends State<ReviewPage> {
                                   guessFits: r.befores[step].contains(
                                     r.guesses[step],
                                   ),
+                                  equalChances: r.weights == null,
                                 ),
                           style: const TextStyle(fontSize: 14, height: 1.5),
                         ),
@@ -548,12 +567,16 @@ class _ReviewPageState extends State<ReviewPage> {
           if (m.daring != null) ...[
             const SizedBox(height: 6),
             Text(
-              m.skill >= 100 - 1e-9
-                  ? 'Nothing scored higher than this guess, so there was '
-                        'nothing daring about it.'
-                  : 'Daring ${m.daring!.round()}%: of the guesses that scored '
-                        'higher skill, ${m.daring!.round()}% were less risky '
-                        'than yours.',
+              !m.possible
+                  ? 'Daring 0%: this guess could not have been the answer, so '
+                        'it was a probe, not an attempt at the word.'
+                  : m.triesLeft <= 1
+                  ? 'Daring 0%: with one try left, going for the word is the '
+                        'only play.'
+                  : 'Daring ${m.daring!.round()}%: an attempt at the word '
+                        '(${(m.winChance * 100).round()}% likely), which cost '
+                        '${(100 - m.skill).round()}% of the split the best '
+                        'guess gave, with ${m.triesLeft} tries left.',
               key: const ValueKey('daring-line'),
               style: const TextStyle(fontSize: 13, height: 1.4),
             ),
@@ -577,6 +600,7 @@ class _ReviewPageState extends State<ReviewPage> {
           fitting: before.length,
           guessAt: before.indexOf(m.guess),
           luck: m.luck,
+          chances: r.weights == null ? null : _chances(before),
         ),
         const SizedBox(height: 18),
       ];
@@ -587,7 +611,7 @@ class _ReviewPageState extends State<ReviewPage> {
         key: ValueKey('split-$step'),
         outcomes: _outcomes.putIfAbsent(
           step,
-          () => outcomesOf(before, m.guess, r.answer),
+          () => outcomesOf(before, m.guess, r.answer, weights: r.weights),
         ),
         best: land?.bestExpected ?? m.best,
         skill: m.skill,
@@ -670,7 +694,6 @@ class _ReviewPageState extends State<ReviewPage> {
   Widget _picks(ColorScheme c, GuessMetrics m, List<Recommendation>? top) {
     final finalTry = _isFinalTry(step);
     final fits = r.befores[step];
-    final chance = fits.isEmpty ? 0.0 : 100 / fits.length;
     String pct(double v) =>
         v == 0 ? '0%' : (v < 10 ? '${v.toStringAsFixed(1)}%' : '${v.round()}%');
     // Two real columns: the words share one edge, and the skill sits in a
@@ -729,9 +752,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 big: true,
                 keys: 'yours',
                 shown: finalTry
-                    ? pct(
-                        fits.contains(m.guess) ? chance : 0,
-                      ) // pool words only
+                    ? pct(m.winChance * 100) // pool words only
                     : null,
               ),
             ],
@@ -756,10 +777,15 @@ class _ReviewPageState extends State<ReviewPage> {
                     top[i].skill,
                     big: i == 0,
                     wordRight: true,
-                    shown: pct(chance),
+                    shown: pct(top[i].skill),
                   ),
                 Text(
-                  fits.length > top.length
+                  r.weights != null
+                      ? (fits.length > top.length
+                            ? 'the likeliest of the ${fits.length} words that '
+                                  'fit'
+                            : 'by how likely each is')
+                      : fits.length > top.length
                       ? 'any of the ${fits.length} words that fit, equally '
                             'likely'
                       : 'each equally likely',

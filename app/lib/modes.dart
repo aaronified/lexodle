@@ -117,6 +117,7 @@ class MultiGame {
     this.tries, {
     List<String>? words,
     this.provisional = false,
+    this.weights,
   }) : boards = [for (final a in answers) Board(a)],
        _words = words,
        eligible = [
@@ -137,6 +138,9 @@ class MultiGame {
   final List<Board> boards;
   final guesses = <String>[];
   final List<String>? _words;
+
+  /// The law the answers were drawn by, as weights; null for equal chances.
+  final Map<String, int>? weights;
 
   /// Whether each guess's skill is provisional until the analysis has found the
   /// best real guess (see [GuessMetrics.ready]).
@@ -253,6 +257,8 @@ class MultiGame {
               triesLeft: tries - (guesses.length - 1),
               solved: boards[live[k]].solved,
               provisional: provisional,
+              weights: weights,
+              afterWords: eligible[live[k]],
             ),
             boards[live[k]].solved,
           ),

@@ -193,8 +193,19 @@ void main() {
       expect(find.textContaining('skill …'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 40));
-      final land = await tester.runAsync(() => analyseGuesses(all, all));
-      final skill = scoreGuess(all, guess, 1, best: land!.bestExpected).skill;
+      final law = bank.weightMap(4);
+      final land = await tester.runAsync(
+        () => analyseGuesses(all, all, weights: law),
+      );
+      final skill = scoreGuess(
+        all,
+        guess,
+        1,
+        best: land!.bestExpected,
+        triesLeft: appState.tries,
+        weights: law,
+        afterWords: filterEligible(all, guess, evaluate(answer, guess)),
+      ).skill;
       expect(find.textContaining('skill …'), findsNothing);
       expect(
         find.textContaining('skill ${skill.toStringAsFixed(1)}'),

@@ -102,6 +102,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       tries,
       words: widget.bank.guessable(length),
       provisional: analyseWhilePlaying,
+      weights: _law,
     );
     input.clear();
     message = '';
@@ -170,7 +171,11 @@ class _MultiGamePageState extends State<MultiGamePage> {
       final epoch = _epoch;
       if (analyseWhilePlaying) {
         final job = _jobs.add(
-          () => analyseMulti(step.liveBefore, widget.bank.guessable(length)),
+          () => analyseMulti(
+            step.liveBefore,
+            widget.bank.guessable(length),
+            weights: _law,
+          ),
         );
         _analysis.add(job);
         job.then<void>((land) {
@@ -243,6 +248,9 @@ class _MultiGamePageState extends State<MultiGamePage> {
     Future.wait(pending).then<void>((_) => done(), onError: (_) => done());
   }
 
+  /// The law the answers were drawn by, as weights; null for equal chances.
+  Map<String, int>? get _law => freq ? widget.bank.weightMap(length) : null;
+
   MultiRecord _record() => MultiRecord(
     bank: widget.bank,
     mode: mode,
@@ -252,6 +260,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     guesses: List.of(game.guesses),
     steps: List.of(game.steps),
     won: game.won,
+    weights: _law,
     analysis: List.of(_analysis),
   );
 

@@ -174,8 +174,8 @@ void main() {
     );
 
     test('the expected guesses come from skill, luck and daring', () {
-      final good = stats(skill: 95, luck: 0, daring: 8);
-      final bad = stats(skill: 40, luck: 0, daring: 8);
+      final good = stats(skill: 95, luck: 0, daring: daringTypical);
+      final bad = stats(skill: 40, luck: 0, daring: daringTypical);
       final b = guessBreakdown(good)!;
       // a typical daring adds nothing, and skill only takes guesses off
       expect(b.daring, closeTo(0, 1e-9));

@@ -210,10 +210,12 @@ List<Period> monthlyPeriods(
 }
 
 /// The expected number of guesses a game takes, read from skill, luck and
-/// daring by the linear fit of tools/predict_tries.dart (the mean of its fits
-/// in English, French and German, docs/paper Section 9.6):
+/// daring by the linear fit of tools/predict_tries3.dart (the mean of its fits
+/// under the three answer laws, every word equally likely, by frequency, and
+/// the daily, English at five letters, 2,500 games each, docs/paper Section
+/// 9.6):
 ///
-///   guesses = 8.05 - 0.0413 skill - 0.0272 luck - 0.0316 daring
+///   guesses = 9.38 - 0.0563 skill - 0.0164 luck - 0.0445 daring
 ///
 /// with skill and daring from 0 to 100 and luck from -100 to 100. It is an
 /// estimate from simulated players, not measured on people. The terms are shown
@@ -221,11 +223,11 @@ List<Period> monthlyPeriods(
 /// takes guesses off; luck takes off when positive and adds when negative; daring
 /// is measured from a typical level, [daringTypical], so going for the word less
 /// than usual adds guesses and more takes them off.
-const guessIntercept = 8.05;
-const guessPerSkill = -0.0413;
-const guessPerLuck = -0.0272;
-const guessPerDaring = -0.0316;
-const daringTypical = 8.0;
+const guessIntercept = 9.38;
+const guessPerSkill = -0.0563;
+const guessPerLuck = -0.0164;
+const guessPerDaring = -0.0445;
+const daringTypical = 10.0;
 
 /// What skill, luck and daring did to the expected guesses of a period.
 class GuessBreakdown {

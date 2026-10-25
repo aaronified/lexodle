@@ -75,6 +75,9 @@ void main() {
           r.guesses[i],
           after.length,
           finalTry: i + 1 >= 6,
+          triesLeft: 6 - i,
+          weights: bank.weightMap(4),
+          afterWords: after,
           solved: r.guesses[i] == answer,
           provisional: true,
         );
@@ -118,6 +121,9 @@ void main() {
         lost[2],
         after.length,
         finalTry: true,
+        triesLeft: 1,
+        weights: bank.weightMap(4),
+        afterWords: after,
         solved: false,
         provisional: true,
       );
@@ -147,7 +153,11 @@ void main() {
         expect(fresh.length, 3);
         final rec = replayClassic(bank, g, rows);
         for (var i = 0; i < 3; i++) {
-          final land = await analyseGuesses(rec.befores[i], bank.guessable(4));
+          final land = await analyseGuesses(
+            rec.befores[i],
+            bank.guessable(4),
+            weights: bank.weightMap(4),
+          );
           final want = rec.metrics[i].withLandscape(land);
           expect(fresh[i].word, rec.guesses[i]);
           expect(fresh[i].n, i);
@@ -171,7 +181,11 @@ void main() {
     );
 
     test('the best opening is not daring', () async {
-      final first = await analyseGuesses(bank.guessable(4), bank.guessable(4));
+      final first = await analyseGuesses(
+        bank.guessable(4),
+        bank.guessable(4),
+        weights: bank.weightMap(4),
+      );
       final best = first.top.first.word;
       final (g, rows) = game([best], answer: pool[3], tries: 6);
       final fresh = await rescoreClassic(bank, g, rows);
@@ -202,6 +216,7 @@ void main() {
         answers,
         9,
         words: bank.guessable(4),
+        weights: bank.weightMap(4),
       );
       for (final w in guesses) {
         live.guess(w);
@@ -248,6 +263,7 @@ void main() {
           final land = await analyseMulti(
             rec.steps[i].liveBefore,
             bank.guessable(4),
+            weights: bank.weightMap(4),
           );
           final step = rec.steps[i].withBests(land.bests);
           expect(fresh[i].word, guesses[i]);

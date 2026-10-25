@@ -8,10 +8,11 @@ import 'logic.dart';
 ///
 /// Every board is judged the way a single game is (see [scoreGuess]): for a
 /// board with n words still possible, a guess splits them into groups, and the
-/// expected size of the group you land in is E = (sum of group sizes squared)
-/// / n. Its skill is how far E got from "no information" (n) towards "a perfect
-/// split" (1), (n - E) / (n - 1) * 100, and its luck is how much smaller the
-/// group you really landed in was than E.
+/// expected size of the group you land in is E = n * sum(q^2), q being the
+/// chance of each group (its size over n when the words are equally likely).
+/// Its skill is ln(n / E) / ln(n / E*) * 100, how far E got from "no
+/// information" towards the best real guess's E*, and its luck is the chance of
+/// landing in a bigger group less that of a smaller one.
 ///
 /// A guess in a quartet is made for every unsolved board at once, so its
 /// skill and luck are the average over those boards, each weighted by how much
@@ -158,6 +159,7 @@ Future<MultiLandscape> analyseMulti(
   List<List<String>> live,
   Iterable<String> candidates, {
   int k = 3,
+  Map<String, int>? weights,
 }) async {
   final cands = candidates.toList();
   final bests = List<double>.filled(live.length, 1);
@@ -168,15 +170,15 @@ Future<MultiLandscape> analyseMulti(
   if (active.isEmpty || cands.isEmpty) return MultiLandscape(const [], bests);
 
   // the sum of squared group sizes of every candidate, once per distinct list
-  final sums = Map<List<String>, Int32List>.identity();
+  final sums = Map<List<String>, Float64List>.identity();
   final sets = Map<List<String>, Set<String>>.identity();
   var work = 0;
   for (final i in active) {
     final board = live[i];
     if (sums.containsKey(board)) continue;
-    final ss = Int32List(cands.length);
+    final ss = Float64List(cands.length);
     for (var c = 0; c < cands.length; c++) {
-      ss[c] = splitSumSquares(board, cands[c]);
+      ss[c] = expectedPool(board, cands[c], weights: weights);
       if (++work % 20 == 0) await Future<void>.delayed(Duration.zero);
     }
     sums[board] = ss;
@@ -185,11 +187,11 @@ Future<MultiLandscape> analyseMulti(
   for (final i in active) {
     final board = live[i];
     final lowest = sums[board]!.reduce((a, b) => a < b ? a : b);
-    bests[i] = lowest / board.length;
+    bests[i] = lowest;
   }
 
-  final weights = {for (final i in active) i: boardWeight(live[i].length)};
-  final total = weights.values.fold<double>(0, (a, b) => a + b);
+  final boardWeights = {for (final i in active) i: boardWeight(live[i].length)};
+  final total = boardWeights.values.fold<double>(0, (a, b) => a + b);
   final scored = <MultiPick>[];
   for (var c = 0; c < cands.length; c++) {
     var sum = 0.0, fits = 0;
@@ -200,8 +202,8 @@ Future<MultiLandscape> analyseMulti(
       if (fit) fits++;
       final skill = n == 1
           ? (fit ? 100.0 : 0.0)
-          : skillAgainst(n, sums[board]![c] / n, bests[i]);
-      sum += weights[i]! * skill;
+          : skillAgainst(n, sums[board]![c], bests[i]);
+      sum += boardWeights[i]! * skill;
     }
     scored.add(MultiPick(cands[c], sum / total, fits));
   }
@@ -217,7 +219,9 @@ Future<List<MultiPick>> recommendMulti(
   List<List<String>> live,
   Iterable<String> candidates, {
   int k = 3,
-}) async => (await analyseMulti(live, candidates, k: k)).picks;
+  Map<String, int>? weights,
+}) async =>
+    (await analyseMulti(live, candidates, k: k, weights: weights)).picks;
 
 /// A suggested guess for the last try, and how many boards it can be expected
 /// to solve.
@@ -234,16 +238,23 @@ class FinalPick {
 /// learn, so only a word that is still possible on a live board is worth
 /// naming; each such word solves a board with the chance 1 / n of the words
 /// possible there, so a word that is possible on several boards is worth the
-/// sum. Best first; equal words keep the order of the most common first.
-List<FinalPick> finalPicks(List<List<String>> live, {int k = 3}) {
+/// sum. Best first; equal words keep the order of the most common first. With
+/// [weights] a word has its share of the weight there as its chance on a board.
+List<FinalPick> finalPicks(
+  List<List<String>> live, {
+  int k = 3,
+  Map<String, int>? weights,
+}) {
+  int weightOf(String w) => weights == null ? 1 : max(weights[w] ?? 1, 1);
   final boards = [
     for (final b in live)
       if (b.isNotEmpty) b,
   ];
   final value = <String, double>{};
   for (final b in boards) {
+    final total = b.fold<int>(0, (a, w) => a + weightOf(w));
     for (final w in b) {
-      value[w] = (value[w] ?? 0) + 1 / b.length;
+      value[w] = (value[w] ?? 0) + weightOf(w) / total;
     }
   }
   final words = value.keys.toList();
@@ -258,10 +269,17 @@ List<FinalPick> finalPicks(List<List<String>> live, {int k = 3}) {
 
 /// The expected number of boards [guess] solves on the last try (see
 /// [finalPicks]): the sum of 1 / n over the live boards it is possible on.
-double expectedSolved(List<List<String>> live, String guess) {
+double expectedSolved(
+  List<List<String>> live,
+  String guess, {
+  Map<String, int>? weights,
+}) {
+  int weightOf(String w) => weights == null ? 1 : max(weights[w] ?? 1, 1);
   var sum = 0.0;
   for (final b in live) {
-    if (b.isNotEmpty && b.contains(guess)) sum += 1 / b.length;
+    if (b.isNotEmpty && b.contains(guess)) {
+      sum += weightOf(guess) / b.fold<int>(0, (a, w) => a + weightOf(w));
+    }
   }
   return sum;
 }

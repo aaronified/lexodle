@@ -1,0 +1,19 @@
+Running build hooks...Running build hooks...law d, en 5: 4994 words, 3000 possible answers, 2500 games
+
+share of all guesses in each tenth of the scale:
+  skill      3   1   2   3   5   9  15  11   8  43   mean 76.3
+  luck       6   8  11  11   7  26   8   8  10   6   mean -0.2
+  daring    59  12  18   7   3   1   0   0   0   0   mean 11.1
+
+2500 games (fit on 1250, read on 1250); tries mean 4.37, lost 8.6%
+skill                      R^2 fit 0.219  held out 0.219  7.5622, -0.0407
+luck                       R^2 fit 0.295  held out 0.294  4.5015, -0.0226
+daring                     R^2 fit 0.000  held out -0.001  4.3365, 0.0014
+skill + luck               R^2 fit 0.519  held out 0.528  7.7428, -0.0411, -0.0227
+skill + luck + daring      R^2 fit 0.556  held out 0.586  9.0617, -0.0528, -0.0209, -0.0376
+
+correlations of the game means:
+  skill ~ luck  -0.018
+  skill ~ daring  -0.554
+  luck ~ daring  0.171
+VIF  skill 1.46  luck 1.04  daring 1.50

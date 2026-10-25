@@ -1,3 +1,4 @@
+import 'daily.dart';
 import 'history.dart';
 import 'logic.dart';
 import 'modes.dart';
@@ -17,7 +18,13 @@ import 'words.dart';
 /// which it does itself when no analysis is given.
 GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
   final answer = g.answers.first;
-  var eligible = List.of(bank.guessable(g.length));
+  // a daily's answer was one of its 3,000 words, so only those were possible
+  var eligible = List.of(
+    g.daily.isEmpty
+        ? bank.guessable(g.length)
+        : bank.answers(g.length).take(dailyAnswers),
+  );
+  final law = g.freq ? bank.weightMap(g.length) : null;
   final guesses = <String>[];
   final marks = <List<Mark>>[];
   final metrics = <GuessMetrics>[];
@@ -34,7 +41,8 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
         finalTry: i + 1 >= g.tries,
         solved: word == answer,
         triesLeft: g.tries - i,
-        weights: g.freq ? bank.weightMap(g.length) : null,
+        weights: law,
+        afterWords: after,
         provisional: true,
       ),
     );
@@ -55,6 +63,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     finalEligible: eligible,
     won: g.won,
     tries: g.tries,
+    weights: law,
   );
 }
 
@@ -66,6 +75,7 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
     g.tries,
     words: bank.guessable(g.length),
     provisional: true,
+    weights: g.freq ? bank.weightMap(g.length) : null,
   );
   for (final r in rows) {
     game.guess(r.word);
@@ -79,6 +89,7 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
     guesses: game.guesses,
     steps: game.steps,
     won: game.won,
+    weights: game.weights,
   );
 }
 
@@ -100,11 +111,21 @@ Future<List<GuessRow>> rescoreClassic(
   final guessable = bank.guessable(g.length);
   final out = <GuessRow>[];
   for (var i = 0; i < rec.guesses.length; i++) {
-    final key = rec.befores[i].length == guessable.length
-        ? '${bank.language.code}:${g.length}'
+    // the opening position is the same for every game under one law
+    final key = i == 0
+        ? '${bank.language.code}:${g.length}:'
+              '${g.freq
+                  ? 'f'
+                  : g.daily.isEmpty
+                  ? 'u'
+                  : 'd'}'
         : null;
     var land = key == null ? null : opening?[key];
-    land ??= await analyseGuesses(rec.befores[i], guessable);
+    land ??= await analyseGuesses(
+      rec.befores[i],
+      guessable,
+      weights: rec.weights,
+    );
     if (key != null) opening?[key] = land;
     out.add(guessRowOf(i, rec.metrics[i].withLandscape(land)));
   }
@@ -123,7 +144,11 @@ Future<List<GuessRow>> rescoreMulti(
   final guessable = bank.guessable(g.length);
   final out = <GuessRow>[];
   for (var i = 0; i < rec.steps.length; i++) {
-    final land = await analyseMulti(rec.steps[i].liveBefore, guessable);
+    final land = await analyseMulti(
+      rec.steps[i].liveBefore,
+      guessable,
+      weights: rec.weights,
+    );
     final step = rec.steps[i].withBests(land.bests);
     out.add(
       GuessRow(

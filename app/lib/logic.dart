@@ -58,8 +58,13 @@ bool _same(List<Mark> a, List<Mark> b) {
 /// Skill and luck of one guess (the maths is in docs/paper).
 ///
 /// With [before] = N words still possible, a guess splits them into groups by
-/// the feedback they would produce. If the answer is equally likely to be any
-/// of them, the pool you land in has expected size E = sum(size^2) / N.
+/// the feedback they would produce. The answer follows a law: every possible
+/// word equally likely, or each by its weight (how common it is) when the game
+/// drew it that way. A group then has a mass m (its words' weights, in words
+/// when equal), you land in it with chance q = m / M, and the pool you land in
+/// has expected size E = N * sum(q^2): the plain sum(size^2) / N when the
+/// weights are equal, and the size of an equally likely pool that would be as
+/// hard to tell apart when they are not.
 ///
 /// * skill = ln(N / E) / ln(N / E*) * 100, where E* is the smallest E any real
 ///   guess can reach against these words: 0 when the guess tells you nothing
@@ -70,8 +75,9 @@ bool _same(List<Mark> a, List<Mark> b) {
 ///   the best guess's. Until E* is known the skill is provisional (E* = 1,
 ///   every word alone), and [ready] is false.
 /// * luck, from -100 to +100, is the chance of landing in a bigger pool than
-///   you did less the chance of landing in a smaller one: 0 is the middle
-///   outcome, and over every answer it averages exactly 0. See [chanceLuck].
+///   you did less the chance of landing in a smaller one, a pool being as big
+///   as its mass: 0 is the middle outcome, and over every answer, under the
+///   law, it averages exactly 0. See [chanceLuck].
 class GuessMetrics {
   const GuessMetrics({
     required this.guess,
@@ -112,8 +118,8 @@ class GuessMetrics {
   final bool possible;
 
   /// The chance it was the answer, given the clues: its share of the weight of
-  /// the words still possible (their frequency, as the game draws them), or 1 in
-  /// n when the weights are not known. 0 for a guess that cannot be the answer.
+  /// the words still possible (the same law the skill and luck use), or 1 in n
+  /// when they are equally likely. 0 for a guess that cannot be the answer.
   final double winChance;
 
   /// The tries left, this one included (0 when not known).
@@ -138,7 +144,9 @@ class GuessMetrics {
   /// The same metrics with skill measured against [best] (E*).
   GuessMetrics withBest(double best) => GuessMetrics(
     guess: guess,
-    skill: before <= 1 ? skill : skillAgainst(before, expected, best),
+    skill: before <= 1 || triesLeft == 1
+        ? skill
+        : skillAgainst(before, expected, best),
     luck: luck,
     before: before,
     after: after,
@@ -229,6 +237,24 @@ double splitRisk(int n, int sumSquares, double sumClogC) {
   return r < 0 ? 0 : r; // rounding can leave -1e-16
 }
 
+/// [splitRisk] for groups of unequal weight: the Shannon entropy of the chances
+/// less their collision entropy, in bits, from the groups' masses [masses].
+double splitRiskMass(Iterable<num> masses) {
+  var total = 0.0;
+  for (final m in masses) {
+    total += m;
+  }
+  if (total <= 0) return 0;
+  var shannon = 0.0, collision = 0.0;
+  for (final m in masses) {
+    final q = m / total;
+    shannon -= q * log(q) / ln2;
+    collision += q * q;
+  }
+  final r = log(collision) / ln2 + shannon;
+  return r < 0 ? 0 : r;
+}
+
 /// Skill from the expected pool [expected] (E) of [n] words, against the best
 /// real guess's [best] (E*): ln(n / E) / ln(n / E*), from 0 to 100. The logarithm
 /// is what keeps most guesses from crowding near 100 when many words are left.
@@ -246,9 +272,9 @@ String luckText(double v) {
 }
 
 /// Luck as the chance-weighted percentile of the pool you landed in. The group
-/// sizes [sizes] sum to the number of words N, and the answer is equally likely
-/// to be any word, so a group of size s is landed in with chance s / N. Landing
-/// in a group of [landed] words, luck = P(a bigger pool) - P(a smaller pool), in
+/// sizes [sizes] (word counts, or the groups' weights when the words are not
+/// equally likely) sum to the total N, so a group of size s is landed in with
+/// chance s / N. Landing in a group of [landed], luck = P(a bigger pool) - P(a smaller pool), in
 /// percent: -100 for the biggest, +100 for the smallest, 0 in the middle.
 ///
 /// It is the mid-distribution transform of the pool size, 2 * F_mid - 1, taken
@@ -256,8 +282,8 @@ String luckText(double v) {
 /// either end) and, over all answers, has mean exactly 0 for every guess. It
 /// depends on the pools through their order and through their sizes as
 /// chances, so scaling every group by the same factor leaves it unchanged.
-double chanceLuck(Iterable<int> sizes, int landed) {
-  var n = 0, bigger = 0, smaller = 0;
+double chanceLuck(Iterable<num> sizes, num landed) {
+  num n = 0, bigger = 0, smaller = 0;
   for (final s in sizes) {
     n += s;
     if (s > landed) bigger += s;
@@ -269,20 +295,25 @@ double chanceLuck(Iterable<int> sizes, int landed) {
 /// Scores a guess made when [eligibleBefore] words were possible, leaving
 /// [after]. Skill is measured against [best] (E*, the smallest expected pool any
 /// real guess leaves) when it is known; without it the skill is provisional
-/// (E* taken as 1) and not [GuessMetrics.ready] if [provisional] is set. On the
-/// [finalTry] only a word that fits the clues can win, so luck is no longer
+/// (E* taken as the finest split) and not [GuessMetrics.ready] if [provisional]
+/// is set. On the [finalTry] only a word that fits the clues can win, so luck is no longer
 /// about the pool you landed in but about the pick itself: the outcome (1 if
 /// [solved], else 0) less the chance of that outcome, which is 1 in n if the
 /// guess is one of the n possible words and 0 if it cannot be the answer, in
 /// percent. Three possible words give +67 for the right one and -33 for a wrong
 /// one; two give +50 and -50. A guess that cannot win has no chance to be lucky
 /// about, so its luck is 0 (the loss is in its skill), which keeps the luck of
-/// every guess at mean zero.
+/// every guess at mean zero. The skill of a last try is no longer about the
+/// split either: it is the guess's chance of winning as a share of the best
+/// chance any guess has (100 for the likeliest word that fits, 0 for a word
+/// that cannot be the answer).
 ///
-/// [triesLeft] (this try counted) and [weights] (how common each word is, as
-/// the game draws its answers) are for the daring: whether the guess could have
-/// been the answer, and how likely it was. Without the weights every possible
-/// word is as likely as the next.
+/// [triesLeft] (this try counted) and [weights] (how common each word is, the
+/// law the game drew its answer by) are for the whole score: the groups are
+/// weighed by them, and so is the chance a guess was the answer. Without them
+/// every possible word is as likely as the next. A word with no weight counts
+/// as 1. [afterWords] are the words left after the guess, so the group landed
+/// in can be weighed; without them it is taken as [after] words of weight 1.
 GuessMetrics scoreGuess(
   List<String> eligibleBefore,
   String guess,
@@ -293,39 +324,63 @@ GuessMetrics scoreGuess(
   bool provisional = false,
   int triesLeft = 0,
   Map<String, int>? weights,
+  List<String>? afterWords,
 }) {
   final n = eligibleBefore.length;
   final possible = eligibleBefore.contains(guess);
-  var winChance = 0.0;
-  if (possible) {
-    if (weights == null) {
-      winChance = 1 / n;
-    } else {
-      var total = 0;
-      for (final w in eligibleBefore) {
-        total += weights[w] ?? 1;
-      }
-      winChance = (weights[guess] ?? 1) / total;
-    }
-  }
+  int weightOf(String w) => weights == null ? 1 : max(weights[w] ?? 1, 1);
+  var total = 0;
+  var squares =
+      0.0; // sum of squared weights: the finest split, every word alone
   final sizes = <int, int>{};
+  final masses = <int, int>{};
   for (final w in eligibleBefore) {
     final key = patternCode(w, guess);
+    final x = weightOf(w);
+    total += x;
+    squares += x.toDouble() * x;
     sizes[key] = (sizes[key] ?? 0) + 1;
+    masses[key] = (masses[key] ?? 0) + x;
+  }
+  final winChance = possible && total > 0 ? weightOf(guess) / total : 0.0;
+  var massSquares = 0.0;
+  for (final m in masses.values) {
+    massSquares += m.toDouble() * m;
   }
   final sumSq = sizes.values.fold<int>(0, (a, s) => a + s * s);
   final clogc = sizes.values.fold<double>(0, (a, s) => a + s * log(s) / ln2);
-  final expected = n == 0 ? 0.0 : sumSq / n;
+  // E = N * sum(q^2); with equal weights that is sum(size^2) / N exactly
+  final expected = n == 0
+      ? 0.0
+      : weights == null
+      ? sumSq / n
+      : n * massSquares / (total.toDouble() * total);
+  // E* cannot be below the finest split, every word alone: 1 when equal
+  final floor = n == 0 || weights == null
+      ? 1.0
+      : n * squares / (total.toDouble() * total);
   // With one word left a guess cannot split anything; it is either that word
   // (100) or a wasted turn (0). The original gave 100 to both.
+  var topWeight = 0;
+  for (final w in eligibleBefore) {
+    topWeight = max(topWeight, weightOf(w));
+  }
+  // On the last try nothing is learned that can be used: skill is the chance
+  // the guess wins as a share of the best chance any guess has.
   final skill = n == 0
       ? 0.0
       : n == 1
       ? (eligibleBefore.first == guess ? 100.0 : 0.0)
-      : skillAgainst(n, expected, best ?? 1);
+      : finalTry
+      ? (possible ? weightOf(guess) / topWeight * 100 : 0.0)
+      : skillAgainst(n, expected, best ?? floor);
+  var landedMass = after;
+  if (weights != null && afterWords != null) {
+    landedMass = afterWords.fold<int>(0, (a, w) => a + weightOf(w));
+  }
   final luck = finalTry && n > 0
-      ? ((solved ? 1.0 : 0.0) - (possible ? 1 / n : 0.0)) * 100
-      : chanceLuck(sizes.values, after);
+      ? ((solved ? 1.0 : 0.0) - winChance) * 100
+      : chanceLuck(masses.values, landedMass);
   return GuessMetrics(
     guess: guess,
     skill: skill,
@@ -335,9 +390,11 @@ GuessMetrics scoreGuess(
     expected: expected,
     groups: sizes.length,
     largest: sizes.values.fold<int>(0, (a, s) => s > a ? s : a),
-    best: best ?? 1,
+    best: best ?? floor,
     ready: !provisional,
-    risk: splitRisk(n, sumSq, clogc),
+    risk: weights == null
+        ? splitRisk(n, sumSq, clogc)
+        : splitRiskMass(masses.values),
     possible: possible,
     winChance: winChance,
     triesLeft: triesLeft,
@@ -425,28 +482,31 @@ Future<Landscape> analyseGuesses(
   List<String> eligible,
   Iterable<String> candidates, {
   int k = 3,
+  Map<String, int>? weights,
 }) async {
   final n = eligible.length;
   if (n == 0) return const Landscape([], []);
   final possible = eligible.toSet();
-  Recommendation make(String w, int sumSq, double best) => Recommendation(
+  Recommendation make(String w, double e, double best) => Recommendation(
     w,
-    n <= 1 ? 100.0 : skillAgainst(n, sumSq / n, best),
-    sumSq / n,
+    n <= 1 ? 100.0 : skillAgainst(n, e, best),
+    e,
     possible.contains(w),
   );
 
   if (n <= 2) {
-    // every word splits itself from the other, so E* is 1
+    // every word splits itself from the other, so E* is the finest split's
+    final floor = _finestSplit(eligible, weights);
     final top = [
-      for (final w in eligible.take(k)) make(w, _sumSquares(eligible, w), 1),
+      for (final w in eligible.take(k))
+        make(w, _expectedPool(eligible, w, weights), floor),
     ];
-    return Landscape(top, [for (final r in top) r.skill], 1);
+    return Landscape(top, [for (final r in top) r.skill], floor);
   }
 
-  final scored = <(String, int)>[];
+  final scored = <(String, double)>[];
   for (final w in candidates) {
-    scored.add((w, _sumSquares(eligible, w)));
+    scored.add((w, _expectedPool(eligible, w, weights)));
     if (scored.length % 40 == 0) await Future<void>.delayed(Duration.zero);
   }
   if (scored.isEmpty) return const Landscape([], []);
@@ -458,12 +518,53 @@ Future<Landscape> analyseGuesses(
     return (possible.contains(y.$1) ? 1 : 0) -
         (possible.contains(x.$1) ? 1 : 0);
   });
-  final best = scored.first.$2 / n;
+  final best = scored.first.$2;
   return Landscape(
-    [for (final (w, sq) in scored.take(k)) make(w, sq, best)],
-    [for (final (_, sq) in scored) skillAgainst(n, sq / n, best)],
+    [for (final (w, e) in scored.take(k)) make(w, e, best)],
+    [for (final (_, e) in scored) skillAgainst(n, e, best)],
     best,
   );
+}
+
+/// E, the expected pool, of [guess] against [eligible]: N * sum(q^2) with the
+/// chances q of the groups under [weights]; the plain sum(size^2) / N when they
+/// are null.
+double _expectedPool(
+  List<String> eligible,
+  String guess,
+  Map<String, int>? weights,
+) {
+  final n = eligible.length;
+  if (weights == null) return _sumSquares(eligible, guess) / n;
+  var seen = 0;
+  var total = 0.0;
+  for (final w in eligible) {
+    final k = patternCode(w, guess);
+    final x = max(weights[w] ?? 1, 1).toDouble();
+    total += x;
+    if (_mass[k] == 0) _touched[seen++] = k;
+    _mass[k] += x;
+  }
+  var sum = 0.0;
+  for (var i = 0; i < seen; i++) {
+    final m = _mass[_touched[i]];
+    sum += m * m;
+    _mass[_touched[i]] = 0;
+  }
+  return n * sum / (total * total);
+}
+
+/// The smallest E any guess could reach against [eligible]: every word in a
+/// group of its own, N * sum(q^2) over the words' chances; 1 when equal.
+double _finestSplit(List<String> eligible, Map<String, int>? weights) {
+  if (weights == null) return 1;
+  var total = 0.0, squares = 0.0;
+  for (final w in eligible) {
+    final x = max(weights[w] ?? 1, 1).toDouble();
+    total += x;
+    squares += x * x;
+  }
+  return eligible.length * squares / (total * total);
 }
 
 /// The best next guesses, best first (see [analyseGuesses]).
@@ -471,14 +572,17 @@ Future<List<Recommendation>> recommendTop(
   List<String> eligible,
   Iterable<String> candidates, {
   int k = 3,
-}) async => (await analyseGuesses(eligible, candidates, k: k)).top;
+  Map<String, int>? weights,
+}) async =>
+    (await analyseGuesses(eligible, candidates, k: k, weights: weights)).top;
 
 /// The single best next guess, for the solver.
 Future<Recommendation?> recommend(
   List<String> eligible,
-  Iterable<String> candidates,
-) async {
-  final top = await recommendTop(eligible, candidates, k: 1);
+  Iterable<String> candidates, {
+  Map<String, int>? weights,
+}) async {
+  final top = await recommendTop(eligible, candidates, k: 1, weights: weights);
   return top.isEmpty ? null : top.first;
 }
 
@@ -499,7 +603,9 @@ Future<Recommendation?> recommendWithin(
   Map<String, int>? weights,
 }) async {
   if (eligible.isEmpty) return null;
-  if (triesLeft >= 3) return recommend(eligible, candidates);
+  if (triesLeft >= 3) {
+    return recommend(eligible, candidates, weights: weights);
+  }
   int weightOf(String w) => max(weights?[w] ?? 1, 1);
   var total = 0;
   for (final w in eligible) {
@@ -594,6 +700,7 @@ String stepComment({
   required bool solved,
   bool finalTry = false,
   bool guessFits = true,
+  bool equalChances = true,
 }) {
   final out = <String>[];
   if (m.before <= 1) {
@@ -606,8 +713,18 @@ String stepComment({
     // the last try: nothing is left to learn, only a word that fits the clues
     // can win, and each of those is as likely as the next
     final n = m.before;
+    final chance = (m.winChance * 100).toStringAsFixed(
+      m.winChance < .1 ? 1 : 0,
+    );
     out.add(
-      guessFits
+      !equalChances
+          ? (guessFits
+                ? 'This was your last try, so only a word that fits the clues '
+                      'could win: $n did, the commoner ones more likely. '
+                      '${m.guess} was one of them, a $chance% chance.'
+                : 'This was your last try, but ${m.guess} does not fit the '
+                      'clues, so it could not win.')
+          : guessFits
           ? 'This was your last try, so only a word that fits the clues could '
                 'win, and all $n were equally likely. ${m.guess} was one of '
                 'them: a 1 in $n chance.'
@@ -670,6 +787,14 @@ Set<String> recommendationCandidates(
   List<String> guessable,
 ) => {...eligible.take(600), ...guessable.take(600)};
 
+/// E, the expected pool, of [guess] against [eligible] under [weights] (null:
+/// every word as likely as the next): see [GuessMetrics].
+double expectedPool(
+  List<String> eligible,
+  String guess, {
+  Map<String, int>? weights,
+}) => _expectedPool(eligible, guess, weights);
+
 /// The sum of the squared sizes of the groups [guess] splits [eligible] into.
 int splitSumSquares(List<String> eligible, String guess) =>
     _sumSquares(eligible, guess);
@@ -679,6 +804,7 @@ int splitSumSquares(List<String> eligible, String guess) =>
 final _counts = Int32List(6561);
 final _touched = Int32List(6561);
 final _maxWeight = List<int>.filled(6561, 0);
+final _mass = Float64List(6561);
 
 int _sumSquares(List<String> eligible, String guess) {
   var seen = 0;

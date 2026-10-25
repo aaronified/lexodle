@@ -18,6 +18,7 @@ class MultiRecord {
     required this.guesses,
     required this.steps,
     required this.won,
+    this.weights,
     this.analysis,
   });
 
@@ -29,6 +30,9 @@ class MultiRecord {
   final List<String> guesses;
   final List<MultiStep> steps;
   final bool won;
+
+  /// The law the answers were drawn by, as weights; null for equal chances.
+  final Map<String, int>? weights;
 
   /// The best picks for each step, if they were already being worked out while
   /// the game was played (null for a step whose picks are not needed, such as
@@ -87,14 +91,18 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
       final s = r.steps[i];
       if (s.finalTry) {
         // nothing is left to learn: only words that fit a board can win
-        setState(() => finals[i] = finalPicks(s.liveBefore));
+        setState(
+          () => finals[i] = finalPicks(s.liveBefore, weights: r.weights),
+        );
       }
       // every step is scored against every real guess, the last try included:
       // the best of them is what skill is measured against
       final ready = r.analysis != null && i < r.analysis!.length
           ? r.analysis![i]
           : null;
-      final land = await (ready ?? analyseMulti(s.liveBefore, guessable));
+      final land =
+          await (ready ??
+              analyseMulti(s.liveBefore, guessable, weights: r.weights));
       if (!mounted) return;
       setState(() {
         if (!s.finalTry) picks[i] = land.picks;
@@ -251,7 +259,9 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
       ready: s.finalTry ? fin != null : top != null,
       bestSolved: fin == null || fin.isEmpty ? null : fin.first.expectedSolved,
       bestFinalWord: fin == null || fin.isEmpty ? null : fin.first.word,
-      yourSolved: s.finalTry ? expectedSolved(s.liveBefore, s.guess) : null,
+      yourSolved: s.finalTry
+          ? expectedSolved(s.liveBefore, s.guess, weights: r.weights)
+          : null,
     );
   }
 
@@ -507,7 +517,11 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
               line(
                 s.guess,
                 fin
-                    ? expectedSolved(s.liveBefore, s.guess).toStringAsFixed(2)
+                    ? expectedSolved(
+                        s.liveBefore,
+                        s.guess,
+                        weights: r.weights,
+                      ).toStringAsFixed(2)
                     : '${s.skill.round()}',
                 big: true,
                 key: 'yours',

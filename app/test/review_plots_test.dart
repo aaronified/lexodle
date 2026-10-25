@@ -26,7 +26,10 @@ void main() {
     test('groups by pattern; the answer picks the group landed in', () {
       final o = outcomesOf(words, 'crate', 'grate');
       expect(o.words, words.length);
-      expect(o.sizes, orderedEquals([...o.sizes]..sort((a, b) => b - a)));
+      expect(
+        o.sizes,
+        orderedEquals([...o.sizes]..sort((a, b) => b.compareTo(a))),
+      );
       final key = patternCode('grate', 'crate');
       final size = words.where((w) => patternCode(w, 'crate') == key).length;
       expect(o.pool, size);
@@ -85,7 +88,7 @@ void main() {
 
     test('how far a column\'s centre is from the middle is its luck', () {
       // for a pool no other group shares, luck = 2 * (centre / width) - 1
-      final sizes = [60, 25, 9, 4, 2];
+      final sizes = <double>[60, 25, 9, 4, 2];
       final oo = Outcomes(sizes, 0, 0);
       final slots = splitSlots(oo, 1000);
       for (final s in slots) {
@@ -95,7 +98,7 @@ void main() {
     });
 
     test('the median outcome sits at the middle: zero luck', () {
-      final sizes = [10, 10, 10, 10, 10];
+      final sizes = <double>[10, 10, 10, 10, 10];
       final slots = splitSlots(Outcomes(sizes, 10, 2), 500);
       expect(slots[2].center, closeTo(250, 1e-9));
       expect(chanceLuck(sizes, 10), 0);
@@ -441,9 +444,9 @@ void main() {
     testWidgets('a crowded plot still paints, and the landing is marked', (
       tester,
     ) async {
-      final sizes = [for (var i = 300; i >= 1; i--) i];
-      final n = sizes.fold<int>(0, (a, b) => a + b);
-      final expected = sizes.fold<int>(0, (a, s) => a + s * s) / n;
+      final sizes = [for (var i = 300; i >= 1; i--) i.toDouble()];
+      final n = sizes.fold<double>(0, (a, b) => a + b);
+      final expected = sizes.fold<double>(0, (a, s) => a + s * s) / n;
       final o = Outcomes(sizes, expected, 40);
       await tester.pumpWidget(
         host(SplitPlot(outcomes: o, best: 60, skill: 50, luck: o.luck)),
