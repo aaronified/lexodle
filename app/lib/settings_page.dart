@@ -9,11 +9,15 @@ import 'haptics.dart';
 import 'log_section.dart';
 import 'main.dart';
 import 'routes.dart';
+import 'store.dart';
 import 'stepper_choice.dart';
 import 'update_section.dart';
 import 'ui.dart';
+import 'wiki_links.dart';
 
-/// The settings page: theme, backup, updates, support, and about. Changes apply
+/// The settings page: theme, touch, backup, updates, log, support, and the way
+/// to about and licences. Each section has its caption, its controls and at
+/// most one short line. Changes apply
 /// and are saved as they are made. It is a route of its own ([Routes.settings]),
 /// so it has an address like every other screen. The game options are in
 /// [Routes.gameModes].
@@ -37,15 +41,21 @@ class SettingsPage extends StatelessWidget {
                   children: [
                     const Caption('theme'),
                     const SizedBox(height: 10),
-                    StepperChoice<ThemeMode>(
+                    StepperChoice<int>(
                       semanticLabel: 'theme',
                       items: const [
-                        (ThemeMode.system, 'system', 'follow the device'),
-                        (ThemeMode.light, 'light', 'a light page'),
-                        (ThemeMode.dark, 'dark', 'a dark page'),
+                        (0, 'system', 'follow the device'),
+                        (1, 'light', 'a light page'),
+                        (2, 'dark', 'a dark page'),
+                        (3, 'black', 'true black, for OLED screens'),
                       ],
-                      selected: appState.themeMode,
-                      onChanged: (t) => appState.setup(themeMode: t),
+                      selected: appState.themeIndex,
+                      onChanged: (t) => appState.setup(
+                        themeMode: t == AppState.maxThemeIndex
+                            ? ThemeMode.dark
+                            : ThemeMode.values[t],
+                        black: t == AppState.maxThemeIndex,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     const Caption('touch'),
@@ -56,9 +66,7 @@ class SettingsPage extends StatelessWidget {
                       dense: true,
                       title: const Text('vibrate on press'),
                       subtitle: Text(
-                        'a light tap for a letter, a click for backspace, a '
-                        'medium one for enter, a knock for a word that is not '
-                        'allowed. phones only',
+                        'a tap of feedback on phones.',
                         style: TextStyle(
                           fontSize: 11,
                           color: c.onSurface.withValues(alpha: dimAlpha),
@@ -91,16 +99,6 @@ class SettingsPage extends StatelessWidget {
                     const DonateSection(),
                     const SizedBox(height: 24),
                     const Caption('about'),
-                    const SizedBox(height: 10),
-                    Text(
-                      aboutText,
-                      key: const ValueKey('about-text'),
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1.5,
-                        color: c.onSurface.withValues(alpha: dimAlpha),
-                      ),
-                    ),
                     const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
@@ -176,8 +174,7 @@ class _BackupSectionState extends State<_BackupSection> {
         _say('saved to downloads: ${r.name}');
       } else if (r.internal) {
         _say(
-          'could not save to downloads on this device; a copy is in the '
-          'app\'s memory',
+          'could not save to downloads; kept in the app instead',
           error: true,
         );
       } else {
@@ -282,13 +279,9 @@ class _BackupSectionState extends State<_BackupSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'your progress is kept on this device only. download a backup to '
-          'keep it safe or move it to another device, and upload one to '
-          'restore it. every update also backs up by itself.',
-          style: dim.copyWith(height: 1.4),
-        ),
-        const SizedBox(height: 10),
+        Text('your progress lives on this device. keep a copy.', style: dim),
+        const WikiLink(WikiPage.updatesAndSupport),
+        const SizedBox(height: 6),
         Row(
           children: [
             Expanded(
@@ -320,8 +313,7 @@ class _BackupSectionState extends State<_BackupSection> {
         if (_auto != null) ...[
           const SizedBox(height: 10),
           Text(
-            'the latest automatic backup, kept in the app\'s memory: '
-            '${_auto!.name}',
+            'latest automatic backup: ${_auto!.name}',
             key: const ValueKey('backup-auto-name'),
             style: dim,
           ),
@@ -338,11 +330,11 @@ class _BackupSectionState extends State<_BackupSection> {
         if (pending != null) ...[
           const SizedBox(height: 12),
           Text(
-            'backup from ${pending.exported.toIso8601String().substring(0, 10)}: '
+            'from ${pending.exported.toIso8601String().substring(0, 10)}: '
             '${_plural(pending.stats.played, 'game')} '
             '(${pending.stats.wins} won), '
             '${_plural(pending.earned, 'achievement')}. '
-            'this replaces what is saved here: '
+            'replaces what is saved here: '
             '${_plural(appState.stats.played, 'game')}, '
             '${_plural(appState.unlockedCount, 'achievement')}.',
             key: const ValueKey('backup-summary'),

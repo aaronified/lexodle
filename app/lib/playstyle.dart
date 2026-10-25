@@ -139,11 +139,15 @@ class Traits {
     required this.daring,
     required this.games,
     required this.guesses,
+    this.luck = 0,
   });
 
   /// Means over the guesses that had a choice (see above).
   final double skill;
   final double daring;
+
+  /// The mean luck over the same guesses as the skill.
+  final double luck;
 
   /// How many games and how many such guesses they come from.
   final int games;
@@ -161,13 +165,14 @@ Traits? traitsOf(History h, {int n = styleWindow, String? lang}) =>
 /// The traits over [games] of [h] (classic ones: the others carry no daring),
 /// for any stretch of play: a week, a month, or the last 100.
 Traits? traitsOfGames(History h, List<GameRow> games) {
-  var skill = 0.0, daring = 0.0;
+  var skill = 0.0, daring = 0.0, luck = 0.0;
   var skillN = 0, daringN = 0;
   for (final g in games) {
     for (final r in h.guessesOf(g.id)) {
       // with one word left there is nothing to choose and nothing to score
       if (r.before <= 1) continue;
       skill += r.skill;
+      luck += r.luck;
       skillN++;
       final d = r.daring;
       if (d != null) {
@@ -180,6 +185,7 @@ Traits? traitsOfGames(History h, List<GameRow> games) {
   return Traits(
     skill: skill / skillN,
     daring: daring / daringN,
+    luck: luck / skillN,
     games: games.length,
     guesses: daringN,
   );

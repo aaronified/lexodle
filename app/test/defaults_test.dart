@@ -64,10 +64,8 @@ void main() {
         of: boxes['playstyle']!,
         matching: find.byType(SvgPicture),
       ),
-      find.descendant(
-        of: boxes['game modes']!,
-        matching: find.byType(SvgPicture),
-      ),
+      // (game modes draws the mode's own Material icon, not the app's set)
+      find.descendant(of: boxes['game modes']!, matching: find.byType(Icon)),
       find.descendant(
         of: find.byTooltip('settings'),
         matching: find.byType(SvgPicture),

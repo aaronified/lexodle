@@ -9,6 +9,7 @@ import 'main.dart';
 import 'ui.dart';
 import 'update_check.dart';
 import 'app_log.dart';
+import 'wiki_links.dart';
 
 /// Whether this build can update itself: an installed Android app (the web page
 /// is always the latest, and nothing else installs an APK).
@@ -166,11 +167,10 @@ String _checkMessage(CheckFailure f) => switch (f) {
 
 String _installMessage(InstallFailure f) => switch (f) {
   InstallFailure.notAllowed =>
-    'Android has not allowed lexodle to install apps. turn on '
-        '"Install unknown apps" for it, then try again',
+    'allow "Install unknown apps" for lexodle, then try again',
   InstallFailure.download => 'the download failed. try again',
   InstallFailure.checksum =>
-    'the download did not match its checksum, so it was not installed',
+    'the download was damaged, so it was not installed',
   InstallFailure.install => 'Android could not start the install',
   InstallFailure.internal => 'something went wrong on the phone',
   InstallFailure.cancelled => '',
@@ -228,8 +228,7 @@ class _UpdateSectionState extends State<UpdateSection> {
         _backupFailed = true;
         _goAhead = true;
         _backupNote =
-            'no backup could be saved, so nothing was updated. press update '
-            'again to go ahead without one';
+            'no backup saved. press update again to go on without one';
       });
       return;
     }
@@ -278,6 +277,9 @@ class _UpdateSectionState extends State<UpdateSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('version $appVersion', key: const ValueKey('app-version')),
+            const SizedBox(height: 2),
+            Text('check for a new version.', style: dim),
+            const WikiLink(WikiPage.updatesAndSupport),
             if (message.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
@@ -339,8 +341,7 @@ class _UpdateSectionState extends State<UpdateSection> {
               dense: true,
               title: const Text('also back up to downloads'),
               subtitle: Text(
-                'every update saves a backup in the app\'s memory; this adds a '
-                'copy in your downloads folder, which survives anything',
+                'a copy outside the app, kept after any update.',
                 style: dim.copyWith(fontSize: 11),
               ),
               value: appState.downloadsBackup,
@@ -352,8 +353,7 @@ class _UpdateSectionState extends State<UpdateSection> {
               dense: true,
               title: const Text('check automatically'),
               subtitle: Text(
-                'once a day, when the app opens. off by default: each check '
-                'is a request to GitHub',
+                'once a day, at launch. each check asks GitHub.',
                 style: dim.copyWith(fontSize: 11),
               ),
               value: appState.autoUpdateCheck,

@@ -234,7 +234,7 @@ void main() {
         ('share', 31),
         ('share', -1),
         ('share', 10.5),
-        ('theme', 3),
+        ('theme', 4),
         ('theme', -1),
         ('theme', 'dark'),
         ('seenHowTo', 1),

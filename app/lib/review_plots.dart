@@ -194,7 +194,7 @@ class SplitPlot extends StatelessWidget {
         Row(
           children: [
             Expanded(child: Text('unlucky', style: dim)),
-            Text('0% luck', style: dim),
+            Text('0% luck', style: dim.copyWith(color: luckColor(c))),
             Expanded(
               child: Text('lucky', textAlign: TextAlign.right, style: dim),
             ),
@@ -211,16 +211,20 @@ class SplitPlot extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Text(
+        metricLine(
+          context,
           skillReady
               ? skillLine(skill)
               : 'skill: working out the best real guess…',
+          'skill',
           key: const ValueKey('skill-caption'),
           style: const TextStyle(fontSize: 13, height: 1.4),
         ),
         const SizedBox(height: 6),
-        Text(
+        metricLine(
+          context,
           luckLine(luck),
+          'luck',
           key: const ValueKey('luck-caption'),
           style: const TextStyle(fontSize: 13, height: 1.4),
         ),
@@ -379,7 +383,8 @@ class EqualChancePlot extends StatelessWidget {
           style: TextStyle(fontSize: 13, height: 1.4),
         ),
         const SizedBox(height: 6),
-        Text(
+        metricLine(
+          context,
           guessAt >= 0
               ? 'luck ${signedLuck(luck)}: your guess was one of the '
                     '${_n(fitting)} words that fit, a '
@@ -387,6 +392,7 @@ class EqualChancePlot extends StatelessWidget {
                     '% chance.'
               : 'luck 0: your guess did not fit the clues, so it had no '
                     'chance.',
+          'luck',
           key: const ValueKey('chance-luck'),
           style: const TextStyle(fontSize: 13, height: 1.4),
         ),

@@ -275,9 +275,11 @@ class _LearnPageState extends State<LearnPage> {
                                   row(guesses[g].split(''), marks[g]),
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 8),
-                                    child: Text(
-                                      key: ValueKey('learn-feedback-$g'),
+                                    child: metricLine(
+                                      context,
                                       _feedbackText(g),
+                                      'skill',
+                                      key: ValueKey('learn-feedback-$g'),
                                       style: dim,
                                     ),
                                   ),

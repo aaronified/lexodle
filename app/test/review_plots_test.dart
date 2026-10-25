@@ -9,6 +9,8 @@ import 'package:lexodle/review_plots.dart';
 import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 
+import 'support/text_of.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -277,13 +279,13 @@ void main() {
       // the old second plot is gone
       expect(find.byKey(const ValueKey('skill-plot')), findsNothing);
       expect(find.byKey(const ValueKey('luck-plot')), findsNothing);
-      final skillText = tester
-          .widget<Text>(find.byKey(const ValueKey('skill-caption')))
-          .data!;
+      final skillText = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
+      )!;
       expect(skillText, startsWith('skill '));
       expect(skillText, contains('best possible guess'));
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))).data,
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('luck-caption')))),
         startsWith('luck '),
       );
       // the plot comes before rarity, which is below
@@ -305,7 +307,7 @@ void main() {
         (w) => w is Text && w.key != null && '${w.key}'.contains('yours-skill'),
       );
       expect(shown, findsOneWidget);
-      final value = int.parse(tester.widget<Text>(shown).data!);
+      final value = int.parse(textOf(tester.widget<Text>(shown))!);
       expect(value, inInclusiveRange(0, 100));
       // and it is what the formula gives against the best of every guess
       final land = await tester.runAsync(
@@ -321,13 +323,13 @@ void main() {
       await open(tester, 2);
       expect(find.byKey(const ValueKey('chance-plot')), findsOneWidget);
       expect(find.byKey(const ValueKey('split-plot')), findsNothing);
-      final text = tester
-          .widget<Text>(find.byKey(const ValueKey('chance-caption')))
-          .data!;
+      final text = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('chance-caption'))),
+      )!;
       expect(text, contains('only a word that fits can win'));
-      final luck = tester
-          .widget<Text>(find.byKey(const ValueKey('chance-luck')))
-          .data!;
+      final luck = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('chance-luck'))),
+      )!;
       expect(luck, contains('${fitting.length} words that fit'));
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
     });
@@ -400,15 +402,15 @@ void main() {
       await tester.pumpWidget(
         host(const SplitPlot(outcomes: o, best: 4.0, skill: 62, luck: 20)),
       );
-      final skill = tester
-          .widget<Text>(find.byKey(const ValueKey('skill-caption')))
-          .data!;
+      final skill = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
+      )!;
       // one plain line each, with the number; the groups are in the pool panel
       expect(skill, startsWith('skill 62: '));
       expect(skill, contains('best possible guess (100)'));
-      final luck = tester
-          .widget<Text>(find.byKey(const ValueKey('luck-caption')))
-          .data!;
+      final luck = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))),
+      )!;
       expect(luck, startsWith('luck +20: '));
       expect(luck, contains('kinder than usual'));
       expect(find.text('0% luck'), findsOneWidget);
@@ -430,7 +432,9 @@ void main() {
         ),
       );
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))).data,
+        textOf(
+          tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
+        ),
         contains('working out the best real guess'),
       );
     });

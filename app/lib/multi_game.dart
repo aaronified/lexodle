@@ -503,9 +503,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
     return Row(
       children: [
         Expanded(
-          child: Caption(
-            'average skill ${game.steps.every((s) => s.ready) ? avg((s) => s.skill).round() : '…'}'
-            ' · luck ${luckText(avg((s) => s.luck))}',
+          child: Caption.rich(
+            metricParts(Theme.of(context).colorScheme, [
+              ('average ', null),
+              (
+                'skill ${game.steps.every((s) => s.ready) ? avg((s) => s.skill).round() : '…'}',
+                'skill',
+              ),
+              (' · ', null),
+              ('luck ${luckText(avg((s) => s.luck))}', 'luck'),
+            ]),
           ),
         ),
         OutlinedButton(

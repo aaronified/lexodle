@@ -779,6 +779,21 @@ class AppState extends ChangeNotifier {
   /// Light, dark, or whichever the device is set to.
   ThemeMode themeMode = ThemeMode.system;
 
+  /// The black theme: the dark one on true black. [themeMode] is dark while
+  /// it is on.
+  bool blackTheme = false;
+
+  /// The theme as stored: 0 system, 1 light, 2 dark, 3 black.
+  int get themeIndex => blackTheme ? maxThemeIndex : themeMode.index;
+
+  /// The highest stored theme index (black).
+  static const maxThemeIndex = 3;
+
+  void _setThemeIndex(int i) {
+    blackTheme = i == maxThemeIndex;
+    themeMode = blackTheme ? ThemeMode.dark : ThemeMode.values[i];
+  }
+
   /// Quartet and relay race: the chance, in percent, that answers share a letter.
   int share = 10;
 
@@ -1298,9 +1313,7 @@ class AppState extends ChangeNotifier {
         }
         share = (p.getInt('share') ?? share).clamp(0, maxShare);
         final ti = p.getInt('theme');
-        if (ti != null && ti >= 0 && ti < ThemeMode.values.length) {
-          themeMode = ThemeMode.values[ti];
-        }
+        if (ti != null && ti >= 0 && ti <= maxThemeIndex) _setThemeIndex(ti);
         seenHowTo = p.getBool('seenHowTo') ?? false;
         haptics = p.getBool('haptics') ?? true;
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
@@ -1512,7 +1525,7 @@ class AppState extends ChangeNotifier {
     'helper': helper.index,
     'mode': mode.index,
     'share': share,
-    'theme': themeMode.index,
+    'theme': themeIndex,
     'seenHowTo': seenHowTo,
   };
 
@@ -1570,7 +1583,7 @@ class AppState extends ChangeNotifier {
     if (m != null) mode = GameMode.values[m];
     share = settings['share'] as int? ?? share;
     final t = settings['theme'] as int?;
-    if (t != null) themeMode = ThemeMode.values[t];
+    if (t != null && t >= 0 && t <= maxThemeIndex) _setThemeIndex(t);
     seenHowTo = settings['seenHowTo'] as bool? ?? seenHowTo;
     this.stats = stats;
     try {
@@ -1583,7 +1596,7 @@ class AppState extends ChangeNotifier {
         _w('helper', p.setInt('helper', helper.index));
         _w('mode', p.setInt('mode', mode.index));
         _w('share', p.setInt('share', share));
-        _w('theme', p.setInt('theme', themeMode.index));
+        _w('theme', p.setInt('theme', themeIndex));
         _w('seenHowTo', p.setBool('seenHowTo', seenHowTo));
         _w('stats', p.setString('stats', jsonEncode(stats.toJson())));
         _w(
@@ -1612,6 +1625,7 @@ class AppState extends ChangeNotifier {
     GameMode? mode,
     int? share,
     ThemeMode? themeMode,
+    bool? black,
   }) {
     this.lang = lang ?? this.lang;
     this.length = length ?? this.length;
@@ -1620,6 +1634,10 @@ class AppState extends ChangeNotifier {
     this.helper = helper ?? this.helper;
     this.mode = mode ?? this.mode;
     this.themeMode = themeMode ?? this.themeMode;
+    // choosing a mode on its own leaves black; black is only ever with dark
+    blackTheme =
+        (black ?? (themeMode == null && blackTheme)) &&
+        this.themeMode == ThemeMode.dark;
     this.share = (share ?? this.share).clamp(0, maxShare);
     try {
       _w('lang', _prefs?.setString('lang', this.lang));
@@ -1629,7 +1647,7 @@ class AppState extends ChangeNotifier {
       _w('helper', _prefs?.setInt('helper', this.helper.index));
       _w('mode', _prefs?.setInt('mode', this.mode.index));
       _w('share', _prefs?.setInt('share', this.share));
-      _w('theme', _prefs?.setInt('theme', this.themeMode.index));
+      _w('theme', _prefs?.setInt('theme', themeIndex));
     } catch (_) {}
     notifyListeners();
   }

@@ -519,7 +519,7 @@ void main() {
         final installer = await ready(tester);
         await update(tester);
         expect(installer.asked, isEmpty, reason: 'nothing installed yet');
-        expect(find.textContaining('no backup could be saved'), findsOneWidget);
+        expect(find.textContaining('no backup saved'), findsOneWidget);
         await update(tester);
         expect(installer.asked, hasLength(1), reason: 'the player went ahead');
       });

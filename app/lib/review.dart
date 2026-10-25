@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'analysis.dart';
 import 'logic.dart';
 import 'review_plots.dart';
 import 'review_text.dart';
@@ -224,6 +225,8 @@ class _ReviewPageState extends State<ReviewPage> {
                         Caption('the word was ${r.answer}'),
                         const SizedBox(height: 16),
                         _board(c),
+                        const SizedBox(height: 10),
+                        _formula(c, dim),
                         TextButton(
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
@@ -320,6 +323,74 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
+  /// "expected tries 4.4 = 9.4 − 3.6 skill + 0.3 luck − 0.8 daring", from the
+  /// means of this game, with what it took beside it. Dots until every step
+  /// has been analysed (daring needs it). A game with no daring leaves that
+  /// term out.
+  Widget _formula(ColorScheme c, TextStyle dim) {
+    const style = TextStyle(fontSize: 13, height: 1.5);
+    final landed = landscapes.length >= r.guesses.length;
+    var n = 0, dn = 0;
+    var skill = 0.0, luck = 0.0, daring = 0.0;
+    if (landed) {
+      for (var i = 0; i < r.guesses.length; i++) {
+        final m = metric(i);
+        if (m.before <= 1) continue;
+        skill += m.skill;
+        luck += m.luck;
+        n++;
+        if (m.daring != null) {
+          daring += m.daring!;
+          dn++;
+        }
+      }
+    }
+    // every guess had one word left: nothing was scored, so nothing to add up
+    if (landed && n == 0) return const SizedBox();
+    final took = r.won ? 'you took ${r.guesses.length}' : 'not solved';
+    final List<InlineSpan> spans;
+    if (!landed) {
+      spans = const [TextSpan(text: 'expected tries …')];
+    } else {
+      final b = breakdownOf(skill / n, luck / n, dn == 0 ? null : daring / dn);
+      TextSpan term(double v, String name, Color color) => TextSpan(
+        text: ' ${v < 0 ? '−' : '+'} ${v.abs().toStringAsFixed(1)} $name',
+        style: TextStyle(color: color),
+      );
+      spans = [
+        TextSpan(
+          text:
+              'expected tries ${b.total.toStringAsFixed(1)} = '
+              '${b.base.toStringAsFixed(1)}',
+        ),
+        term(b.skill, 'skill', skillColor(c)),
+        term(b.luck, 'luck', luckColor(c)),
+        if (dn > 0) term(b.daring, 'daring', daringColor(c)),
+        TextSpan(text: ' · $took'),
+      ];
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text.rich(
+          TextSpan(children: spans),
+          key: const ValueKey('expected-tries'),
+          style: style,
+        ),
+        Text(
+          'each term is the tries that skill, luck and daring added or took '
+          'off, over the whole game.',
+          key: const ValueKey('expected-tries-help'),
+          style: dim.copyWith(height: 1.4),
+        ),
+        reviewLink(
+          WikiPage.skillLuckDaring,
+          label: 'how skill, luck and daring work',
+        ),
+      ],
+    );
+  }
+
   /// One segment per guess, the current one in the accent colour; tap to jump.
   Widget _progress(ColorScheme c, int n) => Row(
     children: [
@@ -366,10 +437,12 @@ class _ReviewPageState extends State<ReviewPage> {
       bool strong = false,
       bool dimmed = false,
       Color? color,
+      Key? key,
     }) => SizedBox(
       width: colW,
       child: Text(
         t,
+        key: key,
         textAlign: TextAlign.right,
         style: TextStyle(
           fontSize: 13,
@@ -403,7 +476,17 @@ class _ReviewPageState extends State<ReviewPage> {
                   ])
                     SizedBox(
                       width: colW,
-                      child: Text(h, textAlign: TextAlign.right, style: head),
+                      child: Text(
+                        h,
+                        key: ValueKey('head-$h'),
+                        textAlign: TextAlign.right,
+                        style: switch (h) {
+                          'skill' => head.copyWith(color: skillColor(c)),
+                          'luck' => head.copyWith(color: luckColor(c)),
+                          'daring' => head.copyWith(color: daringColor(c)),
+                          _ => head,
+                        },
+                      ),
                     ),
                 ],
               ),
@@ -449,12 +532,15 @@ class _ReviewPageState extends State<ReviewPage> {
                               : '…',
                           strong: i == step,
                           dimmed: i < step,
+                          color: skillColor(c),
+                          key: ValueKey('skill-$i'),
                         ),
                         cell(
                           luckText(metric(i).luck),
                           strong: i == step,
                           dimmed: i < step,
-                          color: luckColor(c, metric(i).luck),
+                          color: luckColor(c),
+                          key: ValueKey('luck-$i'),
                         ),
                         cell(
                           // none when there was no choice (one word left)
@@ -465,6 +551,8 @@ class _ReviewPageState extends State<ReviewPage> {
                               : metric(i).daring!.round().toString(),
                           strong: i == step,
                           dimmed: i < step,
+                          color: daringColor(c),
+                          key: ValueKey('daring-$i'),
                         ),
                         cell(
                           metric(i).after.toString(),
@@ -582,7 +670,8 @@ class _ReviewPageState extends State<ReviewPage> {
           bar('you landed in', m.landedSize, landed, strong: true),
           if (m.daring != null) ...[
             const SizedBox(height: 6),
-            Text(
+            metricLine(
+              context,
               !m.possible
                   ? 'daring 0: this guess could not be the answer, so it only '
                         'probed.'
@@ -591,6 +680,7 @@ class _ReviewPageState extends State<ReviewPage> {
                         'only play.'
                   : 'daring ${m.daring!.round()}: how much you went for the '
                         'word itself rather than the clues.',
+              'daring',
               key: const ValueKey('daring-line'),
               style: const TextStyle(fontSize: 13, height: 1.4),
             ),
@@ -746,7 +836,7 @@ class _ReviewPageState extends State<ReviewPage> {
               child: Text(
                 shown ?? '${skill.round()}',
                 key: ValueKey('$keys-skill-$word'),
-                style: style.copyWith(color: c.primary),
+                style: style.copyWith(color: skillColor(c)),
                 textAlign: TextAlign.right,
               ),
             ),

@@ -80,7 +80,15 @@ void main() {
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();
     expect(find.byType(Dialog), findsNothing);
-    expect(find.text('play · quartet'), findsOneWidget);
+    // (the play button says play, with the mode as its second line)
+    expect(find.widgetWithText(FilledButton, 'play'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.widgetWithText(FilledButton, 'play'),
+        matching: find.text(GameMode.quartet.label),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the helper is greyed and fixed outside classic', (tester) async {

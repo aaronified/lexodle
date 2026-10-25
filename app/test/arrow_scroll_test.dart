@@ -100,6 +100,11 @@ void main() {
       tester,
     ) async {
       await home(tester);
+      // the window's middle is (400, 300) as the test view sees it: a window
+      // tall enough that the pinned play bar (frequency row and play row)
+      // starts below it, so the middle is over the scrolling page
+      await tester.binding.setSurfaceSize(const Size(420, 520));
+      await tester.pumpAndSettle();
       final start = top(tester);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pump();

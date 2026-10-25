@@ -59,10 +59,7 @@ class _DonateSectionState extends State<DonateSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'lexodle is free, with no ads. if you enjoy it, you can chip in by UPI.',
-          style: dim,
-        ),
+        Text('free, no ads. chip in by UPI if you like it.', style: dim),
         const SizedBox(height: 12),
         Center(
           // the code carries its own white ground and quiet border (a QR code is

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'analysis.dart';
+import 'ui.dart';
 
 /// The colour of each line: skill, luck and daring, from the scheme.
 Map<PeriodSeries, Color> seriesColors(ColorScheme c) => {
-  PeriodSeries.skill: c.primary,
-  PeriodSeries.luck: c.secondary,
-  PeriodSeries.daring: c.tertiary,
+  PeriodSeries.skill: skillColor(c),
+  PeriodSeries.luck: luckColor(c),
+  PeriodSeries.daring: daringColor(c),
   PeriodSeries.guesses: c.onSurface,
 };
 

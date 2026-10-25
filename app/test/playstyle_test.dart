@@ -9,6 +9,8 @@ import 'package:lexodle/history_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/playstyle.dart';
+import 'package:lexodle/playstyle_card.dart';
+import 'package:lexodle/ui.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -700,7 +702,7 @@ void main() {
       expect(tip(tester), contains(maverick.blurb));
     });
 
-    testWidgets('it is a box at the left of the play row, like the others', (
+    testWidgets('it is a box at the left of the row under achievements', (
       tester,
     ) async {
       for (final style in [null, 'analyst', 'wildcard']) {
@@ -708,7 +710,12 @@ void main() {
         final chip = find.byKey(const ValueKey('style-chip'));
         expect(tester.widget(chip), isA<OutlinedButton>());
         final box = tester.getRect(chip);
-        final play = tester.getRect(find.widgetWithText(FilledButton, 'play'));
+        final hist = tester.getRect(
+          find.byKey(const ValueKey('history-button')),
+        );
+        final ach = tester.getRect(
+          find.byKey(const ValueKey('achievements-button')),
+        );
         final modes = tester.getRect(
           find.descendant(
             of: find.byTooltip('game modes'),
@@ -717,10 +724,11 @@ void main() {
         );
         expect(box.width, box.height, reason: '$style: square');
         expect(box.size, modes.size, reason: '$style: as big as the other box');
-        expect(box.top, play.top, reason: '$style: on the play row');
-        expect(box.height, play.height, reason: '$style: as tall as play');
-        expect(box.right, lessThan(play.left), reason: '$style: to its left');
-        expect(box.left, lessThan(modes.left));
+        expect(box.top, hist.top, reason: '$style: on the history row');
+        expect(box.height, hist.height, reason: '$style: as tall as history');
+        expect(box.right, lessThan(hist.left), reason: '$style: to its left');
+        expect(box.top, greaterThan(ach.bottom), reason: '$style: under it');
+        expect(box.left, ach.left, reason: '$style: at the page edge');
         // and it is no longer in the header
         expect(
           box.top,
@@ -731,21 +739,155 @@ void main() {
       }
     });
 
-    testWidgets('the playstyle is the way into the history, even unrated', (
+    testWidgets('the history button goes straight to the history, unrated', (
       tester,
     ) async {
-      // the style is the history's door: there is no separate link for it
       await home(tester);
-      expect(find.text('history'), findsNothing);
       expect(find.byKey(const ValueKey('history-link')), findsNothing);
-      // not rated, nothing played: it still opens
-      await tester.tap(find.byKey(const ValueKey('style-chip')));
+      await tester.tap(find.byKey(const ValueKey('history-button')));
       await tester.pumpAndSettle();
       expect(find.byType(HistoryPage), findsOneWidget);
+      expect(find.byType(PlaystyleDialog), findsNothing);
       expect(find.text('no games yet'), findsOneWidget);
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(find.byType(HistoryPage), findsNothing);
+    });
+
+    group('the playstyle button opens the playstyle card', () {
+      /// A rated player: 20 classic games, and analyst as their playstyle.
+      Future<void> rated(WidgetTester tester) async {
+        await home(tester, style: 'analyst');
+        addGames(appState.history, 20);
+        appState.styleId = 'analyst';
+        appState.refresh();
+        await tester.pumpAndSettle();
+      }
+
+      Future<void> openCard(WidgetTester tester) async {
+        await tester.tap(find.byKey(const ValueKey('style-chip')));
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('not the history page, even unrated', (tester) async {
+        await home(tester);
+        await openCard(tester);
+        expect(find.byType(PlaystyleDialog), findsOneWidget);
+        expect(find.byType(PlaystyleCard), findsOneWidget);
+        expect(find.byType(HistoryPage), findsNothing);
+        expect(find.text('not rated yet'), findsOneWidget);
+      });
+
+      testWidgets('it shows the style, and skill, luck and daring in their '
+          'colours', (tester) async {
+        await rated(tester);
+        await openCard(tester);
+        final c = Theme.of(tester.element(find.byType(PlaystyleDialog)))
+            .colorScheme;
+        expect(
+          find.byKey(const ValueKey('profile-icon-analyst')),
+          findsOneWidget,
+        );
+        expect(
+          tester.widget<Text>(find.byKey(const ValueKey('profile-name'))).data,
+          'analyst',
+        );
+        for (final (label, colour) in [
+          ('skill', skillColor(c)),
+          ('luck', luckColor(c)),
+          ('daring', daringColor(c)),
+        ]) {
+          final value = find.byKey(ValueKey('stat-$label'));
+          expect(value, findsOneWidget, reason: label);
+          expect(
+            tester.widget<Text>(value).style?.color,
+            colour,
+            reason: label,
+          );
+          final caption = find.descendant(
+            of: find.byType(PlaystyleDialog),
+            matching: find.text(label),
+          );
+          expect(caption, findsOneWidget, reason: label);
+          expect(
+            tester.widget<Text>(caption).style?.color,
+            colour,
+            reason: '$label caption',
+          );
+        }
+      });
+
+      testWidgets('the card is a box like game modes, with the cross centred '
+          'at its top right', (tester) async {
+        await home(tester);
+        await openCard(tester);
+        final dialog = tester.widget<Dialog>(find.byType(Dialog));
+        final shape = dialog.shape! as RoundedRectangleBorder;
+        expect(shape.borderRadius, BorderRadius.circular(3));
+        expect(
+          dialog.backgroundColor,
+          Theme.of(tester.element(find.byType(Dialog))).scaffoldBackgroundColor,
+        );
+        // (the box itself, not the dialog's inset around it)
+        final box = tester.getRect(
+          find
+              .descendant(
+                of: find.byType(Dialog),
+                matching: find.byType(Material),
+              )
+              .first,
+        );
+        final close = find.byKey(const ValueKey('playstyle-close'));
+        expect(tester.getSize(close), const Size(48, 48));
+        final icon = tester.getCenter(
+          find.descendant(of: close, matching: find.byIcon(Icons.close)),
+        );
+        expect(icon, tester.getCenter(close), reason: 'the cross is centred');
+        expect(box.right - tester.getRect(close).right, 8);
+        expect(tester.getRect(close).top - box.top, 8);
+      });
+
+      testWidgets('the cross and back close it, and home is still there', (
+        tester,
+      ) async {
+        await home(tester);
+        await openCard(tester);
+        await tester.tap(find.byKey(const ValueKey('playstyle-close')));
+        await tester.pumpAndSettle();
+        expect(find.byType(PlaystyleDialog), findsNothing);
+        expect(find.byKey(const ValueKey('style-chip')), findsOneWidget);
+        await openCard(tester);
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(find.byType(PlaystyleDialog), findsNothing);
+        expect(find.byKey(const ValueKey('style-chip')), findsOneWidget);
+      });
+
+      testWidgets('its history button goes to the history, and back is home', (
+        tester,
+      ) async {
+        await home(tester);
+        await openCard(tester);
+        await tester.tap(find.byKey(const ValueKey('playstyle-history')));
+        await tester.pumpAndSettle();
+        expect(find.byType(HistoryPage), findsOneWidget);
+        expect(find.byType(PlaystyleDialog), findsNothing);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+        expect(find.byType(HistoryPage), findsNothing);
+        expect(find.byType(PlaystyleDialog), findsNothing);
+        expect(find.byKey(const ValueKey('style-chip')), findsOneWidget);
+      });
+
+      testWidgets('the history page shows the same card at its top', (
+        tester,
+      ) async {
+        await rated(tester);
+        await tester.tap(find.byKey(const ValueKey('history-button')));
+        await tester.pumpAndSettle();
+        expect(find.byType(PlaystyleCard), findsOneWidget);
+        expect(find.byKey(const ValueKey('profile-name')), findsOneWidget);
+      });
     });
 
     testWidgets('the row fits the narrowest phone', (tester) async {

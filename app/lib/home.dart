@@ -7,8 +7,10 @@ import 'daily_streak.dart';
 import 'logo.dart';
 import 'style_chip.dart';
 import 'main.dart';
+import 'mode_wheel.dart';
 import 'modes.dart';
 import 'routes.dart';
+import 'store.dart' show Achievement, achievements;
 import 'ui.dart';
 import 'words.dart';
 
@@ -143,35 +145,79 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// The play row, the last row of the page: the playstyle, play, the daily, and
-  /// game modes. The playstyle and game modes are square, like the settings
-  /// button at the top.
+  /// The word frequency, on or off, just above the play row: what it is in a
+  /// few words, with a switch. The longer sentence is a toast.
+  Widget _frequencyRow(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final on = appState.useFrequency;
+    void toggle(bool v) {
+      appState.setup(useFrequency: v);
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+            content: Text(
+              v
+                  ? 'answers are drawn by how common each word is. the daily '
+                        'always uses equal chances.'
+                  : 'every word of the length is equally likely. the daily '
+                        'always does.',
+            ),
+          ),
+        );
+    }
+
+    return InkWell(
+      key: const ValueKey('frequency-row'),
+      borderRadius: BorderRadius.circular(4),
+      onTap: () => toggle(!on),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                on ? 'common words likelier' : 'all words equally likely',
+                key: const ValueKey('frequency-label'),
+                style: TextStyle(fontSize: 13, color: c.onSurfaceVariant),
+              ),
+            ),
+            Switch(
+              key: const ValueKey('frequency-switch'),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              value: on,
+              onChanged: toggle,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// The icon of each game mode: one tile, four tiles, a chain.
+  static IconData modeIcon(GameMode m) => switch (m) {
+    GameMode.classic => Icons.crop_square,
+    GameMode.quartet => Icons.grid_view,
+    GameMode.relay => Icons.link,
+  };
+
+  /// The play row, the last row of the page: play (a wheel of the modes, with
+  /// the mode under it), the daily, and game modes, whose icon is the mode's.
+  /// Game modes is square, like the settings button at the top.
   Widget _playRow(BuildContext context, Language lang) {
     final c = Theme.of(context).colorScheme;
     // a label that does not fit shrinks, so a long mode name never wraps
     Widget fit(Widget w) => FittedBox(fit: BoxFit.scaleDown, child: w);
     return Row(
       children: [
-        StyleChip(
-          size: _buttonHeight,
-          onTap: () => Navigator.pushNamed(context, Routes.history),
-        ),
-        const SizedBox(width: 8),
         Expanded(
-          child: FilledButton(
-            style: FilledButton.styleFrom(
-              fixedSize: const Size.fromHeight(_buttonHeight),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
-            onPressed: () => Navigator.pushNamed(context, Routes.play),
-            child: fit(
-              Text(
-                appState.mode == GameMode.classic
-                    ? 'play'
-                    : 'play · ${appState.mode.label}',
-              ),
-            ),
+          child: ModeWheel(
+            mode: appState.mode,
+            height: _buttonHeight,
+            onChanged: (m) => appState.setup(mode: m),
+            onPlay: () => Navigator.pushNamed(context, Routes.play),
           ),
         ),
         const SizedBox(width: 8),
@@ -208,10 +254,15 @@ class _HomePageState extends State<HomePage> {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             onPressed: () => Navigator.pushNamed(context, Routes.gameModes),
-            // the app's own icon set, in an explicit colour
+            // a different icon for each mode
             child: Semantics(
               label: 'game modes',
-              child: TablerIcon('layout-grid', size: 28, color: c.onSurface),
+              child: Icon(
+                modeIcon(appState.mode),
+                key: ValueKey('modes-icon-${appState.mode.name}'),
+                size: 28,
+                color: c.onSurface,
+              ),
             ),
           ),
         ),
@@ -219,15 +270,94 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// A full-width menu button, as tall as play.
-  Widget _menuButton(String label, String route, {Key? key}) => SizedBox(
+  /// The most recently earned achievements, newest first, at most [n]: across
+  /// the global ones and the current language's.
+  List<Achievement> _recentAchievements([int n = 3]) {
+    final ach = appState.ach;
+    final earned = [
+      for (final a in achievements)
+        if ((ach[a.id]?.times ?? 0) > 0 && ach[a.id]!.latest != null) a,
+    ]..sort((x, y) => ach[y.id]!.latest!.compareTo(ach[x.id]!.latest!));
+    return earned.take(n).toList();
+  }
+
+  /// A full-width menu button, as tall as play. [trailing] sits on its right.
+  Widget _menuButton(
+    String label,
+    String route, {
+    Key? key,
+    Widget? trailing,
+  }) => SizedBox(
     width: double.infinity,
     height: _buttonHeight,
     child: OutlinedButton(
       key: key,
       onPressed: () => Navigator.pushNamed(context, route),
-      child: Text(label),
+      child: trailing == null
+          ? Text(label)
+          : Row(
+              children: [
+                Expanded(child: Text(label)),
+                trailing,
+              ],
+            ),
     ),
+  );
+
+  /// The glyphs of the latest achievements, newest first, or null for none.
+  Widget? _recentGlyphs(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final recent = _recentAchievements();
+    if (recent.isEmpty) return null;
+    return Row(
+      key: const ValueKey('recent-achievements'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final a in recent)
+          Padding(
+            padding: const EdgeInsets.only(left: 6),
+            child: TablerIcon(
+              a.icon,
+              key: ValueKey('recent-ach-${a.id}'),
+              size: 22,
+              color: c.primary,
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// The playstyle's glyph button and a history button beside it, a row like
+  /// the achievements one.
+  Widget _styleRow(BuildContext context) => Row(
+    children: [
+      StyleChip(
+        size: _buttonHeight,
+        onTap: () => Navigator.pushNamed(context, Routes.playstyle),
+      ),
+      const SizedBox(width: 8),
+      Expanded(
+        child: SizedBox(
+          height: _buttonHeight,
+          child: OutlinedButton(
+            key: const ValueKey('history-button'),
+            onPressed: () => Navigator.pushNamed(context, Routes.history),
+            child: const Text('history'),
+          ),
+        ),
+      ),
+    ],
+  );
+
+  /// The frequency row above the play row.
+  Widget _bottomBar(BuildContext context, Language lang) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _frequencyRow(context),
+      const SizedBox(height: 4),
+      _playRow(context, lang),
+    ],
   );
 
   @override
@@ -340,7 +470,10 @@ class _HomePageState extends State<HomePage> {
                                         key: const ValueKey(
                                           'achievements-button',
                                         ),
+                                        trailing: _recentGlyphs(context),
                                       ),
+                                      const SizedBox(height: 8),
+                                      _styleRow(context),
                                       const SizedBox(height: 8),
                                       _menuButton(
                                         'how to play',
@@ -350,7 +483,7 @@ class _HomePageState extends State<HomePage> {
                                       // on a desktop the row floats: the last row
                                       if (!phone) ...[
                                         const SizedBox(height: 20),
-                                        _playRow(context, lang),
+                                        _bottomBar(context, lang),
                                       ],
                                     ],
                                   ),
@@ -366,7 +499,7 @@ class _HomePageState extends State<HomePage> {
                                     24,
                                     16,
                                   ),
-                                  child: _playRow(context, lang),
+                                  child: _bottomBar(context, lang),
                                 ),
                             ],
                           );
@@ -391,7 +524,16 @@ class _LanguagePopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
+    // the app's own background, and a rectangular box like game modes
     return Dialog(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(3),
+        side: BorderSide(color: c.outline),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Padding(

@@ -335,11 +335,18 @@ void main() {
     'no colour is hard-coded: everything comes from the Material You scheme',
     () {
       final hardCoded = RegExp(r'Color\(\s*0x|Colors\.(?!transparent)');
+      // two places fix a colour by design: the one colour of each measure
+      // (skill blue, luck yellow, daring green; ui.dart) and the black theme
+      // (main.dart)
+      final fixedByDesign = RegExp(r'(ui|main)\.dart$');
       final offenders = [
         for (final f in Directory('lib').listSync(recursive: true))
           if (f is File && f.path.endsWith('.dart'))
             for (final (i, line) in f.readAsLinesSync().indexed)
-              if (hardCoded.hasMatch(line) && !line.trimLeft().startsWith('//'))
+              if (hardCoded.hasMatch(line) &&
+                  !line.trimLeft().startsWith('//') &&
+                  !(fixedByDesign.hasMatch(f.path) &&
+                      !line.contains('Colors.')))
                 '${f.path}:${i + 1}: ${line.trim()}',
       ];
       expect(offenders, isEmpty);

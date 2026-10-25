@@ -27,17 +27,38 @@ const _radius = BorderRadius.all(Radius.circular(3));
 /// The app's one font (assets/fonts).
 const _font = 'JetBrainsMono';
 
-ThemeData buildTheme(Brightness b) {
-  final scheme = ColorScheme.fromSeed(
+/// The theme for [b]; [black] is the dark one on true black (for OLED screens):
+/// the scaffold, surfaces and dialogs are #000000, and the outline colours are
+/// kept light enough to read against it.
+ThemeData buildTheme(Brightness b, {bool black = false}) {
+  var scheme = ColorScheme.fromSeed(
     seedColor: _seed,
     dynamicSchemeVariant: DynamicSchemeVariant.expressive,
     brightness: b,
   );
+  if (black && b == Brightness.dark) {
+    const k = Color(0xFF000000);
+    scheme = scheme.copyWith(
+      surface: k,
+      surfaceDim: k,
+      surfaceBright: const Color(0xFF1A1A1A),
+      surfaceContainerLowest: k,
+      surfaceContainerLow: k,
+      surfaceContainer: k,
+      surfaceContainerHigh: k,
+      surfaceContainerHighest: const Color(0xFF121212),
+      // the variants stay visible on black
+      outlineVariant: const Color(0xFF3A3A3A),
+    );
+  }
   const shape = RoundedRectangleBorder(borderRadius: _radius);
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
+    canvasColor: scheme.surface,
+    cardColor: scheme.surface,
+    dialogTheme: DialogThemeData(backgroundColor: scheme.surface),
     fontFamily: _font,
     dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
     appBarTheme: AppBarTheme(
@@ -133,7 +154,7 @@ class LexodleApp extends StatelessWidget {
         title: 'lexodle',
         debugShowCheckedModeBanner: false,
         theme: buildTheme(Brightness.light),
-        darkTheme: buildTheme(Brightness.dark),
+        darkTheme: buildTheme(Brightness.dark, black: appState.blackTheme),
         themeMode: appState.themeMode,
         initialRoute: initialRoute,
         navigatorObservers: observers,

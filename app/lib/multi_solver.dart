@@ -588,13 +588,15 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
               ),
             ),
           ),
-          Text(
+          metricLine(
+            context,
             finalPick != null
                 ? 'expect about ${finalPick!.expectedSolved.toStringAsFixed(2)} '
                       'of the ${state.live.length} boards solved  (tap to use)'
                 : 'skill ${pick!.skill.toStringAsFixed(1)} across the boards'
                       '${pick!.possibleOn > 0 ? ' · could be the answer on ${pick!.possibleOn}' : ''}'
                       '  (tap to use)',
+            'skill',
             style: dim,
           ),
         ],

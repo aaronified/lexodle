@@ -13,6 +13,8 @@ import 'package:lexodle/review_text.dart';
 import 'package:lexodle/wiki_links.dart';
 import 'package:lexodle/words.dart';
 
+import 'support/text_of.dart';
+
 /// Every explanation of a review screen must fit two lines on a phone.
 const maxChars = 110;
 
@@ -230,12 +232,12 @@ void main() {
       await tester.pumpWidget(
         host(const SplitPlot(outcomes: o, best: 4.0, skill: 62, luck: 20)),
       );
-      final skill = tester
-          .widget<Text>(find.byKey(const ValueKey('skill-caption')))
-          .data!;
-      final luck = tester
-          .widget<Text>(find.byKey(const ValueKey('luck-caption')))
-          .data!;
+      final skill = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
+      )!;
+      final luck = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))),
+      )!;
       expect(skill, startsWith('skill 62: '));
       expect(luck, startsWith('luck +20: '));
       expect(luck, contains('kinder'));
@@ -252,9 +254,9 @@ void main() {
       await tester.pumpWidget(
         host(const SplitPlot(outcomes: o, best: 4.0, skill: 31, luck: -62)),
       );
-      final luck = tester
-          .widget<Text>(find.byKey(const ValueKey('luck-caption')))
-          .data!;
+      final luck = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))),
+      )!;
       expect(luck, startsWith('luck −62: '));
       expect(luck, contains('harsher'));
     });
@@ -271,12 +273,14 @@ void main() {
         host(const EqualChancePlot(fitting: 3, guessAt: 1, luck: -33.3)),
       );
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('chance-caption'))).data,
+        textOf(
+          tester.widget<Text>(find.byKey(const ValueKey('chance-caption'))),
+        ),
         lastTryLine,
       );
-      final luck = tester
-          .widget<Text>(find.byKey(const ValueKey('chance-luck')))
-          .data!;
+      final luck = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('chance-luck'))),
+      )!;
       expect(luck, startsWith('luck −33: '));
       expect(luck, contains('3 words that fit'));
       expect(luck, contains('33% chance'));
@@ -291,9 +295,9 @@ void main() {
       await tester.pumpWidget(
         host(const EqualChancePlot(fitting: 3, guessAt: -1, luck: 0)),
       );
-      final luck = tester
-          .widget<Text>(find.byKey(const ValueKey('chance-luck')))
-          .data!;
+      final luck = textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('chance-luck'))),
+      )!;
       expect(luck, startsWith('luck 0: '));
       expect(luck, contains('did not fit'));
       fits(luck);
@@ -385,13 +389,13 @@ void main() {
         await tester.pump();
         for (final k in lineKeys) {
           for (final e in find.byKey(ValueKey(k)).evaluate()) {
-            fits((e.widget as Text).data!, what: k);
+            fits(textOf(e.widget as Text)!, what: k);
             seen++;
           }
         }
         // the table help and the step comment
         for (final e in find.byType(Text).evaluate()) {
-          final t = (e.widget as Text).data ?? '';
+          final t = textOf(e.widget as Text) ?? '';
           if (t.startsWith('skill:') ||
               t.startsWith('luck:') ||
               t.startsWith('words left:') ||
@@ -419,11 +423,13 @@ void main() {
       );
       final skill = m.withBest(land!.bestExpected).skill.round();
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))).data,
+        textOf(
+          tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
+        ),
         startsWith('skill $skill: '),
       );
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))).data,
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('luck-caption')))),
         startsWith(luckLine(m.luck).split(':').first),
       );
     });
@@ -439,8 +445,8 @@ void main() {
       await open(tester, 0);
       expect(
         find.byKey(const ValueKey('wiki-skillLuckDaring')),
-        findsNWidgets(2),
-        reason: 'one under the pool, one under the plot',
+        findsNWidgets(3),
+        reason: 'one under the formula, one under the pool, one under the plot',
       );
       expect(find.byKey(const ValueKey('wiki-solverAndLearn')), findsOneWidget);
       for (final k in ['wiki-skillLuckDaring', 'wiki-solverAndLearn']) {
@@ -457,7 +463,7 @@ void main() {
       await tester.pump();
       expect(
         find.byKey(const ValueKey('wiki-skillLuckDaring')),
-        findsNWidgets(3),
+        findsNWidgets(4),
       );
     });
 
@@ -577,9 +583,9 @@ void main() {
           await tester.tap(find.byKey(ValueKey('guess-row-$i')));
           await tester.pump();
           fits(
-            tester
-                .widget<Text>(find.byKey(const ValueKey('multi-comment')))
-                .data!,
+            textOf(
+              tester.widget<Text>(find.byKey(const ValueKey('multi-comment'))),
+            )!,
             what: 'multi-comment $i',
           );
           for (final e in find.byType(Text).evaluate()) {

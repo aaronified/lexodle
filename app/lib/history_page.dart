@@ -10,7 +10,7 @@ import 'language_picker.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'period_chart.dart';
-import 'playstyle.dart';
+import 'playstyle_card.dart';
 import 'replay.dart';
 import 'routes.dart';
 import 'ui.dart';
@@ -155,7 +155,7 @@ class _HistoryPageState extends State<HistoryPage> {
                             ),
                           );
                         }
-                        if (i == 1) return _Block(_Profile(_lang));
+                        if (i == 1) return _Block(PlaystyleCard(_lang));
                         // ignore: prefer_const_constructors
                         if (i == 2) return _Block(_Overall(_lang));
                         if (i == 3) {
@@ -254,186 +254,6 @@ class _Block extends StatelessWidget {
       Padding(padding: const EdgeInsets.only(bottom: 18), child: child);
 }
 
-/// A hairline box, as the other cards of the app.
-Widget _card(BuildContext context, {Key? key, required Widget child}) {
-  final c = Theme.of(context).colorScheme;
-  return Container(
-    key: key,
-    width: double.infinity,
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      border: Border.all(color: c.outlineVariant),
-      borderRadius: BorderRadius.circular(3),
-    ),
-    child: child,
-  );
-}
-
-/// The playstyle now, the traits it is read from, and which of the six the
-/// player has been.
-class _Profile extends StatefulWidget {
-  const _Profile(this.lang);
-
-  /// The language it is for.
-  final String lang;
-
-  @override
-  State<_Profile> createState() => _ProfileState();
-}
-
-class _ProfileState extends State<_Profile> {
-  /// The style whose description is open: tapped, since a tooltip needs a hover
-  /// or a long press, which a phone does not give.
-  Playstyle? _picked;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    final lang = widget.lang;
-    final p = appState.styleOf(lang);
-    final t = traitsOf(appState.history, lang: lang);
-    final games = appState.history.recentClassic(100, lang).length;
-    final dim = TextStyle(
-      fontSize: 12,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
-    String why() {
-      if (games < minRatedGames) {
-        return 'play ${minRatedGames - games} more classic '
-            '${minRatedGames - games == 1 ? 'game' : 'games'} to be given a '
-            'playstyle';
-      }
-      return 'not enough guesses with a choice in them yet';
-    }
-
-    return _card(
-      context,
-      key: const ValueKey('profile'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              TablerIcon(
-                p?.icon ?? 'puzzle',
-                key: ValueKey('profile-icon-${p?.id ?? 'unrated'}'),
-                size: 44,
-                color: p == null
-                    ? c.onSurface.withValues(alpha: dimAlpha)
-                    : c.primary,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      p?.name ?? 'not rated yet',
-                      key: const ValueKey('profile-name'),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      p?.blurb ?? why(),
-                      key: const ValueKey('profile-blurb'),
-                      style: dim,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (t != null) ...[
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 28,
-              runSpacing: 8,
-              children: [
-                _Stat('skill', t.skill.round().toString()),
-                _Stat('daring', t.daring.round().toString()),
-                _Stat('games', t.games.toString()),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'the means over your last ${t.games} classic '
-              '${t.games == 1 ? 'game' : 'games'}, up to $styleWindow',
-              style: dim.copyWith(fontSize: 11),
-            ),
-          ],
-          const SizedBox(height: 14),
-          // the six share the card's width, so they fit the narrowest phone,
-          // and a name shrinks before it can touch its neighbour
-          Row(
-            children: [
-              for (final s in playstyles)
-                Expanded(
-                  child: _StyleDot(
-                    s,
-                    held: appState.stylesHeldOf(lang).contains(s.id),
-                    current: s.id == p?.id,
-                    picked: s.id == _picked?.id,
-                    onTap: () =>
-                        setState(() => _picked = _picked == s ? null : s),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          // what the tapped style is, in the card, so it fits any width
-          if (_picked case final s?)
-            Text(
-              '${s.name}: ${s.blurb}'
-              '${s.id == p?.id
-                  ? ' (your style now)'
-                  : appState.stylesHeldOf(lang).contains(s.id)
-                  ? ' (you have been this)'
-                  : ' (not yet)'}',
-              key: const ValueKey('style-detail'),
-              style: const TextStyle(fontSize: 12, height: 1.4),
-            )
-          else
-            Text(
-              appState.styleChangesOf(lang) == 0
-                  ? 'tap a style to see what it is. it moves with the way you '
-                        'play'
-                  : 'tap a style to see what it is. changed '
-                        '${appState.styleChangesOf(lang)} '
-                        '${appState.styleChangesOf(lang) == 1 ? 'time' : 'times'}',
-              style: dim.copyWith(fontSize: 11),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat(this.label, this.value, {this.prefix = 'stat'});
-  final String label;
-  final String value;
-
-  /// Keeps the keys of one card apart from another's.
-  final String prefix;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        value,
-        key: ValueKey('$prefix-$label'),
-        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-      ),
-      Caption(label),
-    ],
-  );
-}
-
 /// Every game kept, added up: always there, however many there are.
 class _Overall extends StatelessWidget {
   const _Overall(this.lang);
@@ -454,7 +274,7 @@ class _Overall extends StatelessWidget {
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
     String whole(double? v) => v == null ? '–' : v.round().toString();
-    return _card(
+    return hairlineCard(
       context,
       key: const ValueKey('overall'),
       child: Column(
@@ -466,27 +286,29 @@ class _Overall extends StatelessWidget {
             spacing: 24,
             runSpacing: 8,
             children: [
-              _Stat('games', '${s.games}', prefix: 'overall'),
-              _Stat(
+              StatTile('games', '${s.games}', prefix: 'overall'),
+              StatTile(
                 'won',
                 s.games == 0 ? '–' : '${s.winRate.round()}%',
                 prefix: 'overall',
               ),
-              _Stat(
+              StatTile(
                 'skill',
                 whole(s.scored == 0 ? null : s.skill),
                 prefix: 'overall',
               ),
-              _Stat('daring', whole(s.daring), prefix: 'overall'),
+              StatTile('daring', whole(s.daring), prefix: 'overall'),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
+          metricLine(
+            context,
             s.games == 0
                 ? 'nothing to add up yet'
                 : 'luck ${s.scored == 0 ? '–' : luckText(s.luck)} · '
                       '${s.meanTries == null ? '–' : s.meanTries!.toStringAsFixed(1)} '
                       'guesses to win · ${s.classic} of ${s.games} classic',
+            'luck',
             key: const ValueKey('overall-line'),
             style: dim,
           ),
@@ -596,7 +418,7 @@ class _TrendState extends State<_Trend> {
 
     final s = p.stats;
     String whole(double? v) => v == null ? '–' : v.round().toString();
-    return _card(
+    return hairlineCard(
       context,
       key: const ValueKey('trend'),
       child: Column(
@@ -664,21 +486,38 @@ class _TrendState extends State<_Trend> {
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 2),
-          Text(
+          Text.rich(
             s.isEmpty
-                ? 'no games'
-                : '${s.games} ${s.games == 1 ? 'game' : 'games'} · '
-                      '${s.winRate.round()}% won · '
-                      'skill ${whole(s.scored == 0 ? null : s.skill)} · '
-                      'daring ${whole(s.daring)} · '
-                      'luck ${s.scored == 0 ? '–' : luckText(s.luck)}',
+                ? const TextSpan(text: 'no games')
+                : TextSpan(
+                    children: [
+                      TextSpan(
+                        text:
+                            '${s.games} ${s.games == 1 ? 'game' : 'games'} · '
+                            '${s.winRate.round()}% won · ',
+                      ),
+                      metricSpan(
+                        c,
+                        'skill ${whole(s.scored == 0 ? null : s.skill)}',
+                        'skill',
+                      ),
+                      const TextSpan(text: ' · '),
+                      metricSpan(c, 'daring ${whole(s.daring)}', 'daring'),
+                      const TextSpan(text: ' · '),
+                      metricSpan(
+                        c,
+                        'luck ${s.scored == 0 ? '–' : luckText(s.luck)}',
+                        'luck',
+                      ),
+                    ],
+                  ),
             key: const ValueKey('period-detail'),
             style: const TextStyle(fontSize: 12, height: 1.4),
           ),
           if (guessBreakdown(s) case final b?) ...[
             const SizedBox(height: 6),
-            Text(
-              _guessLine(b, s),
+            Text.rich(
+              _guessSpan(c, b, s),
               key: const ValueKey('period-guesses'),
               style: const TextStyle(fontSize: 12, height: 1.4),
             ),
@@ -699,9 +538,22 @@ class _TrendState extends State<_Trend> {
           ],
           if (changes.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(
-              '${[for (final e in changes.entries) '${e.key.label} ${e.value}'].join(' · ')}'
-              ' on the last $unit you played',
+            Text.rich(
+              TextSpan(
+                children: [
+                  for (final (i, e) in changes.entries.indexed) ...[
+                    if (i > 0) const TextSpan(text: ' · '),
+                    e.key == PeriodSeries.guesses
+                        ? TextSpan(text: '${e.key.label} ${e.value}')
+                        : metricSpan(
+                            c,
+                            '${e.key.label} ${e.value}',
+                            e.key.label,
+                          ),
+                  ],
+                  TextSpan(text: ' on the last $unit you played'),
+                ],
+              ),
               key: const ValueKey('period-change'),
               style: dim,
             ),
@@ -712,18 +564,31 @@ class _TrendState extends State<_Trend> {
   }
 }
 
-/// "expected guesses 4.4 = 7.8 − 3.6 skill + 0.3 luck + 0.0 daring": what each
+/// "expected guesses 4.4 = 7.8 - 3.6 skill + 0.3 luck + 0.0 daring": what each
 /// of skill, luck and daring did to the guesses a game was expected to take,
-/// with what the won games really took beside it.
-String _guessLine(GuessBreakdown b, PlayStats s) {
-  String term(double v, String name) =>
-      '${v < 0 ? '−' : '+'} ${v.abs().toStringAsFixed(1)} $name';
+/// with what the won games really took beside it. Each term in its own colour.
+TextSpan _guessSpan(ColorScheme c, GuessBreakdown b, PlayStats s) {
+  TextSpan term(double v, String name) => metricSpan(
+    c,
+    ' ${v < 0 ? '−' : '+'} ${v.abs().toStringAsFixed(1)} $name',
+    name,
+  );
   final actual = s.meanTries == null
       ? ''
       : ' · won games took ${s.meanTries!.toStringAsFixed(1)}';
-  return 'expected guesses ${b.total.toStringAsFixed(1)} = '
-      '${b.base.toStringAsFixed(1)} ${term(b.skill, 'skill')} '
-      '${term(b.luck, 'luck')} ${term(b.daring, 'daring')}$actual';
+  return TextSpan(
+    children: [
+      TextSpan(
+        text:
+            'expected guesses ${b.total.toStringAsFixed(1)} = '
+            '${b.base.toStringAsFixed(1)}',
+      ),
+      term(b.skill, 'skill'),
+      term(b.luck, 'luck'),
+      term(b.daring, 'daring'),
+      TextSpan(text: actual),
+    ],
+  );
 }
 
 /// A small switch of the trend card.
@@ -778,76 +643,6 @@ class _Choice extends StatelessWidget {
                   color: selected
                       ? (color ?? c.primary)
                       : c.onSurface.withValues(alpha: dimAlpha),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// One of the six playstyles: lit if the player has been it, ringed if it is
-/// their style now.
-class _StyleDot extends StatelessWidget {
-  const _StyleDot(
-    this.style, {
-    required this.held,
-    required this.current,
-    required this.picked,
-    required this.onTap,
-  });
-  final Playstyle style;
-  final bool held;
-  final bool current;
-
-  /// Whether its description is open, and what a tap does.
-  final bool picked;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    return Semantics(
-      button: true,
-      selected: picked,
-      label: '${style.name}${held ? '' : ', not yet'}',
-      excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(3),
-        child: Container(
-          key: ValueKey('dot-${style.id}'),
-          margin: const EdgeInsets.symmetric(horizontal: 1),
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: current
-                  ? c.primary
-                  : picked
-                  ? c.outline
-                  : c.outlineVariant.withValues(alpha: 0),
-            ),
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Column(
-            children: [
-              TablerIcon(
-                style.icon,
-                size: 24,
-                color: held ? c.primary : c.outlineVariant,
-              ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  style.name,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: c.onSurface.withValues(alpha: held ? 1 : dimAlpha),
-                  ),
                 ),
               ),
             ],
@@ -939,7 +734,7 @@ class _GameTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text('skill $skill', style: dim),
+                metricLine(context, 'skill $skill', 'skill', style: dim),
               ],
             ),
           ],

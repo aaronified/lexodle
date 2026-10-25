@@ -249,13 +249,18 @@ class GuessBreakdown {
 GuessBreakdown? guessBreakdown(PlayStats s) {
   final d = s.daring;
   if (s.isEmpty || s.scored == 0 || d == null) return null;
-  return GuessBreakdown(
-    guessIntercept + guessPerDaring * daringTypical,
-    guessPerSkill * s.skill,
-    guessPerLuck * s.luck,
-    guessPerDaring * (d - daringTypical),
-  );
+  return breakdownOf(s.skill, s.luck, d);
 }
+
+/// The breakdown for means of [skill], [luck] and [daring]. With no daring
+/// (null) that term is 0, as for a typical daring.
+GuessBreakdown breakdownOf(double skill, double luck, double? daring) =>
+    GuessBreakdown(
+      guessIntercept + guessPerDaring * daringTypical,
+      guessPerSkill * skill,
+      guessPerLuck * luck,
+      daring == null ? 0 : guessPerDaring * (daring - daringTypical),
+    );
 
 /// The measures the chart of periods follows, each a line. The first three are
 /// drawn on a scale from 0 to 100; the expected guesses are drawn against their

@@ -13,7 +13,8 @@ enum WikiPage {
   historyAndPlaystyles('History-and-playstyles'),
   solverAndLearn('Solver-and-learn-mode'),
   dailyWord('Daily-word'),
-  wordLists('Word-lists');
+  wordLists('Word-lists'),
+  updatesAndSupport('Updates-and-support');
 
   const WikiPage(this.slug);
   final String slug;

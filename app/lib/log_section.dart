@@ -72,12 +72,7 @@ class _LogSectionState extends State<LogSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'what the app did and what went wrong, kept on this device. it holds '
-          'the app\'s own steps (start, storage, saves, backups, updates, '
-          'errors), never words or guesses. send it with a problem report.',
-          style: dim,
-        ),
+        Text('what the app did, to send with a problem report.', style: dim),
         const SizedBox(height: 8),
         Text(
           '${appLog.length} lines since this start'

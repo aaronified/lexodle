@@ -36,10 +36,66 @@ Color markBorder(ColorScheme c, Mark m) => markColors(c, m).$1;
 
 double markBorderWidth(Mark m) => 1;
 
-/// Colour for a luck score: green above average, red below, plain at zero.
-Color luckColor(ColorScheme c, double v) {
-  if (v.round() == 0) return c.onSurface;
-  return v < 0 ? c.error : c.secondary;
+/// The one colour of each measure, wherever it shows: skill is blue, luck
+/// yellow, daring green. A number keeps its colour whatever its sign or size;
+/// for luck the +/- sign carries the direction. The shades are brighter on the
+/// dark and black pages and deeper on the light one, so they read on all three.
+Color skillColor(ColorScheme c) => c.brightness == Brightness.dark
+    ? const Color(0xFF4C8DFF)
+    : const Color(0xFF1F5FD0);
+
+Color luckColor(ColorScheme c) => c.brightness == Brightness.dark
+    ? const Color(0xFFF2C230)
+    : const Color(0xFF9A7400);
+
+Color daringColor(ColorScheme c) => c.brightness == Brightness.dark
+    ? const Color(0xFF5CB85C)
+    : const Color(0xFF2E7D32);
+
+/// The colour of the measure [which] ('skill', 'luck', 'daring').
+Color metricColor(ColorScheme c, String which) => switch (which) {
+  'skill' => skillColor(c),
+  'luck' => luckColor(c),
+  _ => daringColor(c),
+};
+
+/// A line that starts with a measure's term and number ('skill 82', 'luck +20',
+/// 'daring 30'): the words up to the first colon or dot in the measure's colour,
+/// the rest plain. Returns plain text when [text] does not start with [lead].
+Widget metricLine(
+  BuildContext context,
+  String text,
+  String which, {
+  TextStyle? style,
+  Key? key,
+  TextAlign? textAlign,
+}) {
+  final c = Theme.of(context).colorScheme;
+  final base = style ?? DefaultTextStyle.of(context).style;
+  final stops = [
+    for (final m in [text.indexOf(':'), text.indexOf(' ·')])
+      if (m >= 0) m,
+  ];
+  final end = stops.isEmpty
+      ? text.length
+      : stops.reduce((x, y) => x < y ? x : y);
+  if (!text.startsWith(which)) {
+    return Text(text, key: key, style: style, textAlign: textAlign);
+  }
+  return Text.rich(
+    TextSpan(
+      children: [
+        TextSpan(
+          text: text.substring(0, end),
+          style: TextStyle(color: metricColor(c, which)),
+        ),
+        TextSpan(text: text.substring(end)),
+      ],
+    ),
+    key: key,
+    style: base,
+    textAlign: textAlign,
+  );
 }
 
 /// The colour of a difficulty position, [t] from 0 (easiest) to 1 (hardest):
@@ -203,19 +259,40 @@ class MarkTile extends StatelessWidget {
 
 /// Small tracked lowercase caption, the section label of the whole app.
 class Caption extends StatelessWidget {
-  const Caption(this.text, {super.key, this.textAlign});
+  const Caption(this.text, {super.key, this.textAlign}) : span = null;
+
+  /// A caption with parts of it in colour (see [metricParts]).
+  const Caption.rich(TextSpan this.span, {super.key, this.textAlign})
+    : text = '';
   final String text;
+  final TextSpan? span;
   final TextAlign? textAlign;
 
   @override
-  Widget build(BuildContext context) => Text(
-    text,
-    textAlign: textAlign,
-    style: TextStyle(
+  Widget build(BuildContext context) {
+    final style = TextStyle(
       fontSize: 12,
       letterSpacing: 2,
       color: Theme.of(context).colorScheme.onSurface
           .withValues(alpha: dimAlpha),
-    ),
-  );
+    );
+    return span == null
+        ? Text(text, textAlign: textAlign, style: style)
+        : Text.rich(span!, textAlign: textAlign, style: style);
+  }
 }
+
+/// [text] as a span in the colour of the measure [which].
+TextSpan metricSpan(ColorScheme c, String text, String which) => TextSpan(
+  text: text,
+  style: TextStyle(color: metricColor(c, which)),
+);
+
+/// A line made of [parts]: each is its text and the measure it stands for
+/// ('skill', 'luck', 'daring'), or null for plain text.
+TextSpan metricParts(ColorScheme c, List<(String, String?)> parts) => TextSpan(
+  children: [
+    for (final (t, which) in parts)
+      which == null ? TextSpan(text: t) : metricSpan(c, t, which),
+  ],
+);

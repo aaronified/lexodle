@@ -526,16 +526,23 @@ class _GamePageState extends State<GamePage> {
     final left = '${tries - guesses.length} tries left';
     if (guesses.isEmpty) return Caption(left);
     final m = metrics.last;
-    final parts = [
-      if (h.showSkill) 'skill ${m.ready ? m.skill.toStringAsFixed(1) : '…'}',
-      if (h.showLuck) 'luck ${luckText(m.luck)}',
+    final parts = <(String, String?)>[
+      if (h.showSkill)
+        ('skill ${m.ready ? m.skill.toStringAsFixed(1) : '…'}', 'skill'),
+      if (h.showLuck) ('luck ${luckText(m.luck)}', 'luck'),
     ];
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (parts.isNotEmpty)
-          Caption(
-            'last guess · ${parts.join(' · ')}',
+          Caption.rich(
+            metricParts(c, [
+              ('last guess · ', null),
+              for (final (i, p) in parts.indexed) ...[
+                if (i > 0) (' · ', null),
+                p,
+              ],
+            ]),
             textAlign: TextAlign.center,
           ),
         Caption(
@@ -576,9 +583,16 @@ class _GamePageState extends State<GamePage> {
     return Row(
       children: [
         Expanded(
-          child: Caption(
-            'average skill ${metrics.every((m) => m.ready) ? avg(metrics.map((m) => m.skill)).round() : '…'}'
-            ' · luck ${luckText(avg(metrics.map((m) => m.luck)))}',
+          child: Caption.rich(
+            metricParts(c, [
+              ('average ', null),
+              (
+                'skill ${metrics.every((m) => m.ready) ? avg(metrics.map((m) => m.skill)).round() : '…'}',
+                'skill',
+              ),
+              (' · ', null),
+              ('luck ${luckText(avg(metrics.map((m) => m.luck)))}', 'luck'),
+            ]),
           ),
         ),
         _smallButton(

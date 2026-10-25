@@ -5,6 +5,7 @@ import 'daily.dart';
 import 'game.dart';
 import 'history_page.dart';
 import 'learn.dart';
+import 'licences_page.dart';
 import 'home.dart';
 import 'how_to.dart';
 import 'main.dart';
@@ -13,6 +14,7 @@ import 'multi_review.dart';
 import 'multi_solver.dart';
 import 'review.dart';
 import 'game_modes_dialog.dart';
+import 'playstyle_card.dart';
 import 'settings_page.dart';
 import 'solver.dart';
 import 'ui.dart';
@@ -40,6 +42,7 @@ class Routes {
   static const howTo = '/how-to';
   static const settings = '/settings';
   static const gameModes = '/game-modes';
+  static const playstyle = '/playstyle';
   static const about = '/about';
 }
 
@@ -50,7 +53,7 @@ const onboardingArgument = 'onboarding';
 const aboutText =
     'Words: wordfreq (CC BY-SA 4.0), filtered with spelling dictionaries. '
     'Definitions: Wiktionary (CC BY-SA 4.0). Font: JetBrains Mono (OFL). '
-    'Icons: Tabler Icons (MIT). Full licences are under "view licenses".';
+    'Icons: Tabler Icons (MIT). Every licence is listed below.';
 
 Route<dynamic> onGenerateRoute(RouteSettings settings) {
   final name = Uri.tryParse(settings.name ?? '/')?.path ?? '/';
@@ -112,14 +115,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(const SettingsPage());
     case Routes.gameModes:
       return _dialog(s, const GameModesDialog());
+    case Routes.playstyle:
+      return _dialog(s, const PlaystyleDialog());
     case Routes.about:
-      return _dialog(
-        s,
-        const AboutDialog(
-          applicationName: 'lexodle',
-          children: [Text(aboutText)],
-        ),
-      );
+      return page(const LicencesPage(about: aboutText));
     default:
       return page(const HomePage());
   }
@@ -152,6 +151,7 @@ const _known = {
   Routes.howTo,
   Routes.settings,
   Routes.gameModes,
+  Routes.playstyle,
   Routes.about,
 };
 

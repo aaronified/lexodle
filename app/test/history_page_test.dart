@@ -14,6 +14,8 @@ import 'package:lexodle/routes.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/text_of.dart';
+
 int ms(int day, [int hour = 12]) =>
     DateTime(2026, 10, day, hour).toUtc().millisecondsSinceEpoch;
 
@@ -101,7 +103,7 @@ void main() {
     expect(find.text('no games yet'), findsOneWidget);
     expect(find.textContaining('finish a game'), findsOneWidget);
     expect(
-      tester.widget<Text>(find.byKey(const ValueKey('profile-name'))).data,
+      textOf(tester.widget<Text>(find.byKey(const ValueKey('profile-name')))),
       'not rated yet',
     );
     expect(
@@ -148,11 +150,11 @@ void main() {
 
     // the overall card adds up every game, not only the ones listed
     expect(
-      tester.widget<Text>(find.byKey(const ValueKey('overall-games'))).data,
+      textOf(tester.widget<Text>(find.byKey(const ValueKey('overall-games')))),
       '3',
     );
     expect(
-      tester.widget<Text>(find.byKey(const ValueKey('overall-won'))).data,
+      textOf(tester.widget<Text>(find.byKey(const ValueKey('overall-won')))),
       '33%',
     );
     // newest first
@@ -225,11 +227,13 @@ void main() {
       await tester.pump();
 
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('profile-name'))).data,
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('profile-name')))),
         'analyst',
       );
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('profile-blurb'))).data,
+        textOf(
+          tester.widget<Text>(find.byKey(const ValueKey('profile-blurb'))),
+        ),
         analyst.blurb,
       );
       expect(
@@ -237,15 +241,15 @@ void main() {
         findsOneWidget,
       );
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('stat-skill'))).data,
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('stat-skill')))),
         '95',
       );
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('stat-daring'))).data,
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('stat-daring')))),
         '30',
       );
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('stat-games'))).data,
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('stat-games')))),
         '12',
       );
       expect(find.textContaining('changed 1 time'), findsOneWidget);
@@ -261,9 +265,9 @@ void main() {
       Future<String> detail(Playstyle p) async {
         await tester.tap(find.byKey(ValueKey('dot-${p.id}')));
         await tester.pump();
-        return tester
-            .widget<Text>(find.byKey(const ValueKey('style-detail')))
-            .data!;
+        return textOf(
+          tester.widget<Text>(find.byKey(const ValueKey('style-detail'))),
+        )!;
       }
 
       for (final p in playstyles) {
@@ -385,8 +389,9 @@ void main() {
       );
     }
     await show(tester, h);
-    String overall() =>
-        tester.widget<Text>(find.byKey(const ValueKey('overall-games'))).data!;
+    String overall() => textOf(
+      tester.widget<Text>(find.byKey(const ValueKey('overall-games'))),
+    )!;
     // the language being played to begin with
     expect(overall(), '2');
     expect(find.byKey(const ValueKey('lang-fr')), findsOneWidget);
@@ -467,7 +472,8 @@ void main() {
     expect(find.textContaining('older games'), findsNothing);
   });
 
-  testWidgets('the style on the home page opens the history', (tester) async {
+  testWidgets('the style on the home page opens its card, and the card the '
+      'history', (tester) async {
     await load(tester);
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
@@ -477,9 +483,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('style-chip')));
     await tester.pumpAndSettle();
+    expect(find.byType(HistoryPage), findsNothing);
+    expect(
+      textOf(tester.widget<Text>(find.byKey(const ValueKey('profile-name')))),
+      'maverick',
+    );
+    await tester.tap(find.byKey(const ValueKey('playstyle-history')));
+    await tester.pumpAndSettle();
     expect(find.byType(HistoryPage), findsOneWidget);
     expect(
-      tester.widget<Text>(find.byKey(const ValueKey('profile-name'))).data,
+      textOf(tester.widget<Text>(find.byKey(const ValueKey('profile-name')))),
       'maverick',
     );
     await tester.pageBack();
@@ -585,11 +598,11 @@ void main() {
       expect(overall('skill').data, '80');
       expect(overall('daring').data, '20');
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('overall-line'))).data,
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('overall-line')))),
         contains('luck +10%'),
       );
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('overall-line'))).data,
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('overall-line')))),
         contains('2.0 guesses to win'),
       );
     });
@@ -644,7 +657,9 @@ void main() {
       await show(tester, h);
       expect(started.elapsed, lessThan(const Duration(seconds: 30)));
       expect(
-        tester.widget<Text>(find.byKey(const ValueKey('overall-games'))).data,
+        textOf(
+          tester.widget<Text>(find.byKey(const ValueKey('overall-games'))),
+        ),
         '10000',
       );
       expect(find.text('load 10 more · 9990 left'), findsOneWidget);
@@ -698,7 +713,7 @@ void main() {
     }
 
     String text(WidgetTester tester, String key) =>
-        tester.widget<Text>(find.byKey(ValueKey(key))).data!;
+        textOf(tester.widget<Text>(find.byKey(ValueKey(key))))!;
 
     testWidgets('it starts on the last 50 weeks, with the latest picked', (
       tester,

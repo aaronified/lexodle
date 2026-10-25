@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/licences_page.dart';
 import 'package:lexodle/logo.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/routes.dart';
@@ -57,7 +58,7 @@ void main() {
       (Routes.howTo, find.text(_rule)),
       (Routes.settings, find.text('settings')),
       (Routes.gameModes, find.text('game modes')),
-      (Routes.about, find.byType(AboutDialog)),
+      (Routes.about, find.byType(LicencesPage)),
     ]) {
       await open(tester, route);
       expect(marker, findsOneWidget, reason: route);

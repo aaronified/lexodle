@@ -241,7 +241,7 @@ Map<String, Object> _settings(Object? raw) {
   if (mode != null) out['mode'] = mode;
   final share = integer('share', 0, maxShare);
   if (share != null) out['share'] = share;
-  final theme = integer('theme', 0, 2);
+  final theme = integer('theme', 0, AppState.maxThemeIndex);
   if (theme != null) out['theme'] = theme;
   final seen = raw['seenHowTo'];
   if (seen != null) {

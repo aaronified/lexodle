@@ -375,11 +375,13 @@ class _SolverPageState extends State<SolverPage> {
               ),
             ),
           ),
-          Text(
+          metricLine(
+            context,
             '${r.winChance == null ? 'skill ${r.skill.toStringAsFixed(1)}' : 'about ${(r.winChance! * 100).toStringAsFixed(0)}% to solve it'}'
-            ' · expect about '
-            '${r.expected.toStringAsFixed(1)} words left'
-            '${r.canWin ? ' · could be the answer' : ''}  (tap to use)',
+                ' · expect about '
+                '${r.expected.toStringAsFixed(1)} words left'
+                '${r.canWin ? ' · could be the answer' : ''}  (tap to use)',
+            'skill',
             style: TextStyle(
               fontSize: 11,
               color: c.onSurface.withValues(alpha: dimAlpha),

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/difficulty.dart';
+import 'package:lexodle/licences_page.dart';
 import 'package:lexodle/modes.dart';
+import 'package:lexodle/settings_page.dart';
+import 'package:lexodle/ui.dart' show Caption;
 import 'package:lexodle/main.dart';
 import 'package:lexodle/stepper_choice.dart';
 import 'package:lexodle/words.dart';
@@ -106,33 +111,6 @@ void main() {
     });
 
     testWidgets(
-      'has the playstyle and game modes as square buttons on the play row',
-      (tester) async {
-        await home(tester);
-        final style = tester.getRect(find.byKey(const ValueKey('style-chip')));
-        final play = tester.getRect(find.widgetWithText(FilledButton, 'play'));
-        final daily = tester.getRect(
-          find.byKey(const ValueKey('daily-button')),
-        );
-        final modes = tester.getRect(
-          find.descendant(
-            of: find.byTooltip('game modes'),
-            matching: find.byType(OutlinedButton),
-          ),
-        );
-        expect(style.width, style.height);
-        expect(modes.size, style.size);
-        // one row, in this order: playstyle, play, daily, game modes
-        expect(style.top, play.top);
-        expect(daily.top, play.top);
-        expect(modes.top, play.top);
-        expect(style.right, lessThan(play.left));
-        expect(play.right, lessThan(daily.left));
-        expect(daily.right, lessThan(modes.left));
-      },
-    );
-
-    testWidgets(
       'settings is the gear at the top, where the i used to be, with about inside',
       (tester) async {
         await home(tester);
@@ -154,20 +132,20 @@ void main() {
         expect(find.bySemanticsLabel('settings'), findsWidgets);
         await tester.tap(gear);
         await tester.pumpAndSettle();
-        // a page of its own, with about in it
+        // a page of its own; the about text is not on it, it is on the
+        // licences page the button opens
         expect(find.byType(Dialog), findsNothing);
+        expect(find.byKey(const ValueKey('about-text')), findsNothing);
         await tester.scrollUntilVisible(
-          find.byKey(const ValueKey('about-text')),
+          find.byKey(const ValueKey('licences-button')),
           300,
           scrollable: find.byType(Scrollable).first,
         );
-        expect(find.byKey(const ValueKey('about-text')), findsOneWidget);
-        await tester.ensureVisible(
-          find.byKey(const ValueKey('licences-button')),
-        );
         await tester.tap(find.byKey(const ValueKey('licences-button')));
         await tester.pumpAndSettle();
-        expect(find.byType(AboutDialog), findsOneWidget);
+        expect(find.byType(LicencesPage), findsOneWidget);
+        expect(find.byType(AboutDialog), findsNothing);
+        expect(find.byKey(const ValueKey('about-text')), findsOneWidget);
       },
     );
 
@@ -215,14 +193,15 @@ void main() {
     }
 
     testWidgets(
-      'holds mode, difficulty, shared letters, helper and the buttons, in order',
+      'holds mode, shared letters, difficulty, frequency, helper and the buttons, in order',
       (tester) async {
         await open(tester);
         double y(Finder f) => tester.getTopLeft(f).dy;
         final order = [
           y(find.text('mode')),
-          y(find.text('difficulty')),
           y(find.text('shared letters')),
+          y(find.text('difficulty')),
+          y(find.byKey(const ValueKey('frequency-checkbox'))),
           y(find.text('helper')),
           y(find.byKey(const ValueKey('settings-play'))),
           y(find.text('open the solver')),
@@ -301,6 +280,63 @@ void main() {
         expect(find.byKey(const ValueKey('settings-play')), findsNothing);
       },
     );
+
+    testWidgets('the prose on the page is short, and the about text is not '
+        'on it', (tester) async {
+      // as on an Android phone, so the updates section is there too
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      await home(tester, const Size(420, 3600));
+      await tester.tap(find.byTooltip('settings'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('about-text')), findsNothing);
+      expect(find.text('updates'), findsOneWidget, reason: 'built, not lazy');
+      expect(find.byKey(const ValueKey('donate-pay')), findsOneWidget);
+      // not prose: the buttons, the captions, the live status lines and the
+      // values (the version, the UPI id)
+      const notProse = {
+        'app-version',
+        'update-message',
+        'update-backup-note',
+        'backup-note',
+        'backup-summary',
+        'backup-auto-name',
+        'log-summary',
+        'log-note',
+        'donate-note',
+        'donate-id',
+      };
+      final long = <String>[];
+      var seen = 0;
+      for (final e
+          in find
+              .descendant(
+                of: find.byType(SettingsPage),
+                matching: find.byType(Text),
+              )
+              .evaluate()) {
+        final w = e.widget as Text;
+        final text = w.data ?? w.textSpan?.toPlainText() ?? '';
+        final key = w.key;
+        if (key is ValueKey && notProse.contains(key.value)) continue;
+        var skip = false;
+        e.visitAncestorElements((a) {
+          if (a.widget is ButtonStyleButton ||
+              a.widget is Caption ||
+              a.widget is AppBar) {
+            skip = true;
+            return false;
+          }
+          return true;
+        });
+        if (skip) continue;
+        seen++;
+        if (text.length > 70) long.add('${text.length}: $text');
+      }
+      expect(seen, greaterThan(8), reason: 'the prose lines were found');
+      // (reset inside the test: the framework checks it before teardowns)
+      debugDefaultTargetPlatformOverride = null;
+      expect(long, isEmpty, reason: 'prose of 70 characters at most');
+    });
   });
 
   group('the play row', () {
@@ -348,7 +384,7 @@ void main() {
       final bar = tester.getRect(pinned());
       expect(bar.left, greaterThanOrEqualTo(0));
       expect(bar.right, lessThanOrEqualTo(320));
-      expect(find.text('play · relay race'), findsOneWidget);
+      expect(find.text('relay race'), findsOneWidget);
       appState.setup(mode: GameMode.classic);
     });
 

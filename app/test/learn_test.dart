@@ -6,6 +6,8 @@ import 'package:lexodle/main.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/text_of.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -25,10 +27,9 @@ void main() {
     }
   }
 
-  String answerOf(WidgetTester tester) => tester
-      .widget<Text>(find.byKey(const ValueKey('learn-answer')))
-      .data!
-      .replaceFirst('the answer: ', '');
+  String answerOf(WidgetTester tester) =>
+      textOf(tester.widget<Text>(find.byKey(const ValueKey('learn-answer'))))!
+          .replaceFirst('the answer: ', '');
 
   Future<void> open(WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1100));
@@ -61,7 +62,7 @@ void main() {
     await open(tester);
     final answer = answerOf(tester);
     final before = find.textContaining('words fit the clues so far');
-    final text0 = tester.widget<Text>(before).data!;
+    final text0 = textOf(tester.widget<Text>(before))!;
     // a word that is not the answer
     final guess = answer == 'mais' ? 'lien' : 'mais';
     await type(tester, guess);
@@ -69,11 +70,11 @@ void main() {
     await tester.pump();
     expect(find.byKey(const ValueKey('learn-feedback-0')), findsOneWidget);
     await tester.pump(const Duration(seconds: 3));
-    final fb = tester
-        .widget<Text>(find.byKey(const ValueKey('learn-feedback-0')))
-        .data!;
+    final fb = textOf(
+      tester.widget<Text>(find.byKey(const ValueKey('learn-feedback-0'))),
+    )!;
     expect(fb, startsWith('skill '));
-    final text1 = tester.widget<Text>(before).data!;
+    final text1 = textOf(tester.widget<Text>(before))!;
     expect(text1, isNot(text0), reason: 'the list shrank');
     // the answer is still on the list
     expect(find.byKey(const ValueKey('learn-words')), findsOneWidget);
@@ -99,7 +100,9 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     expect(find.text('solved in 1'), findsOneWidget);
     expect(
-      tester.widget<Text>(find.byKey(const ValueKey('learn-feedback-0'))).data,
+      textOf(
+        tester.widget<Text>(find.byKey(const ValueKey('learn-feedback-0'))),
+      ),
       startsWith('skill '),
     );
     await tester.ensureVisible(find.byKey(const ValueKey('learn-next')));
