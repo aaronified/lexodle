@@ -197,4 +197,78 @@ void main() {
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'the table has a daring column, a number where there was a choice',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1700));
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
+        ),
+      ))!;
+      final pool = bank.answers(4);
+      final answer = pool[3];
+      var eligible = pool;
+      // two guesses that are words from the list (so they could have been the
+      // answer) with tries left, and then the answer itself
+      final guesses = [pool[10], pool[20], answer];
+      final marks = <List<Mark>>[], metrics = <GuessMetrics>[];
+      final befores = <List<String>>[];
+      for (var i = 0; i < guesses.length; i++) {
+        final g = guesses[i];
+        final m = evaluate(answer, g);
+        final after = filterEligible(eligible, g, m);
+        metrics.add(
+          scoreGuess(
+            eligible,
+            g,
+            after.length,
+            triesLeft: 6 - i,
+            solved: g == answer,
+          ),
+        );
+        befores.add(eligible);
+        marks.add(m);
+        eligible = after;
+      }
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildTheme(Brightness.dark),
+          home: ReviewPage(
+            record: GameRecord(
+              bank: bank,
+              length: 4,
+              poolSize: 500,
+              answer: answer,
+              guesses: guesses,
+              marks: marks,
+              metrics: metrics,
+              befores: befores,
+              finalEligible: eligible,
+              won: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 10)); // the analysis lands
+      expect(find.text('daring'), findsOneWidget, reason: 'the column head');
+      // the first guess was made with a choice and a daring worked out: its row
+      // shows a whole number in that column (the head, then skill, luck, daring)
+      final row = find.byKey(const ValueKey('row-0'));
+      final texts = tester
+          .widgetList<Text>(
+            find.descendant(of: row, matching: find.byType(Text)),
+          )
+          .map((t) => t.data ?? '')
+          .skip(4) // the four letters of the guess
+          .toList();
+      expect(
+        texts,
+        hasLength(5),
+        reason: 'skill, luck, daring, words left, info',
+      );
+      expect(int.tryParse(texts[2]), isNotNull, reason: 'daring: ${texts[2]}');
+    },
+  );
 }

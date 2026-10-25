@@ -351,13 +351,13 @@ class _ReviewPageState extends State<ReviewPage> {
   /// The board with the table beside it. Guesses after the current step stay
   /// blank, so stepping through gives nothing away.
   Widget _board(ColorScheme c) {
-    const colW = 46.0;
+    const colW = 40.0;
     const gap = 2.0;
     // the highlight of the current row stands off the tiles and the numbers
     const padX = 10.0, padY = 7.0;
     final head = TextStyle(
-      fontSize: 10,
-      letterSpacing: .8,
+      fontSize: 9,
+      letterSpacing: .4,
       height: 1.2,
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
@@ -385,7 +385,7 @@ class _ReviewPageState extends State<ReviewPage> {
 
     return LayoutBuilder(
       builder: (context, box) {
-        final area = box.maxWidth - colW * 4 - 8 - padX * 2;
+        final area = box.maxWidth - colW * 5 - 8 - padX * 2;
         final tile = min(30.0, (area - gap * (r.length - 1)) / r.length);
         return Column(
           children: [
@@ -397,6 +397,7 @@ class _ReviewPageState extends State<ReviewPage> {
                   for (final h in const [
                     'skill',
                     'luck',
+                    'daring',
                     'words\nleft',
                     'info\ngained',
                   ])
@@ -456,6 +457,16 @@ class _ReviewPageState extends State<ReviewPage> {
                           color: luckColor(c, metric(i).luck),
                         ),
                         cell(
+                          // none when there was no choice (one word left)
+                          !metric(i).ready
+                              ? '…'
+                              : metric(i).daring == null
+                              ? '–'
+                              : metric(i).daring!.round().toString(),
+                          strong: i == step,
+                          dimmed: i < step,
+                        ),
+                        cell(
                           metric(i).after.toString(),
                           strong: i == step,
                           dimmed: i < step,
@@ -466,7 +477,7 @@ class _ReviewPageState extends State<ReviewPage> {
                           dimmed: i < step,
                         ),
                       ] else
-                        for (var k = 0; k < 4; k++) cell('–', dimmed: true),
+                        for (var k = 0; k < 5; k++) cell('–', dimmed: true),
                     ],
                   ),
                 ),

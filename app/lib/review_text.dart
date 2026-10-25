@@ -51,6 +51,7 @@ const tableHelp = [
   'skill: how well the guess narrowed the words, against the best possible '
       'guess (100).',
   'luck: plus means the clues were kinder than usual, minus harsher.',
+  'daring: how much you went for the word itself, not the clues (0 for a probe).',
 ];
 
 /// The last try: nothing is left to learn.
