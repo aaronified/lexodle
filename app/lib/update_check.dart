@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 /// The version of this build. Kept in step with `version:` in pubspec.yaml: a
 /// test fails when they differ, and the release workflow refuses a tag that
 /// does not match the pubspec.
-const appVersion = '0.2.1';
+const appVersion = '0.2.2';
 
 /// The repository the releases come from.
 const releaseRepo = 'aaronified/lexodle';
