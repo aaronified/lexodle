@@ -34,7 +34,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
         finalTry: i + 1 >= g.tries,
         solved: word == answer,
         triesLeft: g.tries - i,
-        weights: bank.weightMap(g.length),
+        weights: g.freq ? bank.weightMap(g.length) : null,
         provisional: true,
       ),
     );

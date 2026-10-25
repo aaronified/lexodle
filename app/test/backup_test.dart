@@ -16,7 +16,7 @@ AppState sample() {
     ..lang = 'fr'
     ..length = 6
     ..tries = 4
-    ..pool = 6000
+    ..useFrequency = false
     ..helper = Helper.skill
     ..mode = GameMode.relay
     ..share = 25
@@ -30,7 +30,7 @@ AppState sample() {
     ..langsWon = {'fr', 'en'}
     ..lengthsWon = {5, 6}
     ..mastery = {
-      'fr': {'5:6:1500', '6:4:6000'},
+      'fr': {'5:6', '6:4'},
     };
   s.ach['first_light'] = AchState(times: 1, dates: ['2026-10-01']);
   s.ach['wins_10'] = AchState(progress: 4);
@@ -71,7 +71,7 @@ void main() {
           'lang',
           'length',
           'tries',
-          'pool',
+          'useFrequency',
           'helper',
           'mode',
           'share',
@@ -223,9 +223,8 @@ void main() {
         ('tries', 0),
         ('tries', 13),
         ('tries', 'six'),
-        ('pool', 1234),
-        ('pool', '500'),
-        ('pool', -1),
+        ('useFrequency', 1),
+        ('useFrequency', 'yes'),
         ('helper', 4),
         ('helper', -1),
         ('helper', 'full'),

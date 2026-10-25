@@ -2,12 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-/// The answer-pool sizes the difficulty matrix offers: how many of the most
-/// frequent words of a length the answer can be. Every word in the file is
-/// still accepted as a guess.
-const poolSizes = [500, 1500, 3000, 6000];
-const defaultPool = 3000;
-
 class Language {
   const Language(
     this.code,
@@ -39,11 +33,9 @@ class WordBank {
   final Map<int, List<int>> _weights;
   final Set<String> valid;
 
-  /// The words an answer can be at [length]: the [size] most frequent.
-  List<String> answers(int length, [int size = defaultPool]) {
-    final w = _words[length] ?? const [];
-    return w.length > size ? w.sublist(0, size) : w;
-  }
+  /// The words an answer can be at [length]: every word of that length, most
+  /// frequent first. How likely each is to be drawn is [answerWeights].
+  List<String> answers(int length) => _words[length] ?? const [];
 
   /// Every word accepted as a guess at [length], most frequent first.
   List<String> guessable(int length) => _words[length] ?? const [];
@@ -61,9 +53,15 @@ class WordBank {
           : 1,
   };
 
-  List<int> answerWeights(int length, [int size = defaultPool]) {
+  /// How likely each word of [answers] is to be drawn as the answer: by how
+  /// common it is when [frequency] is on, and equally likely when it is off.
+  List<int> answerWeights(int length, {bool frequency = true}) {
+    final n = answers(length).length;
+    if (!frequency) return List.filled(n, 1);
     final w = _weights[length] ?? const [];
-    return w.length > size ? w.sublist(0, size) : w;
+    return w.length >= n
+        ? w.sublist(0, n)
+        : [...w, ...List.filled(n - w.length, 1)];
   }
 
   /// Letters seen in the words of [length], for the on-screen keyboard.

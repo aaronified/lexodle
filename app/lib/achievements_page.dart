@@ -432,7 +432,7 @@ class MasteryPage extends StatelessWidget {
                       const SizedBox(height: 8),
                       const Text(
                         'win once at every length and every difficulty '
-                        '(tries and word pool) of a language to earn its '
+                        '(tries and word length) of a language to earn its '
                         'badge. only classic games count.',
                         style: TextStyle(fontSize: 12, height: 1.5),
                       ),

@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'difficulty.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -30,7 +29,7 @@ class MultiSolverState {
 
   final GameMode mode;
 
-  /// The words an answer can be, from the difficulty's pool.
+  /// The words an answer can be, every word of the length.
   final List<String> answers;
   final int length;
 
@@ -153,10 +152,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
   late final int length = appState.length;
   late final GameMode mode = appState.mode;
   late final int tries = triesFor(mode, appState.tries);
-  late final List<String> _answers = widget.bank.answers(
-    length,
-    poolWords(appState.pool, widget.bank.language.counts[length]),
-  );
+  late final List<String> _answers = widget.bank.answers(length);
   late final Set<String> _letters = widget.bank.letters(length);
   late final state = MultiSolverState(
     mode: mode,
@@ -522,7 +518,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
             ),
         const SizedBox(height: 4),
         Caption(
-          'answers from the ${_answers.length} most common words · '
+          'answers from ${_answers.length} words · '
           '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
         ),
       ],
@@ -599,7 +595,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
         ],
         const SizedBox(height: 16),
         Text(
-          'my list holds the ${_answers.length} most common words of this '
+          'my list holds all ${_answers.length} words of this '
           'length. a game can use a word that is not on it.',
           style: dim,
         ),

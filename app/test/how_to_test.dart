@@ -4,7 +4,6 @@ import 'package:lexodle/how_to.dart';
 import 'package:lexodle/logo.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
-import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _rule = 'guess the word in as many tries as your difficulty allows.';
@@ -71,13 +70,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
     // somebody else's choices must not leak into the default game
-    appState.setup(
-      lang: 'fr',
-      length: 7,
-      tries: 3,
-      pool: 500,
-      mode: GameMode.quartet,
-    );
+    appState.setup(lang: 'fr', length: 7, tries: 3, mode: GameMode.quartet);
     await tester.pumpWidget(const LexodleApp());
     await tester.pumpAndSettle();
     expect(find.text(_rule), findsOneWidget); // onboarding, opened by itself
@@ -91,7 +84,7 @@ void main() {
     expect(appState.lang, 'en-GB');
     expect(appState.length, 5);
     expect(appState.tries, 6);
-    expect(appState.pool, defaultPool);
+    expect(appState.useFrequency, isTrue);
     expect(appState.mode, GameMode.classic);
     expect(find.text('6 tries left'), findsOneWidget);
     expect(find.textContaining('english (uk)'), findsOneWidget);

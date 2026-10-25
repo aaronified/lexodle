@@ -5,7 +5,7 @@ import 'modes.dart';
 /// and the pool sizes). Bump it whenever the maths in logic.dart changes: every
 /// game saved under an older one is then stale and is worked out again from its
 /// guesses, which are the facts (see [History.stale]).
-const metricsVersion = 2;
+const metricsVersion = 3;
 
 /// The most games kept. A player can have thousands; the oldest go beyond this,
 /// which keeps what is saved (a browser allows about 5 MB) and what a backup
@@ -28,6 +28,7 @@ class GameRow {
     required this.won,
     this.daily = '',
     this.version = metricsVersion,
+    this.freq = true,
   });
 
   /// Its key in the guesses table; counts up, and is never reused.
@@ -40,8 +41,12 @@ class GameRow {
   final int length;
   final int tries;
 
-  /// The answer-pool size it was played at.
+  /// How many words of that length the answer was drawn from.
   final int pool;
+
+  /// Whether the answer was drawn by how common each word is (true) or with
+  /// every word equally likely (false). The scores are worked out under it.
+  final bool freq;
 
   /// The word or words to find: one in classic, four in quartet and relay race.
   final List<String> answers;
@@ -75,6 +80,7 @@ class GameRow {
     won: won,
     daily: daily,
     version: v,
+    freq: freq,
   );
 
   /// The row as saved: a list, in this order, which is a good deal smaller than
@@ -91,13 +97,15 @@ class GameRow {
     won ? 1 : 0,
     daily,
     version,
+    freq ? 1 : 0,
   ];
 
   /// Reads a row as [toRow] wrote it, or the map of named fields an earlier
   /// version wrote; a [FormatException] for anything else.
   static GameRow fromAny(Object? raw) {
     if (raw is Map) return fromJson(raw.cast<String, dynamic>());
-    if (raw is! List || raw.length != 11) {
+    // (twelve now; eleven before the law the answer was drawn under was kept)
+    if (raw is! List || (raw.length != 11 && raw.length != 12)) {
       throw const FormatException('game');
     }
     return fromJson({
@@ -116,6 +124,7 @@ class GameRow {
           : throw const FormatException('won'),
       'daily': raw[9],
       'v': raw[10],
+      if (raw.length == 12) 'freq': raw[11] == 1,
     });
   }
 
@@ -131,6 +140,7 @@ class GameRow {
     'won': won,
     if (daily.isNotEmpty) 'daily': daily,
     'v': version,
+    if (!freq) 'freq': false,
   };
 
   static GameRow fromJson(Map<String, dynamic> j) {
@@ -167,6 +177,7 @@ class GameRow {
       won: won,
       daily: daily,
       version: _int(j['v'] ?? 0, 0, 1000),
+      freq: j['freq'] is bool ? j['freq'] as bool : true,
     );
   }
 }
@@ -380,6 +391,7 @@ class History {
     required bool won,
     required List<GuessRow> guesses,
     String daily = '',
+    bool freq = true,
   }) {
     final row = GameRow(
       id: _next++,
@@ -392,6 +404,7 @@ class History {
       answers: List.of(answers),
       won: won,
       daily: daily,
+      freq: freq,
     );
     games.add(row);
     dirtyMonths.add(row.month);

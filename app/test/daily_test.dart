@@ -164,6 +164,34 @@ void main() {
       expect(idx.reduce(max), greaterThan(2850));
     });
 
+    test('no word comes back within 90 days, whenever the app is opened', () {
+      const start = '2026-10-26';
+      final idx = [
+        for (var d = 0; d < 1500; d++)
+          dailyIndex('en', dailyShift(start, d), 3000),
+      ];
+      for (var i = 0; i < idx.length; i++) {
+        for (var j = i + 1; j < idx.length && j < i + dailyNoRepeat; j++) {
+          expect(idx[j], isNot(idx[i]), reason: 'days $i and $j');
+        }
+      }
+      // a device opened for the first time on a late day gets the same word
+      expect(dailyIndex('en', dailyShift(start, 1200), 3000), idx[1200]);
+      expect(dailyIndex('en', dailyShift(start, 7), 3000), idx[7]);
+    });
+
+    test('a short list still never repeats inside the window', () {
+      final idx = [
+        for (var d = 0; d < 300; d++)
+          dailyIndex('xx', dailyShift('2026-10-26', d), 100),
+      ];
+      for (var i = 0; i + 1 < idx.length; i++) {
+        for (var j = i + 1; j < idx.length && j < i + dailyNoRepeat; j++) {
+          expect(idx[j], isNot(idx[i]));
+        }
+      }
+    });
+
     test('the languages get different words on one day', () {
       final idx = {
         for (final l in ['en', 'fr', 'de', 'es', 'it', 'nl', 'pl', 'sv'])
@@ -181,7 +209,7 @@ void main() {
       expect(a.answer, b.answer);
       expect(a.date, '2026-10-24');
       expect(a.answer.length, dailyLength);
-      expect(bank.answers(dailyLength, dailyPool), contains(a.answer));
+      expect(bank.answers(dailyLength).take(dailyAnswers), contains(a.answer));
       final others = {
         for (var d = 0; d < 20; d++)
           Daily.of(bank, dailyShift('2026-10-24', d))!.answer,
@@ -412,7 +440,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
       // the settings say something else; the daily ignores them
-      appState.setup(lang: 'fr', length: 7, tries: 3, pool: 500);
+      appState.setup(lang: 'fr', length: 7, tries: 3);
       dailyClock = () => DateTime(2026, 10, 24, 12);
       final bank = await _bank(tester, 'fr');
       final daily = Daily.of(bank)!;
@@ -434,7 +462,8 @@ void main() {
 
       // a wrong word first, then the answer
       final wrong = bank
-          .answers(dailyLength, dailyPool)
+          .answers(dailyLength)
+          .take(dailyAnswers)
           .firstWhere((w) => w != daily.answer);
       for (final w in [wrong, daily.answer]) {
         for (final ch in w.split('')) {
@@ -484,7 +513,8 @@ void main() {
       final bank = await _bank(tester, 'fr');
       final daily = Daily.of(bank)!;
       final wrong = bank
-          .answers(dailyLength, dailyPool)
+          .answers(dailyLength)
+          .take(dailyAnswers)
           .firstWhere((w) => w != daily.answer);
       appState.saveDaily('fr', daily.date, [wrong]);
 

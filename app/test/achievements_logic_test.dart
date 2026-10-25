@@ -29,7 +29,6 @@ GameResult game({
   int tries = 6,
   int length = 5,
   String lang = 'en',
-  int pool = 1500,
   List<double> skills = const [80, 80, 80],
 }) => GameResult(
   lang: lang,
@@ -37,7 +36,6 @@ GameResult game({
   tries: tries,
   used: used,
   won: won,
-  pool: pool,
   skills: skills,
 );
 
@@ -175,27 +173,23 @@ void main() {
       expect(earned[2], contains('bilingual'));
     });
 
-    test(
-      'mastery counts each length, tries level and pool once, wins only',
-      () {
-        final s = Stats()
-          ..record(game())
-          ..record(game()) // the same setting again
-          ..record(game(length: 6))
-          ..record(game(tries: 3, pool: 500))
-          ..record(game(won: false, length: 7))
-          ..record(game(tries: 5)) // not a level of the matrix
-          ..record(game(pool: 1234)) // nor is this pool
-          ..record(game(lang: 'fr'));
-        expect(s.mastery['en'], {'5:6:1500', '6:6:1500', '5:3:500'});
-        expect(s.mastery['fr'], {'5:6:1500'});
-        expect(
-          Stats.fromJson(s.toJson()).mastery['en'],
-          s.mastery['en'],
-          reason: 'mastery survives a restart',
-        );
-      },
-    );
+    test('mastery counts each length and tries level once, wins only', () {
+      final s = Stats()
+        ..record(game())
+        ..record(game()) // the same setting again
+        ..record(game(length: 6))
+        ..record(game(tries: 3))
+        ..record(game(won: false, length: 7))
+        ..record(game(tries: 5)) // not a level of the matrix
+        ..record(game(lang: 'fr'));
+      expect(s.mastery['en'], {'5:6', '6:6', '5:3'});
+      expect(s.mastery['fr'], {'5:6'});
+      expect(
+        Stats.fromJson(s.toJson()).mastery['en'],
+        s.mastery['en'],
+        reason: 'mastery survives a restart',
+      );
+    });
 
     test('full range: lengths 4 to 8', () {
       final (st, earned) = play([
@@ -366,64 +360,36 @@ void main() {
         final langs = await WordBank.languages();
         final id = langs.firstWhere((l) => l.code == 'id');
         expect(masteryWon(id, null), 0);
-        // 6,000 words is more than Indonesian has at any length
-        final obscure = {
-          for (final len in id.lengths) '$len:6:6000',
-          '5:6:500', // offered
-          '5:6:1500', // offered
-          '9:6:500', // a length it does not have
-          '5:2:500', // not a tries level
+        final cells = {
+          '5:6', // offered
+          '5:3', // offered
+          '9:6', // a length it does not have
+          '5:2', // not a tries level
           'junk',
         };
-        expect(masteryWon(id, obscure), 2);
+        expect(masteryWon(id, cells), 2);
       },
     );
 
-    test('every level has 1,000 more words than the one below, and the last is all', () async {
-      final langs = await WordBank.languages();
-      for (final l in langs) {
-        for (final len in l.lengths) {
-          final n = l.counts[len]!;
-          final offered = poolsOffered(n);
-          for (var i = 1; i < offered.length; i++) {
-            expect(
-              n,
-              greaterThanOrEqualTo(offered[i - 1] + poolStep),
-              reason: '${l.code} $len level ${offered[i]}',
-            );
-          }
-          // the next level up, if there is one, is out of reach
-          final next = poolSizes.indexOf(offered.last) + 1;
-          if (next < poolSizes.length) {
-            expect(
-              n,
-              lessThan(offered.last + poolStep),
-              reason: '${l.code} $len could offer ${poolSizes[next]}',
-            );
-          }
-          // no word is left behind: the biggest level is every word
-          expect(poolWords(poolSizes.last, n), n, reason: '${l.code} $len');
-        }
-      }
-      // Danish and Indonesian have no obscure pool at any length
-      for (final code in ['da', 'id']) {
-        final l = langs.firstWhere((l) => l.code == code);
-        for (final len in l.lengths) {
+    test(
+      'the target is every length at every tries level, nothing else',
+      () async {
+        final langs = await WordBank.languages();
+        for (final l in langs) {
           expect(
-            poolsOffered(l.counts[len]),
-            isNot(contains(6000)),
-            reason: '$code $len',
+            masteryTarget(l),
+            l.lengths.length * triesLevels.length,
+            reason: l.code,
           );
+          // winning at every cell of the matrix is the whole target
+          final all = {
+            for (final len in l.lengths)
+              for (final t in triesLevels) '$len:${t.$2}',
+          };
+          expect(masteryWon(l, all), masteryTarget(l), reason: l.code);
         }
-      }
-      // English at five letters (4,994 words) does have it, as all of them
-      final en = langs.firstWhere((l) => l.code == 'en');
-      expect(poolsOffered(en.counts[5]), poolSizes);
-      expect(poolWords(6000, en.counts[5]), en.counts[5]);
-      // a language with plenty keeps all four
-      final cs = langs.firstWhere((l) => l.code == 'cs');
-      expect(poolsOffered(cs.counts[5]), poolSizes);
-    });
+      },
+    );
 
     test('mastery has no progress bar of its own, it is a collection', () {
       expect(byId('mastery').numbered, isFalse);
@@ -435,12 +401,10 @@ void main() {
       final langs = await WordBank.languages();
       final en = langs.firstWhere((l) => l.code == 'en');
       final state = AppState();
-      // every length at every tries level and at every pool English has the
-      // words for (not 6,000 four-letter words: it has fewer)
+      // every length at every tries level
       final cells = {
         for (final len in en.lengths)
-          for (final t in triesLevels)
-            for (final p in poolsOffered(en.counts[len])) '$len:${t.$2}:$p',
+          for (final t in triesLevels) '$len:${t.$2}',
       };
       expect(cells.length, masteryTarget(en));
       // every setting but the last one
@@ -454,7 +418,6 @@ void main() {
           lang: 'en',
           length: parts[0],
           tries: parts[1],
-          pool: parts[2],
           used: 3,
           won: true,
           mode: GameMode.quartet,
@@ -467,7 +430,6 @@ void main() {
           lang: 'en',
           length: parts[0],
           tries: parts[1],
-          pool: parts[2],
           used: 3,
           won: true,
         ),

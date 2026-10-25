@@ -9,7 +9,6 @@ import 'history.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'store.dart';
-import 'words.dart';
 
 /// The version of the backup file; a file from a later one is refused rather
 /// than half understood.
@@ -230,10 +229,11 @@ Map<String, Object> _settings(Object? raw) {
   if (length != null) out['length'] = length;
   final tries = integer('tries', 1, 12);
   if (tries != null) out['tries'] = tries;
-  final pool = raw['pool'];
-  if (pool != null) {
-    if (pool is! int || !poolSizes.contains(pool)) _bad('pool');
-    out['pool'] = pool;
+  // (a backup from before the word pool went has a "pool": it is ignored)
+  final frequency = raw['useFrequency'];
+  if (frequency != null) {
+    if (frequency is! bool) _bad('useFrequency');
+    out['useFrequency'] = frequency;
   }
   final helper = integer('helper', 0, Helper.values.length - 1);
   if (helper != null) out['helper'] = helper;

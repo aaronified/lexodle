@@ -9,16 +9,8 @@ import 'store.dart' show Helper;
 import 'ui.dart';
 import 'words.dart';
 
-/// A word on each length, the second tier of the letters slider.
-const _lengthNote = {
-  4: 'short and quick',
-  5: 'the classic',
-  6: 'a step up',
-  7: 'long',
-  8: 'very long',
-};
-
-/// The game modes popup: mode, letters, difficulty, how often the words share
+/// The game modes popup: mode, difficulty (tries and word length), how the word
+/// is drawn, how often the words share
 /// letters, the helper level, and play, the solver and learn. Changes apply and
 /// are saved as they are made. It is a route of its own ([Routes.gameModes]).
 class GameModesDialog extends StatefulWidget {
@@ -111,27 +103,40 @@ class _GameModesDialogState extends State<GameModesDialog> {
                   ),
                   if (lang != null) ...[
                     const SizedBox(height: 24),
-                    const Caption('letters'),
-                    const SizedBox(height: 10),
-                    StepperChoice<int>(
-                      semanticLabel: 'letters',
-                      items: [
-                        for (final n in lang.lengths)
-                          (n, '$n letters', _lengthNote[n]),
-                      ],
-                      selected: length,
-                      onChanged: (n) => appState.setup(length: n),
-                    ),
-                    const SizedBox(height: 24),
                     const Caption('difficulty'),
                     const SizedBox(height: 10),
                     DifficultyMatrix(
                       tries: appState.tries,
-                      pool: effectivePool(appState.pool, lang.counts[length]),
+                      length: length,
+                      lengths: lang.lengths,
                       available: lang.counts[length],
-                      onChanged: (t, pl) => appState.setup(tries: t, pool: pl),
+                      onChanged: (t, n) => appState.setup(tries: t, length: n),
                     ),
                   ],
+                  const SizedBox(height: 12),
+                  // how the word is drawn: by how common each word is, or with
+                  // every word of the length equally likely
+                  CheckboxListTile(
+                    key: const ValueKey('frequency-checkbox'),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    dense: true,
+                    title: const Text('draw words by how common they are'),
+                    subtitle: Text(
+                      appState.useFrequency
+                          ? 'common words come up more often. the daily never '
+                                'does this: its word is any word of the length.'
+                          : 'every word of the length is as likely as any '
+                                'other, rare ones too. the daily always does '
+                                'this.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: c.onSurface.withValues(alpha: dimAlpha),
+                      ),
+                    ),
+                    value: appState.useFrequency,
+                    onChanged: (v) => appState.setup(useFrequency: v ?? true),
+                  ),
                   const SizedBox(height: 24),
                   // always there, so the popup keeps one shape; one word has
                   // nothing to share, so in classic it is greyed and fixed

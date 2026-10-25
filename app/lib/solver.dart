@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'difficulty.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -28,13 +27,9 @@ class _SolverPageState extends State<SolverPage> {
   final _focus = FocusNode();
   late final int length = appState.length;
   late final int tries = appState.tries;
-  // The words the answer can be, from the difficulty's word pool, exactly as
-  // the game draws its answers. Guesses are still scored over every word the
-  // game accepts (see _solve).
-  late final List<String> _answers = widget.bank.answers(
-    length,
-    poolWords(appState.pool, widget.bank.language.counts[length]),
-  );
+  // The words the answer can be: every word of the length. Guesses are scored
+  // over every word the game accepts too (see _solve).
+  late final List<String> _answers = widget.bank.answers(length);
   late final Set<String> _letters = widget.bank.letters(length);
 
   final history = <(String, List<Mark>)>[];
@@ -78,7 +73,7 @@ class _SolverPageState extends State<SolverPage> {
       left,
       candidates,
       max(tries - history.length, 1),
-      weights: widget.bank.weightMap(length),
+      weights: appState.useFrequency ? widget.bank.weightMap(length) : null,
     );
     if (!mounted || run != _run) return; // a newer guess superseded this one
     setState(() {
@@ -318,7 +313,7 @@ class _SolverPageState extends State<SolverPage> {
         Caption('$n ${n == 1 ? 'word' : 'words'} on my list fit'),
         const SizedBox(height: 4),
         Caption(
-          'answers from the ${_answers.length} most common words · '
+          'answers from ${_answers.length} words · '
           '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
         ),
       ],
@@ -406,7 +401,7 @@ class _SolverPageState extends State<SolverPage> {
         ],
         const SizedBox(height: 16),
         Text(
-          'my list holds the ${_answers.length} most common words of this '
+          'my list holds all ${_answers.length} words of this '
           'length. a game can use a word that is not on it.',
           style: TextStyle(
             fontSize: 11,

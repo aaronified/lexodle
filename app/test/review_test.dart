@@ -21,7 +21,7 @@ void main() {
         ),
       ))!;
       // a short game against a known answer
-      final pool = bank.answers(4, 500);
+      final pool = bank.answers(4);
       final answer = pool[3];
       var eligible = pool;
       final guesses = [pool[10], pool[20]];
@@ -98,7 +98,7 @@ void main() {
           (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
         ),
       ))!;
-      final pool = bank.answers(4, 500);
+      final pool = bank.answers(4);
       final answer = pool[3];
       var eligible = pool;
       // three tries, the last one a word that still fits the clues

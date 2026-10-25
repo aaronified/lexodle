@@ -12,8 +12,9 @@ fewest words in expectation, drawn from the 600 most frequent words plus the pos
 The advice follows the tries left: with two left it picks the guess most likely to solve it by the
 last try (the most groups, weighted by how common each word is), and with one left only the
 likeliest word that fits, since nothing else can win. Tap a word to use it as the next guess.
-Guesses are scored over every word the game accepts (up to 6,000 per length), while the answer is
-looked for in the pool, so raise the pool if the game you are solving uses rarer words.
+Guesses are scored over every word the game accepts (up to 6,000 per length), and the answer is
+looked for among all of them; the frequency checkbox in the game modes sets whether commoner
+words are weighted as likelier.
 
 In the **quartet** and the **relay race** the solver follows the mode too (and counts the extra
 tries those modes give). Type each guess once. In a quartet, tap the colours each unsolved board

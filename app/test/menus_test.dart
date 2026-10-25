@@ -14,7 +14,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await appState.load();
-    appState.setup(lang: 'en', length: 5, tries: 6, pool: 3000);
+    appState.setup(lang: 'en', length: 5, tries: 6);
   });
 
   Future<void> home(
@@ -149,13 +149,12 @@ void main() {
     }
 
     testWidgets(
-      'holds mode, letters, difficulty, shared letters, helper and the buttons, in order',
+      'holds mode, difficulty, shared letters, helper and the buttons, in order',
       (tester) async {
         await open(tester);
         double y(Finder f) => tester.getTopLeft(f).dy;
         final order = [
           y(find.text('mode')),
-          y(find.text('letters')),
           y(find.text('difficulty')),
           y(find.text('shared letters')),
           y(find.text('helper')),
@@ -165,39 +164,51 @@ void main() {
         ];
         expect([...order]..sort(), order, reason: 'top to bottom');
         expect(find.byType(DifficultyMatrix), findsOneWidget);
-        expect(find.byType(StepperChoice<int>), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('frequency-checkbox')),
+          findsOneWidget,
+        );
       },
     );
 
-    testWidgets('changing the letters there changes the length play uses', (
-      tester,
-    ) async {
-      await open(tester);
-      final letters = find.byType(StepperChoice<int>);
-      await tester.tap(
-        find.descendant(
-          of: letters,
-          matching: find.byIcon(Icons.chevron_right),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(appState.length, 6);
-      expect(find.text('6 letters'), findsOneWidget);
-      // play from here, as a player does, and the game takes six letters
-      // (the word list is read with real file IO, so it is read first)
-      await tester.runAsync(
-        () async => WordBank.load(
-          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
-        ),
-      );
-      await tester.tap(find.byKey(const ValueKey('settings-play')));
-      await tester.runAsync(() => Future.delayed(const Duration(seconds: 2)));
-      await tester.pumpAndSettle();
-      await tester.sendKeyEvent(LogicalKeyboardKey.keyA, character: 'a');
-      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.pump();
-      expect(find.text('need 6 letters'), findsOneWidget);
-    });
+    testWidgets(
+      'choosing a length in the matrix changes the length play uses',
+      (tester) async {
+        await open(tester);
+        await tester.tap(find.bySemanticsLabel('6 tries, 6 letters'));
+        await tester.pumpAndSettle();
+        expect(appState.length, 6);
+        expect(appState.tries, 6);
+        // play from here, as a player does, and the game takes six letters
+        // (the word list is read with real file IO, so it is read first)
+        await tester.runAsync(
+          () async => WordBank.load(
+            (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+          ),
+        );
+        await tester.tap(find.byKey(const ValueKey('settings-play')));
+        await tester.runAsync(() => Future.delayed(const Duration(seconds: 2)));
+        await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyA, character: 'a');
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+        expect(find.text('need 6 letters'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'the frequency checkbox turns drawing by frequency off and on',
+      (tester) async {
+        await open(tester);
+        expect(appState.useFrequency, isTrue);
+        await tester.tap(find.byKey(const ValueKey('frequency-checkbox')));
+        await tester.pumpAndSettle();
+        expect(appState.useFrequency, isFalse);
+        await tester.tap(find.byKey(const ValueKey('frequency-checkbox')));
+        await tester.pumpAndSettle();
+        expect(appState.useFrequency, isTrue);
+      },
+    );
   });
 
   group('settings', () {

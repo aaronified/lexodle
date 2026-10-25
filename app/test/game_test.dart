@@ -37,7 +37,7 @@ void main() {
   testWidgets('a blank can be typed but not submitted', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
-    appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
+    appState.setup(lang: 'fr', length: 4, tries: 3);
     final bank = (await tester.runAsync(
       () async => WordBank.load(
         (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
@@ -75,7 +75,7 @@ void main() {
   testWidgets('the left and right arrows move the cursor', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
-    appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
+    appState.setup(lang: 'fr', length: 4, tries: 3);
     final bank = (await tester.runAsync(
       () async => WordBank.load(
         (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
@@ -84,7 +84,7 @@ void main() {
     // a word whose last two letters swapped is not a word, so a wrongly placed
     // letter cannot pass by luck
     final w = bank
-        .answers(4, 500)
+        .answers(4)
         .firstWhere(
           (w) =>
               w[2] != w[3] &&
@@ -139,7 +139,7 @@ void main() {
   testWidgets('lose a game, then review it step by step', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
-    appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
+    appState.setup(lang: 'fr', length: 4, tries: 3);
     final bank = (await tester.runAsync(
       () async => WordBank.load(
         (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
@@ -149,15 +149,11 @@ void main() {
     // A seeded game, so the answer is known and the three guesses can all be
     // wrong; the game draws its answer from the same seed the same way.
     final answer = chooseWord(
-      bank.answers(4, 500),
-      bank.answerWeights(4, 500),
+      bank.answers(4),
+      bank.answerWeights(4),
       Random(7),
     );
-    final guesses = bank
-        .answers(4, 500)
-        .where((w) => w != answer)
-        .take(3)
-        .toList();
+    final guesses = bank.answers(4).where((w) => w != answer).take(3).toList();
     await tester.pumpWidget(
       MaterialApp(
         home: GamePage(bank: bank, random: Random(7)),

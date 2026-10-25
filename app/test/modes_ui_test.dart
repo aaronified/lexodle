@@ -159,14 +159,7 @@ void main() {
     Future<void> open(WidgetTester tester, GameMode mode, int seed) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
-      appState.setup(
-        lang: 'fr',
-        length: 4,
-        tries: 6,
-        pool: 500,
-        mode: mode,
-        share: 10,
-      );
+      appState.setup(lang: 'fr', length: 4, tries: 6, mode: mode, share: 10);
       bank = (await tester.runAsync(
         () async => WordBank.load(
           (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
@@ -181,8 +174,8 @@ void main() {
     }
 
     List<String> answers(int seed) => chooseTargets(
-      bank.answers(4, 500),
-      bank.answerWeights(4, 500),
+      bank.answers(4),
+      bank.answerWeights(4),
       4,
       10,
       Random(seed),

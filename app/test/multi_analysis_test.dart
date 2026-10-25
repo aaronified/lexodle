@@ -75,8 +75,8 @@ void main() {
     MultiGame play(GameMode mode, int seed, {int tries = 9, int guesses = 6}) {
       final rng = Random(seed);
       final answers = chooseTargets(
-        bank.answers(5, 1500),
-        bank.answerWeights(5, 1500),
+        bank.answers(5),
+        bank.answerWeights(5),
         4,
         10,
         rng,

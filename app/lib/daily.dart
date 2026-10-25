@@ -1,20 +1,27 @@
+import 'dart:math' show min;
+
 import 'clock.dart';
-import 'difficulty.dart';
 import 'words.dart';
 
 /// The daily word: one word per language per day, the same for everyone on that
 /// date.
 ///
 /// It is not drawn at random on the device. The date and the language are
-/// hashed to a number, and that number picks one word of the fixed pool, so
-/// every device that has the same word list gets the same word with no server.
+/// hashed to a number, and that number picks one of the [dailyAnswers] most
+/// common words of the language at the daily's length, each equally likely (the
+/// word frequency is never used for a daily, and no other word can be the
+/// answer), so every device that has the same word list gets the same word with
+/// no server.
 /// The day is the player's own: it changes at their local midnight (the time
 /// itself comes from the server, see [TrustedClock], so the device clock cannot
 /// be set to another day). The difficulty is fixed too, whatever the settings
 /// say.
 const dailyLength = 5;
 const dailyTries = 6;
-const dailyPool = 3000;
+
+/// How many of the most common words a daily can be: the rest are valid guesses
+/// but never the answer.
+const dailyAnswers = 3000;
 
 /// The clock the daily reads: the server's time when it could be had, else the
 /// device's. Tests replace it.
@@ -93,9 +100,43 @@ int dailyHash(String s) {
   return h;
 }
 
+/// A word is not picked again for this many days after it was a daily.
+const dailyNoRepeat = 90;
+
+/// The first date the no-repeat rule runs from; earlier dates are a plain hash.
+const _dailyAnchor = '2026-10-26';
+
+// The picks made so far per language and list size, one per day from the anchor.
+final _picks = <String, List<int>>{};
+
 /// Which of [n] words the daily for [lang] on [date] is.
-int dailyIndex(String lang, String date, int n) =>
-    dailyHash('lexodle-daily|$lang|$date') % n;
+///
+/// Each day takes a hashed pick; a word that was a daily in the last
+/// [dailyNoRepeat] days is drawn again with the next counter. The days are
+/// replayed from the anchor date, so the answer depends only on the date, never
+/// on when the app was last opened or on any stored state.
+int dailyIndex(String lang, String date, int n) {
+  final d = DateTime.tryParse(date);
+  final a = DateTime.utc(2026, 10, 26);
+  final day = d == null
+      ? -1
+      : DateTime.utc(d.year, d.month, d.day).difference(a).inDays;
+  if (day < 0 || day > 36500) return dailyHash('lexodle-daily|$lang|$date') % n;
+  final picks = _picks.putIfAbsent('$lang|$n', () => []);
+  final window = min(dailyNoRepeat, n - 1);
+  while (picks.length <= day) {
+    final ds = dailyShift(_dailyAnchor, picks.length);
+    final from = picks.length - window;
+    var k = 0;
+    int pick;
+    do {
+      pick = dailyHash('lexodle-daily|$lang|$ds|$k') % n;
+      k++;
+    } while (picks.indexOf(pick, from < 0 ? 0 : from) >= 0);
+    picks.add(pick);
+  }
+  return picks[day];
+}
 
 /// Today's (or [date]'s) daily: the date and its answer.
 class Daily {
@@ -107,10 +148,8 @@ class Daily {
   /// language has no words of the daily's length.
   static Daily? of(WordBank bank, [String? date]) {
     final d = date ?? dailyDate();
-    final pool = bank.answers(
-      dailyLength,
-      poolWords(dailyPool, bank.language.counts[dailyLength]),
-    );
+    final all = bank.answers(dailyLength);
+    final pool = all.length > dailyAnswers ? all.sublist(0, dailyAnswers) : all;
     if (pool.isEmpty) return null;
     return Daily(d, pool[dailyIndex(bank.language.code, d, pool.length)]);
   }

@@ -32,7 +32,7 @@ void main() {
       final langs = await WordBank.languages();
       bank = await WordBank.load(langs.firstWhere((l) => l.code == 'fr'));
     });
-    pool = bank.answers(4, 500);
+    pool = bank.answers(4);
     appState.lang = 'fr'; // the language of the games these tests add
   }
 

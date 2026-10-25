@@ -19,7 +19,7 @@ the theme, backup, updates (Android), support and about.
 | ---------- | ------- |
 | Language   | English (US and UK spelling), Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Swedish, Danish, Norwegian, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan; each with its flag |
 | Letters    | 4 to 8 |
-| Difficulty | a grid: tries (easy 8, normal 6, hard 4, brutal 3) by word pool: answers drawn from the 500, 1,500, 3,000 or 6,000 most common words of that length. A pool level is offered only if the language has at least 1,000 more words of that length than the level below it, and the last level offered takes every word left, so none is wasted: English at five letters has 4,994 words, so its "obscure" row is all 4,994; Danish and Indonesian never get "obscure" |
+| Difficulty | a grid: tries (easy 8, normal 6, hard 4, brutal 3) by word length, the longest the easiest. Answers can be any word of the length; a checkbox in the game modes picks them by how common each word is (on by default; never used for the daily). The modes menu shows how many words the length has |
 
 The letters and the helper are sliders: use the arrows, swipe or drag (the value slides and fades
 with your finger), scroll sideways or hold shift and scroll the wheel, or click one and use the

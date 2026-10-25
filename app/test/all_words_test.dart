@@ -11,36 +11,29 @@ import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// A player cannot know which words the answer is drawn from, so every real
-/// word that fits the clues counts as possible, whatever the difficulty's pool.
+/// word that fits the clues counts as possible, whatever the answer is.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
 
   testWidgets(
-    'caret, bingo, bread against break: bread is possible even at pool 500',
+    'caret, bingo, bread against break: bread is possible though break is the answer',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
-      appState.setup(
-        lang: 'en',
-        length: 5,
-        tries: 6,
-        pool: 500,
-        mode: GameMode.classic,
-      );
+      appState.setup(lang: 'en', length: 5, tries: 6, mode: GameMode.classic);
       final bank = (await tester.runAsync(
         () async => WordBank.load(
           (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
         ),
       ))!;
-      final pool = bank.answers(5, 500);
+      final pool = bank.answers(5);
       expect(pool, contains('break'));
-      expect(pool, isNot(contains('bread')), reason: 'outside the pool...');
-      expect(bank.valid, contains('bread'), reason: '...but a real word');
+      expect(bank.valid, contains('bread'), reason: 'a real word');
 
       // a seed whose answer is break
-      final weights = bank.answerWeights(5, 500);
+      final weights = bank.answerWeights(5);
       final seed = [for (var s = 0; s < 20000; s++) s]
           .firstWhere((s) => chooseWord(pool, weights, Random(s)) == 'break');
 
@@ -81,19 +74,16 @@ void main() {
     },
   );
 
-  test(
-    'the whole word list is in frequency order, for the pool to be a prefix',
-    () async {
-      final bank = await _bank('en');
-      final all = bank.guessable(5);
-      final w = bank.guessWeights(5);
-      expect(w.length, all.length);
-      for (var i = 1; i < w.length; i++) {
-        expect(w[i], lessThanOrEqualTo(w[i - 1]), reason: 'row $i');
-      }
-      expect(bank.answers(5, 500), all.take(500).toList());
-    },
-  );
+  test('the whole word list is in frequency order, so the daily can take the top words as a prefix', () async {
+    final bank = await _bank('en');
+    final all = bank.guessable(5);
+    final w = bank.guessWeights(5);
+    expect(w.length, all.length);
+    for (var i = 1; i < w.length; i++) {
+      expect(w[i], lessThanOrEqualTo(w[i - 1]), reason: 'row $i');
+    }
+    expect(bank.answers(5), all);
+  });
 }
 
 Future<WordBank> _bank(String code) async => WordBank.load(

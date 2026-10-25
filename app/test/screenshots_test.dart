@@ -108,7 +108,6 @@ void main() {
       lang: lang,
       length: 5,
       tries: 6,
-      pool: 3000,
       mode: mode,
       helper: Helper.full,
       themeMode: ThemeMode.dark,
@@ -127,7 +126,7 @@ void main() {
     // low sixties to about ninety, daring wanders, luck is luck, and the odd
     // week is skipped, so the lines have gaps
     final rng = Random(3);
-    final pool = bank.answers(5, 3000);
+    final pool = bank.answers(5);
     final plays = <(DateTime, double)>[]; // when, and how far along (0 to 1)
     for (var week = 39; week >= 0; week--) {
       if (week > 3 && rng.nextInt(7) == 0) continue; // a week off
@@ -264,7 +263,7 @@ void main() {
     final bank = await prepare(t);
     analyseWhilePlaying = true;
     final key = GlobalKey();
-    final (answer, first, second) = demo(bank.answers(5, 3000));
+    final (answer, first, second) = demo(bank.answers(5));
     final daily = Daily('2026-10-24', answer);
     await t.pumpWidget(framed(key, GamePage(bank: bank, daily: daily)));
     await t.pump();
@@ -288,7 +287,7 @@ void main() {
       framed(key, MultiGamePage(bank: bank, random: Random(11))),
     );
     await t.pump();
-    final words = plain(bank.answers(5, 600));
+    final words = plain(bank.answers(5));
     for (final w in [words[3], words[40], words[200]]) {
       await type(t, w);
       await t.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -300,7 +299,7 @@ void main() {
   testWidgets('the review of a game', (t) async {
     final bank = await prepare(t);
     final key = GlobalKey();
-    final (answer, first, second) = demo(bank.answers(5, 3000));
+    final (answer, first, second) = demo(bank.answers(5));
     final game = GameRow(
       id: 999,
       at: 0,
@@ -375,7 +374,7 @@ void main() {
     t.view.physicalSize = const Size(412, 1100) * 2;
     await t.pumpWidget(framed(key, LearnPage(bank: bank, seed: 4)));
     await t.pump();
-    for (final w in plain(bank.answers(5, 600)).skip(7).take(1)) {
+    for (final w in plain(bank.answers(5)).skip(7).take(1)) {
       await type(t, w);
       await t.sendKeyEvent(LogicalKeyboardKey.enter);
       await t.pump();

@@ -18,15 +18,16 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('difficulty matrix', () {
-    testWidgets('spells out every pool size and every number of tries', (
+    testWidgets('spells out every number of tries and every length', (
       tester,
     ) async {
       await tester.pumpWidget(
         host(
           DifficultyMatrix(
             tries: 6,
-            pool: 1500,
-            available: 6000,
+            length: 5,
+            lengths: const [4, 5, 6, 7, 8],
+            available: 4994,
             onChanged: (_, _) {},
           ),
         ),
@@ -34,159 +35,62 @@ void main() {
       for (final t in ['8 tries', '6 tries', '4 tries', '3 tries']) {
         expect(find.text(t), findsOneWidget);
       }
-      for (final w in [
-        '500 words',
-        '1,500 words',
-        '3,000 words',
-        '6,000 words',
-      ]) {
-        expect(find.text(w), findsOneWidget);
+      for (final n in [4, 5, 6, 7, 8]) {
+        expect(find.text('$n letters'), findsOneWidget);
       }
       expect(
-        find.textContaining('answers from the 1,500 most common words'),
+        find.text('normal · 5 letters: 6 tries, 4,994 words of this length'),
         findsOneWidget,
       );
     });
 
-    testWidgets('a language with fewer words says so', (tester) async {
-      await tester.pumpWidget(
-        host(
-          DifficultyMatrix(
-            tries: 3,
-            pool: 6000,
-            available: 2383,
-            onChanged: (_, _) {},
-          ),
-        ),
-      );
-      // 2,383 words are not 1,000 more than familiar's 1,500 and wide's 3,000
-      // is not reachable, so there are two rows, and the last takes every
-      // word: no word is left behind. A saved 6,000 shows as that last row.
-      expect(find.text('500 words'), findsOneWidget);
-      expect(find.text('2,383 words'), findsOneWidget);
-      expect(find.text('familiar · all'), findsOneWidget);
-      expect(find.text('1,500 words'), findsNothing);
-      expect(find.text('3,000 words'), findsNothing);
-      expect(find.text('6,000 words'), findsNothing);
-      expect(find.text('wide'), findsNothing);
-      expect(find.text('obscure'), findsNothing);
-      expect(find.bySemanticsLabel('3 tries, 2383 words'), findsOneWidget);
-      expect(find.bySemanticsLabel('3 tries, 6000 words'), findsNothing);
-      expect(
-        find.textContaining('answers from all 2,383 words'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('English at five letters gets obscure, as all its words', (
+    testWidgets('only the lengths a language has are rows, longest first', (
       tester,
     ) async {
       await tester.pumpWidget(
         host(
           DifficultyMatrix(
-            tries: 6,
-            pool: 6000,
-            available: 4994,
+            tries: 3,
+            length: 5,
+            lengths: const [5, 6],
+            available: null,
             onChanged: (_, _) {},
           ),
         ),
       );
-      // 4,994 words are 1,000 more than wide's 3,000, so obscure is offered
-      // and is every word English has at that length
-      for (final t in ['500', '1,500', '3,000', '4,994']) {
-        expect(find.text('$t words'), findsOneWidget, reason: t);
-      }
-      expect(find.text('obscure · all'), findsOneWidget);
-      expect(find.text('wide'), findsOneWidget);
-      expect(find.text('6,000 words'), findsNothing);
+      expect(find.text('5 letters'), findsOneWidget);
+      expect(find.text('6 letters'), findsOneWidget);
+      expect(find.text('4 letters'), findsNothing);
+      expect(find.text('8 letters'), findsNothing);
       expect(
-        find.textContaining('answers from all 4,994 words'),
+        tester.getTopLeft(find.text('6 letters')).dy,
+        lessThan(tester.getTopLeft(find.text('5 letters')).dy),
+        reason: 'the longest, easiest, row is at the top',
+      );
+      expect(
+        find.text('brutal · 5 letters: 3 tries, every word of this length'),
         findsOneWidget,
       );
     });
 
-    testWidgets('a language with plenty offers all four rows', (tester) async {
-      await tester.pumpWidget(
-        host(
-          DifficultyMatrix(
-            tries: 6,
-            pool: 3000,
-            available: 6000,
-            onChanged: (_, _) {},
-          ),
-        ),
-      );
-      for (final t in ['500', '1,500', '3,000', '6,000']) {
-        expect(find.text('$t words'), findsOneWidget, reason: t);
-      }
-      expect(find.text('obscure'), findsOneWidget);
-    });
-
-    test('a level needs 1,000 more words than the level below it', () {
-      expect(poolsOffered(null), poolSizes);
-      expect(poolsOffered(10), [500], reason: 'always the smallest');
-      expect(poolsOffered(1499), [500]);
-      expect(poolsOffered(1500), [500, 1500]); // exactly 1,000 more than 500
-      expect(poolsOffered(2383), [500, 1500]);
-      expect(poolsOffered(2499), [500, 1500]);
-      expect(poolsOffered(2500), [500, 1500, 3000]); // 1,000 more than 1,500
-      expect(poolsOffered(3999), [500, 1500, 3000]);
-      expect(poolsOffered(4000), poolSizes); // 1,000 more than 3,000
-      expect(poolsOffered(4994), poolSizes);
-      expect(poolsOffered(6000), poolSizes);
-    });
-
-    test('the last level takes every word, so none is left behind', () {
-      // a level that is not the last is its round number
-      expect(poolWords(500, 4994), 500);
-      expect(poolWords(1500, 4994), 1500);
-      expect(poolWords(3000, 4994), 3000);
-      // the last one is everything
-      expect(poolWords(6000, 4994), 4994);
-      expect(poolWords(6000, 6000), 6000);
-      expect(poolWords(1500, 2383), 2383, reason: 'familiar is the last');
-      expect(poolWords(500, 2383), 500);
-      expect(poolWords(3000, 3900), 3900, reason: 'wide is the last');
-      expect(
-        poolWords(500, 1200),
-        1200,
-        reason: 'a short list is all one level',
-      );
-      // a level not offered means the biggest one that is
-      expect(poolWords(6000, 2383), 2383);
-      expect(poolWords(3000, 2383), 2383);
-      expect(poolWords(3000, null), 3000);
-    });
-
-    test('the pool a saved choice means follows what the language offers', () {
-      expect(effectivePool(6000, 2383), 1500);
-      expect(effectivePool(3000, 2383), 1500);
-      expect(effectivePool(1500, 2383), 1500);
-      expect(effectivePool(500, 2383), 500);
-      expect(effectivePool(6000, 6000), 6000);
-      expect(effectivePool(6000, 4994), 6000);
-      expect(effectivePool(6000, 3999), 3000);
-      expect(effectivePool(3000, null), 3000);
-      expect(effectivePool(1500, 10), 500);
-    });
-
-    testWidgets('tapping a cell chooses that tries and pool', (tester) async {
+    testWidgets('tapping a cell chooses that tries and length', (tester) async {
       (int, int)? chosen;
       await tester.pumpWidget(
         host(
           DifficultyMatrix(
             tries: 6,
-            pool: 1500,
-            available: 6000,
-            onChanged: (t, p) => chosen = (t, p),
+            length: 5,
+            lengths: const [4, 5, 6, 7, 8],
+            available: 4994,
+            onChanged: (t, n) => chosen = (t, n),
           ),
         ),
       );
-      // the hard corner: brutal (3 tries), obscure (6,000 words)
-      await tester.tap(find.bySemanticsLabel('3 tries, 6000 words'));
-      expect(chosen, (3, 6000));
-      await tester.tap(find.bySemanticsLabel('8 tries, 500 words'));
-      expect(chosen, (8, 500));
+      // the hard corner: brutal (3 tries), the shortest word
+      await tester.tap(find.bySemanticsLabel('3 tries, 4 letters'));
+      expect(chosen, (3, 4));
+      await tester.tap(find.bySemanticsLabel('8 tries, 8 letters'));
+      expect(chosen, (8, 8));
     });
 
     test('the colour runs from the scheme green to the scheme purple', () {
@@ -210,23 +114,31 @@ void main() {
 
   group('settings', () {
     test(
-      'the pool is saved, and a value that is not an offered size is ignored',
+      'drawing words by frequency is on by default, saved, and reloaded',
       () async {
         SharedPreferences.setMockInitialValues({});
         final a = AppState();
         await a.load();
-        expect(a.pool, defaultPool);
-        a.setup(pool: 3000, tries: 4);
+        expect(a.useFrequency, isTrue);
+        a.setup(useFrequency: false, tries: 4);
         final b = AppState();
         await b.load();
-        expect((b.pool, b.tries), (3000, 4));
+        expect((b.useFrequency, b.tries), (false, 4));
 
-        SharedPreferences.setMockInitialValues({'pool': 1234});
+        SharedPreferences.setMockInitialValues({'useFrequency': true});
         final c = AppState();
         await c.load();
-        expect(c.pool, defaultPool);
+        expect(c.useFrequency, isTrue);
       },
     );
+
+    test('a saved pool from before the word pool went is ignored', () async {
+      SharedPreferences.setMockInitialValues({'pool': 1234});
+      final a = AppState();
+      await a.load();
+      expect(a.useFrequency, isTrue);
+      expect(a.tries, 6);
+    });
   });
 
   group('word lists', () {

@@ -98,7 +98,7 @@ void main() {
 
     testWidgets('the daily shows only the tries left', (tester) async {
       final b = await bank(tester);
-      await play(tester, daily: Daily('2026-10-24', b.answers(5, 3000).first));
+      await play(tester, daily: Daily('2026-10-24', b.answers(5).first));
       expect(find.textContaining('last guess'), findsNothing);
       expect(find.textContaining('skill'), findsNothing);
       expect(find.textContaining('luck'), findsNothing);
@@ -204,7 +204,7 @@ void main() {
         final b = await bank(tester);
         await appState.load();
         appState.setup(lang: 'en', length: 5, tries: 1);
-        final answer = b.answers(5, 3000).first;
+        final answer = b.answers(5).first;
         await tester.pumpWidget(
           MaterialApp(
             home: GamePage(bank: b, daily: Daily('2026-10-24', answer)),

@@ -210,11 +210,7 @@ void main() {
         (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
       );
       pool = bank.guessable(4);
-      answer = chooseWord(
-        bank.answers(4, 500),
-        bank.answerWeights(4, 500),
-        Random(7),
-      );
+      answer = chooseWord(bank.answers(4), bank.answerWeights(4), Random(7));
       var eligible = pool;
       guesses = [pool[10], pool[20]];
       final marks = <List<Mark>>[], metrics = <GuessMetrics>[];

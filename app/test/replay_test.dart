@@ -15,7 +15,7 @@ void main() {
   setUpAll(() async {
     final langs = await WordBank.languages();
     bank = await WordBank.load(langs.firstWhere((l) => l.code == 'fr'));
-    pool = bank.answers(4, 500);
+    pool = bank.answers(4);
   });
 
   /// A game row, and guess rows holding garbage scores: only the words matter.

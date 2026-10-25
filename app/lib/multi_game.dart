@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'background.dart';
-import 'difficulty.dart';
 import 'guess_input.dart';
 import 'haptics.dart';
 import 'history.dart';
@@ -44,17 +43,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   late final GameMode mode = appState.mode;
   late final int length;
-  late final int pool = effectivePool(
-    appState.pool,
-    widget.bank.language.counts[length],
-  );
   late final int tries;
 
-  /// How many words the pool really holds (see [poolWords]).
-  late final int _poolWords = poolWords(
-    pool,
-    widget.bank.language.counts[length],
-  );
+  /// Whether the answers are drawn by how common each word is.
+  late final bool freq = appState.useFrequency;
+
+  /// How many words the answers were drawn from: every word of the length.
+  late final int pool = widget.bank.answers(length).length;
   late final List<String> _pool;
   late final Set<String> _letters;
 
@@ -77,7 +72,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     super.initState();
     length = appState.length;
     tries = triesFor(mode, appState.tries);
-    _pool = widget.bank.answers(length, _poolWords);
+    _pool = widget.bank.answers(length);
     _letters = widget.bank.letters(length);
     _reset();
   }
@@ -99,7 +94,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       mode,
       chooseTargets(
         _pool,
-        widget.bank.answerWeights(length, _poolWords),
+        widget.bank.answerWeights(length, frequency: freq),
         mode.boards,
         appState.share,
         _rng,
@@ -207,6 +202,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         length: length,
         tries: tries,
         pool: pool,
+        freq: freq,
         answers: [for (final b in game.boards) b.answer],
         won: game.won,
         guesses: [

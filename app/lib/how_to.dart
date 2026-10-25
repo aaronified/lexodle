@@ -6,7 +6,6 @@ import 'modes.dart';
 import 'routes.dart';
 import 'store.dart';
 import 'ui.dart';
-import 'words.dart';
 
 /// How to play, in the manner of the NYT's: the rule, then three worked
 /// examples with tiles, then the parts of this game that are its own.
@@ -18,17 +17,11 @@ class HowToPage extends StatelessWidget {
   const HowToPage({super.key, this.onboarding = false});
   final bool onboarding;
 
-  /// The game the button starts: UK English, five letters, normal tries, the
-  /// default word pool, classic. It replaces this page, so back from the game
+  /// The game the button starts: UK English, five letters, normal tries,
+  /// classic. It replaces this page, so back from the game
   /// is the menu.
   static void startDefaultGame(BuildContext context) {
-    appState.setup(
-      lang: 'en-GB',
-      length: 5,
-      tries: 6,
-      pool: defaultPool,
-      mode: GameMode.classic,
-    );
+    appState.setup(lang: 'en-GB', length: 5, tries: 6, mode: GameMode.classic);
     Navigator.pushReplacementNamed(context, Routes.play);
   }
 
@@ -171,15 +164,13 @@ class HowToPage extends StatelessWidget {
                         'setup',
                         'choose a language on the home screen. the game modes '
                             'button (the grid at the right of the last row) has the rest: the mode, '
-                            '4 to 8 letters (slide or tap the arrows) and a difficulty from the '
-                            '4 x 4 grid. across is the number of tries: easy 8, normal '
-                            '6, hard 4, brutal 3. down is the word pool the answer is '
-                            'drawn from: its 500, 1,500, 3,000 or 6,000 most common '
-                            'words. a level appears only if the language has at least '
-                            '1,000 more words of that length than the level before it, '
-                            'and the last level takes every word left, so none is '
-                            'wasted. the colour runs '
-                            'from green for the easiest to purple for the hardest. '
+                            '4 to 8 letters and a difficulty from the grid. across is the number '
+                            'of tries: easy 8, normal 6, hard 4, brutal 3. down is the '
+                            'word length, the longest the easiest. a checkbox picks '
+                            'answers by how common each word is; it is always off for '
+                            'the daily, which is drawn evenly from the 3,000 most '
+                            'common words and never repeats within 90 days. the colour '
+                            'runs from green for the easiest to purple for the hardest. '
                             'theme, backup, updates, support and about are in settings, '
                             'the gear at the top right.',
                       ),

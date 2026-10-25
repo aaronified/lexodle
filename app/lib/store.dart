@@ -140,8 +140,13 @@ class Stats {
     ..langsWon = {for (final l in j['langsWon'] ?? []) l as String}
     ..lengthsWon = {for (final l in j['lengthsWon'] ?? []) l as int}
     ..mastery = {
+      // a cell is `length:tries`; before the word pool went there was a third
+      // part, which is dropped
       for (final e in ((j['mastery'] ?? {}) as Map).entries)
-        e.key as String: {for (final x in e.value as List) x as String},
+        e.key as String: {
+          for (final x in e.value as List)
+            (x as String).split(':').take(2).join(':'),
+        },
     };
 
   void record(GameResult r) {
@@ -153,7 +158,7 @@ class Stats {
       langsWon.add(r.lang);
       lengthsWon.add(r.length);
       final cell = r.mode == GameMode.classic
-          ? masteryCell(r.length, r.tries, r.pool)
+          ? masteryCell(r.length, r.tries)
           : null;
       if (cell != null) (mastery[r.lang] ??= {}).add(cell);
     } else {
@@ -162,41 +167,32 @@ class Stats {
   }
 }
 
-/// The settings a win counts towards mastery for: one word length, one tries
-/// level and one pool level of the difficulty matrix. Null for a game played
-/// at settings outside the matrix.
-String? masteryCell(int length, int tries, int pool) =>
-    triesLevels.any((l) => l.$2 == tries) && poolSizes.contains(pool)
-    ? '$length:$tries:$pool'
-    : null;
+/// The settings a win counts towards mastery for: one word length at one tries
+/// level of the difficulty matrix. Null for a game played at settings outside
+/// the matrix.
+String? masteryCell(int length, int tries) =>
+    triesLevels.any((l) => l.$2 == tries) ? '$length:$tries' : null;
 
 /// How many settings a language has to be won at for mastery: every length it
-/// offers at every tries level and at every pool level it has the words for
-/// (see [poolsOffered]).
-int masteryTarget(Language l) => [
-  for (final n in l.lengths)
-    triesLevels.length * poolsOffered(l.counts[n]).length,
-].fold(0, (a, b) => a + b);
+/// offers at every tries level.
+int masteryTarget(Language l) => l.lengths.length * triesLevels.length;
 
-/// How many of [cells] (`length:tries:pool`) are settings [l] still offers. A
-/// win at a setting a language no longer offers stays recorded but does not
-/// count towards its mastery.
+/// How many of [cells] (`length:tries`) are settings [l] still offers. A win at
+/// a setting a language no longer offers stays recorded but does not count
+/// towards its mastery.
 int masteryWon(Language l, Set<String>? cells) {
   if (cells == null) return 0;
-  var n = 0;
+  final seen = <String>{};
   for (final cell in cells) {
     final p = cell.split(':');
-    if (p.length != 3) continue;
+    if (p.length < 2) continue;
     final length = int.tryParse(p[0]), tries = int.tryParse(p[1]);
-    final pool = int.tryParse(p[2]);
-    if (length == null || tries == null || pool == null) continue;
-    if (l.lengths.contains(length) &&
-        triesLevels.any((t) => t.$2 == tries) &&
-        poolsOffered(l.counts[length]).contains(pool)) {
-      n++;
+    if (length == null || tries == null) continue;
+    if (l.lengths.contains(length) && triesLevels.any((t) => t.$2 == tries)) {
+      seen.add('$length:$tries');
     }
   }
-  return n;
+  return seen.length;
 }
 
 /// How an achievement is earned.
@@ -783,8 +779,9 @@ class AppState extends ChangeNotifier {
   /// Quartet and relay race: the chance, in percent, that answers share a letter.
   int share = 10;
 
-  /// How many of the most common words an answer can be drawn from.
-  int pool = defaultPool;
+  /// Whether the answer is drawn by how common each word is (on) or with every
+  /// word of the length equally likely (off). A daily is always off.
+  bool useFrequency = true;
   bool seenHowTo = false;
 
   /// Whether an update also saves its backup in the Downloads folder (it always
@@ -1094,6 +1091,7 @@ class AppState extends ChangeNotifier {
     required bool won,
     required List<GuessRow> guesses,
     String daily = '',
+    bool freq = true,
     DateTime? now,
   }) {
     history.add(
@@ -1107,6 +1105,7 @@ class AppState extends ChangeNotifier {
       won: won,
       guesses: guesses,
       daily: daily,
+      freq: freq,
     );
     saveHistory();
     notifyListeners();
@@ -1198,8 +1197,7 @@ class AppState extends ChangeNotifier {
       lang = p.getString('lang') ?? lang;
       length = p.getInt('length') ?? length;
       tries = p.getInt('tries') ?? tries;
-      final pl = p.getInt('pool');
-      if (pl != null && poolSizes.contains(pl)) pool = pl;
+      useFrequency = p.getBool('useFrequency') ?? true;
       final h = p.getInt('helper');
       if (h != null && h >= 0 && h < Helper.values.length) {
         helper = Helper.values[h];
@@ -1394,7 +1392,7 @@ class AppState extends ChangeNotifier {
     'lang': lang,
     'length': length,
     'tries': tries,
-    'pool': pool,
+    'useFrequency': useFrequency,
     'helper': helper.index,
     'mode': mode.index,
     'share': share,
@@ -1444,7 +1442,7 @@ class AppState extends ChangeNotifier {
     lang = settings['lang'] as String? ?? lang;
     length = settings['length'] as int? ?? length;
     tries = settings['tries'] as int? ?? tries;
-    pool = settings['pool'] as int? ?? pool;
+    useFrequency = settings['useFrequency'] as bool? ?? useFrequency;
     final h = settings['helper'] as int?;
     if (h != null) helper = Helper.values[h];
     final m = settings['mode'] as int?;
@@ -1461,7 +1459,7 @@ class AppState extends ChangeNotifier {
           ..setString('lang', lang)
           ..setInt('length', length)
           ..setInt('tries', tries)
-          ..setInt('pool', pool)
+          ..setBool('useFrequency', useFrequency)
           ..setInt('helper', helper.index)
           ..setInt('mode', mode.index)
           ..setInt('share', share)
@@ -1486,7 +1484,7 @@ class AppState extends ChangeNotifier {
     String? lang,
     int? length,
     int? tries,
-    int? pool,
+    bool? useFrequency,
     Helper? helper,
     GameMode? mode,
     int? share,
@@ -1495,7 +1493,7 @@ class AppState extends ChangeNotifier {
     this.lang = lang ?? this.lang;
     this.length = length ?? this.length;
     this.tries = tries ?? this.tries;
-    this.pool = pool ?? this.pool;
+    this.useFrequency = useFrequency ?? this.useFrequency;
     this.helper = helper ?? this.helper;
     this.mode = mode ?? this.mode;
     this.themeMode = themeMode ?? this.themeMode;
@@ -1505,7 +1503,7 @@ class AppState extends ChangeNotifier {
         ?..setString('lang', this.lang)
         ..setInt('length', this.length)
         ..setInt('tries', this.tries)
-        ..setInt('pool', this.pool)
+        ..setBool('useFrequency', this.useFrequency)
         ..setInt('helper', this.helper.index)
         ..setInt('mode', this.mode.index)
         ..setInt('share', this.share)

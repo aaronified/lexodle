@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'difficulty.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -43,10 +42,7 @@ class _LearnPageState extends State<LearnPage> {
   final _focus = FocusNode();
   late final _rng = Random(widget.seed);
   late final int length = appState.length;
-  late final List<String> _pool = widget.bank.answers(
-    length,
-    poolWords(appState.pool, widget.bank.language.counts[length]),
-  );
+  late final List<String> _pool = widget.bank.answers(length);
   late final Set<String> _letters = widget.bank.letters(length);
   late final input = GuessInput(length);
 
@@ -75,7 +71,7 @@ class _LearnPageState extends State<LearnPage> {
   void _reset() {
     answer = chooseWord(
       _pool,
-      widget.bank.answerWeights(length, _pool.length),
+      widget.bank.answerWeights(length, frequency: appState.useFrequency),
       _rng,
     );
     // every word the game accepts could be the answer as far as a clue goes

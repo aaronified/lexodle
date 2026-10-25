@@ -1,7 +1,10 @@
 # Daily word
 
 Everyone gets the same word on the same date, in every language: the date and the language are
-hashed to pick one word of the 3,000-word pool, with no server involved. A daily is always five
+hashed to pick one of the 3,000 most common words of the language, every one equally likely and no
+other word ever, with no server involved. A word is not picked again within 90 days: each day's
+pick is redrawn if it was a daily in the last 90 days, replayed from a fixed start date (2026-10-26),
+so it depends only on the date and not on when the app was last opened. A daily is always five
 letters and six tries, whatever the settings say. It is saved as you go, so closing the page
 cannot reroll it, and it is played once a day.
 

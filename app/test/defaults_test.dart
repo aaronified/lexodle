@@ -4,19 +4,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/difficulty.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/store.dart';
-import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('a new player starts at 6 tries and the third word-pool rung', () {
+  test('a new player starts at 6 tries and draws words by frequency', () {
     final s = AppState();
     expect(s.tries, 6);
     expect(triesLevels.firstWhere((l) => l.$2 == s.tries).$1, 'normal');
-    expect(s.pool, 3000);
-    expect(poolSizes.indexOf(s.pool), 2, reason: 'the third of four rungs');
-    expect(poolLevels[2].$1, 'wide');
+    expect(s.useFrequency, isTrue);
   });
 
   testWidgets('game modes says the default, and the icon buttons match play', (
@@ -29,12 +26,17 @@ void main() {
     await tester.pumpAndSettle();
 
     // the difficulty is chosen on the game modes screen, not on home
-    expect(find.textContaining('normal · wide'), findsNothing);
+    expect(find.byKey(const ValueKey('frequency-checkbox')), findsNothing);
     await tester.tap(find.byTooltip('game modes'));
     await tester.pumpAndSettle();
+    expect(find.byType(DifficultyMatrix), findsOneWidget);
+    final box = tester.widget<CheckboxListTile>(
+      find.byKey(const ValueKey('frequency-checkbox')),
+    );
     expect(
-      find.textContaining('normal · wide: 6 tries, answers from the 3,000'),
-      findsOneWidget,
+      box.value,
+      isTrue,
+      reason: 'words are drawn by frequency by default',
     );
     await tester.tapAt(const Offset(5, 5)); // the scrim closes it
     await tester.pumpAndSettle();

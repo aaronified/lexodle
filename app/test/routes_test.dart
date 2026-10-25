@@ -31,7 +31,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await appState.load();
-    appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
+    appState.setup(lang: 'fr', length: 4, tries: 3);
   });
 
   Future<_Names> open(WidgetTester tester, String? route) async {

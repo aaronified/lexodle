@@ -38,11 +38,10 @@ word lists are shipped.
 
 ## The pool
 
-The difficulty grid's pool is the most frequent words at the chosen length, so a smaller pool means
-more familiar answers. Some languages have fewer than 6,000 words at some lengths (for example
-Indonesian has about 2,400 at five letters), so a level is offered only if the language has at
-least 1,000 more words than the level below it, the last level offered takes every word left, and
-the grid shows the real count of each row. Words beyond the pool are still accepted as guesses.
+The difficulty grid has no word pool: the answer can be any word of the chosen length, drawn by
+frequency when the game modes checkbox is on, evenly when it is off. The daily draws evenly from
+the 3,000 most common words. Some languages have fewer than 6,000 words at some lengths (for
+example Indonesian has about 2,400 at five letters); the game modes menu shows the real count.
 
 ## Credits and licences
 

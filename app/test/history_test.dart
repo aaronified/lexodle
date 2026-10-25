@@ -247,6 +247,7 @@ void main() {
         1,
         '2026-10-24',
         metricsVersion,
+        1, // drawn by frequency
       ]);
       final guess = (j['guesses'] as List).first as List;
       expect(guess, [g.id, 0, 'crane', 70, 5, 30, .4, 100, 90]);
@@ -271,6 +272,17 @@ void main() {
       });
       expect(jsonEncode(h.toJson()).length, lessThan(named.length * 0.7));
     });
+
+    test(
+      'a row from before the frequency flag is read as drawn by frequency',
+      () {
+        final h = History();
+        addGame(h, at: 5);
+        final j = jsonDecode(jsonEncode(h.toJson())) as Map<String, dynamic>;
+        ((j['games'] as List).first as List).removeLast();
+        expect(History.fromJson(j).games.single.freq, isTrue);
+      },
+    );
 
     test('the earlier form, with named fields, is still read', () {
       final h = History();
@@ -305,7 +317,7 @@ void main() {
           (j['guesses'] as List).first as List;
 
       var j = good();
-      game(j).removeLast();
+      game(j).removeRange(game(j).length - 2, game(j).length);
       refuses(j, 'a game row that is too short');
       j = good();
       game(j)[7] = ['abc'];
@@ -886,19 +898,19 @@ void main() {
       addTearDown(() => analyseWhilePlaying = false);
       await appState.load();
       appState.history = History();
-      appState.setup(lang: 'fr', length: 4, tries: 3, pool: 500);
+      appState.setup(lang: 'fr', length: 4, tries: 3);
       final bank = (await tester.runAsync(
         () async => WordBank.load(
           (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
         ),
       ))!;
       final answer = chooseWord(
-        bank.answers(4, 500),
-        bank.answerWeights(4, 500),
+        bank.answers(4),
+        bank.answerWeights(4),
         Random(7),
       );
       final guesses = bank
-          .answers(4, 500)
+          .answers(4)
           .where((w) => w != answer)
           .take(3)
           .toList();
@@ -928,7 +940,7 @@ void main() {
       expect(g.mode, GameMode.classic);
       expect(g.length, 4);
       expect(g.tries, 3);
-      expect(g.pool, 500);
+      expect(g.pool, bank.answers(4).length);
       expect(g.answers, [answer]);
       expect(g.won, isFalse);
       expect(g.isDaily, isFalse);

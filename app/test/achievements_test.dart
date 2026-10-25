@@ -39,7 +39,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(420, 7400));
     appState.stats = Stats()
       ..mastery = {
-        'en': {'5:6:1500', '4:6:1500', '5:3:500'},
+        'en': {'5:6', '4:6', '5:3'},
       };
     appState.ach = {
       'one_shot': AchState(
@@ -81,14 +81,13 @@ void main() {
     expect(find.byKey(const ValueKey('mastery-row')), findsOneWidget);
     // the mastery badges and the completionist's: neither has one yet
     expect(find.text('no badges yet'), findsNWidgets(2));
-    expect(find.text('3/76'), findsNothing, reason: 'the list is on its page');
+    expect(find.text('3/20'), findsNothing, reason: 'the list is on its page');
 
     // tapping it opens the language by language list: 3 of English's
-    // 4 tries x 19 pools = 76 settings: English has the words for 3 pools at 4
-    // letters, and all 4 at 5, 6, 7 and 8
+    // settings, 4 tries levels at each of its 5 lengths (4 to 8) = 20
     await tester.tap(find.byKey(const ValueKey('mastery-row')));
     await tester.pumpAndSettle();
-    expect(find.text('3/76'), findsOneWidget);
+    expect(find.text('3/20'), findsOneWidget);
     expect(find.textContaining('languages mastered'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -195,7 +194,6 @@ void main() {
       lang: lang,
       length: 5,
       tries: 6,
-      pool: 3000,
       used: 3,
       won: true,
       skills: const [90, 90, 90],

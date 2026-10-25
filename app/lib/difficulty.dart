@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'ui.dart';
-import 'words.dart';
 
-/// The two difficulty dimensions. Tries run from easy to brutal; the pool is
-/// how many of a language's most common words of the chosen length the answer
-/// can be drawn from, so a small pool means familiar words.
+/// The difficulty has two dimensions. Tries run from easy to brutal, and the
+/// word length from longest (the easiest: a long word gives more away in every
+/// guess) to shortest.
 const triesLevels = <(String name, int tries)>[
   ('easy', 8),
   ('normal', 6),
@@ -13,87 +12,45 @@ const triesLevels = <(String name, int tries)>[
   ('brutal', 3),
 ];
 
-const _poolNames = ['common', 'familiar', 'wide', 'obscure'];
-final poolLevels = <(String name, int size)>[
-  for (var i = 0; i < poolSizes.length; i++) (_poolNames[i], poolSizes[i]),
-];
-
-const _labelWidth = 104.0;
-
-/// How many more words than the level below a language needs to offer a level:
-/// "wide" only if it has 1,000 more than the 1,500 of "familiar", and so on, so
-/// a level is never a sliver more than the one before it.
-const poolStep = 1000;
-
-/// The pool levels (sizes) a language offers at a length: the smallest always,
-/// then each next one only while there are at least [poolStep] more words than
-/// the level below. All of them when the count is not known.
-List<int> poolsOffered(int? available) {
-  if (available == null) return poolSizes;
-  final offered = [poolSizes.first];
-  for (final s in poolSizes.skip(1)) {
-    if (available < offered.last + poolStep) break;
-    offered.add(s);
-  }
-  return offered;
-}
-
-/// How many words a level really draws its answers from. The size of the
-/// level, except that the last level a language offers takes every word it has
-/// (so none is left out: a short list's last level is all of it, and a language
-/// with 4,994 words has an "obscure" of 4,994). [level] is mapped to the
-/// nearest one offered first.
-int poolWords(int level, int? available) {
-  if (available == null) return level;
-  final offered = poolsOffered(available);
-  final l = offered.lastWhere((s) => s <= level, orElse: () => offered.first);
-  return l == offered.last ? available : l;
-}
-
-/// The pool a [preferred] size means for a language and length: the largest
-/// one offered that is no bigger, or the smallest offered when all are.
-int effectivePool(int preferred, int? available) {
-  final offered = poolsOffered(available);
-  return offered.lastWhere((s) => s <= preferred, orElse: () => offered.first);
-}
+const _labelWidth = 84.0;
 
 String _thousands(int n) => n.toString().replaceAllMapped(
   RegExp(r'(\d)(?=(\d{3})+$)'),
   (m) => '${m[1]},',
 );
 
-/// A 4 x 4 matrix to choose the difficulty from: tries across (easy to
-/// brutal), pool size down (common to obscure). The colour of a cell runs from
+/// A matrix to choose the difficulty from: tries across (easy to brutal), word
+/// length down (longest, the easiest, first). The colour of a cell runs from
 /// green at the easy corner to purple at the hard one, from the theme.
 class DifficultyMatrix extends StatelessWidget {
   const DifficultyMatrix({
     super.key,
     required this.tries,
-    required this.pool,
+    required this.length,
+    required this.lengths,
     required this.available,
     required this.onChanged,
   });
 
   final int tries;
-  final int pool;
+  final int length;
+
+  /// The word lengths the language has.
+  final List<int> lengths;
 
   /// Words the language has at the chosen length (null when not known).
   final int? available;
-  final void Function(int tries, int pool) onChanged;
+  final void Function(int tries, int length) onChanged;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    // only the rows the language can fill; a row keeps the colour of its level
-    // (its place among all four) so green to purple still means easy to hard
-    final rows = [
-      for (final s in poolsOffered(available))
-        poolLevels.indexWhere((l) => l.$2 == s),
-    ];
-    final shown = effectivePool(pool, available);
+    // longest first: the easiest row is at the top, the colour follows
+    final rows = [...lengths]..sort((a, b) => b.compareTo(a));
     final selCol = triesLevels.indexWhere((l) => l.$2 == tries).clamp(0, 3);
-    final selLevel = poolLevels.indexWhere((l) => l.$2 == shown).clamp(0, 3);
-    final selected = difficultyColor(c, (selCol + selLevel) / 6);
+    final selRow = rows.indexOf(length).clamp(0, rows.length - 1);
+    final span = (rows.length - 1 + 3).clamp(1, 100);
+    final selected = difficultyColor(c, (selCol + selRow) / span);
     final head = TextStyle(
       fontSize: 10,
       letterSpacing: .8,
@@ -125,46 +82,29 @@ class DifficultyMatrix extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 6),
-        for (final r in rows)
+        for (var r = 0; r < rows.length; r++)
           Row(
             children: [
               SizedBox(
                 width: _labelWidth,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${_thousands(poolWords(poolLevels[r].$2, available))} words',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        // the last level takes every word the language has
-                        // left, and says so when that is not its round number
-                        poolWords(poolLevels[r].$2, available) !=
-                                poolLevels[r].$2
-                            ? '${poolLevels[r].$1} · all'
-                            : poolLevels[r].$1,
-                        style: head,
-                      ),
-                    ],
+                  child: Text(
+                    '${rows[r]} letters',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
               for (var col = 0; col < 4; col++)
                 Expanded(
                   child: _Cell(
-                    color: difficultyColor(c, (r + col) / 6),
-                    selected: r == selLevel && col == selCol,
-                    label:
-                        '${triesLevels[col].$2} tries, '
-                        '${poolWords(poolLevels[r].$2, available)} words',
-                    onTap: () =>
-                        onChanged(triesLevels[col].$2, poolLevels[r].$2),
+                    color: difficultyColor(c, (r + col) / span),
+                    selected: r == selRow && col == selCol,
+                    label: '${triesLevels[col].$2} tries, ${rows[r]} letters',
+                    onTap: () => onChanged(triesLevels[col].$2, rows[r]),
                   ),
                 ),
             ],
@@ -183,9 +123,9 @@ class DifficultyMatrix extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '${triesLevels[selCol].$1} · ${poolLevels[selLevel].$1}: '
-                '$tries tries, '
-                '${poolWords(shown, available) != shown ? 'answers from all ${_thousands(poolWords(shown, available))} words' : 'answers from the ${_thousands(shown)} most common words'}',
+                '${triesLevels[selCol].$1} · $length letters: $tries tries, '
+                '${available == null ? 'every word of this length' : '${_thousands(available!)} words of this length'}',
+                key: const ValueKey('difficulty-summary'),
                 style: TextStyle(
                   fontSize: 12,
                   color: c.onSurface.withValues(alpha: .8),

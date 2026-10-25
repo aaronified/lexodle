@@ -45,13 +45,7 @@ void main() {
     Wiktionary.reset();
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
-    appState.setup(
-      lang: 'fr',
-      length: 4,
-      tries: 3,
-      pool: 500,
-      mode: GameMode.classic,
-    );
+    appState.setup(lang: 'fr', length: 4, tries: 3, mode: GameMode.classic);
     bank = (await tester.runAsync(
       () async => WordBank.load(
         (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
@@ -76,8 +70,8 @@ void main() {
     await load(tester);
     prefetchDefinitions = true;
     final answer = chooseWord(
-      bank.answers(4, 500),
-      bank.answerWeights(4, 500),
+      bank.answers(4),
+      bank.answerWeights(4),
       Random(7),
     );
     await tester.pumpWidget(
@@ -106,8 +100,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 10));
     }
     final answers = chooseTargets(
-      bank.answers(4, 500),
-      bank.answerWeights(4, 500),
+      bank.answers(4),
+      bank.answerWeights(4),
       4,
       10,
       Random(3),
@@ -121,8 +115,8 @@ void main() {
   ) async {
     await load(tester);
     analyseWhilePlaying = true;
-    final pool = bank.answers(4, 500);
-    final answer = chooseWord(pool, bank.answerWeights(4, 500), Random(7));
+    final pool = bank.answers(4);
+    final answer = chooseWord(pool, bank.answerWeights(4), Random(7));
     final guesses = pool.where((w) => w != answer).take(3).toList();
     await tester.pumpWidget(
       MaterialApp(
@@ -176,8 +170,8 @@ void main() {
       analyseWhilePlaying = true;
       final all = bank.guessable(4);
       final answer = chooseWord(
-        bank.answers(4, 500),
-        bank.answerWeights(4, 500),
+        bank.answers(4),
+        bank.answerWeights(4),
         Random(7),
       );
       return (all, answer);
@@ -244,8 +238,8 @@ void main() {
       analyseWhilePlaying = true;
       final before = appState.stats.played;
       final answers = chooseTargets(
-        bank.answers(4, 500),
-        bank.answerWeights(4, 500),
+        bank.answers(4),
+        bank.answerWeights(4),
         4,
         10,
         Random(3),

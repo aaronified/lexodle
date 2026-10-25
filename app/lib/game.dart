@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 
 import 'background.dart';
 import 'daily.dart';
-import 'difficulty.dart';
 import 'guess_input.dart';
 import 'haptics.dart';
 import 'history.dart';
@@ -42,18 +41,17 @@ class _GamePageState extends State<GamePage> {
 
   late final Daily? _daily = widget.daily;
   late final int length;
-  // the saved pool, or the biggest this language has words for at this length
-  late final int pool = _daily == null
-      ? effectivePool(appState.pool, widget.bank.language.counts[length])
-      : dailyPool;
   late final int tries;
 
-  /// How many words the pool really holds: the level's size, or every word the
-  /// language has when it is the last level offered (see [poolWords]).
-  late final int _poolWords = poolWords(
-    pool,
-    widget.bank.language.counts[length],
-  );
+  /// Whether the answer is drawn by how common each word is. Never for a daily:
+  /// its word is picked from the whole list, every word equally likely.
+  late final bool freq = _daily == null && appState.useFrequency;
+
+  /// How many words the answer was drawn from: every word of the length, or for
+  /// a daily the most common [dailyAnswers] of them.
+  late final int pool = _daily == null
+      ? widget.bank.answers(length).length
+      : min(dailyAnswers, widget.bank.answers(length).length);
   late final List<String> _pool;
   late final Set<String> _letters;
 
@@ -85,7 +83,7 @@ class _GamePageState extends State<GamePage> {
     super.initState();
     length = _daily == null ? appState.length : dailyLength;
     tries = _daily == null ? appState.tries : dailyTries;
-    _pool = widget.bank.answers(length, _poolWords);
+    _pool = widget.bank.answers(length);
     _letters = widget.bank.letters(length);
     _reset();
     _resume();
@@ -116,7 +114,11 @@ class _GamePageState extends State<GamePage> {
   void _reset() {
     answer =
         _daily?.answer ??
-        chooseWord(_pool, widget.bank.answerWeights(length, _poolWords), _rng);
+        chooseWord(
+          _pool,
+          widget.bank.answerWeights(length, frequency: freq),
+          _rng,
+        );
     // Every word the game accepts counts as possible, not only the common ones
     // the answer is drawn from: a player cannot know that list, and a real
     // word that fits every clue must never be ruled out behind their back.
@@ -211,7 +213,7 @@ class _GamePageState extends State<GamePage> {
         finalTry: guesses.length >= tries,
         solved: word == answer,
         triesLeft: tries - (guesses.length - 1),
-        weights: widget.bank.weightMap(length),
+        weights: freq ? widget.bank.weightMap(length) : null,
         // skill is measured against the best real guess, which the
         // background analysis is still finding out
         provisional: analyseWhilePlaying,
@@ -303,6 +305,7 @@ class _GamePageState extends State<GamePage> {
           for (var i = 0; i < metrics.length; i++) guessRowOf(i, metrics[i]),
         ],
         daily: d?.date ?? '',
+        freq: freq,
       );
       final code = widget.bank.language.code;
       final rated = appState.updateStyle(lang: code);
