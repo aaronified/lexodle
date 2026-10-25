@@ -1,8 +1,9 @@
 [
  {
   "code": "en",
-  "name": "English (US)",
+  "name": "English",
   "wikt": "English",
+  "flag": "svg:gb+us",
   "lengths": [
    4,
    5,
@@ -11,30 +12,8 @@
    8
   ],
   "counts": {
-   "4": 2694,
-   "5": 4994,
-   "6": 6000,
-   "7": 6000,
-   "8": 6000
-  },
-  "filter": "hunspell",
-  "flag": "svg:us"
- },
- {
-  "code": "en-GB",
-  "name": "English (UK)",
-  "wikt": "English",
-  "flag": "svg:gb",
-  "lengths": [
-   4,
-   5,
-   6,
-   7,
-   8
-  ],
-  "counts": {
-   "4": 2686,
-   "5": 4980,
+   "4": 2707,
+   "5": 5030,
    "6": 6000,
    "7": 6000,
    "8": 6000
@@ -127,9 +106,9 @@
  },
  {
   "code": "pt",
-  "name": "Português (Brasil)",
+  "name": "Português",
   "wikt": "Portuguese",
-  "flag": "svg:br",
+  "flag": "svg:br+pt",
   "lengths": [
    4,
    5,
@@ -138,29 +117,8 @@
    8
   ],
   "counts": {
-   "4": 2179,
-   "5": 5991,
-   "6": 6000,
-   "7": 6000,
-   "8": 6000
-  },
-  "filter": "hunspell+wiktionary"
- },
- {
-  "code": "pt-PT",
-  "name": "Português (Portugal)",
-  "wikt": "Portuguese",
-  "flag": "svg:pt",
-  "lengths": [
-   4,
-   5,
-   6,
-   7,
-   8
-  ],
-  "counts": {
-   "4": 1627,
-   "5": 4853,
+   "4": 2199,
+   "5": 6000,
    "6": 6000,
    "7": 6000,
    "8": 6000

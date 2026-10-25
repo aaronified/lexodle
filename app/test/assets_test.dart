@@ -34,16 +34,31 @@ void main() {
       (m as Map).cast<String, dynamic>(),
   ];
 
+  /// The files a flag name draws: `fr` is one, `gb+us` is two.
+  List<String> parts(Map<String, dynamic> m) =>
+      (m['flag'] as String).substring(4).split('+');
+
   group('the flags', () {
     test('every language has one, and it is a file in the assets', () {
-      expect(langs.length, 19);
+      expect(langs.length, 17);
       for (final m in langs) {
         final flag = m['flag'] as String;
         expect(flag, startsWith('svg:'), reason: '${m['code']}: not an emoji');
-        final file = File('assets/flags/${flag.substring(4)}.svg');
-        expect(file.existsSync(), isTrue, reason: '${m['code']}: $flag');
-        expect(file.readAsStringSync(), contains('<svg'));
+        expect(parts(m).length, lessThanOrEqualTo(2), reason: flag);
+        for (final name in parts(m)) {
+          final file = File('assets/flags/$name.svg');
+          expect(file.existsSync(), isTrue, reason: '${m['code']}: $flag');
+          expect(file.readAsStringSync(), contains('<svg'));
+        }
       }
+    });
+
+    test('English and Portuguese show their two flags', () {
+      final flags = {for (final m in langs) m['code']: m['flag']};
+      expect(flags['en'], 'svg:gb+us');
+      expect(flags['pt'], 'svg:br+pt');
+      expect(flags.containsKey('en-GB'), isFalse);
+      expect(flags.containsKey('pt-PT'), isFalse);
     });
 
     test('there is no emoji left in the language table', () {
@@ -78,10 +93,11 @@ void main() {
 
     test('each is cropped to the flag, so they sit alike in a badge', () {
       for (final m in langs) {
-        final name = (m['flag'] as String).substring(4);
-        final svg = File('assets/flags/$name.svg').readAsStringSync();
-        if (name == 'ca') continue; // drawn for the project, already 3:2
-        expect(svg, contains('viewBox="0 5 36 26"'), reason: name);
+        for (final name in parts(m)) {
+          final svg = File('assets/flags/$name.svg').readAsStringSync();
+          if (name == 'ca') continue; // drawn for the project, already 3:2
+          expect(svg, contains('viewBox="0 5 36 26"'), reason: name);
+        }
       }
     });
 
@@ -117,7 +133,9 @@ void main() {
           () => Future<void>.delayed(const Duration(milliseconds: 400)),
         );
         await tester.pump();
-        expect(find.byType(SvgPicture), findsNWidgets(langs.length));
+        // a merged language draws two flags, each cropped to half of its width
+        final drawn = langs.fold<int>(0, (n, m) => n + parts(m).length);
+        expect(find.byType(SvgPicture), findsNWidgets(drawn));
         expect(find.byType(Text), findsNothing, reason: 'no emoji text');
         expect(tester.takeException(), isNull, reason: 'at $size');
       }

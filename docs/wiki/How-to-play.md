@@ -17,7 +17,7 @@ the theme, backup, updates (Android), support and about.
 
 | Setting    | Options |
 | ---------- | ------- |
-| Language   | English (US and UK spelling), Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Swedish, Danish, Norwegian, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan; each with its flag |
+| Language   | English (US and UK words together), Spanish, French, German, Italian, Portuguese (Brazil and Portugal words together), Dutch, Polish, Swedish, Danish, Norwegian, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan; each with its flag |
 | Letters    | 4 to 8 |
 | Difficulty | a grid: tries (easy 8, normal 6, hard 4, brutal 3) by word length, the longest the easiest. Answers can be any word of the length; a checkbox in the game modes picks them by how common each word is (on by default; never used for the daily). The modes menu shows how many words the length has |
 

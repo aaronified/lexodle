@@ -76,13 +76,36 @@ class FlagBadge extends StatelessWidget {
       height: size,
       child: Center(
         child: flag.startsWith('svg:')
-            ? SvgPicture.asset(
-                'assets/flags/${flag.substring(4)}.svg',
-                width: size * 1.3,
-                height: size * 0.87,
-              )
+            ? _svgFlags(flag.substring(4))
             : Text(flag, style: TextStyle(fontSize: size * .9, height: 1)),
       ),
+    );
+  }
+
+  /// One flag, or two (`gb+us`) side by side, each cropped to its half, for a
+  /// language that merges two variants.
+  Widget _svgFlags(String names) {
+    Widget one(String name, Alignment half, {bool crop = false}) {
+      final flag = SvgPicture.asset(
+        'assets/flags/$name.svg',
+        width: size * 1.3,
+        height: size * 0.87,
+      );
+      return crop
+          ? ClipRect(
+              child: Align(alignment: half, widthFactor: .5, child: flag),
+            )
+          : flag;
+    }
+
+    final parts = names.split('+');
+    if (parts.length != 2) return one(names, Alignment.center);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        one(parts[0], Alignment.centerLeft, crop: true),
+        one(parts[1], Alignment.centerRight, crop: true),
+      ],
     );
   }
 }

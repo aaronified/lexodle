@@ -500,8 +500,6 @@ acid	28183
 bars	28183
 duke	28183
 fort	28183
-gray	28183
-math	28183
 asks	27542
 bath	27542
 mini	27542
@@ -622,6 +620,7 @@ poem	17782
 rude	17782
 toys	17782
 vary	17782
+matt	17740
 dirt	17378
 lazy	17378
 mama	17378
@@ -668,6 +667,7 @@ earl	15135
 grid	15135
 sits	15135
 soap	15135
+grey	15100
 beds	14791
 lens	14791
 piss	14791
@@ -681,6 +681,8 @@ tier	14454
 caps	14125
 crop	14125
 soup	14125
+gray	14092
+math	14092
 beam	13803
 horn	13803
 lean	13803
@@ -905,7 +907,6 @@ gaps	7244
 lads	7244
 lime	7244
 maid	7244
-moms	7244
 oils	7244
 outs	7244
 owed	7244
@@ -980,7 +981,6 @@ guts	5888
 herb	5888
 herd	5888
 lick	5888
-mold	5888
 pads	5888
 polo	5888
 prop	5888
@@ -1121,7 +1121,6 @@ zinc	4466
 brew	4365
 coca	4365
 cove	4365
-cozy	4365
 expo	4365
 neon	4365
 pest	4365
@@ -1205,6 +1204,7 @@ pals	3630
 pubs	3630
 tame	3630
 taps	3630
+moms	3622
 blur	3548
 blvd	3548
 brow	3548
@@ -1270,7 +1270,6 @@ loaf	3090
 loot	3090
 musk	3090
 nuns	3090
-odor	3090
 slab	3090
 ammo	3019
 crib	3019
@@ -1287,6 +1286,7 @@ hush	2951
 pear	2951
 slit	2951
 wand	2951
+mold	2944
 chem	2884
 iced	2884
 jeez	2884
@@ -1406,6 +1406,7 @@ swam	2187
 toad	2187
 viva	2187
 wick	2187
+cozy	2182
 anon	2137
 ante	2137
 dole	2137
@@ -1447,7 +1448,6 @@ typo	1995
 writ	1995
 dyes	1949
 kart	1949
-meow	1949
 nuke	1949
 pooh	1949
 tofu	1949
@@ -1468,6 +1468,7 @@ fret	1862
 huts	1862
 snag	1862
 tote	1862
+arse	1858
 arcs	1819
 bane	1819
 bios	1819
@@ -1529,9 +1530,9 @@ kink	1621
 lice	1621
 loco	1621
 pave	1621
-plow	1621
 tome	1621
 trot	1621
+tyre	1618
 airy	1584
 anew	1584
 diff	1584
@@ -1552,6 +1553,7 @@ skis	1548
 slag	1548
 swag	1548
 zest	1548
+odor	1545
 bums	1513
 carp	1513
 eels	1513
@@ -1683,6 +1685,7 @@ stow	1148
 sumo	1148
 tins	1148
 yuck	1148
+mums	1145
 beet	1122
 crux	1122
 cusp	1122
@@ -1737,9 +1740,9 @@ seer	1023
 skew	1023
 twas	1023
 yeti	1023
+cosy	1020
 buoy	1000
 coll	1000
-czar	1000
 fowl	1000
 foxy	1000
 furs	1000
@@ -1768,6 +1771,7 @@ onus	977
 onyx	977
 sips	977
 vert	977
+meow	974
 fizz	954
 gory	954
 lard	954
@@ -1830,6 +1834,7 @@ rote	812
 scat	812
 snot	812
 taut	812
+plow	810
 coed	794
 hilt	794
 maul	794
@@ -1839,7 +1844,6 @@ spew	794
 thud	794
 trad	794
 wail	794
-whiz	794
 acme	776
 alms	776
 daze	776
@@ -1874,6 +1878,7 @@ mics	724
 pars	724
 rove	724
 vamp	724
+tsar	722
 bogs	707
 dens	707
 dike	707
@@ -1928,7 +1933,6 @@ hots	630
 ooze	630
 orbs	630
 orig	630
-perv	630
 puny	630
 wadi	630
 wily	630
@@ -1994,7 +1998,6 @@ dint	537
 opts	537
 rots	537
 toga	537
-balk	524
 byes	524
 cine	524
 hick	524
@@ -2024,6 +2027,7 @@ muff	501
 rota	501
 rube	501
 rusk	501
+czar	500
 hypo	489
 ibid	489
 lilo	489
@@ -2034,7 +2038,6 @@ pyre	489
 resp	489
 spud	489
 bade	478
-eons	478
 fete	478
 gaff	478
 kegs	478
@@ -2116,6 +2119,8 @@ hued	398
 inky	398
 laud	398
 tarn	398
+prev	397
+whiz	397
 bast	389
 faro	389
 goer	389
@@ -2185,6 +2190,7 @@ teat	316
 twee	316
 wows	316
 xxiv	316
+perv	315
 flay	309
 ludo	309
 minx	309
@@ -2198,7 +2204,6 @@ glob	301
 hums	301
 mils	301
 frag	295
-heme	295
 isms	295
 kayo	295
 nibs	295
@@ -2242,6 +2247,7 @@ yurt	269
 faun	263
 hake	263
 moos	263
+balk	262
 abet	257
 alts	257
 excl	257
@@ -2269,6 +2275,7 @@ leas	245
 mots	245
 ovum	245
 pkwy	245
+eons	239
 craw	239
 fens	239
 nits	239
@@ -2277,7 +2284,6 @@ ankh	234
 arum	234
 dolt	234
 jogs	234
-molt	234
 mung	234
 pref	234
 ruts	234
@@ -2292,6 +2298,7 @@ slat	223
 souk	223
 ulna	223
 waif	223
+aeon	218
 apse	218
 eves	218
 hems	218
@@ -2311,6 +2318,7 @@ freq	208
 gobs	208
 peon	208
 pleb	208
+kerb	204
 masc	204
 mien	204
 rads	204
@@ -2336,6 +2344,7 @@ foll	190
 veld	190
 viol	190
 yeas	190
+saki	186
 frig	186
 plod	186
 pols	186
@@ -2391,6 +2400,7 @@ lief	151
 sews	151
 trow	151
 weal	151
+heme	148
 cosh	147
 flub	147
 leis	147
@@ -2438,6 +2448,7 @@ lade	125
 nays	125
 coif	123
 scad	123
+molt	117
 bilk	117
 blag	117
 jowl	117
@@ -2457,7 +2468,6 @@ eked	109
 fibs	109
 haws	109
 nobs	109
-whir	109
 yawl	109
 abbr	107
 gars	107
@@ -2484,7 +2494,6 @@ topi	95
 wees	95
 dago	93
 emos	93
-gibe	93
 hoed	93
 lank	93
 naif	93
@@ -2547,7 +2556,6 @@ whop	64
 yews	64
 eccl	63
 ecru	63
-ecus	63
 epee	63
 gabs	63
 ague	61
@@ -2567,6 +2575,7 @@ jibs	57
 yaps	57
 rhos	56
 wive	56
+whir	54
 ceca	53
 ergs	53
 gads	53
@@ -2588,6 +2597,7 @@ awes	47
 beys	47
 furl	47
 mfrs	47
+gibe	46
 advt	46
 avow	46
 elev	46
@@ -2595,7 +2605,6 @@ taus	46
 woks	46
 wops	46
 lops	45
-myna	45
 nark	44
 wogs	44
 lvii	43
@@ -2605,7 +2614,6 @@ ilea	42
 opes	42
 tads	42
 yaws	42
-calk	41
 jato	41
 lase	41
 peke	41
@@ -2636,6 +2644,7 @@ gnus	33
 gorp	33
 lavs	33
 ropy	33
+ecus	32
 futz	32
 hies	32
 roue	32
@@ -2665,19 +2674,21 @@ dobs	24
 trug	23
 iamb	23
 tizz	23
+myna	22
 moil	22
 drub	21
+calk	20
 gite	20
 ftps	20
 slue	20
 obis	19
 winy	19
 pelf	19
+haem	18
 albs	18
 lxix	18
 xref	18
 xcii	17
-fogy	17
 oiks	17
 bumf	16
 effs	16
@@ -2689,9 +2700,11 @@ incs	12
 ttys	12
 hied	12
 pwns	11
+gybe	10
 rcpt	10
 moue	10
 yeps	10
+fogy	8
 about	2511886
 their	2137962
 there	2041737
@@ -2944,7 +2957,6 @@ beach	83176
 ended	83176
 older	83176
 calls	81283
-color	81283
 dream	81283
 grand	81283
 names	81283
@@ -3019,7 +3031,6 @@ proud	60255
 tells	60255
 birth	58884
 drugs	58884
-labor	58884
 lucky	58884
 prove	58884
 tough	58884
@@ -3076,7 +3087,6 @@ proof	50118
 banks	48977
 chair	48977
 homes	48977
-honor	48977
 noted	48977
 trees	48977
 email	47863
@@ -3141,6 +3151,7 @@ finds	40738
 spoke	40738
 talks	40738
 upset	40738
+color	40642
 birds	39810
 cycle	39810
 goods	39810
@@ -3158,7 +3169,6 @@ prize	38904
 rural	38904
 tools	38904
 admit	38018
-favor	38018
 frame	38018
 guest	38018
 teeth	38018
@@ -3233,6 +3243,7 @@ chart	29512
 mount	29512
 occur	29512
 tears	29512
+labor	29442
 argue	28840
 awful	28840
 bound	28840
@@ -3303,6 +3314,7 @@ roger	24547
 shell	24547
 silly	24547
 towns	24547
+honor	24488
 angle	23988
 firms	23988
 forum	23988
@@ -3401,6 +3413,7 @@ globe	19054
 hoped	19054
 seeds	19054
 spare	19054
+favor	19009
 bonds	18620
 chaos	18620
 corps	18620
@@ -3487,7 +3500,6 @@ bucks	15488
 camps	15488
 cargo	15488
 cried	15488
-humor	15488
 meals	15488
 nerve	15488
 sandy	15488
@@ -3644,7 +3656,6 @@ cheat	11481
 cheer	11481
 demon	11481
 elder	11481
-fiber	11481
 fried	11481
 heels	11481
 pulse	11481
@@ -3659,7 +3670,6 @@ penis	11220
 pills	11220
 shook	11220
 stack	11220
-aging	10964
 audit	10964
 blows	10964
 clips	10964
@@ -3729,7 +3739,6 @@ kitty	9549
 whale	9549
 amber	9332
 ankle	9332
-armor	9332
 berry	9332
 bulls	9332
 clash	9332
@@ -3743,7 +3752,6 @@ sally	9332
 scout	9332
 steak	9332
 sweep	9332
-tumor	9332
 cheek	9120
 curry	9120
 drake	9120
@@ -3842,6 +3850,7 @@ onion	7762
 raids	7762
 rogue	7762
 sings	7762
+humor	7744
 abbey	7585
 baron	7585
 bunny	7585
@@ -4009,6 +4018,7 @@ syrup	5754
 tones	5754
 traps	5754
 veins	5754
+fiber	5740
 atoms	5623
 bowls	5623
 dwarf	5623
@@ -4040,9 +4050,9 @@ stray	5495
 tempo	5495
 torch	5495
 turbo	5495
+aging	5482
 arose	5370
 blink	5370
-chili	5370
 excel	5370
 faded	5370
 gangs	5370
@@ -4058,7 +4068,6 @@ owing	5370
 proxy	5370
 renew	5370
 retro	5370
-rumor	5370
 stoke	5370
 thigh	5370
 troll	5370
@@ -4147,6 +4156,8 @@ snail	4677
 tutor	4677
 verge	4677
 yeast	4677
+armor	4666
+tumor	4666
 diets	4570
 erase	4570
 manly	4570
@@ -4313,7 +4324,6 @@ rhyme	3630
 savvy	3630
 spree	3630
 thugs	3630
-vapor	3630
 witty	3630
 woven	3630
 amend	3548
@@ -4397,7 +4407,6 @@ mixer	3162
 pivot	3162
 suing	3162
 taped	3162
-arbor	3090
 cling	3090
 fella	3090
 icing	3090
@@ -4453,7 +4462,6 @@ cocks	2884
 grail	2884
 kappa	2884
 liars	2884
-liter	2884
 opium	2884
 penal	2884
 plank	2884
@@ -4465,6 +4473,7 @@ snowy	2884
 stalk	2884
 stink	2884
 swine	2884
+metre	2877
 bangs	2818
 carts	2818
 clamp	2818
@@ -4484,6 +4493,7 @@ stout	2818
 stump	2818
 wally	2818
 yells	2818
+maths	2812
 berth	2754
 edits	2754
 malls	2754
@@ -4523,6 +4533,8 @@ tacos	2691
 tummy	2691
 wager	2691
 whack	2691
+chili	2685
+rumor	2685
 broom	2630
 brute	2630
 curls	2630
@@ -4628,6 +4640,7 @@ reuse	2344
 scams	2344
 vicar	2344
 woken	2344
+fibre	2338
 apron	2290
 carbs	2290
 coils	2290
@@ -4650,7 +4663,6 @@ evils	2238
 faked	2238
 geese	2238
 hunts	2238
-phony	2238
 synth	2238
 bends	2187
 boxed	2187
@@ -4764,6 +4776,7 @@ sinus	1905
 stung	1905
 waldo	1905
 whine	1905
+flyer	1900
 abort	1862
 banjo	1862
 beech	1862
@@ -4793,6 +4806,7 @@ nouns	1819
 potty	1819
 silky	1819
 stair	1819
+vapor	1815
 brood	1778
 chemo	1778
 dandy	1778
@@ -4852,11 +4866,9 @@ shone	1698
 sissy	1698
 taker	1698
 triad	1698
-valor	1698
 wight	1698
 bathe	1659
 dares	1659
-feces	1659
 giddy	1659
 hanks	1659
 kiddo	1659
@@ -4869,6 +4881,7 @@ pours	1659
 serge	1659
 tempt	1659
 whiff	1659
+tyres	1656
 aunts	1621
 bling	1621
 boner	1621
@@ -4909,6 +4922,7 @@ telly	1584
 volts	1584
 waged	1584
 whoop	1584
+litre	1581
 amaze	1548
 chute	1548
 drier	1548
@@ -4930,6 +4944,7 @@ stead	1548
 vests	1548
 warms	1548
 whips	1548
+arbor	1545
 bagel	1513
 bigot	1513
 bumpy	1513
@@ -4943,7 +4958,6 @@ kinks	1513
 locus	1513
 moors	1513
 posse	1513
-saber	1513
 samba	1513
 slant	1513
 soles	1513
@@ -4977,6 +4991,7 @@ swirl	1445
 theta	1445
 thong	1445
 zoned	1445
+liter	1442
 awoke	1412
 axial	1412
 carat	1412
@@ -5000,6 +5015,7 @@ snuff	1412
 stoic	1412
 swaps	1412
 taser	1412
+mould	1409
 avert	1380
 avian	1380
 barns	1380
@@ -5048,7 +5064,6 @@ groan	1318
 hives	1318
 hoist	1318
 laces	1318
-molds	1318
 murky	1318
 patsy	1318
 pinto	1318
@@ -5153,7 +5168,6 @@ nicks	1174
 nomad	1174
 pubic	1174
 revue	1174
-rigor	1174
 roper	1174
 shank	1174
 thyme	1174
@@ -5187,6 +5201,7 @@ stabs	1122
 swede	1122
 teeny	1122
 trams	1122
+phony	1119
 anvil	1096
 cabal	1096
 cadre	1096
@@ -5225,7 +5240,6 @@ rondo	1071
 scion	1071
 sores	1071
 ulcer	1071
-vigor	1071
 yanks	1071
 axiom	1047
 buffs	1047
@@ -5247,7 +5261,6 @@ cumin	1023
 decal	1023
 execs	1023
 expat	1023
-fecal	1023
 kanji	1023
 lingo	1023
 meaty	1023
@@ -5322,7 +5335,6 @@ mocha	954
 noose	954
 parse	954
 punks	954
-savor	954
 taint	954
 tarts	954
 tiara	954
@@ -5342,7 +5354,6 @@ gleam	933
 gummy	933
 idiom	933
 jaded	933
-odors	933
 plums	933
 pooch	933
 scour	933
@@ -5361,7 +5372,6 @@ whirl	912
 adage	891
 brash	891
 chimp	891
-edema	891
 flack	891
 haves	891
 hiked	891
@@ -5412,12 +5422,12 @@ twink	851
 voila	851
 xxiii	851
 yarns	851
+valor	849
 aorta	831
 beret	831
 bogey	831
 boron	831
 bugle	831
-flier	831
 frisk	831
 gasps	831
 girth	831
@@ -5427,6 +5437,7 @@ pokes	831
 sages	831
 techs	831
 vying	831
+feces	830
 babel	812
 beryl	812
 brats	812
@@ -5500,6 +5511,8 @@ stork	758
 swoon	758
 thane	758
 tithe	758
+saber	756
+spelt	756
 bimbo	741
 bongo	741
 cairn	741
@@ -5578,7 +5591,6 @@ dents	676
 dusky	676
 gaudy	676
 gazed	676
-grays	676
 grout	676
 minis	676
 mists	676
@@ -5606,6 +5618,7 @@ mores	660
 shunt	660
 stent	660
 wicks	660
+molds	659
 agate	645
 aster	645
 barbs	645
@@ -5711,6 +5724,7 @@ quads	588
 safes	588
 tawny	588
 trims	588
+rigor	587
 awash	575
 brawn	575
 foams	575
@@ -5779,6 +5793,8 @@ reals	537
 strep	537
 trill	537
 unmet	537
+vigor	536
+sabre	524
 askew	524
 assoc	524
 bicep	524
@@ -5793,6 +5809,7 @@ skids	524
 tetra	524
 verso	524
 zooms	524
+fecal	512
 arsed	512
 casks	512
 chard	512
@@ -5845,8 +5862,6 @@ coder	489
 degas	489
 mazes	489
 minty	489
-moldy	489
-plows	489
 rivet	489
 tardy	489
 twirl	489
@@ -5871,6 +5886,7 @@ slats	478
 squaw	478
 throb	478
 toyed	478
+savor	477
 bight	467
 bilge	467
 conga	467
@@ -5890,6 +5906,7 @@ roomy	467
 seeps	467
 terse	467
 wench	467
+odors	466
 brags	457
 clank	457
 cushy	457
@@ -5911,6 +5928,8 @@ tubby	457
 tutti	457
 twill	457
 yawns	457
+odour	456
+edema	446
 agape	446
 anise	446
 baits	446
@@ -5973,6 +5992,7 @@ rumba	426
 skiff	426
 tucks	426
 wrest	426
+flier	416
 blurs	416
 clink	416
 doers	416
@@ -5990,7 +6010,6 @@ morel	416
 oomph	416
 plebs	416
 quips	416
-ruble	416
 snarl	416
 taiga	416
 tulle	416
@@ -6017,6 +6036,7 @@ tomes	407
 toots	407
 washy	407
 wince	407
+spilt	406
 biter	398
 bloat	398
 bolus	398
@@ -6122,6 +6142,9 @@ tubal	363
 twang	363
 whorl	363
 wordy	363
+briar	362
+lupin	362
+greys	354
 arras	354
 bandy	354
 bendy	354
@@ -6156,6 +6179,7 @@ trios	346
 twerk	346
 usury	346
 veers	346
+grays	338
 betel	338
 borer	338
 chomp	338
@@ -6185,7 +6209,6 @@ creak	331
 datum	331
 exude	331
 feint	331
-furor	331
 illus	331
 prion	331
 profs	331
@@ -6406,7 +6429,6 @@ creel	245
 ducal	245
 echos	245
 maxis	245
-miter	245
 nobly	245
 nuked	245
 piste	245
@@ -6421,6 +6443,9 @@ umber	245
 umbra	245
 vagus	245
 wimps	245
+moldy	244
+ochre	244
+plows	244
 atria	239
 blips	239
 buxom	239
@@ -6440,6 +6465,7 @@ tinny	239
 wacko	239
 wikis	239
 xxvii	239
+enrol	234
 acrid	234
 auras	234
 beefs	234
@@ -6450,7 +6476,6 @@ dross	234
 dweeb	234
 gayer	234
 logon	234
-meows	234
 rummy	234
 shuck	234
 sooth	234
@@ -6466,7 +6491,6 @@ quine	229
 spurn	229
 tarps	229
 wrung	229
-brier	223
 burro	223
 comas	223
 gorse	223
@@ -6479,7 +6503,6 @@ scram	223
 sours	223
 tress	223
 wilts	223
-ardor	218
 canst	218
 copse	218
 galls	218
@@ -6496,10 +6519,10 @@ venal	218
 wanes	218
 weepy	218
 yodel	218
+mitre	213
 antic	213
 bated	213
 compo	213
-dryly	213
 hobos	213
 imago	213
 loris	213
@@ -6510,6 +6533,7 @@ snubs	213
 sulky	213
 tines	213
 yoked	213
+ruble	208
 barmy	208
 cluck	208
 dumpy	208
@@ -6569,6 +6593,7 @@ squib	194
 tapir	194
 udder	194
 waken	194
+burqa	190
 dusts	190
 finis	190
 fount	190
@@ -6607,7 +6632,6 @@ galas	181
 hones	181
 suppl	181
 upend	181
-dolor	177
 doyen	177
 flout	177
 fumed	177
@@ -6643,6 +6667,7 @@ pulpy	169
 ritzy	169
 rives	169
 tench	169
+furor	166
 anent	165
 bluer	165
 burrs	165
@@ -6691,6 +6716,7 @@ llano	158
 matzo	158
 pored	158
 sadhu	158
+whizz	154
 capon	154
 fiefs	154
 goofs	154
@@ -6718,6 +6744,7 @@ muffs	151
 regex	151
 surer	151
 vetch	151
+arses	148
 aerie	147
 dirks	147
 doted	147
@@ -6759,6 +6786,7 @@ pails	141
 plonk	141
 pupal	141
 sebum	141
+prise	140
 baser	138
 deary	138
 fatso	138
@@ -6801,7 +6829,6 @@ xxxiv	131
 yeahs	131
 bolas	128
 breve	128
-bused	128
 carob	128
 delis	128
 doily	128
@@ -6813,7 +6840,6 @@ torte	128
 tutus	128
 twerp	128
 withe	128
-czars	125
 doles	125
 dopes	125
 gores	125
@@ -6831,7 +6857,6 @@ spoor	125
 wroth	125
 aping	123
 aspic	123
-balks	123
 cedes	123
 ergot	123
 hypes	123
@@ -6845,6 +6870,7 @@ routs	123
 sines	123
 splay	123
 waked	123
+miter	122
 coyly	120
 durum	120
 effed	120
@@ -6860,6 +6886,8 @@ shims	120
 twixt	120
 warty	120
 yelps	120
+hanky	117
+meows	117
 befit	117
 cubit	117
 drams	117
@@ -6884,6 +6912,7 @@ sabot	114
 tromp	114
 tunas	114
 vales	114
+brier	112
 dyers	112
 hilts	112
 jades	112
@@ -6892,12 +6921,12 @@ pinko	112
 talky	112
 wined	112
 zloty	112
+ardor	109
 bairn	109
 bronc	109
 cavil	109
 daunt	109
 kluge	109
-ocher	109
 phyla	109
 pined	109
 retch	109
@@ -6914,6 +6943,7 @@ novae	107
 tepee	107
 villi	107
 wormy	107
+dryly	106
 acing	104
 banns	104
 carpi	104
@@ -6923,6 +6953,7 @@ lucre	104
 plops	104
 swats	104
 xxxix	104
+fayre	102
 biped	102
 braes	102
 flits	102
@@ -6971,7 +7002,6 @@ anons	95
 chads	95
 dater	95
 ewers	95
-fagot	95
 gulfs	95
 mimed	95
 sprat	95
@@ -7012,6 +7042,8 @@ maxes	89
 musts	89
 piton	89
 riper	89
+dolor	88
+moult	88
 argot	87
 clime	87
 eking	87
@@ -7028,6 +7060,7 @@ scums	87
 sizer	87
 snoot	87
 wolds	87
+aeons	86
 contd	85
 doges	85
 emirs	85
@@ -7047,6 +7080,7 @@ newsy	83
 souks	83
 treed	83
 wussy	83
+tsars	82
 arced	81
 caber	81
 caret	81
@@ -7160,6 +7194,7 @@ skoal	66
 trews	66
 unset	66
 wader	66
+bused	64
 byres	64
 cecum	64
 ditsy	64
@@ -7178,6 +7213,9 @@ ousts	63
 ricer	63
 schmo	63
 snood	63
+baulk	62
+czars	62
+balks	62
 apter	61
 baled	61
 brays	61
@@ -7217,6 +7255,8 @@ tokes	56
 toted	56
 treas	56
 vivas	56
+ocher	54
+matts	54
 bruit	54
 loafs	54
 beaus	53
@@ -7236,6 +7276,7 @@ snaky	52
 swigs	52
 treys	52
 umbel	52
+whirr	51
 bents	51
 boink	51
 cruet	51
@@ -7257,14 +7298,14 @@ frays	50
 gamin	50
 lamed	50
 leers	50
-moggy	50
-molts	50
 okays	50
 piker	50
 plods	50
 pommy	50
 scuds	50
 turfs	50
+kerbs	48
+fagot	48
 addle	48
 bonks	48
 cruft	48
@@ -7287,6 +7328,7 @@ nabob	47
 nacre	47
 parky	47
 stows	47
+drily	46
 cuing	46
 dozes	46
 eclat	46
@@ -7397,7 +7439,6 @@ bonce	36
 bulgy	36
 burgs	36
 firer	36
-gibes	36
 ranee	36
 slogs	36
 vaped	36
@@ -7411,6 +7452,7 @@ primp	35
 reify	35
 styli	35
 trued	35
+miaow	34
 hazes	34
 hypos	34
 osier	34
@@ -7475,7 +7517,6 @@ limed	28
 spics	28
 sysop	28
 tuque	28
-niter	28
 parch	28
 poncy	28
 shier	28
@@ -7510,6 +7551,8 @@ laves	26
 poohs	26
 razes	26
 roils	26
+moggy	25
+molts	25
 biers	25
 cadge	25
 piked	25
@@ -7535,11 +7578,13 @@ lolls	23
 muter	23
 sangs	23
 uncap	23
-whirs	23
+fogey	22
+mynah	22
 midis	22
 ceder	22
 prows	22
 stagy	22
+appal	21
 chyme	21
 clops	21
 jived	21
@@ -7572,6 +7617,7 @@ whelm	19
 abler	19
 vends	19
 viler	19
+gibes	18
 coifs	18
 iotas	18
 loges	18
@@ -7591,6 +7637,7 @@ snogs	17
 throe	17
 troys	17
 wodge	17
+nitre	16
 ayahs	16
 crays	16
 gnarl	16
@@ -7602,7 +7649,6 @@ bluet	16
 swots	16
 abbes	16
 busks	16
-calks	16
 cutup	16
 houri	16
 knurl	16
@@ -7614,7 +7660,6 @@ hakes	15
 haler	15
 pawls	15
 toked	15
-fayer	15
 giros	15
 pones	15
 avows	15
@@ -7623,6 +7668,7 @@ helve	15
 mooed	15
 whits	15
 wooer	15
+niter	14
 bahts	14
 dangs	14
 hokes	14
@@ -7647,9 +7693,9 @@ slews	13
 spays	13
 unfix	13
 yawls	13
+whirs	12
 admen	12
 imper	12
-slier	12
 unman	12
 coyer	12
 endue	12
@@ -7686,6 +7732,9 @@ hafts	10
 lazes	10
 yawed	10
 educe	10
+calks	8
+fayer	8
+slier	6
 people	1778279
 should	977237
 really	933254
@@ -7762,7 +7811,6 @@ period	162181
 record	162181
 common	158489
 likely	158489
-center	154881
 county	154881
 couple	154881
 happen	154881
@@ -7876,6 +7924,7 @@ doctor	79432
 notice	79432
 highly	77624
 winter	77624
+center	77440
 advice	75857
 broken	75857
 caused	75857
@@ -8029,6 +8078,7 @@ strike	45708
 studio	45708
 owners	44668
 twenty	44668
+centre	44562
 debate	43651
 escape	43651
 faster	43651
@@ -8181,7 +8231,6 @@ mirror	29512
 nights	29512
 belief	28840
 breaks	28840
-colors	28840
 courts	28840
 server	28840
 voters	28840
@@ -8262,6 +8311,7 @@ smooth	25118
 string	25118
 sudden	25118
 thrown	25118
+labour	25059
 abroad	24547
 bother	24547
 fallen	24547
@@ -8487,6 +8537,7 @@ slaves	15488
 themes	15488
 turner	15488
 wasted	15488
+colour	15451
 cancel	15135
 carpet	15135
 cherry	15135
@@ -8521,12 +8572,12 @@ planes	14454
 retain	14454
 saints	14454
 sheets	14454
+colors	14420
 blacks	14125
 cattle	14125
 farmer	14125
 finest	14125
 grants	14125
-harbor	14125
 inform	14125
 lovers	14125
 minded	14125
@@ -8637,6 +8688,7 @@ rebels	11748
 shorts	11748
 valued	11748
 wounds	11748
+honour	11721
 assure	11481
 bailey	11481
 ballot	11481
@@ -8677,7 +8729,6 @@ comply	10964
 creepy	10964
 donate	10964
 finale	10964
-flavor	10964
 floors	10964
 gloves	10964
 joking	10964
@@ -8727,7 +8778,6 @@ liquor	10232
 messed	10232
 nephew	10232
 prizes	10232
-rumors	10232
 salmon	10232
 seller	10232
 shifts	10232
@@ -8735,6 +8785,7 @@ timber	10232
 tweets	10232
 upside	10232
 wolves	10232
+favour	10208
 abused	10000
 banana	10000
 behave	10000
@@ -8933,7 +8984,6 @@ ghosts	7585
 gossip	7585
 header	7585
 lining	7585
-manila	7585
 metric	7585
 naming	7585
 opener	7585
@@ -8952,13 +9002,13 @@ hiking	7413
 marker	7413
 repeal	7413
 sodium	7413
+metres	7396
 breeze	7244
 browns	7244
 coupon	7244
 curves	7244
 fringe	7244
 greens	7244
-honors	7244
 legion	7244
 lethal	7244
 lively	7244
@@ -8984,6 +9034,7 @@ spiral	7079
 splash	7079
 timely	7079
 tomato	7079
+harbor	7062
 hating	6918
 heroic	6918
 knives	6918
@@ -9146,7 +9197,6 @@ drying	5495
 equals	5495
 erotic	5495
 falcon	5495
-favors	5495
 folder	5495
 groove	5495
 kisses	5495
@@ -9157,7 +9207,7 @@ ranged	5495
 supper	5495
 vanity	5495
 violin	5495
-analog	5370
+flavor	5482
 arcade	5370
 asthma	5370
 aurora	5370
@@ -9214,6 +9264,7 @@ slowed	5128
 tactic	5128
 upward	5128
 wildly	5128
+rumors	5116
 beasts	5011
 beware	5011
 bikini	5011
@@ -9288,7 +9339,6 @@ orgasm	4677
 parcel	4677
 prayed	4677
 reside	4677
-savior	4677
 scenic	4677
 thighs	4677
 tipped	4677
@@ -9331,7 +9381,6 @@ towels	4466
 births	4365
 cooled	4365
 corpus	4365
-fibers	4365
 kitten	4365
 lender	4365
 mutant	4365
@@ -9380,7 +9429,6 @@ sweets	4168
 termed	4168
 trolls	4168
 tucked	4168
-tumors	4168
 vastly	4168
 wisely	4168
 arises	4073
@@ -9469,11 +9517,11 @@ mosaic	3801
 optics	3801
 orphan	3801
 rotate	3801
+manila	3792
 adhere	3715
 alarms	3715
 bruins	3715
 crises	3715
-fueled	3715
 hassle	3715
 hector	3715
 invent	3715
@@ -9488,6 +9536,7 @@ sliced	3715
 stokes	3715
 summed	3715
 winger	3715
+learnt	3706
 alerts	3630
 barbie	3630
 batter	3630
@@ -9505,6 +9554,7 @@ sheila	3630
 sweaty	3630
 tanner	3630
 walnut	3630
+honors	3622
 ambush	3548
 awaits	3548
 blames	3548
@@ -9585,6 +9635,7 @@ usable	3388
 vulgar	3388
 waiver	3388
 wiring	3388
+humour	3380
 ashore	3311
 bonded	3311
 canopy	3311
@@ -9736,7 +9787,6 @@ arches	2818
 candid	2818
 donuts	2818
 dorsal	2818
-enroll	2818
 gadget	2818
 glitch	2818
 graded	2818
@@ -9756,6 +9806,7 @@ uneasy	2818
 unfold	2818
 vested	2818
 wagons	2818
+armour	2812
 aiding	2754
 canary	2754
 cardio	2754
@@ -9778,6 +9829,7 @@ tanker	2754
 villas	2754
 winged	2754
 wiping	2754
+favors	2748
 bearer	2691
 chubby	2691
 creamy	2691
@@ -9796,12 +9848,12 @@ rumble	2691
 saloon	2691
 slated	2691
 stride	2691
-sulfur	2691
 trough	2691
 trunks	2691
 unjust	2691
 walled	2691
 whoops	2691
+analog	2685
 ascent	2630
 ballad	2630
 banged	2630
@@ -9916,6 +9968,7 @@ skulls	2454
 spruce	2454
 utopia	2454
 vanish	2454
+flyers	2448
 abrupt	2398
 antics	2398
 barrow	2398
@@ -9969,6 +10022,7 @@ umpire	2344
 unborn	2344
 undone	2344
 wrench	2344
+savior	2338
 censor	2290
 clover	2290
 coyote	2290
@@ -9977,7 +10031,6 @@ fleece	2290
 fodder	2290
 fumble	2290
 herbal	2290
-hippie	2290
 incest	2290
 infect	2290
 lowers	2290
@@ -10031,18 +10084,17 @@ jammed	2187
 loaned	2187
 malice	2187
 myrtle	2187
-parlor	2187
 pebble	2187
 peeled	2187
 pizzas	2187
 pricey	2187
-prized	2187
 rector	2187
 rocker	2187
 sinful	2187
 sweeps	2187
 uncles	2187
 washer	2187
+fibers	2182
 afloat	2137
 airbus	2137
 bailed	2137
@@ -10071,6 +10123,7 @@ spoils	2137
 tilted	2137
 treble	2137
 weirdo	2137
+whisky	2132
 adored	2089
 amends	2089
 annoys	2089
@@ -10098,6 +10151,7 @@ towing	2089
 untold	2089
 upsets	2089
 wrongs	2089
+tumors	2084
 biopsy	2041
 briefs	2041
 chunky	2041
@@ -10124,6 +10178,7 @@ steaks	2041
 strung	2041
 tendon	2041
 uptown	2041
+storey	2036
 auntie	1995
 blinds	1995
 bribes	1995
@@ -10236,6 +10291,7 @@ thinly	1862
 tinted	1862
 unison	1862
 uplift	1862
+fueled	1858
 adopts	1819
 apathy	1819
 basins	1819
@@ -10274,6 +10330,7 @@ veggie	1819
 veiled	1819
 welded	1819
 wiggle	1819
+amidst	1815
 attest	1778
 avenge	1778
 bikers	1778
@@ -10299,6 +10356,7 @@ tracts	1778
 troupe	1778
 widest	1778
 yachts	1778
+fulfil	1774
 apiece	1737
 arched	1737
 ascend	1737
@@ -10333,7 +10391,6 @@ dreamy	1698
 franks	1698
 gunmen	1698
 messes	1698
-molded	1698
 nebula	1698
 pantry	1698
 pedals	1698
@@ -10348,7 +10405,6 @@ spiked	1698
 staffs	1698
 stiles	1698
 worded	1698
-armory	1659
 chases	1659
 choral	1659
 creams	1659
@@ -10440,7 +10496,6 @@ gaping	1548
 gentry	1548
 hounds	1548
 iodine	1548
-liters	1548
 nuclei	1548
 ornate	1548
 ousted	1548
@@ -10458,6 +10513,7 @@ touted	1548
 tracer	1548
 watery	1548
 weasel	1548
+cheque	1545
 allege	1513
 bagged	1513
 basque	1513
@@ -10478,7 +10534,6 @@ sitter	1513
 soothe	1513
 swears	1513
 tripod	1513
-anemia	1479
 bakers	1479
 barons	1479
 beggar	1479
@@ -10550,6 +10605,7 @@ tweaks	1412
 unites	1412
 willed	1412
 zenith	1412
+enroll	1409
 abuser	1380
 arming	1380
 cantor	1380
@@ -10572,6 +10628,7 @@ thrice	1380
 touchy	1380
 unwell	1380
 vacate	1380
+ageing	1377
 astral	1348
 astray	1348
 banded	1348
@@ -10590,6 +10647,7 @@ sonata	1348
 sugary	1348
 tanned	1348
 veneer	1348
+sulfur	1346
 armada	1318
 atrium	1318
 breezy	1318
@@ -10706,6 +10764,7 @@ unwind	1230
 unwise	1230
 vaping	1230
 wrecks	1230
+tumour	1227
 ailing	1202
 amazes	1202
 bitchy	1202
@@ -10740,6 +10799,7 @@ tundra	1202
 unruly	1202
 vegans	1202
 wearer	1202
+rumour	1199
 aortic	1174
 banish	1174
 cloned	1174
@@ -10806,6 +10866,7 @@ thwart	1148
 ticked	1148
 waging	1148
 worsen	1148
+hippie	1145
 albino	1122
 azalea	1122
 barter	1122
@@ -10817,10 +10878,8 @@ deluge	1122
 desist	1122
 doable	1122
 errand	1122
-fervor	1122
 fifths	1122
 globes	1122
-meager	1122
 minion	1122
 niches	1122
 ninjas	1122
@@ -10828,7 +10887,6 @@ punter	1122
 shards	1122
 shiver	1122
 sinned	1122
-somber	1122
 stools	1122
 suffix	1122
 surges	1122
@@ -10853,7 +10911,6 @@ obtuse	1096
 ported	1096
 promos	1096
 rammed	1096
-rubles	1096
 shoddy	1096
 sleazy	1096
 sneaks	1096
@@ -10861,6 +10918,8 @@ spares	1096
 tarmac	1096
 unpack	1096
 vetoed	1096
+parlor	1094
+prized	1094
 assent	1071
 bagels	1071
 bigots	1071
@@ -10893,6 +10952,7 @@ ticker	1071
 trusty	1071
 wobbly	1071
 wraith	1071
+dreamt	1068
 airmen	1047
 banger	1047
 basalt	1047
@@ -10934,7 +10994,6 @@ canoes	1023
 cervix	1023
 cheery	1023
 crusty	1023
-dialed	1023
 ducked	1023
 enmity	1023
 eyelid	1023
@@ -10976,7 +11035,6 @@ minced	1000
 mishap	1000
 reread	1000
 rogues	1000
-savory	1000
 shalom	1000
 sowing	1000
 sphinx	1000
@@ -10993,7 +11051,6 @@ bogged	977
 bronco	977
 detach	977
 fleshy	977
-fliers	977
 graced	977
 hadith	977
 looser	977
@@ -11014,6 +11071,7 @@ sultry	977
 swivel	977
 toying	977
 unkind	977
+chilli	974
 bestow	954
 bustle	954
 collie	954
@@ -11083,9 +11141,7 @@ fennel	912
 firsts	912
 forked	912
 jester	912
-luster	912
 mousse	912
-naught	912
 outrun	912
 prawns	912
 quirks	912
@@ -11195,7 +11251,6 @@ milieu	851
 nachos	851
 oblong	851
 patchy	851
-plowed	851
 pusher	851
 resell	851
 rusted	851
@@ -11207,6 +11262,7 @@ trifle	851
 venous	851
 wedded	851
 whiter	851
+molded	849
 adores	831
 ashram	831
 chatty	831
@@ -11239,6 +11295,8 @@ siphon	831
 taming	831
 truest	831
 vassal	831
+armory	830
+litres	830
 accrue	812
 acumen	812
 allele	812
@@ -11341,6 +11399,8 @@ tampon	776
 toffee	776
 triage	776
 undies	776
+fibres	774
+liters	774
 adapts	758
 airbag	758
 airman	758
@@ -11407,6 +11467,8 @@ tirade	741
 vistas	741
 winded	741
 wisest	741
+anemia	740
+sabres	740
 clawed	724
 coerce	724
 dahlia	724
@@ -11485,6 +11547,7 @@ teases	691
 turnip	691
 widens	691
 zebras	691
+louvre	690
 bygone	676
 capers	676
 cedars	676
@@ -11549,12 +11612,10 @@ effigy	645
 girdle	645
 hookah	645
 jumble	645
-labors	645
 maimed	645
 nudist	645
 nymphs	645
 orgies	645
-pajama	645
 panics	645
 potash	645
 salter	645
@@ -11570,7 +11631,6 @@ beaker	630
 belted	630
 bereft	630
 bobcat	630
-candor	630
 carats	630
 chaste	630
 dermal	630
@@ -11599,6 +11659,7 @@ thrall	630
 throng	630
 verily	630
 wallow	630
+spoilt	629
 aureus	616
 bantam	616
 barked	616
@@ -11637,6 +11698,7 @@ uncool	616
 uptick	616
 urchin	616
 vandal	616
+plough	615
 afresh	602
 baited	602
 blazes	602
@@ -11705,11 +11767,9 @@ rowers	588
 shifty	588
 soured	588
 talons	588
-vapors	588
 wasabi	588
 whammy	588
 whines	588
-anemic	575
 boomed	575
 discus	575
 dryers	575
@@ -11766,6 +11826,9 @@ wafers	562
 whoosh	562
 wooing	562
 zipped	562
+fervor	561
+meager	561
+somber	561
 abduct	549
 batten	549
 bodega	549
@@ -11785,6 +11848,7 @@ lattes	549
 mussel	549
 quarks	549
 toting	549
+rubles	548
 aprons	537
 baboon	537
 balled	537
@@ -11812,6 +11876,7 @@ veered	537
 vestry	537
 weevil	537
 wintry	537
+vapour	524
 acetyl	524
 awoken	524
 baffle	524
@@ -11846,6 +11911,7 @@ toasty	524
 voided	524
 wagers	524
 zeroes	524
+dialed	512
 barium	512
 befall	512
 behead	512
@@ -11905,7 +11971,7 @@ triads	501
 tufted	501
 tumult	501
 ushers	501
-woolen	501
+savory	500
 bedlam	489
 beluga	489
 buries	489
@@ -11926,6 +11992,7 @@ tinned	489
 unsaid	489
 uppers	489
 woeful	489
+fliers	488
 bookie	478
 catnip	478
 chalky	478
@@ -11975,6 +12042,7 @@ strove	467
 ultras	467
 usages	467
 wheres	467
+lustre	466
 avowed	457
 coolly	457
 dodges	457
@@ -12003,6 +12071,8 @@ tenses	457
 toasts	457
 tubers	457
 twinks	457
+luster	456
+naught	456
 abacus	446
 acetic	446
 amoral	446
@@ -12076,6 +12146,7 @@ torrid	436
 tugged	436
 whorls	436
 winder	436
+plowed	426
 aphids	426
 aromas	426
 braved	426
@@ -12097,7 +12168,6 @@ keener	426
 morphs	426
 mutate	426
 nimrod	426
-omelet	426
 paella	426
 parser	426
 phenom	426
@@ -12124,7 +12194,6 @@ broach	416
 butane	416
 chippy	416
 chives	416
-clamor	416
 coking	416
 crusts	416
 dollop	416
@@ -12181,6 +12250,7 @@ titian	407
 toiled	407
 untidy	407
 vitals	407
+valour	406
 amines	398
 begets	398
 brutes	398
@@ -12324,8 +12394,8 @@ sifted	371
 sniffs	371
 solute	371
 tasers	371
-tidbit	371
 ultimo	371
+vigour	370
 addled	363
 belfry	363
 bicker	363
@@ -12347,6 +12417,7 @@ seeped	363
 sequin	363
 unwrap	363
 vernal	363
+meagre	362
 abides	354
 adverb	354
 berets	354
@@ -12364,7 +12435,6 @@ looker	354
 malady	354
 minima	354
 peyote	354
-rigors	354
 shames	354
 smithy	354
 snooty	354
@@ -12373,6 +12443,7 @@ tedium	354
 tittle	354
 vellum	354
 votive	354
+sombre	346
 ballsy	346
 befell	346
 blanch	346
@@ -12401,12 +12472,11 @@ rhymed	346
 roping	346
 snugly	346
 spurts	346
+moulds	338
 ataxia	338
-balked	338
 beefed	338
 biotin	338
 blunts	338
-busing	338
 caries	338
 costed	338
 defame	338
@@ -12493,7 +12563,6 @@ neocon	323
 niacin	323
 pitied	323
 pumice	323
-rancor	323
 rehash	323
 retook	323
 snorts	323
@@ -12503,6 +12572,8 @@ vetoes	323
 weaved	323
 wining	323
 zealot	323
+labors	322
+pajama	322
 abbess	316
 accede	316
 adagio	316
@@ -12536,6 +12607,7 @@ sashes	316
 storks	316
 techie	316
 yeasts	316
+candor	315
 aviary	309
 baddie	309
 bolero	309
@@ -12564,6 +12636,7 @@ utters	309
 vomits	309
 wiggly	309
 zeroed	309
+savour	301
 anoint	301
 blithe	301
 coitus	301
@@ -12620,13 +12693,15 @@ swoosh	295
 tonics	295
 vestal	295
 waists	295
+vapors	294
+wilful	294
+anemic	288
 adorns	288
 aflame	288
 audios	288
 avidly	288
 bulges	288
 callow	288
-cesium	288
 copter	288
 crabby	288
 crocus	288
@@ -12808,6 +12883,7 @@ vigils	257
 weeded	257
 whiten	257
 yippee	257
+faeces	256
 ageism	251
 aliyah	251
 anions	251
@@ -12850,6 +12926,7 @@ wedgie	251
 wheeze	251
 yuppie	251
 zinger	251
+woolen	250
 beckon	245
 belied	245
 bigamy	245
@@ -12877,7 +12954,6 @@ perked	245
 prance	245
 purser	245
 pylori	245
-sabers	245
 shelve	245
 shrike	245
 smugly	245
@@ -12885,6 +12961,7 @@ tidied	245
 tipple	245
 upwind	245
 warily	245
+phoney	244
 bobbed	239
 bonobo	239
 boughs	239
@@ -12911,6 +12988,7 @@ quanta	239
 shandy	239
 visors	239
 winced	239
+rigour	234
 brassy	234
 cussed	234
 drench	234
@@ -13031,6 +13109,7 @@ steins	218
 tattle	218
 turgid	218
 warder	218
+omelet	213
 atolls	213
 bosoms	213
 bossed	213
@@ -13057,6 +13136,7 @@ unclog	213
 unwary	213
 veined	213
 waster	213
+clamor	208
 bongos	208
 coddle	208
 deface	208
@@ -13186,6 +13266,7 @@ suntan	190
 swirly	190
 wigwam	190
 wreaks	190
+tidbit	186
 abbeys	186
 adepts	186
 alibis	186
@@ -13240,6 +13321,7 @@ tsetse	181
 unroll	181
 valets	181
 wavers	181
+rigors	177
 bugler	177
 drover	177
 firmed	177
@@ -13286,6 +13368,8 @@ torsos	173
 tuples	173
 warded	173
 writhe	173
+balked	169
+busing	169
 afters	169
 baobab	169
 beeped	169
@@ -13316,7 +13400,6 @@ bleary	165
 blowup	165
 bugles	165
 creche	165
-dentin	165
 dicing	165
 embeds	165
 flukes	165
@@ -13336,6 +13419,8 @@ svelte	165
 tilled	165
 toupee	165
 windup	165
+nought	162
+rancor	162
 ampere	162
 aright	162
 balder	162
@@ -13364,7 +13449,6 @@ theist	162
 unzips	162
 wafted	162
 wisher	162
-armors	158
 banjos	158
 benzyl	158
 decant	158
@@ -13388,6 +13472,7 @@ scrums	158
 thresh	158
 townie	158
 unhook	158
+odours	154
 anodes	154
 badder	154
 baling	154
@@ -13435,14 +13520,12 @@ stably	151
 adware	147
 bedbug	147
 biters	147
-briers	147
 budged	147
 burghs	147
 cellos	147
 cerium	147
 eyelet	147
 gorged	147
-humors	147
 knifes	147
 lazing	147
 lurker	147
@@ -13454,6 +13537,7 @@ slaved	147
 whiner	147
 withal	147
 woofer	147
+cesium	144
 blonds	144
 carafe	144
 cloaca	144
@@ -13494,7 +13578,6 @@ seamed	141
 sinews	141
 sneers	141
 sperms	141
-succor	141
 totter	141
 twirls	141
 woodsy	141
@@ -13526,11 +13609,11 @@ teabag	138
 upmost	138
 virago	138
 wheezy	138
+mouldy	134
 argosy	134
 bairns	134
 blurbs	134
 chalks	134
-drafty	134
 faxing	134
 freest	134
 gleams	134
@@ -13646,46 +13729,12 @@ sniped	123
 taints	123
 tinier	123
 wagged	123
+sabers	122
+instil	120
 adders	120
 akimbo	120
 ambled	120
 atonal	120
-basked	120
-cerise	120
-chasms	120
-covets	120
-foaled	120
-hatted	120
-hotpot	120
-jetsam	120
-klaxon	120
-raffia	120
-reword	120
-ribald	120
-rioter	120
-sieves	120
-snoops	120
-stater	120
-warble	120
-aborts	117
-ageist	117
-blurts	117
-brinks	117
-earwig	117
-fajita	117
-farces	117
-gusset	117
-hooter	117
-logjam	117
-mafias	117
-sashay	117
-segues	117
-sickos	117
-sinewy	117
-strafe	117
-tarsal	117
-tubule	117
-tweeds	117
 because	1071519
 through	741310
 between	588843
@@ -13829,7 +13878,6 @@ growing	87096
 opening	87096
 opinion	87096
 biggest	85113
-defense	85113
 reasons	85113
 weekend	85113
 awesome	83176
@@ -13893,7 +13941,6 @@ stopped	69183
 becomes	67608
 covered	67608
 digital	67608
-realize	67608
 surface	67608
 totally	67608
 twitter	67608
@@ -14022,6 +14069,7 @@ stadium	42657
 surgery	42657
 trading	42657
 worried	42657
+defense	42556
 charged	41686
 kingdom	41686
 moments	41686
@@ -14093,6 +14141,7 @@ regions	33884
 respond	33884
 somehow	33884
 unknown	33884
+realize	33804
 battery	33113
 conduct	33113
 destroy	33113
@@ -14194,7 +14243,6 @@ winners	26915
 alright	26302
 android	26302
 capture	26302
-centers	26302
 diamond	26302
 dressed	26302
 hunting	26302
@@ -14261,9 +14309,7 @@ painted	22387
 pulling	22387
 removal	22387
 stretch	22387
-theater	22387
 absence	21877
-asshole	21877
 cameras	21877
 couples	21877
 genetic	21877
@@ -14334,7 +14380,6 @@ borders	18197
 breathe	18197
 coaches	18197
 mounted	18197
-offense	18197
 peoples	18197
 segment	18197
 venture	18197
@@ -14392,6 +14437,7 @@ shorter	16595
 tension	16595
 useless	16595
 viewers	16595
+theatre	16556
 closest	16218
 creator	16218
 farming	16218
@@ -14404,6 +14450,7 @@ phoenix	16218
 slavery	16218
 veteran	16218
 wealthy	16218
+defence	16180
 attract	15848
 blowing	15848
 chronic	15848
@@ -14420,7 +14467,6 @@ volumes	15848
 anytime	15488
 bottles	15488
 coastal	15488
-colored	15488
 customs	15488
 destiny	15488
 distant	15488
@@ -14517,12 +14563,12 @@ surgeon	13489
 washing	13489
 chasing	13182
 cookies	13182
-jewelry	13182
 prayers	13182
 pressed	13182
 pursuit	13182
 sounded	13182
 streams	13182
+centers	13151
 arrives	12882
 artwork	12882
 athlete	12882
@@ -14547,7 +14593,6 @@ cycling	12589
 dragons	12589
 fitting	12589
 hardest	12589
-honored	12589
 loading	12589
 publish	12589
 rewards	12589
@@ -14625,6 +14670,7 @@ symbols	11220
 travels	11220
 warfare	11220
 warming	11220
+theater	11194
 airline	10964
 anyways	10964
 counted	10964
@@ -14641,6 +14687,7 @@ sponsor	10964
 strings	10964
 thermal	10964
 yelling	10964
+asshole	10938
 analyst	10715
 assists	10715
 cowboys	10715
@@ -14678,7 +14725,6 @@ starter	10471
 utterly	10471
 voltage	10471
 workout	10471
-advisor	10232
 broader	10232
 dealers	10232
 desires	10232
@@ -14690,6 +14736,7 @@ priests	10232
 relaxed	10232
 visitor	10232
 vitamin	10232
+amongst	10208
 admiral	10000
 arrange	10000
 betting	10000
@@ -14766,6 +14813,8 @@ scholar	9120
 stuffed	9120
 suburbs	9120
 triumph	9120
+offense	9098
+realise	9098
 annoyed	8912
 bargain	8912
 cousins	8912
@@ -14820,10 +14869,8 @@ marines	8317
 outline	8317
 quicker	8317
 receipt	8317
-catalog	8128
 drafted	8128
 killers	8128
-labeled	8128
 pioneer	8128
 smarter	8128
 tablets	8128
@@ -14865,6 +14912,7 @@ resting	7762
 sharply	7762
 showers	7762
 touring	7762
+colored	7744
 accepts	7585
 blaming	7585
 coconut	7585
@@ -14908,7 +14956,6 @@ dentist	7244
 dodgers	7244
 fatigue	7244
 fragile	7244
-fulfill	7244
 granite	7244
 lowered	7244
 manning	7244
@@ -14935,7 +14982,7 @@ lengthy	7079
 obscure	7079
 threads	7079
 uranium	7079
-analyze	6918
+colours	7062
 batting	6918
 bitches	6918
 bracket	6918
@@ -14999,6 +15046,7 @@ sunrise	6606
 timothy	6606
 tornado	6606
 tunnels	6606
+jewelry	6591
 bidding	6456
 boycott	6456
 buddies	6456
@@ -15035,6 +15083,8 @@ rivalry	6309
 royalty	6309
 sausage	6309
 thrones	6309
+centres	6294
+honored	6294
 bombers	6165
 bonuses	6165
 bubbles	6165
@@ -15068,14 +15118,12 @@ sweater	6025
 tractor	6025
 variant	6025
 wherein	6025
-whiskey	6025
 algebra	5888
 antenna	5888
 bankers	5888
 conquer	5888
 deepest	5888
 defects	5888
-favored	5888
 handing	5888
 insider	5888
 literal	5888
@@ -15129,7 +15177,6 @@ strokes	5623
 summers	5623
 textile	5623
 upwards	5623
-utilize	5623
 violate	5623
 arrests	5495
 baggage	5495
@@ -15203,6 +15250,7 @@ texting	5128
 theorem	5128
 tribune	5128
 winding	5128
+advisor	5116
 appoint	5011
 bananas	5011
 capsule	5011
@@ -15259,6 +15307,7 @@ stunned	4786
 suspend	4786
 trustee	4786
 turnout	4786
+harbour	4774
 brokers	4677
 chaotic	4677
 confuse	4677
@@ -15279,6 +15328,7 @@ rituals	4677
 slapped	4677
 toilets	4677
 vibrant	4677
+licence	4666
 brewery	4570
 daytime	4570
 differs	4570
@@ -15294,8 +15344,8 @@ punches	4570
 skipped	4570
 tougher	4570
 trivial	4570
+offence	4560
 buzzing	4466
-caliber	4466
 crafted	4466
 crowned	4466
 flipped	4466
@@ -15361,7 +15411,6 @@ winters	4265
 abusing	4168
 ambient	4168
 aquatic	4168
-armored	4168
 atheist	4168
 bipolar	4168
 bladder	4168
@@ -15392,7 +15441,6 @@ disgust	4073
 emerges	4073
 factual	4073
 falsely	4073
-flavors	4073
 freeway	4073
 freshly	4073
 gazette	4073
@@ -15404,7 +15452,8 @@ pudding	4073
 sibling	4073
 sorting	4073
 witches	4073
-adapter	3981
+catalog	4064
+labeled	4064
 allergy	3981
 banners	3981
 bourbon	3981
@@ -15527,6 +15576,7 @@ thinner	3630
 tipping	3630
 topping	3630
 tracing	3630
+fulfill	3622
 baptism	3548
 bothers	3548
 cabbage	3548
@@ -15582,6 +15632,7 @@ swiftly	3467
 unicorn	3467
 weaving	3467
 welding	3467
+analyze	3459
 asphalt	3388
 booklet	3388
 bottoms	3388
@@ -15678,7 +15729,6 @@ growers	3162
 handler	3162
 jackpot	3162
 longing	3162
-modeled	3162
 nuggets	3162
 overdue	3162
 payable	3162
@@ -15749,6 +15799,7 @@ uncover	3019
 upfront	3019
 virtues	3019
 wrestle	3019
+whiskey	3012
 anomaly	2951
 benches	2951
 blinded	2951
@@ -15777,6 +15828,7 @@ trimmed	2951
 vaguely	2951
 veggies	2951
 voucher	2951
+favored	2944
 apostle	2884
 applaud	2884
 bondage	2884
@@ -15839,6 +15891,7 @@ stature	2818
 steward	2818
 tongues	2818
 topical	2818
+utilize	2812
 barring	2754
 busting	2754
 cannons	2754
@@ -15894,6 +15947,7 @@ sterile	2691
 torrent	2691
 trainee	2691
 tripped	2691
+flavour	2685
 accuses	2630
 acrylic	2630
 bigotry	2630
@@ -15987,7 +16041,6 @@ preface	2454
 reddish	2454
 reprint	2454
 rulings	2454
-rumored	2454
 scatter	2454
 settles	2454
 squared	2454
@@ -16050,7 +16103,6 @@ reunite	2344
 roadway	2344
 setback	2344
 shaming	2344
-sizable	2344
 spartan	2344
 stalled	2344
 straits	2344
@@ -16059,7 +16111,6 @@ surpass	2344
 swapped	2344
 tagging	2344
 throats	2344
-totaled	2344
 unheard	2344
 vending	2344
 wallets	2344
@@ -16089,6 +16140,7 @@ suction	2290
 topless	2290
 torment	2290
 wheeled	2290
+rumours	2285
 annuity	2238
 aroused	2238
 bedside	2238
@@ -16124,6 +16176,8 @@ tackled	2238
 takeoff	2238
 taxable	2238
 widened	2238
+caliber	2233
+honours	2233
 amnesia	2187
 angrily	2187
 aspirin	2187
@@ -16207,6 +16261,7 @@ scumbag	2089
 seizing	2089
 sweeter	2089
 wingers	2089
+armored	2084
 bastion	2041
 bolster	2041
 canning	2041
@@ -16233,7 +16288,6 @@ midterm	2041
 midtown	2041
 nurture	2041
 paisley	2041
-pajamas	2041
 perjury	2041
 plotted	2041
 quarrel	2041
@@ -16249,6 +16303,8 @@ uniting	2041
 urinary	2041
 valiant	2041
 weekday	2041
+flavors	2036
+onwards	2036
 adjunct	1995
 broaden	1995
 burdens	1995
@@ -16277,6 +16333,7 @@ sipping	1995
 stormed	1995
 unequal	1995
 vacated	1995
+adapter	1990
 acclaim	1949
 angered	1949
 archers	1949
@@ -16337,7 +16394,6 @@ gunners	1905
 indexed	1905
 lawless	1905
 legions	1905
-leveled	1905
 marries	1905
 mayoral	1905
 puzzled	1905
@@ -16592,6 +16648,8 @@ slumber	1584
 sockets	1584
 staunch	1584
 warmest	1584
+centred	1581
+modeled	1581
 admirer	1548
 aerobic	1548
 augment	1548
@@ -16607,7 +16665,6 @@ gimmick	1548
 liturgy	1548
 marbles	1548
 milking	1548
-molding	1548
 mortals	1548
 nodding	1548
 orgasms	1548
@@ -16618,7 +16675,6 @@ riddled	1548
 scourge	1548
 shopper	1548
 signage	1548
-sulfate	1548
 tangent	1548
 unravel	1548
 zoology	1548
@@ -16675,6 +16731,7 @@ sayings	1479
 seduced	1479
 timbers	1479
 twinkle	1479
+analyse	1476
 amplify	1445
 bailout	1445
 ballads	1445
@@ -16716,7 +16773,6 @@ crushes	1412
 deluded	1412
 drizzle	1412
 exalted	1412
-fueling	1412
 gambler	1412
 governs	1412
 hailing	1412
@@ -16836,7 +16892,6 @@ hangout	1318
 headers	1318
 hickory	1318
 insides	1318
-lasagna	1318
 leaflet	1318
 mediums	1318
 minding	1318
@@ -16875,6 +16930,7 @@ spanned	1288
 vetting	1288
 wailing	1288
 wishful	1288
+enquiry	1285
 batters	1258
 bonkers	1258
 callers	1258
@@ -16941,6 +16997,7 @@ tripled	1230
 unveils	1230
 wayward	1230
 wronged	1230
+rumored	1227
 airflow	1202
 blaster	1202
 braided	1202
@@ -16968,7 +17025,6 @@ shelled	1202
 skillet	1202
 slipper	1202
 sloping	1202
-specter	1202
 steeped	1202
 swaying	1202
 toolkit	1202
@@ -16978,7 +17034,6 @@ valuing	1202
 vaulted	1202
 viceroy	1202
 whiting	1202
-willful	1202
 abstain	1174
 averted	1174
 bellows	1174
@@ -17012,6 +17067,8 @@ squeaky	1174
 tenancy	1174
 tiniest	1174
 ushered	1174
+sizable	1172
+totaled	1172
 almanac	1148
 beavers	1148
 clipper	1148
@@ -17019,7 +17076,6 @@ closets	1148
 clouded	1148
 curving	1148
 deviate	1148
-dialing	1148
 donkeys	1148
 dribble	1148
 earbuds	1148
@@ -17165,6 +17221,7 @@ walnuts	1071
 warhead	1071
 watcher	1071
 widower	1071
+saviour	1068
 barista	1047
 belated	1047
 buffers	1047
@@ -17192,6 +17249,7 @@ submits	1047
 tenuous	1047
 uterine	1047
 weirder	1047
+favours	1044
 angling	1023
 baiting	1023
 berserk	1023
@@ -17235,6 +17293,7 @@ thrived	1023
 tickled	1023
 tumbled	1023
 ukulele	1023
+pajamas	1020
 austere	1000
 bagging	1000
 bailiff	1000
@@ -17249,9 +17308,7 @@ combing	1000
 encased	1000
 gelatin	1000
 handout	1000
-harbors	1000
 heretic	1000
-instill	1000
 kingpin	1000
 lentils	1000
 leprosy	1000
@@ -17337,6 +17394,7 @@ tyrants	954
 ugliest	954
 victors	954
 withers	954
+leveled	952
 anglers	933
 atrophy	933
 aviator	933
@@ -17348,7 +17406,6 @@ fractal	933
 fumbled	933
 gifting	933
 intents	933
-labored	933
 natures	933
 niggers	933
 openers	933
@@ -17384,7 +17441,6 @@ hamlets	912
 hedging	912
 impasse	912
 jockeys	912
-likable	912
 limping	912
 lineups	912
 misread	912
@@ -17474,6 +17530,7 @@ typhoid	870
 viscous	870
 vitally	870
 workday	870
+spectre	868
 bragged	851
 bribing	851
 denials	851
@@ -17540,7 +17597,6 @@ slasher	831
 snagged	831
 stifled	831
 stinger	831
-sulfide	831
 tableau	831
 toppled	831
 trotter	831
@@ -17594,6 +17650,7 @@ ungodly	812
 vaginas	812
 yellows	812
 zooming	812
+calibre	810
 aquifer	794
 blowers	794
 borrows	794
@@ -17647,7 +17704,6 @@ giggled	776
 hovered	776
 inwards	776
 jacking	776
-laborer	776
 lefties	776
 paddles	776
 pennant	776
@@ -17658,11 +17714,12 @@ retards	776
 saddles	776
 sawmill	776
 scribes	776
-skeptic	776
 sweeper	776
 torched	776
 venison	776
 veranda	776
+molding	774
+sulfate	774
 airship	758
 attuned	758
 baffles	758
@@ -17692,7 +17749,6 @@ oppress	758
 parched	758
 pecking	758
 pertain	758
-plowing	758
 primacy	758
 reagent	758
 reckons	758
@@ -17710,6 +17766,7 @@ tugging	758
 uptight	758
 vomited	758
 wreaths	758
+sulphur	756
 airlift	741
 amyloid	741
 armpits	741
@@ -17842,6 +17899,7 @@ tumbler	707
 unbound	707
 urethra	707
 weighty	707
+fueling	706
 aliases	691
 amiable	691
 artiste	691
@@ -17851,7 +17909,6 @@ chipper	691
 dailies	691
 decayed	691
 decoder	691
-dueling	691
 earthen	691
 eyelash	691
 flirted	691
@@ -17882,6 +17939,7 @@ stencil	691
 twofold	691
 upstart	691
 weeding	691
+parlour	690
 absolve	676
 agonist	676
 aground	676
@@ -17963,6 +18021,7 @@ subtext	660
 thrusts	660
 upholds	660
 winking	660
+lasagna	659
 abscess	645
 ascetic	645
 aspires	645
@@ -17984,7 +18043,6 @@ godless	645
 helical	645
 igneous	645
 intrude	645
-jeweler	645
 latched	645
 liqueur	645
 locusts	645
@@ -18024,7 +18082,6 @@ heralds	630
 hunched	630
 legible	630
 lingual	630
-livable	630
 messier	630
 oregano	630
 outdone	630
@@ -18042,6 +18099,8 @@ terrify	630
 tryouts	630
 vocally	630
 widgets	630
+cheques	629
+tumours	629
 acetone	616
 barrack	616
 caveats	616
@@ -18106,6 +18165,9 @@ trimmer	602
 usurped	602
 webcams	602
 yardage	602
+draught	601
+specter	601
+willful	601
 arcades	588
 barrows	588
 cockney	588
@@ -18194,6 +18256,7 @@ tidings	575
 vagrant	575
 walkout	575
 woodman	575
+dialing	574
 amenity	562
 angrier	562
 ascribe	562
@@ -18240,6 +18303,7 @@ sunroof	562
 untamed	562
 weaning	562
 webbing	562
+fuelled	561
 amazons	549
 baddies	549
 beseech	549
@@ -18299,7 +18363,6 @@ purring	537
 retweet	537
 rigidly	537
 riskier	537
-scepter	537
 sharpie	537
 sitters	537
 sported	537
@@ -18426,12 +18489,14 @@ regalia	501
 retrial	501
 royally	501
 sinning	501
-tidbits	501
 trinket	501
 triplet	501
 trusses	501
 verdant	501
 whopper	501
+harbors	500
+instill	500
+moulded	500
 ageless	489
 apropos	489
 beeping	489
@@ -18453,7 +18518,6 @@ ketones	489
 meander	489
 moraine	489
 oxidase	489
-parlors	489
 payoffs	489
 punting	489
 quibble	489
@@ -18482,7 +18546,6 @@ wheelie	489
 wiretap	489
 ascends	478
 baboons	478
-baptize	478
 brained	478
 caching	478
 churned	478
@@ -18518,7 +18581,6 @@ rickety	478
 ricotta	478
 saddens	478
 saucers	478
-saviors	478
 shorted	478
 sneezed	478
 snorkel	478
@@ -18564,6 +18626,7 @@ wavered	467
 wiggles	467
 worsens	467
 yeshiva	467
+labored	466
 abalone	457
 affable	457
 bismuth	457
@@ -18577,7 +18640,6 @@ cliques	457
 copping	457
 coronal	457
 curable	457
-equaled	457
 ghosted	457
 goalies	457
 godhead	457
@@ -18611,6 +18673,9 @@ tolling	457
 tritium	457
 upswing	457
 wankers	457
+likable	456
+pyjamas	456
+utilise	456
 aimless	446
 barbell	446
 broiler	446
@@ -18700,7 +18765,6 @@ upriver	436
 wallaby	436
 aerials	426
 airlock	426
-analogs	426
 assuage	426
 ballets	426
 bazooka	426
@@ -18746,6 +18810,7 @@ unaided	426
 wastage	426
 whalers	426
 zillion	426
+sulfide	416
 astride	416
 blurted	416
 calcite	416
@@ -18758,9 +18823,7 @@ diesels	416
 dimming	416
 drapery	416
 glossed	416
-grayish	416
 hashish	416
-ionized	416
 jawline	416
 mitosis	416
 redrawn	416
@@ -18790,7 +18853,6 @@ kidnaps	407
 latches	407
 obverse	407
 paucity	407
-peddler	407
 pelagic	407
 phonics	407
 pulleys	407
@@ -18804,6 +18866,8 @@ wearers	407
 welders	407
 wetness	407
 wrecker	407
+enquire	406
+skilful	406
 actives	398
 adverbs	398
 amulets	398
@@ -18887,6 +18951,8 @@ usurper	389
 wanking	389
 whoring	389
 wriggle	389
+laborer	388
+skeptic	388
 acceded	380
 adopter	380
 airshow	380
@@ -18929,6 +18995,7 @@ sulking	380
 tatters	380
 yanking	380
 yearned	380
+plowing	379
 arrayed	371
 bolting	371
 bookish	371
@@ -18975,6 +19042,7 @@ tassels	371
 twitchy	371
 volleys	371
 zippers	371
+storeys	370
 abetted	363
 airdrop	363
 anemone	363
@@ -19046,7 +19114,6 @@ midsize	354
 necktie	354
 nonzero	354
 paddled	354
-paneled	354
 ravines	354
 repulse	354
 riptide	354
@@ -19055,6 +19122,7 @@ sunspot	354
 swathes	354
 topsoil	354
 veering	354
+dueling	346
 attests	346
 bashful	346
 blunted	346
@@ -19083,7 +19151,6 @@ innards	346
 jailing	346
 languid	346
 leotard	346
-meowing	346
 mommies	346
 needful	346
 policed	346
@@ -19221,6 +19288,8 @@ travail	323
 veneers	323
 wobbles	323
 womanly	323
+jeweler	322
+savoury	322
 accrual	316
 actuary	316
 aircrew	316
@@ -19255,6 +19324,7 @@ squeals	316
 trundle	316
 tumbles	316
 unstuck	316
+livable	315
 aplenty	309
 austral	309
 carding	309
@@ -19321,7 +19391,6 @@ dragnet	301
 envelop	301
 fetches	301
 hussars	301
-idolize	301
 jetting	301
 kinsmen	301
 laziest	301
@@ -19354,7 +19423,6 @@ chapped	295
 cicadas	295
 copilot	295
 crustal	295
-distill	295
 freemen	295
 gainful	295
 girlish	295
@@ -19362,7 +19430,6 @@ gritted	295
 growler	295
 impound	295
 isomers	295
-jeweled	295
 kestrel	295
 lurched	295
 melding	295
@@ -19412,7 +19479,6 @@ parquet	288
 plotter	288
 quelled	288
 rebukes	288
-rivaled	288
 salting	288
 scapula	288
 sidearm	288
@@ -19427,6 +19493,7 @@ sundial	288
 tastier	288
 tranche	288
 wracked	288
+fervour	281
 ascents	281
 bitched	281
 bonnets	281
@@ -19479,7 +19546,6 @@ fluvial	275
 gambles	275
 harried	275
 holdout	275
-honoree	275
 lectern	275
 levying	275
 loyally	275
@@ -19503,6 +19569,7 @@ verbose	275
 verging	275
 vespers	275
 wrested	275
+woollen	274
 afflict	269
 barrens	269
 bobsled	269
@@ -19542,6 +19609,8 @@ soonest	269
 supremo	269
 swatted	269
 trudged	269
+armoury	268
+scepter	268
 bazaars	263
 bipedal	263
 blooper	263
@@ -19579,9 +19648,7 @@ wincing	263
 worsted	263
 wreaked	263
 acolyte	257
-airfoil	257
 bathers	257
-beveled	257
 blinder	257
 breaded	257
 civilly	257
@@ -19668,24 +19735,6 @@ suppers	251
 tenable	251
 toluene	251
 twinned	251
-waltzes	251
-abyssal	245
-backhoe	245
-bestial	245
-betwixt	245
-broiled	245
-chicory	245
-coulomb	245
-curates	245
-dappled	245
-dotting	245
-draping	245
-fiddled	245
-flunked	245
-headman	245
-inbuilt	245
-laconic	245
-maudlin	245
 business	363078
 anything	354813
 national	323593
@@ -19757,7 +19806,6 @@ reported	100000
 consider	97723
 positive	97723
 computer	93325
-favorite	93325
 movement	93325
 designed	91201
 expected	91201
@@ -19863,7 +19911,6 @@ elements	50118
 intended	50118
 soldiers	50118
 attorney	48977
-behavior	48977
 brothers	48977
 creating	48977
 domestic	48977
@@ -19880,6 +19927,7 @@ measures	46773
 platform	46773
 requires	46773
 schedule	46773
+favorite	46662
 internal	45708
 recorded	45708
 identity	44668
@@ -19927,7 +19975,6 @@ republic	39810
 concerns	38904
 delivery	38904
 instance	38904
-realized	38904
 register	38904
 universe	38904
 attitude	38018
@@ -20062,6 +20109,7 @@ mortgage	24547
 observed	24547
 resource	24547
 sciences	24547
+behavior	24488
 channels	23988
 commonly	23988
 findings	23988
@@ -20135,9 +20183,9 @@ overseas	19498
 regarded	19498
 reliable	19498
 stopping	19498
+realized	19452
 equipped	19054
 expanded	19054
-judgment	19054
 peaceful	19054
 printing	19054
 publicly	19054
@@ -20323,7 +20371,6 @@ adjusted	12882
 deciding	12882
 defender	12882
 keyboard	12882
-neighbor	12882
 nowadays	12882
 overview	12882
 pathetic	12882
@@ -20385,7 +20432,6 @@ password	11481
 rational	11481
 revenues	11481
 tourists	11481
-traveled	11481
 adequate	11220
 comeback	11220
 freezing	11220
@@ -20428,7 +20474,6 @@ premises	10471
 sticking	10471
 superman	10471
 surfaces	10471
-aluminum	10232
 barriers	10232
 belonged	10232
 congrats	10232
@@ -20451,7 +20496,6 @@ kindness	10000
 punished	10000
 spelling	10000
 survivor	10000
-centered	9772
 cylinder	9772
 failures	9772
 founding	9772
@@ -20464,7 +20508,6 @@ doctrine	9549
 freshman	9549
 hydrogen	9549
 mistaken	9549
-organize	9549
 portions	9549
 recalled	9549
 seasonal	9549
@@ -20475,6 +20518,7 @@ spinning	9549
 stepping	9549
 township	9549
 writings	9549
+judgment	9527
 bachelor	9332
 billions	9332
 bullying	9332
@@ -20531,7 +20575,6 @@ guessing	8709
 illusion	8709
 junction	8709
 medicare	8709
-modeling	8709
 overtime	8709
 profound	8709
 suspects	8709
@@ -20553,7 +20596,6 @@ thankful	8511
 triangle	8511
 upgraded	8511
 absorbed	8317
-airplane	8317
 altitude	8317
 biblical	8317
 cracking	8317
@@ -20588,10 +20630,8 @@ thriller	8128
 troubled	8128
 violated	8128
 advocacy	7943
-analyzed	7943
 arguably	7943
 assessed	7943
-canceled	7943
 cardinal	7943
 classics	7943
 conclude	7943
@@ -20651,7 +20691,6 @@ maturity	7413
 outlined	7413
 pharmacy	7413
 regulate	7413
-theaters	7413
 uncommon	7413
 underway	7413
 unstable	7413
@@ -20718,7 +20757,6 @@ outright	6760
 panthers	6760
 remedies	6760
 sickness	6760
-utilized	6760
 addicted	6606
 chickens	6606
 citation	6606
@@ -20755,14 +20793,13 @@ rewarded	6456
 roommate	6456
 surgeons	6456
 taxation	6456
+neighbor	6441
 builders	6309
-colorful	6309
 confront	6309
 decisive	6309
 epidemic	6309
 eternity	6309
 homicide	6309
-minimize	6309
 pensions	6309
 responds	6309
 restrict	6309
@@ -20811,6 +20848,7 @@ turnover	6025
 unwanted	6025
 upgrades	6025
 warnings	6025
+realised	6011
 abundant	5888
 audition	5888
 branding	5888
@@ -20862,6 +20900,7 @@ username	5754
 vaccines	5754
 ventures	5754
 weddings	5754
+traveled	5740
 awaiting	5623
 chandler	5623
 cheapest	5623
@@ -20880,7 +20919,6 @@ pleasing	5623
 premiums	5623
 prestige	5623
 protects	5623
-realizes	5623
 remotely	5623
 retailer	5623
 sampling	5623
@@ -20948,12 +20986,10 @@ vanished	5248
 volatile	5248
 withdrew	5248
 abnormal	5128
-assholes	5128
 backward	5128
 blogging	5128
 cosmetic	5128
 declares	5128
-defenses	5128
 deputies	5128
 detector	5128
 distract	5128
@@ -20973,6 +21009,7 @@ sketches	5128
 template	5128
 treaties	5128
 volcanic	5128
+aluminum	5116
 alphabet	5011
 baseline	5011
 bisexual	5011
@@ -21018,6 +21055,7 @@ squirrel	4897
 stickers	4897
 takeover	4897
 updating	4897
+centered	4886
 betrayal	4786
 clusters	4786
 communal	4786
@@ -21046,6 +21084,7 @@ stirring	4786
 swelling	4786
 visually	4786
 weighted	4786
+organize	4774
 activism	4677
 airborne	4677
 barracks	4677
@@ -21132,7 +21171,7 @@ pathways	4365
 salesman	4365
 stalking	4365
 warrants	4365
-advisors	4265
+modeling	4354
 attracts	4265
 bastards	4265
 coherent	4265
@@ -21144,7 +21183,6 @@ gigantic	4265
 halftime	4265
 inactive	4265
 lawsuits	4265
-maximize	4265
 mushroom	4265
 periodic	4265
 redskins	4265
@@ -21173,6 +21211,8 @@ shutdown	4168
 stresses	4168
 thriving	4168
 trending	4168
+airplane	4158
+coloured	4158
 adaptive	4073
 affinity	4073
 casualty	4073
@@ -21212,13 +21252,14 @@ prolific	3981
 referral	3981
 restless	3981
 sinister	3981
+analyzed	3972
+canceled	3972
 altering	3890
 asserted	3890
 attacker	3890
 brackets	3890
 brutally	3890
 collects	3890
-coloring	3890
 commence	3890
 converts	3890
 crawling	3890
@@ -21249,7 +21290,6 @@ charcoal	3801
 contexts	3801
 implying	3801
 improper	3801
-offenses	3801
 passions	3801
 plastics	3801
 poisoned	3801
@@ -21284,10 +21324,10 @@ rosemary	3715
 shameful	3715
 shortest	3715
 skipping	3715
-traveler	3715
 watering	3715
 wellness	3715
 whispers	3715
+theaters	3706
 abducted	3630
 abruptly	3630
 aquarium	3630
@@ -21295,7 +21335,6 @@ aspiring	3630
 asteroid	3630
 culinary	3630
 discrete	3630
-endeavor	3630
 exported	3630
 follower	3630
 hardship	3630
@@ -21311,7 +21350,6 @@ veronica	3630
 waitress	3630
 blasting	3548
 creeping	3548
-diarrhea	3548
 disposed	3548
 doctoral	3548
 draining	3548
@@ -21324,7 +21362,6 @@ gangster	3548
 giveaway	3548
 harassed	3548
 kingdoms	3548
-labeling	3548
 meltdown	3548
 mystical	3548
 outsider	3548
@@ -21374,7 +21411,6 @@ flourish	3388
 guarding	3388
 lingerie	3388
 magician	3388
-maneuver	3388
 mattered	3388
 overlook	3388
 pleading	3388
@@ -21389,6 +21425,7 @@ tempered	3388
 tertiary	3388
 timeless	3388
 vanguard	3388
+utilized	3380
 ballroom	3311
 beginner	3311
 bombings	3311
@@ -21402,7 +21439,6 @@ examiner	3311
 fidelity	3311
 hardened	3311
 haunting	3311
-honoring	3311
 insulted	3311
 jeopardy	3311
 listener	3311
@@ -21476,6 +21512,8 @@ seminars	3162
 statutes	3162
 striving	3162
 tackling	3162
+colorful	3154
+minimize	3154
 ancestor	3090
 authored	3090
 breakout	3090
@@ -21552,7 +21590,6 @@ afforded	2884
 anchored	2884
 antibody	2884
 arteries	2884
-baptized	2884
 breeders	2884
 burgundy	2884
 cabinets	2884
@@ -21565,7 +21602,6 @@ forcibly	2884
 grouping	2884
 holiness	2884
 initials	2884
-leukemia	2884
 manpower	2884
 motorway	2884
 simplify	2884
@@ -21598,6 +21634,7 @@ stripper	2818
 swimmers	2818
 variance	2818
 workload	2818
+realizes	2812
 blending	2754
 bragging	2754
 brightly	2754
@@ -21606,7 +21643,6 @@ ceramics	2754
 commuter	2754
 cupboard	2754
 depended	2754
-flavored	2754
 formulas	2754
 lavender	2754
 lemonade	2754
@@ -21658,7 +21694,6 @@ strikers	2630
 suicides	2630
 truthful	2630
 adultery	2570
-artifact	2570
 battered	2570
 browning	2570
 coronary	2570
@@ -21672,7 +21707,6 @@ excerpts	2570
 explodes	2570
 hesitant	2570
 immersed	2570
-mustache	2570
 obituary	2570
 populous	2570
 presided	2570
@@ -21685,6 +21719,8 @@ spraying	2570
 sweetest	2570
 verbally	2570
 vitality	2570
+assholes	2564
+defenses	2564
 amateurs	2511
 archived	2511
 awarding	2511
@@ -21719,6 +21755,7 @@ validate	2511
 vocalist	2511
 wildcats	2511
 yielding	2511
+honoured	2506
 banished	2454
 barefoot	2454
 beauties	2454
@@ -21810,7 +21847,6 @@ coatings	2290
 cookbook	2290
 decorate	2290
 diagonal	2290
-estrogen	2290
 felicity	2290
 gripping	2290
 handheld	2290
@@ -21850,6 +21886,7 @@ slamming	2238
 smoother	2238
 trucking	2238
 westward	2238
+offences	2233
 atheists	2187
 blossoms	2187
 bungalow	2187
@@ -21890,7 +21927,6 @@ hormonal	2137
 leaflets	2137
 maverick	2137
 migraine	2137
-optimize	2137
 playback	2137
 portrays	2137
 previews	2137
@@ -21905,6 +21941,8 @@ unbiased	2137
 underdog	2137
 werewolf	2137
 wrongful	2137
+advisors	2132
+maximize	2132
 aromatic	2089
 dentists	2089
 dictates	2089
@@ -21935,6 +21973,7 @@ swapping	2089
 syllable	2089
 takeaway	2089
 wielding	2089
+labelled	2084
 allocate	2041
 analytic	2041
 cohesive	2041
@@ -21985,7 +22024,6 @@ serenity	1995
 sighting	1995
 stacking	1995
 teaspoon	1995
-totaling	1995
 warships	1995
 acquires	1949
 airfield	1949
@@ -21999,7 +22037,6 @@ exporter	1949
 hijacked	1949
 impulses	1949
 infusion	1949
-laborers	1949
 lordship	1949
 mahogany	1949
 markedly	1949
@@ -22017,6 +22054,7 @@ unionist	1949
 wearable	1949
 wreckage	1949
 zeppelin	1949
+coloring	1945
 airspace	1905
 allotted	1905
 analogue	1905
@@ -22049,6 +22087,7 @@ unsolved	1905
 ventured	1905
 watchers	1905
 withhold	1905
+offenses	1900
 antennas	1862
 audacity	1862
 barbaric	1862
@@ -22075,8 +22114,8 @@ sourcing	1862
 sweaters	1862
 trainees	1862
 tributes	1862
-utilizes	1862
 wasteful	1862
+traveler	1858
 auditing	1819
 billings	1819
 collided	1819
@@ -22084,7 +22123,6 @@ concerto	1819
 dialects	1819
 electors	1819
 inducted	1819
-legalize	1819
 meditate	1819
 overcame	1819
 paternal	1819
@@ -22098,6 +22136,7 @@ sorority	1819
 stemming	1819
 tortoise	1819
 visceral	1819
+endeavor	1815
 alkaline	1778
 antidote	1778
 arterial	1778
@@ -22128,6 +22167,9 @@ smoothie	1778
 spoiling	1778
 towering	1778
 weekdays	1778
+diarrhea	1774
+favoured	1774
+labeling	1774
 appalled	1737
 catheter	1737
 confines	1737
@@ -22158,6 +22200,7 @@ tumbling	1737
 unmarked	1737
 winnings	1737
 yearning	1737
+theatres	1734
 bubbling	1698
 converge	1698
 crucible	1698
@@ -22189,6 +22232,7 @@ threaded	1698
 trimming	1698
 untitled	1698
 virtuous	1698
+maneuver	1694
 abrasive	1659
 adoptive	1659
 ailments	1659
@@ -22209,9 +22253,6 @@ grandeur	1659
 gunshots	1659
 handlers	1659
 laureate	1659
-leveling	1659
-medalist	1659
-memorize	1659
 mindless	1659
 obscured	1659
 outlawed	1659
@@ -22225,6 +22266,8 @@ stoppage	1659
 triumphs	1659
 unbroken	1659
 whopping	1659
+honoring	1656
+practise	1656
 ambushed	1621
 armchair	1621
 captives	1621
@@ -22264,7 +22307,6 @@ backside	1584
 blinding	1584
 chainsaw	1584
 climatic	1584
-demeanor	1584
 deranged	1584
 downtime	1584
 ethereal	1584
@@ -22284,7 +22326,7 @@ tutoring	1584
 unworthy	1584
 utensils	1584
 vocation	1584
-analyzes	1548
+organise	1581
 backseat	1548
 bitching	1548
 brownies	1548
@@ -22335,7 +22377,6 @@ melanoma	1513
 menacing	1513
 microbes	1513
 midterms	1513
-mobilize	1513
 nativity	1513
 perilous	1513
 prepping	1513
@@ -22351,6 +22392,7 @@ terminus	1513
 turnpike	1513
 unloaded	1513
 waterway	1513
+analysed	1510
 absentee	1479
 admirers	1479
 appoints	1479
@@ -22402,7 +22444,6 @@ descends	1445
 epiphany	1445
 eyeliner	1445
 fatality	1445
-favoring	1445
 firewood	1445
 forsaken	1445
 geniuses	1445
@@ -22423,6 +22464,8 @@ viscount	1445
 whistler	1445
 windmill	1445
 workflow	1445
+baptized	1442
+leukemia	1442
 buttocks	1412
 emergent	1412
 glitches	1412
@@ -22478,6 +22521,8 @@ stomping	1380
 stroking	1380
 thinning	1380
 tranquil	1380
+defences	1377
+flavored	1377
 adhering	1348
 baffling	1348
 blockers	1348
@@ -22507,7 +22552,6 @@ resonant	1348
 scammers	1348
 shippers	1348
 sizzling	1348
-skillful	1348
 stampede	1348
 standoff	1348
 suitably	1348
@@ -22580,6 +22624,8 @@ tenacity	1288
 trespass	1288
 vibrator	1288
 wrestled	1288
+artifact	1285
+mustache	1285
 anointed	1258
 campfire	1258
 checkers	1258
@@ -22604,7 +22650,6 @@ nostrils	1258
 nurtured	1258
 rebuttal	1258
 reliever	1258
-signaled	1258
 slowdown	1258
 solstice	1258
 sparsely	1258
@@ -22648,7 +22693,6 @@ antelope	1202
 automate	1202
 basilica	1202
 blushing	1202
-catalogs	1202
 chivalry	1202
 credence	1202
 emptying	1202
@@ -22673,6 +22717,7 @@ subgroup	1202
 taxonomy	1202
 tiresome	1202
 venomous	1202
+flavours	1199
 airliner	1174
 allegory	1174
 blisters	1174
@@ -22708,13 +22753,11 @@ roosters	1174
 scarring	1174
 scheming	1174
 scorched	1174
-skeptics	1174
 slashing	1174
 stinging	1174
 telecast	1174
 trampled	1174
 verbatim	1174
-analyzer	1148
 bandages	1148
 cauldron	1148
 cleanser	1148
@@ -22744,10 +22787,10 @@ salvaged	1148
 skirmish	1148
 snippets	1148
 solvents	1148
-stylized	1148
 talisman	1148
 tortilla	1148
 whiplash	1148
+estrogen	1145
 asterisk	1122
 cannibal	1122
 chuckled	1122
@@ -22773,7 +22816,6 @@ renovate	1122
 restores	1122
 reverses	1122
 shackles	1122
-splendor	1122
 tendered	1122
 thoracic	1122
 triplets	1122
@@ -22804,6 +22846,7 @@ streamer	1096
 stringer	1096
 tireless	1096
 westerly	1096
+armoured	1094
 alienate	1071
 ammonium	1071
 atrocity	1071
@@ -22841,6 +22884,8 @@ splashed	1071
 sprained	1071
 starling	1071
 stumbles	1071
+licences	1068
+optimize	1068
 accorded	1047
 agnostic	1047
 aligning	1047
@@ -22919,7 +22964,6 @@ neutrons	1023
 overtook	1023
 overture	1023
 peddling	1023
-pretense	1023
 reappear	1023
 redeemer	1023
 repulsed	1023
@@ -22970,6 +23014,7 @@ travesty	1000
 tricking	1000
 vengeful	1000
 wrinkled	1000
+totaling	998
 alluding	977
 caravans	977
 cascades	977
@@ -23004,6 +23049,7 @@ solidify	977
 soybeans	977
 squashed	977
 whiskers	977
+laborers	974
 airwaves	954
 alerting	954
 baptists	954
@@ -23077,6 +23123,7 @@ teleport	933
 trombone	933
 unusable	933
 warlords	933
+utilizes	931
 abandons	912
 blurring	912
 cautions	912
@@ -23113,6 +23160,7 @@ vertices	912
 voltages	912
 wineries	912
 zucchini	912
+legalize	910
 absurdly	891
 airtight	891
 annulled	891
@@ -23154,6 +23202,7 @@ truckers	891
 unending	891
 unproven	891
 watchmen	891
+modelled	889
 allusion	870
 altruism	870
 birthing	870
@@ -23196,7 +23245,6 @@ endpoint	851
 entailed	851
 expertly	851
 flamenco	851
-grueling	851
 homesick	851
 immobile	851
 kinetics	851
@@ -23213,6 +23261,7 @@ stingray	851
 tickling	851
 unjustly	851
 wrappers	851
+sizeable	849
 antigens	831
 apostasy	831
 avocados	831
@@ -23222,7 +23271,6 @@ distaste	831
 dwindled	831
 fantasia	831
 freehold	831
-fulfills	831
 hygienic	831
 imitated	831
 intersex	831
@@ -23243,6 +23291,9 @@ splashes	831
 withered	831
 woefully	831
 wrangler	831
+leveling	830
+medalist	830
+memorize	830
 abrasion	812
 bluebird	812
 blunders	812
@@ -23325,6 +23376,7 @@ treading	794
 trotting	794
 villager	794
 virtuoso	794
+demeanor	792
 addendum	776
 amenable	776
 bearable	776
@@ -23339,7 +23391,6 @@ emigrate	776
 emulsion	776
 exorcism	776
 fillings	776
-finalize	776
 flicking	776
 gimmicks	776
 intercom	776
@@ -23362,6 +23413,7 @@ tabloids	776
 tomahawk	776
 ulterior	776
 verdicts	776
+analyzes	774
 assessor	758
 boycotts	758
 brimming	758
@@ -23370,7 +23422,6 @@ chariots	758
 cladding	758
 cuteness	758
 dilation	758
-dishonor	758
 drummers	758
 enforces	758
 infidels	758
@@ -23379,13 +23430,13 @@ marksman	758
 mourners	758
 munching	758
 omitting	758
-oxidized	758
 patently	758
 reprieve	758
 resupply	758
 soulless	758
 syringes	758
 virulent	758
+mobilize	756
 acronyms	741
 alluvial	741
 blowjobs	741
@@ -23410,7 +23461,6 @@ hustling	741
 imbecile	741
 imprison	741
 inasmuch	741
-ischemic	741
 joystick	741
 kamikaze	741
 laminate	741
@@ -23434,8 +23484,8 @@ spoonful	741
 trinkets	741
 turmeric	741
 wheezing	741
+minimise	740
 accusers	724
-adapters	724
 backhand	724
 bankroll	724
 belittle	724
@@ -23463,6 +23513,8 @@ suspends	724
 tenement	724
 thatched	724
 undersea	724
+favoring	722
+realises	722
 adequacy	707
 adopters	707
 babbling	707
@@ -23479,8 +23531,6 @@ flocking	707
 flogging	707
 handyman	707
 heatwave	707
-ischemia	707
-licorice	707
 lighters	707
 linearly	707
 linkages	707
@@ -23502,6 +23552,7 @@ untested	707
 waveform	707
 workbook	707
 worships	707
+utilised	706
 amygdala	691
 appended	691
 booklets	691
@@ -23576,6 +23627,7 @@ testicle	676
 tinnitus	676
 volition	676
 westerns	676
+skillful	674
 abetting	660
 accolade	660
 baguette	660
@@ -23637,7 +23689,6 @@ lengthen	645
 lineages	645
 mariachi	645
 modality	645
-monetize	645
 monolith	645
 payloads	645
 provokes	645
@@ -23691,6 +23742,8 @@ shatters	630
 stenosis	630
 unpacked	630
 washroom	630
+maximise	629
+signaled	629
 anathema	616
 callback	616
 commutes	616
@@ -23734,11 +23787,9 @@ backroom	602
 bodywork	602
 bookcase	602
 choruses	602
-colonize	602
 consents	602
 despises	602
 elongate	602
-enamored	602
 flounder	602
 glycogen	602
 hacienda	602
@@ -23761,6 +23812,7 @@ thickens	602
 vagabond	602
 vestiges	602
 writhing	602
+catalogs	601
 ablation	588
 actuator	588
 admirals	588
@@ -23781,7 +23833,6 @@ formulae	588
 frescoes	588
 gatherer	588
 inhabits	588
-ionizing	588
 meniscus	588
 mightily	588
 monotone	588
@@ -23803,6 +23854,7 @@ tweezers	588
 twerking	588
 unedited	588
 vertebra	588
+skeptics	587
 aldermen	575
 autumnal	575
 bayonets	575
@@ -23814,7 +23866,6 @@ crouched	575
 devalued	575
 diverged	575
 elevates	575
-energize	575
 flywheel	575
 foregone	575
 freshest	575
@@ -23836,6 +23887,8 @@ stretchy	575
 suckling	575
 tutelage	575
 wordplay	575
+analyzer	574
+stylized	574
 aerobics	562
 alleyway	562
 avenging	562
@@ -23884,11 +23937,11 @@ silencer	562
 soloists	562
 speedily	562
 subprime	562
-sulfuric	562
 trickier	562
 twirling	562
 vesicles	562
 wracking	562
+splendor	561
 algebras	549
 applauds	549
 apricots	549
@@ -23909,7 +23962,6 @@ insolent	549
 modulate	549
 nihilism	549
 oilfield	549
-penalize	549
 pharaohs	549
 postures	549
 ramparts	549
@@ -23922,6 +23974,7 @@ tramways	549
 unlisted	549
 whistled	549
 wizardry	549
+levelled	548
 adaption	537
 anorexic	537
 begotten	537
@@ -23971,6 +24024,8 @@ unfunded	537
 unsteady	537
 wagering	537
 whirling	537
+rumoured	536
+likeable	524
 amicably	524
 attendee	524
 banquets	524
@@ -24011,9 +24066,9 @@ sriracha	524
 systolic	524
 typified	524
 unionism	524
-unsavory	524
 unwashed	524
 yachting	524
+pretense	512
 aquifers	512
 bandaged	512
 bonfires	512
@@ -24030,7 +24085,6 @@ fictions	512
 frowning	512
 grunting	512
 jaundice	512
-jewelers	512
 joyfully	512
 peacocks	512
 pedicure	512
@@ -24107,7 +24161,6 @@ brackish	489
 buckling	489
 cackling	489
 capstone	489
-chiseled	489
 coursing	489
 dateline	489
 erupting	489
@@ -24145,7 +24198,6 @@ uncooked	489
 uttering	489
 accesses	478
 adjuster	478
-ambiance	478
 bathrobe	478
 biathlon	478
 bundling	478
@@ -24158,7 +24210,6 @@ exemplar	478
 extender	478
 fandango	478
 frenetic	478
-funneled	478
 gangrene	478
 gluttony	478
 granddad	478
@@ -24171,7 +24222,6 @@ loudness	478
 megawatt	478
 moorland	478
 nitrates	478
-oversize	478
 pushover	478
 quilting	478
 raincoat	478
@@ -24226,6 +24276,7 @@ torments	467
 transact	467
 underpin	467
 unseemly	467
+totalled	466
 abdicate	457
 accosted	457
 airbrush	457
@@ -24256,7 +24307,6 @@ laxative	457
 liaisons	457
 lustrous	457
 newscast	457
-panelist	457
 pastimes	457
 pedantic	457
 pickings	457
@@ -24309,7 +24359,6 @@ operable	446
 orgasmic	446
 overhear	446
 pacifism	446
-paralyze	446
 pinewood	446
 platters	446
 redheads	446
@@ -24379,9 +24428,12 @@ tsunamis	436
 unneeded	436
 upmarket	436
 warfarin	436
+ambience	435
+labourer	435
+grueling	426
+harbours	426
 allergen	426
 bailouts	426
-barreled	426
 carapace	426
 chomping	426
 christen	426
@@ -24398,7 +24450,6 @@ fiftieth	426
 gargoyle	426
 gaslight	426
 grannies	426
-harbored	426
 headroom	426
 hustlers	426
 inedible	426
@@ -24420,6 +24471,7 @@ stockade	426
 stoicism	426
 uppercut	426
 virology	426
+fulfills	416
 adjudged	416
 aspirant	416
 biracial	416
@@ -24433,12 +24485,10 @@ farthing	416
 feigning	416
 finality	416
 garlands	416
-glycerin	416
 goldmine	416
 groupies	416
 handcuff	416
 impolite	416
-itemized	416
 leathery	416
 masseuse	416
 mimicked	416
@@ -24471,13 +24521,11 @@ cabbages	407
 caresses	407
 castaway	407
 cenotaph	407
-demonize	407
 diazepam	407
 dismount	407
 diuretic	407
 drugging	407
 encircle	407
-etiology	407
 flossing	407
 fruiting	407
 hammocks	407
@@ -24528,7 +24576,6 @@ legation	398
 martinis	398
 massaged	398
 mementos	398
-paneling	398
 polishes	398
 quandary	398
 quietest	398
@@ -24564,7 +24611,6 @@ hedonism	389
 inequity	389
 inspects	389
 kindling	389
-laboring	389
 linesman	389
 mandrake	389
 marinate	389
@@ -24584,6 +24630,7 @@ squabble	389
 tamarind	389
 vagaries	389
 vermouth	389
+finalize	388
 accruing	380
 artifice	380
 bookworm	380
@@ -24619,6 +24666,8 @@ thunders	380
 uncaring	380
 usefully	380
 workweek	380
+dishonor	379
+oxidized	379
 acrylics	371
 aquatics	371
 barnyard	371
@@ -24631,7 +24680,6 @@ crunched	371
 despotic	371
 disallow	371
 doghouse	371
-equalize	371
 expanses	371
 freeware	371
 genitive	371
@@ -24666,6 +24714,7 @@ whacking	371
 wiretaps	371
 wisteria	371
 wordless	371
+ischemic	370
 actuated	363
 alarmist	363
 berating	363
@@ -24680,13 +24729,11 @@ gravelly	363
 grizzled	363
 hermetic	363
 hijacker	363
-honorees	363
 hurtling	363
 imploded	363
 jalapeno	363
 knitwear	363
 latching	363
-marveled	363
 newsreel	363
 phosphor	363
 pigtails	363
@@ -24704,6 +24751,11 @@ upwardly	363
 vanadium	363
 viewings	363
 wickedly	363
+adapters	362
+moulding	362
+ischemia	354
+licorice	354
+omelette	354
 adorning	354
 anarchic	354
 barnacle	354
@@ -24722,7 +24774,6 @@ gestured	354
 graphing	354
 guttural	354
 hellhole	354
-idolized	354
 kabbalah	354
 ladyship	354
 languish	354
@@ -24784,7 +24835,6 @@ jettison	346
 ladybird	346
 landmass	346
 magnates	346
-mollusks	346
 murmured	346
 nuptials	346
 saplings	346
@@ -24794,7 +24844,6 @@ snuggles	346
 squished	346
 studious	346
 tadpoles	346
-theorize	346
 thievery	346
 untangle	346
 vibrancy	346
@@ -24822,7 +24871,6 @@ headlamp	338
 incisors	338
 landless	338
 listless	338
-localize	338
 marinara	338
 niceties	338
 novellas	338
@@ -24852,7 +24900,6 @@ assailed	331
 banister	331
 bolsters	331
 camellia	331
-catalyze	331
 cockatoo	331
 commends	331
 convents	331
@@ -24889,6 +24936,7 @@ unleaded	331
 unsalted	331
 vanities	331
 venereal	331
+equalled	330
 acquaint	323
 acrobats	323
 atropine	323
@@ -24929,6 +24977,7 @@ sweepers	323
 switcher	323
 unnerved	323
 wrestles	323
+monetize	322
 abattoir	316
 achiever	316
 amputees	316
@@ -24959,7 +25008,6 @@ jacquard	316
 lemmings	316
 marksmen	316
 miseries	316
-pedaling	316
 planking	316
 rejoices	316
 returner	316
@@ -24975,6 +25023,7 @@ tallying	316
 textural	316
 unsuited	316
 wishbone	316
+arsehole	315
 aeration	309
 aphorism	309
 autobahn	309
@@ -25030,9 +25079,10 @@ tangents	309
 thickets	309
 timbered	309
 trapdoor	309
-tricolor	309
 tripling	309
 warblers	309
+colonize	301
+enamored	301
 autocrat	301
 contrite	301
 convenes	301
@@ -25040,18 +25090,15 @@ crawlers	301
 dampness	301
 disjoint	301
 divorcee	301
-equaling	301
 feckless	301
 gladness	301
 grumbled	301
-hematite	301
 herdsmen	301
 idleness	301
 interwar	301
 intruded	301
 kneading	301
 medicate	301
-odorless	301
 parakeet	301
 provable	301
 rationed	301
@@ -25109,11 +25156,14 @@ stooping	295
 terrains	295
 unboxing	295
 uncapped	295
-vaporize	295
 varietal	295
 virginal	295
 vitreous	295
 whittled	295
+ionizing	294
+ploughed	294
+baptised	288
+energize	288
 abductor	288
 aliasing	288
 alleluia	288
@@ -25150,16 +25200,15 @@ slurping	288
 snagging	288
 spaceman	288
 spenders	288
-spiraled	288
 squirted	288
 tinkling	288
 tiramisu	288
 toasters	288
 trashcan	288
 tumblers	288
-unionize	288
 waltzing	288
 woodwind	288
+sulfuric	281
 abutting	281
 anemones	281
 appeased	281
@@ -25184,7 +25233,6 @@ feldspar	281
 formless	281
 fractals	281
 grooving	281
-humanize	281
 ironwood	281
 lattices	281
 lucidity	281
@@ -25237,10 +25285,8 @@ impeller	275
 munition	275
 outpaced	275
 pairwise	275
-peddlers	275
 phonemic	275
 plebeian	275
-pummeled	275
 ramblers	275
 remotest	275
 riflemen	275
@@ -25253,6 +25299,7 @@ succumbs	275
 thalamus	275
 virility	275
 woodcuts	275
+penalize	274
 agronomy	269
 blanking	269
 causally	269
@@ -25270,7 +25317,6 @@ jostling	269
 knockers	269
 litigate	269
 metrical	269
-moldings	269
 orifices	269
 refrains	269
 rightist	269
@@ -25283,10 +25329,10 @@ vagrants	269
 verbiage	269
 weakling	269
 windpipe	269
+pretence	268
 banality	263
 basilisk	263
 blinkers	263
-calibers	263
 coercing	263
 compacts	263
 eardrums	263
@@ -25307,8 +25353,6 @@ pastrami	263
 plummets	263
 prequels	263
 puppetry	263
-sanitize	263
-savoring	263
 scoffing	263
 scrapers	263
 sheepish	263
@@ -25324,6 +25368,7 @@ ungainly	263
 uprights	263
 vintages	263
 weeklies	263
+unsavory	262
 aborting	257
 abounded	257
 adorably	257
@@ -25333,7 +25378,6 @@ availing	257
 backless	257
 calliope	257
 coenzyme	257
-colorway	257
 curbside	257
 dropkick	257
 effusion	257
@@ -25371,7 +25415,7 @@ unforced	257
 urethane	257
 vacating	257
 whisking	257
-atomizer	251
+jewelers	256
 befallen	251
 bleating	251
 buybacks	251
@@ -25385,7 +25429,6 @@ cyclonic	251
 deadlier	251
 defecate	251
 downcast	251
-enameled	251
 extolled	251
 geodesic	251
 gratings	251
@@ -25414,6 +25457,7 @@ trillium	251
 unravels	251
 usurping	251
 warlocks	251
+artefact	250
 aardvark	245
 bristled	245
 checkbox	245
@@ -25454,6 +25498,11 @@ unseated	245
 unwisely	245
 urethral	245
 wrenched	245
+chiseled	244
+ambiance	239
+funneled	239
+laboured	239
+oversize	239
 amaranth	239
 belching	239
 bloomers	239
@@ -25478,13 +25527,13 @@ sidewall	239
 stirrups	239
 subduing	239
 subhuman	239
-sulfates	239
 tableaux	239
 toilette	239
 underarm	239
 wreckers	239
 yearlong	239
 yuletide	239
+wilfully	234
 airfares	234
 arbiters	234
 armbands	234
@@ -25497,7 +25546,6 @@ classier	234
 climaxes	234
 colander	234
 crevasse	234
-cruelest	234
 defacing	234
 defaming	234
 diverges	234
@@ -25558,7 +25606,6 @@ homilies	229
 hoodlums	229
 hydrants	229
 inositol	229
-libelous	229
 nihilist	229
 operetta	229
 paramour	229
@@ -25577,6 +25624,9 @@ sunrises	229
 tandoori	229
 thespian	229
 widowers	229
+panelist	228
+jeweller	223
+paralyze	223
 abutment	223
 adjuncts	223
 bellowed	223
@@ -25649,13 +25699,11 @@ porphyry	218
 recouped	218
 refusals	218
 remitted	218
-rivaling	218
 ruffians	218
 scorcher	218
 serenely	218
 shimmery	218
 shockers	218
-shoveled	218
 slogging	218
 smarties	218
 smothers	218
@@ -25665,14 +25713,15 @@ thresher	218
 timidity	218
 witching	218
 yeomanry	218
+barreled	213
+chillies	213
+harbored	213
 acquirer	213
-agonized	213
 albinism	213
 amnesiac	213
 bootlegs	213
 burrowed	213
 castrate	213
-colorist	213
 culverts	213
 debonair	213
 decedent	213

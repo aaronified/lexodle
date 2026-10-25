@@ -63,7 +63,7 @@ void main() {
     );
   });
 
-  testWidgets('the first-visit screen starts a default UK english game', (
+  testWidgets('the first-visit screen starts a default english game', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -81,13 +81,13 @@ void main() {
     // the word file is read with real file IO, which fake-async cannot await
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 2)));
     await tester.pumpAndSettle();
-    expect(appState.lang, 'en-GB');
+    expect(appState.lang, 'en');
     expect(appState.length, 5);
     expect(appState.tries, 6);
     expect(appState.useFrequency, isTrue);
     expect(appState.mode, GameMode.classic);
     expect(find.text('6 tries left'), findsOneWidget);
-    expect(find.textContaining('english (uk)'), findsOneWidget);
+    expect(find.textContaining('english · 5 · 6 tries'), findsOneWidget);
     expect(find.text(_rule), findsNothing, reason: 'the page is replaced');
 
     // back from the game is the menu, not the how-to page again

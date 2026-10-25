@@ -14,6 +14,9 @@ import 'history.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'words.dart';
+import 'dialects.dart';
+
+import 'dart:math';
 
 /// How much the game tells you while you play. Whatever the level, a finished
 /// game reveals everything (as in the original).
@@ -140,17 +143,25 @@ class Stats {
     ..wins = j['wins'] ?? 0
     ..streak = j['streak'] ?? 0
     ..bestStreak = j['bestStreak'] ?? 0
-    ..langsWon = {for (final l in j['langsWon'] ?? []) l as String}
+    ..langsWon = {
+      for (final l in j['langsWon'] ?? []) languageCode(l as String),
+    }
     ..lengthsWon = {for (final l in j['lengthsWon'] ?? []) l as int}
-    ..mastery = {
-      // a cell is `length:tries`; before the word pool went there was a third
-      // part, which is dropped
-      for (final e in ((j['mastery'] ?? {}) as Map).entries)
-        e.key as String: {
-          for (final x in e.value as List)
-            (x as String).split(':').take(2).join(':'),
-        },
-    };
+    ..mastery = _masteryOf(j['mastery'] ?? {});
+
+  /// The mastery cells by language. A cell is `length:tries`; before the word
+  /// pool went there was a third part, which is dropped. The cells of a
+  /// language that was merged into another (see dialects.dart) join its own.
+  static Map<String, Set<String>> _masteryOf(Object raw) {
+    final out = <String, Set<String>>{};
+    for (final e in (raw as Map).entries) {
+      (out[languageCode(e.key as String)] ??= {}).addAll([
+        for (final x in e.value as List)
+          (x as String).split(':').take(2).join(':'),
+      ]);
+    }
+    return out;
+  }
 
   void record(GameResult r) {
     played++;
@@ -842,9 +853,14 @@ class AppState extends ChangeNotifier {
     lastUpdateCheck = DateTime.now();
     latestRelease = latest;
     try {
-      _prefs
-        ?..setInt('lastUpdateCheck', lastUpdateCheck!.millisecondsSinceEpoch)
-        ..setString('latestRelease', latest ?? '');
+      _w(
+        'lastUpdateCheck',
+        _prefs?.setInt(
+          'lastUpdateCheck',
+          lastUpdateCheck!.millisecondsSinceEpoch,
+        ),
+      );
+      _w('latestRelease', _prefs?.setString('latestRelease', latest ?? ''));
     } catch (_) {}
     notifyListeners();
   }
@@ -1067,19 +1083,23 @@ class AppState extends ChangeNotifier {
     try {
       final p = _prefs;
       if (p == null) return;
-      p
-        ..setString('styles', jsonEncode(_styles))
-        ..setString(
+      _w('styles', p.setString('styles', jsonEncode(_styles)));
+      _w(
+        'stylesHeldBy',
+        p.setString(
           'stylesHeldBy',
           jsonEncode({
             for (final e in _stylesHeld.entries) e.key: e.value.toList(),
           }),
-        )
-        ..setString('styleChangesBy', jsonEncode(_styleChanges))
-        // the forms before each language had its own
-        ..remove('style')
-        ..remove('stylesHeld')
-        ..remove('styleChanges');
+        ),
+      );
+      _w(
+        'styleChangesBy',
+        p.setString('styleChangesBy', jsonEncode(_styleChanges)),
+      );
+      _w('style', p.remove('style'));
+      _w('stylesHeld', p.remove('stylesHeld'));
+      _w('styleChanges', p.remove('styleChanges'));
     } catch (_) {}
   }
 
@@ -1225,11 +1245,13 @@ class AppState extends ChangeNotifier {
 
   void _saveDailyLog() {
     try {
-      _prefs
-        ?..setString('dailyLogs', jsonEncode(_dailyLogs))
-        ..setString('dailyBests', jsonEncode(_dailyBests))
-        ..remove('dailyLog')
-        ..remove('dailyBest');
+      _w('dailyLogs', _prefs?.setString('dailyLogs', jsonEncode(_dailyLogs)));
+      _w(
+        'dailyBests',
+        _prefs?.setString('dailyBests', jsonEncode(_dailyBests)),
+      );
+      _w('dailyLog', _prefs?.remove('dailyLog'));
+      _w('dailyBest', _prefs?.remove('dailyBest'));
     } catch (_) {}
   }
 
@@ -1244,7 +1266,10 @@ class AppState extends ChangeNotifier {
     if (f == null) {
       // there is no store (it could not be opened), so this was not kept
       saveFailures++;
-      appLog.e('save', '$what was not saved: storage is not available');
+      // (the first twenty are written: the rest would only fill the log)
+      if (saveFailures <= 20) {
+        appLog.e('save', '$what was not saved: storage is not available');
+      }
       return;
     }
     f.then(
@@ -1268,7 +1293,7 @@ class AppState extends ChangeNotifier {
     try {
       final p = _prefs = await SharedPreferences.getInstance();
       try {
-        lang = p.getString('lang') ?? lang;
+        lang = languageCode(p.getString('lang') ?? lang);
         length = p.getInt('length') ?? length;
         tries = p.getInt('tries') ?? tries;
         useFrequency = p.getBool('useFrequency') ?? true;
@@ -1327,6 +1352,7 @@ class AppState extends ChangeNotifier {
         daily = {};
       }
       try {
+        GameRow.mergedLanguageRows = 0;
         history = _readHistory(p);
         if (history.dirtyMonths.isNotEmpty) saveHistory(); // from the old form
       } catch (e) {
@@ -1349,6 +1375,7 @@ class AppState extends ChangeNotifier {
         _dailyBests.clear();
       }
       _readAchievements(p);
+      _foldVariants(p);
       appLog.i(
         'store',
         'load ends: version ${p.getString('lastRunVersion')}, '
@@ -1360,6 +1387,102 @@ class AppState extends ChangeNotifier {
     }
     loaded = true;
     notifyListeners();
+  }
+
+  /// Moves what is kept under the code of a language that was merged into
+  /// another (see dialects.dart) to the new one, and writes it so the old code
+  /// is gone from storage. The statistics and the history rows were already
+  /// read under the new code; this is the rest, and the write.
+  void _foldVariants(SharedPreferences p) {
+    var changed = false;
+    for (final e in mergedLanguages.entries) {
+      final old = e.key, now = e.value;
+      final style = _styles.remove(old);
+      if (style != null) {
+        _styles.putIfAbsent(now, () => style);
+        changed = true;
+      }
+      final held = _stylesHeld.remove(old);
+      if (held != null) {
+        (_stylesHeld[now] ??= {}).addAll(held);
+        changed = true;
+      }
+      final changes = _styleChanges.remove(old);
+      if (changes != null) {
+        _styleChanges[now] = ((_styleChanges[now] ?? 0) + changes).clamp(
+          0,
+          1000000,
+        );
+        changed = true;
+      }
+      final log = _dailyLogs.remove(old);
+      if (log != null) {
+        _dailyLogs[now] = mergeDailyLogs(_dailyLogs[now] ?? {}, log);
+        changed = true;
+      }
+      final best = _dailyBests.remove(old);
+      if (best != null) {
+        _dailyBests[now] = max(_dailyBests[now] ?? 0, best);
+        changed = true;
+      }
+      final ach = _langAch.remove(old);
+      if (ach != null) {
+        _langAch[now] = mergeAchStates(_langAch[now] ?? {}, ach);
+        changed = true;
+      }
+      // a daily in progress was against the old language's word: it is dropped
+      // (the calendar above keeps that the day was played)
+      final before = daily.length;
+      daily.removeWhere((k, _) => k.startsWith('$old|'));
+      if (daily.length != before) changed = true;
+    }
+    // the achievements that count languages hold the codes they counted
+    for (final e in _globalAch.entries.toList()) {
+      final fold = foldMergedLanguages(
+        e.value,
+        badges: achievementById(e.key)?.track == Track.badges,
+      );
+      if (!identical(fold, e.value)) {
+        _globalAch[e.key] = fold;
+        changed = true;
+      }
+    }
+    for (final langs in _langAch.values) {
+      for (final e in langs.entries.toList()) {
+        final fold = foldMergedLanguages(e.value);
+        if (!identical(fold, e.value)) {
+          langs[e.key] = fold;
+          changed = true;
+        }
+      }
+    }
+    final statsText = p.getString('stats') ?? '';
+    final rows = GameRow.mergedLanguageRows > 0;
+    final names = mergedLanguages.keys.any(
+      (c) => statsText.contains('"$c"') || (p.getString('lang') ?? '') == c,
+    );
+    if (!changed && !rows && !names) return;
+    appLog.i(
+      'store',
+      'merged language variants: ${mergedLanguages.keys.join(', ')} are now '
+          '${mergedLanguages.values.join(', ')}',
+    );
+    _saveStyle();
+    _saveDailyLog();
+    _saveAchievements();
+    _w(
+      'daily',
+      p.setString(
+        'daily',
+        jsonEncode({for (final e in daily.entries) e.key: e.value.toJson()}),
+      ),
+    );
+    _w('stats', p.setString('stats', jsonEncode(stats.toJson())));
+    _w('lang', p.setString('lang', lang));
+    if (rows) {
+      history.markAllDirty();
+      saveHistory();
+    }
   }
 
   // What is kept for each language is read as it was saved; the forms from
@@ -1467,20 +1590,25 @@ class AppState extends ChangeNotifier {
   /// The achievements as they are saved: the global ones, then each language's.
   void _saveAchievements() {
     try {
-      _prefs
-        ?..setString(
+      _w(
+        'ach',
+        _prefs?.setString(
           'ach',
           jsonEncode({
             for (final e in _globalAch.entries) e.key: e.value.toJson(),
           }),
-        )
-        ..setString(
+        ),
+      );
+      _w(
+        'achLang',
+        _prefs?.setString(
           'achLang',
           jsonEncode({
             for (final l in _langAch.entries)
               l.key: {for (final e in l.value.entries) e.key: e.value.toJson()},
           }),
-        );
+        ),
+      );
     } catch (_) {}
   }
 
@@ -1557,18 +1685,20 @@ class AppState extends ChangeNotifier {
     try {
       final p = _prefs;
       if (p != null) {
-        p
-          ..setString('lang', lang)
-          ..setInt('length', length)
-          ..setInt('tries', tries)
-          ..setBool('useFrequency', useFrequency)
-          ..setInt('helper', helper.index)
-          ..setInt('mode', mode.index)
-          ..setInt('share', share)
-          ..setInt('theme', themeMode.index)
-          ..setBool('seenHowTo', seenHowTo)
-          ..setString('stats', jsonEncode(stats.toJson()))
-          ..remove('unlocked'); // the earlier format, now replaced
+        _w('lang', p.setString('lang', lang));
+        _w('length', p.setInt('length', length));
+        _w('tries', p.setInt('tries', tries));
+        _w('useFrequency', p.setBool('useFrequency', useFrequency));
+        _w('helper', p.setInt('helper', helper.index));
+        _w('mode', p.setInt('mode', mode.index));
+        _w('share', p.setInt('share', share));
+        _w('theme', p.setInt('theme', themeMode.index));
+        _w('seenHowTo', p.setBool('seenHowTo', seenHowTo));
+        _w('stats', p.setString('stats', jsonEncode(stats.toJson())));
+        _w(
+          'unlocked',
+          p.remove('unlocked'),
+        ); // the earlier format, now replaced
       }
     } catch (_) {}
     _saveAchievements();
@@ -1601,15 +1731,14 @@ class AppState extends ChangeNotifier {
     this.themeMode = themeMode ?? this.themeMode;
     this.share = (share ?? this.share).clamp(0, maxShare);
     try {
-      _prefs
-        ?..setString('lang', this.lang)
-        ..setInt('length', this.length)
-        ..setInt('tries', this.tries)
-        ..setBool('useFrequency', this.useFrequency)
-        ..setInt('helper', this.helper.index)
-        ..setInt('mode', this.mode.index)
-        ..setInt('share', this.share)
-        ..setInt('theme', this.themeMode.index);
+      _w('lang', _prefs?.setString('lang', this.lang));
+      _w('length', _prefs?.setInt('length', this.length));
+      _w('tries', _prefs?.setInt('tries', this.tries));
+      _w('useFrequency', _prefs?.setBool('useFrequency', this.useFrequency));
+      _w('helper', _prefs?.setInt('helper', this.helper.index));
+      _w('mode', _prefs?.setInt('mode', this.mode.index));
+      _w('share', _prefs?.setInt('share', this.share));
+      _w('theme', _prefs?.setInt('theme', this.themeMode.index));
     } catch (_) {}
     notifyListeners();
   }

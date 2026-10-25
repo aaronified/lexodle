@@ -138,12 +138,13 @@ void main() {
       // every achievement of the language wears its flag
       expect(find.byKey(const ValueKey('badges-one_shot')), findsOneWidget);
       expect(find.byKey(const ValueKey('badges-wins_10')), findsOneWidget);
-      // the one that counts languages wears every flag won in
+      // the one that counts languages wears every flag won in: English draws two
+      // (gb and us, each half), French one
       final shared = find.descendant(
         of: find.byKey(const ValueKey('badges-bilingual')),
         matching: find.byType(SvgPicture),
       );
-      expect(shared, findsNWidgets(2));
+      expect(shared, findsNWidgets(3));
       // picking French shows French's
       await tester.tap(find.byKey(const ValueKey('lang-fr')));
       await tester.pump();

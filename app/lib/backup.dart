@@ -9,6 +9,7 @@ import 'history.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'store.dart';
+import 'dialects.dart';
 
 /// The version of the backup file; a file from a later one is refused rather
 /// than half understood.
@@ -155,7 +156,7 @@ Backup parseBackup(String text) {
         if (v is! Map) _bad('language $code');
         final play = _playstyle(v['playstyle']);
         final daily = _daily(v['daily']);
-        languages[code] = LanguageKept(
+        final kept = LanguageKept(
           style: play?.style,
           held: play?.held,
           changes: play?.changes,
@@ -163,6 +164,15 @@ Backup parseBackup(String text) {
           dailyBest: daily?.$2,
           achievements: _achievements(v['achievements']),
         );
+        // a variant that has been merged into another language joins it (the
+        // language's own playstyle wins when both have one)
+        final now = languageCode(code);
+        final had = languages[now];
+        languages[now] = had == null
+            ? kept
+            : code == now
+            ? mergeKept(kept, had)
+            : mergeKept(had, kept);
       }
     } else if (raw['playstyle'] != null ||
         raw['daily'] != null ||
@@ -223,7 +233,7 @@ Map<String, Object> _settings(Object? raw) {
         !RegExp(r'^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$').hasMatch(lang)) {
       _bad('lang');
     }
-    out['lang'] = lang;
+    out['lang'] = languageCode(lang);
   }
   final length = integer('length', 4, 8);
   if (length != null) out['length'] = length;
@@ -278,7 +288,10 @@ Map<String, AchState> _achievements(Object? raw) {
     if (v is! Map) _bad('${e.key}');
     final s = AchState.fromJson(v.cast<String, dynamic>());
     if (s.times < 0 || s.times > _bigCount || s.progress < 0) _bad('${e.key}');
-    out[e.key as String] = s;
+    out[e.key as String] = foldMergedLanguages(
+      s,
+      badges: achievementById(e.key as String)?.track == Track.badges,
+    );
   }
   return out;
 }

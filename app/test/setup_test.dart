@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -148,9 +149,11 @@ void main() {
       final langs = (await tester.runAsync(WordBank.languages))!;
       expect(
         langs,
-        hasLength(19),
-      ); // 17 languages, English and Portuguese in two spellings each
+        hasLength(17),
+      ); // English and Portuguese are one language each, spellings merged
       expect(langs.map((l) => l.code), isNot(contains('fi')));
+      expect(langs.map((l) => l.code), isNot(contains('en-GB')));
+      expect(langs.map((l) => l.code), isNot(contains('pt-PT')));
       for (final l in langs) {
         expect(l.lengths, isNotEmpty, reason: l.code);
         for (final n in l.lengths) {
@@ -168,49 +171,93 @@ void main() {
       final langs = (await tester.runAsync(WordBank.languages))!;
       for (final l in langs) {
         expect(l.flag, startsWith('svg:'), reason: l.code);
-        expect(
-          File('assets/flags/${l.flag.substring(4)}.svg').existsSync(),
-          isTrue,
-          reason: l.code,
-        );
+        for (final name in l.flag.substring(4).split('+')) {
+          expect(
+            File('assets/flags/$name.svg').existsSync(),
+            isTrue,
+            reason: '${l.code}: $name',
+          );
+        }
       }
-      // the two Englishes and the two Portuguese have a flag each
-      expect(langs.firstWhere((l) => l.code == 'en').flag, 'svg:us');
-      expect(langs.firstWhere((l) => l.code == 'en-GB').flag, 'svg:gb');
-      expect(langs.firstWhere((l) => l.code == 'pt').flag, 'svg:br');
-      expect(langs.firstWhere((l) => l.code == 'pt-PT').flag, 'svg:pt');
+      // English and Portuguese carry the flags of both variants
+      expect(langs.firstWhere((l) => l.code == 'en').flag, 'svg:gb+us');
+      expect(langs.firstWhere((l) => l.code == 'pt').flag, 'svg:br+pt');
       expect(langs.firstWhere((l) => l.code == 'ca').flag, 'svg:ca');
       // and no two share one
       expect({for (final l in langs) l.flag}.length, langs.length);
     });
 
-    Set<String> words(String code) => {
-      for (final l in File('assets/words/$code.txt').readAsLinesSync())
-        l.split('\t').first,
+    /// word -> weight, as the file has it
+    Map<String, int> weights(String code) => {
+      for (final line in File('assets/words/$code.txt').readAsLinesSync())
+        line.split('\t').first: int.parse(line.split('\t')[1]),
     };
 
-    test('American and British English differ in spelling', () {
-      final us = words('en'), uk = words('en-GB');
-      for (final w in ['color', 'favor', 'center', 'defense']) {
-        expect(us, contains(w));
-        expect(uk, isNot(contains(w)), reason: w);
+    test('the variants are merged, so no list is left for one of them', () {
+      for (final code in ['en-GB', 'pt-PT']) {
+        expect(
+          File('assets/words/$code.txt').existsSync(),
+          isFalse,
+          reason: code,
+        );
       }
-      for (final w in ['colour', 'favour', 'centre', 'defence']) {
-        expect(uk, contains(w));
-        expect(us, isNot(contains(w)), reason: w);
-      }
-      expect(us.intersection(uk).length, greaterThan(15000)); // mostly shared
     });
 
-    test('Brazilian and European Portuguese differ in spelling', () {
-      final br = words('pt'), pt = words('pt-PT');
-      expect(br, contains('prêmio'));
-      expect(br, isNot(contains('prémio')));
-      expect(pt, contains('prémio'));
-      expect(pt, isNot(contains('prêmio')));
+    test('English holds American and British spellings, merged', () {
+      final en = weights('en');
+      for (final w in [
+        'color',
+        'colour',
+        'favor',
+        'favour',
+        'center',
+        'centre',
+        'meter',
+        'metre',
+      ]) {
+        expect(en, contains(w));
+      }
+      expect('color'.length, 5);
+      expect('colour'.length, 6);
+      // a word is kept if either dictionary accepts it, so the spelling of
+      // only one is no reason to lose it
+      expect(en.length, greaterThan(25000));
     });
 
-    test('the Portuguese lists carry no names, and keep the real words', () {
+    test('a word only one variant accepts has half the weight of a shared one', () {
+      final en = weights('en');
+      // raw wordfreq weight (int(10 ** zipf)) of the words, which no dictionary
+      // changes: `color` and `metre` are accepted by one variant of two, so
+      // they weigh half of it; `about` and `their` by both, so all of it
+      const raw = {'color': 81284, 'metre': 5754, 'about': 2511886};
+      expect(en['about'], raw['about'], reason: 'shared: the full weight');
+      expect(en['their'], 2137962, reason: 'shared: the full weight');
+      expect(en['color'], inInclusiveRange(40641, 40643));
+      expect(
+        en['color']!,
+        closeTo(raw['color']! / 2, 1),
+        reason: 'half of the raw weight',
+      );
+      expect(en['metre']!, closeTo(raw['metre']! / 2, 1));
+      // the shared word is not halved
+      expect(en['about']!, greaterThan(en['color']! * 50));
+    });
+
+    test('Portuguese holds Brazilian and European spellings, merged', () {
+      final pt = weights('pt');
+      expect(pt, contains('prêmio')); // Brazil
+      expect(pt, contains('prémio')); // Portugal
+      expect(pt, contains('ônibus')); // Brazil only
+      // a shared word keeps its full weight, one used by a single variant has
+      // half of its raw weight (prêmio 104712, prémio 22908, wordfreq)
+      expect(pt['casa'], 977237);
+      expect(pt['tempo'], 1047128);
+      expect(pt['prêmio']!, closeTo(104712 / 2, 1));
+      expect(pt['prémio']!, closeTo(22908 / 2, 1));
+      expect(pt['casa']!, greaterThan(pt['prêmio']!));
+    });
+
+    test('the Portuguese list carries no names, and keeps the real words', () {
       // names the dictionary alone lets through, in lowercase
       const names = [
         'paulo',
@@ -225,13 +272,28 @@ void main() {
         'lena',
         'rafa',
       ];
-      for (final code in ['pt', 'pt-PT']) {
-        final w = words(code);
-        for (final name in names) {
-          expect(w, isNot(contains(name)), reason: '$code: $name');
+      final w = weights('pt');
+      for (final name in names) {
+        expect(w, isNot(contains(name)), reason: name);
+      }
+      for (final word in ['casa', 'falar', 'tempo', 'cidade', 'amigo']) {
+        expect(w, contains(word), reason: word);
+      }
+    });
+
+    test('the counts in the language table match the lists', () {
+      final table = jsonDecode(
+        File('assets/words/languages.json').readAsStringSync(),
+      ) as List;
+      for (final m in table.cast<Map<String, dynamic>>()) {
+        final code = m['code'] as String;
+        final byLength = <int, int>{};
+        for (final w in weights(code).keys) {
+          byLength[w.length] = (byLength[w.length] ?? 0) + 1;
         }
-        for (final word in ['casa', 'falar', 'tempo', 'cidade', 'amigo']) {
-          expect(w, contains(word), reason: '$code: $word');
+        final counts = (m['counts'] as Map).cast<String, int>();
+        for (final n in (m['lengths'] as List).cast<int>()) {
+          expect(byLength[n], counts['$n'], reason: '$code $n');
         }
       }
     });

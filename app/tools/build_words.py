@@ -12,10 +12,14 @@ Every language is built the same way:
 3. the first POOL accepted words of each length are kept, with a weight from
    their frequency.
 
-Spelling variants (English US / UK, Portuguese Brazil / Portugal) share one
-frequency list, since wordfreq has one per language, and differ in the
-dictionary that filters it: colour is accepted by the UK dictionary and not by
-the US one.
+Spelling variants (English US / UK, Portuguese Brazil / Portugal) are one
+language each. wordfreq has one frequency list per language and the variants'
+dictionaries filter it differently (colour is accepted by the UK dictionary
+and not by the US one), so a merged language keeps a word if any of its
+dictionaries accepts it, and its weight is the average of the weights the
+variants give it: the full weight when every dictionary accepts the word, half
+of it (two variants) when only one does, since the other variant never uses
+it. The first POOL words by that averaged weight are kept.
 
 Two things differ: Indonesian uses LibreOffice's dictionary (wooorm has none),
 and the two Portuguese lists get a second filter, because the Portuguese
@@ -53,7 +57,7 @@ EXAMINE = 80_000  # most candidates tried per length
 FREQUENCY_ONLY_ZIPF = 3.0
 
 # lists that also need a Wiktionary entry (see the module docstring)
-WIKTIONARY_CHECKED = {"pt", "pt-PT"}
+WIKTIONARY_CHECKED = {"pt"}
 WIKT_API = "https://en.wiktionary.org/w/api.php"
 WIKT_UA = "lexodle-build/1.0 (https://github.com/aaronified/lexodle)"
 
@@ -61,19 +65,19 @@ WOORM = "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries
 LIBRE = "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/{c}/{f}"
 
 # code, name shown in the app, language heading on en.wiktionary.org,
-# wordfreq code, dictionary directory (None: no dictionary), flag.
-# A flag is "svg:<name>", a file in assets/flags/ (Twemoji graphics, CC BY 4.0,
+# wordfreq code, dictionary directory (None: no dictionary; a list: the
+# variants of one language, merged), flag.
+# A flag is "svg:<name>" (or "svg:<a>+<b>", two flags side by side, for a
+# language that merges two variants), a file in assets/flags/ (Twemoji graphics, CC BY 4.0,
 # and the Catalan flag drawn for the project). They are not emoji: an emoji
 # needs a font the device may not have, and a web page fetches one.
 LANGS = [
-    ("en", "English (US)", "English", "en", "en", "svg:us"),
-    ("en-GB", "English (UK)", "English", "en", "en-GB", "svg:gb"),
+    ("en", "English", "English", "en", ["en", "en-GB"], "svg:gb+us"),
     ("es", "Español", "Spanish", "es", "es", "svg:es"),
     ("fr", "Français", "French", "fr", "fr", "svg:fr"),
     ("de", "Deutsch", "German", "de", "de", "svg:de"),
     ("it", "Italiano", "Italian", "it", "it", "svg:it"),
-    ("pt", "Português (Brasil)", "Portuguese", "pt", "pt", "svg:br"),
-    ("pt-PT", "Português (Portugal)", "Portuguese", "pt", "pt-PT", "svg:pt"),
+    ("pt", "Português", "Portuguese", "pt", ["pt", "pt-PT"], "svg:br+pt"),
     ("nl", "Nederlands", "Dutch", "nl", "nl", "svg:nl"),
     ("pl", "Polski", "Polish", "pl", "pl", "svg:pl"),
     ("sv", "Svenska", "Swedish", "sv", "sv", "svg:se"),
@@ -209,33 +213,69 @@ def candidates(wf):
     return out
 
 
-def build(code, wf, dictdir, heading):
+def acceptor(code, wf, dictdir):
+    """accept(word, zipf) for one dictionary directory (None: frequency only)
+    and the kind of filter it is."""
     from spylls.hunspell import Dictionary
 
-    cands = candidates(wf)
     if dictdir is None:
-        accept = lambda w, z: z >= FREQUENCY_ONLY_ZIPF  # noqa: E731
-        kind = "frequency"
+        return (lambda w, z: z >= FREQUENCY_ONLY_ZIPF), "frequency"
+    d = Dictionary.from_files(str(fetch(dictdir)[0]))
+    if wf == "de":
+        accept = lambda w, z: d.lookup(w) or d.lookup(w.capitalize())  # noqa: E731
     else:
-        d = Dictionary.from_files(str(fetch(dictdir)[0]))
-        if wf == "de":
-            accept = lambda w, z: d.lookup(w) or d.lookup(w.capitalize())  # noqa: E731
-        else:
-            accept = lambda w, z: d.lookup(w)  # noqa: E731
-        kind = "hunspell"
+        accept = lambda w, z: d.lookup(w)  # noqa: E731
+    kind = "hunspell"
     if code in WIKTIONARY_CHECKED:
-        members = wiktionary_members(heading)
+        members = wiktionary_members(HEADINGS[code])
         hunspell_ok = accept
         accept = lambda w, z: w in members and hunspell_ok(w, z)  # noqa: E731
         kind = "hunspell+wiktionary"
+    return accept, kind
+
+
+HEADINGS = {}
+
+
+def build(code, wf, dictdir, heading):
+    import heapq
+
+    HEADINGS[code] = heading
+    cands = candidates(wf)
+    dirs = dictdir if isinstance(dictdir, list) else [dictdir]
+    accepts, kind = [], None
+    for dd in dirs:
+        acc, kind = acceptor(code, wf, dd)
+        accepts.append(acc)
     lines, lengths, counts = [], [], {}
     for n in LENGTHS:
         kept = []
-        for w, z in cands[n][:EXAMINE]:
-            if accept(w, z):
-                kept.append((w, max(1, int(10 ** z))))
-                if len(kept) >= POOL:
+        if len(accepts) == 1:
+            for w, z in cands[n][:EXAMINE]:
+                if accepts[0](w, z):
+                    kept.append((w, max(1, int(10 ** z))))
+                    if len(kept) >= POOL:
+                        break
+        else:
+            # merged variants: the weight is the average over the variants,
+            # a variant that does not accept the word counting as 0. A later
+            # candidate can weigh no more than its own raw weight, so the scan
+            # stops once the POOL-th best averaged weight is above it.
+            top = []  # min-heap of the POOL best averaged weights
+            for w, z in cands[n][:EXAMINE]:
+                raw = max(1, int(10 ** z))
+                if len(top) >= POOL and raw <= top[0]:
                     break
+                votes = sum(1 for acc in accepts if acc(w, z))
+                if votes:
+                    avg = max(1, round(raw * votes / len(accepts)))
+                    kept.append((w, avg))
+                    if len(top) < POOL:
+                        heapq.heappush(top, avg)
+                    elif avg > top[0]:
+                        heapq.heapreplace(top, avg)
+            kept.sort(key=lambda x: -x[1])  # stable: ties keep the raw order
+            kept = kept[:POOL]
         counts[str(n)] = len(kept)
         if len(kept) >= MIN_POOL:
             lengths.append(n)
@@ -247,12 +287,16 @@ def write_sources(manifest):
     built = {m["code"]: m.get("filter") for m in manifest}
     rows = []
     for code, name, _, _, dictdir, _ in LANGS:
-        src = source(dictdir)
+        dirs = dictdir if isinstance(dictdir, list) else [dictdir]
+        src = source(dirs[0])
         if src is None:
             rows.append(f"| {name} (`{code}`) | frequency only (zipf >= 3) | none (no dictionary) |")
         else:
             extra = " + en.wiktionary.org lemma check" if built.get(code) == "hunspell+wiktionary" else ""
-            rows.append(f"| {name} (`{code}`) | Hunspell, {src[2]} `{dictdir}`{extra} | {fetch(dictdir)[1]} |")
+            ds = " and ".join(f"`{d}`" for d in dirs)
+            merged = ", variants merged (weights averaged)" if len(dirs) > 1 else ""
+            lic = "; ".join(f"`{d}`: {fetch(d)[1]}" if len(dirs) > 1 else fetch(d)[1] for d in dirs)
+            rows.append(f"| {name} (`{code}`) | Hunspell, {src[2]} {ds}{extra}{merged} | {lic} |")
     (OUT / "SOURCES.md").write_text(
         "# Word list sources\n\n"
         "Candidates come from [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0). "

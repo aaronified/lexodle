@@ -18,20 +18,28 @@ abbreviations drop out; German nouns are capitalised in its dictionary, so Germa
 capitalised form. Each language keeps up to 6,000 words per length as valid guesses, with a weight
 from their frequency.
 
-Spelling variants (English US / UK, Portuguese Brazil / Portugal) share one frequency list, since
-wordfreq has one per language, and differ in the dictionary that filters it: `colour` passes the UK
-dictionary and not the US one. Flags are the SVGs in `app/assets/flags`, one per language, set in
-the table of `build_words.py`.
+Spelling variants are one language each: English (US and UK) is `en`, Portuguese (Brazil and
+Portugal) is `pt`. wordfreq has one frequency list per language and each variant's dictionary
+filters it differently (`colour` passes the UK dictionary and not the US one), so a merged language
+keeps a word if **any** of its dictionaries accepts it, and its weight is the **average of the
+weights the variants give it**: the full weight when both accept the word, half of it when only one
+does (the other variant never uses it). The first 6,000 by that averaged weight are kept, so
+`color` and `colour` are both words, each with half the weight of a word both spell alike. Saved
+progress under the old codes (`en-GB`, `pt-PT`) is moved to the merged language when the app reads
+its storage or a backup: the statistics, the history, the daily calendar (the better result on a
+day both were played), the playstyle, and the achievements (earned as often as the more often
+earned of the two). A daily in progress under an old code is dropped; that the day was played is
+kept. Flags are the SVGs in `app/assets/flags`, one per language (two side by side, each cropped
+to half, for a merged one), set in the table of `build_words.py`.
 
 ## Known gaps
 
 Names are the weak point of a dictionary filter. The Portuguese dictionary stores many names as
 ordinary lowercase entries (`brasil`, `lisboa`, `jorge`), so the two Portuguese lists get a second
 filter: a word must also have its lowercase page on en.wiktionary.org as a Portuguese lemma or
-non-lemma form, which names do not (`paulo`, `maria`, `pedro`). **The filter is in the generator,
-but the shipped Portuguese lists have not been rebuilt with it yet** and still contain those
-names; run `python app/tools/build_words.py pt pt-PT` (about 15 minutes, mostly the one-off
-download of Wiktionary's category lists). Finnish was removed: it has no Hunspell dictionary in
+non-lemma form, which names do not (`paulo`, `maria`, `pedro`). The shipped list is built with it
+(`python app/tools/build_words.py en pt` rebuilds the two merged languages; the one-off download of
+Wiktionary's category lists takes about 15 minutes). Finnish was removed: it has no Hunspell dictionary in
 either collection, and a frequency-only list let names and abbreviations in.
 `app/assets/words/SOURCES.md` lists every dictionary and the licence it states; only the filtered
 word lists are shipped.

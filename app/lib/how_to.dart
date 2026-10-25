@@ -22,7 +22,7 @@ class HowToPage extends StatelessWidget {
   /// classic. It replaces this page, so back from the game
   /// is the menu.
   static void startDefaultGame(BuildContext context) {
-    appState.setup(lang: 'en-GB', length: 5, tries: 6, mode: GameMode.classic);
+    appState.setup(lang: 'en', length: 5, tries: 6, mode: GameMode.classic);
     Navigator.pushReplacementNamed(context, Routes.play);
   }
 
