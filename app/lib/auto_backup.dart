@@ -6,12 +6,21 @@ import 'package:flutter/services.dart';
 import 'backup.dart';
 import 'store.dart';
 import 'update_check.dart';
+import 'app_log.dart';
 
 /// Where the automatic backups are written. Narrow enough that tests fake it.
 abstract interface class BackupFiles {
   /// Saves a copy in the Downloads folder; the name it was saved as, or null
   /// where that cannot be done (before Android 10, or off Android).
-  Future<String?> saveToDownloads(String name, Uint8List bytes);
+  Future<String?> saveToDownloads(
+    String name,
+    Uint8List bytes, {
+    String mime = 'application/json',
+  });
+
+  /// The app's log, in a folder of its own (not pruned with the backups).
+  Future<bool> writeLog(String name, Uint8List bytes);
+  Future<Uint8List?> readLog(String name);
 
   /// Saves a copy in the app's own storage (kept through an update, not through
   /// a clear of the app's data or an uninstall).
@@ -34,12 +43,33 @@ class PlatformBackupFiles implements BackupFiles {
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   @override
-  Future<String?> saveToDownloads(String name, Uint8List bytes) async {
+  Future<String?> saveToDownloads(
+    String name,
+    Uint8List bytes, {
+    String mime = 'application/json',
+  }) async {
     if (!supported) return null;
     return _channel.invokeMethod<String>('saveToDownloads', {
       'name': name,
       'bytes': bytes,
+      'mime': mime,
     });
+  }
+
+  @override
+  Future<bool> writeLog(String name, Uint8List bytes) async {
+    if (!supported) return false;
+    return await _channel.invokeMethod<bool>('writeLog', {
+          'name': name,
+          'bytes': bytes,
+        }) ??
+        false;
+  }
+
+  @override
+  Future<Uint8List?> readLog(String name) async {
+    if (!supported) return null;
+    return _channel.invokeMethod<Uint8List>('readLog', {'name': name});
   }
 
   @override
@@ -127,12 +157,21 @@ class AutoBackup {
     try {
       internal = await files.writeInternal(name, bytes);
       if (internal) await _prune();
-    } catch (_) {}
+    } catch (e) {
+      appLog.e('backup', 'could not write $name to app memory: $e');
+    }
     if (downloads) {
       try {
         saved = await files.saveToDownloads(name, bytes) != null;
-      } catch (_) {}
+      } catch (e) {
+        appLog.e('backup', 'could not write $name to Downloads: $e');
+      }
     }
+    appLog.i(
+      'backup',
+      '$label backup ${bytes.length} bytes: app memory $internal, '
+          'downloads ${downloads ? saved : 'not asked'}',
+    );
     return AutoBackupResult(name: name, internal: internal, downloads: saved);
   }
 

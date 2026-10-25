@@ -71,3 +71,17 @@ load failed with a `NoSuchMethodError`, which the app swallowed, so no progress 
 (updates and force-stops both looked like data loss). Debug builds do not shrink, so it only showed
 in the release APK. `test/release_config_test.dart` fails if the shrinker is turned back on. To turn
 it on again, first show with a release build that progress is saved and read after a force-stop.
+
+## The log
+
+Settings has a **log** section. The app writes its own steps to a log kept in its private storage
+(`files/logs`, apart from the backups, which are pruned by age): each start, what the load found
+(keys, games, played, rows skipped), every save that failed or could not be tried because storage
+was not available, backups, restores, update checks and installs, recorded games (mode, length,
+won or lost; never words or guesses), and errors. A line is `time level tag: message`, level `I`
+(happened), `W` (could be wrong) or `E` (failed).
+
+One run holds the newest 4,000 lines. At the next start it moves to a history of the newest 300,000
+characters. **view this run** shows the last lines; **export this run** and **export everything**
+save a text file to Downloads (`lexodle-log-run-…txt`, `lexodle-log-all-…txt`) to send with a
+problem report. A failed save is counted and shown in the section's summary line.

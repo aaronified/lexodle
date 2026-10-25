@@ -6,6 +6,7 @@ import 'auto_backup.dart';
 import 'backup.dart';
 import 'donate.dart';
 import 'haptics.dart';
+import 'log_section.dart';
 import 'main.dart';
 import 'routes.dart';
 import 'stepper_choice.dart';
@@ -81,6 +82,10 @@ class SettingsPage extends StatelessWidget {
                       const UpdateSection(),
                       const SizedBox(height: 24),
                     ],
+                    const Caption('log'),
+                    const SizedBox(height: 10),
+                    const LogSection(),
+                    const SizedBox(height: 24),
                     const Caption('support lexodle'),
                     const SizedBox(height: 10),
                     const DonateSection(),

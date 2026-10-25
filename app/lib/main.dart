@@ -9,7 +9,9 @@ import 'haptics.dart';
 import 'licences.dart';
 import 'routes.dart';
 import 'store.dart';
+import 'update_check.dart';
 import 'update_section.dart';
+import 'app_log.dart';
 
 /// Dustland-style minimalism on Material 3: flat surfaces, hairline borders,
 /// near-square corners, lowercase monospace text. Every colour comes from the
@@ -85,6 +87,8 @@ final appState = AppState();
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   registerLicences();
+  appLog.i('app', 'main starts');
+  unawaited(appLog.start(version: appVersion));
   appState.load().then((_) {
     // a new version keeps a copy of what it found, then looks for a newer one
     unawaited(AutoBackup.afterUpgrade(appState));

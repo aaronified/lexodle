@@ -8,6 +8,9 @@ class FakeBackupFiles implements BackupFiles {
   final internal = <String, Uint8List>{};
   final downloads = <String, Uint8List>{};
   final deleted = <String>[];
+  final logs = <String, Uint8List>{};
+  final downloadMimes = <String, String>{};
+  bool logFails = false;
   bool internalFails = false;
   bool downloadsFails = false;
 
@@ -19,12 +22,27 @@ class FakeBackupFiles implements BackupFiles {
   final _order = <String>[];
 
   @override
-  Future<String?> saveToDownloads(String name, Uint8List bytes) async {
+  Future<String?> saveToDownloads(
+    String name,
+    Uint8List bytes, {
+    String mime = 'application/json',
+  }) async {
     if (downloadsFails) throw StateError('no space');
     if (!downloadsSupported) return null;
     downloads[name] = bytes;
+    downloadMimes[name] = mime;
     return name;
   }
+
+  @override
+  Future<bool> writeLog(String name, Uint8List bytes) async {
+    if (logFails) throw StateError('no space');
+    logs[name] = bytes;
+    return true;
+  }
+
+  @override
+  Future<Uint8List?> readLog(String name) async => logs[name];
 
   @override
   Future<bool> writeInternal(String name, Uint8List bytes) async {

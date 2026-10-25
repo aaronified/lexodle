@@ -2,6 +2,9 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+
+import 'app_log.dart';
+
 import 'package:flutter/material.dart' show ThemeMode;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -791,7 +794,7 @@ class AppState extends ChangeNotifier {
   void setDownloadsBackup(bool on) {
     downloadsBackup = on;
     try {
-      _prefs?.setBool('downloadsBackup', on);
+      _w('downloadsBackup', _prefs?.setBool('downloadsBackup', on));
     } catch (_) {}
     notifyListeners();
   }
@@ -802,7 +805,7 @@ class AppState extends ChangeNotifier {
   void noteRunVersion(String v) {
     lastRunVersion = v;
     try {
-      _prefs?.setString('lastRunVersion', v);
+      _w('lastRunVersion', _prefs?.setString('lastRunVersion', v));
     } catch (_) {}
   }
 
@@ -812,7 +815,7 @@ class AppState extends ChangeNotifier {
   void setHaptics(bool on) {
     haptics = on;
     try {
-      _prefs?.setBool('haptics', on);
+      _w('haptics', _prefs?.setBool('haptics', on));
     } catch (_) {}
     notifyListeners();
   }
@@ -829,7 +832,7 @@ class AppState extends ChangeNotifier {
   void setAutoUpdateCheck(bool on) {
     autoUpdateCheck = on;
     try {
-      _prefs?.setBool('autoUpdateCheck', on);
+      _w('autoUpdateCheck', _prefs?.setBool('autoUpdateCheck', on));
     } catch (_) {}
     notifyListeners();
   }
@@ -966,9 +969,12 @@ class AppState extends ChangeNotifier {
       (k, _) => k.substring(k.indexOf('|') + 1).compareTo(oldest) < 0,
     );
     try {
-      _prefs?.setString(
+      _w(
         'daily',
-        jsonEncode({for (final e in daily.entries) e.key: e.value.toJson()}),
+        _prefs?.setString(
+          'daily',
+          jsonEncode({for (final e in daily.entries) e.key: e.value.toJson()}),
+        ),
       );
     } catch (_) {}
     notifyListeners();
@@ -1094,6 +1100,11 @@ class AppState extends ChangeNotifier {
     bool freq = true,
     DateTime? now,
   }) {
+    appLog.i(
+      'game',
+      'recorded: ${mode.name}, $length letters, $tries tries, '
+          '${won ? 'won' : 'lost'}${daily.isEmpty ? '' : ', daily'}',
+    );
     history.add(
       at: (now ?? DateTime.now()).toUtc().millisecondsSinceEpoch,
       lang: lang,
@@ -1127,13 +1138,16 @@ class AppState extends ChangeNotifier {
       for (final m in history.dirtyMonths.toList()) {
         final chunk = history.chunk(m);
         if ((chunk['games'] as List).isEmpty) {
-          p.remove(historyChunkKey(m));
+          _w(historyChunkKey(m), p.remove(historyChunkKey(m)));
         } else {
-          p.setString(historyChunkKey(m), jsonEncode(chunk));
+          _w(
+            historyChunkKey(m),
+            p.setString(historyChunkKey(m), jsonEncode(chunk)),
+          );
         }
       }
-      p.setStringList(historyIndexKey, history.months());
-      p.remove('history'); // the one string of earlier versions
+      _w(historyIndexKey, p.setStringList(historyIndexKey, history.months()));
+      _w('history', p.remove('history')); // the one string of earlier versions
       history.dirtyMonths.clear();
     } catch (_) {}
   }
@@ -1221,6 +1235,32 @@ class AppState extends ChangeNotifier {
 
   SharedPreferences? _prefs;
 
+  /// How many saves failed since the start (see [_w]).
+  int saveFailures = 0;
+
+  /// Logs a save that failed: the store answered no, or threw. Saves are not
+  /// waited for, so without this a failure would pass unseen.
+  void _w(Object what, Future<bool>? f) {
+    if (f == null) {
+      // there is no store (it could not be opened), so this was not kept
+      saveFailures++;
+      appLog.e('save', '$what was not saved: storage is not available');
+      return;
+    }
+    f.then(
+      (ok) {
+        if (!ok) {
+          saveFailures++;
+          appLog.e('save', '$what was not saved (the store answered no)');
+        }
+      },
+      onError: (Object e) {
+        saveFailures++;
+        appLog.e('save', '$what failed: $e');
+      },
+    );
+  }
+
   /// How many stored history rows could not be read on the last start.
   int skippedRows = 0;
 
@@ -1258,14 +1298,16 @@ class AppState extends ChangeNotifier {
         }
         final found = p.getString('latestRelease');
         latestRelease = found == null || found.isEmpty ? null : found;
-      } catch (_) {
+      } catch (e) {
+        appLog.w('store', 'could not read a setting: $e');
         // a setting of an unexpected kind must not stop the progress being read
       }
       final s = p.getString('stats');
       if (s != null) {
         try {
           stats = Stats.fromJson(jsonDecode(s));
-        } catch (_) {
+        } catch (e) {
+          appLog.w('store', 'could not read the statistics: $e');
           _keepUnread(p, 'stats', s); // the rest is still read
         }
       }
@@ -1280,36 +1322,42 @@ class AppState extends ChangeNotifier {
               ),
           };
         }
-      } catch (_) {
+      } catch (e) {
+        appLog.w('store', 'could not read the daily entries: $e');
         daily = {};
       }
       try {
         history = _readHistory(p);
         if (history.dirtyMonths.isNotEmpty) saveHistory(); // from the old form
-      } catch (_) {
+      } catch (e) {
+        appLog.w('store', 'could not read the history: $e');
         history = History(); // damaged: start the record again
       }
       try {
         _readStyles(p);
-      } catch (_) {
+      } catch (e) {
+        appLog.w('store', 'could not read the playstyles: $e');
         _styles.clear();
         _stylesHeld.clear();
         _styleChanges.clear();
       }
       try {
         _readDaily(p);
-      } catch (_) {
+      } catch (e) {
+        appLog.w('store', 'could not read the daily log: $e');
         _dailyLogs.clear();
         _dailyBests.clear();
       }
       _readAchievements(p);
-      // what the start found, for reading from the device log (adb logcat)
-      debugPrint(
-        'lexodle: start v${p.getString('lastRunVersion')} found '
-        '${p.getKeys().length} keys, ${history.games.length} games, '
-        '${stats.played} played, $skippedRows rows skipped',
+      appLog.i(
+        'store',
+        'load ends: version ${p.getString('lastRunVersion')}, '
+            '${p.getKeys().length} keys, ${history.games.length} games, '
+            '${stats.played} played, $skippedRows rows skipped',
       );
-    } catch (_) {}
+    } catch (e) {
+      appLog.e('store', 'storage could not be read at all: $e');
+    }
     loaded = true;
     notifyListeners();
   }
@@ -1459,6 +1507,11 @@ class AppState extends ChangeNotifier {
     Map<String, LanguageKept>? languages,
     History? history,
   }) {
+    appLog.i(
+      'restore',
+      'a backup is restored: ${stats.played} played'
+          '${history == null ? '' : ', ${history.games.length} games'}',
+    );
     // the global achievements, then what each language has: its playstyle, its
     // daily calendar and streak, and its achievements. A backup from before the
     // daily or the playstyles has none of them, and what is here stays.
@@ -1525,7 +1578,7 @@ class AppState extends ChangeNotifier {
   void markHowToSeen() {
     seenHowTo = true;
     try {
-      _prefs?.setBool('seenHowTo', true);
+      _w('seenHowTo', _prefs?.setBool('seenHowTo', true));
     } catch (_) {}
   }
 
@@ -1592,7 +1645,7 @@ class AppState extends ChangeNotifier {
         if (fresh.contains(l.code)) l,
     ];
     try {
-      _prefs?.setString('stats', jsonEncode(stats.toJson()));
+      _w('stats', _prefs?.setString('stats', jsonEncode(stats.toJson())));
     } catch (_) {}
     _saveAchievements();
     notifyListeners();

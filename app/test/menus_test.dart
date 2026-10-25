@@ -95,6 +95,11 @@ void main() {
         await tester.pumpAndSettle();
         // a page of its own, with about in it
         expect(find.byType(Dialog), findsNothing);
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('about-text')),
+          300,
+          scrollable: find.byType(Scrollable).first,
+        );
         expect(find.byKey(const ValueKey('about-text')), findsOneWidget);
         await tester.ensureVisible(
           find.byKey(const ValueKey('licences-button')),

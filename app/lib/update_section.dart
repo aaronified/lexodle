@@ -8,6 +8,7 @@ import 'auto_backup.dart';
 import 'main.dart';
 import 'ui.dart';
 import 'update_check.dart';
+import 'app_log.dart';
 
 /// Whether this build can update itself: an installed Android app (the web page
 /// is always the latest, and nothing else installs an APK).
@@ -34,10 +35,13 @@ Future<void> checkForUpdateAtLaunch({
   final r = await (check ?? GitHubReleaseCheck()).check();
   switch (r) {
     case UpdateAvailable(release: final found):
+      appLog.i('update', 'launch check: ${found.version} is available');
       appState.noteUpdateCheck(latest: found.version);
     case UpToDate():
+      appLog.i('update', 'launch check: up to date');
       appState.noteUpdateCheck(latest: null);
-    case CheckFailed():
+    case CheckFailed(why: final why):
+      appLog.w('update', 'launch check failed: ${why.name}');
       break; // not counted: the next launch tries again
   }
 }
@@ -80,14 +84,17 @@ class UpdateController extends ChangeNotifier {
     final r = await _check.check();
     switch (r) {
       case UpdateAvailable(release: final found):
+        appLog.i('update', 'check: ${found.version} is available');
         release = found;
         step = UpdateStep.available;
         appState.noteUpdateCheck(latest: found.version);
       case UpToDate():
+        appLog.i('update', 'check: up to date');
         release = null;
         step = UpdateStep.upToDate;
         appState.noteUpdateCheck(latest: null);
       case CheckFailed(why: final why):
+        appLog.w('update', 'check failed: ${why.name}');
         checkFailure = why;
         step = release == null ? UpdateStep.idle : UpdateStep.available;
         // only a check that got an answer counts (a failed one is tried again)
@@ -104,6 +111,7 @@ class UpdateController extends ChangeNotifier {
     await checkNow();
     final r = release;
     if (step != UpdateStep.available || r == null) return;
+    appLog.i('update', 'download of ${r.version} starts');
     step = UpdateStep.downloading;
     percent = 0;
     installFailure = null;
@@ -114,11 +122,16 @@ class UpdateController extends ChangeNotifier {
         .listen(
           (e) {
             if (e.failure != null) {
+              appLog.w(
+                'update',
+                'install did not go through: ${e.failure!.name}',
+              );
               installFailure = e.failure == InstallFailure.cancelled
                   ? null
                   : e.failure;
               step = UpdateStep.available;
             } else if (e.installing) {
+              appLog.i('update', 'handed to the installer');
               step = UpdateStep.installing;
             } else {
               percent = e.percent ?? percent;

@@ -27,6 +27,7 @@ class MainActivity : FlutterActivity() {
                         saveToDownloads(
                             call.argument<String>("name")!!,
                             call.argument<ByteArray>("bytes")!!,
+                            call.argument<String>("mime") ?: "application/json",
                         ),
                     )
                     "writeInternal" -> {
@@ -45,6 +46,15 @@ class MainActivity : FlutterActivity() {
                         val f = File(backupsDir(), safe(call.argument<String>("name")!!))
                         result.success(if (f.isFile) f.readBytes() else null)
                     }
+                    "writeLog" -> {
+                        File(logsDir(), safe(call.argument<String>("name")!!))
+                            .writeBytes(call.argument<ByteArray>("bytes")!!)
+                        result.success(true)
+                    }
+                    "readLog" -> {
+                        val f = File(logsDir(), safe(call.argument<String>("name")!!))
+                        result.success(if (f.isFile) f.readBytes() else null)
+                    }
                     "deleteInternal" -> {
                         File(backupsDir(), safe(call.argument<String>("name")!!)).delete()
                         result.success(true)
@@ -60,13 +70,16 @@ class MainActivity : FlutterActivity() {
     /// The folder of the app's own copies, inside its private storage.
     private fun backupsDir(): File = File(filesDir, "backups").also { it.mkdirs() }
 
+    /// The app's log, kept apart from the backups (which are pruned by age).
+    private fun logsDir(): File = File(filesDir, "logs").also { it.mkdirs() }
+
     /// A file name with no path in it.
     private fun safe(name: String): String = File(name).name
 
     /// Saves [bytes] as [name] in the Downloads folder, replacing an earlier copy
     /// of the same name that this app made. Returns the name it was saved as, or
     /// null before Android 10 (which would need a storage permission).
-    private fun saveToDownloads(name: String, bytes: ByteArray): String? {
+    private fun saveToDownloads(name: String, bytes: ByteArray, mime: String): String? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return null
         val resolver = contentResolver
         val collection = MediaStore.Downloads.EXTERNAL_CONTENT_URI
@@ -91,7 +104,7 @@ class MainActivity : FlutterActivity() {
         }
         val values = ContentValues().apply {
             put(MediaStore.Downloads.DISPLAY_NAME, name)
-            put(MediaStore.Downloads.MIME_TYPE, "application/json")
+            put(MediaStore.Downloads.MIME_TYPE, mime)
             put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
             put(MediaStore.Downloads.IS_PENDING, 1)
         }
