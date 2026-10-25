@@ -120,6 +120,16 @@ class _ReviewPageState extends State<ReviewPage> {
     return [for (final x in fits) weightOf(x) / total];
   }
 
+  /// Whether the guess at [i] fits every clue given before it: it need not be
+  /// one of the words the answer can be (a daily draws from 3,000 only).
+  bool _fitsClues(int i) {
+    final g = r.guesses[i];
+    for (var j = 0; j < i; j++) {
+      if (filterEligible([g], r.guesses[j], r.marks[j]).isEmpty) return false;
+    }
+    return true;
+  }
+
   Future<void> _analyse() async {
     final guessable = r.bank.guessable(r.length);
     for (var i = 0; i < r.guesses.length; i++) {
@@ -261,9 +271,8 @@ class _ReviewPageState extends State<ReviewPage> {
                                   after: r.afterOf(step),
                                   solved: r.guesses[step] == r.answer,
                                   finalTry: _isFinalTry(step),
-                                  guessFits: r.befores[step].contains(
-                                    r.guesses[step],
-                                  ),
+                                  guessFits: _fitsClues(step),
+                                  guessIsPossible: m.possible,
                                   equalChances: r.weights == null,
                                 ),
                           style: const TextStyle(fontSize: 14, height: 1.5),
@@ -477,7 +486,9 @@ class _ReviewPageState extends State<ReviewPage> {
       fontSize: 11,
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
-    final landed = m.after <= m.expected + 1e-9 ? c.secondary : yellowOf(c);
+    final landed = m.landedSize <= m.expected + 1e-9
+        ? c.secondary
+        : yellowOf(c);
 
     Widget bar(String label, double value, Color color, {bool strong = false}) {
       final frac = (value / m.before).clamp(0.015, 1.0);
@@ -527,12 +538,12 @@ class _ReviewPageState extends State<ReviewPage> {
 
     final pct = m.luck.abs().round();
     final String landing = pct < 1
-        ? 'You landed in an average-sized pool for this guess.'
+        ? 'You landed in a middling pool for this guess.'
         : m.luck > 0
-        ? 'You landed in a pool $pct% smaller than the average for '
-              'this guess.'
-        : 'You landed in a pool $pct% larger than the average for '
-              'this guess.';
+        ? 'Luck +$pct: a bigger pool was $pct points more likely than a '
+              'smaller one, and you landed in a small one.'
+        : 'Luck \u2212$pct: a smaller pool was $pct points more likely than a '
+              'bigger one, and you landed in a big one.';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
@@ -559,7 +570,7 @@ class _ReviewPageState extends State<ReviewPage> {
               top.first.expected,
               c.primary.withValues(alpha: .8),
             ),
-          bar('you landed in', m.after.toDouble(), landed, strong: true),
+          bar('you landed in', m.landedSize, landed, strong: true),
           ...[
             const SizedBox(height: 6),
             Text(landing, style: const TextStyle(fontSize: 13, height: 1.4)),

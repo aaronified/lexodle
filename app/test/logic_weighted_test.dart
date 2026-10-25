@@ -229,4 +229,49 @@ void main() {
       expect(splitRiskMass([97, 1, 1, 1]), greaterThan(0.1));
     });
   });
+
+  group('the pool landed in', () {
+    test(
+      'is the landed mass over the total times the words, when weighted',
+      () {
+        final m = score('team', 'mean', weights);
+        final after = filterEligible(words, 'team', evaluate('mean', 'team'));
+        final total = words.fold<int>(0, (a, w) => a + weights[w]!);
+        final mass = after.fold<int>(0, (a, w) => a + weights[w]!);
+        expect(m.landedSize, closeTo(mass * words.length / total, 1e-9));
+        expect(m.landedSize, isNot(m.after.toDouble()));
+      },
+    );
+
+    test('is the word count when the words are equally likely', () {
+      final m = score('team', 'mean', null);
+      expect(m.landedSize, closeTo(m.after.toDouble(), 1e-9));
+    });
+  });
+
+  group('the last try comment', () {
+    test('a word that fits but cannot be the answer says so', () {
+      // the daily's list holds only some words: ears-like probe fits the clues
+      final m = scoreGuess(
+        ['team', 'mean'],
+        'beam',
+        2,
+        finalTry: true,
+        triesLeft: 1,
+      );
+      expect(m.possible, isFalse);
+      final text = stepComment(
+        m: m,
+        picks: const [],
+        after: const [],
+        solved: false,
+        finalTry: true,
+        guessFits: true,
+        guessIsPossible: false,
+      );
+      expect(text, contains('fits the clues'));
+      expect(text, contains('could not win'));
+      expect(text, isNot(contains('does not fit')));
+    });
+  });
 }

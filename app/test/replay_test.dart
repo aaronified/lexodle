@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/history.dart';
 import 'package:lexodle/logic.dart';
@@ -405,6 +407,29 @@ void main() {
       expect(h.stale(), isEmpty);
       expect(h.guessesOf(row.id).every((r) => r.skill != 3.14), isTrue);
       expect(g.mode, GameMode.quartet);
+    });
+  });
+
+  group('an old daily row', () {
+    test('is scored with equal chances, whatever its flag says', () {
+      final h = History();
+      final row = h.add(
+        at: 1000,
+        lang: 'fr',
+        mode: GameMode.classic,
+        length: 4,
+        tries: 6,
+        pool: 500,
+        answers: [pool[3]],
+        won: false,
+        daily: '2026-10-20',
+        freq: true, // what a row from before the flag reads as
+        guesses: [GuessRow(game: 0, n: 0, word: pool[5], skill: 0, luck: 0)],
+      );
+      expect(row.byFrequency, isFalse);
+      final r = replayClassic(bank, row, h.guessesOf(row.id));
+      expect(r.weights, isNull);
+      expect(r.befores.first.length, min(3000, bank.answers(4).length));
     });
   });
 }

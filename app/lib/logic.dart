@@ -95,12 +95,19 @@ class GuessMetrics {
     this.possible = false,
     this.winChance = 0,
     this.triesLeft = 0,
+    this.landed,
   });
   final String guess;
   final double skill;
   final double luck;
   final int before;
   final int after;
+
+  /// The size of the pool you landed in as an equally likely pool: its mass over
+  /// the total, times the number of words. [after] when the words are equally
+  /// likely, or when it was not worked out.
+  final double? landed;
+  double get landedSize => landed ?? after.toDouble();
 
   /// How risky the guess is, in bits: its split's Shannon entropy less its
   /// collision entropy, which is the log of the expected pool less the average
@@ -160,6 +167,7 @@ class GuessMetrics {
     possible: possible,
     winChance: winChance,
     triesLeft: triesLeft,
+    landed: landed,
   );
 
   /// The same metrics once the position has been analysed: skill against the
@@ -190,6 +198,7 @@ class GuessMetrics {
       possible: possible,
       winChance: winChance,
       triesLeft: triesLeft,
+      landed: landed,
     );
   }
 }
@@ -398,6 +407,7 @@ GuessMetrics scoreGuess(
     possible: possible,
     winChance: winChance,
     triesLeft: triesLeft,
+    landed: total > 0 ? landedMass * n / total : null,
   );
 }
 
@@ -701,6 +711,7 @@ String stepComment({
   bool finalTry = false,
   bool guessFits = true,
   bool equalChances = true,
+  bool guessIsPossible = true,
 }) {
   final out = <String>[];
   if (m.before <= 1) {
@@ -717,7 +728,11 @@ String stepComment({
       m.winChance < .1 ? 1 : 0,
     );
     out.add(
-      !equalChances
+      guessFits && !guessIsPossible
+          ? 'This was your last try. ${m.guess} fits the clues, but it is not '
+                'one of the words this game draws its answer from, so it could '
+                'not win.'
+          : !equalChances
           ? (guessFits
                 ? 'This was your last try, so only a word that fits the clues '
                       'could win: $n did, the commoner ones more likely. '
@@ -760,9 +775,13 @@ String stepComment({
   }
   // (on the last try luck is the chance of the pick, already said above)
   if (!finalTry && m.luck >= 25) {
-    out.add('You got lucky: you landed in a smaller pool than expected.');
+    out.add(
+      'You got lucky: the pool you landed in was smaller than most of the outcomes could have left.',
+    );
   } else if (!finalTry && m.luck <= -25) {
-    out.add('Unlucky: you landed in a larger pool than expected.');
+    out.add(
+      'Unlucky: the pool you landed in was bigger than most of the outcomes would have left.',
+    );
   }
   if (solved) {
     out.add('You solved it.');

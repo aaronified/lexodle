@@ -24,7 +24,10 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
         ? bank.guessable(g.length)
         : bank.answers(g.length).take(dailyAnswers),
   );
-  final law = g.freq ? bank.weightMap(g.length) : null;
+  // a word list that has since changed may not hold the answer any more: it is
+  // still the answer, so it is among the possible words
+  if (!eligible.contains(answer)) eligible.insert(0, answer);
+  final law = g.byFrequency ? bank.weightMap(g.length) : null;
   final guesses = <String>[];
   final marks = <List<Mark>>[];
   final metrics = <GuessMetrics>[];
@@ -114,7 +117,7 @@ Future<List<GuessRow>> rescoreClassic(
     // the opening position is the same for every game under one law
     final key = i == 0
         ? '${bank.language.code}:${g.length}:'
-              '${g.freq
+              '${g.byFrequency
                   ? 'f'
                   : g.daily.isEmpty
                   ? 'u'

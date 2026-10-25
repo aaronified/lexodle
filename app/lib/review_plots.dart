@@ -10,7 +10,16 @@ import 'ui.dart';
 /// and greys) is one group of the words that would give it; the pool you land
 /// in is the size of the group the answer is in.
 class Outcomes {
-  const Outcomes(this.sizes, this.expected, this.landed);
+  const Outcomes(
+    this.sizes,
+    this.expected,
+    this.landed, {
+    this.weighted = false,
+  });
+
+  /// Whether the sizes are effective ones (the words were not equally likely)
+  /// and not word counts.
+  final bool weighted;
 
   /// The size of each outcome's group, largest first. When the words are not
   /// equally likely a group counts for its words' weights, scaled so that the
@@ -72,7 +81,7 @@ Outcomes outcomesOf(
       ? 0.0
       : sizes.fold<double>(0, (a, s) => a + s * s) / n;
   final landed = max(0, order.indexOf(patternCode(answer, guess)));
-  return Outcomes(sizes, expected, landed);
+  return Outcomes(sizes, expected, landed, weighted: weights != null);
 }
 
 /// Where one column of the plot sits.
@@ -206,7 +215,7 @@ class SplitPlot extends StatelessWidget {
           skillReady
               ? 'skill ${skill.round()}: how evenly and finely this guess split the '
                     '${_n(o.words)} possible words. it made ${o.sizes.length} '
-                    'groups, the biggest holding ${_n(o.sizes.first.round())}; the more '
+                    'groups, the biggest holding ${o.weighted ? 'the weight of ' : ''}${_n(o.sizes.first.round())}${o.weighted ? ' equally likely words' : ''}; the more '
                     'even the groups, the fewer words you can expect to be left '
                     'with. here that is about ${_w(o.expected)}, where no split '
                     'at all would leave ${_n(o.words)} and the best real guess '
@@ -217,7 +226,7 @@ class SplitPlot extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'you landed in ${_n(o.pool.round())} ${o.pool.round() == 1 ? 'word' : 'words'}: luck '
+          'you landed in ${o.weighted ? 'a pool worth ' : ''}${_n(o.pool.round())} ${o.weighted ? 'equally likely ' : ''}${o.pool.round() == 1 ? 'word' : 'words'}: luck '
           '${luckText(luck)}. you would have landed in a bigger pool '
           '${o.chanceBigger.round()}% of the time and in a smaller one '
           '${o.chanceSmaller.round()}%.',

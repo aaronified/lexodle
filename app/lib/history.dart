@@ -48,6 +48,10 @@ class GameRow {
   /// every word equally likely (false). The scores are worked out under it.
   final bool freq;
 
+  /// Whether the scores are worked out under the frequency law. A daily never
+  /// is, whatever an old row (written before the flag existed) says.
+  bool get byFrequency => freq && daily.isEmpty;
+
   /// The word or words to find: one in classic, four in quartet and relay race.
   final List<String> answers;
   final bool won;

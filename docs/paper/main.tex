@@ -972,7 +972,8 @@ that law, and the tries are regressed on the means of skill, luck and daring. Th
 the first half of the games and $R^2$ is read on the second half, which the fit never saw.
 The tool also prints how evenly each score fills its range (the share of all guesses in
 each tenth), the correlations between the three game means and their variance inflation
-factors, which show whether the coefficients can be read one at a time. It uses one seed.
+factors, which show whether the coefficients can be read one at a time. It uses one seed. As in the first experiment, the last try's luck (outcome less
+win chance) enters the game means, so part of the luck $R^2$ is mechanical.
 
 \medskip\noindent\textbf{Results of the second experiment.}
 English, five letters, $2{,}500$ games per law (fit on $1{,}250$, read on $1{,}250$), one
@@ -1001,7 +1002,7 @@ Three things follow. First, the mean luck is within one point of zero under ever
 as Theorem~3 says for the law that draws the answer. Second, the three scores are close
 to uncorrelated as game means (the largest $|r|$ is the skill--daring pair, $-0.52$ to
 $-0.57$, which is the opening-guess identity of Proposition~8(5), not a defect); the
-variance inflation factors are all below $1.5$, so the coefficients can be read one at a
+variance inflation factors are all at most $1.5$, so the coefficients can be read one at a
 time. Third, the scores jointly explain $36\%$ of the variance of the tries when the
 answers are drawn by frequency and about $59\%$ otherwise, and daring adds $4$ to $6$
 points on top of skill and luck. Under law~f luck explains almost nothing alone
@@ -1052,9 +1053,9 @@ The history page uses the fits to draw the expected guesses of a period. It take
 of the three fits of the second experiment, $9.38-0.0563\,\text{skill}-0.0164\,\text{luck}-0.0445\,\text{daring}$, and
 shows each term as what it does to a base. Skill, which is never negative, can only take
 guesses off; luck can do either; daring is measured from a typical level of $10$ so that it
-too can add or take off. The weights come from the held-out fits above (one seed, English
-five letters), and are a first reading, not measured on people; they should be refitted
-on the \texttt{predict\_tries3} output.
+too can add or take off. The weights are the coefficients of the fits above, from the first
+half of the games (only $R^2$ is read on the second half); one seed, English five letters, so
+a first reading, not measured on people.
 
 \subsection{A worked game}\label{sec:game}
 
