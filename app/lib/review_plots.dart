@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'logic.dart';
+import 'review_text.dart';
 import 'ui.dart';
+import 'wiki_links.dart';
 
 /// Every way a guess could have come out against the words still possible,
 /// for the plot of skill and luck. Each outcome (a pattern of greens, yellows
@@ -119,8 +121,6 @@ String _n(int v) => v.toString().replaceAllMapped(
   (m) => '${m[1]},',
 );
 
-String _w(double v) => v < 10 ? v.toStringAsFixed(1) : _n(v.round());
-
 /// Skill and luck on one plot. A column for every way the guess could have come
 /// out, as tall as the pool it leaves and as wide as the chance of it, the
 /// biggest pools (the likeliest) on the left.
@@ -213,25 +213,20 @@ class SplitPlot extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           skillReady
-              ? 'skill ${skill.round()}: how evenly and finely this guess split the '
-                    '${_n(o.words)} possible words. it made ${o.sizes.length} '
-                    'groups, the biggest holding ${o.weighted ? 'the weight of ' : ''}${_n(o.sizes.first.round())}${o.weighted ? ' equally likely words' : ''}; the more '
-                    'even the groups, the fewer words you can expect to be left '
-                    'with. here that is about ${_w(o.expected)}, where no split '
-                    'at all would leave ${_n(o.words)} and the best real guess '
-                    'about ${_w(best)}.'
+              ? skillLine(skill)
               : 'skill: working out the best real guess…',
           key: const ValueKey('skill-caption'),
           style: const TextStyle(fontSize: 13, height: 1.4),
         ),
         const SizedBox(height: 6),
         Text(
-          'you landed in ${o.weighted ? 'a pool worth ' : ''}${_n(o.pool.round())} ${o.weighted ? 'equally likely ' : ''}${o.pool.round() == 1 ? 'word' : 'words'}: luck '
-          '${luckText(luck)}. you would have landed in a bigger pool '
-          '${o.chanceBigger.round()}% of the time and in a smaller one '
-          '${o.chanceSmaller.round()}%.',
+          luckLine(luck),
           key: const ValueKey('luck-caption'),
           style: const TextStyle(fontSize: 13, height: 1.4),
+        ),
+        reviewLink(
+          WikiPage.skillLuckDaring,
+          label: 'how skill, luck and daring work',
         ),
       ],
     );
@@ -378,14 +373,26 @@ class EqualChancePlot extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
+        const Text(
+          lastTryLine,
+          key: ValueKey('chance-caption'),
+          style: TextStyle(fontSize: 13, height: 1.4),
+        ),
+        const SizedBox(height: 6),
         Text(
-          '${_n(fitting)} ${fitting == 1 ? 'word fits' : 'words fit'} the '
-          '${ch == null ? 'clues, each with the same chance: 1 in ${_n(fitting)} ' : 'clues, the commoner ones likelier. '}'
-          '(${chance < 10 ? chance.toStringAsFixed(1) : chance.round()}%). '
-          '${guessAt >= 0 ? 'your guess was one of them' : 'your guess did not fit the clues, so it had no chance'}'
-          '. luck ${luckText(luck)}: the outcome, less that chance.',
-          key: const ValueKey('chance-caption'),
+          guessAt >= 0
+              ? 'luck ${signedLuck(luck)}: your guess was one of the '
+                    '${_n(fitting)} words that fit, a '
+                    '${chance < 10 ? chance.toStringAsFixed(1) : chance.round()}'
+                    '% chance.'
+              : 'luck 0: your guess did not fit the clues, so it had no '
+                    'chance.',
+          key: const ValueKey('chance-luck'),
           style: const TextStyle(fontSize: 13, height: 1.4),
+        ),
+        reviewLink(
+          WikiPage.skillLuckDaring,
+          label: 'how skill, luck and daring work',
         ),
       ],
     );

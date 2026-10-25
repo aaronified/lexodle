@@ -67,3 +67,10 @@ fetched from [Wiktionary](https://en.wiktionary.org), with a link to the full en
 Wiktionary has no entry or is unreachable, the game carries on without it.
 
 See [Skill, luck and daring](Skill-luck-and-daring) for what the numbers mean.
+
+## In the app
+
+The in-app how-to page is kept to the basics: the colours, blanks and the cursor, and the one line
+of maths (**skill + luck + daring = expected tries**). The review screens explain each number in
+one line and link here. This page and [Skill, luck and daring](Skill-luck-and-daring) hold the
+rest.

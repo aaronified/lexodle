@@ -684,8 +684,6 @@ double infoGained(int initial, int wordsLeft) {
   return v.clamp(0, 100).toDouble();
 }
 
-String _num(double v) => v < 10 ? v.toStringAsFixed(1) : v.round().toString();
-
 String ordinal(int n) => const [
   'first',
   'second',
@@ -701,7 +699,8 @@ String ordinal(int n) => const [
   'twelfth',
 ][n.clamp(1, 12) - 1];
 
-/// A short plain-English reading of one step, for the review screen.
+/// A short plain-English reading of one step, for the review screen: one
+/// sentence of verdict, then at most one short sentence of fact.
 /// [picks] is empty while the alternatives are still being worked out.
 String stepComment({
   required GuessMetrics m,
@@ -729,71 +728,40 @@ String stepComment({
     );
     out.add(
       guessFits && !guessIsPossible
-          ? 'This was your last try. ${m.guess} fits the clues, but it is not '
-                'one of the words this game draws its answer from, so it could '
-                'not win.'
+          ? 'Last try: ${m.guess} fits the clues, but this game never picks '
+                'it, so it could not win.'
+          : !guessFits
+          ? 'Last try: ${m.guess} does not fit the clues, so it could not win.'
           : !equalChances
-          ? (guessFits
-                ? 'This was your last try, so only a word that fits the clues '
-                      'could win: $n did, the commoner ones more likely. '
-                      '${m.guess} was one of them, a $chance% chance.'
-                : 'This was your last try, but ${m.guess} does not fit the '
-                      'clues, so it could not win.')
-          : guessFits
-          ? 'This was your last try, so only a word that fits the clues could '
-                'win, and all $n were equally likely. ${m.guess} was one of '
-                'them: a 1 in $n chance.'
-          : 'This was your last try, but ${m.guess} does not fit the clues, so '
-                'it could not win. Any of the $n possible words had a 1 in $n '
-                'chance.',
+          ? 'Last try: ${m.guess} fit the clues, a $chance% chance.'
+          : 'Last try: ${m.guess} fit the clues, a 1 in $n chance.',
     );
   } else if (picks.isNotEmpty) {
     final top = picks.first;
     final gap = top.skill - m.skill;
-    final yours = _num(m.expected);
-    final theirs = _num(top.expected);
     if (picks.any((p) => p.word == m.guess) || gap <= 0.5) {
-      out.add(
-        'Terrific choice. ${m.guess} would have been one of my top picks.',
-      );
+      out.add('Terrific choice: ${m.guess} is one of my top picks.');
     } else if (gap <= 4) {
-      out.add(
-        'Good choice. ${top.word} was a touch sharper: about $theirs '
-        'words left on average, against about $yours for ${m.guess}.',
-      );
+      out.add('Good choice, but ${top.word} was a touch sharper.');
     } else if (gap <= 12) {
-      out.add(
-        'Decent, but a better split was available. ${top.word} leaves '
-        'about $theirs words on average; ${m.guess} leaves about $yours.',
-      );
+      out.add('Decent, but ${top.word} was a better split.');
     } else {
-      out.add(
-        'A missed chance. ${top.word} would have cut the field to about '
-        '$theirs words on average; ${m.guess} leaves about $yours.',
-      );
+      out.add('A missed chance: ${top.word} was a much better split.');
     }
   }
-  // (on the last try luck is the chance of the pick, already said above)
-  if (!finalTry && m.luck >= 25) {
-    out.add(
-      'You got lucky: the pool you landed in was smaller than most of the outcomes could have left.',
-    );
-  } else if (!finalTry && m.luck <= -25) {
-    out.add(
-      'Unlucky: the pool you landed in was bigger than most of the outcomes would have left.',
-    );
-  }
+  // one fact at most: the end, the few words left, or the luck
   if (solved) {
     out.add('You solved it.');
   } else if (finalTry) {
     // the game is over: nothing is coming next turn
   } else if (after.length == 1) {
-    out.add(
-      "There's only one possible solution left, so you should solve it "
-      'on your next turn.',
-    );
+    out.add('Only one word is left: ${after.single}.');
   } else if (after.length > 1 && after.length <= 4) {
     out.add('Only ${after.length} words are left: ${after.join(', ')}.');
+  } else if (m.luck >= 25) {
+    out.add('You got lucky: the clues were kind.');
+  } else if (m.luck <= -25) {
+    out.add('Unlucky: the clues were harsh.');
   }
   return out.join(' ');
 }

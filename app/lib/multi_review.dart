@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'logic.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
+import 'review_text.dart';
 import 'ui.dart';
+import 'wiki_links.dart';
 import 'words.dart';
 
 /// Everything the review needs about one finished quartet or relay race.
@@ -182,9 +184,22 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
                         if (explain)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(
-                              _explanation,
-                              style: dim.copyWith(height: 1.5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                for (final line in _explanation)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 3),
+                                    child: Text(
+                                      line,
+                                      style: dim.copyWith(height: 1.4),
+                                    ),
+                                  ),
+                                reviewLink(
+                                  WikiPage.skillLuckDaring,
+                                  label: 'how skill, luck and daring work',
+                                ),
+                              ],
                             ),
                           ),
                         ..._opened(c, s),
@@ -232,22 +247,18 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
     );
   }
 
-  String get _explanation =>
-      'words left: the words still possible on that board, before and after '
-      'your guess. a board you solved says so.\n'
-      'skill: for one board, how evenly the guess broke up its possible words, '
-      'measured against the best any real guess could do on that board: 100 '
-      'matches it, 0 tells you nothing (on a log scale: cutting the words left '
-      'in half is worth the same whether 2,000 or 20 remain). '
-      '${r.mode == GameMode.quartet ? 'the "all boards" line is the average over the boards the guess was made for, each weighted by how much was left to find out on it (the log of its words left, at least one bit), so a board with a thousand words counts far more than one with two, and a board with a single word left counts as one bit: playing that word is rewarded and missing it is not free.' : 'in a relay race a guess is made for the board that is on, so it is judged on that board alone.'}\n'
-      'luck: where the pool you landed in sits among the pools you could have '
-      'landed in (the chance of a bigger pool less the chance of a smaller '
-      'one, -100% to +100%, 0% the middle outcome); averaged the same way. on '
-      'your last try luck is '
-      'the chance of the pick instead: the chance of any one word on a board is '
-      '1 in its words left, and you gain what you score above it (+67 for the '
-      'right one of three, -33 for a wrong one).'
-      '${r.mode == GameMode.relay ? '\nhead start: a board opens with every earlier guess already applied to it, so a guess also works for the boards still to come. the review says how many words were left the moment each one opened.' : ''}';
+  /// What the table means, one short line each.
+  List<String> get _explanation => [
+    'words left: the words still possible on that board, before and after.',
+    ...tableHelp,
+    if (r.mode == GameMode.quartet)
+      'all: the average over the boards, bigger boards counting more.'
+    else
+      'a relay guess is judged on the board that is on.',
+    'last try: luck is how the pick turned out against its chance.',
+    if (r.mode == GameMode.relay)
+      'head start: a board opens with earlier guesses already applied.',
+  ];
 
   String _comment(MultiStep s) {
     final top = picks[step];
@@ -453,10 +464,10 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
         padding: const EdgeInsets.only(top: 8),
         child: Text(
           'board ${h.board + 1} opened with '
-          '${h.words == 1 ? 'one word' : '${_n(h.words)} words'} possible out '
-          'of ${_n(h.total)}: your earlier guesses had already cut '
-          '${h.cut.toStringAsFixed(h.cut >= 99.9 ? 2 : 0)}% of the list'
-          '${r.guesses.take(h.opensAfter).contains(r.answers[h.board]) ? ' and solved it the moment it opened: a free ride' : ''}.',
+          '${h.words == 1 ? 'one word' : '${_n(h.words)} words'} possible of '
+          '${_n(h.total)}: earlier guesses cut '
+          '${h.cut.toStringAsFixed(h.cut >= 99.9 ? 2 : 0)}%'
+          '${r.guesses.take(h.opensAfter).contains(r.answers[h.board]) ? ' and solved it' : ''}.',
           key: ValueKey('opened-${h.board}'),
           style: TextStyle(
             fontSize: 12,
@@ -467,7 +478,15 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
       ),
   ];
 
-  Widget _picks(ColorScheme c, MultiStep s) {
+  Widget _picks(ColorScheme c, MultiStep s) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _pickRows(c, s),
+      reviewLink(WikiPage.solverAndLearn, label: 'how my picks are chosen'),
+    ],
+  );
+
+  Widget _pickRows(ColorScheme c, MultiStep s) {
     final fin = s.finalTry;
     final top = picks[step];
     final finalTop = finals[step];

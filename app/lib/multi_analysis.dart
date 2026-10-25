@@ -284,7 +284,8 @@ double expectedSolved(
   return sum;
 }
 
-/// A short plain-English reading of one step of a quartet or relay race.
+/// A short plain-English reading of one step of a quartet or relay race: one
+/// sentence of verdict, then at most one short sentence of fact.
 /// [bestWord] and [bestSkill] are the best pick's, [bestFinalWord] and
 /// [bestSolved] the best last-try pick's with its expected boards solved, and
 /// [yourSolved] the same for the guess played; [ready] is false while the
@@ -299,84 +300,63 @@ String multiComment(
   double? yourSolved,
 }) {
   final out = <String>[];
+  // the fact, chosen below: the first that applies
+  final facts = <String>[];
   final names = [for (final b in s.boards.where((b) => b.solved)) b.board + 1];
-  if (names.isNotEmpty) {
-    out.add(
-      names.length == 1
-          ? 'It solved board ${names.single}.'
-          : 'It solved boards ${names.join(' and ')}.',
-    );
-  }
-  // which board it helped most, when there were several to compare
   final open = [
     for (final b in s.boards)
       if (!b.solved && b.metrics.before > 1) b,
-  ];
-  if (open.length >= 2) {
-    open.sort((a, b) => b.metrics.skill.compareTo(a.metrics.skill));
-    final best = open.first, worst = open.last;
-    if (best.metrics.skill - worst.metrics.skill >= 15) {
-      out.add(
-        'It helped board ${best.board + 1} most (skill '
-        '${best.metrics.skill.round()}) and board ${worst.board + 1} least '
-        '(skill ${worst.metrics.skill.round()}).',
-      );
-    }
-  }
+  ]..sort((a, b) => b.metrics.skill.compareTo(a.metrics.skill));
   if (!ready) {
     out.add('Working out the alternatives…');
   } else if (s.finalTry) {
     // the last try: only a word that fits a board can win one
     final mine = yourSolved ?? 0;
     final n = s.boards.length;
-    if (mine == 0) {
-      out.add(
-        'This was your last try, but ${s.guess} fits no board that was still '
-        'open, so it could not win one.',
-      );
-    } else {
-      out.add(
-        'This was your last try, so only a word that fits a board could win '
-        'one. ${s.guess} could be expected to solve '
-        '${mine.toStringAsFixed(2)} of the $n boards left.',
-      );
-    }
+    out.add(
+      mine == 0
+          ? 'Last try: ${s.guess} fits no open board, so it could not win one.'
+          : 'Last try: ${s.guess} could solve about ${mine.toStringAsFixed(2)} '
+                'of the $n boards left.',
+    );
     if (bestFinalWord != null &&
         bestSolved != null &&
         bestSolved > mine + 1e-9) {
-      out.add(
-        '$bestFinalWord would have been better: '
-        '${bestSolved.toStringAsFixed(2)}.',
-      );
+      facts.add('$bestFinalWord was better: ${bestSolved.toStringAsFixed(2)}.');
     }
   } else if (bestWord != null && bestSkill != null) {
     final gap = bestSkill - s.skill;
     if (gap <= 0.5) {
-      out.add('Terrific choice. ${s.guess} was as good as any guess I found.');
+      out.add('Terrific choice: ${s.guess} was as good as any I found.');
     } else if (gap <= 4) {
-      out.add(
-        'Good choice. $bestWord was a touch sharper across the boards: '
-        'skill ${bestSkill.round()} against ${s.skill.round()}.',
-      );
+      out.add('Good choice, but $bestWord was a touch sharper.');
     } else if (gap <= 12) {
-      out.add(
-        'Decent, but a better split was available. $bestWord would have '
-        'scored ${bestSkill.round()} across the boards; ${s.guess} scored '
-        '${s.skill.round()}.',
-      );
+      out.add('Decent, but $bestWord was a better split.');
     } else {
-      out.add(
-        'A missed chance. $bestWord would have scored ${bestSkill.round()} '
-        'across the boards; ${s.guess} scored ${s.skill.round()}.',
-      );
+      out.add('A missed chance: $bestWord was a much better split.');
     }
+  }
+  if (names.isNotEmpty) {
+    facts.add(
+      names.length == 1
+          ? 'It solved board ${names.single}.'
+          : 'It solved boards ${names.join(' and ')}.',
+    );
+  }
+  if (open.length >= 2 &&
+      open.first.metrics.skill - open.last.metrics.skill >= 15) {
+    facts.add(
+      'It helped board ${open.first.board + 1} most and board '
+      '${open.last.board + 1} least.',
+    );
   }
   if (!s.finalTry) {
     if (s.luck >= 25) {
-      out.add('You got lucky: the boards narrowed more than expected.');
+      facts.add('You got lucky: the clues were kind.');
     } else if (s.luck <= -25) {
-      out.add('Unlucky: the boards narrowed less than expected.');
+      facts.add('Unlucky: the clues were harsh.');
     }
   }
+  if (facts.isNotEmpty) out.add(facts.first);
   return out.join(' ');
 }

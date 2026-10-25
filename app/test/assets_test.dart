@@ -218,9 +218,14 @@ void main() {
         }
       }
       // (en.wiktionary.org and its siblings; the licences and credits that name
-      // a project are text, not addresses the app asks)
+      // a project are text, not addresses the app asks; github.com is the wiki,
+      // which the player's browser opens from a "learn more" link, never the
+      // app: see wiki_links.dart)
       final fetched = hosts.where(
-        (h) => !h.endsWith('wiktionary.org') && h != 'aaronified.github.io',
+        (h) =>
+            !h.endsWith('wiktionary.org') &&
+            h != 'aaronified.github.io' &&
+            h != 'github.com',
       );
       expect(fetched, isEmpty, reason: 'unexpected hosts: $fetched');
     });

@@ -5,7 +5,9 @@ import 'package:flutter/services.dart';
 
 import 'logic.dart';
 import 'review_plots.dart';
+import 'review_text.dart';
 import 'ui.dart';
+import 'wiki_links.dart';
 import 'words.dart';
 
 /// Everything the review needs about one finished game.
@@ -237,22 +239,27 @@ class _ReviewPageState extends State<ReviewPage> {
                         if (explain)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(
-                              'skill: how evenly the guess broke up the words that '
-                              'were still possible, measured against the best any '
-                              'real guess could do here. 100 matches the best real '
-                              'guess, 0 tells you nothing. It is on a log scale: '
-                              'cutting the words left in half is worth the same '
-                              'whether 2,000 or 20 remain.\n'
-                              'luck: where the pool you landed in sits among all the '
-                              'pools you could have landed in: the chance of a '
-                              'bigger pool less the chance of a smaller one. It runs '
-                              'from -100% to +100%, 0% is the middle outcome, and '
-                              'over every possible answer it averages exactly 0.\n'
-                              'words left: the words still possible afterwards.\n'
-                              'info gained: the share of the starting uncertainty '
-                              'removed so far. It reaches 100% when one word is left.',
-                              style: dim.copyWith(height: 1.5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                for (final line in [
+                                  ...tableHelp,
+                                  'words left: the words still possible. '
+                                      'info gained: how close you are to one '
+                                      'word.',
+                                ])
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 3),
+                                    child: Text(
+                                      line,
+                                      style: dim.copyWith(height: 1.4),
+                                    ),
+                                  ),
+                                reviewLink(
+                                  WikiPage.skillLuckDaring,
+                                  label: 'how skill, luck and daring work',
+                                ),
+                              ],
                             ),
                           ),
                         const SizedBox(height: 14),
@@ -536,15 +543,6 @@ class _ReviewPageState extends State<ReviewPage> {
       );
     }
 
-    final pct = m.luck.abs().round();
-    final String landing = pct < 1
-        ? 'You landed in a middling pool for this guess.'
-        : m.luck > 0
-        ? 'Luck +$pct: a bigger pool was $pct points more likely than a '
-              'smaller one, and you landed in a small one.'
-        : 'Luck \u2212$pct: a smaller pool was $pct points more likely than a '
-              'bigger one, and you landed in a big one.';
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Column(
@@ -553,8 +551,8 @@ class _ReviewPageState extends State<ReviewPage> {
           const Caption('the pool'),
           const SizedBox(height: 6),
           Text(
-            'Your guess split the ${m.before} possible words into ${m.groups} '
-            'groups; the biggest held ${m.largest}.',
+            'The ${m.before} possible words split into ${m.groups} groups; '
+            'the biggest held ${m.largest}.',
             style: const TextStyle(fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 8),
@@ -571,27 +569,25 @@ class _ReviewPageState extends State<ReviewPage> {
               c.primary.withValues(alpha: .8),
             ),
           bar('you landed in', m.landedSize, landed, strong: true),
-          ...[
-            const SizedBox(height: 6),
-            Text(landing, style: const TextStyle(fontSize: 13, height: 1.4)),
-          ],
           if (m.daring != null) ...[
             const SizedBox(height: 6),
             Text(
               !m.possible
-                  ? 'Daring 0%: this guess could not have been the answer, so '
-                        'it was a probe, not an attempt at the word.'
+                  ? 'daring 0: this guess could not be the answer, so it only '
+                        'probed.'
                   : m.triesLeft <= 1
-                  ? 'Daring 0%: with one try left, going for the word is the '
+                  ? 'daring 0: with one try left, going for the word is the '
                         'only play.'
-                  : 'Daring ${m.daring!.round()}%: an attempt at the word '
-                        '(${(m.winChance * 100).round()}% likely), which cost '
-                        '${(100 - m.skill).round()}% of the split the best '
-                        'guess gave, with ${m.triesLeft} tries left.',
+                  : 'daring ${m.daring!.round()}: how much you went for the '
+                        'word itself rather than the clues.',
               key: const ValueKey('daring-line'),
               style: const TextStyle(fontSize: 13, height: 1.4),
             ),
           ],
+          reviewLink(
+            WikiPage.skillLuckDaring,
+            label: 'how skill, luck and daring work',
+          ),
         ],
       ),
     );
@@ -748,7 +744,7 @@ class _ReviewPageState extends State<ReviewPage> {
       );
     }
 
-    return Row(
+    final row = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -813,6 +809,13 @@ class _ReviewPageState extends State<ReviewPage> {
             ],
           ),
         ),
+      ],
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        row,
+        reviewLink(WikiPage.solverAndLearn, label: 'how my picks are chosen'),
       ],
     );
   }

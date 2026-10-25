@@ -280,10 +280,11 @@ void main() {
       final skillText = tester
           .widget<Text>(find.byKey(const ValueKey('skill-caption')))
           .data!;
-      expect(skillText, contains('the best real guess about'));
+      expect(skillText, startsWith('skill '));
+      expect(skillText, contains('best possible guess'));
       expect(
         tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))).data,
-        contains('you landed in ${record.metrics[0].after}'),
+        startsWith('luck '),
       );
       // the plot comes before rarity, which is below
       expect(
@@ -323,8 +324,11 @@ void main() {
       final text = tester
           .widget<Text>(find.byKey(const ValueKey('chance-caption')))
           .data!;
-      expect(text, contains('1 in ${fitting.length}'));
-      expect(text, contains('your guess was one of them'));
+      expect(text, contains('only a word that fits can win'));
+      final luck = tester
+          .widget<Text>(find.byKey(const ValueKey('chance-luck')))
+          .data!;
+      expect(luck, contains('${fitting.length} words that fit'));
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
     });
 
@@ -399,24 +403,14 @@ void main() {
       final skill = tester
           .widget<Text>(find.byKey(const ValueKey('skill-caption')))
           .data!;
-      expect(skill, contains('skill 62'));
-      // what it is about: how evenly the guess split the words, into how many
-      // groups and how big the biggest, and what that means for the words left
-      expect(skill, contains('how evenly and finely'));
-      expect(skill, contains('split the 100 possible words'));
-      expect(skill, contains('made 5 groups, the biggest holding 60'));
-      expect(skill, contains('about 39'));
-      expect(skill, contains('no split at all would leave 100'));
-      expect(skill, contains('the best real guess about 4.0'));
-      // and it does not read as an average group size
-      expect(skill, isNot(contains('on average')));
+      // one plain line each, with the number; the groups are in the pool panel
+      expect(skill, startsWith('skill 62: '));
+      expect(skill, contains('best possible guess (100)'));
       final luck = tester
           .widget<Text>(find.byKey(const ValueKey('luck-caption')))
           .data!;
-      expect(luck, contains('you landed in 25 words'));
-      expect(luck, contains('luck +20%'));
-      expect(luck, contains('bigger pool 60% of the time'));
-      expect(luck, contains('smaller one 15%'));
+      expect(luck, startsWith('luck +20: '));
+      expect(luck, contains('kinder than usual'));
       expect(find.text('0% luck'), findsOneWidget);
     });
 

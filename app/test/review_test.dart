@@ -170,10 +170,7 @@ void main() {
       // at most three, as on every other step
       expect(shown.length, min(fitting.length, 3));
       expect(find.byKey(const ValueKey('pick-each')), findsOneWidget);
-      expect(
-        find.textContaining('equally likely'),
-        findsNWidgets(2),
-      ); // note and comment
+      expect(find.textContaining('equally likely'), findsOneWidget); // the note
       // all at the same chance, 1 in the number that fit
       final chance = 100 / fitting.length;
       final shownChance = chance < 10
@@ -189,7 +186,7 @@ void main() {
         closeTo(-100 / fitting.length, 1e-9),
         reason: 'a wrong pick among n words: minus the 1 in n chance',
       );
-      expect(find.textContaining('This was your last try'), findsOneWidget);
+      expect(find.textContaining('Last try: '), findsOneWidget);
       // the plot of the possible words is on the last step...
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
       // the earlier steps keep the ranked picks (words that split best)

@@ -117,4 +117,47 @@ void main() {
     expect(find.text(_rule), findsOneWidget);
     expect(find.text('start playing'), findsNothing);
   });
+
+  testWidgets('it explains blanks and the cursor with tiles', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: HowToPage()));
+    await tester.pump();
+    expect(find.text('blanks and the cursor'), findsOneWidget);
+    expect(find.textContaining('press space (or _)'), findsOneWidget);
+    expect(find.textContaining('tap any tile'), findsOneWidget);
+    // the first row has a blank in it, shown as an underscore, and the cursor
+    expect(find.text('_'), findsOneWidget);
+  });
+
+  testWidgets('the maths is one line, then one line each, then a link', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: HowToPage()));
+    await tester.pump();
+    expect(find.text('skill + luck + daring = expected tries'), findsOneWidget);
+    for (final line in [
+      'is how well your guesses narrowed the words.',
+      'is how kind the clues turned out to be.',
+      'is how much you went for the word itself.',
+    ]) {
+      expect(find.textContaining(line, findRichText: true), findsOneWidget);
+    }
+    expect(find.byKey(const ValueKey('wiki-skillLuckDaring')), findsOneWidget);
+    expect(find.byKey(const ValueKey('wiki-howToPlay')), findsOneWidget);
+  });
+
+  testWidgets('the page is short: no setup, solver or achievements essay', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await tester.pumpWidget(const MaterialApp(home: HowToPage()));
+    await tester.pump();
+    expect(find.text('setup'), findsNothing);
+    expect(find.text('solver'), findsNothing);
+    expect(find.text('achievements'), findsNothing);
+    // every line of explanation is short enough for two lines on a phone
+    for (final w in tester.widgetList<Text>(find.byType(Text))) {
+      final t = w.data ?? w.textSpan?.toPlainText() ?? '';
+      expect(t.length, lessThanOrEqualTo(150), reason: t);
+    }
+  });
 }

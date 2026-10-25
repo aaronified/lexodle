@@ -454,7 +454,7 @@ void main() {
         solved: false,
         finalTry: true,
       );
-      expect(fits, contains('last try'));
+      expect(fits, contains('Last try'));
       expect(fits, contains('1 in 12'));
       expect(fits, isNot(contains('missed chance')));
       expect(fits, isNot(contains('turbo')));
@@ -478,22 +478,19 @@ void main() {
         solved: false,
       );
       expect(t, contains('Terrific choice'));
-      expect(t, contains('only one possible solution left'));
+      expect(t, contains('Only one word is left: grout.'));
     });
-    test(
-      'comment: a weak guess names the better one and both expectations',
-      () {
-        final t = stepComment(
-          m: gm('mamma', 30, 0, 400, 280),
-          picks: [rec('rates', 95, 20)],
-          after: List.filled(280, 'x'),
-          solved: false,
-        );
-        expect(t, contains('A missed chance'));
-        expect(t, contains('rates'));
-        expect(t, contains('about 20 words'));
-      },
-    );
+    test('comment: a weak guess names the better one', () {
+      final t = stepComment(
+        m: gm('mamma', 30, 0, 400, 280),
+        picks: [rec('rates', 95, 20)],
+        after: List.filled(280, 'x'),
+        solved: false,
+      );
+      expect(t, contains('A missed chance'));
+      expect(t, contains('rates'));
+      expect(t, isNot(contains('about')), reason: 'no numbers, no formulas');
+    });
     test('comment: luck and few words left are mentioned', () {
       final lucky = stepComment(
         m: gm('crane', 80, 50, 300, 3),
@@ -501,8 +498,16 @@ void main() {
         after: ['a', 'b', 'c'],
         solved: false,
       );
-      expect(lucky, contains('lucky'));
+      // one fact only: the few words left come before the luck
       expect(lucky, contains('Only 3 words are left: a, b, c.'));
+      expect(lucky, isNot(contains('lucky')));
+      final luckyOnly = stepComment(
+        m: gm('crane', 80, 50, 300, 30),
+        picks: [rec('crane', 80, 60)],
+        after: List.filled(30, 'x'),
+        solved: false,
+      );
+      expect(luckyOnly, contains('You got lucky'));
       final unlucky = stepComment(
         m: gm('crane', 80, -50, 300, 200),
         picks: [rec('crane', 80, 60)],

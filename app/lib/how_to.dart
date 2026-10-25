@@ -4,11 +4,12 @@ import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'routes.dart';
-import 'store.dart';
 import 'ui.dart';
+import 'wiki_links.dart';
 
-/// How to play, in the manner of the NYT's: the rule, then three worked
-/// examples with tiles, then the parts of this game that are its own.
+/// How to play, kept short: the rule, the colours, the blanks and the cursor,
+/// and the one line of maths (skill + luck + daring = expected tries). Anyone
+/// who wants more follows the link to the wiki.
 ///
 /// On a first visit ([onboarding]) a "start playing" button is pinned under it,
 /// which starts a default UK English game. Opened later from the footer it is
@@ -33,19 +34,17 @@ class HowToPage extends StatelessWidget {
       color: c.onSurface.withValues(alpha: .65),
     );
 
-    Widget bullet(String t) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('•  '),
-          Expanded(child: Text(t, style: const TextStyle(height: 1.45))),
-        ],
-      ),
-    );
-
-    Widget example(String word, int at, Mark mark, String note) => Padding(
-      padding: const EdgeInsets.only(bottom: 22),
+    /// A row of tiles: a letter, ' ' for a blank; [mark] colours the tile at
+    /// [markAt], and [cursorAt] outlines the slot the next letter goes into.
+    Widget tiles(
+      String word, {
+      int? markAt,
+      Mark? mark,
+      int? cursorAt,
+      required String note,
+      List<InlineSpan>? lead,
+    }) => Padding(
+      padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -57,7 +56,8 @@ class HowToPage extends StatelessWidget {
                   child: MarkTile(
                     word[i],
                     size: 44,
-                    mark: i == at ? mark : null,
+                    mark: i == markAt ? mark : null,
+                    cursor: i == cursorAt,
                   ),
                 ),
             ],
@@ -66,27 +66,47 @@ class HowToPage extends StatelessWidget {
           Text.rich(
             TextSpan(
               children: [
-                TextSpan(
-                  text: word[at],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                TextSpan(text: ' $note'),
+                ...?lead,
+                TextSpan(text: note),
               ],
             ),
+            style: const TextStyle(height: 1.4),
           ),
         ],
       ),
     );
 
-    Widget section(String title, String body) => Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Caption(title),
-          const SizedBox(height: 6),
-          Text(body, style: const TextStyle(fontSize: 13, height: 1.5)),
-        ],
+    Widget colour(String word, int at, Mark mark, String note) => tiles(
+      word,
+      markAt: at,
+      mark: mark,
+      note: ' $note',
+      lead: [
+        TextSpan(
+          text: word[at],
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+
+    Widget heading(String text) => Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 12),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
+    );
+
+    Widget maths(String name, String what) => Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: name,
+              style: TextStyle(fontWeight: FontWeight.bold, color: c.primary),
+            ),
+            TextSpan(text: ' $what'),
+          ],
+        ),
+        style: const TextStyle(fontSize: 13, height: 1.4),
       ),
     );
 
@@ -115,94 +135,84 @@ class HowToPage extends StatelessWidget {
                         'allows.',
                         style: TextStyle(fontSize: 16, height: 1.4),
                       ),
-                      const SizedBox(height: 20),
-                      bullet(
-                        'each guess must be a valid word, of the length and in '
-                        'the language you chose.',
-                      ),
-                      bullet(
-                        'the colour of the tiles shows how close your guess was '
-                        'to the word.',
-                      ),
-                      bullet(
-                        'not sure of a letter? type a blank with the _ key (or '
-                        'the space bar) to pencil in a pattern like a_ode. tap a '
-                        'tile to move the cursor. a blank cannot be submitted.',
-                      ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 6),
                       const Text(
-                        'examples',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        'every guess must be a real word of the right length.',
+                        style: TextStyle(height: 1.4),
                       ),
-                      const SizedBox(height: 12),
-                      example(
+                      const SizedBox(height: 18),
+                      heading('the colours'),
+                      colour(
                         'weary',
                         0,
                         Mark.correct,
                         'is in the word and in the correct spot.',
                       ),
-                      example(
+                      colour(
                         'pills',
                         1,
                         Mark.present,
                         'is in the word but in the wrong spot.',
                       ),
-                      example(
+                      colour(
                         'vague',
                         3,
                         Mark.absent,
                         'is not in the word in any spot.',
                       ),
                       Text(
-                        'the examples are in english; every language plays the same.',
+                        'the examples are in english; every language plays the '
+                        'same.',
                         style: dim,
                       ),
                       const SizedBox(height: 22),
+                      heading('blanks and the cursor'),
+                      tiles(
+                        'a ode',
+                        cursorAt: 1,
+                        note:
+                            'not sure of a letter? press space (or _) to leave '
+                            'a blank. the outlined tile is the cursor: the next '
+                            'letter goes there.',
+                      ),
+                      tiles(
+                        'abode',
+                        cursorAt: 2,
+                        note:
+                            'tap any tile to move the cursor. a blank cannot be '
+                            'submitted.',
+                      ),
+                      const SizedBox(height: 4),
                       const Divider(),
-                      const SizedBox(height: 18),
-                      section(
-                        'setup',
-                        'choose a language on the home screen. the game modes '
-                            'button (the grid at the right of the last row) has the rest: the mode, '
-                            '4 to 8 letters and a difficulty from the grid. across is the number '
-                            'of tries: easy 8, normal 6, hard 4, brutal 3. down is the '
-                            'word length, the longest the easiest. a checkbox picks '
-                            'answers by how common each word is; it is always off for '
-                            'the daily, which is drawn evenly from the 3,000 most '
-                            'common words and never repeats within 90 days. the colour '
-                            'runs from green for the easiest to purple for the hardest. '
-                            'theme, backup, updates, support and about are in settings, '
-                            'the gear at the top right.',
+                      const SizedBox(height: 14),
+                      heading('the maths'),
+                      Text(
+                        'skill + luck + daring = expected tries',
+                        key: const ValueKey('maths-line'),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: c.primary,
+                        ),
                       ),
-                      section(
-                        'skill and luck',
-                        'skill says how evenly a guess broke up the words still '
-                            'possible, against the best any real guess could do: 100 '
-                            'matches it, 0 tells you nothing, and halving the words '
-                            'left counts the same whether 2,000 or 20 remain. luck says where the '
-                            'pool you landed in sits among all the pools you could '
-                            'have landed in, from -100% to +100%; 0% is the middle '
-                            'outcome. the helper setting (in game modes) decides how much of this '
-                            'you see while you play. when the game ends you see all '
-                            'of it.',
+                      const SizedBox(height: 10),
+                      maths(
+                        'skill',
+                        'is how well your guesses narrowed the words.',
                       ),
-                      section(
-                        'review',
-                        'after a game, review walks through your guesses one by one: '
-                            'how each guess divided the possible words, the pool you '
-                            'landed in against the average pool, and the best picks at '
-                            'that point.',
+                      maths('luck', 'is how kind the clues turned out to be.'),
+                      maths(
+                        'daring',
+                        'is how much you went for the word itself.',
                       ),
-                      section(
-                        'solver',
-                        'playing somewhere else? the solver (open it from game '
-                            'modes) narrows the words that fit the guesses you tell '
-                            'it about, and suggests the next one. learn, beside it, '
-                            'shows you the answer and grades each guess.',
+                      const SizedBox(height: 4),
+                      const WikiLink(
+                        WikiPage.skillLuckDaring,
+                        label: 'how skill, luck and daring work',
                       ),
-                      section(
-                        'achievements',
-                        '${achievements.length} to collect. they are kept in this browser only.',
+                      const WikiLink(
+                        WikiPage.howToPlay,
+                        label: 'everything else, on the wiki',
                       ),
                     ],
                   ),
