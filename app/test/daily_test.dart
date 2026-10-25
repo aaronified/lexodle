@@ -584,7 +584,9 @@ void main() {
     appState.setup(lang: 'fr', length: 5);
     await tester.pumpWidget(const LexodleApp());
     await tester.pumpAndSettle();
-    final language = tester.getTopLeft(find.byType(DropdownMenu<String>)).dy;
+    final language = tester
+        .getTopLeft(find.byKey(const ValueKey('language-button')))
+        .dy;
     final card = tester
         .getTopLeft(find.byKey(const ValueKey('daily-streak')))
         .dy;
