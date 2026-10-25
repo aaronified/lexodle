@@ -34,21 +34,30 @@
 
 \begin{abstract}
 We define skill, risk and luck for a guess in a word game with colour feedback
-(Wordle and variants). A guess partitions the words still possible by the feedback
-they would give. The answer lies in one class; its size is the \emph{pool}.
+(Wordle and variants). The answer is drawn by a known \emph{law}: every word equally
+likely, or each by its weight (word frequency). A guess partitions the words still
+possible by the feedback they would give. The answer lies in one class; the
+\emph{pool} is the class's share of the law, expressed as a number of equally likely
+words (its size, under equal chances).
 \emph{Skill} is the log-reduction of the expected pool, as a fraction of the same
 quantity for the best real guess. \emph{Luck} is the probability of a larger pool
-minus the probability of a smaller one. It lies strictly in $(-100,100)$ percent,
-has mean zero for every guess, and its increments over a game are martingale
-differences, so luck is uncorrelated with skill. The two simpler luck definitions
-are unbounded or biased. The log-reduction of the candidate set equals skill plus
-risk plus luck exactly, where risk is the gap between Shannon and collision
-entropy. \emph{Daring} measures how far the player went for the whole word instead of the clues:
+minus the probability of a smaller one. It lies strictly in $(-100,100)$ percent.
+Under the law the answer is drawn from, and only under that law, it has mean zero for
+every guess, and its increments over a game are martingale differences, so luck is
+uncorrelated with the skill of the same and earlier guesses (not independent of it).
+The two simpler luck definitions are unbounded or biased. The log-reduction of the
+candidate set equals skill plus risk plus luck exactly, where risk is the gap between
+Shannon and collision entropy. On the last try skill is the guess's chance of winning
+as a share of the best chance any guess has, and luck is the outcome less that chance.
+\emph{Daring} measures how far the player went for the whole word instead of the clues:
 it is zero for a guess that cannot be the answer, and otherwise grows with what the
-attempt cost in skill, how unlikely the word was, and how many tries were left. We extend the definitions to games with
+attempt cost in skill, how unlikely the word was, and how many tries were left. At the
+opening guess, where every word is possible, it is a function of skill alone (and
+the word's chance). We extend the definitions to games with
 several boards, give an exact algorithm, and report experiments on an English
 five-letter list ($N=4{,}994$) and simulated players of several habits.
-The best first guess leaves $114.4$ words on average. \textsc{crane} scores
+The best first guess leaves $114.4$ words on average (equal chances).
+\textsc{crane} scores
 $81.6$ ($97.6$ on a linear scale, which puts most openings near $100$). A bound on
 the best conceivable split from the number of feedback patterns is too loose to
 use. We list open problems.
@@ -72,10 +81,13 @@ play. It defines scores to show a player after the game. The requirements are:
 
 \begin{enumerate}
 \item[(R1)] \textbf{Knowledge only.} Neither score depends on the answer except
-through what the player saw.
+through what the player saw (and the law the game draws answers by, which is a rule
+of the game).
 \item[(R2)] \textbf{Bounded.} Skill runs from $0$ (the guess tells nothing) to $100$
 (as good as any real guess). Luck is symmetric about $0$ and bounded.
-\item[(R3)] \textbf{Fair luck.} Luck has mean zero and is uncorrelated with skill.
+\item[(R3)] \textbf{Fair luck.} Under the law the answer is drawn from, luck has mean
+zero (given the history) and is uncorrelated with the skill of the same and earlier
+guesses. It is unbiased only with respect to that law (Section~\ref{sec:laws}).
 \item[(R4)] \textbf{One plot.} Both scores can be read from a single plot of the
 outcomes the guess could have had.
 \item[(R5)] \textbf{Accounting.} The reduction of the candidate set equals a skill
@@ -91,37 +103,64 @@ problems. Code and scripts are listed in Section~\ref{sec:repro}.
 
 \section{Setting}\label{sec:setting}
 
+Notation. $\ell$ is the word length, $N=|\Omega|$ the number of words still possible,
+$W$ the (random) answer, $\Pool$ the pool a guess leaves (a number of words, possibly
+effective, see below), $S\in[0,1]$ a skill and $D\in[0,1)$ a daring (both quoted as
+percentages), $\Luck\in(-1,1)$ a luck (quoted as a percentage).
+
 Let $\Omega$ be the finite set of words still possible given everything the player
 has seen, $N=|\Omega|\ge1$, and $\mathcal G$ the finite set of admissible guesses.
 Assume $\Omega\subseteq\mathcal G$. Let $\Phi$ be the set of feedback patterns
-($\{\text{grey},\text{yellow},\text{green}\}^n$ for $n$-letter words) and
+($\{\text{grey},\text{yellow},\text{green}\}^\ell$ for $\ell$-letter words) and
 $f\colon\mathcal G\times\Omega\to\Phi$ the feedback function. Only two properties of
-$f$ are used: it is computable, and $f(g,w)$ is all green only if $g=w$.
+$f$ are used: it is computable, and $f(g,w)$ is all green if and only if $g=w$.
 
-\begin{definition}[Prior (U)]
-The answer $A$ is uniform on $\Omega$. Given the history of guesses and feedback, $A$
-is uniform on the words consistent with it.
+\subsection{Answer laws}\label{sec:laws}
+
+\begin{definition}[Answer law]
+A law is a weight $\pi(\omega)>0$ for each $\omega\in\Omega$, $M=\sum_{\omega\in\Omega}\pi(\omega)$.
+The answer $W$ has $\Prob(W=\omega)=\pi(\omega)/M$. Feedback is a deterministic
+function of the answer and the guesses, so given the history of guesses and
+feedback, $W$ has the law $\pi$ restricted to the words consistent with the history,
+and $M$ is replaced by the weight of those words.
 \end{definition}
 
-(U) is the player's view: without knowing how the game draws answers, all possible
-words count equally. Section~\ref{sec:experiments} measures the effect of the real
-draw.
+Three laws are used. \textbf{(U)} Every possible word equally likely, $\pi\equiv1$
+(frequency off). \textbf{(F)} Each word by its weight, its frequency in the word list
+(frequency on). \textbf{(D)} The daily: uniform over the $3{,}000$ most common words
+and zero elsewhere. A word with zero chance is not possible, so $\Omega$ is those
+$3{,}000$ words and (D) is (U) on a smaller $\Omega$; the other words can be played
+as probes ($\mathcal G\supsetneq\Omega$). This is how \texttt{predict\_tries3.dart}
+treats it. Every score below is relative to one law, which is part of the rules of
+the game and not of the answer, so (R1) holds. What each score is relative to is
+stated in Theorem~\ref{thm:luck} and Section~\ref{sec:wronglaw}.
 
 A guess $g\in\mathcal G$ partitions $\Omega$ into nonempty classes
-$C_\varphi=\{w\in\Omega: f(g,w)=\varphi\}$ of sizes $s_1,\dots,s_k$,
-$\sum_is_i=N$. The answer lands in one class. Its size $\Pool_g=|C_{f(g,A)}|$ is the
-\emph{pool}, the number of words still possible after the guess. If $m_x$ classes
-have size $x$,
+$C_\varphi=\{w\in\Omega: f(g,w)=\varphi\}$, $k$ of them. Let $\mu_i=\pi(C_i)$ be the mass
+of class $i$ and $q_i=\mu_i/M$ the chance that the answer lies in it, $\sum_iq_i=1$.
+The \emph{effective size} of the class is $s_i=Nq_i$, so $\sum_is_i=N$; under (U)
+$s_i=|C_i|$. The answer lands in one class. Its effective size $\Pool_g=s_{i(W)}$ is the
+\emph{pool}: the number of equally likely words that would be as hard to tell apart.
+Under (U) it is the number of words still possible after the guess. If $\nu_x$ classes
+have effective size $x$,
 \begin{equation}\label{eq:pool-law}
-\Prob(\Pool_g=x)=\frac{x\,m_x}{N}.
+\Prob(\Pool_g=x)=\frac{x\,\nu_x}{N}.
 \end{equation}
-Pools are size-biased: a large class is more likely to contain the answer.
+Pools are size-biased: a large class is more likely to contain the answer. The
+definitions of skill and luck, Lemma~\ref{lem:E}, Proposition~\ref{prop:skill} and
+Theorems~\ref{thm:luck} and~\ref{thm:martingale} use only $N$, the effective sizes and their
+order, and hold for every law with sizes read as effective sizes (which need not be
+integers). Statements that count words, such as the examples of
+Proposition~\ref{prop:alternatives}, are for (U).
 
 \section{Skill}\label{sec:skill}
 
 \begin{definition}[Expected pool]
-$E(g)=\E[\Pool_g]=\dfrac1N\sum_{i=1}^k s_i^2$.
+$E(g)=\E[\Pool_g]=\dfrac1N\sum_{i=1}^k s_i^2=N\sum_{i=1}^kq_i^2$.
 \end{definition}
+
+Under (U) this is $\sum_i|C_i|^2/N$. In general $\sum_iq_i^2$ is the chance that two
+independent answers fall in the same class, and $E$ is $N$ times it.
 
 \begin{definition}[Best real guess, skill]
 $E^\ast=\min_{g\in\mathcal G}E(g)$. For $N\ge2$ the \emph{skill} of $g\in\mathcal G$ is
@@ -138,19 +177,24 @@ scale $(N-E)/(N-E^\ast)$ most sensible guesses score near $100$
 ordering of guesses.
 
 \begin{lemma}\label{lem:E}
-Let the partition of $g$ have $k$ classes.
+Let the partition of $g$ have $k$ classes, and let $E_{\min}=N\sum_{\omega\in\Omega}(\pi(\omega)/M)^2$
+(the value of $E$ for the partition into singletons).
 \begin{enumerate}
-\item $\max\{1,N/k\}\le E(g)\le N$; $E(g)=N$ iff $k=1$; $E(g)=1$ iff $k=N$;
-$E(g)=N/k$ iff all classes have equal size.
+\item $\max\{N/k,E_{\min}\}\le E(g)\le N$; $E(g)=N$ iff $k=1$; $E(g)=E_{\min}$ iff
+$k=N$; $E(g)=N/k$ iff all classes have equal mass. Also $E_{\min}\ge1$, with equality
+iff $\pi$ is constant. Under (U), $E(g)=1$ iff $k=N$.
 \item If the partition of $g'$ properly refines that of $g$, then $E(g')<E(g)$.
 \end{enumerate}
 \end{lemma}
 \begin{proof}
-(1) $1\le s_i\le N$ gives $E\ge1$, with equality iff every $s_i=1$, and $s_i^2\le Ns_i$
-gives $E\le N$, with equality iff $k=1$. By Cauchy--Schwarz
-$\sum s_i^2\ge(\sum s_i)^2/k=N^2/k$, with equality iff the $s_i$ are equal.
-(2) Splitting a class of size $a_1+\dots+a_r$, $r\ge2$, replaces $(\sum a_j)^2$ by
-$\sum a_j^2$, which is smaller because the cross terms are positive.
+(1) $q_i\le1$ gives $\sum q_i^2\le\sum q_i=1$, with equality iff $k=1$, so $E\le N$.
+By Cauchy--Schwarz $\sum q_i^2\ge(\sum q_i)^2/k=1/k$, with equality iff the $q_i$ are
+equal. A class of chance $q_i$ is a sum of the chances $p_\omega=\pi(\omega)/M$ of its
+words, and $(\sum p_\omega)^2\ge\sum p_\omega^2$, with equality iff the class has one
+word (the weights are positive); so $E\ge E_{\min}$, with equality iff $k=N$. Finally
+$\sum p_\omega^2\ge1/N$ by Cauchy--Schwarz, with equality iff the $p_\omega$ are equal.
+(2) Splitting a class of chance $b_1+\dots+b_r$, $r\ge2$, replaces $(\sum b_j)^2$ by
+$\sum b_j^2$, which is smaller because the cross terms are positive.
 \end{proof}
 
 \begin{proposition}\label{prop:skill}
@@ -161,13 +205,13 @@ $S(g)=0$ iff $g$ does not divide $\Omega$;
 \item $S$ is strictly decreasing in $E(g)$ and affine in $\ln E(g)$: halving the
 expected pool adds $\ln2/\ln(N/E^\ast)$. If the partition of $g'$ properly refines
 that of $g$, then $S(g')>S(g)$;
-\item $S(g)$ is a function of $(\Omega,g,\mathcal G)$ alone. It does not depend on the
-answer.
+\item $S(g)$ is a function of $(\Omega,\pi,g,\mathcal G)$ alone. It does not depend on
+the answer.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-Take $w\in\Omega\subseteq\mathcal G$. Only $w$ gives all green against $w$, so
-$\{w\}$ is a class of $w$'s partition. For $N\ge2$ the partition is nontrivial, so
+Take $w\in\Omega\subseteq\mathcal G$. The guess $w$ gives all green against $w$, and
+against no other word (all green iff $g=w$), so $\{w\}$ is a class of $w$'s partition. For $N\ge2$ the partition is nontrivial, so
 $E(w)<N$ by Lemma~\ref{lem:E} and $E^\ast<N$. The denominator is positive.
 (1) follows from $E^\ast\le E(g)\le N$ and the lemma, (2) from the formula and
 Lemma~\ref{lem:E}(2), (3) because $E(g)$ and $E^\ast$ are computed from the classes of
@@ -175,26 +219,31 @@ $\Omega$.
 \end{proof}
 
 \begin{remark}[Entropy]
-Let $p_i=s_i/N$. Then $\ln(N/E)=-\ln\sum p_i^2=H_2$, the R\'enyi entropy of order $2$
-\cite{renyi1961}; $e^{H_2}$ is the inverse Simpson index, the Hill number of order $2$
-\cite{simpson1949,hill1973}. Hence $S(g)=H_2(g)/\max_{g'}H_2(g')$. The Shannon
-entropy $H=-\sum p_i\ln p_i=\ln N-\E[\ln\Pool_g]$ \cite{shannon1948} is the expected
+Then $\ln(N/E)=-\ln\sum q_i^2=H_2$, the R\'enyi entropy of order $2$
+\cite{renyi1961} of the split chances; $e^{H_2}$ is the inverse Simpson index, the Hill
+number of order $2$
+\cite{simpson1949,hill1973}. Hence $S(g)=H_2(g)/\max_{g'}H_2(g')$: the collision-entropy
+share of the best guess. The Shannon
+entropy $H=-\sum q_i\ln q_i=\ln N-\E[\ln\Pool_g]$ \cite{shannon1948} is the expected
 log-reduction of the candidate set, and $H\ge H_2$ by Jensen. $H_2$ is used because it
 is a function of $E$, the expected number of words left. Other orders of R\'enyi entropy
 give other scales (Section~\ref{sec:risk}).
 \end{remark}
 
 \begin{remark}[Why the best real guess]
-A bound that needs no search is $e=N/\min(N,3^n)$, the most even split into
-$\min(N,3^n)$ groups. Section~\ref{sec:experiments} tests it and a sharper bound from
-the clues. Both are too loose. The best real word makes about two thirds of the groups
-the bound allows when many words remain, and rarely separates every word when few
-remain. $E^\ast$ is therefore the actual minimum over real guesses.
+A bound that needs no search is $e=N/\min(N,3^\ell)$, the most even split into
+$\min(N,3^\ell)$ groups (a lower bound on $E$ under every law, by Lemma~\ref{lem:E}(1)).
+Section~\ref{sec:experiments} tests it and two bounds that use the clues; they never
+improve on it, and it is too loose. The best real word makes about two thirds of the
+groups the bound allows when many words remain, and rarely separates every word when few
+remain. $E^\ast$ is therefore the actual minimum over real guesses. The floor of $E^\ast$
+is $E_{\min}$ (Lemma~\ref{lem:E}), reached only if some guess separates every word.
 \end{remark}
 
 \section{Luck}\label{sec:luck}
 
-Let $q_x=\Prob(\Pool_g=x)=x\,m_x/N$.
+Let $q_x=\Prob(\Pool_g=x)=x\,\nu_x/N$. Pools are ordered by effective size, that is by
+the chance of their class: a class is bigger when it is more likely to hold the answer.
 
 \begin{definition}[Luck]
 For $x$ in the support of $\Pool=\Pool_g$,
@@ -208,17 +257,22 @@ It is the probability of a larger pool minus the probability of a smaller one: n
 if the outcome is worse than most, positive if better, zero at the median.
 
 \begin{theorem}\label{thm:luck}
-Let $\Pool$ have the law \eqref{eq:pool-law} and $\Luck=\Luck_g$.
+Let the answer be drawn by the law $\pi$ used to compute the effective sizes, let
+$\Pool$ have the law \eqref{eq:pool-law} and $\Luck=\Luck_g$. (Only the law of
+$\Pool$ is used in the proof; (U) is the case $s_i=|C_i|$.)
 \begin{enumerate}
 \item (Mid-distribution form.) $\Luck(x)=2\tilde F(x)-1$ with
 $\tilde F(x)=\Prob(\Pool>x)+\tfrac12\Prob(\Pool=x)$. $\Luck(\Pool)$ is Cliff's delta
 between the realised pool and an independent copy \cite{cliff1993}.
 \item (Bounded.) $-1<\Luck(x)<1$ for every $x$ in the support, and $\Luck$ is strictly
 decreasing in $x$.
-\item (Fair.) $\E[\Luck(\Pool)]=0$ for every guess.
-\item (Spread.) $\Var\,\Luck(\Pool)=\dfrac{1-\sum_x q_x^3}{3}<\dfrac13$.
-\item (Invariance.) $\Luck(x)$ is unchanged if all class sizes are multiplied by the
-same positive factor. Equal pools have equal luck.
+\item (Fair.) $\E[\Luck(\Pool)]=0$ for every guess, when the answer follows the law $\pi$.
+\item (Spread.) $\Var\,\Luck(\Pool)=\dfrac{1-\sum_x q_x^3}{3}<\dfrac13$, the sum over the
+distinct pool sizes $x$ (equal pools are one atom: $q_x$ is the chance of landing in any
+class of effective size $x$, so ties lower the variance).
+\item (Invariance.) $\Luck(x)$ is unchanged if all class sizes (under (U)) or all
+weights (in general) are multiplied by the same positive factor. Equal pools have equal
+luck.
 \end{enumerate}
 \end{theorem}
 \begin{proof}
@@ -245,8 +299,8 @@ Then $\E[\tilde F^2]=\sum_i q_i(c_i+q_i/2)^2=\sum_i q_ic_i^2+\sum_i c_iq_i^2+
 \tfrac14\sum_i q_i^3=\tfrac13-\tfrac1{12}\sum_i q_i^3$. By (3), $\E[\tilde F]=\tfrac12$,
 so $\Var\tilde F=\tfrac1{12}(1-\sum_i q_i^3)$ and $\Var\Luck=4\Var\tilde F$.
 
-(5) Multiplying every $s_i$ by $c>0$ multiplies $N$ and each numerator $x\,m_x$ by $c$,
-so each $q_x$ is unchanged.
+(5) Multiplying every weight (every size, under (U)) by $c>0$ multiplies each mass $\mu_i$
+and $M$ by $c$, so each chance $q_i$ and hence each $q_x$ is unchanged.
 \end{proof}
 
 \begin{remark}
@@ -257,50 +311,99 @@ as their chance, the horizontal middle is the median outcome and $\Luck$ is the
 position of the landed column relative to that middle (Figure~\ref{fig:example}).
 \end{remark}
 
+\subsection{Luck under the wrong law}\label{sec:wronglaw}
+
+Theorem~\ref{thm:luck}(3) is a statement about one law: the one that makes the class
+chances $q_i$ and the one the answer is drawn from. If the answer follows another law
+$\pi'$, with class chances $q'_i$, the mean of $\Luck_g$ is $\sum_iq'_i\Luck_g(s_i)$, which
+is not zero in general (Section~\ref{sec:prior}: luck computed with equal chances has a
+mean of $+10.6\%$ for \textsc{crane} when answers are drawn by frequency). So luck is
+unbiased with respect to $\pi$ only; under (U) it is unbiased only for equal chances, and
+under (F) only for frequency. The app computes luck, skill and daring with the law the
+game draws by, so all three use one law.
+
+Ties get their mid-rank. Suppose a tie rule gives tied pools weight $\lambda\in[0,1]$:
+$\Luck^\lambda(x)=\Prob(\Pool>x)-\Prob(\Pool<x)+(2\lambda-1)\Prob(\Pool=x)$, so
+$\lambda=\tfrac12$ is the mid-rank, $\lambda=0$ counts ties as smaller (strict
+ranks) and $\lambda=1$ as larger. With $q_i$ the chances of the distinct pool sizes,
+\[
+\E[\Luck^\lambda(\Pool)]=(2\lambda-1)\sum_i q_i^2,
+\]
+because $\E[\Prob(\Pool'=\Pool)]=\sum_iq_i^2$ for an independent copy $\Pool'$ and the
+$\lambda=\tfrac12$ term is zero by Theorem~\ref{thm:luck}(3). Since $\sum_iq_i^2>0$, in this
+family of tie rules only the mid-rank has mean zero, and it does for every law and
+every guess.
+
 \subsection{Luck is uncorrelated with skill}
 
-Let $\mathcal F_{t-1}$ be the history before guess $t$. The guess $g_t$ is a function
-of $\mathcal F_{t-1}$ and possibly independent randomness. Let $S_t$ and
-$\Luck_t=\Luck_{g_t}(\Pool_{g_t})$ be its skill and luck.
+Let $\mathcal F_{t-1}$ be the history (guesses and feedback) before guess $t$. The guess
+$g_t$ is a function of $\mathcal F_{t-1}$ and of a randomisation $\xi_t$ independent of
+the answer and of everything before it. Let $\mathcal G_t=\sigma(\mathcal F_{t-1},\xi_t)$,
+so that $g_t$ is $\mathcal G_t$-measurable and $\mathcal F_{t-1}\subseteq\mathcal G_t$.
+Let $S_t$ and $\Luck_t=\Luck_{g_t}(\Pool_{g_t})$ be its skill and luck, with the
+convention that $\Luck_t=0$ and $S_t=0$ once the game has ended. After the answer was
+found there is one word left and one class, so Theorem~\ref{thm:luck} gives luck $0$ in
+any case; after the last permitted try there is no guess and the convention applies.
 
 \begin{theorem}\label{thm:martingale}
-Under (U), $\E[\Luck_t\mid\mathcal F_{t-1}]=0$. Hence $\E\Luck_t=0$,
-$\Cov(\Luck_t,S_s)=0$ for $s\le t$, $\Cov(\Luck_s,\Luck_t)=0$ for $s\ne t$, and
-$\sum_{s\le t}\Luck_s$ is a martingale.
+Let the answer follow the law $\pi$ used to score. Then
+$\E[\Luck_t\mid\mathcal G_t]=0$, hence $\E[\Luck_t\mid\mathcal F_{t-1}]=0$ and
+$\E\Luck_t=0$. Moreover $\Cov(\Luck_t,S_s)=0$ for $s\le t$,
+$\Cov(\Luck_s,\Luck_t)=0$ for $s\ne t$, and $\sum_{s\le t}\Luck_s$ is a martingale for the
+filtration $(\mathcal F_t)$. The last-try luck of Proposition~\ref{prop:last} has the
+same conditional mean zero.
 \end{theorem}
 \begin{proof}
-Given $\mathcal F_{t-1}$ the answer is uniform on the consistent words $\Omega_t$ and
-$g_t$ is fixed, so Theorem~\ref{thm:luck}(3) applies conditionally. $S_s$ ($s\le t$) and
-$\Luck_s$ ($s<t$) are $\mathcal F_{t-1}$-measurable, so
-$\Cov(\Luck_t,S_s)=\E[S_s\E[\Luck_t\mid\mathcal F_{t-1}]]-\E S_s\,\E\Luck_t=0$, and
-likewise for $\Luck_s\Luck_t$.
+Given $(\mathcal F_{t-1},\xi_t)$, $\xi_t$ being independent of $W$, the answer has the law
+$\pi$ restricted to the consistent words $\Omega_t$, and $g_t$ is fixed; the classes and
+chances of $g_t$ are those used in the score. Theorem~\ref{thm:luck}(3) applies, so
+$\E[\Luck_t\mid\mathcal G_t]=0$. The tower property gives
+$\E[\Luck_t\mid\mathcal F_{t-1}]=0$. For $s\le t$, $S_s$ is $\mathcal G_t$-measurable
+(it is a function of $\Omega_s$ and $g_s$, and for $s<t$ both are in $\mathcal F_{t-1}$),
+and $\Luck_s$ for $s<t$ is a function of $g_s$ and the feedback, hence
+$\mathcal F_{t-1}$-measurable. All are bounded. So
+$\Cov(\Luck_t,S_s)=\E[S_s\E[\Luck_t\mid\mathcal G_t]]-\E S_s\,\E\Luck_t=0$, and likewise
+for $\Luck_s\Luck_t$. The partial sums are adapted to $(\mathcal F_t)$ and have
+increments of conditional mean zero. On the last try the conditional mean of the win
+indicator given $\mathcal G_t$ is the win chance (Proposition~\ref{prop:last}), so the
+same argument applies.
 \end{proof}
 
-This is (R3).
+This is (R3). It does \emph{not} say that luck is independent of skill (the spread of
+$\Luck_t$ depends on the split chosen), and it does not say that the game's total luck is
+uncorrelated with its total skill: $\Cov(\Luck_t,S_s)$ for $s>t$ need not vanish, since a
+lucky early outcome changes the position and so what later skills measure. The regression
+of Section~\ref{sec:tries} uses game means, to which only the case $s\le t$ applies.
 
 \subsection{Alternative luck definitions}\label{sec:alternatives}
 
 Two definitions scale the difference between the landed pool $a$ and the expected pool
-$E$.
+$E$. Pools are class sizes under (U) here, which is the law of the comparison in
+Section~\ref{sec:experiments}.
 
 \begin{proposition}\label{prop:alternatives}
 Let $E>1$.
 \begin{enumerate}
 \item The expectation-scaled luck $\Luck^{\exp}(a)=(E-a)/(E-1)$ has mean zero and no
-lower bound: for one pair and $N-2$ singletons, landing in the pair gives $-(N-2)/2$.
+lower bound: for one pair and $N-2$ singletons ($N\ge3$), landing in the pair gives
+$-(N-2)/2$.
 \item The rescaled luck $\Luck^{\mathrm{res}}(a)=(E-a)/(E-1)$ for $a\le E$ and
-$(E-a)/(a_{\max}-E)$ for $a>E$ lies in $[-1,1]$. Its mean is
-$\kappa\bigl(\tfrac1{E-1}-\tfrac1{a_{\max}-E}\bigr)$, $\kappa=\E[(E-\Pool)^+]$, which is
-nonzero unless $a_{\max}-E=E-1$. For the partition $\{3,1\}$ it is $-\tfrac12$.
+$(E-a)/(a_{\max}-E)$ for $a>E$ lies in $[-1,1]$. If the pools are not all equal, its
+mean is $\kappa\bigl(\tfrac1{E-1}-\tfrac1{a_{\max}-E}\bigr)$, $\kappa=\E[(E-\Pool)^+]>0$,
+which is nonzero unless $a_{\max}-E=E-1$. For the partition $\{3,1\}$ it is $-\tfrac12$.
+If all classes have equal size, $\Pool\equiv E$, $\Luck^{\mathrm{res}}\equiv0$ and the
+mean is $0$ (for $\{2,2\}$, $E=2$).
 \end{enumerate}
 \end{proposition}
 \begin{proof}
 (1) $\E\Luck^{\exp}=(E-\E\Pool)/(E-1)=0$. For a pair and $N-2$ singletons
 $E=(N+2)/N$, so $E-1=2/N$, $E-2=-(N-2)/N$, and the ratio is $-(N-2)/2$.
-(2) $\E[\Pool-E]=0$ gives $\E[(E-\Pool)^+]=\E[(\Pool-E)^+]=\kappa$. The positive part of
+(2) If $\Pool$ is not constant then $1<E<a_{\max}$ and
+$\kappa>0$. $\E[\Pool-E]=0$ gives $\E[(E-\Pool)^+]=\E[(\Pool-E)^+]=\kappa$. The positive part of
 $\Luck^{\mathrm{res}}$ is scaled by $1/(E-1)$ and the negative part by $1/(a_{\max}-E)$.
 For $\{3,1\}$: $N=4$, $E=\tfrac52$, $a_{\max}=3$. Landing in the $3$ (chance $\tfrac34$)
-gives $-1$, landing in the $1$ gives $+1$, mean $-\tfrac12$.
+gives $-1$, landing in the $1$ gives $+1$, mean $-\tfrac12$. If $\Pool\equiv E$ every
+landed pool has $a=E$ and $\Luck^{\mathrm{res}}=0$.
 \end{proof}
 
 The first violates (R2), the second (R3): its bias mixes guess quality into luck.
@@ -308,18 +411,44 @@ Section~\ref{sec:experiments} gives means from $+19\%$ to $-60\%$ on real positi
 
 \subsection{The last try}
 
-On the last guess only a word that fits the clues can win. Let $n$ words fit. A guess
-that is one of them wins with chance $1/n$. Any other guess cannot win.
+On the last guess only a word that fits the clues can win, and the split is worth
+nothing, so the split skill of Section~\ref{sec:skill} no longer measures the guess. Let
+$N$ words fit, with law $\pi$ and total weight $M$. A guess $g\in\Omega$ wins with chance
+$p(g)=\pi(g)/M$ (equal to $1/N$ under (U)); any other guess cannot win, $p(g)=0$. Let
+$p^\ast=\max_{h\in\Omega}p(h)$.
+
+\begin{definition}[Last-try skill and luck]
+For $N\ge2$ the \emph{skill} of the last guess is $S^{\mathrm{last}}(g)=p(g)/p^\ast$: the
+chance of winning as a share of the best chance any guess has. Its \emph{luck} is
+$\Luck^{\mathrm{last}}=Y-p(g)$, with $Y=\mathbf 1\{\text{win}\}$.
+\end{definition}
 
 \begin{proposition}\label{prop:last}
-Let $Y=\mathbf 1\{\text{win}\}$ and $\pi=\Prob(\text{win})\in\{1/n,0\}$. The last-try
-luck $\Luck=Y-\pi$ has mean zero for every guess, takes the values $1-\pi$ and $-\pi$,
-and lies in $(-1,1)$ for $n\ge2$. It is $0$ for a guess that cannot win; that loss
-belongs to skill. With three words fitting, a hit is $+67\%$ and a miss $-33\%$.
+Under the law the answer is drawn from, $\E[\Luck^{\mathrm{last}}]=0$ for every guess
+(given the history and the guess). $\Luck^{\mathrm{last}}$ takes the values
+$1-p$ and $-p$; for $N\ge2$ it lies in $(-1,1)$, and it is $0$ for a guess that cannot win.
+$S^{\mathrm{last}}\in[0,1]$, is $1$ iff $g$ is a most likely word and $0$ iff $g$ is a
+probe, and depends only on the position and the guess. Under (U), $S^{\mathrm{last}}=1$ for
+every word that fits. For every guess
+\[
+Y=S^{\mathrm{last}}(g)\,p^\ast+\Luck^{\mathrm{last}},
+\]
+the part of the outcome the guess had in hand plus the part that fell by chance. A probe
+has skill $0$: on the last try the loss from playing a word that cannot win is in
+skill. With three words fitting under (U), a hit is $+67\%$ and a miss $-33\%$.
 \end{proposition}
 \begin{proof}
-$\E Y=\pi$, so $\E[Y-\pi]=0$. The range follows from $0\le\pi\le\tfrac12$ for $n\ge2$.
+$\E Y=p$, so $\E[Y-p]=0$. If $N\ge2$ and $p>0$ then $0<p<1$ (the weights are positive and
+there is another word), so $1-p\in(0,1)$ and $-p\in(-1,0)$; if $p=0$ then $Y=0$ and the
+luck is $0$. $0\le p\le p^\ast$ gives the range of $S^{\mathrm{last}}$, with equality as
+stated because $p(g)=0$ iff $g\notin\Omega$ and $p(g)=p^\ast$ iff $g$ attains the maximum.
+The identity is $p=(p/p^\ast)p^\ast$ added to $Y-p$. Under (U), $p=1/N=p^\ast$ for
+every $g\in\Omega$.
 \end{proof}
+
+The accounting of Section~\ref{sec:accounting} is about the split and does not apply on the
+last try; the identity above takes its place. The conditional mean zero is what
+Theorem~\ref{thm:martingale} uses.
 
 \begin{figure}[t]
 \centering
@@ -360,26 +489,30 @@ $\tfrac{10}{20}(-.5)+\tfrac5{20}(.25)+\tfrac3{20}(.65)+\tfrac2{20}(.9)=0$.
 \section{Accounting: skill, risk and luck}\label{sec:accounting}
 
 Skill and luck have different scales, so they do not add. Their underlying quantities
-do. Let $\rho=\ln(N/A)$ be the \emph{total reduction} of the candidate set (nats; divide
-by $\ln2$ for bits): $A$ words remain of $N$. With $X=\Pool_g$ and
-$H=-\sum_ip_i\ln p_i$,
+do. Let $X=\Pool_g$ be the pool landed in and $\rho=\ln(N/X)$ the \emph{total reduction}
+of the candidate set (nats; divide by $\ln2$ for bits): under (U), $X$ words remain of
+$N$; in general $\rho=-\ln q$ for the chance $q$ of the class landed in. With
+$H=-\sum_iq_i\ln q_i$,
 \[
 \underbrace{H_2}_{\text{skill}}\;+\;\underbrace{H-H_2}_{\text{risk}}\;+\;
 \underbrace{\rho-H}_{\text{luck}}\;=\;\rho,\qquad H_2=\ln\frac NE .
 \]
 
 \begin{proposition}[Accounting]\label{prop:accounting}
-For every guess and outcome the three terms sum to $\rho$. Moreover
+For every guess and outcome (not on the last try, Proposition~\ref{prop:last}) the three
+terms sum to $\rho$, under any answer law. Moreover
 \begin{enumerate}
 \item the skill term $H_2=\ln(N/E)\ge0$ is the numerator of $S$;
 \item the risk term $H-H_2=\ln\E[X]-\E[\ln X]\ge0$, with equality iff all classes have
 equal size;
-\item the luck term $Z=\rho-H=\E[\ln X]-\ln A$ has $\E[Z]=0$ and $\Var Z=\Var(\ln X)$,
+\item the luck term $Z=\rho-H=\E[\ln X]-\ln X$ has $\E[Z]=0$ (under the law the answer
+follows) and $\Var Z=\Var(\ln X)$,
 and under the hypotheses of Theorem~\ref{thm:martingale} it is a martingale difference.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-$\E[\rho]=\E[\ln(N/X)]=\ln N-\E\ln X=H$ and $H_2=\ln N-\ln E$. Hence
+With $X=Nq_{i(W)}$, $\E[\rho]=\E[\ln(N/X)]=\ln N-\E\ln X=-\sum_iq_i\ln q_i=H$
+and $H_2=\ln N-\ln E$. Hence
 $H-H_2=\ln\E[X]-\E[\ln X]\ge0$ by Jensen's inequality, with equality iff $X$ is
 constant, which by \eqref{eq:pool-law} holds iff all class sizes are equal. The luck
 term is $\rho-\E\rho$: mean zero, variance $\Var\rho=\Var(\ln X)$. The conditional
@@ -398,8 +531,8 @@ reduces by $0.14=0.27+0.45-0.59$.
 \end{remark}
 
 \begin{remark}[Two luck scores]
-$Z=\E[\ln X]-\ln A$ and the percentile luck $\Luck$ are both strictly decreasing in the
-landed pool $A$ and both have mean zero, so they rank outcomes identically. $Z$ has the
+$Z=\E[\ln X]-\ln X$ and the percentile luck $\Luck$ are both strictly decreasing in the
+landed pool $X$ and both have mean zero, so they rank outcomes identically. $Z$ has the
 units of skill and risk, which makes the accounting exact, and is bounded by
 $\pm\ln N$. $\Luck$ is the mid-rank of the pool and is bounded by $\pm1$.
 \end{remark}
@@ -432,20 +565,23 @@ Risk is a property of a guess. It does not say what the player was trying to do.
 guess that could be the answer is an attempt at the word; one that cannot is a probe,
 chosen for what it tells. \emph{Daring} measures how much a guess was an attempt at the
 whole word rather than a way of narrowing the pool. Fix a position with $\tau\ge1$ tries
-left, this one included, a set $\Omega$ of words still possible, and a weight $w(\omega)$
-for each (its frequency, which is how the game draws the answer). Let $S(g)\in[0,100]$ be
-the skill of $g$, and
+left, this one included, a set $\Omega$ of $N\ge2$ words still possible and the answer law
+$\pi$ with total weight $M$ (Section~\ref{sec:laws}), the same law that scores skill and
+luck. Let $S(g)\in[0,1]$ be the skill of $g$ (the split skill of Section~\ref{sec:skill};
+daring is $0$ when $\tau=1$, so the last-try skill is not needed), and
 \[
-p(g)=\frac{w(g)}{\sum_{\omega\in\Omega}w(\omega)}\ \text{ if } g\in\Omega,\qquad p(g)=0\ \text{ otherwise,}
+p(g)=\frac{\pi(g)}{M}\ \text{ if } g\in\Omega,\qquad p(g)=0\ \text{ otherwise,}
 \]
-the chance, given the clues, that $g$ is the answer.
+the chance that $g$ wins now. The reference for ``going for the word'' is a word that is
+still possible, as drawn by the answer law: the indicator and $p$ compare $g$ with the
+words the law could have drawn.
 
 \begin{definition}[Daring]\label{def:daring}
 The daring of a guess $g$ is
 \[
-D(g)=\mathbf 1[g\in\Omega]\;\Bigl(1-\frac{S(g)}{100}\Bigr)\;\bigl(1-p(g)\bigr)\;\Bigl(1-\frac1\tau\Bigr).
+D(g)=\mathbf 1[g\in\Omega]\;\bigl(1-S(g)\bigr)\;\bigl(1-p(g)\bigr)\;\Bigl(1-\frac1\tau\Bigr)\in[0,1),
 \]
-It is quoted in percent, and is undefined when only one word is possible.
+quoted in percent. It is undefined when only one word is possible.
 \end{definition}
 
 The four factors say, in turn: the guess is a try at the word; it gave up some of the
@@ -455,19 +591,41 @@ both the best split and a possible answer costs nothing, so $D=0$ too.
 
 \begin{proposition}\label{prop:daring}
 \begin{enumerate}
-\item $D(g)\in[0,1]$, and it depends on the position, the choice of $g$ and $\tau$ only,
-not on the answer, so (R1) holds.
-\item $D(g)=0$ if $g\notin\Omega$, if $\tau=1$, if $S(g)=100$, or if $p(g)=1$.
-\item $D$ is non-increasing in $S$ and in $p$ and non-decreasing in $\tau$, the others
-fixed. It is largest, $1-1/\tau$, for a possible answer of skill $0$ and chance $0$.
+\item $0\le D(g)<1$, and it depends on the position, the law, the choice of $g$ and $\tau$
+only, not on the answer, so (R1) holds.
+\item $D(g)=0$ if $g\notin\Omega$, if $\tau=1$, or if $S(g)=1$. (The case $p(g)=1$ would
+need every other possible word to have chance $0$; the weights are positive, so it means
+$N=1$, where $D$ is undefined and the case does not arise.)
+\item As a function of $(S,p,\tau)$, $D$ is non-increasing in $S$ and in $p$ and
+non-decreasing in $\tau$, the others fixed.
+\item Let $g\in\Omega$ and $\tau\ge2$. Then $p(g)\in(0,1)$ and $S(g)>0$, so
+$D(g)<(1-\tfrac1\tau)(1-p(g))<1-\tfrac1\tau$: the value $1-1/\tau$ is never attained. More
+precisely $S(g)\ge s_0(p)=\ln\!\bigl(1/(1-2p(1-p))\bigr)/\ln(N/E^\ast)$ with $p=p(g)$, so
+$D(g)\le\bigl(1-\min\{1,s_0(p)\}\bigr)(1-p)(1-\tfrac1\tau)$.
+\item At the opening guess every word is possible. If $\Omega$ is the whole list and $g$ is
+in it, then $\mathbf 1[g\in\Omega]=1$ and $D(g)=(1-S(g))(1-p(g))(1-\tfrac1\tau)$, with
+$\tau=6$ in the classic game, so $1-\tfrac1\tau=\tfrac56$. Under (U), $p=1/N$ is the same for every guess and $D$ is a
+function of skill alone, $D=\tfrac56(1-\tfrac1N)(1-S)$. Under (F), $D$ lies between
+$\tfrac56(1-p^\ast)(1-S)$ and $\tfrac56(1-S)$, $p^\ast=\max_hp(h)$.
 \item $D$ does not involve risk, so the accounting of Proposition~\ref{prop:accounting}
 is unaffected.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-All four are read off the product: each factor lies in $[0,1]$, is monotone in the
-stated variable, and the first, third and fourth do not mention the answer.
+(1)--(3) are read off the product: each factor lies in $[0,1]$, the last is below $1$,
+each is monotone in the stated variable, and the factors do not mention the answer.
+(4) $g\in\Omega$ and the weights are positive, so $p(g)>0$, and $p(g)<1$ since
+$N\ge2$. The class of $g$ is $\{g\}$ (all green iff equal), of chance $p$, and the other
+classes share chance $1-p$, so $\sum_iq_i^2\le p^2+(1-p)^2=1-2p(1-p)<1$. Hence
+$E(g)<N$, $S(g)>0$, and $\ln(N/E(g))=-\ln\sum_iq_i^2\ge-\ln(1-2p(1-p))$; divide by
+$\ln(N/E^\ast)$. (5) $\mathbf 1[g\in\Omega]=1$ for every $g$ in the list $\Omega$; the rest is
+substitution, with $0<p\le p^\ast$ and $p=1/N$ under (U).
 \end{proof}
+
+At the opening, then, daring tells no more than skill does: \textsc{crane}
+($S=0.816$) has $D=15.3$ and an opener of median skill ($S=0.674$) has $D=27.2$, both
+under (U) and $\tau=6$. Daring separates players by what they try only through the
+guesses after the opener.
 
 \begin{remark}
 Daring is reported beside the accounting and is not a term of it. An earlier definition
@@ -475,9 +633,9 @@ counted, among the guesses of higher skill, the share that were less risky; it
 mostly measured how far a guess was from the best one, so any player who was not
 optimal looked daring, and it ignored the tries left. It is replaced because the
 question a player means by ``bold'' is whether they went for the word. Skill is relative
-to the language and the word length, so $D$ is too, through $S$. The weights are those
-of the app's word list; in a quartet or relay race the weights are not used and every
-possible word counts as equally likely.
+to the language and the word length, so $D$ is too, through $S$. The chance $p$ uses the
+same law as skill and luck. Daring is defined for single-board games: the quartet and the
+relay race of Section~\ref{sec:multi} have no daring score.
 \end{remark}
 
 \section{Several boards}\label{sec:multi}
@@ -488,7 +646,8 @@ earlier guess is applied to a board when it opens.
 
 A guess is made for live boards $b=1,\dots,B$ with possible sets $\Omega_b$ of sizes
 $N_b$. Skill $S_b$ and luck $\Luck_b$ are computed per board as above, with $E_b^\ast$
-the best real guess for that board. Let $w_b=\log_2\max\{N_b,2\}$, which depends only on
+the best real guess for that board and every board scored by the same law $\pi$ (the
+weights are threaded through to each board, restricted to its candidates). Let $w_b=\log_2\max\{N_b,2\}$, which depends only on
 the history, and
 \[
 S=\frac{\sum_b w_bS_b}{\sum_b w_b},\qquad
@@ -496,18 +655,28 @@ S=\frac{\sum_b w_bS_b}{\sum_b w_b},\qquad
 \]
 
 \begin{proposition}\label{prop:multi}
-$S\in[0,1]$ and $-1<\Luck<1$. If, given the history, each answer is uniform on its
-board's candidates, then $\E[\Luck\mid\mathcal F_{t-1}]=0$ and
-Theorem~\ref{thm:martingale} holds for the combined luck. Independence between boards
-is not required.
+$S\in[0,1]$ and $-1<\Luck<1$. Suppose that, given the history and the guess, the
+answer of each live board has, as a marginal, the law $\pi$ restricted to that board's
+candidates, which is the law the board is scored by. Then
+$\E[\Luck\mid\mathcal G_t]=0$ and Theorem~\ref{thm:martingale} holds for the combined
+luck. Independence between boards is not required.
 \end{proposition}
 \begin{proof}
 Convex combinations stay in $[0,1]$ and $(-1,1)$. The weights are
 $\mathcal F_{t-1}$-measurable, so
-$\E[\Luck\mid\mathcal F_{t-1}]=\sum_b w_b\E[\Luck_b\mid\mathcal F_{t-1}]/\sum_bw_b=0$
-by Theorem~\ref{thm:luck}(3) on each board. The remainder of
-Theorem~\ref{thm:martingale}'s proof uses only this.
+$\E[\Luck\mid\mathcal G_t]=\sum_b w_b\E[\Luck_b\mid\mathcal G_t]/\sum_bw_b=0$
+by Theorem~\ref{thm:luck}(3) on each board, which uses only the marginal law of that
+board's answer. The remainder of Theorem~\ref{thm:martingale}'s proof uses only this.
 \end{proof}
+
+The hypothesis is about how the game draws the boards' answers. It holds if each board's
+answer is an independent draw from $\pi$ (under (U) or (F)). It does not hold exactly if
+the answers are drawn jointly, for instance all distinct or preferring sets that share
+few letters: then a board's marginal law given the history is not $\pi$ restricted to its
+candidates, and the combined luck need not have mean zero. How far the quartet's draw
+departs from the hypothesis is not measured here, so the zero-mean property is proved
+for independent draws only. (The earlier statement, with equal chances on every board,
+is the case (U) with independent draws.)
 
 \begin{remark}[Weights]
 $\log_2N_b$ is the number of bits still to find on board $b$. A board with one word left
@@ -526,24 +695,30 @@ earlier guesses is open.
 
 \section{Computation}\label{sec:computation}
 
-Feedback for an $n$-letter guess is packed into an integer in $\{0,\dots,3^n-1\}$. For a
-guess $g$, class sizes are counted in an array indexed by pattern, reset by revisiting
-only the patterns touched. $E(g)$ costs one pass, $O(nN)$, with no allocation. Skill
-needs $E^\ast=\min_gE(g)$, a scan of all $|\mathcal G|$ guesses: $O(nN|\mathcal G|)$,
+Feedback for an $\ell$-letter guess is packed into an integer in $\{0,\dots,3^\ell-1\}$. For a
+guess $g$, class sizes (or class masses, under a weighted law) are counted in an array
+indexed by pattern, reset by revisiting
+only the patterns touched. $E(g)=N\sum q_i^2$ costs one pass, $O(\ell N)$, with no
+allocation. Skill
+needs $E^\ast=\min_gE(g)$, a scan of all $|\mathcal G|$ guesses: $O(\ell N|\mathcal G|)$,
 about $1.2\times10^8$ operations for a first guess on $N=|\mathcal G|=4{,}994$
 five-letter words, and fewer as $N$ falls. The scan also gives the skill of every
 guess, so the rank of the player's guess is free. For several boards, boards sharing
 the same candidate list (all of them at the start) are scored once. A truncated scan
 gives $E^\ast$ too large and skill too high; the app scans every guess.
 
-Luck needs the class sizes of the player's guess only: sort the distinct sizes and
-accumulate the masses above and below, $O(k\log k)$ for $k$ classes.
+Luck needs the class masses of the player's guess only: sort the distinct masses and
+accumulate the chances above and below, $O(k\log k)$ for $k$ classes. The last-try skill
+needs the largest weight among the words that fit.
 
 \section{Experiments}\label{sec:experiments}
 
 All figures use the app's English five-letter list ($N=4{,}994$; every word is a legal
 guess and a possible answer). Scripts are in \texttt{docs/paper/experiments}; outputs
-in its \texttt{results} directory.
+in its \texttt{results} directory. The Python experiments (first guesses, luck
+definitions, simulated players, risk, accounting, worked game, bounds, theorem checks)
+use law (U). The Dart simulations of Sections~\ref{sec:styles} and~\ref{sec:tries} draw
+answers by frequency or from the daily set, as stated there.
 
 \subsection{First guesses}
 
@@ -623,8 +798,8 @@ linear scale nearly every guess of either player would score above $90$.
 
 \subsection{Is risk worth rewarding?}\label{sec:risk}
 
-$H_2$ rewards even splits. $H$ (the risk term above) credits a split into one large and
-several small classes more, and counting groups more still. These are the R\'enyi
+$H_2$ rewards even splits. $H$ (the expected reduction; the risk term is $H-H_2$) credits
+a split into one large and several small classes more, and counting groups more still. These are the R\'enyi
 entropies of order $\alpha=\infty$ (the largest class), $2$ (the app), $1$ (Shannon) and
 $0$ (number of classes). \texttt{risk\_attitude.py} plays a greedy player ranking guesses
 by each. The first guess is chosen over every word; later guesses among the words still
@@ -643,15 +818,19 @@ Shannon ($\alpha=1$) & tares & $3.83\pm0.03$ & $36.2$ & $82.5$ & $96.9$ & $99.1$
 groups ($\alpha=0$) & tares & $3.81\pm0.03$ & $37.8$ & $82.5$ & $97.0$ & $99.2$\\
 \bottomrule
 \end{tabular}
-\caption{Greedy player under four valuations, $1{,}000$ games each. Shares in percent,
-standard error $1.2$ to $1.5$ points.}
+\caption{Greedy player under four valuations, $1{,}000$ games each. Shares in percent.
+Binomial standard errors: $1.2$ to $1.5$ points at $\le3$ and $\le4$, $0.5$ to $0.6$ at
+$\le5$, $0.2$ to $0.3$ at $\le6$ (the same answers are used in every row, so differences
+between rows are paired and tighter; not computed).}
 \label{tab:risk}
 \end{table}
 
-The worst-case valuation is slower ($4.01$ against about $3.8$, five standard errors). The
+The worst-case valuation is slower ($4.01$ against about $3.8$, four to five standard
+errors of the difference, treating the runs as unpaired). The
 other three have indistinguishable mean time. The share won within three guesses rises
-with the weight on small classes ($34.3\%$, $36.2\%$, $37.8\%$) with no loss within six
-($99.4$, $99.1$, $99.2\%$). This is consistent with a gamble paying off when few guesses
+with the weight on small classes ($34.3\%$, $36.2\%$, $37.8\%$), with no loss detectable
+within six ($99.4$, $99.1$, $99.2\%$: differences of $0.1$ to $0.3$ points against a
+standard error of about $0.3$). This is consistent with a gamble paying off when few guesses
 are needed, but the evidence is weak: one greedy policy, a restricted candidate set, one
 language and length, one run. The three non-worst-case players share the opener
 \textsc{tares}, so their differences come from later guesses.
@@ -667,9 +846,13 @@ three best at random); \emph{best-fit} (the best split among the words that stil
 so always an attempt at the word); \emph{frequent} (the most common word that still
 fits); \emph{random-fit} (any word that still fits); \emph{wild} (a common word,
 ignoring the clues); and \emph{wild-bold} (a rare word, ignoring the clues). Means are
-over the guesses made with more than one word left. Table~\ref{tab:styles} gives English
+over the guesses made with more than one word left, the opening guess included.
+Table~\ref{tab:styles} gives English
 at five letters ($200$ games each); the output of this and three more settings is in
-\texttt{results/daring\_calibration.txt}.
+\texttt{results/daring\_calibration.txt}. That output was saved on 2026-10-24, before skill
+and luck were generalised to the answer law: skill and luck then assumed equal chances
+while daring's $p$ used the frequency weights, and answers were drawn by frequency. The
+tables of this section have not been regenerated with the law-consistent scores.
 
 \begin{table}[t]
 \centering
@@ -692,13 +875,18 @@ guesses, guesses per game, and the means of skill and daring.}
 \end{table}
 
 Three things stand out. First, the best player has daring exactly $0$, as
-Proposition~\ref{prop:daring} says. Second, daring separates the players
-by what they try to do and not by how good they are: the players who go for the word
-whatever it costs (frequent, random-fit) score about $20$; the players who work the clues
-(near-best, wild) score under $7$; best-fit, which goes for the word only when the word
-is also a good split, scores $4$. Third, daring is small for everyone, because the
-tries-to-spare and chance factors shrink it, so a good player seldom exceeds
-$10$ (Table~\ref{tab:bands}).
+Proposition~\ref{prop:daring} says. Second, daring is not independent of skill, and at
+the opening guess it is a function of skill alone (Proposition~\ref{prop:daring}(5)):
+a player's daring there is fixed by the skill of the opener. After the opener it records
+what the player tried. Frequent and random-fit play a word that still fits on every
+turn whatever it costs in the split, and score about $20$. Best-fit also always plays a
+word that fits, but the best-splitting one, so the cost factor is small and it scores $4$.
+Near-best picks among the three best splits, which are often not possible words, and
+scores under $1$. Wild and wild-bold ignore the clues: after the opener their guesses
+are rarely still possible and then have daring $0$, so their $6.0$ and $6.5$ come mostly
+from the opener (this split was not measured separately). Third, daring is small for
+everyone, because the tries-to-spare and chance factors shrink it, so a good player
+seldom exceeds $10$ (Table~\ref{tab:bands}).
 
 \begin{table}[t]
 \centering
@@ -761,11 +949,73 @@ from changing it.
 \subsection{Do skill, luck and daring predict the tries?}\label{sec:tries}
 
 If skill, luck and daring describe a game, they should predict how many tries it takes.
-\texttt{app/tools/predict\_tries.dart} plays $400$ games per language by simulated
+Two tools test this. The first, \texttt{app/tools/predict\_tries.dart}, plays $400$ games
+per language by simulated
 players whose habits are drawn afresh for each game (the chance, per guess, of each of
 best, best-fit, frequent, random-fit and wild play), and fits the number of tries (a
 failed game counts as $7$) by least squares on the game's mean skill, mean luck and mean
-daring over the guesses with a choice. Table~\ref{tab:tries} gives $R^2$.
+daring over the guesses with a choice. Table~\ref{tab:tries} gives $R^2$. It should not be
+read as evidence, for three reasons. Answers were drawn by frequency while luck assumed
+equal chances, so the luck column is biased and not uncorrelated with skill
+(Section~\ref{sec:wronglaw}). The model is fitted and read on the same games, from one
+seed: the same model gave $R^2=0.542$ at $250$ games and $0.483$ at $400$, so differences
+of a few points are within noise. And a lost game coded $7$ is a censored value treated
+as exact, game means over guesses with a choice are endogenous (a short game averages few
+guesses), and the last-try luck is the win indicator less its chance, so it nearly encodes
+the outcome of a game that reaches its last try.
+
+The second, \texttt{app/tools/predict\_tries3.dart}, replaces it. It scores every guess
+with the app's own code under an explicit answer law: \textbf{u} (equal chances, frequency
+off), \textbf{f} (by frequency) and \textbf{d} (the daily: equal chances over the $3{,}000$
+most common words). The same mixed-habit players play games whose answers are drawn by
+that law, and the tries are regressed on the means of skill, luck and daring. The fit uses
+the first half of the games and $R^2$ is read on the second half, which the fit never saw.
+The tool also prints how evenly each score fills its range (the share of all guesses in
+each tenth), the correlations between the three game means and their variance inflation
+factors, which show whether the coefficients can be read one at a time. It uses one seed.
+
+\medskip\noindent\textbf{Results of the second experiment.}
+English, five letters, $2{,}500$ games per law (fit on $1{,}250$, read on $1{,}250$), one
+seed (\texttt{results/predict\_tries3\_\{u,f,d\}\_en.txt}).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+ & u & f & d\\
+\midrule
+mean tries (share lost) & 4.67 (12.9\%) & 3.94 (5.4\%) & 4.37 (8.6\%)\\
+held-out $R^2$, skill alone & 0.26 & 0.29 & 0.22\\
+held-out $R^2$, luck alone & 0.31 & 0.01 & 0.29\\
+held-out $R^2$, daring alone & $-0.01$ & 0.01 & $0.00$\\
+held-out $R^2$, skill + luck & 0.55 & 0.30 & 0.53\\
+held-out $R^2$, skill + luck + daring & 0.60 & 0.36 & 0.59\\
+mean skill / luck / daring & 74.8 / $-0.8$ / 11.3 & 81.5 / $-0.5$ / 8.1 & 76.3 / $-0.2$ / 11.1\\
+VIF skill / luck / daring & 1.40 / 1.04 / 1.42 & 1.49 / 1.00 / 1.49 & 1.46 / 1.04 / 1.50\\
+\bottomrule
+\end{tabular}
+\caption{Held-out prediction of the tries a game takes, by answer law.}
+\end{table}
+
+Three things follow. First, the mean luck is within one point of zero under every law,
+as Theorem~3 says for the law that draws the answer. Second, the three scores are close
+to uncorrelated as game means (the largest $|r|$ is the skill--daring pair, $-0.52$ to
+$-0.57$, which is the opening-guess identity of Proposition~8(5), not a defect); the
+variance inflation factors are all below $1.5$, so the coefficients can be read one at a
+time. Third, the scores jointly explain $36\%$ of the variance of the tries when the
+answers are drawn by frequency and about $59\%$ otherwise, and daring adds $4$ to $6$
+points on top of skill and luck. Under law~f luck explains almost nothing alone
+($R^2=0.01$): a common word is both the likely answer and, on a bad split, the likely big
+pool, so the order of the pools by mass says little about how many guesses remain. The
+fitted line, the mean of the three, is the one the history chart shows
+($9.38 - 0.0563\,\text{skill} - 0.0164\,\text{luck} - 0.0445\,\text{daring}$).
+
+The spread is \emph{not} even. Skill puts $42$ to $56\%$ of all guesses in its top
+tenth (most guesses are good); daring puts $58$ to $71\%$ in its lowest tenth (most
+guesses are not attempts at the word); luck is spread over its range but humped near
+the middle. These are properties of the players simulated, not of the definitions, but
+they mean that a score of 50 does not sit at the middle of the guesses played.
+\medskip
 
 \begin{table}[t]
 \centering
@@ -781,26 +1031,30 @@ skill + daring & 0.215 & 0.153 & 0.112\\
 skill + luck + daring & 0.483 & 0.578 & 0.619\\
 \bottomrule
 \end{tabular}
-\caption{$R^2$ of the tries a game takes on its mean skill, luck and daring ($400$
-simulated games each; \texttt{results/predict\_tries.txt}).}
+\caption{In-sample $R^2$ of the tries a game takes on its mean skill, luck and daring
+($400$ simulated games each, answers by frequency, luck with equal chances, one seed;
+\texttt{results/predict\_tries.txt}). Superseded by \texttt{predict\_tries3}.}
 \label{tab:tries}
 \end{table}
 
-Skill and luck together explain about half of the variance, and daring adds $1.5$ to $4$
+In Table~\ref{tab:tries}, skill and luck together explain about half of the variance, and
+daring adds $1.5$ to $4$
 points on top ($0.458\to0.483$, $0.538\to0.578$, $0.604\to0.619$), with a negative
 coefficient in every fit: given skill and luck, a player who went for the word more took
 fewer tries. Daring alone explains almost nothing, since by itself it does not say whether
-the attempt paid off. The addition is real but modest; the rest of the variance is the
-discreteness of the tries and what the game means lose (the number of guesses with a
-choice, and when the luck came). Luck explains more than skill alone because a game that
-ends early did so by a lucky split.
+the attempt paid off. Whether the addition is real is what the held-out fit is for. The
+rest of the variance is the discreteness of the tries and what the game means lose (the
+number of guesses with a choice, and when the luck came). Luck explains more than skill
+alone here; a plausible reading, untested, is that a game that ends early had a lucky
+split, and part of it is mechanical (the last-try luck above).
 
 The history page uses the fits to draw the expected guesses of a period. It takes the mean
-of the three fits, $8.05-0.0413\,\text{skill}-0.0272\,\text{luck}-0.0316\,\text{daring}$, and
+of the three fits of the second experiment, $9.38-0.0563\,\text{skill}-0.0164\,\text{luck}-0.0445\,\text{daring}$, and
 shows each term as what it does to a base. Skill, which is never negative, can only take
-guesses off; luck can do either; daring is measured from a typical level of $8$ so that it
-too can add or take off. The weights come from simulated players and are a first reading,
-not measured on people.
+guesses off; luck can do either; daring is measured from a typical level of $10$ so that it
+too can add or take off. The weights come from the held-out fits above (one seed, English
+five letters), and are a first reading, not measured on people; they should be refitted
+on the \texttt{predict\_tries3} output.
 
 \subsection{A worked game}\label{sec:game}
 
@@ -819,19 +1073,23 @@ risk term ($0.28$ against $0.15$ bits), but only as a singleton class. The accou
 gives a win no more credit than any other singleton, although a win saves a whole guess
 (Section~\ref{sec:open}).
 
-\subsection{The game's answer draw}
+\subsection{The game's answer draw}\label{sec:prior}
 
-Luck has mean zero when each possible word is equally likely. The game draws answers by
-word frequency. \texttt{prior\_bias.py} gives the mean first-guess luck under that draw:
+Luck computed with equal chances has mean zero when each possible word is equally likely.
+The game draws answers by word frequency. \texttt{prior\_bias.py} gives the mean
+first-guess luck, computed with equal chances, when the answer is drawn by frequency:
 $+10.2\%$ for \textsc{tares}, $+10.6\%$ for \textsc{crane}, $+7.6\%$ for \textsc{slate},
 $-6.4\%$ for \textsc{abbey}, $-8.2\%$ for \textsc{mamma}. Restricting the draw to the $500$
 most common words changes these by about one point. Common words tend to fall in small
 classes of strong guesses and large classes of weak ones. Under (U) the means are zero to
-machine precision (Table~\ref{tab:luck}). This is the first open problem.
+machine precision (Table~\ref{tab:luck}). This cross-law bias is what
+Section~\ref{sec:wronglaw} describes; the app now computes luck with the law the answer is
+drawn by, for which the mean is exactly zero (Theorem~\ref{thm:luck}(3)). The opposite
+direction (luck by frequency when answers are equal) was not measured.
 
 \subsection{A bound on the best conceivable split}
 
-Three bounds on the number of groups were tested: the naive $\min(N,3^n)$; a bound $B$
+Three bounds on the number of groups were tested: the naive $\min(N,3^\ell)$; a bound $B$
 counting $2$ outcomes at positions fixed by the clues and $3$ elsewhere; and a bound $C$
 taking, over all real guesses, the product over letters of how many of
 green/yellow/grey that letter could show against the words still possible. On $14$
@@ -845,7 +1103,7 @@ is normalised by the best real guess.
 \subsection{Numerical check of the theorems}
 
 \texttt{verify\_theorems.py} checks Theorems~\ref{thm:luck} and~\ref{thm:martingale} and
-Proposition~\ref{prop:alternatives} independently of the app. On $20{,}000$ random
+Proposition~\ref{prop:alternatives} independently of the app, under (U). On $20{,}000$ random
 partitions, luck lies strictly in $(-1,1)$, is strictly monotone in the pool, is unchanged
 by scaling the classes, has $|\text{mean}|<2\times10^{-16}$, and has variance equal to
 $(1-\sum q^3)/3$ to the same precision. On $1{,}500$ simulated games of four guesses, with
@@ -853,16 +1111,30 @@ uniform answers and guesses depending only on the past, the mean luck of each gu
 within sampling error of zero (for the first guess $+0.008$, standard deviation $0.57$).
 All correlations of a guess's luck with the skill of any guess so far, and with earlier
 luck, are within four standard errors of zero (largest in magnitude $0.084$, tolerance
-$0.103$).
+$0.103$); the ``skill'' there is the linear $(N-E)/(N-1)$, a number fixed by the past,
+which is all the theorem needs.
+
+\texttt{verify\_laws.py} checks the weighted-law statements. With rational arithmetic, on
+$3{,}000$ random weighted partitions (ties included) luck has mean exactly $0$, variance
+$(1-\sum q^3)/3$, lies strictly in $(-1,1)$ and is strictly monotone; luck under a
+different law has a nonzero mean; the tie rule with weight $\lambda$ has mean
+$(2\lambda-1)\sum q^2$; the rescaled luck has mean $0$ for $\{2,2\}$ and $-\tfrac12$ for
+$\{3,1\}$; the last-try luck has mean $0$ and the daring bound of
+Proposition~\ref{prop:daring}(4) holds. On $800$ simulated games of three guesses by a
+randomising player, with answers drawn by frequency from the $250$ most common words and
+luck computed with that law, the mean luck of each guess is within four standard errors
+of zero and all correlations with the skill so far and with earlier luck are within
+tolerance (\texttt{results/verify\_laws.txt}; the skill there uses a sample of $50$
+guesses for $E^\ast$, again a number fixed by the past).
 
 \section{Open problems}\label{sec:open}
 
 \begin{enumerate}
-\item \textbf{Non-uniform priors.} For frequency-weighted answers, replace sizes by prior
-masses: $E=\sum_iW_i^2/W$ with $W_i$ the mass of class $i$. Theorems~\ref{thm:luck}
-and~\ref{thm:martingale} hold with $p_i=W_i/W$, which would remove the bias of about
-$\pm10$ points measured above. Open: whether the ranked pool is the word count or the
-mass, and whether a player can be assumed to know the frequencies.
+\item \textbf{Non-uniform priors.} \emph{Answered} (Section~\ref{sec:laws}): replace sizes
+by effective sizes $s_i=Nq_i$, so $E=N\sum_iq_i^2$; Theorems~\ref{thm:luck}
+and~\ref{thm:martingale} hold unchanged, pools are ranked by mass, and luck is exactly
+unbiased under the law used (and biased under another, Section~\ref{sec:wronglaw}).
+What remains open is whether a player can be assumed to know the frequencies.
 \item \textbf{Lookahead.} Skill scores the split made now. A guess can score lower and
 play better over the rest of the game. Is there a skill that credits lookahead and
 depends only on the player's knowledge, for example through the expected number of
@@ -876,7 +1148,8 @@ guesses remaining: an even split with many left, a gamble with few (Section~\ref
 Is there a skill that depends on the tries left, for example the chance of finishing within
 them under an optimal continuation?
 \item \textbf{Credit for finishing now.} A guess that is a possible answer wins at
-once with chance $1/N$. In the accounting the winning class is a singleton like any
+once with chance $p(g)$ ($1/N$ under (U)); on the last try this is now the skill
+(Proposition~\ref{prop:last}), but not before it. In the accounting the winning class is a singleton like any
 other, with reduction $\ln N$. But landing in another singleton still costs one more
 guess; landing in the winning class does not. Skill and risk therefore undercount
 guesses that can win. A measure based on the expected number of remaining guesses would
@@ -885,11 +1158,16 @@ count it. How should this be combined with the entropy terms?
 games of different length, for example $\sum_t\Luck_t/\sqrt{\sum_t\Var\Luck_t}$?
 \item \textbf{Relay-race credit.} How to credit the head start of a board to the earlier
 guesses that produced it.
-\item \textbf{Ties.} Mid-ranks are used for equal pools. Strict ranks give a luck with
-nonzero mean. Other tie rules exist. Does fairness characterise the mid-rank rule?
+\item \textbf{Ties.} \emph{Answered} (Section~\ref{sec:wronglaw}): a rule giving tied pools
+weight $\lambda$ has mean $(2\lambda-1)\sum_iq_i^2$, so within that family the mid-rank
+$\lambda=\tfrac12$ is the only one that is fair for every law. Rules outside the family
+are not covered.
 \item \textbf{Hard modes, other feedback.} Only the following is used about $f$: a map to
-a finite set with all-green exactly at equality. Do the results and the algorithm extend to
-games where later guesses must obey earlier clues, and how does $E^\ast$ change?
+a finite set with all-green exactly at equality. \emph{Answered, largely trivially}: in a game where later guesses must obey earlier
+clues, every word still possible obeys them (the answer does), so $\Omega\subseteq\mathcal G$
+still holds and all results go through with $\mathcal G$ replaced by the legal guesses;
+only $E^\ast$ can rise, because the probes are no longer available. How much it rises is
+not measured.
 \item \textbf{Playstyles on real players.} The thresholds of Section~\ref{sec:styles}
 come from simulated players at five letters. They should be set on real play, and
 probably per length: skill is not comparable across lengths (the player who ignores the
@@ -925,7 +1203,9 @@ with \texttt{dart run tools/calibrate\_styles.dart [code] [length] [games]} from
 \texttt{app}, which writes to the console; the saved output is
 \texttt{results/daring\_calibration.txt}. The tries regression of
 Section~\ref{sec:tries} is \texttt{dart run tools/predict\_tries.dart [code] [length]
-[games]}, saved as \texttt{results/predict\_tries.txt}. The other experiments are in
+[games]}, saved as \texttt{results/predict\_tries.txt}; its replacement is \texttt{dart run
+tools/predict\_tries3.dart [law] [code] [length] [games]} with the law \texttt{u}, \texttt{f}
+or \texttt{d}, saved as \texttt{results/predict\_tries3\_}$\langle$law$\rangle$\texttt{\_en.txt}. The other experiments are in
 \texttt{docs/paper/experiments}, share \texttt{common.py}, and each states its command and
 output file:
 \begin{itemize}
@@ -937,7 +1217,8 @@ question;
 \item \texttt{reduction\_accounting.py}, \texttt{worked\_game.py}: skill, risk and luck
 terms, and one worked game;
 \item \texttt{capacity\_bound.py}: the negative result;
-\item \texttt{verify\_theorems.py}: numerical checks.
+\item \texttt{verify\_theorems.py}, \texttt{verify\_laws.py}: numerical checks (the second
+for weighted laws, ties, the last try and the daring bound).
 \end{itemize}
 
 \begin{thebibliography}{99}

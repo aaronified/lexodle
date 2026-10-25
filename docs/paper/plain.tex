@@ -18,7 +18,7 @@
 \begin{document}
 \maketitle
 
-	extbf{The maths here is mostly AI-generated and has not been peer reviewed.}
+\textbf{The maths here is mostly AI-generated and has not been peer reviewed.}
 
 This is the same material as the paper \texttt{main.pdf}, with the notation taken out. You need
 fractions, percentages, averages, and one calculator button (the natural logarithm, explained in
@@ -59,8 +59,13 @@ sizes
 (These add up to 18.) If the hidden word is in the group of 5, you are left with 5 words. If it is
 in a group of 1, you are left with just that word.
 
-Each of the 18 words is equally likely to be the hidden one, so the chance of landing in a group is
-its size divided by 18. The group of 5 has chance $5/18$.
+In this example each of the 18 words is equally likely to be the hidden one, so the chance of
+landing in a group is its size divided by 18. The group of 5 has chance $5/18$. (If the game draws
+words by how common they are, each word counts by its weight instead, and a group's chance is its
+share of the total weight; everything below works the same way, with ``size'' read as that share
+of 18. Lexodle uses whichever rule the game uses to draw the answer: equal chances when
+frequency is off, by weight when it is on, and equal chances over the 3,000 most common words
+for the daily.)
 
 \section{The expected number of words left}
 \label{sec:expected}
@@ -150,13 +155,21 @@ one is $(3+2+2+6)/18 = 13/18$. So luck is $0 - 13/18 = -72\%$.
 \[
 \tfrac{5}{18}(-0.72) + \tfrac{3}{18}(-0.28) + \tfrac{4}{18}(0.11) + \tfrac{6}{18}(0.67) = 0 .
 \]
-Luck averages to exactly zero over the possible answers, for \emph{every} possible guess. So a
-guess cannot be made to look lucky by choosing it cleverly; only the answer decides. That also makes
-luck independent of skill. (Two simpler definitions fail this: ``pool you got minus pool expected''
+Luck averages to exactly zero over the possible answers, for \emph{every} possible guess, when
+the answers are drawn by the rule the scores use. So a guess cannot be made to look lucky by
+choosing it cleverly; only the answer decides. That also makes luck \emph{uncorrelated} with the
+skill of the same guess and of the guesses before it (not independent of it: how spread out luck is
+depends on the guess). If the game drew words by a different rule than the one used to score, luck
+would no longer average to zero: scored with equal chances but drawn by frequency, the first guess
+\textsc{crane} averages $+10.6\%$. (Two simpler definitions fail this: ``pool you got minus pool expected''
 has no lower limit and ``percent better than expected'' is biased. The paper shows both.)
 
-\textbf{The last try.} With one try left only a word that could still be the answer can win. Luck is
-then about the pick itself: $+100\%$ minus its chance if you win, minus its chance if you lose.
+\textbf{The last try.} With one try left only a word that could still be the answer can win, and
+the split no longer matters. Skill is then the guess's chance of winning as a share of the best
+chance any guess has (100 for the likeliest word that fits, 0 for a word that cannot be the answer;
+with equal chances every word that fits scores 100). Luck is the outcome less that chance:
+$+100\%$ minus its chance if you win, minus its chance if you lose, and 0 for a guess that
+cannot win.
 
 \section{Daring}
 
@@ -169,8 +182,9 @@ between 0 and 1:
 \item \textbf{Could it be the answer?} 1 if yes, 0 if not. A probe has no daring.
 \item \textbf{What did it cost?} $1 - \text{skill}/100$. Going for the word with the best split costs
 nothing.
-\item \textbf{How unlikely was the word?} $1 - $ its chance of being the answer, where the chance
-follows how common each word is. A very likely word is hardly a gamble.
+\item \textbf{How unlikely was the word?} $1 - $ its chance of being the answer, under the same
+rule as skill and luck (equal, or by how common each word is). A very likely word is hardly a
+gamble.
 \item \textbf{Were there tries to spare?} $1 - 1/\text{tries left}$, counting this one. With one try
 left it is 0: going for the word is the only play.
 \end{enumerate}
@@ -185,8 +199,11 @@ and you had 4 tries left:
 \]
 
 Daring is small for almost everyone. In simulated players (Section~\ref{sec:sim}) a player who
-always works the clues scores under 7; one who always plays the commonest word that fits scores
-about 20; a good player seldom goes above 10.
+mostly plays words that do not fit scores under 7; one who always plays the commonest word that
+fits scores about 20; a good player seldom goes above 10. Note that on the \emph{first} guess every
+word is possible, so daring there is fixed by skill alone (about $\tfrac56(1-\text{skill}/100)$,
+with six tries): \textsc{crane}, skill 82, has daring about 15. Daring tells the style of play only
+from the second guess on.
 
 \section{The three add up}
 \label{sec:accounting}
@@ -207,7 +224,9 @@ this sum. The paper proves the identity and that luck averages to zero.
 \section{Expected guesses}
 
 If skill, luck and daring describe a game, they should predict how many guesses it takes. They do,
-partly. Fitting a straight line to simulated games gives, on average over three languages:
+partly. Fitting a straight line to simulated games gives, on average over three languages
+(an earlier fit, made on the same games it was read on, with luck scored with equal chances although
+the simulated answers were drawn by frequency; it is being redone on games it has not seen):
 \[
 \text{expected guesses} \approx 8.05 - 0.0413\times\text{skill} - 0.0272\times\text{luck}
 - 0.0316\times\text{daring}.
@@ -265,12 +284,17 @@ a common word, ignoring the clues & 48 & 6.0\\
 \end{center}
 
 Players who go for the word at any cost (the middle two) have high daring and middling skill. Players
-who work the clues have low daring.
+whose guesses are mostly not possible words, or who go for the word only with a good split, have low
+daring. (These runs were made before the scores were tied to the answer law and have not been redone.)
 
 \section{What is not claimed}
 
 \begin{itemize}[nosep]
-\item The playstyle lines and the guesses formula come from simulated players, not people.
+\item The playstyle lines and the guesses formula come from simulated players, not people, and
+from runs made before the scores were tied to the answer law.
+\item Luck averages to zero only under the rule the score assumes for drawing the answer. Under a
+different rule it is biased (about $+10$ points for strong first guesses when equal chances are
+assumed and the game draws by frequency).
 \item Skill is not comparable between word lengths: guessing blindly scores about 48 at five
 letters and 69 at eight.
 \item The word lists are filtered by spelling dictionaries and still contain some oddities (the

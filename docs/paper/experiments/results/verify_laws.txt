@@ -1,0 +1,25 @@
+ok    1. luck under a weighted law: mean exactly 0 (3000 partitions, exact)
+ok    1. variance (1 - sum r^3)/3 over distinct masses, ties included
+ok    1. luck strictly inside (-1, 1) and strictly decreasing in the mass
+ok    1. invariance under scaling the weights
+ok    2. luck under a different law has nonzero mean   mean +0.390
+ok    3. tie weight lambda: mean = (2 lambda - 1) sum r^2, zero for every law iff lambda = 1/2
+ok    4. rescaled luck, classes {2,2}: mean 0
+ok    4. rescaled luck, classes {3,1}: mean -1/2
+ok    5. last try: Y - p has mean 0, values in (-1, 1), skill*best chance = p
+ok    5. three words, equal chances: hit +67, miss -33
+ok    6. possible guess: sum q^2 <= p^2 + (1-p)^2, hence E < N and skill > 0
+ok    7. mean luck of guess 1 under the frequency law   +0.0116 (sd 0.572, tolerance 0.0809)
+ok    7. mean luck of guess 2 under the frequency law   +0.0002 (sd 0.486, tolerance 0.0688)
+ok    7. mean luck of guess 3 under the frequency law   +0.0006 (sd 0.305, tolerance 0.0431)
+ok    7. corr(luck 1, skill 1) = +0.021   tolerance 0.141
+ok    7. corr(luck 2, skill 1) = -0.013   tolerance 0.141
+ok    7. corr(luck 2, skill 2) = +0.023   tolerance 0.141
+ok    7. corr(luck 3, skill 1) = +0.039   tolerance 0.141
+ok    7. corr(luck 3, skill 2) = +0.012   tolerance 0.141
+ok    7. corr(luck 3, skill 3) = -0.021   tolerance 0.141
+ok    7. corr(luck 2, luck 1) = +0.049   tolerance 0.141
+ok    7. corr(luck 3, luck 1) = +0.027   tolerance 0.141
+ok    7. corr(luck 3, luck 2) = +0.015   tolerance 0.141
+
+ALL CHECKS PASSED
