@@ -45,3 +45,13 @@ a margin around the line keeps one game either side of it from changing your sty
 thresholds come from simulated players of seven habits played through the app's own maths (paper
 Section 9.5); they are **not measured on people yet**, and skill is not comparable across word
 lengths, so treat the style as a first reading.
+
+## When saved data cannot be read
+
+The history is kept one block per month. If a stored row cannot be read (for example after a change
+between versions), only that row is left out, not the month, and the rest of the progress (stats,
+daily log, achievements, settings) is read on its own. The unreadable text is kept under its own key
+with `:unread` added, so saving what was read does not overwrite the only copy. There is no message
+in the app for this; each start prints one line to the device log (`lexodle: start v… found N keys,
+M games, P played, R rows skipped`), readable with `adb logcat -s flutter`. Backups are still taken
+whole or not at all.

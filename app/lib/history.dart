@@ -497,6 +497,65 @@ class History {
   /// whose game is missing is dropped, and a game with no guesses is refused.
   static History fromJson(Object? raw) => fromChunks([raw]);
 
+  /// Reads what it can of [chunks], for the app's own storage, where one row
+  /// that cannot be read must not cost the month it is in: a row that fails, a
+  /// repeated id and a game left with no readable guess are left out and the
+  /// rest kept. [dropped] says how many rows were left out.
+  static (History, int) recover(Iterable<Object?> chunks) {
+    final games = <GameRow>[];
+    final guesses = <GuessRow>[];
+    final ids = <int>{};
+    var dropped = 0;
+    for (final raw in chunks) {
+      if (raw is! Map) {
+        dropped++;
+        continue;
+      }
+      final gs = raw['games'], rs = raw['guesses'];
+      if (gs is List) {
+        for (final g in gs) {
+          try {
+            final row = GameRow.fromAny(g);
+            if (ids.add(row.id)) {
+              games.add(row);
+            } else {
+              dropped++;
+            }
+          } catch (_) {
+            dropped++;
+          }
+        }
+      }
+      if (rs is List) {
+        for (final r in rs) {
+          try {
+            guesses.add(GuessRow.fromAny(r));
+          } catch (_) {
+            dropped++;
+          }
+        }
+      }
+    }
+    final withGuesses = {for (final g in guesses) g.game};
+    final kept = [
+      for (final g in games)
+        if (withGuesses.contains(g.id)) g,
+    ];
+    dropped += games.length - kept.length;
+    kept.sort((a, b) => a.id.compareTo(b.id));
+    final keptIds = {for (final g in kept) g.id};
+    return (
+      History(
+        games: kept,
+        guesses: [
+          for (final g in guesses)
+            if (keptIds.contains(g.game)) g,
+        ],
+      ),
+      dropped,
+    );
+  }
+
   /// Reads several chunks (or one whole history) as one history.
   static History fromChunks(Iterable<Object?> chunks) {
     final games = <GameRow>[];

@@ -1145,23 +1145,53 @@ class AppState extends ChangeNotifier {
     if (months != null) {
       final good = <Object?>[];
       for (final m in months) {
-        final s = p.getString(historyChunkKey(m));
+        final key = historyChunkKey(m);
+        final s = p.getString(key);
         if (s == null) continue;
         try {
           final chunk = jsonDecode(s);
-          History.fromJson(chunk); // checked on its own
+          try {
+            History.fromJson(chunk); // checked whole
+          } catch (_) {
+            _keepUnread(p, key, s); // a row is bad: read what can be, keep this
+          }
           good.add(chunk);
         } catch (_) {
-          // a damaged month is left out, the others are kept
+          _keepUnread(p, key, s); // not even readable as JSON
         }
       }
-      return History.fromChunks(good);
+      final (h, dropped) = History.recover(good);
+      skippedRows += dropped;
+      return h;
     }
     final old = p.getString('history');
     if (old == null) return History();
-    final h = History.fromJson(jsonDecode(old));
+    Object? whole;
+    try {
+      whole = jsonDecode(old);
+    } catch (_) {
+      _keepUnread(p, 'history', old);
+      return History();
+    }
+    try {
+      History.fromJson(whole);
+    } catch (_) {
+      _keepUnread(p, 'history', old);
+    }
+    final (h, dropped) = History.recover([whole]);
+    skippedRows += dropped;
     h.markAllDirty(); // moved to months on the next save
     return h;
+  }
+
+  /// Keeps a copy of stored text that could not be read whole, under the same
+  /// key with `:unread` added, so that saving what was read does not overwrite
+  /// the only copy. Not done twice for one key.
+  void _keepUnread(SharedPreferences p, String key, String raw) {
+    try {
+      final k = '$key:unread';
+      if (p.getString(k) == null) p.setString(k, raw);
+    } catch (_) {}
   }
 
   /// Replaces the history (a restored backup), removing the months that are no
@@ -1191,41 +1221,54 @@ class AppState extends ChangeNotifier {
 
   SharedPreferences? _prefs;
 
+  /// How many stored history rows could not be read on the last start.
+  int skippedRows = 0;
+
   Future<void> load() async {
     try {
       final p = _prefs = await SharedPreferences.getInstance();
-      lang = p.getString('lang') ?? lang;
-      length = p.getInt('length') ?? length;
-      tries = p.getInt('tries') ?? tries;
-      useFrequency = p.getBool('useFrequency') ?? true;
-      final h = p.getInt('helper');
-      if (h != null && h >= 0 && h < Helper.values.length) {
-        helper = Helper.values[h];
-      } else if (p.getBool('showWordsLeft') == false) {
-        helper = Helper.off; // the setting this replaced
+      try {
+        lang = p.getString('lang') ?? lang;
+        length = p.getInt('length') ?? length;
+        tries = p.getInt('tries') ?? tries;
+        useFrequency = p.getBool('useFrequency') ?? true;
+        final h = p.getInt('helper');
+        if (h != null && h >= 0 && h < Helper.values.length) {
+          helper = Helper.values[h];
+        } else if (p.getBool('showWordsLeft') == false) {
+          helper = Helper.off; // the setting this replaced
+        }
+        final mi = p.getInt('mode');
+        if (mi != null && mi >= 0 && mi < GameMode.values.length) {
+          mode = GameMode.values[mi];
+        }
+        share = (p.getInt('share') ?? share).clamp(0, maxShare);
+        final ti = p.getInt('theme');
+        if (ti != null && ti >= 0 && ti < ThemeMode.values.length) {
+          themeMode = ThemeMode.values[ti];
+        }
+        seenHowTo = p.getBool('seenHowTo') ?? false;
+        haptics = p.getBool('haptics') ?? true;
+        downloadsBackup = p.getBool('downloadsBackup') ?? true;
+        lastRunVersion = p.getString('lastRunVersion');
+        autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
+        final last = p.getInt('lastUpdateCheck');
+        if (last != null) {
+          lastUpdateCheck = DateTime.fromMillisecondsSinceEpoch(last);
+        }
+        final found = p.getString('latestRelease');
+        latestRelease = found == null || found.isEmpty ? null : found;
+      } catch (_) {
+        // a setting of an unexpected kind must not stop the progress being read
       }
-      final mi = p.getInt('mode');
-      if (mi != null && mi >= 0 && mi < GameMode.values.length) {
-        mode = GameMode.values[mi];
-      }
-      share = (p.getInt('share') ?? share).clamp(0, maxShare);
-      final ti = p.getInt('theme');
-      if (ti != null && ti >= 0 && ti < ThemeMode.values.length) {
-        themeMode = ThemeMode.values[ti];
-      }
-      seenHowTo = p.getBool('seenHowTo') ?? false;
-      haptics = p.getBool('haptics') ?? true;
-      downloadsBackup = p.getBool('downloadsBackup') ?? true;
-      lastRunVersion = p.getString('lastRunVersion');
-      autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
-      final last = p.getInt('lastUpdateCheck');
-      if (last != null) {
-        lastUpdateCheck = DateTime.fromMillisecondsSinceEpoch(last);
-      }
-      final found = p.getString('latestRelease');
-      latestRelease = found == null || found.isEmpty ? null : found;
       final s = p.getString('stats');
-      if (s != null) stats = Stats.fromJson(jsonDecode(s));
+      if (s != null) {
+        try {
+          stats = Stats.fromJson(jsonDecode(s));
+        } catch (_) {
+          _keepUnread(p, 'stats', s); // the rest is still read
+        }
+      }
       try {
         // its own guard: a damaged daily must not stop the rest being read
         final dl = p.getString('daily');
@@ -1260,6 +1303,12 @@ class AppState extends ChangeNotifier {
         _dailyBests.clear();
       }
       _readAchievements(p);
+      // what the start found, for reading from the device log (adb logcat)
+      debugPrint(
+        'lexodle: start v${p.getString('lastRunVersion')} found '
+        '${p.getKeys().length} keys, ${history.games.length} games, '
+        '${stats.played} played, $skippedRows rows skipped',
+      );
     } catch (_) {}
     loaded = true;
     notifyListeners();
