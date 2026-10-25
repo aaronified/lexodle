@@ -1,6 +1,5 @@
 import 'logic.dart';
 import 'modes.dart';
-import 'dialects.dart';
 
 /// The version of the numbers cached on a guess row (skill, luck, daring, risk
 /// and the pool sizes). Bump it whenever the maths in logic.dart changes: every
@@ -148,11 +147,6 @@ class GameRow {
     if (!freq) 'freq': false,
   };
 
-  /// How many rows read since this was last zeroed named a language that has
-  /// since been merged into another (see dialects.dart), so the storage can be
-  /// written again with the new code.
-  static int mergedLanguageRows = 0;
-
   static GameRow fromJson(Map<String, dynamic> j) {
     final mode = _int(j['mode'], 0, GameMode.values.length - 1);
     final answers = j['answers'];
@@ -170,11 +164,10 @@ class GameRow {
     }
     final won = j['won'];
     if (won is! bool) throw const FormatException('won');
-    if (languageCode(lang) != lang) mergedLanguageRows++;
     return GameRow(
       id: _int(j['id'], 0, _big),
       at: _int(j['at'], 0, _maxMs),
-      lang: languageCode(lang),
+      lang: lang,
       mode: GameMode.values[mode],
       length: length,
       tries: _int(j['tries'], 1, 40),
