@@ -104,13 +104,17 @@ const ANSWER = 'PRISM';
 // pool sizes of every outcome of each guess; the pool you landed in is the next level's word count
 const G = [
   { word: 'STARE', n: 3000, sizes: [184,195,182,169,157,146,136,126,118,109,102,95,88,82,76,71,66,61,57,53,49,46,43,40,37,34,32,30,28,26,24,22,21,19,18,17,15,14,13,12,12,11,10,9,9,8,7,7,6,6,6,5,5,4,4,4,4,3,3,3,3,3,2,2,2,2,2,2,2].concat(Array(41).fill(1)), landedSize: 46, estar: 36.7, bestWord: 'TRACE',
-    top: [['TRACE',100],['CRATE',99],['SLATE',98]], bottom: [['MUMMY',7],['FUZZY',4],['JAZZY',1]] },
+    top: [['TRACE',100],['CRATE',99],['SLATE',98]], bottom: [['MUMMY',7],['FUZZY',4],['JAZZY',1]],
+    dare: [['FUZZY',64,4],['MUMMY',61,7],['JUMBO',58,12]], lucky: [['PRISM',99],['PRIMO',97],['PRISE',96]] },
   { word: 'BRISK', n: 46, sizes: [11,9,8,6,4,3,2,1,1,1], landedSize: 9, estar: 4.2, bestWord: 'CHOIR',
-    top: [['CHOIR',100],['SPLIT',98],['CLOMP',95]], bottom: [['FUZZY',11],['MAMMA',6],['XYLYL',0]] },
+    top: [['CHOIR',100],['SPLIT',98],['CLOMP',95]], bottom: [['FUZZY',11],['MAMMA',6],['XYLYL',0]],
+    dare: [['FUZZY',70,11],['MAMMA',66,6],['XYLYL',62,0]], lucky: [['PRISM',96],['PRISE',91],['PRIMP',87]] },
   { word: 'CRISP', n: 9, sizes: [4,2,1,1,1], landedSize: 2, estar: 1.1, bestWord: 'FRISK',
-    top: [['FRISK',100],['PRISM',97],['GRIST',92]], bottom: [['MUMMY',0],['QUEEN',3],['AUDIO',9]] },
+    top: [['FRISK',100],['PRISM',97],['GRIST',92]], bottom: [['MUMMY',0],['QUEEN',3],['AUDIO',9]],
+    dare: [['MUMMY',56,0],['QUEEN',44,3],['AUDIO',33,9]], lucky: [['PRISM',78],['FRISK',56],['GRIST',44]] },
   { word: 'PRISM', n: 2, sizes: [1,1], landedSize: 1, estar: 1, bestWord: 'PRISM',
-    top: [['PRISM',100],['FRISK',100],['PRISE',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]] },
+    top: [['PRISM',100],['FRISK',100],['PRISE',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]], ties: true,
+    dare: [['MUMMY',0,0],['FUZZY',0,0],['JAZZY',0,0]], lucky: [['PRISM',0],['FRISK',0],['PRISE',0]] },
 ];
 
 // ---- the maths ----
@@ -215,7 +219,7 @@ function plot(g) {
 // ---- one level ----
 function renderLevel() {
   const g = G[sel];
-  const picks = (title, arr) => '<div><h3 style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="skill">' + p[1] + '</span></div>').join('') + '</div>';
+  const picks = (title, arr, cls, fmt, extra) => '<div><h3 class="' + cls + '" style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="' + cls + '">' + fmt(p[1]) + (extra ? ' <span class="dim small">' + extra(p) + '</span>' : '') + '</span></div>').join('') + '</div>';
   const side = g.daring > 10 ? 'Usually a wide pool, with a small chance of a narrow one.'
     : g.daring < -10 ? 'Usually a narrow pool, with a small chance of a wide one.'
     : 'Wide and narrow pools are about equally likely.';
@@ -249,8 +253,9 @@ function renderLevel() {
       '<i class="rule"></i><span class="res luck">luck = wider − narrower</span><span class="res luck">' + sg(g.luck) + '%</span>' +
     '</div></div>' +
 
-    '<div class="block"><div class="cols">' + picks('best 3 picks', g.top) + picks('worst 3 picks', g.bottom) + '</div>' +
-    '<p class="small dim">Skill among all accepted words. Yours: <b class="skill">' + f0(g.skill) + '</b>.</p></div>';
+    '<div class="block"><div class="cols">' + picks('best skill', g.top, 'skill', f0) + picks('worst skill', g.bottom, 'skill', f0) +
+      picks('most daring', g.dare, 'daring', pc, p => 'skill ' + p[2]) + picks('luckiest', g.lucky, 'luck', pc) + '</div>' +
+    '<p class="small dim">Among all accepted words. Yours: skill <b class="skill">' + f0(g.skill) + '</b>, daring <b class="daring">' + pc(g.daring) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>. Luckiest is for the actual answer, ' + ANSWER + ': guessing it is always the luckiest.' + (g.ties ? ' With two words left every guess that separates them ties.' : '') + '</p></div>';
 }
 
 // ---- tries: bits ----
