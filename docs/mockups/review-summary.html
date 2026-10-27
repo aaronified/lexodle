@@ -176,43 +176,40 @@ function renderTabs() {
   $('tabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { sel = +b.dataset.i; renderAll(); }));
 }
 
-// ---- plots: one column per outcome, as wide as its chance and as tall as its pool ----
-function plot(g, mode) {
-  const W_ = 420, H = 170, L = 30, R = 8, T = 10, B = 26, pw = W_ - L - R, ph = H - T - B, max = g.sizes[0] * 1.08;
+// ---- plot: one column per outcome, as wide as its chance and as tall as the pool it leaves ----
+function plot(g) {
+  const W_ = 420, H = 186, L = 30, R = 8, T = 10, B = 42, pw = W_ - L - R, ph = H - T - B, max = g.sizes[0] * 1.08;
   const y = v => T + ph - v / max * ph;
-  let x = L, bars = '';
+  let x = L, bars = '', mark = '';
   g.sizes.forEach((s, i) => {
     const w = s / g.n * pw;
-    let fill, op = 1;
-    if (mode === 'luck') {
-      fill = i === g.landed ? 'var(--fg)' : (s > g.landedSize ? 'var(--luck)' : 'var(--line2)');
-      if (i !== g.landed && s > g.landedSize) op = .6;
-    } else {
-      fill = s > g.E + 1e-9 ? 'var(--daring)' : (s < g.E - 1e-9 ? 'var(--line2)' : 'var(--dim)');
-      if (s > g.E + 1e-9) op = .6;
+    const wide = s > g.E + 1e-9, narrow = s < g.E - 1e-9;
+    const fill = wide ? 'var(--daring)' : (narrow ? 'var(--line2)' : 'var(--dim)');
+    bars += '<rect x="' + x.toFixed(2) + '" y="' + y(s).toFixed(2) + '" width="' + Math.max(w - .4, .3).toFixed(2) + '" height="' + (T + ph - y(s)).toFixed(2) + '" fill="' + fill + '" opacity="' + (wide ? .6 : 1) + '"/>';
+    if (i === g.landed) {
+      const cx = x + w / 2;
+      bars += '<rect x="' + x.toFixed(2) + '" y="' + y(s).toFixed(2) + '" width="' + Math.max(w - .4, 1.5).toFixed(2) + '" height="' + (T + ph - y(s)).toFixed(2) + '" fill="none" stroke="var(--fg)" stroke-width="2"/>';
+      mark = '<path d="M' + (cx - 5) + ' ' + (T + ph + 12) + ' L' + (cx + 5) + ' ' + (T + ph + 12) + ' L' + cx + ' ' + (T + ph + 4) + ' Z" fill="var(--fg)"/><text x="' + Math.min(Math.max(cx, L + 14), W_ - R - 14) + '" y="' + (T + ph + 24) + '" text-anchor="middle" style="fill:var(--fg)">you</text>';
     }
-    bars += '<rect x="' + x.toFixed(2) + '" y="' + y(s).toFixed(2) + '" width="' + Math.max(w - .4, .3).toFixed(2) + '" height="' + (T + ph - y(s)).toFixed(2) + '" fill="' + fill + '" opacity="' + op + '"/>';
     x += w;
   });
-  let lines = '', lab = '';
-  if (mode !== 'luck') {
-    const yE = y(g.E), yS = y(g.estar), close = Math.abs(yE - yS) < 12;
-    lines = '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yE + '" y2="' + yE + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="5 3"/>' +
-      '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yS + '" y2="' + yS + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="1.5 2.5"/>';
-    lab = close
+  const yE = y(g.E), yS = y(g.estar), close = Math.abs(yE - yS) < 12, mid = L + pw / 2;
+  const lines =
+    '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yE + '" y2="' + yE + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="5 3"/>' +
+    '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yS + '" y2="' + yS + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="1.5 2.5"/>' +
+    '<line x1="' + mid + '" x2="' + mid + '" y1="' + T + '" y2="' + (T + ph) + '" stroke="var(--luck)" stroke-width="1.5"/>';
+  const lab = (close
       ? '<text x="' + (W_ - R) + '" y="' + (Math.min(yE, yS) - 4) + '" text-anchor="end" style="fill:var(--skill)">E = E* = ' + f1(g.E) + '</text>'
-      : '<text x="' + (W_ - R) + '" y="' + (yE - 4) + '" text-anchor="end" style="fill:var(--skill)">E ' + f1(g.E) + '</text><text x="' + (W_ - R) + '" y="' + (yS + 11) + '" text-anchor="end" style="fill:var(--skill)">E* ' + f1(g.estar) + '</text>';
-  }
+      : '<text x="' + (W_ - R) + '" y="' + (yE - 4) + '" text-anchor="end" style="fill:var(--skill)">E ' + f1(g.E) + '</text><text x="' + (W_ - R) + '" y="' + (yS + 11) + '" text-anchor="end" style="fill:var(--skill)">E* ' + f1(g.estar) + '</text>') +
+    '<text x="' + (mid + 4) + '" y="' + (T + 8) + '" style="fill:var(--luck)">luck 0</text>';
   const axis =
     '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + (T + ph) + '" y2="' + (T + ph) + '" stroke="var(--line2)"/>' +
-    '<text x="' + L + '" y="' + (H - 8) + '">widest pool</text>' +
-    '<text x="' + (W_ - R) + '" y="' + (H - 8) + '" text-anchor="end">narrowest pool</text>' +
+    '<text x="' + L + '" y="' + (H - 4) + '">widest pool</text>' +
+    '<text x="' + (W_ - R) + '" y="' + (H - 4) + '" text-anchor="end">narrowest pool</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + 8) + '" text-anchor="end">' + f0(g.sizes[0]) + '</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + ph) + '" text-anchor="end">0</text>';
-  const legend = mode === 'luck'
-    ? '<span><i style="background:var(--fg)"></i>your pool (' + g.landedSize + ')</span><span><i style="background:var(--luck);opacity:.6"></i>wider pools (' + f0(g.bigger) + '% chance)</span><span><i style="background:var(--line2)"></i>narrower pools (' + f0(g.smaller) + '%)</span>'
-    : '<span><i style="background:var(--daring);opacity:.6"></i>wider than E (' + f0(g.wider) + '% chance)</span><span><i style="background:var(--line2)"></i>narrower than E (' + f0(g.narrower) + '%)</span><span class="skill">dashed: E, dotted: E*</span>';
-  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Every outcome of ' + g.word + '">' + bars + lines + lab + axis + '</svg><div class="legend">' + legend + '</div>';
+  const legend = '<span><i style="background:var(--daring);opacity:.6"></i>wider than E (' + f0(g.wider) + '% chance)</span><span><i style="background:var(--line2)"></i>narrower than E (' + f0(g.narrower) + '%)</span><span><i style="border:2px solid var(--fg);background:none"></i>your pool (' + g.landedSize + ')</span>';
+  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Every outcome of ' + g.word + '">' + bars + lines + lab + axis + mark + '</svg><div class="legend">' + legend + '</div>';
 }
 
 // ---- one level ----
@@ -224,7 +221,7 @@ function renderLevel() {
     : 'Wide and narrow pools are about equally likely.';
   $('level').innerHTML =
     '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' + tiles(g.word) + '<span class="dim">' + N(g.n) + ' words possible</span></div>' +
-    '<div class="block"><h3>Your guess, before the answer</h3><p class="small dim">Each column is one possible outcome: as wide as its chance, as tall as the pool it leaves. Skill and daring come from this plot. The answer does not change them.</p>' + plot(g, 'quality') + '</div>' +
+    '<div class="block"><h3>All outcomes of your guess</h3><p class="small dim">Each column is one possible outcome: as wide as its chance, as tall as the pool it leaves. Skill and daring depend only on the columns. Luck depends on which column you landed in. The yellow line splits the chance in half: the middle outcome, luck 0.</p>' + plot(g) + '</div>' +
 
     '<div class="block"><h3 class="skill">Skill</h3>' +
     '<p class="small dim">How small the pool is on average, compared with the best guess. Logs make halving 3,000 words equal halving 30.</p>' +
@@ -234,7 +231,7 @@ function renderLevel() {
       '<span>your shrink, ln(N ÷ E)</span><span>ln(' + f1(g.n / g.E) + ') = ' + f3(g.lnE) + '</span>' +
       '<span>best shrink, ln(N ÷ E*)</span><span>ln(' + f1(g.n / g.estar) + ') = ' + f3(g.room) + '</span>' +
       '<i class="rule"></i><span class="res skill">skill = ' + f3(g.lnE) + ' ÷ ' + f3(g.room) + ' × 100</span><span class="res skill">' + f1(g.skill) + '</span>' +
-    '</div></div>' +
+    '</div><p class="small dim">E* is the only value not taken from the plot. It comes from scoring every accepted word as a guess.</p></div>' +
 
     '<div class="block"><h3 class="daring">Daring</h3>' +
     '<p class="small dim">Which side the tail is on. A daring guess often leaves a wide pool and rarely a narrow one: a gamble on the tail. A pool of exactly E counts for neither.</p>' +
@@ -245,7 +242,7 @@ function renderLevel() {
     '</div><p class="small dim">' + side + '</p></div>' +
 
     '<div class="block"><h3 class="luck">Luck</h3>' +
-    '<p class="small dim">The answer decides this. The plot marks the pool you landed in.</p>' + plot(g, 'luck') +
+    '<p class="small dim">The answer decides this. Your pool is outlined on the plot.</p>' +
     '<div class="sum">' +
       '<span>chance of a wider pool than ' + g.landedSize + '</span><span>' + f1(g.bigger) + '%</span>' +
       '<span>chance of a narrower pool than ' + g.landedSize + '</span><span>' + f1(g.smaller) + '%</span>' +
