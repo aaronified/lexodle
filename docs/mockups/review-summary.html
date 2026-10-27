@@ -71,27 +71,27 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
   <header style="display:flex;flex-direction:column;gap:10px">
     <h1>REVIEW</h1>
     <h2 id="head"></h2>
-    <p class="note">Mockup. The words and pool sizes are an invented example; every figure below is worked out from them by the real formulas in <code>logic.dart</code> and <code>analysis.dart</code>.</p>
+    <p class="note">Mockup. Words and pool sizes are invented. All other figures come from the app's formulas.</p>
   </header>
 
   <section>
-    <h3>Your game, level by level</h3>
+    <h3>Your game</h3>
     <div class="wrap"><table>
       <thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="luck">luck</th><th class="daring">daring</th></tr></thead>
       <tbody id="rows"></tbody>
       <tfoot id="means"></tfoot>
     </table></div>
-    <p class="dim small">Tap a row to see how its three numbers were worked out. The bottom row is the average of the four levels; it feeds the expected tries at the end.</p>
+    <p class="dim small">Tap a row for its calculation. The average row feeds expected tries.</p>
   </section>
 
   <section>
-    <h3>How each level was scored</h3>
+    <h3>Each level</h3>
     <div class="tabs" role="tablist" id="tabs"></div>
     <div class="card" id="level"></div>
   </section>
 
   <section>
-    <h3>From three numbers to expected tries</h3>
+    <h3>Expected tries</h3>
     <div class="card" id="tries"></div>
   </section>
 </main>
@@ -150,7 +150,7 @@ function tiles(guess) {
 }
 
 // ---- header ----
-$('head').textContent = 'The word was ' + ANSWER + '. Solved in ' + G.length + ' of ' + TRIES + '.';
+$('head').textContent = 'The word was ' + ANSWER + '. You solved it in ' + G.length + ' of ' + TRIES + '.';
 
 // ---- summary table ----
 let sel = 1;
@@ -190,9 +190,9 @@ function plot(g) {
   const axis =
     '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + (T + ph) + '" y2="' + (T + ph) + '" stroke="var(--line2)"/>' +
     '<line x1="' + (L + pw / 2) + '" x2="' + (L + pw / 2) + '" y1="' + (T + ph) + '" y2="' + (T + ph + 4) + '" stroke="var(--dim)"/>' +
-    '<text x="' + L + '" y="' + (H - 8) + '">biggest pool, likeliest</text>' +
+    '<text x="' + L + '" y="' + (H - 8) + '">biggest pool</text>' +
     '<text x="' + (L + pw / 2) + '" y="' + (H - 8) + '" text-anchor="middle" dx="-4"></text>' +
-    '<text x="' + (W_ - R) + '" y="' + (H - 8) + '" text-anchor="end">smallest, rarest</text>' +
+    '<text x="' + (W_ - R) + '" y="' + (H - 8) + '" text-anchor="end">smallest pool</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + 8) + '" text-anchor="end">' + f0(g.sizes[0]) + '</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + ph) + '" text-anchor="end">0</text>';
   return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Every outcome of guess ' + g.word + ', as wide as its chance and as tall as the pool it leaves">' + bars + lines + lab + axis + '</svg>' +
@@ -204,21 +204,21 @@ function renderLevel() {
   const g = G[sel];
   const picks = (title, arr) => '<div><h3 style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="skill">' + p[1] + '</span></div>').join('') + '</div>';
   $('level').innerHTML =
-    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div style="display:flex;align-items:center;gap:10px">' + tiles(g.word) + '<span class="dim">' + N(g.n) + ' words were possible</span></div></div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div style="display:flex;align-items:center;gap:10px">' + tiles(g.word) + '<span class="dim">' + N(g.n) + ' words possible</span></div></div>' +
     plot(g) +
 
     '<div class="block"><h3 class="skill">Skill</h3>' +
-    '<p class="small dim">How much the guess shrank the pool, against the best real guess. Both are measured in logs, so halving 3,000 words counts the same as halving 30.</p>' +
+    '<p class="small dim">How much your guess shrank the pool, relative to the best guess. Logs make halving 3,000 words equal halving 30.</p>' +
     '<div class="sum">' +
-      '<span>pool you expect, E = Σ size² ÷ N</span><span>' + N(g.sumSq) + ' ÷ ' + N(g.n) + ' = ' + f2(g.E) + '</span>' +
-      '<span>best real guess leaves, E* (' + g.bestWord + ')</span><span>' + f2(g.estar) + '</span>' +
+      '<span>expected pool, E = Σ size² ÷ N</span><span>' + N(g.sumSq) + ' ÷ ' + N(g.n) + ' = ' + f2(g.E) + '</span>' +
+      '<span>pool of the best guess, E* (' + g.bestWord + ')</span><span>' + f2(g.estar) + '</span>' +
       '<span>your shrink, ln(N ÷ E)</span><span>ln(' + f1(g.n / g.E) + ') = ' + f3(g.lnE) + '</span>' +
-      '<span>best possible shrink, ln(N ÷ E*)</span><span>ln(' + f1(g.n / g.estar) + ') = ' + f3(g.room) + '</span>' +
+      '<span>best shrink, ln(N ÷ E*)</span><span>ln(' + f1(g.n / g.estar) + ') = ' + f3(g.room) + '</span>' +
       '<i class="rule"></i><span class="res skill">skill = ' + f3(g.lnE) + ' ÷ ' + f3(g.room) + ' × 100</span><span class="res skill">' + f1(g.skill) + '</span>' +
     '</div></div>' +
 
     '<div class="block"><h3 class="luck">Luck</h3>' +
-    '<p class="small dim">Out of every answer that was possible, how many would have left you a bigger pool, and how many a smaller one.</p>' +
+    '<p class="small dim">Across all possible answers: how often your guess leaves a bigger pool, and how often a smaller one.</p>' +
     '<div class="sum">' +
       '<span>chance of a bigger pool than ' + g.landedSize + '</span><span>' + f1(g.bigger) + '%</span>' +
       '<span>chance of a smaller pool than ' + g.landedSize + '</span><span>' + f1(g.smaller) + '%</span>' +
@@ -226,18 +226,18 @@ function renderLevel() {
     '</div></div>' +
 
     '<div class="block"><h3 class="daring">Daring</h3>' +
-    '<p class="small dim">How much the guess went for the word itself instead of the clues. Four factors, each 0 to 1, multiplied.</p>' +
+    '<p class="small dim">How much you went for the word instead of the clues. Four factors, each 0 to 1.</p>' +
     '<div class="sum">' +
-      '<span>could it be the answer?</span><span>' + (g.possible ? 'yes = 1' : 'no = 0') + '</span>' +
-      '<span>what it cost in skill, 1 − skill ÷ 100</span><span>' + f2(g.f.cost) + '</span>' +
-      '<span>how unlikely the word was, 1 − 1 ÷ ' + g.n + '</span><span>' + (g.possible ? f2(g.f.unlikely) : '—') + '</span>' +
-      '<span>tries to spare, 1 − 1 ÷ ' + g.triesLeft + ' left</span><span>' + f2(g.f.spare) + '</span>' +
+      '<span>can it be the answer?</span><span>' + (g.possible ? 'yes = 1' : 'no = 0') + '</span>' +
+      '<span>skill lost, 1 − skill ÷ 100</span><span>' + f2(g.f.cost) + '</span>' +
+      '<span>unlikely word, 1 − 1 ÷ ' + g.n + '</span><span>' + (g.possible ? f2(g.f.unlikely) : '—') + '</span>' +
+      '<span>spare tries, 1 − 1 ÷ ' + g.triesLeft + ' left</span><span>' + f2(g.f.spare) + '</span>' +
       '<i class="rule"></i><span class="res daring">daring = 100 × product</span><span class="res daring">' + f1(g.daring) + '</span>' +
-    '</div>' + (g.possible ? '' : '<p class="small dim">A word that cannot be the answer only probes, so daring is 0 whatever the other factors say.</p>') +
-    (g.possible && g.skill >= 99.95 ? '<p class="small dim">The best split that also fits costs nothing, so it has no daring.</p>' : '') + '</div>' +
+    '</div>' + (g.possible ? '' : '<p class="small dim">A word that cannot be the answer only probes. Daring is 0.</p>') +
+    (g.possible && g.skill >= 99.95 ? '<p class="small dim">The best split that also fits costs no skill. Daring is 0.</p>' : '') + '</div>' +
 
     '<div class="block"><div class="cols">' + picks('best 3 picks', g.top) + picks('worst 3 picks', g.bottom) + '</div>' +
-    '<p class="small dim">Skill of each, out of every word the game accepts. Yours scored <b class="skill">' + f0(g.skill) + '</b>.</p></div>';
+    '<p class="small dim">Skill among all accepted words. Yours: <b class="skill">' + f0(g.skill) + '</b>.</p></div>';
 }
 
 // ---- expected tries ----
@@ -264,25 +264,25 @@ function waterfall() {
 function renderTries() {
   const row = (name, cls, mean, ref, w, e) => '<tr><td class="' + cls + '">' + name + '</td><td>' + mean + '</td><td>' + ref + '</td><td>' + w + '</td><td class="' + cls + '">' + e + '</td></tr>';
   $('tries').innerHTML =
-    '<p>A skill of ' + f0(M.skill) + ' is not ' + f0(M.skill) + ' guesses. It is a score out of 100, and each point of it is worth a small slice of a guess.</p>' +
+    '<p>Skill ' + f0(M.skill) + ' is a score out of 100, not ' + f0(M.skill) + ' guesses. Each point removes a fraction of a guess.</p>' +
     '<div class="steps">' +
-      '<div class="step"><span>1</span><div><b>Average each measure over your levels</b><p class="small dim">Levels where one word was left are skipped. Daring is averaged over the levels that have one.</p>' +
+      '<div class="step"><span>1</span><div><b>Average each measure</b><p class="small dim">Levels with one word left are skipped.</p>' +
         '<div class="sum"><span class="skill">skill</span><span>(' + G.map(g => f1(g.skill)).join(' + ') + ') ÷ ' + G.length + ' = <b>' + f1(M.skill) + '</b></span>' +
         '<span class="luck">luck</span><span>(' + G.map(g => f1(g.luck)).join(' + ').replace(/\+ -/g, '− ') + ') ÷ ' + G.length + ' = <b>' + sgn(M.luck) + '</b></span>' +
         '<span class="daring">daring</span><span>(' + G.map(g => f1(g.daring)).join(' + ') + ') ÷ ' + G.length + ' = <b>' + f1(M.daring) + '</b></span></div></div></div>' +
-      '<div class="step"><span>2</span><div><b>Turn each average into guesses</b><p class="small dim">Multiply by what one point is worth, then measure daring from a typical player (10).</p>' +
+      '<div class="step"><span>2</span><div><b>Convert to guesses</b><p class="small dim">Multiply each average by its per-point weight. Daring counts from 10, the typical level.</p>' +
         '<div class="wrap"><table><thead><tr><th>measure</th><th>yours</th><th>from</th><th>per point</th><th>guesses</th></tr></thead><tbody>' +
         row('skill', 'skill', f1(M.skill), '0', f3(W.skill), sgn(eff.skill, 2)) +
         row('luck', 'luck', sgn(M.luck), '0', f3(W.luck), sgn(eff.luck, 2)) +
         row('daring', 'daring', f1(M.daring), W.typical, f3(W.daring), sgn(eff.daring, 2)) +
         '</tbody></table></div>' +
-        '<p class="small dim">So skill 0 adds nothing and skill 100 takes off ' + f1(-W.skill * 100) + ' guesses. Luck of ±100% moves ' + f1(-W.luck * 100).replace('-', '') + ', and daring 0 to 100 about ' + f1(-W.daring * 100).replace('-', '') + '.</p></div></div>' +
-      '<div class="step"><span>3</span><div><b>Start from the base and add them up</b><p class="small dim">A player with skill 0, luck 0 and daring 10 is expected to need ' + f1(base) + ' guesses: the fitted 9.38 less 10 × 0.0445.</p>' +
+        '<p class="small dim">Skill 100 removes ' + f1(-W.skill * 100) + ' guesses. Luck ±100% shifts ' + f1(-W.luck * 100).replace('-', '') + '. Daring 0 to 100 shifts ' + f1(-W.daring * 100).replace('-', '') + '.</p></div></div>' +
+      '<div class="step"><span>3</span><div><b>Add to the base</b><p class="small dim">Base ' + f1(base) + ' = 9.38 − 10 × 0.0445. It assumes skill 0, luck 0, daring 10.</p>' +
         '<div class="sum"><span>base</span><span>' + f2(base) + '</span><span class="skill">skill</span><span class="skill">' + sgn(eff.skill, 2) + '</span><span class="luck">luck</span><span class="luck">' + sgn(eff.luck, 2) + '</span><span class="daring">daring</span><span class="daring">' + sgn(eff.daring, 2) + '</span>' +
         '<i class="rule"></i><span class="res">expected tries</span><span class="res">' + f1(total) + '</span></div></div></div>' +
     '</div>' + waterfall() +
-    '<div class="block"><h3>Where the per-point weights come from</h3>' +
-    '<p class="small dim">Simulated five-letter games (2,500 for each of three answer laws) were played, and the tries each took were fitted to the game’s average skill, luck and daring by a straight line. The weights are the mean of the three fits: tries = 9.38 − 0.0563 skill − 0.0164 luck − 0.0445 daring. Read on games the fit never saw, the three numbers explain 36% of the variance in tries when answers are drawn by frequency and 59% when every word is equally likely. They are not measured on people.</p></div>';
+    '<div class="block"><h3>Where the weights come from</h3>' +
+    '<p class="small dim">Linear fits on 2,500 simulated five-letter games per answer law. The weights are the mean of the three fits: tries = 9.38 − 0.0563 skill − 0.0164 luck − 0.0445 daring. On unseen games, the three numbers explain 36% of the variance in tries (frequency law) and 59% (equal chances). Not measured on people.</p></div>';
 }
 
 function renderAll() { renderRows(); renderTabs(); renderLevel(); renderTries(); }
