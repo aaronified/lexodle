@@ -64,6 +64,9 @@ svg text { fill: var(--dim); font-family: var(--font); font-size: 10px; }
 .step > span { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line2); display: grid; place-items: center; font-size: 11px; color: var(--dim); }
 .step > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+td .tile { width: 18px; height: 18px; font-size: 10px; }
+td .tiles { gap: 2px; }
+td, th { padding-inline: 4px; }
 @media (max-width: 380px) { .cols { grid-template-columns: 1fr; } }
 </style>
 
@@ -71,17 +74,17 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
   <header style="display:flex;flex-direction:column;gap:10px">
     <h1>REVIEW</h1>
     <h2 id="head"></h2>
-    <p class="note">Mockup. Words and pool sizes are invented. All other figures come from the app's formulas.</p>
+    <p class="note">Mockup. Words and pool sizes are invented. All other figures come from the formulas.</p>
   </header>
 
   <section>
     <h3>Your game</h3>
     <div class="wrap"><table>
-      <thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="luck">luck</th><th class="daring">daring</th></tr></thead>
+      <thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="daring">daring</th><th class="luck">luck</th></tr></thead>
       <tbody id="rows"></tbody>
       <tfoot id="means"></tfoot>
     </table></div>
-    <p class="dim small">Tap a row for its calculation. The average row feeds expected tries.</p>
+    <p class="dim small">Tap a row for its calculation.</p>
   </section>
 
   <section>
@@ -91,26 +94,28 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
   </section>
 
   <section>
-    <h3>Expected tries</h3>
+    <h3>Tries</h3>
     <div class="card" id="tries"></div>
   </section>
 </main>
 
 <script>
-const ANSWER = 'PRISM', TRIES = 6;
+const ANSWER = 'PRISM';
+// pool sizes of every outcome of each guess; the pool you landed in is the next level's word count
 const G = [
-  { word: 'STARE', n: 3000, sizes: [184,195,182,169,157,146,136,126,118,109,102,95,88,82,76,71,66,61,57,53,49,46,43,40,37,34,32,30,28,26,24,22,21,19,18,17,15,14,13,12,12,11,10,9,9,8,7,7,6,6,6,5,5,4,4,4,4,3,3,3,3,3,2,2,2,2,2,2,2].concat(Array(41).fill(1)), landedSize: 46, estar: 36.7, bestWord: 'TRACE', possible: false,
+  { word: 'STARE', n: 3000, sizes: [184,195,182,169,157,146,136,126,118,109,102,95,88,82,76,71,66,61,57,53,49,46,43,40,37,34,32,30,28,26,24,22,21,19,18,17,15,14,13,12,12,11,10,9,9,8,7,7,6,6,6,5,5,4,4,4,4,3,3,3,3,3,2,2,2,2,2,2,2].concat(Array(41).fill(1)), landedSize: 46, estar: 36.7, bestWord: 'TRACE',
     top: [['TRACE',100],['CRATE',99],['SLATE',98]], bottom: [['MUMMY',7],['FUZZY',4],['JAZZY',1]] },
-  { word: 'BRISK', n: 40, sizes: [10,8,6,4,3,2,2,1,1,1,1,1], landedSize: 8, estar: 3.4, bestWord: 'CHOIR', possible: true,
+  { word: 'BRISK', n: 46, sizes: [11,9,8,6,4,3,2,1,1,1], landedSize: 9, estar: 4.2, bestWord: 'CHOIR',
     top: [['CHOIR',100],['SPLIT',98],['CLOMP',95]], bottom: [['FUZZY',11],['MAMMA',6],['XYLYL',0]] },
-  { word: 'CRISP', n: 9, sizes: [4,2,1,1,1], landedSize: 2, estar: 1.1, bestWord: 'FRISK', possible: true,
+  { word: 'CRISP', n: 9, sizes: [4,2,1,1,1], landedSize: 2, estar: 1.1, bestWord: 'FRISK',
     top: [['FRISK',100],['PRISM',97],['GRIST',92]], bottom: [['MUMMY',0],['QUEEN',3],['AUDIO',9]] },
-  { word: 'PRISM', n: 3, sizes: [1,1,1], landedSize: 1, estar: 1, bestWord: 'PRISM', possible: true,
-    top: [['PRISM',100],['CRISP',100],['FRISK',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]] },
+  { word: 'PRISM', n: 2, sizes: [1,1], landedSize: 1, estar: 1, bestWord: 'PRISM',
+    top: [['PRISM',100],['FRISK',100],['PRISE',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]] },
 ];
 
-// ---- the maths, as in logic.dart ----
-G.forEach((g, i) => {
+// ---- the maths ----
+const log2 = Math.log2;
+G.forEach(g => {
   g.sizes.sort((a, b) => b - a);
   g.landed = g.sizes.indexOf(g.landedSize);
   g.sumSq = g.sizes.reduce((a, s) => a + s * s, 0);
@@ -118,20 +123,25 @@ G.forEach((g, i) => {
   g.room = Math.log(g.n / g.estar);
   g.lnE = Math.log(g.n / g.E);
   g.skill = Math.min(100, Math.max(0, g.lnE / g.room * 100));
-  g.bigger = g.sizes.filter(s => s > g.landedSize).reduce((a, b) => a + b, 0) / g.n * 100;
-  g.smaller = g.sizes.filter(s => s < g.landedSize).reduce((a, b) => a + b, 0) / g.n * 100;
+  const share = test => g.sizes.filter(test).reduce((a, b) => a + b, 0) / g.n * 100;
+  g.wider = share(s => s > g.E + 1e-9);
+  g.narrower = share(s => s < g.E - 1e-9);
+  g.daring = g.wider - g.narrower;
+  g.bigger = share(s => s > g.landedSize);
+  g.smaller = share(s => s < g.landedSize);
   g.luck = g.bigger - g.smaller;
-  g.triesLeft = TRIES - i;
-  g.win = g.possible ? 1 / g.n : 0;
-  g.f = { poss: g.possible ? 1 : 0, cost: 1 - g.skill / 100, unlikely: 1 - g.win, spare: 1 - 1 / g.triesLeft };
-  g.daring = (!g.possible || g.triesLeft <= 1) ? 0 : 100 * g.f.cost * g.f.unlikely * g.f.spare;
+  // bits
+  g.H = -g.sizes.reduce((a, s) => a + s / g.n * log2(s / g.n), 0);
+  g.bSkill = log2(g.n / g.E);
+  g.bShape = g.H - g.bSkill;
+  g.cut = log2(g.n / g.landedSize);
+  g.bLuck = g.cut - g.H;
 });
 const mean = k => G.reduce((a, g) => a + g[k], 0) / G.length;
-const M = { skill: mean('skill'), luck: mean('luck'), daring: mean('daring') };
-const W = { base: 9.38, skill: -0.0563, luck: -0.0164, daring: -0.0445, typical: 10 };
-const base = W.base + W.daring * W.typical;
-const eff = { skill: W.skill * M.skill, luck: W.luck * M.luck, daring: W.daring * (M.daring - W.typical) };
-const total = base + eff.skill + eff.luck + eff.daring;
+const M = { skill: mean('skill'), daring: mean('daring'), luck: mean('luck') };
+const needed = log2(G[0].n);
+const avg = { skill: mean('bSkill'), shape: mean('bShape'), luck: mean('bLuck'), cut: mean('cut') };
+const atAverageLuck = needed / (avg.skill + avg.shape);
 
 // ---- helpers ----
 const $ = id => document.getElementById(id);
@@ -139,8 +149,8 @@ const f0 = v => Math.round(v).toString();
 const f1 = v => v.toFixed(1);
 const f2 = v => v.toFixed(2);
 const f3 = v => v.toFixed(3);
-const sgn = (v, d = 1) => (v < 0 ? '−' : '+') + Math.abs(v).toFixed(d);
-const lk = v => (Math.round(v) === 0 ? '0%' : (v > 0 ? '+' : '−') + Math.abs(Math.round(v)) + '%');
+const sg = (v, d = 1) => (Math.abs(v) < Math.pow(10, -d) / 2 ? '' : v < 0 ? '\u2212' : '+') + Math.abs(v).toFixed(d);
+const pc = v => (Math.round(v) === 0 ? '0%' : (v > 0 ? '+' : '\u2212') + Math.abs(Math.round(v)) + '%');
 const N = v => v.toLocaleString('en-US');
 function tiles(guess) {
   const marks = Array(5).fill('x'), left = {};
@@ -148,141 +158,141 @@ function tiles(guess) {
   [...guess].forEach((c, i) => { if (marks[i] !== 'g' && left[c]) { marks[i] = 'y'; left[c]--; } });
   return '<span class="tiles" aria-label="' + guess + '">' + [...guess].map((c, i) => '<span class="tile ' + marks[i] + '">' + c + '</span>').join('') + '</span>';
 }
+$('head').textContent = 'The word was ' + ANSWER + '. You solved it in ' + G.length + ' guesses.';
 
-// ---- header ----
-$('head').textContent = 'The word was ' + ANSWER + '. You solved it in ' + G.length + ' of ' + TRIES + '.';
-
-// ---- summary table ----
+// ---- summary ----
 let sel = 1;
 function renderRows() {
-  $('rows').innerHTML = G.map((g, i) => '<tr class="pick' + (i === sel ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + N(g.n) + '</td><td class="skill">' + f0(g.skill) + '</td><td class="luck">' + lk(g.luck) + '</td><td class="daring">' + f0(g.daring) + '</td></tr>').join('');
+  $('rows').innerHTML = G.map((g, i) => '<tr class="pick' + (i === sel ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + N(g.n) + '</td><td class="skill">' + f0(g.skill) + '</td><td class="daring">' + pc(g.daring) + '</td><td class="luck">' + pc(g.luck) + '</td></tr>').join('');
   $('rows').querySelectorAll('tr').forEach(tr => {
     const go = () => { sel = +tr.dataset.i; renderAll(); };
     tr.addEventListener('click', go);
     tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
   });
-  $('means').innerHTML = '<tr><td>average</td><td></td><td class="skill">' + f1(M.skill) + '</td><td class="luck">' + sgn(M.luck) + '%</td><td class="daring">' + f1(M.daring) + '</td></tr>';
+  $('means').innerHTML = '<tr><td>average</td><td></td><td class="skill">' + f1(M.skill) + '</td><td class="daring">' + sg(M.daring) + '%</td><td class="luck">' + sg(M.luck) + '%</td></tr>';
 }
 function renderTabs() {
   $('tabs').innerHTML = G.map((g, i) => '<button role="tab" type="button" aria-selected="' + (i === sel) + '" data-i="' + i + '">guess ' + (i + 1) + '</button>').join('');
   $('tabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { sel = +b.dataset.i; renderAll(); }));
 }
 
-// ---- the plot of one level ----
-function plot(g) {
+// ---- plots: one column per outcome, as wide as its chance and as tall as its pool ----
+function plot(g, mode) {
   const W_ = 420, H = 170, L = 30, R = 8, T = 10, B = 26, pw = W_ - L - R, ph = H - T - B, max = g.sizes[0] * 1.08;
   const y = v => T + ph - v / max * ph;
   let x = L, bars = '';
   g.sizes.forEach((s, i) => {
     const w = s / g.n * pw;
-    const fill = i === g.landed ? 'var(--fg)' : (s > g.landedSize ? 'var(--luck)' : 'var(--line2)');
-    const op = i === g.landed || s <= g.landedSize ? 1 : .6;
+    let fill, op = 1;
+    if (mode === 'luck') {
+      fill = i === g.landed ? 'var(--fg)' : (s > g.landedSize ? 'var(--luck)' : 'var(--line2)');
+      if (i !== g.landed && s > g.landedSize) op = .6;
+    } else {
+      fill = s > g.E + 1e-9 ? 'var(--daring)' : (s < g.E - 1e-9 ? 'var(--line2)' : 'var(--dim)');
+      if (s > g.E + 1e-9) op = .6;
+    }
     bars += '<rect x="' + x.toFixed(2) + '" y="' + y(s).toFixed(2) + '" width="' + Math.max(w - .4, .3).toFixed(2) + '" height="' + (T + ph - y(s)).toFixed(2) + '" fill="' + fill + '" opacity="' + op + '"/>';
     x += w;
   });
-  const yE = y(g.E), yS = y(g.estar), close = Math.abs(yE - yS) < 12;
-  const lines =
-    '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yE + '" y2="' + yE + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="5 3"/>' +
-    '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yS + '" y2="' + yS + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="1.5 2.5"/>';
-  const lab = close
-    ? '<text x="' + (W_ - R) + '" y="' + (Math.min(yE, yS) - 4) + '" text-anchor="end" style="fill:var(--skill)">E = E* = ' + f1(g.E) + '</text>'
-    : '<text x="' + (W_ - R) + '" y="' + (yE - 4) + '" text-anchor="end" style="fill:var(--skill)">E ' + f1(g.E) + '</text><text x="' + (W_ - R) + '" y="' + (yS + 11) + '" text-anchor="end" style="fill:var(--skill)">E* ' + f1(g.estar) + '</text>';
+  let lines = '', lab = '';
+  if (mode !== 'luck') {
+    const yE = y(g.E), yS = y(g.estar), close = Math.abs(yE - yS) < 12;
+    lines = '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yE + '" y2="' + yE + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="5 3"/>' +
+      '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yS + '" y2="' + yS + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="1.5 2.5"/>';
+    lab = close
+      ? '<text x="' + (W_ - R) + '" y="' + (Math.min(yE, yS) - 4) + '" text-anchor="end" style="fill:var(--skill)">E = E* = ' + f1(g.E) + '</text>'
+      : '<text x="' + (W_ - R) + '" y="' + (yE - 4) + '" text-anchor="end" style="fill:var(--skill)">E ' + f1(g.E) + '</text><text x="' + (W_ - R) + '" y="' + (yS + 11) + '" text-anchor="end" style="fill:var(--skill)">E* ' + f1(g.estar) + '</text>';
+  }
   const axis =
     '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + (T + ph) + '" y2="' + (T + ph) + '" stroke="var(--line2)"/>' +
-    '<line x1="' + (L + pw / 2) + '" x2="' + (L + pw / 2) + '" y1="' + (T + ph) + '" y2="' + (T + ph + 4) + '" stroke="var(--dim)"/>' +
-    '<text x="' + L + '" y="' + (H - 8) + '">biggest pool</text>' +
-    '<text x="' + (L + pw / 2) + '" y="' + (H - 8) + '" text-anchor="middle" dx="-4"></text>' +
-    '<text x="' + (W_ - R) + '" y="' + (H - 8) + '" text-anchor="end">smallest pool</text>' +
+    '<text x="' + L + '" y="' + (H - 8) + '">widest pool</text>' +
+    '<text x="' + (W_ - R) + '" y="' + (H - 8) + '" text-anchor="end">narrowest pool</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + 8) + '" text-anchor="end">' + f0(g.sizes[0]) + '</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + ph) + '" text-anchor="end">0</text>';
-  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Every outcome of guess ' + g.word + ', as wide as its chance and as tall as the pool it leaves">' + bars + lines + lab + axis + '</svg>' +
-    '<div class="legend"><span><i style="background:var(--fg)"></i>pool you landed in (' + g.landedSize + ')</span><span><i style="background:var(--luck);opacity:.6"></i>bigger pools (' + f0(g.bigger) + '% chance)</span><span><i style="background:var(--line2)"></i>smaller pools (' + f0(g.smaller) + '%)</span></div>';
+  const legend = mode === 'luck'
+    ? '<span><i style="background:var(--fg)"></i>your pool (' + g.landedSize + ')</span><span><i style="background:var(--luck);opacity:.6"></i>wider pools (' + f0(g.bigger) + '% chance)</span><span><i style="background:var(--line2)"></i>narrower pools (' + f0(g.smaller) + '%)</span>'
+    : '<span><i style="background:var(--daring);opacity:.6"></i>wider than E (' + f0(g.wider) + '% chance)</span><span><i style="background:var(--line2)"></i>narrower than E (' + f0(g.narrower) + '%)</span><span class="skill">dashed: E, dotted: E*</span>';
+  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Every outcome of ' + g.word + '">' + bars + lines + lab + axis + '</svg><div class="legend">' + legend + '</div>';
 }
 
 // ---- one level ----
 function renderLevel() {
   const g = G[sel];
   const picks = (title, arr) => '<div><h3 style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="skill">' + p[1] + '</span></div>').join('') + '</div>';
+  const side = g.daring > 10 ? 'Usually a wide pool, with a small chance of a narrow one.'
+    : g.daring < -10 ? 'Usually a narrow pool, with a small chance of a wide one.'
+    : 'Wide and narrow pools are about equally likely.';
   $('level').innerHTML =
-    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div style="display:flex;align-items:center;gap:10px">' + tiles(g.word) + '<span class="dim">' + N(g.n) + ' words possible</span></div></div>' +
-    plot(g) +
+    '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' + tiles(g.word) + '<span class="dim">' + N(g.n) + ' words possible</span></div>' +
+    '<div class="block"><h3>Your guess, before the answer</h3><p class="small dim">Each column is one possible outcome: as wide as its chance, as tall as the pool it leaves. Skill and daring come from this plot. The answer does not change them.</p>' + plot(g, 'quality') + '</div>' +
 
     '<div class="block"><h3 class="skill">Skill</h3>' +
-    '<p class="small dim">How good the guess is as a question, judged before the answer is known. Any answer gives the same skill. Logs make halving 3,000 words equal halving 30.</p>' +
+    '<p class="small dim">How small the pool is on average, compared with the best guess. Logs make halving 3,000 words equal halving 30.</p>' +
     '<div class="sum">' +
-      '<span>average pool over all answers, E = Σ size² ÷ N</span><span>' + N(g.sumSq) + ' ÷ ' + N(g.n) + ' = ' + f2(g.E) + '</span>' +
+      '<span>average pool, E = Σ size² ÷ N</span><span>' + N(g.sumSq) + ' ÷ ' + N(g.n) + ' = ' + f2(g.E) + '</span>' +
       '<span>pool of the best guess, E* (' + g.bestWord + ')</span><span>' + f2(g.estar) + '</span>' +
-      '<span>average shrink, ln(N ÷ E)</span><span>ln(' + f1(g.n / g.E) + ') = ' + f3(g.lnE) + '</span>' +
+      '<span>your shrink, ln(N ÷ E)</span><span>ln(' + f1(g.n / g.E) + ') = ' + f3(g.lnE) + '</span>' +
       '<span>best shrink, ln(N ÷ E*)</span><span>ln(' + f1(g.n / g.estar) + ') = ' + f3(g.room) + '</span>' +
       '<i class="rule"></i><span class="res skill">skill = ' + f3(g.lnE) + ' ÷ ' + f3(g.room) + ' × 100</span><span class="res skill">' + f1(g.skill) + '</span>' +
     '</div></div>' +
 
-    '<div class="block"><h3 class="luck">Luck</h3>' +
-    '<p class="small dim">The answer decides this. How often your guess would leave a bigger pool, and how often a smaller one.</p>' +
-    '<div class="sum">' +
-      '<span>chance of a bigger pool than ' + g.landedSize + '</span><span>' + f1(g.bigger) + '%</span>' +
-      '<span>chance of a smaller pool than ' + g.landedSize + '</span><span>' + f1(g.smaller) + '%</span>' +
-      '<i class="rule"></i><span class="res luck">luck = bigger − smaller</span><span class="res luck">' + sgn(g.luck) + '%</span>' +
-    '</div></div>' +
-
     '<div class="block"><h3 class="daring">Daring</h3>' +
-    '<p class="small dim">How much you went for the word instead of the clues. Four factors, each 0 to 1.</p>' +
+    '<p class="small dim">Which side the tail is on. A daring guess often leaves a wide pool and rarely a narrow one: a gamble on the tail. A pool of exactly E counts for neither.</p>' +
     '<div class="sum">' +
-      '<span>can it be the answer?</span><span>' + (g.possible ? 'yes = 1' : 'no = 0') + '</span>' +
-      '<span>skill lost, 1 − skill ÷ 100</span><span>' + f2(g.f.cost) + '</span>' +
-      '<span>unlikely word, 1 − 1 ÷ ' + g.n + '</span><span>' + (g.possible ? f2(g.f.unlikely) : '—') + '</span>' +
-      '<span>spare tries, 1 − 1 ÷ ' + g.triesLeft + ' left</span><span>' + f2(g.f.spare) + '</span>' +
-      '<i class="rule"></i><span class="res daring">daring = 100 × product</span><span class="res daring">' + f1(g.daring) + '</span>' +
-    '</div>' + (g.possible ? '' : '<p class="small dim">A word that cannot be the answer only probes. Daring is 0.</p>') +
-    (g.possible && g.skill >= 99.95 ? '<p class="small dim">The best split that also fits costs no skill. Daring is 0.</p>' : '') + '</div>' +
+      '<span>chance of a pool wider than E</span><span>' + f1(g.wider) + '%</span>' +
+      '<span>chance of a pool narrower than E</span><span>' + f1(g.narrower) + '%</span>' +
+      '<i class="rule"></i><span class="res daring">daring = wider − narrower</span><span class="res daring">' + sg(g.daring) + '%</span>' +
+    '</div><p class="small dim">' + side + '</p></div>' +
+
+    '<div class="block"><h3 class="luck">Luck</h3>' +
+    '<p class="small dim">The answer decides this. The plot marks the pool you landed in.</p>' + plot(g, 'luck') +
+    '<div class="sum">' +
+      '<span>chance of a wider pool than ' + g.landedSize + '</span><span>' + f1(g.bigger) + '%</span>' +
+      '<span>chance of a narrower pool than ' + g.landedSize + '</span><span>' + f1(g.smaller) + '%</span>' +
+      '<i class="rule"></i><span class="res luck">luck = wider − narrower</span><span class="res luck">' + sg(g.luck) + '%</span>' +
+    '</div></div>' +
 
     '<div class="block"><div class="cols">' + picks('best 3 picks', g.top) + picks('worst 3 picks', g.bottom) + '</div>' +
     '<p class="small dim">Skill among all accepted words. Yours: <b class="skill">' + f0(g.skill) + '</b>.</p></div>';
 }
 
-// ---- expected tries ----
+// ---- tries: bits ----
 function waterfall() {
-  const W_ = 420, rowH = 26, L = 92, R = 40, rows = [
-    ['base', 0, base, 'var(--dim)', f1(base)],
-    ['skill', base, base + eff.skill, 'var(--skill)', sgn(eff.skill)],
-    ['luck', base + eff.skill, base + eff.skill + eff.luck, 'var(--luck)', sgn(eff.luck)],
-    ['daring', base + eff.skill + eff.luck, total, 'var(--daring)', sgn(eff.daring)],
-    ['expected tries', 0, total, 'var(--fg)', f1(total)],
+  const W_ = 420, rowH = 26, L = 92, R = 44, rows = [
+    ['needed', 0, needed, 'var(--fg)', f1(needed)],
+    ['skill', 0, avg.skill * G.length, 'var(--skill)', f1(avg.skill * G.length)],
+    ['shape', avg.skill * G.length, (avg.skill + avg.shape) * G.length, 'var(--dim)', f1(avg.shape * G.length)],
+    ['luck', (avg.skill + avg.shape) * G.length, needed, 'var(--luck)', sg(avg.luck * G.length)],
   ];
-  const sx = v => L + v / 10 * (W_ - L - R), H = rows.length * rowH + 26;
+  const top = Math.ceil(Math.max(needed, (avg.skill + avg.shape) * G.length) / 2) * 2;
+  const sx = v => L + v / top * (W_ - L - R), H = rows.length * rowH + 26;
   let s = '';
-  for (let t = 0; t <= 10; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 18) + '" stroke="var(--line)"/><text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>';
+  for (let t = 0; t <= top; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 18) + '" stroke="var(--line)"/><text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>';
   rows.forEach((r, i) => {
     const a = Math.min(r[1], r[2]), b = Math.max(r[1], r[2]), y = i * rowH + 5;
     s += '<text x="0" y="' + (y + 12) + '">' + r[0] + '</text><rect x="' + sx(a) + '" y="' + y + '" width="' + Math.max(sx(b) - sx(a), 1.5) + '" height="16" fill="' + r[3] + '"/><text x="' + (sx(b) + 5) + '" y="' + (y + 12) + '" style="fill:var(--fg)">' + r[4] + '</text>';
   });
-  const took = sx(G.length), ty = rows.length * rowH - 4;
-  s += '<line x1="' + took + '" x2="' + took + '" y1="' + (ty - rowH + 4) + '" y2="' + (ty + 4) + '" stroke="var(--fg)" stroke-width="2" stroke-dasharray="3 2"/>';
-  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Waterfall from the base of ' + f1(base) + ' guesses to ' + f1(total) + ' expected">' + s + '</svg>' +
-    '<p class="small dim">Dashed line: you took ' + G.length + '.</p>';
+  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Bits supplied by skill, shape and luck against the bits needed">' + s + '</svg>';
 }
 function renderTries() {
-  const row = (name, cls, mean, ref, w, e) => '<tr><td class="' + cls + '">' + name + '</td><td>' + mean + '</td><td>' + ref + '</td><td>' + w + '</td><td class="' + cls + '">' + e + '</td></tr>';
+  const rows = G.map((g, i) => '<tr><td>' + (i + 1) + ' ' + g.word + '</td><td class="skill">' + f2(g.bSkill) + '</td><td>' + f2(g.bShape) + '</td><td class="luck">' + sg(g.bLuck, 2) + '</td><td><b>' + f2(g.cut) + '</b></td></tr>').join('');
   $('tries').innerHTML =
-    '<p>Skill ' + f0(M.skill) + ' is a score out of 100, not ' + f0(M.skill) + ' guesses. Each point removes a fraction of a guess.</p>' +
+    '<p>A game ends when one word is left. Every guess removes some bits from the pool. Skill is a score out of 100, so it is converted to bits first.</p>' +
     '<div class="steps">' +
-      '<div class="step"><span>1</span><div><b>Average each measure</b><p class="small dim">Levels with one word left are skipped.</p>' +
-        '<div class="sum"><span class="skill">skill</span><span>(' + G.map(g => f1(g.skill)).join(' + ') + ') ÷ ' + G.length + ' = <b>' + f1(M.skill) + '</b></span>' +
-        '<span class="luck">luck</span><span>(' + G.map(g => f1(g.luck)).join(' + ').replace(/\+ -/g, '− ') + ') ÷ ' + G.length + ' = <b>' + sgn(M.luck) + '</b></span>' +
-        '<span class="daring">daring</span><span>(' + G.map(g => f1(g.daring)).join(' + ') + ') ÷ ' + G.length + ' = <b>' + f1(M.daring) + '</b></span></div></div></div>' +
-      '<div class="step"><span>2</span><div><b>Convert to guesses</b><p class="small dim">Multiply each average by its per-point weight. Daring counts from 10, the typical level.</p>' +
-        '<div class="wrap"><table><thead><tr><th>measure</th><th>yours</th><th>from</th><th>per point</th><th>guesses</th></tr></thead><tbody>' +
-        row('skill', 'skill', f1(M.skill), '0', f3(W.skill), sgn(eff.skill, 2)) +
-        row('luck', 'luck', sgn(M.luck), '0', f3(W.luck), sgn(eff.luck, 2)) +
-        row('daring', 'daring', f1(M.daring), W.typical, f3(W.daring), sgn(eff.daring, 2)) +
-        '</tbody></table></div>' +
-        '<p class="small dim">Skill 100 removes ' + f1(-W.skill * 100) + ' guesses. Luck ±100% shifts ' + f1(-W.luck * 100).replace('-', '') + '. Daring 0 to 100 shifts ' + f1(-W.daring * 100).replace('-', '') + '.</p></div></div>' +
-      '<div class="step"><span>3</span><div><b>Add to the base</b><p class="small dim">Base ' + f1(base) + ' = 9.38 − 10 × 0.0445. It assumes skill 0, luck 0, daring 10.</p>' +
-        '<div class="sum"><span>base</span><span>' + f2(base) + '</span><span class="skill">skill</span><span class="skill">' + sgn(eff.skill, 2) + '</span><span class="luck">luck</span><span class="luck">' + sgn(eff.luck, 2) + '</span><span class="daring">daring</span><span class="daring">' + sgn(eff.daring, 2) + '</span>' +
-        '<i class="rule"></i><span class="res">expected tries</span><span class="res">' + f1(total) + '</span></div></div></div>' +
+      '<div class="step"><span>1</span><div><b>Bits needed</b>' +
+        '<div class="sum"><span>log₂(' + N(G[0].n) + ' words)</span><span class="res">' + f2(needed) + '</span></div></div></div>' +
+      '<div class="step"><span>2</span><div><b>Bits each guess removed</b>' +
+        '<p class="small dim">skill = log₂(N ÷ E). shape = Shannon entropy of the outcomes minus skill. luck = what the answer added or took away. The four rows add up to the bits needed.</p>' +
+        '<div class="wrap"><table><thead><tr><th>guess</th><th>skill</th><th>shape</th><th>luck</th><th>removed</th></tr></thead><tbody>' + rows +
+        '</tbody><tfoot><tr><td>total</td><td class="skill">' + f2(avg.skill * G.length) + '</td><td>' + f2(avg.shape * G.length) + '</td><td class="luck">' + sg(avg.luck * G.length, 2) + '</td><td>' + f2(avg.cut * G.length) + '</td></tr></tfoot></table></div></div></div>' +
+      '<div class="step"><span>3</span><div><b>Tries you took</b>' +
+        '<div class="sum"><span>bits needed ÷ average bits removed</span><span>' + f2(needed) + ' ÷ ' + f2(avg.cut) + ' = <b>' + f1(needed / avg.cut) + '</b></span></div></div></div>' +
+      '<div class="step"><span>4</span><div><b>Tries at average luck</b>' +
+        '<p class="small dim">Luck averages 0 over all answers. Without it, each guess removes skill plus shape bits.</p>' +
+        '<div class="sum"><span>' + f2(needed) + ' ÷ (' + f2(avg.skill) + ' + ' + f2(avg.shape) + ')</span><span class="res">' + f1(atAverageLuck) + ' tries</span>' +
+        '<span>effect of your luck</span><span class="res luck">' + sg(needed / avg.cut - atAverageLuck) + ' tries</span></div></div></div>' +
     '</div>' + waterfall() +
-    '<div class="block"><h3>Where the weights come from</h3>' +
-    '<p class="small dim">Linear fits on 2,500 simulated five-letter games per answer law. The weights are the mean of the three fits: tries = 9.38 − 0.0563 skill − 0.0164 luck − 0.0445 daring. On unseen games, the three numbers explain 36% of the variance in tries (frequency law) and 59% (equal chances). Not measured on people.</p></div>';
+    '<p class="small dim">Bars: bits supplied by each part, against the bits needed. Daring is not in this sum. It reports which side the tail is on.</p>';
 }
 
 function renderAll() { renderRows(); renderTabs(); renderLevel(); renderTries(); }
