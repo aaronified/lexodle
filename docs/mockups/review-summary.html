@@ -208,11 +208,11 @@ function plot(g) {
     '<text x="' + (mid + 4) + '" y="' + (T + 8) + '" style="fill:var(--luck)">luck 0</text>';
   const axis =
     '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + (T + ph) + '" y2="' + (T + ph) + '" stroke="var(--line2)"/>' +
-    '<text x="' + L + '" y="' + (H - 4) + '">widest pool</text>' +
-    '<text x="' + (W_ - R) + '" y="' + (H - 4) + '" text-anchor="end">narrowest pool</text>' +
+    '<text x="' + L + '" y="' + (H - 4) + '">tallest pool</text>' +
+    '<text x="' + (W_ - R) + '" y="' + (H - 4) + '" text-anchor="end">shortest pool</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + 8) + '" text-anchor="end">' + f0(g.sizes[0]) + '</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + ph) + '" text-anchor="end">0</text>';
-  const legend = '<span><i style="background:var(--daring);opacity:.6"></i>wider than E (' + f0(g.wider) + '% chance)</span><span><i style="background:var(--line2)"></i>narrower than E (' + f0(g.narrower) + '%)</span><span><i style="border:2px solid var(--fg);background:none"></i>your pool (' + g.landedSize + ')</span>';
+  const legend = '<span><i style="background:var(--daring);opacity:.6"></i>taller than E (' + f0(g.wider) + '% chance)</span><span><i style="background:var(--line2)"></i>shorter than E (' + f0(g.narrower) + '%)</span><span><i style="border:2px solid var(--fg);background:none"></i>your pool (' + g.landedSize + ')</span>';
   return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Every outcome of ' + g.word + '">' + bars + lines + lab + axis + mark + '</svg><div class="legend">' + legend + '</div>';
 }
 
@@ -220,9 +220,9 @@ function plot(g) {
 function renderLevel() {
   const g = G[sel];
   const picks = (title, arr, cls, fmt, extra) => '<div><h3 class="' + cls + '" style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="' + cls + '">' + fmt(p[1]) + (extra ? ' <span class="dim small">' + extra(p) + '</span>' : '') + '</span></div>').join('') + '</div>';
-  const side = g.daring > 10 ? 'Usually a wide pool, with a small chance of a narrow one.'
-    : g.daring < -10 ? 'Usually a narrow pool, with a small chance of a wide one.'
-    : 'Wide and narrow pools are about equally likely.';
+  const side = g.daring > 10 ? 'Usually a tall pool, with a small chance of a short one.'
+    : g.daring < -10 ? 'Usually a short pool, with a small chance of a tall one.'
+    : 'Tall and short pools are about equally likely.';
   $('level').innerHTML =
     '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' + tiles(g.word) + '<span class="dim">' + N(g.n) + ' words possible</span></div>' +
     '<div class="block"><h3>All outcomes of your guess</h3><p class="small dim">Each column is one possible outcome: as wide as its chance, as tall as the pool it leaves. Skill and daring depend only on the columns. Luck depends on which column you landed in. The yellow line splits the chance in half: the middle outcome, luck 0.</p>' + plot(g) + '</div>' +
@@ -238,19 +238,19 @@ function renderLevel() {
     '</div><p class="small dim">E* is the only value not taken from the plot. It comes from scoring every accepted word as a guess.</p></div>' +
 
     '<div class="block"><h3 class="daring">Daring</h3>' +
-    '<p class="small dim">Which side the tail is on. A daring guess often leaves a wide pool and rarely a narrow one: a gamble on the tail. A pool of exactly E counts for neither.</p>' +
+    '<p class="small dim">A daring guess usually leaves a pool taller than E and rarely a much shorter one: a gamble on the short tail. A pool of exactly E counts for neither.</p>' +
     '<div class="sum">' +
-      '<span>chance of a pool wider than E</span><span>' + f1(g.wider) + '%</span>' +
-      '<span>chance of a pool narrower than E</span><span>' + f1(g.narrower) + '%</span>' +
-      '<i class="rule"></i><span class="res daring">daring = wider − narrower</span><span class="res daring">' + sg(g.daring) + '%</span>' +
+      '<span>chance of a pool taller than E</span><span>' + f1(g.wider) + '%</span>' +
+      '<span>chance of a pool shorter than E</span><span>' + f1(g.narrower) + '%</span>' +
+      '<i class="rule"></i><span class="res daring">daring = taller − shorter</span><span class="res daring">' + sg(g.daring) + '%</span>' +
     '</div><p class="small dim">' + side + '</p></div>' +
 
     '<div class="block"><h3 class="luck">Luck</h3>' +
     '<p class="small dim">The answer decides this. Your pool is outlined on the plot.</p>' +
     '<div class="sum">' +
-      '<span>chance of a wider pool than ' + g.landedSize + '</span><span>' + f1(g.bigger) + '%</span>' +
-      '<span>chance of a narrower pool than ' + g.landedSize + '</span><span>' + f1(g.smaller) + '%</span>' +
-      '<i class="rule"></i><span class="res luck">luck = wider − narrower</span><span class="res luck">' + sg(g.luck) + '%</span>' +
+      '<span>chance of a taller pool than ' + g.landedSize + '</span><span>' + f1(g.bigger) + '%</span>' +
+      '<span>chance of a shorter pool than ' + g.landedSize + '</span><span>' + f1(g.smaller) + '%</span>' +
+      '<i class="rule"></i><span class="res luck">luck = taller − shorter</span><span class="res luck">' + sg(g.luck) + '%</span>' +
     '</div></div>' +
 
     '<div class="block"><div class="cols">' + picks('best skill', g.top, 'skill', f0) + picks('worst skill', g.bottom, 'skill', f0) +
