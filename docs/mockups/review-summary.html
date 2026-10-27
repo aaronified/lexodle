@@ -208,17 +208,17 @@ function renderLevel() {
     plot(g) +
 
     '<div class="block"><h3 class="skill">Skill</h3>' +
-    '<p class="small dim">How much your guess shrank the pool, relative to the best guess. Logs make halving 3,000 words equal halving 30.</p>' +
+    '<p class="small dim">How good the guess is as a question, judged before the answer is known. Any answer gives the same skill. Logs make halving 3,000 words equal halving 30.</p>' +
     '<div class="sum">' +
-      '<span>expected pool, E = Σ size² ÷ N</span><span>' + N(g.sumSq) + ' ÷ ' + N(g.n) + ' = ' + f2(g.E) + '</span>' +
+      '<span>average pool over all answers, E = Σ size² ÷ N</span><span>' + N(g.sumSq) + ' ÷ ' + N(g.n) + ' = ' + f2(g.E) + '</span>' +
       '<span>pool of the best guess, E* (' + g.bestWord + ')</span><span>' + f2(g.estar) + '</span>' +
-      '<span>your shrink, ln(N ÷ E)</span><span>ln(' + f1(g.n / g.E) + ') = ' + f3(g.lnE) + '</span>' +
+      '<span>average shrink, ln(N ÷ E)</span><span>ln(' + f1(g.n / g.E) + ') = ' + f3(g.lnE) + '</span>' +
       '<span>best shrink, ln(N ÷ E*)</span><span>ln(' + f1(g.n / g.estar) + ') = ' + f3(g.room) + '</span>' +
       '<i class="rule"></i><span class="res skill">skill = ' + f3(g.lnE) + ' ÷ ' + f3(g.room) + ' × 100</span><span class="res skill">' + f1(g.skill) + '</span>' +
     '</div></div>' +
 
     '<div class="block"><h3 class="luck">Luck</h3>' +
-    '<p class="small dim">Across all possible answers: how often your guess leaves a bigger pool, and how often a smaller one.</p>' +
+    '<p class="small dim">The answer decides this. How often your guess would leave a bigger pool, and how often a smaller one.</p>' +
     '<div class="sum">' +
       '<span>chance of a bigger pool than ' + g.landedSize + '</span><span>' + f1(g.bigger) + '%</span>' +
       '<span>chance of a smaller pool than ' + g.landedSize + '</span><span>' + f1(g.smaller) + '%</span>' +
