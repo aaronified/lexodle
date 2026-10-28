@@ -1,0 +1,199 @@
+<title>Lexodle Home</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a phone-width column. Everything about play sits at the bottom: the mode button above the play and daily buttons. */
+:root {
+  --bg: #f6f6f3; --surface: #ffffff; --fg: #1b1c1a; --dim: #5d605b; --line: #dcdcd6; --line2: #b9bab3;
+  --skill: #1f5fd0; --luck: #9a7400; --risk: #2e7d32; --accent: #1b1c1a; --onaccent: #f6f6f3;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121311; --surface: #1b1c1a; --fg: #ecece8; --dim: #a3a59e; --line: #2f302d; --line2: #4a4b47;
+  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --accent: #ecece8; --onaccent: #121311; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #121311; --surface: #1b1c1a; --fg: #ecece8; --dim: #a3a59e; --line: #2f302d; --line2: #4a4b47;
+  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --accent: #ecece8; --onaccent: #121311; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5;
+  padding-block: 12px 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.app { max-width: 480px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 20px; }
+.top { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 22px; font-weight: 700; letter-spacing: .04em; }
+.sq { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line2); border-radius: 4px; background: transparent; color: var(--fg); cursor: pointer; font: inherit; }
+.scroll { flex: 1; display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+h3 { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin: 0; font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.style { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.style b { font-size: 18px; }
+.dim { color: var(--dim); } .small { font-size: 12px; }
+.streaks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.streak { border: 1px solid var(--line); border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 2px; background: var(--bg); }
+.streak.on { border-color: var(--fg); }
+.streak b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.streak span { font-size: 11px; color: var(--dim); }
+.ach { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.ach:last-child { border-bottom: 0; }
+.play { display: flex; flex-direction: column; gap: 8px; touch-action: pan-y; user-select: none; }
+.mode { position: relative; height: 56px; border: 1px solid var(--line2); border-radius: 4px; background: var(--surface); color: var(--fg); font: inherit; cursor: pointer; overflow: hidden; padding: 0; }
+.mode .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 36px; }
+.mode .chev { position: absolute; top: 50%; transform: translateY(-50%); color: var(--dim); font-size: 18px; }
+.mode .l { left: 12px; } .mode .r { right: 12px; }
+.mode .name { font-weight: 600; font-size: 16px; line-height: 1.15; text-align: left; }
+.mode .sub { font-size: 11px; color: var(--dim); font-weight: 400; display: block; }
+.row { display: flex; gap: 8px; }
+.btn { flex: 1; height: 52px; border-radius: 4px; font: inherit; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; }
+.btn.fill { background: var(--accent); color: var(--onaccent); border: 1px solid var(--accent); }
+.btn.line { background: transparent; color: var(--fg); border: 1px solid var(--line2); }
+.btn small { font-weight: 400; font-size: 11px; }
+.dots { display: flex; justify-content: center; gap: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line2); }
+.dots i.on { background: var(--fg); }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 4px; font-size: 13px; z-index: 50; max-width: calc(100% - 32px); }
+.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.5); display: flex; justify-content: center; align-items: center; padding: 16px max(16px, env(safe-area-inset-left, 0px)); overscroll-behavior: contain; }
+.modal { background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; max-width: 440px; width: 100%; max-height: 90%; overflow: auto; padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 14px; overscroll-behavior: contain; }
+.modal > * { flex-shrink: 0; }
+.modal h2 { display: flex; justify-content: space-between; align-items: center; margin: 0; font-size: 18px; }
+.close { font: inherit; background: transparent; border: 1px solid var(--line2); color: var(--fg); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+.opt { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+.opt[aria-checked="true"] { border-color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.opt b { font-size: 15px; }
+.hd { display: flex; align-items: center; gap: 8px; }
+.dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--dim); background: transparent; color: var(--dim); font: italic 700 11px/1 Georgia, serif; cursor: pointer; display: grid; place-items: center; padding: 0; flex: none; }
+.pop { position: absolute; z-index: 60; max-width: min(320px, calc(100vw - 32px)); background: var(--surface); color: var(--fg); border: 1px solid var(--line2); border-radius: 6px; padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,.25); font-size: 13px; line-height: 1.45; }
+.sty { display: flex; gap: 8px; align-items: center; }
+.row3 { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { font: inherit; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1.5px solid currentColor; background: transparent; }
+.skill { color: var(--skill); } .luck { color: var(--luck); } .risk { color: var(--risk); }
+button:focus-visible { outline: 2px solid var(--skill); outline-offset: 2px; }
+</style>
+
+<div class="app">
+  <div class="top">
+    <span class="logo">lexodle</span>
+    <button class="sq" type="button" aria-label="settings" id="settings">&#9881;</button>
+  </div>
+
+  <div class="scroll">
+    <div class="card">
+      <div class="hd"><h3>Playstyle</h3><button class="dot" type="button" aria-label="Explain" data-tip="Read from your last 100 classic games. Early game habit (maximiser, eliminator or gambler) plus end game habit (prober or closer). Tap to see how it is judged.">i</button></div>
+      <div class="style"><div><b>Analyst</b><div class="small dim">maximiser early, prober at the end</div></div><button class="sq" type="button" id="stylebtn" aria-label="Open playstyle">&#9656;</button></div>
+    </div>
+
+    <div class="card">
+      <div class="hd"><h3>Daily streaks</h3><button class="dot" type="button" aria-label="Explain" data-tip="Each mode has its own daily word and its own streak. The day counts for a mode when you solve that mode's daily.">i</button></div>
+      <div class="streaks" id="streaks"></div>
+    </div>
+
+    <div class="card">
+      <h3>Recent achievements</h3>
+      <div><div class="ach"><span>win a quartet with 3 or more tries left</span><span class="dim small">today</span></div>
+      <div class="ach"><span>win a daily in three guesses</span><span class="dim small">2 days ago</span></div>
+      <div class="ach"><span>win a relay race on your very last try</span><span class="dim small">last week</span></div></div>
+    </div>
+  </div>
+
+  <div class="play" id="play">
+    <button class="mode" type="button" id="mode" aria-label="Game modes. Swipe to change mode."><span class="chev l">&#8249;</span><div class="slide" id="slide"></div><span class="chev r">&#8250;</span></button>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <div class="row">
+      <button class="btn fill" type="button" id="playbtn">play</button>
+      <button class="btn line" type="button" id="dailybtn"></button>
+    </div>
+  </div>
+</div>
+<div id="layer"></div>
+
+<script>
+// The three modes. Each has its own daily: the word (or words) is drawn from the date, the language and the mode, the same for everyone.
+const MODES = [
+  { id: 'classic', label: 'classic', sub: 'one word', tries: 6, dailyTries: 6, streak: 12,
+    daily: { state: 'done', text: 'solved 4/6' }, rule: 'one word, 6 tries' },
+  { id: 'quartet', label: 'quartet', sub: 'four words at once · +3 tries', tries: 9, dailyTries: 9, streak: 3,
+    daily: { state: 'going', text: '5/9' }, rule: 'four words that share every guess, 9 tries' },
+  { id: 'relay', label: 'relay race', sub: 'four words, one after the other · +4 tries', tries: 10, dailyTries: 10, streak: 0,
+    daily: { state: 'new', text: '' }, rule: 'four words one after the other, 10 tries' },
+];
+let mi = 0;
+const $ = id => document.getElementById(id);
+const esc = t => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+function face(m) { return '<span class="name">' + m.label + '<span class="sub">' + m.sub + '</span></span>'; }
+function renderMode() {
+  const m = MODES[mi];
+  $('slide').innerHTML = face(m);
+  $('dots').innerHTML = MODES.map((x, i) => '<i class="' + (i === mi ? 'on' : '') + '"></i>').join('');
+  // play carries no mode text. The daily shows how today's daily of this mode stands.
+  const d = m.daily;
+  $('dailybtn').innerHTML = 'daily' + (d.text ? '<small>' + d.text + '</small>' : '');
+  $('streaks').innerHTML = MODES.map((x, i) => '<div class="streak' + (i === mi ? ' on' : '') + '"><b>' + x.streak + '</b><span>' + x.label + '</span></div>').join('');
+}
+function setMode(i) { mi = (i + MODES.length) % MODES.length; renderMode(); }
+
+// ---- swipe: one swipe changes the mode for play and daily alike; a tap on the mode button opens game modes ----
+(() => {
+  const area = $('play'), slide = $('slide'); let x0 = null, dx = 0, moved = false;
+  area.addEventListener('pointerdown', e => { x0 = e.clientX; dx = 0; moved = false; });
+  area.addEventListener('pointermove', e => {
+    if (x0 === null) return; dx = e.clientX - x0;
+    if (Math.abs(dx) > 6) moved = true;
+    if (moved) slide.style.transform = 'translateX(' + Math.max(-90, Math.min(90, dx * .6)) + 'px)';
+  });
+  const end = () => {
+    if (x0 === null) return;
+    slide.style.transform = '';
+    if (moved && Math.abs(dx) > 50) setMode(mi + (dx < 0 ? 1 : -1));
+    x0 = null;
+  };
+  area.addEventListener('pointerup', end); area.addEventListener('pointercancel', end);
+  area.addEventListener('click', e => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+  area.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') setMode(mi - 1); if (e.key === 'ArrowRight') setMode(mi + 1); });
+})();
+
+// ---- toast and popups ----
+let toastT;
+function toast(t) { document.querySelectorAll('.toast').forEach(n => n.remove()); const n = document.createElement('div'); n.className = 'toast'; n.textContent = t; document.body.appendChild(n); clearTimeout(toastT); toastT = setTimeout(() => n.remove(), 1800); }
+let pop = null;
+const closePop = () => { if (pop) { pop.remove(); pop = null; } };
+document.addEventListener('click', e => {
+  const d = e.target.closest('.dot');
+  if (!d) { if (!e.target.closest('.pop')) closePop(); return; }
+  const same = pop && pop.dataset.for === d.dataset.tip; closePop(); if (same) return;
+  pop = document.createElement('div'); pop.className = 'pop'; pop.dataset.for = d.dataset.tip; pop.textContent = d.dataset.tip; document.body.appendChild(pop);
+  const r = d.getBoundingClientRect(), w = pop.offsetWidth;
+  pop.style.left = Math.max(16, Math.min(r.left + scrollX - 8, scrollX + document.documentElement.clientWidth - w - 16)) + 'px';
+  pop.style.top = (r.bottom + scrollY + 6) + 'px';
+});
+function lockScroll(on) { document.documentElement.style.overflow = on ? 'hidden' : ''; document.body.style.overflow = on ? 'hidden' : ''; }
+function openLayer(html, label) {
+  $('layer').innerHTML = '<div class="overlay" id="ov"><div class="modal" role="dialog" aria-modal="true" aria-label="' + esc(label) + '">' + html + '</div></div>';
+  lockScroll(true);
+  $('ov').addEventListener('click', e => { if (e.target === $('ov')) closeLayer(); });
+  $('layer').querySelector('.close').addEventListener('click', closeLayer);
+  $('layer').querySelector('.close').focus();
+}
+function closeLayer() { $('layer').innerHTML = ''; lockScroll(false); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if ($('layer').firstChild) closeLayer(); else closePop(); } });
+
+// ---- game modes: opened by the mode button ----
+function openModes() {
+  const draw = () => {
+    openLayer('<h2><span>game modes</span><button class="close" type="button">close</button></h2>' +
+      '<div class="hd"><h3>mode</h3><button class="dot" type="button" aria-label="Explain" data-tip="The mode you pick here is the one play and daily start. Swiping the mode button on the home page changes it too. Quartet and relay race have extra tries because one guess serves every board. The daily of each mode uses fixed settings: five letters, the words share no letter, and the tries shown here.">i</button></div>' +
+      '<div role="radiogroup" aria-label="mode" style="display:flex;flex-direction:column;gap:8px">' + MODES.map((m, i) =>
+        '<button class="opt" role="radio" aria-checked="' + (i === mi) + '" data-i="' + i + '" type="button"><b>' + m.label + '</b><span class="small dim">' + m.sub + '</span><span class="small dim">daily: ' + m.rule + '</span></button>').join('') + '</div>' +
+      '<div class="hd"><h3>difficulty</h3></div><p class="small dim" style="margin:0">tries ' + MODES[mi].tries + ' · five letters · helper level normal (kept from your settings)</p>' +
+      '<div class="row3"><button class="close" type="button" data-go="solver">solver</button><button class="close" type="button" data-go="learn">learn</button></div>', 'game modes');
+    $('layer').querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => { setMode(+b.dataset.i); draw(); }));
+    $('layer').querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { closeLayer(); toast('opens the ' + b.dataset.go); }));
+  };
+  draw();
+}
+
+$('mode').addEventListener('click', openModes);
+$('playbtn').addEventListener('click', () => toast('play: ' + MODES[mi].label));
+$('dailybtn').addEventListener('click', () => toast('daily ' + MODES[mi].label + (MODES[mi].daily.state === 'done' ? ': already solved today' : ': ' + MODES[mi].rule)));
+$('settings').addEventListener('click', () => toast('settings'));
+$('stylebtn').addEventListener('click', () => toast('opens the playstyle page'));
+renderMode();
+</script>
