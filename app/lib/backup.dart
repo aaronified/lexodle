@@ -84,7 +84,16 @@ String backupToText(AppState state, {DateTime? now}) {
             'held': state.stylesHeldOf(l).toList()..sort(),
             'changes': state.styleChangesOf(l),
           },
-          'daily': {'log': state.dailyLogOf(l), 'best': state.dailyBestOf(l)},
+          'daily': {
+            'log': state.dailyLogOf(l),
+            'best': state.dailyBestOf(l),
+            // the daily quartet and relay race have a log and a streak of their own
+            for (final m in GameMode.values.where((m) => m.multi))
+              m.name: {
+                'log': state.dailyLogOf(l, m),
+                'best': state.dailyBestOf(l, m),
+              },
+          },
           'achievements': {
             for (final e in state.achOf(l).entries)
               if (!(achievementById(e.key)?.global ?? true))
@@ -164,6 +173,7 @@ Backup parseBackup(String text) {
           changes: play?.changes,
           dailyLog: daily?.$1,
           dailyBest: daily?.$2,
+          dailyModes: _dailyModes(v['daily']),
           achievements: _achievements(v['achievements']),
         );
       }
@@ -339,6 +349,16 @@ History? _history(Object? raw) {
   final best = raw['best'] ?? 0;
   if (best is! int || best < 0 || best > _bigCount) _bad('best streak');
   return (log, best);
+}
+
+/// The daily log and best streak of the quartet and the relay race in a
+/// language's daily, by mode name; none for a file from before they had one.
+Map<String, (Map<String, int>, int)> _dailyModes(Object? raw) {
+  if (raw is! Map) return const {};
+  return {
+    for (final m in GameMode.values.where((m) => m.multi))
+      if (raw[m.name] != null) m.name: _daily(raw[m.name])!,
+  };
 }
 
 /// A file the player chose to restore.

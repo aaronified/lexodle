@@ -75,6 +75,14 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(
         BankGate(
           builder: (bank) {
+            // each mode has a daily of its own: the mode in view decides
+            final mode = appState.mode;
+            if (mode.multi) {
+              final m = DailyMulti.of(bank, mode);
+              return m == null
+                  ? const HomePage()
+                  : MultiGamePage(bank: bank, daily: m);
+            }
             final d = Daily.of(bank);
             return d == null
                 ? const HomePage()

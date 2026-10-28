@@ -1,35 +1,46 @@
 import 'package:flutter/material.dart';
 
 import 'modes.dart';
+import 'ui.dart';
 
-/// How far a drag must go, as a share of the button's width, to change the
-/// mode on release.
-const wheelThreshold = .35;
+/// How far a drag must go, in logical pixels, to change the mode on release.
+const modeSwipeDistance = 50.0;
 
 /// A fling faster than this (logical pixels a second) changes the mode too.
-const wheelFlingSpeed = 700.0;
+const modeSwipeSpeed = 700.0;
 
-/// The play button, which is also a looped wheel of the game modes: classic,
-/// quartet, relay race, and round to classic again, in both directions. A
-/// horizontal drag turns it: the button's content (play, and the mode's name
-/// under it) follows the finger, with the next mode sliding in from the side
-/// being dragged towards. On release, past [wheelThreshold] of the width or a
-/// fast fling, it finishes the turn from where the finger left it and calls
-/// [onChanged]; otherwise it springs back. A tap plays ([onPlay]).
-///
-/// Dragging right brings in the previous mode, dragging left the next.
-class ModeWheel extends StatefulWidget {
-  const ModeWheel({
+/// The name of the Tabler filled icon of each game mode: one piece, four
+/// tiles, a knight.
+String modeIconName(GameMode m) => switch (m) {
+  GameMode.classic => 'puzzle',
+  GameMode.quartet => 'layout-grid',
+  GameMode.relay => 'chess-knight',
+};
+
+/// The mode under the modes' own line: "four words at once · +3 tries".
+String modeSub(GameMode m) =>
+    m.extraTries == 0 ? m.sub : '${m.sub} · +${m.extraTries} tries';
+
+/// The mode button of the home page, with the play row under it: a loop of the
+/// game modes (classic, quartet, relay race, and round to classic again, in both
+/// directions). The chevrons, a swipe anywhere over [below] or the button, and
+/// the arrow keys, all turn it: the mode's icon and name follow the finger.
+/// A tap on the button opens the game modes ([onOpen]). [below] is the play and
+/// the daily, which follow the mode the button shows.
+class ModeSwitch extends StatefulWidget {
+  const ModeSwitch({
     super.key,
     required this.mode,
     required this.onChanged,
-    required this.onPlay,
+    required this.onOpen,
+    required this.below,
     this.height = 52,
   });
 
   final GameMode mode;
   final ValueChanged<GameMode> onChanged;
-  final VoidCallback onPlay;
+  final VoidCallback onOpen;
+  final Widget below;
   final double height;
 
   /// The mode [steps] along the loop from [from] (negative goes back).
@@ -39,75 +50,60 @@ class ModeWheel extends StatefulWidget {
   }
 
   @override
-  State<ModeWheel> createState() => _ModeWheelState();
+  State<ModeSwitch> createState() => _ModeSwitchState();
 }
 
-class _ModeWheelState extends State<ModeWheel>
-    with SingleTickerProviderStateMixin {
-  /// The turn so far as a share of the width: 0 at rest, +1 a whole button to
-  /// the right (the previous mode is in), -1 a whole button to the left.
-  late final AnimationController _turn = AnimationController(
-    vsync: this,
-    lowerBound: -1,
-    upperBound: 1,
-    value: 0,
-  );
+class _ModeSwitchState extends State<ModeSwitch> {
+  double _drag = 0;
+  bool _moved = false;
 
-  double _width = 1;
-
-  @override
-  void dispose() {
-    _turn.dispose();
-    super.dispose();
-  }
-
-  void _start(DragStartDetails _) => _turn.stop();
+  void _change(int by) => widget.onChanged(ModeSwitch.step(widget.mode, by));
 
   void _update(DragUpdateDetails d) {
-    _turn.value = (_turn.value + d.delta.dx / _width).clamp(-1.0, 1.0);
+    setState(() {
+      _drag += d.delta.dx;
+      if (_drag.abs() > 6) _moved = true;
+    });
   }
 
-  Future<void> _end(DragEndDetails d) async {
+  void _end(DragEndDetails d) {
     final v = d.primaryVelocity ?? 0;
-    final f = _turn.value;
-    var dir = 0;
-    if (f.abs() >= wheelThreshold) {
-      dir = f.sign.toInt();
-    } else if (v.abs() >= wheelFlingSpeed) {
-      dir = v.sign.toInt();
+    final dx = _drag;
+    setState(() => _drag = 0);
+    if (dx.abs() >= modeSwipeDistance || v.abs() >= modeSwipeSpeed) {
+      // dragged left brings the next mode, right the previous
+      final dir = dx.abs() >= modeSwipeDistance ? dx.sign : v.sign;
+      _change(dir < 0 ? 1 : -1);
     }
-    if (dir == 0) {
-      await _turn.animateTo(
-        0,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutBack,
-      );
-      return;
-    }
-    await _turn.animateTo(
-      dir.toDouble(),
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOut,
-    );
-    if (!mounted) return;
-    // right brings the previous mode in, left the next
-    widget.onChanged(ModeWheel.step(widget.mode, -dir));
-    _turn.value = 0;
   }
 
-  // padded so it never runs under the chevrons
-  Widget _face(GameMode m) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 28),
+  Widget _face(ColorScheme c, GameMode m) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 44),
     child: FittedBox(
       fit: BoxFit.scaleDown,
-      child: Column(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('play'),
-          Text(
-            m.label,
-            key: ValueKey('wheel-mode-${m.name}'),
-            style: const TextStyle(fontSize: 11, height: 1.1),
+          TablerIcon(modeIconName(m), size: 24, color: c.primary),
+          const SizedBox(width: 12),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                m.label,
+                key: ValueKey('mode-name-${m.name}'),
+                style: const TextStyle(letterSpacing: 1.2, height: 1.1),
+              ),
+              Text(
+                modeSub(m),
+                style: TextStyle(
+                  fontSize: 11,
+                  height: 1.1,
+                  color: c.onSurface.withValues(alpha: dimAlpha),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -116,63 +112,94 @@ class _ModeWheelState extends State<ModeWheel>
 
   @override
   Widget build(BuildContext context) {
-    final chevron = Theme.of(context).colorScheme.onPrimary
-        .withValues(alpha: .65);
+    final c = Theme.of(context).colorScheme;
+    final chevron = c.onSurface.withValues(alpha: dimAlpha);
+    Widget arrow(String key, IconData icon, String label, int by) => SizedBox(
+      width: 44,
+      height: widget.height,
+      child: IconButton(
+        key: ValueKey(key),
+        tooltip: label,
+        padding: EdgeInsets.zero,
+        icon: Icon(icon, color: chevron),
+        onPressed: () => _change(by),
+      ),
+    );
     return GestureDetector(
-      key: const ValueKey('mode-wheel'),
-      behavior: HitTestBehavior.opaque,
-      onHorizontalDragStart: _start,
+      key: const ValueKey('play-area'),
+      behavior: HitTestBehavior.translucent,
       onHorizontalDragUpdate: _update,
       onHorizontalDragEnd: _end,
-      child: FilledButton(
-        style: FilledButton.styleFrom(
-          fixedSize: Size.fromHeight(widget.height),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          padding: EdgeInsets.zero,
-        ),
-        onPressed: widget.onPlay,
-        child: SizedBox.expand(
-          child: LayoutBuilder(
-            builder: (context, box) {
-              _width = box.maxWidth <= 0 ? 1 : box.maxWidth;
-              return ClipRect(
-                child: AnimatedBuilder(
-                  animation: _turn,
-                  builder: (context, _) {
-                    final f = _turn.value;
-                    final w = _width;
-                    return Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Positioned(
-                          left: 4,
-                          child: Icon(Icons.chevron_left, color: chevron),
-                        ),
-                        Positioned(
-                          right: 4,
-                          child: Icon(Icons.chevron_right, color: chevron),
-                        ),
-                        Transform.translate(
-                          offset: Offset(f * w, 0),
-                          child: _face(widget.mode),
-                        ),
-                        // dragged right: the previous mode comes in from the
-                        // left; dragged left: the next from the right
-                        if (f != 0)
-                          Transform.translate(
-                            offset: Offset(f * w - f.sign * w, 0),
-                            child: _face(
-                              ModeWheel.step(widget.mode, -f.sign.toInt()),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
+      onHorizontalDragCancel: () => setState(() => _drag = 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            children: [
+              SizedBox(
+                height: widget.height,
+                child: Tooltip(
+                  message: 'game modes',
+                  child: OutlinedButton(
+                    key: const ValueKey('mode-button'),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () {
+                      // a swipe that ended on the button is not a tap
+                      if (_moved) {
+                        _moved = false;
+                        return;
+                      }
+                      widget.onOpen();
+                    },
+                    child: ClipRect(
+                      child: Transform.translate(
+                        offset: Offset(_drag.clamp(-90.0, 90.0) * .6, 0),
+                        child: _face(c, widget.mode),
+                      ),
+                    ),
+                  ),
                 ),
-              );
-            },
+              ),
+              Positioned(
+                left: 1,
+                child: arrow(
+                  'mode-prev',
+                  Icons.chevron_left,
+                  'previous mode',
+                  -1,
+                ),
+              ),
+              Positioned(
+                right: 1,
+                child: arrow('mode-next', Icons.chevron_right, 'next mode', 1),
+              ),
+            ],
           ),
-        ),
+          const SizedBox(height: 6),
+          Row(
+            key: const ValueKey('mode-dots'),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (final m in GameMode.values)
+                Container(
+                  key: ValueKey('mode-dot-${m.name}'),
+                  width: 6,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: m == widget.mode ? c.primary : c.outlineVariant,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          widget.below,
+        ],
       ),
     );
   }

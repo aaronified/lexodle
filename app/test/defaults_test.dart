@@ -16,63 +16,60 @@ void main() {
     expect(s.useFrequency, isTrue);
   });
 
-  testWidgets('game modes says the default, and the icon buttons match play', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({'seenHowTo': true});
-    await tester.binding.setSurfaceSize(const Size(420, 1700));
-    await appState.load();
-    await tester.pumpWidget(const LexodleApp());
-    await tester.pumpAndSettle();
+  testWidgets(
+    'game modes says the default, and the square buttons match play',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({'seenHowTo': true});
+      await tester.binding.setSurfaceSize(const Size(420, 1700));
+      await appState.load();
+      await tester.pumpWidget(const LexodleApp());
+      await tester.pumpAndSettle();
 
-    // the difficulty is chosen on the game modes screen, not on home
-    expect(find.byKey(const ValueKey('frequency-checkbox')), findsNothing);
-    await tester.tap(find.byTooltip('game modes'));
-    await tester.pumpAndSettle();
-    expect(find.byType(DifficultyMatrix), findsOneWidget);
-    final box = tester.widget<CheckboxListTile>(
-      find.byKey(const ValueKey('frequency-checkbox')),
-    );
-    expect(
-      box.value,
-      isTrue,
-      reason: 'words are drawn by frequency by default',
-    );
-    await tester.tapAt(const Offset(5, 5)); // the scrim closes it
-    await tester.pumpAndSettle();
+      // the difficulty is chosen on the game modes screen, not on home
+      expect(find.byKey(const ValueKey('frequency-checkbox')), findsNothing);
+      await tester.tap(find.byTooltip('game modes'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DifficultyMatrix), findsOneWidget);
+      final box = tester.widget<CheckboxListTile>(
+        find.byKey(const ValueKey('frequency-checkbox')),
+      );
+      expect(
+        box.value,
+        isTrue,
+        reason: 'words are drawn by frequency by default',
+      );
+      await tester.tapAt(const Offset(5, 5)); // the scrim closes it
+      await tester.pumpAndSettle();
 
-    // the playstyle and game modes boxes are as tall as play, and square
-    final play = tester.getSize(find.widgetWithText(FilledButton, 'play'));
-    final boxes = {
-      'playstyle': find.byKey(const ValueKey('style-chip')),
-      'game modes': find.descendant(
-        of: find.byTooltip('game modes'),
-        matching: find.byType(OutlinedButton),
-      ),
-    };
-    for (final e in boxes.entries) {
-      final size = tester.getSize(e.value);
-      expect(size.height, play.height, reason: e.key);
-      expect(size.width, size.height, reason: e.key);
-    }
+      // the playstyle and game modes boxes are as tall as play, and square
+      final play = tester.getSize(find.widgetWithText(FilledButton, 'play'));
+      final boxes = {'playstyle': find.byKey(const ValueKey('style-chip'))};
+      for (final e in boxes.entries) {
+        final size = tester.getSize(e.value);
+        expect(size.height, play.height, reason: e.key);
+        expect(size.width, size.height, reason: e.key);
+      }
 
-    // and their icons, and the gear's, are drawn, in a colour that shows
-    await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
-    await tester.pump();
-    for (final f in [
-      find.descendant(
-        of: boxes['playstyle']!,
-        matching: find.byType(SvgPicture),
-      ),
-      // (game modes draws the mode's own Material icon, not the app's set)
-      find.descendant(of: boxes['game modes']!, matching: find.byType(Icon)),
-      find.descendant(
-        of: find.byTooltip('settings'),
-        matching: find.byType(SvgPicture),
-      ),
-    ]) {
-      expect(f, findsOneWidget);
-      expect(tester.getSize(f).width, greaterThan(16));
-    }
-  });
+      // and their icons, and the gear's, are drawn, in a colour that shows
+      await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
+      await tester.pump();
+      for (final f in [
+        find.descendant(
+          of: boxes['playstyle']!,
+          matching: find.byType(SvgPicture),
+        ),
+        find.descendant(
+          of: find.byKey(const ValueKey('mode-button')),
+          matching: find.byType(SvgPicture),
+        ),
+        find.descendant(
+          of: find.byTooltip('settings'),
+          matching: find.byType(SvgPicture),
+        ),
+      ]) {
+        expect(f, findsOneWidget);
+        expect(tester.getSize(f).width, greaterThan(16));
+      }
+    },
+  );
 }

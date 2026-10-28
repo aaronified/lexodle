@@ -8,7 +8,6 @@ import 'logo.dart';
 import 'style_chip.dart';
 import 'main.dart';
 import 'mode_wheel.dart';
-import 'modes.dart';
 import 'routes.dart';
 import 'store.dart' show Achievement, achievements;
 import 'ui.dart';
@@ -68,9 +67,10 @@ class _HomePageState extends State<HomePage> {
   /// The small second line under "daily": where today's daily word stands for
   /// [lang], or null before it is started.
   String? _dailyStatus(String lang) {
-    final e = appState.dailyFor(lang, dailyDate());
+    final mode = appState.mode;
+    final e = appState.dailyFor(lang, dailyDate(), mode);
     if (e == null) return null;
-    if (!e.over) return '${e.guesses.length}/$dailyTries';
+    if (!e.over) return '${e.guesses.length}/${dailyTriesOf(mode)}';
     return e.won! ? 'solved in ${e.guesses.length}' : 'missed';
   }
 
@@ -196,77 +196,57 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// The icon of each game mode: one tile, four tiles, a chain.
-  static IconData modeIcon(GameMode m) => switch (m) {
-    GameMode.classic => Icons.crop_square,
-    GameMode.quartet => Icons.grid_view,
-    GameMode.relay => Icons.link,
-  };
-
-  /// The play row, the last row of the page: play (a wheel of the modes, with
-  /// the mode under it), the daily, and game modes, whose icon is the mode's.
-  /// Game modes is square, like the settings button at the top.
+  /// The play row, the last row of the page: the mode button (its name, with
+  /// chevrons, and a swipe over the whole area, turn the loop of modes; a tap
+  /// opens the game modes), then play and the daily of that mode. Play shows no
+  /// mode text: the button above it says which.
   Widget _playRow(BuildContext context, Language lang) {
-    final c = Theme.of(context).colorScheme;
-    // a label that does not fit shrinks, so a long mode name never wraps
+    // a label that does not fit shrinks, so a long status never wraps
     Widget fit(Widget w) => FittedBox(fit: BoxFit.scaleDown, child: w);
-    return Row(
-      children: [
-        Expanded(
-          child: ModeWheel(
-            mode: appState.mode,
-            height: _buttonHeight,
-            onChanged: (m) => appState.setup(mode: m),
-            onPlay: () => Navigator.pushNamed(context, Routes.play),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: OutlinedButton(
-            key: const ValueKey('daily-button'),
-            style: OutlinedButton.styleFrom(
-              fixedSize: const Size.fromHeight(_buttonHeight),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
-            onPressed: () async {
-              // the daily goes by the server's time: ask again if it has not
-              // been for a while
-              if (!TrustedClock.isFresh()) {
-                await TrustedClock.sync(
-                  timeout: const Duration(milliseconds: 1500),
-                );
-              }
-              if (!context.mounted) return;
-              Navigator.pushNamed(context, Routes.daily);
-            },
-            child: fit(_dailyChild(lang.code)),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Tooltip(
-          message: 'game modes',
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              fixedSize: const Size.square(_buttonHeight),
-              minimumSize: Size.zero,
-              padding: EdgeInsets.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            onPressed: () => Navigator.pushNamed(context, Routes.gameModes),
-            // a different icon for each mode
-            child: Semantics(
-              label: 'game modes',
-              child: Icon(
-                modeIcon(appState.mode),
-                key: ValueKey('modes-icon-${appState.mode.name}'),
-                size: 28,
-                color: c.onSurface,
+    return ModeSwitch(
+      mode: appState.mode,
+      height: _buttonHeight,
+      onChanged: (m) => appState.setup(mode: m),
+      onOpen: () => Navigator.pushNamed(context, Routes.gameModes),
+      below: Row(
+        children: [
+          Expanded(
+            child: FilledButton(
+              key: const ValueKey('play-button'),
+              style: FilledButton.styleFrom(
+                fixedSize: const Size.fromHeight(_buttonHeight),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
               ),
+              onPressed: () => Navigator.pushNamed(context, Routes.play),
+              child: const Text('play'),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton(
+              key: const ValueKey('daily-button'),
+              style: OutlinedButton.styleFrom(
+                fixedSize: const Size.fromHeight(_buttonHeight),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              onPressed: () async {
+                // the daily goes by the server's time: ask again if it has not
+                // been for a while
+                if (!TrustedClock.isFresh()) {
+                  await TrustedClock.sync(
+                    timeout: const Duration(milliseconds: 1500),
+                  );
+                }
+                if (!context.mounted) return;
+                Navigator.pushNamed(context, Routes.daily);
+              },
+              child: fit(_dailyChild(lang.code)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

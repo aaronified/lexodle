@@ -1,6 +1,7 @@
 import 'dart:math' show min;
 
 import 'clock.dart';
+import 'modes.dart';
 import 'words.dart';
 
 /// The daily word: one word per language per day, the same for everyone on that
@@ -152,5 +153,56 @@ class Daily {
     final pool = all.length > dailyAnswers ? all.sublist(0, dailyAnswers) : all;
     if (pool.isEmpty) return null;
     return Daily(d, pool[dailyIndex(bank.language.code, d, pool.length)]);
+  }
+}
+
+/// The tries of a daily in [mode]: the fixed daily difficulty, with the extra
+/// tries the mode has (9 for a quartet, 10 for a relay race).
+int dailyTriesOf(GameMode mode) => triesFor(mode, dailyTries);
+
+/// Today's (or [date]'s) daily quartet or relay race: four words, drawn from
+/// the date, the language and the mode alone, so that every device with the same
+/// word list gets the same four. They are five letters long, among the
+/// [dailyAnswers] most common words, and share no letter, in the order they are
+/// played.
+class DailyMulti {
+  const DailyMulti(this.date, this.mode, this.answers);
+  final String date;
+  final GameMode mode;
+  final List<String> answers;
+
+  /// The daily of [mode] for [bank]'s language on [date] (default today), or
+  /// null when the language has too few words of the daily's length.
+  static DailyMulti? of(WordBank bank, GameMode mode, [String? date]) {
+    final d = date ?? dailyDate();
+    final all = bank.answers(dailyLength);
+    final pool = all.length > dailyAnswers ? all.sublist(0, dailyAnswers) : all;
+    if (pool.length < mode.boards) return null;
+    final code = bank.language.code;
+    String word(int k, int j, int t) =>
+        pool[dailyHash('lexodle-daily|$code|$d|${mode.name}|$k|$j|$t') %
+            pool.length];
+    for (var k = 0; k < 2000; k++) {
+      final chosen = <String>[];
+      for (var j = 0; j < mode.boards; j++) {
+        String? pick;
+        for (var t = 0; t < 60 && pick == null; t++) {
+          final w = word(k, j, t);
+          if (!chosen.contains(w) && chosen.every((o) => !sharesLetter(o, w))) {
+            pick = w;
+          }
+        }
+        if (pick == null) break;
+        chosen.add(pick);
+      }
+      if (chosen.length == mode.boards) return DailyMulti(d, mode, chosen);
+    }
+    // no four words without a shared letter (a very small list): any four
+    final chosen = <String>[];
+    for (var t = 0; chosen.length < mode.boards; t++) {
+      final w = word(0, 0, t);
+      if (!chosen.contains(w)) chosen.add(w);
+    }
+    return DailyMulti(d, mode, chosen);
   }
 }

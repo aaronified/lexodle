@@ -80,13 +80,17 @@ void main() {
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();
     expect(find.byType(Dialog), findsNothing);
-    // (the play button says play, with the mode as its second line)
+    // (play says only play: the mode button above it names the mode)
     expect(find.widgetWithText(FilledButton, 'play'), findsOneWidget);
     expect(
       find.descendant(
         of: find.widgetWithText(FilledButton, 'play'),
         matching: find.text(GameMode.quartet.label),
       ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(ValueKey('mode-name-${GameMode.quartet.name}')),
       findsOneWidget,
     );
   });

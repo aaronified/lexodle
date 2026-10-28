@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'daily.dart';
 import 'difficulty.dart';
 import 'main.dart';
 import 'modes.dart';
@@ -117,6 +118,18 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           ],
                           selected: mode,
                           onChanged: (m) => appState.setup(mode: m),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'the daily of ${mode.label} always uses fixed '
+                          'settings: five letters, '
+                          '${mode.multi ? 'the words share no letter, ' : ''}'
+                          '${dailyTriesOf(mode)} tries.',
+                          key: const ValueKey('daily-note'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         // right under the mode it belongs to. always there, so the

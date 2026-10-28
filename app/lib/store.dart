@@ -1707,7 +1707,7 @@ class AppState extends ChangeNotifier {
     for (final g in history.games) g.lang,
     ..._langAch.keys,
     ..._styles.keys,
-    ..._dailyLogs.keys,
+    ..._dailyLogs.keys.where((k) => !k.contains('|')),
     lang,
   };
 
@@ -1773,12 +1773,27 @@ class AppState extends ChangeNotifier {
   /// days are kept.
   Map<String, DailyEntry> daily = {};
 
-  DailyEntry? dailyFor(String lang, String date) => daily['$lang|$date'];
+  /// The progress of [lang]'s daily of [mode] on [date]: `language|date` for a
+  /// classic game, with `|mode` added for the others.
+  static String _dailyEntryKey(String lang, String date, GameMode mode) =>
+      mode == GameMode.classic ? '$lang|$date' : '$lang|$date|${mode.name}';
+
+  DailyEntry? dailyFor(
+    String lang,
+    String date, [
+    GameMode mode = GameMode.classic,
+  ]) => daily[_dailyEntryKey(lang, date, mode)];
 
   /// Saves the progress of the daily [lang] has on [date], and forgets days
   /// more than a week older than it.
-  void saveDaily(String lang, String date, List<String> guesses, {bool? won}) {
-    daily['$lang|$date'] = DailyEntry(List.of(guesses), won);
+  void saveDaily(
+    String lang,
+    String date,
+    List<String> guesses, {
+    bool? won,
+    GameMode mode = GameMode.classic,
+  }) {
+    daily[_dailyEntryKey(lang, date, mode)] = DailyEntry(List.of(guesses), won);
     final oldest = dailyShift(date, -7);
     daily.removeWhere(
       (k, _) => k.substring(k.indexOf('|') + 1).compareTo(oldest) < 0,
@@ -1797,36 +1812,51 @@ class AppState extends ChangeNotifier {
 
   /// How each day's daily went in a language (date -> [dailyMissed],
   /// [dailySolved] or [dailyDouble]): each language has its own streak and its
-  /// own calendar. A year is kept; the best is the longest streak ever.
+  /// own calendar, and so has each mode (the quartet and the relay race have a
+  /// daily of their own). A year is kept; the best is the longest streak ever.
   final Map<String, Map<String, int>> _dailyLogs = {};
   final Map<String, int> _dailyBests = {};
 
-  Map<String, int> dailyLogOf(String l) => _dailyLogs[l] ??= {};
-  int dailyBestOf(String l) => _dailyBests[l] ?? 0;
+  /// The key of a language's daily log in [mode]: the language itself for a
+  /// classic game, `language|mode` for the others.
+  static String dailyKey(String l, GameMode mode) =>
+      mode == GameMode.classic ? l : '$l|${mode.name}';
 
-  /// The log and the best streak of the language being played.
+  Map<String, int> dailyLogOf(String l, [GameMode mode = GameMode.classic]) =>
+      _dailyLogs[dailyKey(l, mode)] ??= {};
+  int dailyBestOf(String l, [GameMode mode = GameMode.classic]) =>
+      _dailyBests[dailyKey(l, mode)] ?? 0;
+
+  /// The log and the best streak of the language being played (classic).
   Map<String, int> get dailyLog => dailyLogOf(lang);
   set dailyLog(Map<String, int> v) => _dailyLogs[lang] = v;
   int get dailyBest => dailyBestOf(lang);
   set dailyBest(int v) => _dailyBests[lang] = v;
 
-  /// The daily streak in [l] now (see [dailyStreakOf]).
-  int dailyStreakFor(String l) => dailyStreakOf(dailyLogOf(l), dailyDate());
+  /// The daily streak in [l] now, in [mode] (see [dailyStreakOf]).
+  int dailyStreakFor(String l, [GameMode mode = GameMode.classic]) =>
+      dailyStreakOf(dailyLogOf(l, mode), dailyDate());
 
-  /// The daily streak of the language being played.
+  /// The classic daily streak of the language being played.
   int get dailyStreak => dailyStreakFor(lang);
 
   /// Logs how [date]'s daily went in [l] (the language being played when not
-  /// given) and returns the streak it leaves there.
-  int recordDaily(String date, int tier, {String? lang}) {
+  /// given) in [mode], and returns the streak it leaves there.
+  int recordDaily(
+    String date,
+    int tier, {
+    String? lang,
+    GameMode mode = GameMode.classic,
+  }) {
     final l = lang ?? this.lang;
-    final log = dailyLogOf(l);
+    final key = dailyKey(l, mode);
+    final log = dailyLogOf(l, mode);
     final old = log[date];
     if (old == null || tier > old) log[date] = tier;
     final oldest = dailyShift(date, -400);
     log.removeWhere((k, _) => k.compareTo(oldest) < 0);
     final streak = dailyStreakOf(log, date);
-    if (streak > dailyBestOf(l)) _dailyBests[l] = streak;
+    if (streak > (_dailyBests[key] ?? 0)) _dailyBests[key] = streak;
     _saveDailyLog();
     notifyListeners();
     return streak;
@@ -2363,6 +2393,10 @@ class AppState extends ChangeNotifier {
         if (k.changes != null) _styleChanges[e.key] = k.changes!;
         if (k.dailyLog != null) _dailyLogs[e.key] = Map.of(k.dailyLog!);
         if (k.dailyBest != null) _dailyBests[e.key] = k.dailyBest!;
+        for (final m in k.dailyModes.entries) {
+          _dailyLogs['${e.key}|${m.key}'] = Map.of(m.value.$1);
+          _dailyBests['${e.key}|${m.key}'] = m.value.$2;
+        }
         _langAch[e.key] = Map.of(k.achievements);
       }
     }
@@ -2549,6 +2583,7 @@ class LanguageKept {
     this.changes,
     this.dailyLog,
     this.dailyBest,
+    this.dailyModes = const {},
     this.achievements = const {},
   });
   final String? style;
@@ -2556,5 +2591,8 @@ class LanguageKept {
   final int? changes;
   final Map<String, int>? dailyLog;
   final int? dailyBest;
+
+  /// The log and best streak of the daily quartet and relay race, by mode name.
+  final Map<String, (Map<String, int>, int)> dailyModes;
   final Map<String, AchState> achievements;
 }

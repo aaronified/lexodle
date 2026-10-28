@@ -384,7 +384,7 @@ void main() {
       final bar = tester.getRect(pinned());
       expect(bar.left, greaterThanOrEqualTo(0));
       expect(bar.right, lessThanOrEqualTo(320));
-      expect(find.text('relay race'), findsOneWidget);
+      expect(find.byKey(const ValueKey('mode-name-relay')), findsOneWidget);
       appState.setup(mode: GameMode.classic);
     });
 

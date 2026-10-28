@@ -240,6 +240,7 @@ class _GamePageState extends State<GamePage> {
           before,
           widget.bank.guessable(length),
           weights: _law,
+          answer: answer,
         ),
       );
       _analysis.add(job);

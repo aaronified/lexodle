@@ -116,14 +116,17 @@ class MultiGame {
     List<String> answers,
     this.tries, {
     List<String>? words,
+    List<String>? possible,
     this.provisional = false,
     this.weights,
   }) : boards = [for (final a in answers) Board(a)],
        _words = words,
        eligible = [
          // the very same list for every board at the start, so the analysis of
-         // the first guess is worked out once for all of them
-         for (final _ in answers) words ?? <String>[],
+         // the first guess is worked out once for all of them; [possible] is
+         // the words an answer can be, when they are fewer than [words] (a
+         // daily draws from the most common only)
+         for (final _ in answers) possible ?? words ?? <String>[],
        ] {
     if (words != null) {
       // a quartet opens every board at once, a relay race the first
