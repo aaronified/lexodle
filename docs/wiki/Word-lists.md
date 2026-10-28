@@ -58,3 +58,5 @@ example Indonesian has about 2,400 at five letters); the game modes menu shows t
 - Achievement and playstyle icons: [Tabler Icons](https://tabler.io/icons) filled set (MIT)
 - Flags: [Twemoji](https://github.com/jdecked/twemoji) graphics, CC BY 4.0, cropped to the flag; the
   Catalan flag is drawn for this project
+
+Roman numerals (xviii, xiii) are left out of every list: a dictionary accepts them, but they are not words to guess or to set as a daily.

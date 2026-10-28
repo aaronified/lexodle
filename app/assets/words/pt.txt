@@ -871,7 +871,6 @@ gaja	2089
 rego	2089
 tops	2089
 cuca	2084
-xiii	2084
 zone	2084
 caco	2041
 cava	2041

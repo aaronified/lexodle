@@ -1042,7 +1042,6 @@ pits	5248
 rang	5248
 tile	5248
 verb	5248
-viii	5248
 apex	5128
 beck	5128
 calf	5128
@@ -1318,7 +1317,6 @@ gran	2754
 jams	2754
 mule	2754
 seam	2754
-xiii	2754
 ache	2691
 aqua	2691
 bins	2691
@@ -1919,7 +1917,6 @@ duos	660
 jags	660
 kana	660
 racy	660
-xvii	660
 boas	645
 burg	645
 burp	645
@@ -2055,7 +2052,6 @@ saps	467
 sirs	467
 swot	467
 wale	467
-xxii	467
 zany	467
 berk	457
 bide	457
@@ -2189,7 +2185,6 @@ rime	316
 teat	316
 twee	316
 wows	316
-xxiv	316
 perv	315
 flay	309
 ludo	309
@@ -2287,7 +2282,6 @@ jogs	234
 mung	234
 pref	234
 ruts	234
-xxvi	234
 ghat	229
 juts	229
 kith	229
@@ -2351,7 +2345,6 @@ pols	186
 sett	186
 tows	186
 tums	186
-xxxi	186
 dado	181
 flab	181
 fogs	181
@@ -2382,7 +2375,6 @@ cobs	162
 dict	162
 lilt	162
 whee	162
-xxix	162
 aver	158
 idem	158
 lobs	158
@@ -2425,7 +2417,6 @@ gits	138
 jeer	138
 razz	138
 spic	138
-xxxv	138
 ital	134
 lout	134
 secy	134
@@ -2534,7 +2525,6 @@ pouf	75
 sups	75
 hobs	74
 jiff	74
-lxii	74
 woad	74
 bubo	72
 caff	72
@@ -2583,7 +2573,6 @@ pule	53
 burs	52
 yobs	52
 aped	51
-clix	51
 egad	51
 puds	51
 wist	51
@@ -2607,7 +2596,6 @@ wops	46
 lops	45
 nark	44
 wogs	44
-lvii	43
 bawd	42
 glop	42
 ilea	42
@@ -2658,8 +2646,6 @@ miry	30
 hods	29
 yuks	29
 ecol	28
-lxiv	28
-lxvi	28
 psis	28
 wkly	28
 emfs	27
@@ -2686,16 +2672,13 @@ winy	19
 pelf	19
 haem	18
 albs	18
-lxix	18
 xref	18
-xcii	17
 oiks	17
 bumf	16
 effs	16
 niff	14
 limy	13
 mewl	13
-xcvi	13
 incs	12
 ttys	12
 hied	12
@@ -5400,7 +5383,6 @@ totes	870
 vixen	870
 whims	870
 wreak	870
-xviii	870
 amiss	851
 cuter	851
 dimes	851
@@ -5420,7 +5402,6 @@ smite	851
 twine	851
 twink	851
 voila	851
-xxiii	851
 yarns	851
 valor	849
 aorta	831
@@ -6464,7 +6445,6 @@ talus	239
 tinny	239
 wacko	239
 wikis	239
-xxvii	239
 enrol	234
 acrid	234
 auras	234
@@ -6761,7 +6741,6 @@ scald	147
 sower	147
 tabla	147
 tansy	147
-xxxvi	147
 blase	144
 brims	144
 dooms	144
@@ -6799,7 +6778,6 @@ steno	138
 toady	138
 troth	138
 wolfs	138
-xxxii	138
 filmy	134
 holey	134
 kaput	134
@@ -6825,7 +6803,6 @@ maser	131
 pulps	131
 wazoo	131
 wheal	131
-xxxiv	131
 yeahs	131
 bolas	128
 breve	128
@@ -6952,7 +6929,6 @@ dobro	104
 lucre	104
 plops	104
 swats	104
-xxxix	104
 fayre	102
 biped	102
 braes	102
@@ -7588,7 +7564,6 @@ appal	21
 chyme	21
 clops	21
 jived	21
-lxvii	21
 outgo	21
 retie	21
 doffs	21
@@ -13189,7 +13164,6 @@ screwy	204
 taxman	204
 whinge	204
 workup	204
-xxviii	204
 beaked	199
 bogies	199
 chichi	199
@@ -13635,7 +13609,6 @@ throbs	134
 valuer	134
 violas	134
 wormed	134
-xxxiii	134
 billow	131
 carper	131
 coring	131

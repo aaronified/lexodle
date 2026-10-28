@@ -339,7 +339,6 @@ spot	18620
 veda	18197
 dose	17782
 morì	17378
-xiii	16982
 esci	16595
 mise	16595
 nere	16595
@@ -385,7 +384,6 @@ esco	13182
 ride	13182
 riga	13182
 spia	13182
-viii	13182
 week	13182
 made	12882
 nido	12882
@@ -401,7 +399,6 @@ moro	12302
 nuda	12302
 peli	12302
 toro	12302
-xvii	12302
 asse	12022
 coca	12022
 down	12022
@@ -820,7 +817,6 @@ cubi	2754
 foca	2754
 gite	2754
 rifà	2754
-xxii	2754
 acta	2691
 beat	2691
 boot	2691
@@ -915,7 +911,6 @@ bile	1995
 melo	1995
 pong	1995
 sica	1995
-xxiv	1995
 zeri	1995
 lidi	1949
 peri	1949
@@ -968,7 +963,6 @@ elfo	1621
 erro	1621
 meri	1621
 orco	1621
-xxvi	1621
 echi	1584
 lobi	1584
 none	1584
@@ -978,7 +972,6 @@ tris	1584
 urna	1584
 urta	1584
 visi	1584
-xxix	1584
 anca	1548
 arto	1548
 mire	1548
@@ -1011,7 +1004,6 @@ nasi	1445
 ovvi	1445
 riff	1445
 urti	1445
-xxxi	1445
 auge	1412
 ione	1412
 judo	1412
@@ -1322,7 +1314,6 @@ posò	457
 redi	457
 sudi	457
 tifi	457
-xxxv	457
 caca	446
 gora	446
 numi	446
@@ -1490,7 +1481,6 @@ rivi	223
 thug	223
 udii	223
 ulna	223
-xlvi	223
 asco	218
 bado	218
 iato	218
@@ -1500,10 +1490,8 @@ spii	218
 tota	218
 osca	213
 urtò	213
-xlii	213
 isso	208
 lene	208
-liii	208
 slum	208
 torr	208
 amai	204
@@ -1516,7 +1504,6 @@ elci	194
 epos	194
 glia	194
 opti	194
-xliv	194
 boma	190
 dovi	190
 mamo	190
@@ -1543,7 +1530,6 @@ orbo	177
 seda	177
 unno	177
 viri	177
-xlix	177
 erta	173
 ideo	173
 moca	173
@@ -1657,8 +1643,6 @@ mote	102
 balì	100
 bila	100
 lini	100
-lvii	100
-lxii	100
 peno	100
 cimi	97
 doga	97
@@ -1720,15 +1704,12 @@ pepo	74
 pipo	74
 teni	74
 elce	72
-miii	72
 pesò	72
 sapi	72
 teff	72
-lxvi	70
 doto	69
 dovo	69
 egee	69
-lxiv	69
 nomo	69
 orse	69
 agir	67
@@ -1752,20 +1733,16 @@ viga	60
 bine	58
 eleo	58
 issò	58
-lxxi	58
 besi	57
 ledi	57
 luno	57
 sedo	57
 bete	56
 virò	56
-ciii	54
 erse	54
 mixa	54
 sevi	54
-xcii	54
 gaie	53
-lxix	53
 veno	53
 acuì	52
 bave	52
@@ -1780,7 +1757,6 @@ minò	51
 ungo	51
 zebù	51
 ordì	50
-lxxv	48
 alca	47
 dové	47
 gemo	47
@@ -1810,8 +1786,6 @@ erti	40
 tuff	40
 tupi	40
 arei	39
-cvii	39
-lxxx	39
 aspa	38
 avei	38
 gemi	38
@@ -1864,7 +1838,6 @@ inne	27
 ornò	27
 sfar	27
 tosc	27
-xcvi	27
 agre	26
 doso	26
 gelò	26
@@ -1885,36 +1858,27 @@ pule	24
 uzza	24
 suco	23
 tesò	23
-xcix	23
 godé	23
 iulo	23
 olei	23
 onco	23
-xciv	23
 cadì	22
 svio	22
 arar	22
 bucò	22
 liba	22
 rivà	22
-cxii	20
 flue	20
 sevo	20
-diii	20
 fumò	20
 volé	20
-clix	19
 rute	19
 anso	18
 tarò	18
 egei	18
 egra	18
 alar	17
-cxix	17
-dccc	17
 cebo	16
-cxxi	16
-ccix	16
 idei	16
 ilei	16
 isbe	16
@@ -1924,26 +1888,22 @@ vagi	16
 errò	16
 acmi	15
 aeri	15
-clii	15
 erbi	15
 alno	15
 skai	15
 vaco	15
-cxxx	14
 mixi	14
 omei	14
 usca	14
 suba	14
 azze	14
 zeli	14
-ccii	13
 cebi	13
 gioì	13
 espi	13
 insù	13
 orni	13
 rasò	13
-cxiv	12
 fohn	12
 urei	12
 sube	12
@@ -1957,7 +1917,6 @@ agii	11
 egro	11
 velò	11
 bune	11
-cxvi	11
 loie	11
 murò	11
 nife	11
@@ -1966,7 +1925,6 @@ ugna	11
 urgo	11
 barò	10
 refi	10
-cliv	10
 fruì	10
 yole	10
 della	7244359
@@ -2799,7 +2757,6 @@ rocco	13182
 scuro	13182
 sfide	13182
 vasca	13182
-xviii	13182
 erede	12882
 letti	12882
 minor	12882
@@ -3387,7 +3344,6 @@ scema	4570
 siero	4570
 tango	4570
 terze	4570
-xxiii	4570
 aceto	4466
 alibi	4466
 amavo	4466
@@ -4169,7 +4125,6 @@ porge	1380
 ronde	1380
 udire	1380
 viole	1380
-xxvii	1380
 zombi	1380
 apnea	1348
 aspro	1348
@@ -4809,7 +4764,6 @@ poppe	588
 spire	588
 tizie	588
 verri	588
-xxxii	588
 arnie	575
 cicca	575
 esimo	575
@@ -4981,7 +4935,6 @@ odono	446
 paggi	446
 prono	446
 volgo	446
-xxxiv	446
 amaca	436
 bieco	436
 carpa	436
@@ -5063,7 +5016,6 @@ ruoti	398
 sorga	398
 verse	398
 volse	398
-xxxvi	398
 aggio	389
 auree	389
 bersi	389
@@ -5358,7 +5310,6 @@ spett	263
 spini	263
 trait	263
 udita	263
-xxxix	263
 binda	257
 capta	257
 coeso	257
@@ -5522,7 +5473,6 @@ salii	213
 tatti	213
 tenni	213
 vacuo	213
-xlvii	213
 zinne	213
 alani	208
 balzò	208
@@ -5581,7 +5531,6 @@ tarsi	199
 tersa	199
 tozze	199
 vinsi	199
-xliii	199
 amidi	194
 attuò	194
 birba	194
@@ -6054,7 +6003,6 @@ efori	100
 filmi	100
 liuti	100
 lutea	100
-lviii	100
 manne	100
 ovaia	100
 pappi	100
@@ -6085,7 +6033,6 @@ gabbi	95
 gerla	95
 gradì	95
 idola	95
-lxiii	95
 parrà	95
 savia	95
 serto	95
@@ -6288,7 +6235,6 @@ ceder	70
 cheto	70
 dacie	70
 loden	70
-lxxii	70
 magmi	70
 maure	70
 ponci	70
@@ -6302,7 +6248,6 @@ bessi	69
 bevvi	69
 carda	69
 fende	69
-lxvii	69
 ohimè	69
 rader	69
 salpi	69
@@ -6442,7 +6387,6 @@ creai	54
 dinne	54
 greti	54
 luteo	54
-lxxvi	54
 odiar	54
 sfumi	54
 sfumò	54
@@ -6542,7 +6486,6 @@ esone	46
 frano	46
 ganze	46
 leccò	46
-lxxix	46
 mutar	46
 patir	46
 sbucò	46
@@ -6604,7 +6547,6 @@ fumai	42
 geodi	42
 glico	42
 lerce	42
-lxxiv	42
 marno	42
 menai	42
 pissi	42
@@ -6616,7 +6558,6 @@ bwana	41
 coiti	41
 goder	41
 imani	41
-lxxxi	41
 mogia	41
 narro	41
 natii	41
@@ -6780,7 +6721,6 @@ neuma	31
 orafe	31
 predo	31
 spani	31
-xciii	31
 alzar	30
 arale	30
 colar	30
@@ -6905,7 +6845,6 @@ borie	25
 cabri	25
 fieni	25
 loffa	25
-lxxxv	25
 nummi	25
 pachi	25
 piota	25
@@ -6940,8 +6879,6 @@ balba	23
 beare	23
 bissi	23
 confa	23
-cviii	23
-cxxxv	23
 dande	23
 leuco	23
 meati	23
@@ -7026,7 +6963,6 @@ palai	20
 svito	20
 tensa	20
 upupe	20
-xcvii	20
 areni	19
 casba	19
 oppia	19
@@ -7093,8 +7029,6 @@ rochi	18
 spole	18
 svaso	18
 tramo	18
-cxiii	17
-cxvii	17
 elida	17
 filmò	17
 grame	17
@@ -7256,7 +7190,6 @@ bugni	13
 celte	13
 cenar	13
 cicce	13
-cxxxi	13
 durre	13
 ginni	13
 inani	13
@@ -7280,7 +7213,6 @@ nefro	12
 norie	12
 alide	12
 avolo	12
-cxxii	12
 dolse	12
 munga	12
 mungi	12
@@ -7288,7 +7220,6 @@ prore	12
 ritma	12
 suidi	12
 avoli	12
-cxxvi	12
 devii	12
 dreno	12
 evira	12
@@ -7312,7 +7243,6 @@ penai	12
 staso	12
 adiva	11
 bighi	11
-cxxiv	11
 fanga	11
 iboga	11
 irido	11
@@ -7327,7 +7257,6 @@ tucul	11
 altee	11
 apode	11
 binde	11
-clvii	11
 ebani	11
 egide	11
 flato	11
@@ -7352,7 +7281,6 @@ urlio	11
 vendé	11
 beole	10
 credé	10
-cxxix	10
 mutai	10
 pogge	10
 sedar	10
@@ -7360,7 +7288,6 @@ uxori	10
 algia	10
 guadò	10
 iriti	10
-mdccl	10
 mimar	10
 olmio	10
 penar	10
@@ -10244,7 +10171,6 @@ spilla	1348
 teglia	1348
 unisca	1348
 velato	1348
-xxviii	1348
 apriti	1318
 barare	1318
 cassio	1318
@@ -11280,7 +11206,6 @@ recitò	588
 scanno	588
 storno	588
 walkie	588
-xxxiii	588
 aiuola	575
 arguta	575
 carnet	575
@@ -12238,7 +12163,6 @@ vedesi	288
 velare	288
 voleri	288
 votivo	288
-xxxvii	288
 zigomo	288
 arriba	281
 assedi	281
@@ -12609,7 +12533,6 @@ segano	218
 svuoto	218
 tackle	218
 uscivi	218
-xlviii	218
 alcova	213
 allaga	213
 amorfo	213

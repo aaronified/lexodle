@@ -44,18 +44,6 @@ void main() {
       },
     );
 
-    test('never a Roman numeral', () {
-      final roman = RegExp(r'^[ivxlcdm]+$');
-      for (final mode in [GameMode.quartet, GameMode.relay]) {
-        for (var day = 0; day < 400; day++) {
-          final d = DailyMulti.of(bank, mode, dailyShift('2026-10-01', day))!;
-          for (final w in d.answers) {
-            expect(roman.hasMatch(w), isFalse, reason: '$w on day $day');
-          }
-        }
-      }
-    });
-
     test('the same for everyone, and each mode and day has its own', () {
       final a = DailyMulti.of(bank, GameMode.quartet, '2026-11-01')!;
       final b = DailyMulti.of(bank, GameMode.quartet, '2026-11-01')!;

@@ -1505,7 +1505,6 @@ kora	1258
 mare	1258
 stad	1258
 virk	1258
-xiii	1258
 afro	1230
 amin	1230
 brom	1230
@@ -1518,7 +1517,6 @@ midi	1230
 oval	1230
 røve	1230
 snot	1230
-viii	1230
 dims	1202
 gelé	1202
 klat	1202
