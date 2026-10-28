@@ -51,8 +51,8 @@ and your end habit:
 | **gambler** early  | wildcard          | gambler           |
 
 It moves as you play, and a margin of 5 points keeps one game either side of a line from changing
-your habit. The playstyle page shows, with a real game for each style, how each guess was counted,
-and the exact rules behind the info dots. The thresholds come from simulated players of the six
+your habit. The playstyle page shows the share of each behaviour (in its own colour),
+and the exact rules behind the info dot. The thresholds come from simulated players of the six
 styles played through the app's own maths (paper, Playstyles); they are **not measured on people
 yet**, so treat the style as a first reading.
 
