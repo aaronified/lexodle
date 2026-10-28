@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'daily.dart';
 import 'main.dart';
+import 'modes.dart';
+import 'store.dart' show achievementById;
 import 'ui.dart';
 
 /// The home page's daily streak: a fire with the days in a row, and the last
@@ -135,7 +137,8 @@ class DailyStreak extends StatelessWidget {
             child: Row(
               children: [
                 TablerIcon(
-                  'flame',
+                  // the icon of the highest streak level the streak has reached
+                  _streakIcon(mode, streak),
                   key: const ValueKey('streak-flame'),
                   size: 34,
                   color: solvedToday ? lit : unlit,
@@ -195,4 +198,22 @@ class DailyStreak extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The icon of the streak achievement of [mode] at the level [streak] days has
+/// reached: the same icons as the achievement, for the streak now; a flame
+/// before the first level.
+String _streakIcon(GameMode mode, int streak) {
+  final id = switch (mode) {
+    GameMode.classic => 'daily_streak',
+    GameMode.quartet => 'quartet_streak',
+    GameMode.relay => 'relay_streak',
+  };
+  final a = achievementById(id);
+  if (a == null) return 'flame';
+  var reached = 0;
+  for (var i = 0; i < a.count; i++) {
+    if (streak >= a.levels[i].target) reached = i + 1;
+  }
+  return reached == 0 ? 'flame' : a.atLevel(reached - 1).icon;
 }

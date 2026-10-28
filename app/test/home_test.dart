@@ -261,23 +261,23 @@ void main() {
     });
 
     testWidgets('the three newest by date, newest first', (tester) async {
-      appState.ach['first_light'] = AchState(times: 1, dates: ['2026-01-01']);
-      appState.ach['one_shot'] = AchState(
+      appState.ach['wins'] = AchState(times: 1, dates: ['2026-01-01']);
+      appState.ach['quick'] = AchState(
         times: 2,
         dates: ['2026-02-01', '2026-05-01'],
       );
-      appState.ach['last_1'] = AchState(times: 1, dates: ['2026-03-01']);
-      appState.ach['quick_4'] = AchState(times: 1, dates: ['2026-04-01']);
+      appState.ach['last_try'] = AchState(times: 1, dates: ['2026-03-01']);
+      appState.ach['played'] = AchState(times: 1, dates: ['2026-04-01']);
       await home(tester);
       expect(glyphs(), findsOneWidget);
       Finder g(String id) => find.byKey(ValueKey('recent-ach-$id'));
-      expect(g('one_shot'), findsOneWidget);
-      expect(g('quick_4'), findsOneWidget);
-      expect(g('last_1'), findsOneWidget);
-      expect(g('first_light'), findsNothing);
+      expect(g('quick'), findsOneWidget);
+      expect(g('played'), findsOneWidget);
+      expect(g('last_try'), findsOneWidget);
+      expect(g('wins'), findsNothing);
       // newest first, left to right, inside the achievements button
       final xs = [
-        for (final id in ['one_shot', 'quick_4', 'last_1'])
+        for (final id in ['quick', 'played', 'last_try'])
           tester.getCenter(g(id)).dx,
       ];
       expect(xs[0], lessThan(xs[1]));
@@ -299,12 +299,9 @@ void main() {
     });
 
     testWidgets('fewer than three show what there is', (tester) async {
-      appState.ach['first_light'] = AchState(times: 1, dates: ['2026-01-01']);
+      appState.ach['wins'] = AchState(times: 1, dates: ['2026-01-01']);
       await home(tester);
-      expect(
-        find.byKey(const ValueKey('recent-ach-first_light')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const ValueKey('recent-ach-wins')), findsOneWidget);
       expect(
         find.descendant(of: glyphs(), matching: find.byType(Padding)),
         findsOneWidget,

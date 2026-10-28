@@ -117,21 +117,20 @@ void main() {
     }
     s.recordGame(won('fr'));
     // 25 wins in English earn "regular"; French has had one
-    expect(s.achOf('en')['wins_25']!.times, 1);
-    expect(s.achOf('fr')['wins_25']!.times, 0);
-    expect(s.achOf('fr')['wins_25']!.value, 1);
-    expect(s.achOf('fr')['first_light']!.times, 1);
+    expect(s.achOf('en')['wins']!.times, 2);
+    expect(s.achOf('fr')['wins']!.times, 1);
+    expect(s.achOf('fr')['wins']!.value, 1);
     // the ones that span languages are shared, and see both
-    expect(s.achOf('en')['bilingual']!.times, 1);
-    expect(s.achOf('fr')['bilingual']!.times, 1);
+    expect(s.achOf('en')['languages']!.times, 1);
+    expect(s.achOf('fr')['languages']!.times, 1);
     expect(
-      identical(s.achOf('en')['bilingual'], s.achOf('de')['bilingual']),
+      identical(s.achOf('en')['languages'], s.achOf('de')['languages']),
       isTrue,
     );
     // and which are shared is a property of the achievement
-    expect(achievementById('bilingual')!.global, isTrue);
-    expect(achievementById('mastery')!.global, isTrue);
-    expect(achievementById('wins_25')!.global, isFalse);
+    expect(achievementById('languages')!.global, isTrue);
+    expect(achievementById('mastery_badges')!.global, isTrue);
+    expect(achievementById('wins')!.global, isFalse);
   });
 
   test('all of it is saved, and read back, per language', () async {
@@ -146,14 +145,15 @@ void main() {
     expect(again.styleOf('en'), analyst);
     expect(again.dailyStreakFor('fr'), 1);
     expect(again.dailyLogOf('fr')[dailyDate()], dailyDouble);
-    expect(again.achOf('de')['first_light']!.times, 1);
-    expect(again.achOf('en')['first_light']?.times ?? 0, 0);
+    expect(again.achOf('de')['wins']!.times, 1);
+    expect(again.achOf('en')['wins']?.times ?? 0, 0);
   });
 
   test(
     'what was kept before each language had its own goes to the one in use',
     () async {
       SharedPreferences.setMockInitialValues({
+        'achievementsVersion': AppState.achievementsVersion,
         'lang': 'fr',
         'style': 'gambler',
         'stylesHeld': ['gambler', 'analyst'],
@@ -161,8 +161,8 @@ void main() {
         'dailyLog': jsonEncode({'2026-10-23': dailySolved}),
         'dailyBest': 7,
         'ach': jsonEncode({
-          'first_light': AchState(times: 1, dates: ['2026-10-01']).toJson(),
-          'bilingual': AchState(times: 1, dates: ['2026-10-02']).toJson(),
+          'wins': AchState(times: 1, dates: ['2026-10-01']).toJson(),
+          'languages': AchState(times: 1, dates: ['2026-10-02']).toJson(),
         }),
       });
       final s = AppState();
@@ -174,9 +174,9 @@ void main() {
       expect(s.dailyLogOf('fr')['2026-10-23'], dailySolved);
       expect(s.dailyBestOf('fr'), 7);
       expect(s.dailyBestOf('en'), 0);
-      expect(s.achOf('fr')['first_light']!.times, 1);
-      expect(s.achOf('en')['first_light'], isNull);
-      expect(s.achOf('en')['bilingual']!.times, 1, reason: 'a shared one');
+      expect(s.achOf('fr')['wins']!.times, 1);
+      expect(s.achOf('en')['wins'], isNull);
+      expect(s.achOf('en')['languages']!.times, 1, reason: 'a shared one');
     },
   );
 
@@ -202,8 +202,8 @@ void main() {
       );
       expect(other.styleOf('en'), analyst);
       expect(other.dailyStreakFor('fr'), 1);
-      expect(other.achOf('de')['first_light']!.times, 1);
-      expect(other.achOf('en')['first_light']?.times ?? 0, 0);
+      expect(other.achOf('de')['wins']!.times, 1);
+      expect(other.achOf('en')['wins']?.times ?? 0, 0);
     },
   );
 
@@ -225,7 +225,7 @@ void main() {
       ..['version'] = 1;
     final b = parseBackup(jsonEncode(j));
     expect(b.languages!.keys, ['fr']);
-    expect(b.languages!['fr']!.achievements.containsKey('first_light'), isTrue);
-    expect(b.achievements.containsKey('first_light'), isFalse);
+    expect(b.languages!['fr']!.achievements.containsKey('wins'), isTrue);
+    expect(b.achievements.containsKey('wins'), isFalse);
   });
 }

@@ -43,11 +43,11 @@ void main() {
         'en': {'5:6', '4:6', '5:3'},
       };
     appState.ach = {
-      'one_shot': AchState(
+      'quick': AchState(
         times: 3,
         dates: ['2026-10-01', '2026-10-05', '2026-10-09'],
       ),
-      'wins_25': AchState(times: 1, dates: ['2026-10-03'], value: 25),
+      'dailies': AchState(times: 1, dates: ['2026-10-03'], value: 25),
       'wins_100': AchState(value: 40),
     };
     await tester.pumpWidget(
@@ -68,9 +68,9 @@ void main() {
     expect(find.text('×1'), findsOneWidget);
 
     // every achievement wears its medal
-    expect(find.byKey(const ValueKey('medal-one_shot')), findsOneWidget);
+    expect(find.byKey(const ValueKey('medal-quick')), findsOneWidget);
     expect(
-      tester.widget<Text>(find.byKey(const ValueKey('medal-one_shot'))).data,
+      tester.widget<Text>(find.byKey(const ValueKey('medal-quick'))).data,
       'platinum',
     );
 
@@ -124,7 +124,7 @@ void main() {
     }
     await tester.tap(find.byKey(const ValueKey('medal-filter-all')));
     await tester.pump();
-    expect(find.byKey(const ValueKey('first_light-row')), findsOneWidget);
+    expect(find.byKey(const ValueKey('wins-row')), findsOneWidget);
   });
 
   testWidgets('the history says so when nothing is earned yet', (tester) async {
@@ -147,10 +147,10 @@ void main() {
       appState.lang = 'en';
       appState.stats = Stats()..langsWon = {'en', 'fr'};
       appState.setAch('en', {
-        'one_shot': AchState(times: 3, dates: ['2026-10-01']),
+        'quick': AchState(times: 3, dates: ['2026-10-01']),
       });
       appState.setAch('fr', {
-        'wins_25': AchState(times: 1, dates: ['2026-10-03']),
+        'dailies': AchState(times: 1, dates: ['2026-10-03']),
       });
       await tester.pumpWidget(
         const MaterialApp(
@@ -164,12 +164,12 @@ void main() {
       expect(find.text('×3'), findsOneWidget);
       expect(find.text('×1'), findsNothing);
       // every achievement of the language wears its flag
-      expect(find.byKey(const ValueKey('badges-one_shot')), findsOneWidget);
-      expect(find.byKey(const ValueKey('badges-wins_25')), findsOneWidget);
+      expect(find.byKey(const ValueKey('badges-quick')), findsOneWidget);
+      expect(find.byKey(const ValueKey('badges-dailies')), findsOneWidget);
       // the one that counts languages wears every flag won in: English draws two
       // (gb and us, each half), French one
       final shared = find.descendant(
-        of: find.byKey(const ValueKey('badges-bilingual')),
+        of: find.byKey(const ValueKey('badges-languages')),
         matching: find.byType(SvgPicture),
       );
       expect(shared, findsNWidgets(3));
@@ -189,11 +189,11 @@ void main() {
     appState.lang = 'en';
     appState.stats = Stats()..langsWon = {'en', 'fr'};
     appState.setAch('en', {
-      'one_shot': AchState(times: 3, dates: ['2026-10-01', '2026-10-05']),
+      'quick': AchState(times: 3, dates: ['2026-10-01', '2026-10-05']),
     });
     appState.setAch('fr', {
-      'one_shot': AchState(times: 2, dates: ['2026-10-03']),
-      'wins_25': AchState(times: 1, dates: ['2026-10-04']),
+      'quick': AchState(times: 2, dates: ['2026-10-03']),
+      'dailies': AchState(times: 1, dates: ['2026-10-04']),
     });
     await tester.pumpWidget(
       const MaterialApp(
@@ -211,10 +211,10 @@ void main() {
     double opacity(String id, String code) =>
         tester.widget<Opacity>(find.byKey(ValueKey('badge-$id-$code'))).opacity;
     // one shot was earned in both; regular only in French
-    expect(opacity('one_shot', 'en'), 1);
-    expect(opacity('one_shot', 'fr'), 1);
-    expect(opacity('wins_25', 'fr'), 1);
-    expect(opacity('wins_25', 'en'), lessThan(1));
+    expect(opacity('quick', 'en'), 1);
+    expect(opacity('quick', 'fr'), 1);
+    expect(opacity('dailies', 'fr'), 1);
+    expect(opacity('dailies', 'en'), lessThan(1));
     appState.lang = 'en';
   });
 
@@ -236,9 +236,9 @@ void main() {
 
     test('the achievements that count languages do not stand in the way', () {
       expect(achievementById(completionistId)!.global, isTrue);
-      expect(achievementById('tower_of_babel')!.global, isTrue);
+      expect(achievementById('completionist')!.global, isTrue);
       expect(achievementById('polyglot_9')!.title, 'nine tongues');
-      expect(achievementById('tower_of_babel')!.title, 'tower of babel');
+      expect(achievementById('completionist')!.title, 'tower of babel');
     });
 
     test(
@@ -273,15 +273,15 @@ void main() {
         finish(s, l);
         s.recordGame(won(l));
       }
-      expect(s.achOf('en')['tower_of_babel']?.times ?? 0, 0);
+      expect(s.achOf('en')['completionist']?.times ?? 0, 0);
       finish(s, langs.last);
       final earned = s.recordGame(won(langs.last));
-      expect(earned.map((a) => a.id), contains('tower_of_babel'));
-      expect(s.achOf('en')['tower_of_babel']!.times, 1);
+      expect(earned.map((a) => a.id), contains('completionist'));
+      expect(s.achOf('en')['completionist']!.times, 1);
       expect(s.achOf('en')[completionistId]!.seen, langs.toSet());
       // once
       final more = s.recordGame(won(langs.last));
-      expect(more.map((a) => a.id), isNot(contains('tower_of_babel')));
+      expect(more.map((a) => a.id), isNot(contains('completionist')));
     });
   });
 }

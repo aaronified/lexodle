@@ -8,7 +8,7 @@ import 'store.dart';
 import 'ui.dart';
 import 'words.dart';
 
-int achievementCount() => achievements.length;
+int achievementCount() => levelCount;
 
 /// The achievements. Each language has its own (except the few that count
 /// languages, and the mastery badges), so the page is about one language at a
@@ -82,6 +82,24 @@ class _AchievementsPageState extends State<AchievementsPage> {
     return out;
   }
 
+  /// The medal of the highest level earned of [a], or null for none.
+  Medal? _topMedal(Map<String, AchState> mine, Achievement a) {
+    final n = (mine[a.id]?.times ?? 0).clamp(0, a.count);
+    return n == 0 ? null : a.levels[n - 1].medal;
+  }
+
+  /// How many levels of medal [m] (every medal when null) are earned.
+  int _earnedAt(Map<String, AchState> mine, Medal? m) {
+    var n = 0;
+    for (final a in achievements) {
+      final t = (mine[a.id]?.times ?? 0).clamp(0, a.count);
+      for (var i = 0; i < t; i++) {
+        if (m == null || a.levels[i].medal == m) n++;
+      }
+    }
+    return n;
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
@@ -110,8 +128,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
                   ),
                   const SizedBox(height: 12),
                   Caption(
-                    '${achievements.where((a) => (mine[a.id]?.times ?? 0) > 0).length} of '
-                    '${achievements.length} earned '
+                    '${achievements.fold(0, (n, a) => n + (mine[a.id]?.times ?? 0))} of '
+                    '$levelCount levels earned '
                     '${all ? 'in any language' : 'in $_lang'}',
                   ),
                   const SizedBox(height: 16),
@@ -131,15 +149,13 @@ class _AchievementsPageState extends State<AchievementsPage> {
                       for (final m in [null, ...Medal.values])
                         _MedalPill(
                           m,
-                          earned: achievements
+                          earned: _earnedAt(mine, m),
+                          total: achievements
                               .where(
                                 (a) =>
-                                    (m == null || a.medal == m) &&
-                                    (mine[a.id]?.times ?? 0) > 0,
+                                    m == null ||
+                                    a.levels.any((l) => l.medal == m),
                               )
-                              .length,
-                          total: achievements
-                              .where((a) => m == null || a.medal == m)
                               .length,
                           on: _medal == m,
                           onTap: () => setState(() => _medal = m),
@@ -148,7 +164,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                   ),
                   const SizedBox(height: 12),
                   for (final a in achievements.where(
-                    (a) => _medal == null || a.medal == _medal,
+                    (a) => _medal == null || _topMedal(mine, a) == _medal,
                   )) ...[
                     const Divider(),
                     _Row(
@@ -188,8 +204,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
   }
 }
 
-/// One achievement: its glyph, what it asks for, how often it has been earned
-/// and, for numbered ones, a bar showing progress towards the next time.
+/// One achievement: its glyph in the medal of the highest level earned, what
+/// the next level asks for, a pip for each level, and a bar towards the next. A
+/// streak shows an icon for each of its levels instead.
 class _Row extends StatelessWidget {
   const _Row(
     this.a,
@@ -216,12 +233,201 @@ class _Row extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final earned = st.times > 0;
-    final medal = medalColor(c, a.medal);
-    // the families that count mastered languages open the list of them
-    final tap = a.metric == 'mastered'
-        ? () => Navigator.pushNamed(context, Routes.mastery)
-        : null;
+    final done = st.times.clamp(0, a.count);
+    final complete = done >= a.count;
+    // what it asks next (or, once complete, its top level)
+    final next = a.atLevel(complete ? a.count - 1 : done);
+    final top = done == 0 ? null : a.atLevel(done - 1);
+    final medal = medalColor(c, next.medal);
+    final earnedColor = top == null ? null : medalColor(c, top.medal);
+    final ghost = c.onSurface.withValues(alpha: .22);
+    // a tap lists every level: its name, what it asks, and when it was earned
+    void tap() => showHairlineDialog<void>(
+      context,
+      title: a.family,
+      children: [
+        for (var i = 0; i < a.count; i++)
+          Padding(
+            key: ValueKey('detail-${a.id}-$i'),
+            padding: const EdgeInsets.only(bottom: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TablerIcon(
+                  a.atLevel(i).icon,
+                  size: 32,
+                  color: i < done ? medalColor(c, a.levels[i].medal) : ghost,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              a.levels[i].name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            a.levels[i].medal.name,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: medalColor(c, a.levels[i].medal),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        a.atLevel(i).description,
+                        style: const TextStyle(fontSize: 12, height: 1.4),
+                      ),
+                      if (i < done && i < st.dates.length) Caption(st.dates[i]),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (a.metric == 'mastered')
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, Routes.mastery);
+            },
+            child: const Text('language by language'),
+          ),
+      ],
+    );
+    final target = a.targetAt(next.level, languages: languages);
+
+    Widget pips() => Row(
+      key: ValueKey('levels-${a.id}'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < a.count; i++)
+          Container(
+            key: ValueKey('level-${a.id}-$i'),
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(right: 4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: i < done ? medalColor(c, a.levels[i].medal) : null,
+              border: Border.all(color: i < done ? Colors.transparent : ghost),
+            ),
+          ),
+      ],
+    );
+
+    final glyph = a.separate
+        ? Row(
+            key: ValueKey('streak-icons-${a.id}'),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < a.count; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: Column(
+                    children: [
+                      TablerIcon(
+                        a.atLevel(i).icon,
+                        key: ValueKey('streak-icon-${a.id}-$i'),
+                        size: 34,
+                        color: i < done
+                            ? medalColor(c, a.levels[i].medal)
+                            : ghost,
+                      ),
+                      Text(
+                        '${a.levels[i].target}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: c.onSurface.withValues(alpha: dimAlpha),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          )
+        : TablerIcon(a.icon, size: 44, color: earnedColor ?? ghost);
+
+    final text = Opacity(
+      opacity: done > 0 ? 1 : .55,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  // the name changes as the levels are reached
+                  (top ?? next).title,
+                  key: ValueKey('name-${a.id}'),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                next.medal.name,
+                key: ValueKey('medal-${a.id}'),
+                style: TextStyle(fontSize: 11, color: medal),
+              ),
+              if (a.tag != null) ...[
+                const SizedBox(width: 6),
+                TablerIcon(
+                  a.tag == GameMode.quartet ? 'layout-grid' : 'chess-knight',
+                  size: 13,
+                  color: c.onSurface.withValues(alpha: dimAlpha),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(next.description, style: const TextStyle(fontSize: 12)),
+          if (!a.separate) ...[const SizedBox(height: 6), pips()],
+          if (badges.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Wrap(
+              key: ValueKey('badges-${a.id}'),
+              spacing: 3,
+              runSpacing: 3,
+              children: [
+                for (final code in badges)
+                  Opacity(
+                    key: ValueKey('badge-${a.id}-$code'),
+                    opacity: dimmed.contains(code) ? .3 : 1,
+                    child: languageBadge(code, size: 11),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+
+    final right = done == 0
+        ? null
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '$done/${a.count}',
+                key: ValueKey('count-${a.id}'),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: earnedColor,
+                ),
+              ),
+              Caption(st.latest ?? ''),
+            ],
+          );
+
     return InkWell(
       key: ValueKey('${a.id}-row'),
       onTap: tap,
@@ -230,97 +436,31 @@ class _Row extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                // earned: in its medal's colour; not yet: a faint ghost
-                TablerIcon(
-                  a.icon,
-                  size: 44,
-                  color: earned ? medal : c.onSurface.withValues(alpha: .22),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Opacity(
-                    opacity: earned ? 1 : .55,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                a.title,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              a.medal.name,
-                              key: ValueKey('medal-${a.id}'),
-                              style: TextStyle(fontSize: 11, color: medal),
-                            ),
-                            if (a.tag != null) ...[
-                              const SizedBox(width: 6),
-                              TablerIcon(
-                                a.tag == GameMode.quartet
-                                    ? 'layout-grid'
-                                    : 'chess-knight',
-                                size: 13,
-                                color: c.onSurface.withValues(alpha: dimAlpha),
-                              ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          a.description,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        if (badges.isNotEmpty) ...[
-                          const SizedBox(height: 5),
-                          Wrap(
-                            key: ValueKey('badges-${a.id}'),
-                            spacing: 3,
-                            runSpacing: 3,
-                            children: [
-                              for (final code in badges)
-                                Opacity(
-                                  key: ValueKey('badge-${a.id}-$code'),
-                                  opacity: dimmed.contains(code) ? .3 : 1,
-                                  child: languageBadge(code, size: 11),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                if (earned)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '×${st.times}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: medal,
-                        ),
-                      ),
-                      Caption(st.latest ?? ''),
-                    ],
-                  ),
-              ],
-            ),
-            if (a.numbered && showBar && !earned) ...[
+            if (a.separate) ...[
+              Row(
+                children: [
+                  Expanded(child: text),
+                  ?right,
+                ],
+              ),
+              const SizedBox(height: 10),
+              glyph,
+            ] else
+              Row(
+                children: [
+                  glyph,
+                  const SizedBox(width: 16),
+                  Expanded(child: text),
+                  ?right,
+                ],
+              ),
+            if (a.numbered && showBar && !complete) ...[
               const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.only(left: 60),
+                padding: EdgeInsets.only(left: a.separate ? 0 : 60),
                 child: _Bar(
                   progress: st.value.toInt(),
-                  target: _target(),
+                  target: target,
                   color: medal,
                 ),
               ),
@@ -330,10 +470,6 @@ class _Row extends StatelessWidget {
       ),
     );
   }
-
-  /// The target, with "every language" as the number of languages there are.
-  int _target() =>
-      languages > 0 && a.global && a.target > languages ? languages : a.target;
 }
 
 /// One medal's filter: its name and how many of its achievements are earned.

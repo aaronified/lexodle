@@ -32,10 +32,14 @@ AppState sample() {
     ..mastery = {
       'fr': {'5:6', '6:4'},
     };
-  s.ach['first_light'] = AchState(times: 1, dates: ['2026-10-01']);
-  s.ach['one_shot'] = AchState(times: 1, dates: ['2026-10-02']);
-  s.ach['wins_25'] = AchState(value: 4);
-  s.ach['mastery'] = AchState(times: 1, dates: ['2026-10-09'], seen: {'fr'});
+  s.ach['wins'] = AchState(times: 1, dates: ['2026-10-01']);
+  s.ach['quick'] = AchState(times: 1, dates: ['2026-10-02']);
+  s.ach['dailies'] = AchState(value: 4);
+  s.ach['mastery_badges'] = AchState(
+    times: 1,
+    dates: ['2026-10-09'],
+    seen: {'fr'},
+  );
   return s;
 }
 
@@ -82,10 +86,10 @@ void main() {
       );
       expect((m['stats'] as Map)['played'], 12);
       // the achievements that belong to no language, then each language's own
-      expect((m['achievements'] as Map).keys, contains('mastery'));
-      expect((m['achievements'] as Map).keys, isNot(contains('wins_25')));
+      expect((m['achievements'] as Map).keys, contains('mastery_badges'));
+      expect((m['achievements'] as Map).keys, isNot(contains('dailies')));
       final en = (m['languages'] as Map)[(m['settings'] as Map)['lang']] as Map;
-      expect((en['achievements'] as Map).keys, contains('wins_25'));
+      expect((en['achievements'] as Map).keys, contains('dailies'));
       expect(en.keys, containsAll(['playstyle', 'daily', 'achievements']));
     });
 
@@ -131,8 +135,8 @@ void main() {
       expect(fresh.settingsJson(), source.settingsJson());
       expect(fresh.stats.toJson(), source.stats.toJson());
       expect(fresh.unlockedCount, source.unlockedCount);
-      expect(fresh.ach['wins_25']!.value, 4);
-      expect(fresh.ach['mastery']!.seen, {'fr'});
+      expect(fresh.ach['dailies']!.value, 4);
+      expect(fresh.ach['mastery_badges']!.seen, {'fr'});
 
       // it was written to storage, so a restart finds it
       final again = AppState();
@@ -167,7 +171,7 @@ void main() {
     test('it replaces the achievements as well, not adds to them', () async {
       final s = AppState();
       await s.load();
-      s.ach['quick_3'] = AchState(times: 4, dates: ['x']);
+      s.ach['last_try'] = AchState(times: 4, dates: ['x']);
       final b = parseBackup(backupToText(sample()));
       s.restore(
         settings: b.settings,
@@ -175,7 +179,7 @@ void main() {
         ach: b.achievements,
         languages: b.languages,
       );
-      expect(s.ach.containsKey('quick_3'), isFalse);
+      expect(s.ach.containsKey('last_try'), isFalse);
     });
 
     test('listeners are told, so the screens follow', () async {
@@ -291,7 +295,7 @@ void main() {
         },
       ]) {
         final m = valid();
-        (m['achievements'] as Map)['one_shot'] = bad;
+        (m['achievements'] as Map)['quick'] = bad;
         expectRefused(text(m));
       }
       expectRefused(text(valid()..['achievements'] = []));
@@ -305,10 +309,10 @@ void main() {
       (en['achievements'] as Map)['from_the_past'] = {'times': 3};
       final b = parseBackup(text(m));
       expect(b.achievements.containsKey('from_the_future'), isFalse);
-      expect(b.achievements.containsKey('mastery'), isTrue);
+      expect(b.achievements.containsKey('mastery_badges'), isTrue);
       final kept = b.languages![code]!.achievements;
       expect(kept.containsKey('from_the_past'), isFalse);
-      expect(kept.containsKey('wins_25'), isTrue);
+      expect(kept.containsKey('dailies'), isTrue);
     });
 
     test('a file with only some parts is accepted for those parts', () {
@@ -367,7 +371,7 @@ void main() {
           ..played = 3
           ..wins = 1,
         ach: {
-          'first_light': AchState(times: 1, dates: ['2026-09-01']),
+          'wins': AchState(times: 1, dates: ['2026-09-01']),
         },
       );
     });
@@ -392,10 +396,7 @@ void main() {
       expect(io.saved.single.$1, backupFileName(DateTime.now()));
       final b = parseBackup(utf8.decode(io.saved.single.$2));
       expect(b.stats.played, 3);
-      expect(
-        b.languages!['en']!.achievements.containsKey('first_light'),
-        isTrue,
-      );
+      expect(b.languages!['en']!.achievements.containsKey('wins'), isTrue);
       expect(b.settings['lang'], 'en');
       expect(find.text('backup saved'), findsOneWidget);
     });
@@ -456,7 +457,7 @@ void main() {
       expect(appState.lang, 'fr');
       expect(appState.mode, GameMode.relay);
       expect(appState.themeMode, ThemeMode.light);
-      expect(appState.ach['mastery']!.seen, {'fr'});
+      expect(appState.ach['mastery_badges']!.seen, {'fr'});
       expect(find.text('restored: 12 games, 2 achievements'), findsOneWidget);
       expect(byKey('backup-summary'), findsNothing);
       // the theme setting changed with it: the popup is now the light theme

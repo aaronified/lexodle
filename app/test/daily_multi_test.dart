@@ -16,30 +16,33 @@ void main() {
   });
 
   group('the daily quartet and relay race words', () {
-    test('four five-letter words that share no letter, from the common 3,000', () {
-      final common = bank.answers(dailyLength).take(dailyAnswers).toSet();
-      for (final mode in [GameMode.quartet, GameMode.relay]) {
-        for (var day = 0; day < 30; day++) {
-          final date = dailyShift('2026-11-01', day);
-          final d = DailyMulti.of(bank, mode, date)!;
-          expect(d.answers.length, 4, reason: '$mode $date');
-          expect(d.answers.toSet().length, 4);
-          for (final w in d.answers) {
-            expect(w.length, dailyLength);
-            expect(common, contains(w));
-          }
-          for (var i = 0; i < 4; i++) {
-            for (var j = i + 1; j < 4; j++) {
-              expect(
-                sharesLetter(d.answers[i], d.answers[j]),
-                isFalse,
-                reason: '${d.answers} $date',
-              );
+    test(
+      'four five-letter words that share no letter, from the common 3,000',
+      () {
+        final common = bank.answers(dailyLength).take(dailyAnswers).toSet();
+        for (final mode in [GameMode.quartet, GameMode.relay]) {
+          for (var day = 0; day < 30; day++) {
+            final date = dailyShift('2026-11-01', day);
+            final d = DailyMulti.of(bank, mode, date)!;
+            expect(d.answers.length, 4, reason: '$mode $date');
+            expect(d.answers.toSet().length, 4);
+            for (final w in d.answers) {
+              expect(w.length, dailyLength);
+              expect(common, contains(w));
+            }
+            for (var i = 0; i < 4; i++) {
+              for (var j = i + 1; j < 4; j++) {
+                expect(
+                  sharesLetter(d.answers[i], d.answers[j]),
+                  isFalse,
+                  reason: '${d.answers} $date',
+                );
+              }
             }
           }
         }
-      }
-    });
+      },
+    );
 
     test('the same for everyone, and each mode and day has its own', () {
       final a = DailyMulti.of(bank, GameMode.quartet, '2026-11-01')!;

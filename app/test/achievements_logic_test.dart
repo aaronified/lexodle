@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/medal.dart';
 import 'package:lexodle/difficulty.dart';
+import 'package:lexodle/history.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
@@ -82,44 +83,61 @@ void main() {
   });
 
   group('the list', () {
-    test('there are 97, each with a medal and a glyph that exists', () {
-      expect(achievements.length, 97);
-      expect(achievements.map((a) => a.id).toSet().length, 97);
-      for (final a in achievements) {
-        final f = File('assets/icons/${a.icon}.svg');
-        expect(f.existsSync(), isTrue, reason: '${a.id}: ${a.icon}.svg');
+    test(
+      'each achievement has levels, a glyph that exists, and a medal each',
+      () {
         expect(
-          f.readAsStringSync(),
-          contains('icons-tabler-filled'),
-          reason: '${a.id} must use a Tabler filled glyph',
+          achievements.map((a) => a.id).toSet().length,
+          achievements.length,
         );
-        expect(a.track, Track.metric, reason: a.id);
-      }
-    });
-
-    test('every medal has some, and a family climbs from bronze', () {
-      for (final m in Medal.values) {
-        expect(achievements.where((a) => a.medal == m), isNotEmpty);
-      }
-      final byMetric = <String, List<Achievement>>{};
-      for (final a in achievements) {
-        (byMetric[a.metric] ??= []).add(a);
-      }
-      for (final e in byMetric.entries) {
-        final rungs = [...e.value]
-          ..sort(
-            (x, y) => x.smaller
-                ? y.target.compareTo(x.target)
-                : x.target.compareTo(y.target),
-          );
-        for (var i = 1; i < rungs.length; i++) {
+        var levels = 0;
+        for (final a in achievements) {
+          expect(a.track, Track.metric, reason: a.id);
+          expect(a.count, 4, reason: a.id);
+          levels += a.count;
           expect(
-            rungs[i].medal.index,
-            greaterThanOrEqualTo(rungs[i - 1].medal.index),
-            reason: '${e.key}: ${rungs[i].id}',
+            a.levels.map((l) => l.medal).toList(),
+            Medal.values,
+            reason: '${a.id} climbs from bronze to platinum',
           );
+          for (final i in [for (var i = 0; i < a.count; i++) i]) {
+            final icon = a.atLevel(i).icon;
+            final f = File('assets/icons/$icon.svg');
+            expect(f.existsSync(), isTrue, reason: '${a.id}: $icon.svg');
+            expect(
+              f.readAsStringSync(),
+              contains('icons-tabler-filled'),
+              reason: '${a.id} must use a Tabler filled glyph',
+            );
+          }
         }
-      }
+        expect(levelCount, levels);
+      },
+    );
+
+    test(
+      'a level asks for more of the same: targets climb (fastest falls)',
+      () {
+        for (final a in achievements) {
+          for (var i = 1; i < a.count; i++) {
+            if (a.smaller) {
+              expect(a.levels[i].target, lessThan(a.levels[i - 1].target));
+            } else {
+              expect(a.levels[i].target, greaterThan(a.levels[i - 1].target));
+            }
+          }
+        }
+      },
+    );
+
+    test('only the streaks show a separate icon for each level', () {
+      expect(
+        achievements.where((a) => a.separate).map((a) => a.metric).toList(),
+        ['streak', 'streakClassic', 'streakQuartet', 'streakRelay'],
+      );
+      final s = byId('daily_streak');
+      expect(s.atLevel(0).icon, isNot(s.atLevel(3).icon));
+      expect(byId('wins').atLevel(0).icon, byId('wins').atLevel(3).icon);
     });
 
     test('every metric an achievement reads is kept, or counts languages', () {
@@ -133,19 +151,45 @@ void main() {
       }
     });
 
+    test('a level says what it asks', () {
+      expect(byId('wins').atLevel(0).description, 'win a game');
+      expect(byId('wins').atLevel(2).description, 'win 100 games');
+      expect(byId('quick').atLevel(3).description, 'win on the first guess');
+      expect(byId('chameleon').atLevel(3).description, contains('all 6'));
+    });
+
     test('the ones about the quartet or the relay carry the mode', () {
-      expect(byId('dq_3').tag, GameMode.quartet);
-      expect(byId('relay_win').tag, GameMode.relay);
-      expect(byId('wins_25').tag, isNull);
+      expect(byId('quartet_streak').tag, GameMode.quartet);
+      expect(byId('relay_wins').tag, GameMode.relay);
+      expect(byId('wins').tag, isNull);
     });
   });
 
   group('counting', () {
-    test('first light is earned once only', () {
-      final (st, earned) = play([game(), game(), game()]);
-      expect(earned[0], contains('first_light'));
-      expect(earned[1], isNot(contains('first_light')));
-      expect(st['first_light']!.times, 1);
+    test('a game earns every level its number has reached, in order', () {
+      final (st, earned) = play([game(used: 1)]);
+      expect(
+        st['quick']!.times,
+        4,
+        reason: 'a win in one guess is every level',
+      );
+      expect(earned[0].where((id) => id == 'quick'), hasLength(4));
+      expect(st['wins']!.times, 1);
+      expect(st['quick']!.dates, hasLength(4));
+    });
+
+    test('the earned level is the one the toast shows', () {
+      final states = <String, AchState>{};
+      final e = advanceAchievements(states, game(used: 5), 'a');
+      expect(e.map((a) => a.id), contains('wins'));
+      expect(e.firstWhere((a) => a.id == 'wins').medal, Medal.bronze);
+      final more = [
+        for (var i = 0; i < 24; i++)
+          ...advanceAchievements(states, game(used: 5), 'b$i'),
+      ];
+      final silver = more.firstWhere((a) => a.id == 'wins');
+      expect(silver.medal, Medal.silver);
+      expect(silver.description, 'win 25 games');
     });
 
     test('wins and games played climb the medals', () {
@@ -153,38 +197,24 @@ void main() {
         for (var i = 0; i < 25; i++) game(),
         for (var i = 0; i < 4; i++) game(won: false),
       ]);
-      expect(earned[24], contains('wins_25'));
-      expect(st['wins_25']!.times, 1);
-      expect(st['wins_25']!.value, 25);
-      expect(st['wins_100']!.value, 25);
-      expect(st['played_10']!.times, 1);
-      expect(st['played_50']!.times, 0);
-      expect(st['played_50']!.value, 29);
+      expect(earned[24], contains('wins'));
+      expect(st['wins']!.times, 2);
+      expect(st['wins']!.value, 25);
+      expect(st['played']!.times, 1);
+      expect(st['played']!.value, 29);
     });
 
-    test('a streak is the best run, and a loss starts the next one', () {
+    test('a win streak is the best run, and a loss starts the next one', () {
       final (st, _) = play([game(), game(), game(), game(won: false), game()]);
-      expect(st['streak_3']!.times, 1);
-      expect(st['streak_3']!.value, 3);
-      expect(st['streak_3']!.progress, 1);
-      expect(st['streak_7']!.times, 0);
+      expect(st['streak']!.times, 1);
+      expect(st['streak']!.value, 3);
+      expect(st['streak']!.progress, 1);
     });
 
-    test('the fastest win: the smaller the better, and a rung is earned', () {
-      final (st, earned) = play([game(used: 5), game(used: 3), game(used: 6)]);
-      expect(st['quick_4']!.times, 1);
-      expect(st['quick_3']!.times, 1);
-      expect(st['quick_2']!.times, 0);
-      expect(earned[1], containsAll(['quick_4', 'quick_3']));
-      expect(st['quick_3']!.value, 3);
-    });
-
-    test('a win that does it again is counted again, once earned', () {
-      final (st, _) = play([game(used: 1), game(used: 4), game(used: 1)]);
-      expect(st['one_shot']!.times, 2);
-      expect(st['one_shot']!.dates, ['day-0', 'day-2']);
-      expect(st['quick_4']!.times, 3, reason: 'a one shot is a win in 4 too');
-      expect(st['quick_3']!.times, 2);
+    test('the fastest win: the smaller the better', () {
+      final (st, _) = play([game(used: 5), game(used: 3), game(used: 6)]);
+      expect(st['quick']!.times, 2);
+      expect(st['quick']!.value, 3);
     });
 
     test('last try: a win on the very last of four or more tries', () {
@@ -193,8 +223,8 @@ void main() {
         game(used: 3, tries: 3),
         game(used: 6),
       ]);
-      expect(st['last_1']!.times, 2);
-      expect(st['last_10']!.value, 2);
+      expect(st['last_try']!.value, 2);
+      expect(st['last_try']!.times, 1);
     });
 
     test('skill: the best average, and the lowest guess, of a win', () {
@@ -202,33 +232,20 @@ void main() {
         game(skills: [91, 95, 100]),
         game(skills: [50, 99, 99], won: false),
       ]);
-      expect(st['skillavg_90']!.times, 1);
-      expect(st['skillavg_95']!.times, 1);
-      expect(st['every_75']!.times, 1);
-      expect(st['every_90']!.times, 1);
-      expect(st['every_90']!.value, 91, reason: 'the lost game does not count');
+      expect(st['skill_avg']!.times, 4, reason: '95.3 reaches 95');
+      expect(st['skill_every']!.times, 3, reason: '91 is above 60, 75, 90');
+      expect(st['skill_every']!.value, 91);
     });
 
-    test(
-      'above means above: a lowest guess of exactly 60 is not a no slip',
-      () {
-        final (st, _) = play([
-          game(skills: [60, 80, 90]),
-        ]);
-        expect(st['every_60']!.times, 0);
-        final (st2, _) = play([
-          game(skills: [61, 80, 90]),
-        ]);
-        expect(st2['every_60']!.times, 1);
-      },
-    );
-
-    test('skill issue: ten wins with every guess above 95', () {
-      final (st, earned) = play([
-        for (var i = 0; i < 10; i++) game(skills: [96, 97, 99]),
+    test('above means above: a lowest guess of exactly 60 is not a level', () {
+      final (st, _) = play([
+        game(skills: [60, 80, 90]),
       ]);
-      expect(earned[9], contains('skill_issue'));
-      expect(st['skill_issue']!.times, 1);
+      expect(st['skill_every']!.times, 0);
+      final (st2, _) = play([
+        game(skills: [61, 80, 90]),
+      ]);
+      expect(st2['skill_every']!.times, 1);
     });
 
     test('luck, risk and bits: the best a game had', () {
@@ -237,26 +254,20 @@ void main() {
         game(luck: 10, risk: 60, maxBits: 3),
         game(luck: 90, risk: 99, maxBits: 12.5, won: false),
       ]);
-      expect(st['luck_20']!.times, 1);
-      expect(st['luck_40']!.times, 1);
-      expect(st['luck_60']!.times, 0, reason: 'a lost game has no luck medal');
-      expect(st['risk_55']!.times, 1);
-      expect(st['risk_70']!.times, 0);
-      expect(st['bits_6']!.times, 1);
-      expect(st['bits_12']!.times, 1, reason: 'a lost game still gained bits');
+      expect(st['luck']!.times, 2);
+      expect(st['risk']!.times, 3);
+      expect(st['bits']!.times, 4, reason: 'a lost game still gained bits');
     });
 
-    test('lengths: distinct lengths won, and 4 and 8 on their own', () {
+    test('word lengths: distinct lengths won', () {
       final (st, _) = play([
         game(length: 4),
         game(length: 8),
         game(length: 8),
         game(length: 6, won: false),
       ]);
-      expect(st['brevity']!.times, 1);
-      expect(st['long_haul']!.times, 1);
-      expect(st['full_range']!.value, 2);
-      expect(st['full_range']!.times, 0);
+      expect(st['lengths']!.value, 2);
+      expect(st['lengths']!.times, 1);
     });
 
     test(
@@ -272,10 +283,10 @@ void main() {
         );
         expect(
           earned.map((a) => a.id),
-          containsAll(['bilingual', 'mastery_1']),
+          containsAll(['languages', 'language_mastery']),
         );
-        expect(states['polyglot_3']!.times, 0);
-        expect(states['polyglot_3']!.value, 2);
+        expect(states['languages']!.times, 1);
+        expect(states['languages']!.value, 2);
         earned = advanceAchievements(
           states,
           game(),
@@ -283,73 +294,65 @@ void main() {
           counts: {'langs': 17, 'mastered': 17, 'completed': 17},
           languages: 17,
         );
-        expect(
-          earned.map((a) => a.id),
-          containsAll(['polyglot_9', 'mastery_all', 'tower_of_babel']),
-        );
+        expect(states['languages']!.times, 4);
+        expect(states['language_mastery']!.times, 4);
+        expect(states['completionist']!.times, 4);
       },
     );
 
-    test('the playstyles: rated once each, a change, and all six', () {
+    test('playstyles: rated one, a change, all six, in one achievement', () {
+      GameResult styled(String style, int held, {bool changed = false}) =>
+          GameResult(
+            lang: 'en',
+            length: 5,
+            tries: 6,
+            used: 4,
+            won: true,
+            style: style,
+            styleChanged: changed,
+            stylesHeld: held,
+          );
       final (st, _) = play([
-        GameResult(
-          lang: 'en',
-          length: 5,
-          tries: 6,
-          used: 4,
-          won: true,
-          style: 'analyst',
-          stylesHeld: 1,
-        ),
-        GameResult(
-          lang: 'en',
-          length: 5,
-          tries: 6,
-          used: 4,
-          won: true,
-          style: 'maverick',
-          styleChanged: true,
-          stylesHeld: 2,
-        ),
+        styled('analyst', 1),
+        styled('maverick', 2, changed: true),
       ]);
-      expect(st['style_analyst']!.times, 1);
-      expect(st['style_maverick']!.times, 1);
-      expect(st['style_gambler']!.times, 0);
-      expect(st['chameleon']!.times, 1);
-      expect(st['many_hats']!.value, 2);
-      expect(st['many_hats']!.times, 0);
+      expect(st['chameleon']!.times, 2);
+      expect(st['chameleon']!.value, 2);
+      final (all, _) = play([styled('gambler', 6)]);
+      expect(all['chameleon']!.times, 4);
+      expect(byId('chameleon').levels[3].medal, Medal.platinum);
     });
   });
 
   group('daily', () {
-    test('a daily is counted, and double fires by their own ladder', () {
+    test('a daily is counted, and double fires climb their own ladder', () {
       final (st, _) = play([
         game(daily: true, dailyStreak: 1, used: 2),
         game(daily: true, dailyStreak: 2, used: 4, skills: [70, 70, 70, 70]),
         game(daily: false),
       ]);
-      expect(st['dailies_5']!.value, 2);
-      expect(st['double_1']!.times, 1);
-      expect(st['double_10']!.value, 1);
+      expect(st['dailies']!.value, 2);
+      expect(st['double_fire']!.times, 1);
+      expect(st['double_fire']!.value, 1);
     });
 
-    test('each mode has its own streak ladder', () {
+    test('each mode has its own streak', () {
       final (st, earned) = play([
         game(daily: true, dailyStreak: 3),
         multi(GameMode.quartet, daily: true, dailyStreak: 1),
         multi(GameMode.relay, daily: true, dailyStreak: 4),
       ]);
-      expect(earned[0], contains('daily_3'));
-      expect(st['dq_3']!.times, 0, reason: 'the quartet streak is 1');
-      expect(st['dr_3']!.times, 1);
-      expect(st['dr_3']!.value, 4);
-      expect(st['daily_3']!.value, 3);
+      expect(earned[0], contains('daily_streak'));
+      expect(st['quartet_streak']!.times, 0, reason: 'the quartet streak is 1');
+      expect(st['relay_streak']!.times, 1);
+      expect(st['relay_streak']!.value, 4);
+      expect(st['daily_streak']!.value, 3);
     });
 
     test('a classic game does not touch a quartet streak', () {
       final (st, _) = play([game(daily: true, dailyStreak: 50)]);
-      expect(st['dq_3']!.value, 0);
-      expect(st['dr_3']!.value, 0);
+      expect(st['quartet_streak']!.value, 0);
+      expect(st['relay_streak']!.value, 0);
     });
   });
 
@@ -360,11 +363,10 @@ void main() {
         multi(GameMode.quartet),
         multi(GameMode.relay, freeRides: 1),
       ]);
-      expect(st['quartet_win']!.times, 1);
-      expect(st['relay_win']!.times, 1);
+      expect(st['quartet_wins']!.times, 1);
+      expect(st['relay_wins']!.times, 1);
       expect(st['relay_free']!.times, 1);
-      expect(st['quartet_10']!.value, 1);
-      expect(st['relay_10']!.value, 1);
+      expect(st['quartet_wins']!.value, 1);
     });
 
     test('quartet: spare tries, last try and sharp skill', () {
@@ -374,7 +376,11 @@ void main() {
       ]);
       expect(st['quartet_last']!.times, 1);
       expect(st['quartet_spare']!.times, 1);
-      expect(st['quartet_sharp']!.times, 1);
+      expect(
+        st['quartet_skill']!.times,
+        2,
+        reason: '85 is above 70 and 80, not above 85',
+      );
     });
 
     test('relay race: photo finish', () {
@@ -385,11 +391,89 @@ void main() {
     test('luckiest man alive: one guess per word, in either mode', () {
       for (final mode in [GameMode.quartet, GameMode.relay]) {
         final (st, earned) = play([multi(mode, used: 4)]);
-        expect(earned[0], contains('luckiest'), reason: mode.name);
-        expect(st['luckiest']!.times, 1);
+        expect(earned[0], contains('one_each'), reason: mode.name);
+        expect(st['one_each']!.times, 1);
       }
       final (st, _) = play([multi(GameMode.quartet, used: 5)]);
-      expect(st['luckiest']!.times, 0);
+      expect(st['one_each']!.times, 0);
+    });
+  });
+
+  group('worked out again from the games kept', () {
+    void add(
+      History h,
+      int day, {
+      bool won = true,
+      int guesses = 3,
+      String daily = '',
+    }) => h.add(
+      at: DateTime.utc(2026, 10, day, 12).millisecondsSinceEpoch,
+      lang: 'en',
+      mode: GameMode.classic,
+      length: 5,
+      tries: 6,
+      pool: 3000,
+      answers: const ['slate'],
+      won: won,
+      daily: daily,
+      guesses: [
+        for (var i = 0; i < guesses; i++)
+          GuessRow(
+            game: 0,
+            n: i,
+            word: 'crane',
+            skill: 90,
+            luck: 10,
+            before: 50,
+            gain: 7,
+          ),
+      ],
+    );
+
+    test('once, when the flag is missing, from the games kept', () async {
+      SharedPreferences.setMockInitialValues({});
+      final a = AppState();
+      await a.load();
+      for (var d = 1; d <= 3; d++) {
+        add(a.history, d, daily: '2026-10-0$d');
+      }
+      add(a.history, 4, won: false, guesses: 6);
+      a.rebuildAchievements();
+      expect(a.ach['wins']!.times, 1);
+      expect(a.ach['wins']!.value, 3);
+      expect(a.ach['played']!.value, 4);
+      expect(a.ach['quick']!.value, 3);
+      expect(
+        a.ach['quick']!.times,
+        2,
+        reason: '3 guesses: 4 or fewer, 3 or fewer',
+      );
+      expect(a.ach['bits']!.times, 1, reason: '7 bits: 6 or more, not 8');
+      expect(a.ach['daily_streak']!.value, 3);
+      expect(a.ach['daily_streak']!.times, 1);
+      expect(a.ach['wins']!.dates, ['2026-10-01']);
+    });
+
+    test('the flag is kept, and a start without it works them out', () async {
+      SharedPreferences.setMockInitialValues({});
+      final a = AppState();
+      await a.load();
+      add(a.history, 1);
+      a.saveHistory();
+      a.ach = {'wins': AchState(times: 4, value: 999)};
+      // flagged: left as they are
+      final b = AppState();
+      await b.load();
+      expect(b.history.games, hasLength(1));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt('achievementsVersion'), AppState.achievementsVersion);
+      // without the flag: worked out again
+      await prefs.remove('achievementsVersion');
+      final c = AppState();
+      await c.load();
+      expect(c.ach['wins']!.value, 1);
+      expect(c.ach['wins']!.times, 1);
+      expect(prefs.getInt('achievementsVersion'), AppState.achievementsVersion);
     });
   });
 
@@ -403,23 +487,11 @@ void main() {
       }
       final b = AppState();
       await b.load();
-      expect(b.ach['one_shot']!.times, 3);
-      expect(b.ach['one_shot']!.dates, hasLength(3));
-      expect(b.ach['wins_25']!.value, 3);
+      expect(b.ach['quick']!.times, 4);
+      expect(b.ach['quick']!.dates, hasLength(4));
+      expect(b.ach['wins']!.value, 3);
       expect(b.stats.wins, 3);
       expect(b.unlockedCount, a.unlockedCount);
-    });
-
-    test('achievements saved by the earlier version are kept', () async {
-      SharedPreferences.setMockInitialValues({
-        'unlocked': '{"first_light":"2026-10-01","one_shot":"2026-10-02"}',
-      });
-      final a = AppState();
-      await a.load();
-      expect(a.ach['first_light']!.times, 1);
-      expect(a.ach['first_light']!.dates, ['2026-10-01']);
-      expect(a.ach['one_shot']!.latest, '2026-10-02');
-      expect(a.unlockedCount, 2);
     });
   });
 
@@ -427,12 +499,12 @@ void main() {
     test('a badge per language, collected and kept', () {
       final states = <String, AchState>{};
       var earned = advanceAchievements(states, game(), 'd1', mastered: {'en'});
-      expect([for (final a in earned) a.id], contains('mastery'));
-      expect(states['mastery']!.seen, {'en'});
-      expect(states['mastery']!.times, 1);
+      expect([for (final a in earned) a.id], contains('mastery_badges'));
+      expect(states['mastery_badges']!.seen, {'en'});
+      expect(states['mastery_badges']!.times, 1);
       // nothing new, nothing earned
       earned = advanceAchievements(states, game(), 'd2', mastered: {'en'});
-      expect([for (final a in earned) a.id], isNot(contains('mastery')));
+      expect([for (final a in earned) a.id], isNot(contains('mastery_badges')));
       // a second language is a second badge
       earned = advanceAchievements(
         states,
@@ -440,13 +512,13 @@ void main() {
         'd3',
         mastered: {'en', 'fr'},
       );
-      expect([for (final a in earned) a.id], contains('mastery'));
-      expect(states['mastery']!.seen, {'en', 'fr'});
-      expect(states['mastery']!.times, 2);
-      expect(states['mastery']!.dates, ['d1', 'd3']);
+      expect([for (final a in earned) a.id], contains('mastery_badges'));
+      expect(states['mastery_badges']!.seen, {'en', 'fr'});
+      expect(states['mastery_badges']!.times, 2);
+      expect(states['mastery_badges']!.dates, ['d1', 'd3']);
       // badges are never taken away
       advanceAchievements(states, game(), 'd4', mastered: const {});
-      expect(states['mastery']!.seen, {'en', 'fr'});
+      expect(states['mastery_badges']!.seen, {'en', 'fr'});
     });
 
     test(
@@ -529,10 +601,10 @@ void main() {
           won: true,
         ),
       );
-      expect([for (final a in earned) a.id], contains('mastery'));
+      expect([for (final a in earned) a.id], contains('mastery_badges'));
       expect(state.masteredLanguages().map((l) => l.code), ['en']);
       expect(state.lastMastered.map((l) => l.code), ['en']);
-      expect(state.ach['mastery']!.seen, {'en'});
+      expect(state.ach['mastery_badges']!.seen, {'en'});
     });
   });
 }

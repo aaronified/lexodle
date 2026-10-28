@@ -231,7 +231,15 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
         ),
         const SizedBox(height: 6),
         // what the tapped style is, in the card, so it fits any width
-        if (_picked case final s?) ...[
+        if (_picked case final s?
+            when !(s.id == p?.id || appState.stylesHeldOf(lang).contains(s.id)))
+          // a style not unlocked yet stays hidden: no name, no description
+          Text(
+            'a playstyle you have not been yet. it shows once you are rated it.',
+            key: const ValueKey('style-detail'),
+            style: const TextStyle(fontSize: 12, height: 1.4),
+          )
+        else if (_picked case final s?) ...[
           Text(
             '${s.name}: ${s.blurb}'
             '${s.id == p?.id
@@ -431,7 +439,7 @@ class _StyleDot extends StatelessWidget {
     return Semantics(
       button: true,
       selected: picked,
-      label: '${style.name}${held ? '' : ', not yet'}',
+      label: held || current ? style.name : 'locked playstyle',
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
@@ -452,16 +460,23 @@ class _StyleDot extends StatelessWidget {
           ),
           child: Column(
             children: [
-              TablerIcon(
-                style.icon,
-                size: 24,
-                color: held ? c.primary : c.outlineVariant,
-              ),
+              if (held || current)
+                TablerIcon(style.icon, size: 24, color: c.primary)
+              else
+                SizedBox(
+                  height: 24,
+                  child: Center(
+                    child: Text(
+                      '?',
+                      style: TextStyle(fontSize: 18, color: c.outlineVariant),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 2),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  style.name,
+                  held || current ? style.name : '???',
                   maxLines: 1,
                   style: TextStyle(
                     fontSize: 9,

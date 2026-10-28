@@ -172,7 +172,7 @@ const maverick = Playstyle(
 const detective = Playstyle(
   'detective',
   'detective',
-  'compass',
+  'zoom-question',
   Behaviour.eliminator,
   Behaviour.prober,
   'clears letters first, then splits the last candidates before committing',
@@ -180,7 +180,7 @@ const detective = Playstyle(
 const sweeper = Playstyle(
   'sweeper',
   'sweeper',
-  'feather',
+  'trash-x',
   Behaviour.eliminator,
   Behaviour.closer,
   'clears letters first, then goes straight for the word',

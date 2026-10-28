@@ -292,12 +292,14 @@ void main() {
   group('the achievements', () {
     Achievement byId(String id) => achievements.firstWhere((a) => a.id == id);
 
-    test('there is a classic streak ladder, each rung earned once', () {
-      final ladder = achievements
-          .where((a) => a.metric == 'streakClassic')
-          .map((a) => a.target)
-          .toList();
-      expect(ladder, [3, 14, 60, 365]);
+    test('there is a classic streak ladder, each level earned once', () {
+      expect(byId('daily_streak').levels.map((l) => l.target), [
+        3,
+        14,
+        60,
+        365,
+      ]);
+      expect(byId('daily_streak').separate, isTrue);
       final states = <String, AchState>{};
       final earned = <String>[];
       for (var day = 1; day <= 15; day++) {
@@ -310,11 +312,9 @@ void main() {
             a.id,
         ]);
       }
-      expect(earned.where((id) => id == 'daily_3'), hasLength(1));
-      expect(earned, contains('daily_14'));
-      expect(earned, isNot(contains('daily_60')));
-      expect(states['daily_14']!.value, 15);
-      expect(states['daily_3']!.times, 1);
+      expect(earned.where((id) => id == 'daily_streak'), hasLength(2));
+      expect(states['daily_streak']!.times, 2);
+      expect(states['daily_streak']!.value, 15);
     });
 
     test('a streak earned once is not earned again', () {
@@ -323,10 +323,10 @@ void main() {
       advanceAchievements(states, dailyResult(streak: 4), 'b');
       // a miss and a fresh run to 3
       advanceAchievements(states, dailyResult(won: false, streak: 0), 'c');
-      expect(states['daily_3']!.value, 4, reason: 'the best is kept');
+      expect(states['daily_streak']!.value, 4, reason: 'the best is kept');
       final again = advanceAchievements(states, dailyResult(streak: 3), 'd');
-      expect(again.map((a) => a.id), isNot(contains('daily_3')));
-      expect(states['daily_3']!.times, 1);
+      expect(again.map((a) => a.id), isNot(contains('daily_streak')));
+      expect(states['daily_streak']!.times, 1);
     });
 
     test('an ordinary game does not touch the daily streak', () {
@@ -342,9 +342,9 @@ void main() {
         dailyStreak: 50,
       );
       final earned = advanceAchievements(states, plain, 'x');
-      expect(earned.map((a) => a.id), isNot(contains('daily_14')));
-      expect(states['daily_3']?.value ?? 0, 0);
-      expect(earned.map((a) => a.id), isNot(contains('double_1')));
+      expect(earned.map((a) => a.id), isNot(contains('daily_streak')));
+      expect(states['daily_streak']?.value ?? 0, 0);
+      expect(earned.map((a) => a.id), isNot(contains('double_fire')));
     });
 
     test('a double fire is earned by a daily, and counted up the ladder', () {
@@ -354,19 +354,19 @@ void main() {
         dailyResult(used: 2, streak: 1),
         'a',
       );
-      expect(first.map((a) => a.id), contains('double_1'));
-      expect(byId('double_10').numbered, isTrue);
+      expect(first.map((a) => a.id), contains('double_fire'));
+      expect(byId('double_fire').numbered, isTrue);
       for (var i = 0; i < 9; i++) {
         advanceAchievements(states, dailyResult(used: 2, streak: 2), 'b$i');
       }
-      expect(states['double_10']!.times, 1);
+      expect(states['double_fire']!.times, 2);
       final plain = advanceAchievements(
         states,
         dailyResult(used: 5, streak: 3),
         'c',
       );
-      expect(plain.map((a) => a.id), isNot(contains('double_50')));
-      expect(states['double_10']!.value, 10);
+      expect(plain.map((a) => a.id), isNot(contains('double_fire')));
+      expect(states['double_fire']!.value, 10);
     });
   });
 
