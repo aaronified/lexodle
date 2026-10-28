@@ -83,8 +83,8 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .seg i.past { background: var(--bar); } .seg i.cur { background: var(--primary); }
 .modal > * { flex-shrink: 0; }
 table.st { font-size: 12px; } table.st td { padding: 6px 3px; line-height: 1.25; } table.st th { padding: 4px 3px; } table.st td .tile { width: 15px; height: 15px; font-size: 9px; } table.st td .tiles { gap: 1px; }
-.sb { width: 30px; height: 30px; border: 1px solid var(--outlinev); border-radius: 3px; background: transparent; color: var(--primary); font-size: 18px; display: inline-grid; place-items: center; cursor: pointer; padding: 0; }
-.sb:hover { border-color: var(--primary); }
+.sb { border: 0; background: transparent; color: var(--primary); font-size: 16px; line-height: 1; padding: 0; margin: 0; cursor: pointer; display: inline-block; vertical-align: middle; width: 16px; height: 16px; }
+.sb:hover { color: var(--fg); }
 </style>
 <main>
   <header style="display:flex;flex-direction:column;gap:12px">
@@ -267,13 +267,12 @@ function behaviourPopup(g) {
   $('allstyles').addEventListener('click', () => { closeLayer(); $('samples').click(); });
 }
 function table(list, upto, nav) {
-  const head = '<div class="wrap"><table class="st"><thead><tr><th>guess</th><th>words</th><th><span class="bits">bits</span> (<span class="skill">skill</span>, <span class="luck">luck</span>, <span class="risk">risk</span>)</th><th>style</th></tr></thead><tbody>';
+  const head = '<div class="wrap"><table class="st"><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk</th><th class="luck">luck</th><th class="bits">bits</th><th>type</th></tr></thead><tbody>';
   const rows = (nav ? list : list.slice(0, upto + 1)).map((g, i) => {
     const seen = i <= upto && !g.unscored, dim = '<span class="dim">·</span>';
     const counted = i <= upto && !g.unscored && g.label && g.label !== 'none';
-    const cell = seen ? '<b class="bits">' + f2(g.gain) + '</b> (<span class="skill">' + f0(g.skill) + '</span>, <span class="luck">' + pc(g.luck) + '</span>, <span class="risk">' + f0(g.risk) + '</span>)' : dim;
-    const style = counted ? '<button class="sb" type="button" data-b="' + i + '" title="' + g.label + '" aria-label="' + g.label + '">' + ic(BEHAV[g.label].icon) + '</button>' : dim;
-    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (i <= upto ? N(g.n) : dim) + '</td><td>' + cell + '</td><td>' + style + '</td></tr>';
+    const type = counted ? '<button class="sb" type="button" data-b="' + i + '" title="' + g.label + '" aria-label="' + g.label + '">' + ic(BEHAV[g.label].icon) + '</button>' : dim;
+    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (i <= upto ? N(g.n) : dim) + '</td><td class="skill">' + (seen ? f0(g.skill) : dim) + '</td><td class="risk">' + (seen ? f0(g.risk) : dim) + '</td><td class="luck">' + (seen ? pc(g.luck) : dim) + '</td><td class="bits">' + (seen ? f2(g.gain) : dim) + '</td><td>' + type + '</td></tr>';
   }).join('');
   return head + rows + '</tbody></table></div>';
 }
