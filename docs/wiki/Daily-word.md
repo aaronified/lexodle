@@ -27,3 +27,13 @@ cannot reroll it, and it is played once a day.
   yet does not break it; a day missed does. The home page shows it as a fire with the week
   (Monday first) and the language's flag. A **double fire** is a daily solved in three guesses or
   fewer, or with every guess at 80 skill or more.
+
+## Sharing a puzzle
+
+The link button in the corner of a daily (any mode) copies a link to that day's puzzle:
+`https://aaronified.github.io/lexodle/#/puzzle?l=en&m=quartet&d=2026-10-28` (language, mode and day).
+Whoever opens it in a browser plays the same words, in that language and mode, with only the colours
+and the tries left, as **practice**: it is never saved or counted (no streak, calendar, history,
+statistics or achievements), and the answer is not in the link. A day that has not come yet, or a
+language or mode the app does not know, opens the home page instead. The link opens the web app; it
+does not open the Android app by itself.

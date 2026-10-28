@@ -5,12 +5,14 @@ import 'package:flutter/services.dart';
 
 import 'background.dart';
 import 'daily.dart';
+import 'modes.dart';
+import 'puzzle.dart';
+import 'share_puzzle.dart';
 import 'guess_input.dart';
 import 'haptics.dart';
 import 'history.dart';
 import 'keyboard.dart';
 import 'logic.dart';
-import 'modes.dart';
 import 'review.dart';
 import 'routes.dart';
 import 'main.dart';
@@ -21,7 +23,13 @@ import 'word_info.dart';
 import 'words.dart';
 
 class GamePage extends StatefulWidget {
-  const GamePage({super.key, required this.bank, this.random, this.daily});
+  const GamePage({
+    super.key,
+    required this.bank,
+    this.random,
+    this.daily,
+    this.practice = false,
+  });
   final WordBank bank;
 
   /// Where the answer is drawn from; tests pass a seeded one.
@@ -30,6 +38,10 @@ class GamePage extends StatefulWidget {
   /// Set to play the daily word: its answer, and the fixed difficulty, instead
   /// of a random word at the chosen settings. Read once, when the game begins.
   final Daily? daily;
+
+  /// A daily opened by a link: played as practice, so nothing is saved or
+  /// counted (no streak, history, statistics or achievements).
+  final bool practice;
 
   @override
   State<GamePage> createState() => _GamePageState();
@@ -94,7 +106,7 @@ class _GamePageState extends State<GamePage> {
   /// counted when it ended.
   void _resume() {
     final d = _daily;
-    if (d == null) return;
+    if (d == null || widget.practice) return;
     final saved = appState.dailyFor(widget.bank.language.code, d.date);
     if (saved == null) return;
     for (final g in saved.guesses) {
@@ -265,7 +277,7 @@ class _GamePageState extends State<GamePage> {
       }
     }
     final d = _daily;
-    if (d != null && !restoring) {
+    if (d != null && !restoring && !widget.practice) {
       appState.saveDaily(
         widget.bank.language.code,
         d.date,
@@ -278,6 +290,8 @@ class _GamePageState extends State<GamePage> {
   /// The finished game counts towards the statistics and achievements. Skill
   /// is final only once every guess has been analysed, so that is waited for.
   void _finish() {
+    // practice is not counted
+    if (widget.practice) return;
     final epoch = _epoch;
     void record() {
       final d = _daily;
@@ -382,6 +396,16 @@ class _GamePageState extends State<GamePage> {
       onKeyEvent: _onKey,
       child: Scaffold(
         appBar: AppBar(
+          actions: [
+            if (_daily != null)
+              SharePuzzleButton(
+                Puzzle(
+                  widget.bank.language.code,
+                  GameMode.classic,
+                  _daily.date,
+                ),
+              ),
+          ],
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -393,7 +417,8 @@ class _GamePageState extends State<GamePage> {
                       ? '${widget.bank.language.name.toLowerCase()} · '
                             '$length · $tries tries'
                       : '${widget.bank.language.name.toLowerCase()} · '
-                            'daily · ${_daily.date}',
+                            '${widget.practice ? 'practice' : 'daily'} · '
+                            '${_daily.date}',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                 ),
@@ -650,8 +675,10 @@ class _GamePageState extends State<GamePage> {
             ),
             if (_daily != null)
               Caption(
-                'daily ${_daily.date} · streak ${appState.dailyStreak} · '
-                'the next word comes at midnight, your time',
+                widget.practice
+                    ? 'practice ${_daily.date} · not counted'
+                    : 'daily ${_daily.date} · streak ${appState.dailyStreak} · '
+                          'the next word comes at midnight, your time',
               ),
             // the answer, said as such (a win used to show it bare)
             if (won) Caption('the word was $answer'),
