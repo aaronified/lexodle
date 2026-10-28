@@ -15,6 +15,7 @@ import 'multi_solver.dart';
 import 'review.dart';
 import 'game_modes_dialog.dart';
 import 'playstyle_card.dart';
+import 'puzzle.dart';
 import 'settings_page.dart';
 import 'solver.dart';
 import 'ui.dart';
@@ -33,6 +34,7 @@ class Routes {
   static const home = '/';
   static const play = '/play';
   static const daily = '/daily';
+  static const puzzle = '/puzzle';
   static const history = '/history';
   static const review = '/play/review';
   static const solver = '/solver';
@@ -90,6 +92,12 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           },
         ),
       );
+    case Routes.puzzle:
+      // a daily puzzle named by a link: played as practice
+      final puzzle = Puzzle.parse(Uri.tryParse(settings.name ?? '') ?? Uri());
+      return page(
+        puzzle == null ? const HomePage() : PuzzleGate(puzzle: puzzle),
+      );
     case Routes.history:
       return page(const HistoryPage());
     case Routes.review:
@@ -140,17 +148,26 @@ List<Route<dynamic>> onGenerateInitialRoutes(String initial) {
     return [onGenerateRoute(const RouteSettings(name: Routes.home))];
   }
   final parts = path.split('/').where((p) => p.isNotEmpty).toList();
+  final query = Uri.tryParse(initial)?.query ?? '';
   return [
     onGenerateRoute(const RouteSettings(name: Routes.home)),
     for (var i = 1; i <= parts.length; i++)
       if (_known.contains('/${parts.take(i).join('/')}'))
-        onGenerateRoute(RouteSettings(name: '/${parts.take(i).join('/')}')),
+        onGenerateRoute(
+          RouteSettings(
+            // the last page keeps its query: a puzzle link is all in it
+            name:
+                '/${parts.take(i).join('/')}'
+                '${i == parts.length && query.isNotEmpty ? '?$query' : ''}',
+          ),
+        ),
   ];
 }
 
 const _known = {
   Routes.play,
   Routes.daily,
+  Routes.puzzle,
   Routes.history,
   Routes.mastery,
   Routes.solver,
@@ -229,6 +246,58 @@ class _BankGateState extends State<BankGate> {
             return bank == null ? _waiting('loading…') : widget.builder(bank);
           },
         );
+      },
+    );
+  }
+}
+
+/// Opens the puzzle a link names: loads the language it is in (whatever the
+/// player's own language is), then plays that day's daily of that mode as
+/// practice. A language the app does not have goes home.
+class PuzzleGate extends StatefulWidget {
+  const PuzzleGate({super.key, required this.puzzle});
+  final Puzzle puzzle;
+
+  @override
+  State<PuzzleGate> createState() => _PuzzleGateState();
+}
+
+class _PuzzleGateState extends State<PuzzleGate> {
+  late final Future<WordBank?> _bank = _load();
+
+  Future<WordBank?> _load() async {
+    final langs = await WordBank.languages();
+    final found = langs.where((l) => l.code == widget.puzzle.lang);
+    return found.isEmpty ? null : WordBank.load(found.first);
+  }
+
+  Widget _waiting(String text) => Scaffold(
+    appBar: AppBar(),
+    body: Center(child: Caption(text)),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<WordBank?>(
+      future: _bank,
+      builder: (context, snap) {
+        if (snap.hasError) return _waiting('could not load the words');
+        if (snap.connectionState != ConnectionState.done) {
+          return _waiting('loading…');
+        }
+        final bank = snap.data;
+        if (bank == null) return const HomePage();
+        final p = widget.puzzle;
+        if (p.mode.multi) {
+          final d = DailyMulti.of(bank, p.mode, p.date);
+          return d == null
+              ? const HomePage()
+              : MultiGamePage(bank: bank, daily: d, practice: true);
+        }
+        final d = Daily.of(bank, p.date);
+        return d == null
+            ? const HomePage()
+            : GamePage(bank: bank, daily: d, practice: true);
       },
     );
   }

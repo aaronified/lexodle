@@ -14,7 +14,9 @@ import 'main.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
 import 'multi_review.dart';
+import 'puzzle.dart';
 import 'routes.dart';
+import 'share_puzzle.dart';
 import 'store.dart';
 import 'ui.dart';
 import 'wiktionary.dart';
@@ -28,12 +30,22 @@ import 'words.dart';
 /// out in the background: the Wiktionary entry of every answer is looked up
 /// and each guess is analysed as soon as it is made.
 class MultiGamePage extends StatefulWidget {
-  const MultiGamePage({super.key, required this.bank, this.random, this.daily});
+  const MultiGamePage({
+    super.key,
+    required this.bank,
+    this.random,
+    this.daily,
+    this.practice = false,
+  });
   final WordBank bank;
 
   /// Set to play the daily quartet or relay race: its four words and the fixed
   /// daily difficulty, instead of a game drawn at random.
   final DailyMulti? daily;
+
+  /// A daily opened by a link: played as practice, so nothing is saved or
+  /// counted (no streak, history, statistics or achievements).
+  final bool practice;
 
   /// Where the answers are drawn from; tests pass a seeded one.
   final Random? random;
@@ -95,7 +107,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// counted when it ended.
   void _resume() {
     final d = _daily;
-    if (d == null) return;
+    if (d == null || widget.practice) return;
     final saved = appState.dailyFor(widget.bank.language.code, d.date, mode);
     if (saved == null) return;
     for (final g in saved.guesses) {
@@ -227,7 +239,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       _analysis.add(null);
     }
     final d = _daily;
-    if (d != null && !restoring) {
+    if (d != null && !restoring && !widget.practice) {
       appState.saveDaily(
         widget.bank.language.code,
         d.date,
@@ -245,6 +257,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// The finished game counts towards the achievements of its mode. Skill is
   /// final only once every guess has been analysed, so that is waited for.
   void _finish() {
+    // practice is not counted
+    if (widget.practice) return;
     final epoch = _epoch;
     void record() {
       final d = _daily;
@@ -368,6 +382,12 @@ class _MultiGamePageState extends State<MultiGamePage> {
       onKeyEvent: _onKey,
       child: Scaffold(
         appBar: AppBar(
+          actions: [
+            if (_daily != null)
+              SharePuzzleButton(
+                Puzzle(widget.bank.language.code, mode, _daily.date),
+              ),
+          ],
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -381,7 +401,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
                             ' · $length · $tries tries'
                       : '${mode.label} · '
                             '${widget.bank.language.name.toLowerCase()}'
-                            ' · daily · ${_daily.date}',
+                            ' · ${widget.practice ? 'practice' : 'daily'} · '
+                            '${_daily.date}',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                 ),
@@ -644,9 +665,11 @@ class _MultiGamePageState extends State<MultiGamePage> {
             ),
             if (_daily != null)
               Caption(
-                'daily ${_daily.date} · streak '
-                '${appState.dailyStreakFor(widget.bank.language.code, mode)} · '
-                'the next words come at midnight, your time',
+                widget.practice
+                    ? 'practice ${_daily.date} · not counted'
+                    : 'daily ${_daily.date} · streak '
+                          '${appState.dailyStreakFor(widget.bank.language.code, mode)} · '
+                          'the next words come at midnight, your time',
               ),
             const SizedBox(height: 10),
             for (final a in unlocked)
