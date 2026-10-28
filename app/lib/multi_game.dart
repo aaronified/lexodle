@@ -397,16 +397,18 @@ class _MultiGamePageState extends State<MultiGamePage> {
       child: Scaffold(
         appBar: AppBar(
           actions: [
-            SharePuzzleButton(
-              (withGuesses) => Puzzle.hashed(
-                widget.bank.language.code,
-                mode,
-                length: length,
-                tries: tries,
-                answers: [for (final b in game.boards) b.answer],
-                guesses: withGuesses ? List.of(game.guesses) : const [],
+            // the daily is not shared: anyone can open the app and play it
+            if (_daily == null || _daily.date.isEmpty)
+              SharePuzzleButton(
+                (withGuesses) => Puzzle.hashed(
+                  widget.bank.language.code,
+                  mode,
+                  length: length,
+                  tries: tries,
+                  answers: [for (final b in game.boards) b.answer],
+                  guesses: withGuesses ? List.of(game.guesses) : const [],
+                ),
               ),
-            ),
           ],
           title: Row(
             mainAxisSize: MainAxisSize.min,

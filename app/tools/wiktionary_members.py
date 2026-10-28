@@ -76,11 +76,16 @@ def main():
         for m in PAGE.finditer(line):
             if m[2] == "0" and int(m[1]) in pages:
                 t = m[3].replace("_", " ")
-                if t == t.lower() and 4 <= len(t) <= 8 and is_latin_word(t):
-                    # a word two languages share (from: English, Welsh) counts
-                    # for each of them
-                    for h in pages[int(m[1])]:
+                if not (4 <= len(t) <= 8 and is_latin_word(t)):
+                    continue
+                # a word two languages share (from: English, Welsh) counts for
+                # each of them. German nouns are capitalised on Wiktionary, so
+                # German keeps a title that is not lowercase, as its lowercase.
+                for h in pages[int(m[1])]:
+                    if t == t.lower():
                         members[h].add(t)
+                    elif h == "German":
+                        members[h].add(t.lower())
     OUT.mkdir(parents=True, exist_ok=True)
     for h, ws in members.items():
         (OUT / f"wiktionary-{h}-members.txt").write_text("\n".join(sorted(ws)), encoding="utf-8")

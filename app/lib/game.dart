@@ -411,16 +411,18 @@ class _GamePageState extends State<GamePage> {
       child: Scaffold(
         appBar: AppBar(
           actions: [
-            SharePuzzleButton(
-              (withGuesses) => Puzzle.hashed(
-                widget.bank.language.code,
-                GameMode.classic,
-                length: length,
-                tries: tries,
-                answers: [answer],
-                guesses: withGuesses ? List.of(guesses) : const [],
+            // the daily is not shared: anyone can open the app and play it
+            if (_daily == null || _daily.date.isEmpty)
+              SharePuzzleButton(
+                (withGuesses) => Puzzle.hashed(
+                  widget.bank.language.code,
+                  GameMode.classic,
+                  length: length,
+                  tries: tries,
+                  answers: [answer],
+                  guesses: withGuesses ? List.of(guesses) : const [],
+                ),
               ),
-            ),
           ],
           title: Row(
             mainAxisSize: MainAxisSize.min,

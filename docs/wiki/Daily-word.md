@@ -30,8 +30,8 @@ cannot reroll it, and it is played once a day.
 
 ## Sharing a puzzle
 
-The link button in the corner of any game (a daily or an ordinary game, in every mode) offers two
-links to copy:
+Dailies are not shared: everyone opens the app and plays the same daily. The link button is for
+ordinary games (every mode) and for a shared puzzle already open. It offers two links to copy:
 
 - **the puzzle**: the word (four for a quartet or a relay race) goes in the link only as a hash, so it
   does not give the word away; the length and the tries are in it;
@@ -43,6 +43,6 @@ links to copy:
 Whoever opens a link plays it in a browser as **practice**, with only the colours and the tries left:
 it is never saved or counted (no streak, calendar, history, statistics or achievements). The app finds
 the word by hashing the words of that length in the language until one matches; a hash is a disguise,
-not a secret, since anyone can do the same. A link with a damaged hash, a day that has not come yet,
-or a language or mode the app does not know opens the home page instead. The link opens the web app;
-it does not open the Android app by itself.
+not a secret, since anyone can do the same. A link with a damaged hash, or a language or mode the app
+does not know, opens the home page instead. The link opens the web app; it does not open the Android
+app by itself.
