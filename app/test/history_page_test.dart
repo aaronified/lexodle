@@ -286,11 +286,12 @@ void main() {
         await detail(maverick),
         '${maverick.name}: ${maverick.blurb} (you have been this)',
       );
-      expect(
-        await detail(wildcard),
-        '${wildcard.name}: ${wildcard.blurb} (not yet)',
-      );
-      expect(await detail(gambler), endsWith('(not yet)'));
+      // a style not unlocked yet stays hidden: no name, no description
+      const hidden =
+          'a playstyle you have not been yet. it shows once you are rated it.';
+      expect(await detail(wildcard), hidden);
+      expect(await detail(gambler), hidden);
+      expect(find.text('???'), findsWidgets);
       // tapping the open one closes it again
       await tester.tap(find.byKey(const ValueKey('dot-gambler')));
       await tester.pump();

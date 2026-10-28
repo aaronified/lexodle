@@ -67,16 +67,14 @@ class _AchievementsPageState extends State<AchievementsPage> {
         if (st != null) out[a.id] = st;
         continue;
       }
-      var times = 0;
-      final dates = <String>[];
+      // the furthest level of any language, with the days it was reached
+      AchState? best;
       for (final l in codes) {
         final st = appState.achOf(l)[a.id];
-        if (st == null) continue;
-        times += st.times;
-        dates.addAll(st.dates);
+        if (st != null && st.times > (best?.times ?? 0)) best = st;
       }
-      if (times > 0) {
-        out[a.id] = AchState(times: times, dates: dates..sort());
+      if (best != null) {
+        out[a.id] = AchState(times: best.times, dates: List.of(best.dates));
       }
     }
     return out;
@@ -150,13 +148,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                         _MedalPill(
                           m,
                           earned: _earnedAt(mine, m),
-                          total: achievements
-                              .where(
-                                (a) =>
-                                    m == null ||
-                                    a.levels.any((l) => l.medal == m),
-                              )
-                              .length,
+                          total: m == null ? levelCount : achievements.length,
                           on: _medal == m,
                           onTap: () => setState(() => _medal = m),
                         ),
