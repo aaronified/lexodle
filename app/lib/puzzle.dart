@@ -3,9 +3,9 @@ import 'daily.dart';
 import 'modes.dart';
 import 'words.dart';
 
-/// A puzzle named by a link: the language, the mode, and either a day (the
-/// daily of that day) or the words themselves, hashed. Anyone who opens the link
-/// plays it as practice: it never touches the streak, the history or the
+/// A puzzle named by a link: the language, the mode, the length, the tries and
+/// the words themselves, hashed. (The daily is not shared this way: everyone
+/// has the same one in the app.) Anyone who opens the link plays it as practice: it never touches the streak, the history or the
 /// achievements. A link can also carry the guesses of whoever shares it, in
 /// plain, which the page opens already played.
 ///
@@ -14,11 +14,10 @@ import 'words.dart';
 class Puzzle {
   const Puzzle(
     this.lang,
-    this.mode,
-    this.date, {
-    this.length = dailyLength,
-    this.tries = 0,
-    this.hashes = const [],
+    this.mode, {
+    required this.length,
+    required this.tries,
+    required this.hashes,
     this.guesses = const [],
   });
 
@@ -32,14 +31,11 @@ class Puzzle {
     required this.tries,
     required List<String> answers,
     this.guesses = const [],
-  }) : date = '',
-       hashes = [for (final a in answers) wordHash(a)];
+  }) : hashes = [for (final a in answers) wordHash(a)];
 
   final String lang;
   final GameMode mode;
 
-  /// The day of a daily, or '' for a puzzle of hashed words.
-  final String date;
   final int length;
   final int tries;
   final List<String> hashes;
@@ -47,18 +43,15 @@ class Puzzle {
 
   /// The link to share.
   String get link {
-    final q = date.isNotEmpty
-        ? 'l=$lang&m=${mode.name}&d=$date'
-        : 'l=$lang&m=${mode.name}&n=$length&t=$tries&w=${hashes.join('.')}';
+    final q = 'l=$lang&m=${mode.name}&n=$length&t=$tries&w=${hashes.join('.')}';
     return '$puzzleBase#$puzzlePath?$q'
         '${guesses.isEmpty ? '' : '&g=${guesses.join('.')}'}';
   }
 
   /// The puzzle a link names, or null when it names none: the language and the
-  /// mode are missing or unknown, there is neither a day nor the words, a day is
-  /// not a date or has not come yet (its words would spoil it), or the words, the
-  /// length, the tries or the guesses are not what a puzzle has.
-  static Puzzle? parse(Uri uri, {String? today}) {
+  /// mode are missing or unknown, or the words, the length, the tries or the
+  /// guesses are not what a puzzle has.
+  static Puzzle? parse(Uri uri) {
     final q = uri.queryParameters;
     final lang = q['l'];
     final mode = GameMode.values.where((m) => m.name == q['m']);
@@ -73,18 +66,6 @@ class Puzzle {
       guesses = g.split('.');
     }
 
-    final date = q['d'];
-    if (date != null) {
-      if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date)) return null;
-      // a date that does not exist (2026-02-31) rolls over: it is not one
-      if (DateTime.tryParse(date) == null || dailyShift(date, 0) != date) {
-        return null;
-      }
-      if (date.compareTo(today ?? dailyDate()) > 0) return null;
-      if (!_guessesOk(guesses, dailyLength, 99)) return null;
-      return Puzzle(lang, m, date, guesses: guesses);
-    }
-
     final n = int.tryParse(q['n'] ?? ''), t = int.tryParse(q['t'] ?? '');
     final w = (q['w'] ?? '').split('.');
     if (n == null || n < 4 || n > 8 || t == null || t < 1 || t > 20) {
@@ -95,15 +76,7 @@ class Puzzle {
       return null;
     }
     if (!_guessesOk(guesses, n, t)) return null;
-    return Puzzle(
-      lang,
-      m,
-      '',
-      length: n,
-      tries: t,
-      hashes: w,
-      guesses: guesses,
-    );
+    return Puzzle(lang, m, length: n, tries: t, hashes: w, guesses: guesses);
   }
 
   static bool _guessesOk(List<String> guesses, int length, int tries) =>
@@ -114,15 +87,10 @@ class Puzzle {
             RegExp(r'^\p{L}+$', unicode: true).hasMatch(x),
       );
 
-  /// The words of the puzzle in [bank]: the daily's, or the ones whose hashes
-  /// the link carries, found among the words of the length (null when one is
-  /// not there: a link from a newer word list, or a damaged one).
+  /// The words of the puzzle in [bank]: the ones whose hashes the link carries,
+  /// found among the words of the length (null when one is not there: a link
+  /// from a newer word list, or a damaged one).
   List<String>? answersIn(WordBank bank) {
-    if (date.isNotEmpty) {
-      return mode.multi
-          ? DailyMulti.of(bank, mode, date)?.answers
-          : [?Daily.of(bank, date)?.answer];
-    }
     final byHash = {for (final w in bank.answers(length)) wordHash(w): w};
     final out = <String>[];
     for (final h in hashes) {

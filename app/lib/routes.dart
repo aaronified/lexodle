@@ -296,11 +296,11 @@ class _PuzzleGateState extends State<PuzzleGate> {
             practice: true,
             replay: p.guesses,
             daily: DailyMulti(
-              p.date,
+              '',
               p.mode,
               answers,
-              length: p.date.isEmpty ? p.length : dailyLength,
-              tries: p.date.isEmpty ? p.tries : null,
+              length: p.length,
+              tries: p.tries,
             ),
           );
         }
@@ -308,12 +308,7 @@ class _PuzzleGateState extends State<PuzzleGate> {
           bank: bank,
           practice: true,
           replay: p.guesses,
-          daily: Daily(
-            p.date,
-            answers.first,
-            length: p.date.isEmpty ? p.length : dailyLength,
-            tries: p.date.isEmpty ? p.tries : dailyTries,
-          ),
+          daily: Daily('', answers.first, length: p.length, tries: p.tries),
         );
       },
     );
