@@ -80,7 +80,7 @@ td, th { padding-inline: 4px; }
 .modal { background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; max-width: 480px; width: 100%; max-height: 88%; overflow: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
 .modal h2 { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .close { font: inherit; background: transparent; border: 1px solid var(--line2); color: var(--fg); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
-.math { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: color-mix(in srgb, var(--fg) 6%, transparent); padding: 8px 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+.math { font-size: 13px; line-height: 1.55; white-space: pre-line; font-variant-numeric: tabular-nums; }
 .sub { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); font-weight: 600; }
 .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--bg); border-top: 1px solid var(--line); padding: 10px max(16px, env(safe-area-inset-left, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .nav > div { max-width: 480px; margin: 0 auto; display: flex; gap: 12px; }
@@ -89,7 +89,7 @@ td, th { padding-inline: 4px; }
 .btn:disabled { opacity: .4; cursor: default; }
 .link { font: inherit; background: none; border: 0; color: var(--skill); cursor: pointer; padding: 6px 0; text-align: left; text-decoration: underline; }
 body { padding-bottom: 96px; }
-.formula { background: color-mix(in srgb, var(--fg) 6%, transparent); border-radius: 4px; padding: 6px 10px; overflow-x: auto; display: flex; flex-direction: column; gap: 4px; }
+.formula { display: flex; flex-direction: column; gap: 4px; }
 .formula math { font-size: 1.15em; }
 .where { font-size: 12px; color: var(--dim); }
 .where math { font-size: 1.05em; color: var(--fg); }
@@ -200,7 +200,7 @@ function colorize(root) {
   while (w.nextNode()) nodes.push(w.currentNode);
   nodes.forEach(n => {
     const p = n.parentElement;
-    if (!p || p.closest('.skill,.luck,.risk,.bits,svg,script,style,code,.math,math,button')) return;
+    if (!p || p.closest('.skill,.luck,.risk,.bits,svg,script,style,code,math,button')) return;
     if (!/\b(skill|luck|risk)\b/i.test(n.nodeValue)) return;
     const span = document.createElement('span');
     span.innerHTML = n.nodeValue.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\b(skill|luck|risk)\b/gi, m => '<span class="' + m.toLowerCase() + '">' + m + '</span>');
