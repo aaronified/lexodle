@@ -1072,7 +1072,7 @@ class AppState extends ChangeNotifier {
   ({Playstyle? style, bool changed}) updateStyle({String? lang}) {
     final l = lang ?? this.lang;
     final current = styleOf(l);
-    final next = classify(traitsOf(history, lang: l), current: current);
+    final next = classify(habitsOf(history, lang: l), current: current);
     if (next == null) return (style: current, changed: false);
     final changed = _styles[l] != null && _styles[l] != next.id;
     if (changed) _styleChanges[l] = styleChangesOf(l) + 1;

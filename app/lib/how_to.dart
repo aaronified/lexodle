@@ -207,7 +207,7 @@ class HowToPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       const WikiLink(
-                        WikiPage.skillLuckDaring,
+                        WikiPage.skillLuckRisk,
                         label: 'how skill, luck and daring work',
                       ),
                       const WikiLink(

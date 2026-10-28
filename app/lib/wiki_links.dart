@@ -9,7 +9,7 @@ const wikiBase = 'https://github.com/aaronified/lexodle/wiki/';
 /// The wiki pages the app points to (the file names of docs/wiki, no `.md`).
 enum WikiPage {
   howToPlay('How-to-play'),
-  skillLuckDaring('Skill-luck-and-daring'),
+  skillLuckRisk('Skill-luck-and-risk'),
   historyAndPlaystyles('History-and-playstyles'),
   solverAndLearn('Solver-and-learn-mode'),
   dailyWord('Daily-word'),

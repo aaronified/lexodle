@@ -3,30 +3,140 @@ import 'history.dart';
 /// How a player plays, read from their last 100 classic games (a daily is a
 /// classic game) and shown on the home page. It moves as they play.
 ///
-/// Two traits are averaged over every guess of those games in which there was
-/// something to choose between (more than one word still possible):
+/// A style is two habits: what the player does in the early game, and what they
+/// do at the end. Each guess in those phases is counted as one of five things,
+/// and a habit is the thing a player's guesses most often are:
 ///
-/// * **skill**, 0 to 100: how evenly the guess split the words (see logic.dart);
-/// * **daring**, 0 to 100: how much the player went for the whole word instead of
-///   for the clues: a guess that could be the answer, at a cost in skill, at an
-///   unlikely word, with tries to spare (see [daringOf] in logic.dart). A good
-///   player seldom scores above 10.
+/// * early game, 64 or more words still possible: a [Behaviour.gambler] (risk of
+///   [gamblerRisk] or more), else a [Behaviour.maximiser] (in the top
+///   [topRank]% of the guesses scored by expected gain), else an
+///   [Behaviour.eliminator] ([freshLetters] or more letters never tried);
+/// * end game, 16 or fewer words possible or 3 or more greens known: a
+///   [Behaviour.closer] (the guess fits every clue, so it can win), else a
+///   [Behaviour.prober] (it does not fit, ranks in the top [topRank]% and 3 or
+///   more words are left).
 ///
-/// Skill gives three tiers and daring splits each in two, which is six styles.
-/// The numbers below were set by playing simulated players through the real
-/// maths (tools/calibrate_styles.dart, results in docs/paper/experiments/results/
-/// daring_calibration.txt): a player who always plays the best guess scores 100
-/// and 0, one who picks at random among the three best 99 and 0, one who plays the
-/// best split among the words that fit 91 and 4, one who plays the commonest word
-/// that fits about 66 and 20, one who ignores the clues about 48 and 6. They are not measured on people, so they are the first thing to
-/// revisit once there is real play to look at.
+/// The first that applies is the one counted, so a risky guess is never also a
+/// maximiser. A habit needs [habitShare] of a phase's guesses, and a player is
+/// rated once there are [minRatedGames] games and [minPhaseGuesses] guesses in
+/// each phase. The numbers come from simulated players of each style played
+/// through the real word list (docs/paper, the playstyle section); they are not
+/// measured on people, so they are the first thing to revisit once there is real
+/// play to look at.
+
+/// The phases a guess is counted in.
+enum Phase { early, middle, end }
+
+/// What a guess can be counted as, with the phase it belongs to.
+enum Behaviour {
+  gambler('gambler', 'dice-5', Phase.early),
+  maximiser('maximiser', 'diamond', Phase.early),
+  eliminator('eliminator', 'apps', Phase.early),
+  closer('closer', 'bolt', Phase.end),
+  prober('prober', 'microscope', Phase.end);
+
+  const Behaviour(this.label, this.icon, this.phase);
+
+  /// Its name, the name of a Tabler filled icon in assets/icons, and its phase.
+  final String label;
+  final String icon;
+  final Phase phase;
+
+  /// What it is, in a line.
+  String get what => switch (this) {
+    gambler =>
+      'you gambled on the tail: usually less than expected, sometimes much more',
+    maximiser => 'you played one of the best splits',
+    eliminator => 'you used fresh letters to clear the board',
+    closer => 'you went for the word',
+    prober => 'you spent a guess to split the last words',
+  };
+
+  /// The rule that counts a guess as it.
+  String get rule => switch (this) {
+    gambler => 'a risk of $gamblerRisk or more',
+    maximiser =>
+      'in the top $topRank% of all the guesses scored, by expected gain',
+    eliminator => '$freshLetters or more letters never tried in the game',
+    closer => 'the guess fits every clue, so it can win',
+    prober =>
+      'the guess does not fit, ranks in the top $topRank% and 3 or more words are left',
+  };
+}
+
+/// The early game starts at this many words possible; the end game is this few
+/// or fewer, or [endGreens] known greens.
+const earlyFrom = 64;
+const endUpTo = 16;
+const endGreens = 3;
+
+/// A guess with a risk of this much or more is a gamble.
+const gamblerRisk = 75;
+
+/// A guess in the top this share (percent) by expected gain is a maximiser, or
+/// a prober.
+const topRank = 10;
+
+/// How many letters new to the game make an eliminator.
+const freshLetters = 4;
+
+/// The share of a phase's guesses that makes a habit.
+const habitShare = 0.4;
+
+/// How much closer to the top the habit a player has now may be before it is
+/// kept, so one game either side of a line does not swap their style back and
+/// forth.
+const habitMargin = 0.05;
+
+/// The games, and the guesses in each phase, it takes before a player is rated.
+const minRatedGames = 10;
+const minPhaseGuesses = 10;
+
+/// The games a playstyle is read from.
+const styleWindow = 100;
+
+/// The phase of a guess made with [before] words possible and [greens] known; null
+/// with one word left, when there is nothing to choose.
+Phase? phaseOf(int before, int greens) {
+  if (before <= 1) return null;
+  if (before >= earlyFrom) return Phase.early;
+  if (before <= endUpTo || greens >= endGreens) return Phase.end;
+  return Phase.middle;
+}
+
+/// What a guess is counted as, or null when it is neither (a middle game guess,
+/// or one that does not qualify). Only classic guesses have what it needs.
+Behaviour? behaviourOf(GuessRow r) {
+  final phase = phaseOf(r.before, r.greens);
+  switch (phase) {
+    case null:
+    case Phase.middle:
+      return null;
+    case Phase.early:
+      final risk = r.risk;
+      if (risk != null && risk >= gamblerRisk) return Behaviour.gambler;
+      final rank = r.rank;
+      if (rank != null && rank <= topRank) return Behaviour.maximiser;
+      if (r.fresh >= freshLetters) return Behaviour.eliminator;
+      return null;
+    case Phase.end:
+      if (r.fits) return Behaviour.closer;
+      final rank = r.rank;
+      if (rank != null && rank <= topRank && r.before >= 3) {
+        return Behaviour.prober;
+      }
+      return null;
+  }
+}
+
+/// A playstyle: an early habit and an end habit.
 class Playstyle {
   const Playstyle(
     this.id,
     this.name,
     this.icon,
-    this.sharpness,
-    this.bold,
+    this.early,
+    this.end,
     this.blurb,
   );
 
@@ -37,10 +147,9 @@ class Playstyle {
   /// Name of a Tabler filled icon in assets/icons.
   final String icon;
 
-  /// The skill tier, 0 loose, 1 solid, 2 sharp, and whether it is the daring
-  /// half of it.
-  final int sharpness;
-  final bool bold;
+  /// Its habit in the early game and at the end.
+  final Behaviour early;
+  final Behaviour end;
   final String blurb;
 }
 
@@ -48,53 +157,55 @@ const analyst = Playstyle(
   'analyst',
   'analyst',
   'microscope',
-  2,
-  false,
-  'sharp and careful: guesses that split the words well, and few stabs at the word',
+  Behaviour.maximiser,
+  Behaviour.prober,
+  'plays the best splits all game, and spends a guess to split the last words '
+      'when it must',
 );
 const maverick = Playstyle(
   'maverick',
   'maverick',
   'chess-knight',
-  2,
-  true,
-  'sharp, and quick to go for the word itself when it fits',
+  Behaviour.maximiser,
+  Behaviour.closer,
+  'plays the best splits early, then goes for the word as soon as one fits',
 );
-const steady = Playstyle(
-  'steady',
-  'steady',
-  'scale',
-  1,
-  false,
-  'solid, dependable guesses that work the clues before going for the word',
+const detective = Playstyle(
+  'detective',
+  'detective',
+  'compass',
+  Behaviour.eliminator,
+  Behaviour.prober,
+  'clears letters first, then splits the last candidates before committing',
 );
-const gambler = Playstyle(
-  'gambler',
-  'gambler',
-  'dice-5',
-  1,
-  true,
-  'plays the odds: decent guesses, and always shooting for the word',
-);
-const wanderer = Playstyle(
-  'wanderer',
-  'wanderer',
+const sweeper = Playstyle(
+  'sweeper',
+  'sweeper',
   'feather',
-  0,
-  false,
-  'plays by feel, lightly, working the clues',
+  Behaviour.eliminator,
+  Behaviour.closer,
+  'clears letters first, then goes straight for the word',
 );
 const wildcard = Playstyle(
   'wildcard',
   'wildcard',
   'cards',
-  0,
-  true,
-  'unpredictable: stabs at the word with little method',
+  Behaviour.gambler,
+  Behaviour.prober,
+  'gambles on the first turns, then settles into proper splits',
+);
+const gambler = Playstyle(
+  'gambler',
+  'gambler',
+  'dice-5',
+  Behaviour.gambler,
+  Behaviour.closer,
+  'gambles on the first turns and goes all in for the word',
 );
 
-/// Every playstyle, from the sharpest careful one to the loosest bold one.
-const playstyles = [analyst, maverick, steady, gambler, wanderer, wildcard];
+/// Every playstyle, in the order of its grid: the early habit down, the end
+/// habit across.
+const playstyles = [analyst, maverick, detective, sweeper, wildcard, gambler];
 
 Playstyle? playstyleById(String? id) {
   for (final p in playstyles) {
@@ -103,70 +214,41 @@ Playstyle? playstyleById(String? id) {
   return null;
 }
 
-/// The games a playstyle is read from.
-const styleWindow = 100;
+/// The playstyle with these two habits.
+Playstyle styleOf(Behaviour early, Behaviour end) => playstyles.firstWhere(
+  (p) => p.early == early && p.end == end,
+  orElse: () => throw ArgumentError('no style for $early and $end'),
+);
 
-/// How many classic games, and how many guesses with a daring, it takes before a
-/// player is rated at all.
-const minRatedGames = 10;
-const minRatedGuesses = 20;
-
-/// Where the tiers and the daring split lie. A guess that is skilled is
-/// [sharpFrom] or more; one below [looseBelow] is loose. The daring split is
-/// different in each tier, because daring and skill go together (a sharp player
-/// seldom pays anything to go for the word, so a little is already bold).
-const sharpFrom = 85.0;
-const looseBelow = 58.0;
-const _splitSharp = 2.5;
-const _splitSolid = 12.0;
-const _splitLoose = 12.0;
-
-/// How far past a line a player must go to leave the style they have, so one
-/// game either side of a line does not swap their style back and forth.
-const skillMargin = 3.0;
-const daringMargin = 1.5;
-
-double _splitFor(int tier) => switch (tier) {
-  2 => _splitSharp,
-  1 => _splitSolid,
-  _ => _splitLoose,
-};
-
-/// A player's two traits over their last games.
+/// A player's two numbers over their last games, and how many they come from.
 class Traits {
   const Traits({
     required this.skill,
-    required this.daring,
+    required this.risk,
+    required this.luck,
     required this.games,
     required this.guesses,
-    this.luck = 0,
   });
 
-  /// Means over the guesses that had a choice (see above).
+  /// Means over the guesses that had a choice (more than one word possible).
   final double skill;
-  final double daring;
-
-  /// The mean luck over the same guesses as the skill.
+  final double risk;
   final double luck;
 
-  /// How many games and how many such guesses they come from.
+  /// How many games, and how many guesses with a choice, they come from.
   final int games;
   final int guesses;
-
-  /// Whether there is enough to rate a player on.
-  bool get rated => games >= minRatedGames && guesses >= minRatedGuesses;
 }
 
-/// The traits over the last [n] classic games of [h]; null when there is no
-/// guess with a daring in them at all.
+/// The means over the last [n] classic games of [h]; null when there is no guess
+/// with a choice in them at all.
 Traits? traitsOf(History h, {int n = styleWindow, String? lang}) =>
     traitsOfGames(h, h.recentClassic(n, lang));
 
-/// The traits over [games] of [h] (classic ones: the others carry no daring),
-/// for any stretch of play: a week, a month, or the last 100.
+/// The means over [games] of [h] (classic ones: the others have no risk).
 Traits? traitsOfGames(History h, List<GameRow> games) {
-  var skill = 0.0, daring = 0.0, luck = 0.0;
-  var skillN = 0, daringN = 0;
+  var skill = 0.0, risk = 0.0, luck = 0.0;
+  var skillN = 0, riskN = 0;
   for (final g in games) {
     for (final r in h.guessesOf(g.id)) {
       // with one word left there is nothing to choose and nothing to score
@@ -174,58 +256,104 @@ Traits? traitsOfGames(History h, List<GameRow> games) {
       skill += r.skill;
       luck += r.luck;
       skillN++;
-      final d = r.daring;
-      if (d != null) {
-        daring += d;
-        daringN++;
+      final k = r.risk;
+      if (k != null) {
+        risk += k;
+        riskN++;
       }
     }
   }
-  if (daringN == 0) return null;
+  if (riskN == 0) return null;
   return Traits(
     skill: skill / skillN,
-    daring: daring / daringN,
+    risk: risk / riskN,
     luck: luck / skillN,
     games: games.length,
-    guesses: daringN,
+    guesses: riskN,
   );
 }
 
-/// The skill tier of [skill] (0 loose, 1 solid, 2 sharp), staying in the tier of
-/// [current] unless [skill] is past its edge by more than [skillMargin].
-int tierOf(double skill, {int? current}) {
-  int raw(double s) => s >= sharpFrom
-      ? 2
-      : s < looseBelow
-      ? 0
-      : 1;
-  if (current != null) {
-    final lo = switch (current) {
-      2 => sharpFrom,
-      1 => looseBelow,
-      _ => double.negativeInfinity,
-    };
-    final hi = switch (current) {
-      2 => double.infinity,
-      1 => sharpFrom,
-      _ => looseBelow,
-    };
-    if (skill >= lo - skillMargin && skill < hi + skillMargin) return current;
+/// What a player's guesses were counted as, phase by phase.
+class Habits {
+  const Habits(this.games, this.counts, this.opportunities);
+
+  /// How many games it is read from.
+  final int games;
+
+  /// How many guesses were counted as each behaviour, and how many guesses there
+  /// were in each phase (early and end).
+  final Map<Behaviour, int> counts;
+  final Map<Phase, int> opportunities;
+
+  /// The share of [phase]'s guesses counted as [b].
+  double share(Behaviour b) {
+    final n = opportunities[b.phase] ?? 0;
+    return n == 0 ? 0 : (counts[b] ?? 0) / n;
   }
-  return raw(skill);
+
+  /// Whether there are enough guesses in both phases to rate.
+  bool get rated =>
+      games >= minRatedGames &&
+      (opportunities[Phase.early] ?? 0) >= minPhaseGuesses &&
+      (opportunities[Phase.end] ?? 0) >= minPhaseGuesses;
+
+  /// The habit of [phase]: the behaviour with the largest share, if that is
+  /// [habitShare] or more. Ties go to the first listed in [Behaviour].
+  Behaviour? habit(Phase phase) {
+    Behaviour? best;
+    var top = 0.0;
+    for (final b in Behaviour.values) {
+      if (b.phase != phase) continue;
+      if (share(b) > top + 1e-9) {
+        top = share(b);
+        best = b;
+      }
+    }
+    return top >= habitShare ? best : null;
+  }
 }
 
-/// The playstyle of [t]; null while they are not rated. [current] is the one
-/// they have now: it is kept while they stay near it (see [skillMargin]).
-Playstyle? classify(Traits? t, {Playstyle? current}) {
-  if (t == null || !t.rated) return null;
-  final tier = tierOf(t.skill, current: current?.sharpness);
-  final split = _splitFor(tier);
-  var bold = t.daring >= split;
-  if (current != null &&
-      current.sharpness == tier &&
-      (t.daring - split).abs() < daringMargin) {
-    bold = current.bold;
+/// The habits over the last [n] classic games of [h] in [lang].
+Habits habitsOf(History h, {int n = styleWindow, String? lang}) =>
+    habitsOfGames(h, h.recentClassic(n, lang));
+
+/// The habits over [games] of [h] (classic ones, scored with the current maths).
+Habits habitsOfGames(History h, List<GameRow> games) {
+  final counts = {for (final b in Behaviour.values) b: 0};
+  final opportunities = {Phase.early: 0, Phase.end: 0};
+  for (final g in games) {
+    if (g.version != metricsVersion) continue;
+    for (final r in h.guessesOf(g.id)) {
+      final phase = phaseOf(r.before, r.greens);
+      if (phase == Phase.early || phase == Phase.end) {
+        opportunities[phase!] = opportunities[phase]! + 1;
+      }
+      final b = behaviourOf(r);
+      if (b != null) counts[b] = counts[b]! + 1;
+    }
   }
-  return playstyles.firstWhere((p) => p.sharpness == tier && p.bold == bold);
+  return Habits(games.length, counts, opportunities);
+}
+
+/// The playstyle of [h]'s habits; null while they are not rated, or when a phase
+/// has no habit. [current] is the one they have now: its habit in a phase is
+/// kept while it stays within [habitMargin] of the top (and still counts).
+Playstyle? classify(Habits? h, {Playstyle? current}) {
+  if (h == null || !h.rated) return null;
+  Behaviour? pick(Phase phase, Behaviour? now) {
+    final top = h.habit(phase);
+    if (top == null) return null;
+    if (now != null &&
+        now != top &&
+        h.share(now) >= habitShare &&
+        h.share(top) - h.share(now) < habitMargin) {
+      return now;
+    }
+    return top;
+  }
+
+  final early = pick(Phase.early, current?.early);
+  final end = pick(Phase.end, current?.end);
+  if (early == null || end == null) return null;
+  return styleOf(early, end);
 }

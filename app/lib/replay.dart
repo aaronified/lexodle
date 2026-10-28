@@ -47,6 +47,8 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
         weights: law,
         afterWords: after,
         provisional: true,
+        fresh: freshLetters(word, guesses),
+        greens: knownGreens(marks),
       ),
     );
     befores.add(eligible);
@@ -97,7 +99,7 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
 }
 
 /// The guess rows of the classic game [g] worked out afresh: every guess is
-/// scored against the best real guess in its position, and given its daring.
+/// scored against the best real guess in its position, and given its risk and rank.
 /// Slow (it looks at every word the game accepts, for every guess).
 ///
 /// The first guess of every game is made against every word, and is the same
@@ -137,7 +139,7 @@ Future<List<GuessRow>> rescoreClassic(
 
 /// The same for a quartet or relay race: a step's skill and luck are the means
 /// over the boards it was made for, with each board's skill measured against its
-/// best real guess. It has no daring.
+/// best real guess. It has no risk.
 Future<List<GuessRow>> rescoreMulti(
   WordBank bank,
   GameRow g,

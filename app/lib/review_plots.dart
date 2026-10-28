@@ -7,314 +7,454 @@ import 'review_text.dart';
 import 'ui.dart';
 import 'wiki_links.dart';
 
-/// Every way a guess could have come out against the words still possible,
-/// for the plot of skill and luck. Each outcome (a pattern of greens, yellows
-/// and greys) is one group of the words that would give it; the pool you land
-/// in is the size of the group the answer is in.
-class Outcomes {
-  const Outcomes(
-    this.sizes,
-    this.expected,
-    this.landed, {
-    this.weighted = false,
-  });
-
-  /// Whether the sizes are effective ones (the words were not equally likely)
-  /// and not word counts.
-  final bool weighted;
-
-  /// The size of each outcome's group, largest first. When the words are not
-  /// equally likely a group counts for its words' weights, scaled so that the
-  /// sizes still add up to the number of words: a pool of equally likely words
-  /// that would be as likely to land in.
-  final List<double> sizes;
-
-  /// E, the average pool you would land in: the sum of the squared group
-  /// sizes over the number of words.
-  final double expected;
-
-  /// Which of [sizes] is the outcome that happened.
-  final int landed;
-
-  /// N, the words that were possible.
-  int get words => sizes.fold(0.0, (a, b) => a + b).round();
-
-  /// The pool you landed in.
-  double get pool => sizes[landed];
-
-  /// The chance of landing in a bigger pool than you did, and in a smaller
-  /// one, in percent. Luck is the first less the second.
-  double get chanceBigger => _share((s) => s > pool);
-  double get chanceSmaller => _share((s) => s < pool);
-
-  double _share(bool Function(double s) test) {
-    final n = sizes.fold(0.0, (a, b) => a + b);
-    return n == 0 ? 0 : sizes.where(test).fold(0.0, (a, b) => a + b) / n * 100;
-  }
-
-  /// Luck as in the table: [chanceLuck] of the pool landed in.
-  double get luck => chanceLuck(sizes, pool);
-}
-
-/// The outcomes of [guess] against [eligible], and which one [answer] gave.
-Outcomes outcomesOf(
-  List<String> eligible,
-  String guess,
-  String answer, {
-  Map<String, int>? weights,
-}) {
-  final groups = <int, int>{};
-  for (final w in eligible) {
-    final key = patternCode(w, guess);
-    final x = weights == null ? 1 : max(weights[w] ?? 1, 1);
-    groups[key] = (groups[key] ?? 0) + x;
-  }
-  final order = groups.keys.toList()
-    ..sort((a, b) {
-      final c = groups[b]!.compareTo(groups[a]!);
-      return c != 0 ? c : a.compareTo(b);
-    });
-  final n = eligible.length;
-  final total = groups.values.fold<int>(0, (a, b) => a + b);
-  final sizes = [
-    for (final k in order) total == 0 ? 0.0 : groups[k]! * n / total,
-  ];
-  final expected = n == 0
-      ? 0.0
-      : sizes.fold<double>(0, (a, s) => a + s * s) / n;
-  final landed = max(0, order.indexOf(patternCode(answer, guess)));
-  return Outcomes(sizes, expected, landed, weighted: weights != null);
-}
-
-/// Where one column of the plot sits.
-class Slot {
-  const Slot(this.index, this.x0, this.x1);
-
-  /// Which outcome, as in [Outcomes.sizes].
-  final int index;
-  final double x0, x1;
-
-  double get width => x1 - x0;
-  double get center => (x0 + x1) / 2;
-}
-
-/// The columns of the plot in a plot [width] wide, largest pool first. Each
-/// column is as wide as the chance of landing there (its share of the words),
-/// so the horizontal middle of the plot is the median outcome, and how far
-/// from it a column's centre lies is its luck: the middle is 0% luck, the far
-/// left (the biggest pool, the likeliest outcomes) is unlucky, the far right
-/// lucky.
-List<Slot> splitSlots(Outcomes o, double width) {
-  final n = o.words;
-  final slots = <Slot>[];
-  var x = 0.0;
-  for (var i = 0; i < o.sizes.length; i++) {
-    final w = n == 0 ? 0.0 : o.sizes[i] / n * width;
-    slots.add(Slot(i, x, x + w));
-    x += w;
-  }
-  return slots;
-}
-
 String _n(int v) => v.toString().replaceAllMapped(
   RegExp(r'(\d)(?=(\d{3})+$)'),
   (m) => '${m[1]},',
 );
 
-/// Skill and luck on one plot. A column for every way the guess could have come
-/// out, as tall as the pool it leaves and as wide as the chance of it, the
-/// biggest pools (the likeliest) on the left.
-///
-/// * Skill is about the dashed line, E: the pool the guess leaves on average,
-///   measured between N (no split at all) and the dotted line, E*, what the best
-///   real word in the list leaves. The lower E sits, the better the guess.
-/// * Luck is about the column you landed in: the middle of the plot is 0%, to
-///   its left a bigger pool than half the outcomes, to its right a smaller one.
-class SplitPlot extends StatelessWidget {
-  const SplitPlot({
+/// One way a guess could have come out: the chance of it and the bits it would
+/// gain (-log2 of the chance).
+class Outcome {
+  const Outcome(this.chance, this.gain);
+  final double chance;
+  final double gain;
+}
+
+/// Every outcome of [guess] against [eligible] under [weights], the one that
+/// gains least first (the biggest group), and the index of the outcome that
+/// [answer] gave.
+({List<Outcome> outcomes, int landed}) outcomesOf(
+  List<String> eligible,
+  String guess,
+  String answer,
+  Map<String, int>? weights,
+) {
+  final mass = <int, double>{};
+  var total = 0.0;
+  for (final w in eligible) {
+    final x = weights == null ? 1.0 : max(weights[w] ?? 1, 1).toDouble();
+    mass[patternCode(w, guess)] = (mass[patternCode(w, guess)] ?? 0) + x;
+    total += x;
+  }
+  final key = patternCode(answer, guess);
+  final keys = mass.keys.toList()
+    ..sort((a, b) {
+      final c = mass[b]!.compareTo(mass[a]!);
+      return c != 0 ? c : a.compareTo(b);
+    });
+  return (
+    outcomes: [for (final k in keys) Outcome(mass[k]! / total, bitsOf(mass[k]! / total))],
+    landed: max(0, keys.indexOf(key)),
+  );
+}
+
+/// Skill, risk and luck on one plot of a guess: a column for every way it could
+/// have come out, as wide as its chance and as tall as the bits it would gain,
+/// the one that gains least on the left. The area under the columns is the
+/// expected gain, H (the dashed line is its mean height), and H* (dotted) is
+/// the best guess's. The columns that gain more than expected are green, the
+/// tail a risky guess gambles on. The yellow line splits the chance in half, the
+/// middle outcome, where luck is 0, and the column you landed in is outlined,
+/// named by the guess.
+class GainPlot extends StatelessWidget {
+  const GainPlot({
     super.key,
     required this.outcomes,
+    required this.landed,
+    required this.expected,
     required this.best,
-    required this.skill,
-    required this.luck,
-    this.skillReady = true,
+    required this.word,
   });
-  final Outcomes outcomes;
-
-  /// E*, the smallest expected pool any real guess leaves.
-  final double best;
-
-  /// The skill and luck of the guess, as in the table.
-  final double skill, luck;
-
-  /// False while E* is still being worked out.
-  final bool skillReady;
+  final List<Outcome> outcomes;
+  final int landed;
+  final double expected;
+  final double? best;
+  final String word;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final o = outcomes;
-    final dim = TextStyle(
-      fontSize: 11,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
-    Widget key(Color color, String label) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(width: 8, height: 8, color: color),
-        const SizedBox(width: 6),
-        Text(label, style: dim),
-      ],
-    );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Caption('skill and luck'),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 110,
-          width: double.infinity,
-          child: LayoutBuilder(
-            builder: (context, box) => CustomPaint(
-              key: const ValueKey('split-plot'),
-              painter: SplitPainter(
-                o,
-                splitSlots(o, box.maxWidth),
-                best: best,
-                base: c.onSurface.withValues(alpha: .3),
-                yours: c.primary,
-                expected: c.secondary,
-                bestLine: yellowOf(c),
-                axis: c.outlineVariant,
-              ),
-            ),
-          ),
+    return SizedBox(
+      height: 170,
+      width: double.infinity,
+      child: CustomPaint(
+        key: const ValueKey('gain-plot'),
+        painter: GainPainter(
+          outcomes,
+          landed,
+          expected,
+          best,
+          word,
+          less: c.outline,
+          more: riskColor(c).withValues(alpha: .6),
+          even: c.onSurface.withValues(alpha: dimAlpha),
+          skill: skillColor(c),
+          luck: luckColor(c),
+          ink: c.onSurface,
+          axis: c.outline,
+          label: c.onSurface.withValues(alpha: dimAlpha),
+          font: DefaultTextStyle.of(context).style.fontFamily,
         ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Expanded(child: Text('unlucky', style: dim)),
-            Text('0% luck', style: dim.copyWith(color: luckColor(c))),
-            Expanded(
-              child: Text('lucky', textAlign: TextAlign.right, style: dim),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 16,
-          runSpacing: 2,
-          children: [
-            key(c.primary, 'where you landed'),
-            key(c.secondary, 'average pool'),
-            key(yellowOf(c), 'best real guess'),
-          ],
-        ),
-        const SizedBox(height: 8),
-        metricLine(
-          context,
-          skillReady
-              ? skillLine(skill)
-              : 'skill: working out the best real guess…',
-          'skill',
-          key: const ValueKey('skill-caption'),
-          style: const TextStyle(fontSize: 13, height: 1.4),
-        ),
-        const SizedBox(height: 6),
-        metricLine(
-          context,
-          luckLine(luck),
-          'luck',
-          key: const ValueKey('luck-caption'),
-          style: const TextStyle(fontSize: 13, height: 1.4),
-        ),
-        reviewLink(
-          WikiPage.skillLuckDaring,
-          label: 'how skill, luck and daring work',
-        ),
-      ],
+      ),
     );
   }
 }
 
-class SplitPainter extends CustomPainter {
-  SplitPainter(
-    this.o,
-    this.slots, {
-    required this.best,
-    required this.base,
-    required this.yours,
-    required this.expected,
-    required this.bestLine,
+class GainPainter extends CustomPainter {
+  GainPainter(
+    this.outcomes,
+    this.landed,
+    this.expected,
+    this.best,
+    this.word, {
+    required this.less,
+    required this.more,
+    required this.even,
+    required this.skill,
+    required this.luck,
+    required this.ink,
     required this.axis,
+    required this.label,
+    required this.font,
   });
-  final Outcomes o;
-  final List<Slot> slots;
-  final double best;
-  final Color base, yours, expected, bestLine, axis;
+  final List<Outcome> outcomes;
+  final int landed;
+  final double expected;
+  final double? best;
+  final String word;
+  final Color less, more, even, skill, luck, ink, axis, label;
+  final String? font;
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (o.sizes.isEmpty) return;
-    final maxSize = o.sizes.first;
-    double h(num s) => max(1.5, s / maxSize * size.height);
-    canvas.drawLine(
-      Offset(0, size.height),
-      Offset(size.width, size.height),
-      Paint()..color = axis,
-    );
-    // the columns, side by side: where there are many they read as one area
-    for (final s in slots) {
-      final landed = s.index == o.landed;
-      final gap = s.width > 8 ? 1.0 : 0.0;
-      canvas.drawRect(
-        Rect.fromLTRB(
-          s.x0 + gap,
-          size.height - h(o.sizes[s.index]),
-          max(s.x1 - gap, s.x0 + gap + (landed ? 2.0 : 0.5)),
-          size.height,
+  void _text(
+    Canvas canvas,
+    String t,
+    Offset at, {
+    Color? color,
+    TextAlign align = TextAlign.left,
+    double fontSize = 10,
+  }) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: t,
+        style: TextStyle(
+          fontSize: fontSize,
+          color: color ?? label,
+          fontFamily: font,
         ),
-        Paint()
-          ..color = landed ? yours : base
-          ..isAntiAlias = s.width < 3,
-      );
-    }
-    // the middle of the plot: 0% luck
-    canvas.drawLine(
-      Offset(size.width / 2, 0),
-      Offset(size.width / 2, size.height),
-      Paint()
-        ..color = axis
-        ..strokeWidth = 1,
-    );
-    // E, the average pool (dashed) and E*, the best real guess's (dotted)
-    void line(double value, Color color, double dash, double gap) {
-      final y = size.height - h(value);
-      final p = Paint()
-        ..color = color
-        ..strokeWidth = 1.5;
-      for (var x = 0.0; x < size.width; x += dash + gap) {
-        canvas.drawLine(Offset(x, y), Offset(min(x + dash, size.width), y), p);
-      }
-    }
-
-    line(o.expected, expected, 8, 4);
-    line(best, bestLine, 2, 3);
-    // where you landed: always marked, however thin the column
-    for (final s in slots) {
-      if (s.index != o.landed) continue;
-      final top = size.height - h(o.sizes[o.landed]);
-      final p = Paint()
-        ..color = yours
-        ..strokeWidth = 2;
-      canvas.drawLine(Offset(s.center, top), Offset(s.center, size.height), p);
-      canvas.drawCircle(Offset(s.center, top), 3.5, p);
-    }
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final dx = switch (align) {
+      TextAlign.right => -tp.width,
+      TextAlign.center => -tp.width / 2,
+      _ => 0.0,
+    };
+    tp.paint(canvas, at + Offset(dx, 0));
   }
 
   @override
-  bool shouldRepaint(SplitPainter old) =>
-      old.o != o || old.slots != slots || old.best != best;
+  void paint(Canvas canvas, Size size) {
+    if (outcomes.isEmpty) return;
+    const left = 30.0, right = 4.0, top = 8.0, bottom = 38.0;
+    final w = size.width - left - right, h = size.height - top - bottom;
+    final topGain = max(outcomes.last.gain, best ?? 0);
+    final max_ = max(topGain, 1e-9) * 1.08;
+    double y(double g) => top + h - g / max_ * h;
+
+    var x = left;
+    Rect? yours;
+    for (var i = 0; i < outcomes.length; i++) {
+      final o = outcomes[i];
+      final cw = o.chance * w;
+      final r = Rect.fromLTRB(
+        x,
+        y(o.gain),
+        x + max(cw - .4, .3),
+        top + h,
+      );
+      final color = o.gain > expected + 1e-9
+          ? more
+          : o.gain < expected - 1e-9
+          ? less
+          : even;
+      canvas.drawRect(r, Paint()..color = color);
+      if (i == landed) {
+        yours = Rect.fromLTRB(
+          r.left,
+          min(r.top, top + h - 1.5),
+          max(r.right, r.left + 1.5),
+          top + h,
+        );
+      }
+      x += cw;
+    }
+    canvas.drawLine(
+      Offset(left, top + h),
+      Offset(size.width - right, top + h),
+      Paint()..color = axis,
+    );
+    // the expected gain (dashed), the best guess's (dotted)
+    void dashed(double v, double on, double off, Color color) {
+      final p = Paint()
+        ..color = color
+        ..strokeWidth = 1.5;
+      var dx = left;
+      while (dx < size.width - right) {
+        canvas.drawLine(
+          Offset(dx, y(v)),
+          Offset(min(dx + on, size.width - right), y(v)),
+          p,
+        );
+        dx += on + off;
+      }
+    }
+
+    dashed(expected, 5, 3, skill);
+    if (best != null) dashed(best!, 1.5, 2.5, skill);
+    // luck 0: the middle of the chance
+    final mid = left + w / 2;
+    canvas.drawLine(
+      Offset(mid, top),
+      Offset(mid, top + h),
+      Paint()
+        ..color = luck
+        ..strokeWidth = 1.5,
+    );
+    _text(canvas, 'luck 0', Offset(mid - 4, top), color: luck, align: TextAlign.right);
+    final hLabel = 'H ${expected.toStringAsFixed(2)}'
+        '${best == null ? '' : ' · H* ${best!.toStringAsFixed(2)}'}';
+    _text(
+      canvas,
+      hLabel,
+      Offset(size.width - right, y(max(expected, best ?? expected)) - 12),
+      color: skill,
+      align: TextAlign.right,
+    );
+    if (yours != null) {
+      canvas.drawRect(
+        yours,
+        Paint()
+          ..color = ink
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+      final cx = yours.center.dx;
+      final tri = Path()
+        ..moveTo(cx - 5, top + h + 12)
+        ..lineTo(cx + 5, top + h + 12)
+        ..lineTo(cx, top + h + 4)
+        ..close();
+      canvas.drawPath(tri, Paint()..color = ink);
+      _text(
+        canvas,
+        word,
+        Offset(cx.clamp(left + 20, size.width - right - 20), top + h + 15),
+        color: ink,
+        align: TextAlign.center,
+      );
+    }
+    _text(canvas, 'least gain', Offset(left, size.height - 12));
+    _text(
+      canvas,
+      'most gain',
+      Offset(size.width - right, size.height - 12),
+      align: TextAlign.right,
+    );
+    _text(canvas, topGain.toStringAsFixed(0), Offset(left - 4, top), align: TextAlign.right);
+    _text(canvas, '0', Offset(left - 4, top + h - 11), align: TextAlign.right);
+  }
+
+  @override
+  bool shouldRepaint(GainPainter old) =>
+      old.outcomes != outcomes ||
+      old.landed != landed ||
+      old.expected != expected ||
+      old.best != best;
+}
+
+/// One guess of the waterfall: where it starts (the bits gained so far), what it
+/// was expected to add (H, in skill's colour), what luck added or took away, and
+/// where the best guess would have been expected to land (H*, a thin line).
+class WaterfallStep {
+  const WaterfallStep(this.word, this.expected, this.gain, this.best);
+  final String word;
+  final double expected;
+  final double gain;
+  final double? best;
+}
+
+/// The bits gained guess by guess, racing to the bits needed to find the word
+/// (the line at the right). Only the guesses up to the one on show are drawn.
+class BitsWaterfall extends StatelessWidget {
+  const BitsWaterfall({
+    super.key,
+    required this.steps,
+    required this.needed,
+    required this.current,
+  });
+  final List<WaterfallStep> steps;
+  final double needed;
+
+  /// The index of the guess on show, drawn bold.
+  final int current;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return SizedBox(
+      height: steps.length * 34.0 + 44,
+      width: double.infinity,
+      child: CustomPaint(
+        key: const ValueKey('bits-waterfall'),
+        painter: WaterfallPainter(
+          steps,
+          needed,
+          current,
+          skill: skillColor(c),
+          luck: luckColor(c),
+          ink: c.onSurface,
+          grid: c.outlineVariant,
+          label: c.onSurface.withValues(alpha: dimAlpha),
+          font: DefaultTextStyle.of(context).style.fontFamily,
+        ),
+      ),
+    );
+  }
+}
+
+class WaterfallPainter extends CustomPainter {
+  WaterfallPainter(
+    this.steps,
+    this.needed,
+    this.current, {
+    required this.skill,
+    required this.luck,
+    required this.ink,
+    required this.grid,
+    required this.label,
+    required this.font,
+  });
+  final List<WaterfallStep> steps;
+  final double needed;
+  final int current;
+  final Color skill, luck, ink, grid, label;
+  final String? font;
+
+  void _text(
+    Canvas canvas,
+    String t,
+    Offset at, {
+    Color? color,
+    bool bold = false,
+    bool right = false,
+  }) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: t,
+        style: TextStyle(
+          fontSize: 10,
+          color: color ?? label,
+          fontFamily: font,
+          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, at - Offset(right ? tp.width : 0, 0));
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const left = 62.0, right = 36.0, rowH = 34.0;
+    final top = max(12.0, (needed / 2).ceilToDouble() * 2);
+    double x(double v) => left + v / top * (size.width - left - right);
+    final bottom = size.height - 20;
+    for (var t = 0.0; t <= top; t += 2) {
+      canvas.drawLine(
+        Offset(x(t), 18),
+        Offset(x(t), bottom),
+        Paint()..color = grid,
+      );
+      _text(canvas, t.round().toString(), Offset(x(t) - 3, size.height - 14));
+    }
+    var cum = 0.0;
+    for (var i = 0; i < steps.length; i++) {
+      final s = steps[i];
+      final y = i * rowH + 26, h = 14.0;
+      final start = cum, end = cum + s.gain, exp = start + s.expected;
+      _text(
+        canvas,
+        '${i + 1} ${s.word}',
+        Offset(0, y + 1),
+        color: i == current ? ink : label,
+        bold: i == current,
+      );
+      if (i > 0) {
+        canvas.drawLine(
+          Offset(x(start), y - (rowH - h)),
+          Offset(x(start), y),
+          Paint()..color = label,
+        );
+      }
+      final got = min(exp, end);
+      canvas.drawRect(
+        Rect.fromLTRB(x(start), y, max(x(got), x(start) + .5), y + h),
+        Paint()..color = skill,
+      );
+      if (end > exp + .005) {
+        canvas.drawRect(
+          Rect.fromLTRB(x(exp), y, x(end), y + h),
+          Paint()..color = luck,
+        );
+      } else if (end < exp - .005) {
+        final p = Paint()
+          ..color = luck
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5;
+        final r = Rect.fromLTRB(x(end), y, x(exp), y + h);
+        for (var dx = r.left; dx < r.right; dx += 5) {
+          canvas.drawLine(Offset(dx, r.top), Offset(min(dx + 3, r.right), r.top), p);
+          canvas.drawLine(Offset(dx, r.bottom), Offset(min(dx + 3, r.right), r.bottom), p);
+        }
+        canvas.drawLine(r.topLeft, r.bottomLeft, p);
+        canvas.drawLine(r.topRight, r.bottomRight, p);
+      }
+      if (s.best != null) {
+        final b = start + s.best!;
+        final ly = y + h + 5;
+        final p = Paint()
+          ..color = skill
+          ..strokeWidth = 1.5;
+        canvas.drawLine(Offset(x(start), ly), Offset(x(b), ly), p);
+        canvas.drawLine(Offset(x(b), ly - 3), Offset(x(b), ly + 3), p);
+      }
+      _text(
+        canvas,
+        end.toStringAsFixed(2),
+        Offset(x(max(end, exp)) + 5, y + 1),
+        color: ink,
+      );
+      cum = end;
+    }
+    canvas.drawLine(
+      Offset(x(needed), 16),
+      Offset(x(needed), bottom),
+      Paint()
+        ..color = ink
+        ..strokeWidth = 1.5,
+    );
+    _text(
+      canvas,
+      'needed ${needed.toStringAsFixed(2)} bits',
+      Offset(x(needed) - 4, 2),
+      color: ink,
+      right: true,
+    );
+  }
+
+  @override
+  bool shouldRepaint(WaterfallPainter old) =>
+      old.steps != steps || old.needed != needed || old.current != current;
 }
 
 /// The last try: nothing is left to learn, so the words that fit the clues are
@@ -397,8 +537,8 @@ class EqualChancePlot extends StatelessWidget {
           style: const TextStyle(fontSize: 13, height: 1.4),
         ),
         reviewLink(
-          WikiPage.skillLuckDaring,
-          label: 'how skill, luck and daring work',
+          WikiPage.skillLuckRisk,
+          label: 'how skill, luck and risk work',
         ),
       ],
     );

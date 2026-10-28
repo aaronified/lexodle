@@ -223,6 +223,8 @@ class _GamePageState extends State<GamePage> {
         // skill is measured against the best real guess, which the
         // background analysis is still finding out
         provisional: analyseWhilePlaying,
+        fresh: freshLetters(word, guesses.take(guesses.length - 1)),
+        greens: knownGreens(marks.take(marks.length - 1)),
       ),
     );
     befores.add(eligible);

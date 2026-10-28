@@ -76,7 +76,7 @@
       <b>Skill</b> says how well the guess split the words left, <b>luck</b> how the answer fell,
       and <b>daring</b> how far you went for the word instead of the clues. The review steps
       through your game against the best picks at each point.
-      <a href="https://github.com/aaronified/lexodle/wiki/Skill-luck-and-daring">What the numbers mean</a>.
+      <a href="https://github.com/aaronified/lexodle/wiki/Skill-luck-and-risk">What the numbers mean</a>.
     </td>
     <td width="40%"><img src="docs/screenshots/review.png" width="100%" alt="The review of a game: skill, luck and words left per guess"></td>
   </tr>

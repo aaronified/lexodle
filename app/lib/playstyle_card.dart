@@ -21,9 +21,10 @@ Widget hairlineCard(BuildContext context, {Key? key, required Widget child}) {
   );
 }
 
-/// The playstyle now, the traits it is read from, and which of the six the
-/// player has been. The history page shows it at its top, and the home page's
-/// playstyle button opens it in a popup ([PlaystyleDialog]).
+/// The playstyle now, the habits it is read from with the exact shares, and
+/// which of the six the player has been. The history page shows it at its top,
+/// and the home page's playstyle button opens it in a popup
+/// ([PlaystyleDialog]).
 class PlaystyleCard extends StatefulWidget {
   const PlaystyleCard(this.lang, {super.key, this.bordered = true});
 
@@ -38,10 +39,60 @@ class PlaystyleCard extends StatefulWidget {
   State<PlaystyleCard> createState() => _PlaystyleCardState();
 }
 
+/// How a style is read: the long explanation behind the info dot.
+final howStyleIsRead =
+    'A playstyle is two habits. The early game is a guess made with 64 or more '
+    'words still possible. The end game is 16 or fewer words possible, or 3 or '
+    'more greens known. Each guess in a phase is counted as one thing, the first '
+    'that applies. Early: a gambler (risk $gamblerRisk or more), else a maximiser '
+    '(in the top $topRank% of all the guesses scored, by expected gain), else an '
+    'eliminator ($freshLetters or more letters never tried). End: a closer (the '
+    'guess fits every clue), else a prober (it does not fit, ranks in the top '
+    '$topRank% and 3 or more words are left). Your habit in a phase is what '
+    'most of its guesses were, if that is ${(habitShare * 100).round()}% or '
+    'more. The two habits make the style. It is read from your last '
+    '$styleWindow classic games, and needs $minRatedGames games and '
+    '$minPhaseGuesses guesses in each phase.';
+
 class _PlaystyleCardState extends State<PlaystyleCard> {
   /// The style whose description is open: tapped, since a tooltip needs a hover
   /// or a long press, which a phone does not give.
   Playstyle? _picked;
+
+  Widget _behaviour(
+    ColorScheme c,
+    Habits h,
+    Behaviour b, {
+    required bool habit,
+  }) {
+    final n = h.opportunities[b.phase] ?? 0;
+    final k = h.counts[b] ?? 0;
+    final color = habit ? c.primary : c.onSurface.withValues(alpha: dimAlpha);
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        key: ValueKey('habit-${b.label}'),
+        children: [
+          TablerIcon(b.icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              b.label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: habit ? FontWeight.bold : FontWeight.normal,
+                color: habit ? null : color,
+              ),
+            ),
+          ),
+          Text(
+            n == 0 ? '–' : '${(h.share(b) * 100).round()}%  ($k of $n)',
+            style: TextStyle(fontSize: 12, color: color),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +100,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
     final lang = widget.lang;
     final p = appState.styleOf(lang);
     final t = traitsOf(appState.history, lang: lang);
+    final h = habitsOf(appState.history, lang: lang);
     final games = appState.history.recentClassic(100, lang).length;
     final dim = TextStyle(
       fontSize: 12,
@@ -60,7 +112,28 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
             '${minRatedGames - games == 1 ? 'game' : 'games'} to be given a '
             'playstyle';
       }
-      return 'not enough guesses with a choice in them yet';
+      return 'not enough early and end game guesses yet';
+    }
+
+    Widget phaseBlock(Phase phase, String title, String sub) {
+      final habit = h.habit(phase);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Caption(title)),
+              Text(
+                '${h.opportunities[phase] ?? 0} guesses',
+                style: dim.copyWith(fontSize: 11),
+              ),
+            ],
+          ),
+          Text(sub, style: dim.copyWith(fontSize: 11)),
+          for (final b in Behaviour.values.where((b) => b.phase == phase))
+            _behaviour(c, h, b, habit: b == habit),
+        ],
+      );
     }
 
     final body = Column(
@@ -108,7 +181,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
             children: [
               StatTile('skill', t.skill.round().toString()),
               StatTile('luck', luckText(t.luck)),
-              StatTile('daring', t.daring.round().toString()),
+              StatTile('risk', t.risk.round().toString()),
               StatTile('games', t.games.toString()),
             ],
           ),
@@ -119,6 +192,25 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
             style: dim.copyWith(fontSize: 11),
           ),
         ],
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            const Expanded(child: Caption('your habits')),
+            InfoDot(howStyleIsRead, title: 'how a style is read'),
+          ],
+        ),
+        const SizedBox(height: 6),
+        phaseBlock(
+          Phase.early,
+          'early game',
+          '$earlyFrom or more words possible',
+        ),
+        const SizedBox(height: 10),
+        phaseBlock(
+          Phase.end,
+          'end game',
+          '$endUpTo or fewer words possible, or $endGreens greens',
+        ),
         const SizedBox(height: 14),
         // the six share the card's width, so they fit the narrowest phone,
         // and a name shrinks before it can touch its neighbour
@@ -139,7 +231,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
         ),
         const SizedBox(height: 6),
         // what the tapped style is, in the card, so it fits any width
-        if (_picked case final s?)
+        if (_picked case final s?) ...[
           Text(
             '${s.name}: ${s.blurb}'
             '${s.id == p?.id
@@ -149,8 +241,20 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
                 : ' (not yet)'}',
             key: const ValueKey('style-detail'),
             style: const TextStyle(fontSize: 12, height: 1.4),
-          )
-        else
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              TablerIcon(s.early.icon, size: 16, color: c.primary),
+              const SizedBox(width: 6),
+              Text('${s.early.label} early', style: dim),
+              const SizedBox(width: 12),
+              TablerIcon(s.end.icon, size: 16, color: c.primary),
+              const SizedBox(width: 6),
+              Text('${s.end.label} at the end', style: dim),
+            ],
+          ),
+        ] else
           Text(
             appState.styleChangesOf(lang) == 0
                 ? 'tap a style to see what it is. it moves with the way you '
@@ -168,7 +272,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
   }
 }
 
-/// One number with its name under it. skill, luck and daring show in their
+/// One number with its name under it. skill, luck and risk show in their
 /// own colours.
 class StatTile extends StatelessWidget {
   const StatTile(this.label, this.value, {super.key, this.prefix = 'stat'});
@@ -181,8 +285,8 @@ class StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    // skill, luck and daring always show in their own colours
-    final measure = const ['skill', 'luck', 'daring'].contains(label);
+    // skill, luck and risk always show in their own colours
+    final measure = const ['skill', 'luck', 'risk'].contains(label);
     final color = measure ? metricColor(c, label) : null;
     return Column(
       mainAxisSize: MainAxisSize.min,

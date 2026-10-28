@@ -23,7 +23,7 @@ Tap your playstyle on the home screen. A row of flags picks the language (see
   you played, and the playstyle that period alone would have. Luck is drawn about the middle
   line, which is a luck of 0%. A fourth line, **guesses**, is the expected number of guesses a
   game takes, on its own scale (1 to 7) at the right edge; see
-  [Skill, luck and daring](Skill-luck-and-daring);
+  [Skill, luck and daring](Skill-luck-and-risk);
 - the games, newest first: **the last ten, and "load 10 more" as you need them**. Each opens its
   review, rebuilt from the guesses alone.
 

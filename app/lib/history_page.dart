@@ -297,7 +297,7 @@ class _Overall extends StatelessWidget {
                 whole(s.scored == 0 ? null : s.skill),
                 prefix: 'overall',
               ),
-              StatTile('daring', whole(s.daring), prefix: 'overall'),
+              StatTile('risk', whole(s.risk), prefix: 'overall'),
             ],
           ),
           const SizedBox(height: 8),
@@ -317,7 +317,7 @@ class _Overall extends StatelessWidget {
             Text(
               '${s.stale} ${s.stale == 1 ? 'game' : 'games'} saved under '
               'older maths ${s.stale == 1 ? 'is' : 'are'} left out of skill, '
-              'luck and daring until scored again',
+              'luck and risk until scored again',
               key: const ValueKey('overall-stale'),
               style: dim,
             ),
@@ -329,7 +329,7 @@ class _Overall extends StatelessWidget {
 }
 
 /// How play changed over time: a bar for each of the last 50 weeks or months,
-/// for skill, daring, share won or games, and what was in the one picked.
+/// for skill, risk, share won or games, and what was in the one picked.
 class _Trend extends StatefulWidget {
   const _Trend(this.lang, {super.key});
 
@@ -404,13 +404,10 @@ class _TrendState extends State<_Trend> {
       for (var j = sel - 1; j >= 0; j--) {
         final before = series.of(periods[j].stats);
         if (before == null) continue;
-        final tenths = series == PeriodSeries.guesses;
-        final d = tenths
-            ? ((now - before) * 10).round() / 10
-            : (now - before).round();
+        final d = (now - before).round();
         changes[series] = d == 0
             ? 'no change'
-            : '${d > 0 ? '+' : '−'}${tenths ? d.abs().toStringAsFixed(1) : d.abs().round()}'
+            : '${d > 0 ? '+' : '−'}${d.abs()}'
                   '${series == PeriodSeries.luck ? '%' : ''}';
         break;
       }
@@ -467,7 +464,6 @@ class _TrendState extends State<_Trend> {
                 _Choice(
                   switch (series) {
                     PeriodSeries.luck => 'luck (50 = 0%)',
-                    PeriodSeries.guesses => 'guesses (right scale)',
                     _ => series.label,
                   },
                   key: ValueKey('series-${series.name}'),
@@ -502,7 +498,7 @@ class _TrendState extends State<_Trend> {
                         'skill',
                       ),
                       const TextSpan(text: ' · '),
-                      metricSpan(c, 'daring ${whole(s.daring)}', 'daring'),
+                      metricSpan(c, 'risk ${whole(s.risk)}', 'risk'),
                       const TextSpan(text: ' · '),
                       metricSpan(
                         c,
@@ -514,14 +510,6 @@ class _TrendState extends State<_Trend> {
             key: const ValueKey('period-detail'),
             style: const TextStyle(fontSize: 12, height: 1.4),
           ),
-          if (guessBreakdown(s) case final b?) ...[
-            const SizedBox(height: 6),
-            Text.rich(
-              _guessSpan(c, b, s),
-              key: const ValueKey('period-guesses'),
-              style: const TextStyle(fontSize: 12, height: 1.4),
-            ),
-          ],
           if (p.style != null) ...[
             const SizedBox(height: 6),
             Row(
@@ -543,13 +531,7 @@ class _TrendState extends State<_Trend> {
                 children: [
                   for (final (i, e) in changes.entries.indexed) ...[
                     if (i > 0) const TextSpan(text: ' · '),
-                    e.key == PeriodSeries.guesses
-                        ? TextSpan(text: '${e.key.label} ${e.value}')
-                        : metricSpan(
-                            c,
-                            '${e.key.label} ${e.value}',
-                            e.key.label,
-                          ),
+                    metricSpan(c, '${e.key.label} ${e.value}', e.key.label),
                   ],
                   TextSpan(text: ' on the last $unit you played'),
                 ],
@@ -562,33 +544,6 @@ class _TrendState extends State<_Trend> {
       ),
     );
   }
-}
-
-/// "expected guesses 4.4 = 7.8 - 3.6 skill + 0.3 luck + 0.0 daring": what each
-/// of skill, luck and daring did to the guesses a game was expected to take,
-/// with what the won games really took beside it. Each term in its own colour.
-TextSpan _guessSpan(ColorScheme c, GuessBreakdown b, PlayStats s) {
-  TextSpan term(double v, String name) => metricSpan(
-    c,
-    ' ${v < 0 ? '−' : '+'} ${v.abs().toStringAsFixed(1)} $name',
-    name,
-  );
-  final actual = s.meanTries == null
-      ? ''
-      : ' · won games took ${s.meanTries!.toStringAsFixed(1)}';
-  return TextSpan(
-    children: [
-      TextSpan(
-        text:
-            'expected guesses ${b.total.toStringAsFixed(1)} = '
-            '${b.base.toStringAsFixed(1)}',
-      ),
-      term(b.skill, 'skill'),
-      term(b.luck, 'luck'),
-      term(b.daring, 'daring'),
-      TextSpan(text: actual),
-    ],
-  );
 }
 
 /// A small switch of the trend card.
