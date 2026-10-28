@@ -156,6 +156,8 @@ class Daily {
   }
 }
 
+final _roman = RegExp(r'^[ivxlcdm]+$');
+
 /// The tries of a daily in [mode]: the fixed daily difficulty, with the extra
 /// tries the mode has (9 for a quartet, 10 for a relay race).
 int dailyTriesOf(GameMode mode) => triesFor(mode, dailyTries);
@@ -176,7 +178,14 @@ class DailyMulti {
   static DailyMulti? of(WordBank bank, GameMode mode, [String? date]) {
     final d = date ?? dailyDate();
     final all = bank.answers(dailyLength);
-    final pool = all.length > dailyAnswers ? all.sublist(0, dailyAnswers) : all;
+    final common = all.length > dailyAnswers
+        ? all.sublist(0, dailyAnswers)
+        : all;
+    // a Roman numeral (xviii) is in the lists but is no word to be set
+    final pool = [
+      for (final w in common)
+        if (!_roman.hasMatch(w)) w,
+    ];
     if (pool.length < mode.boards) return null;
     final code = bank.language.code;
     String word(int k, int j, int t) =>
