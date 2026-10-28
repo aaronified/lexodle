@@ -145,6 +145,7 @@ void main() {
         final marks = g.letterMarks();
         // brute force: for every board and letter, the best of its marks
         for (var b = 0; b < 4; b++) {
+          if (g.boards[b].solved) continue;
           final best = <String, Mark>{};
           for (final guess in g.guesses.take(g.boards[b].marks.length)) {
             final m = evaluate(four[b], guess);
@@ -157,11 +158,12 @@ void main() {
             expect(marks[e.key]![b], e.value, reason: 'board $b ${e.key}');
           }
         }
-        // hand-checked: 'l' is green on light (board 1), absent on house
-        expect(marks['l']![1], Mark.correct);
-        expect(marks['l']![0], Mark.absent);
-        // 'h' is in the right place in house, which was guessed second
-        expect(marks['h']![0], Mark.correct, reason: 'house, second guess');
+        // light and house solved boards 1 and 0: neither shows a colour
+        expect(g.boards[1].solved && g.boards[0].solved, isTrue);
+        for (final e in marks.entries) {
+          expect(e.value[0], isNull, reason: e.key);
+          expect(e.value[1], isNull, reason: e.key);
+        }
         // a letter no guess has used is not there at all
         expect(marks['z'], isNull);
       });
@@ -192,15 +194,17 @@ void main() {
         expect(m.skip(1), everyElement(isNull));
       });
 
-      test('a solved board keeps what it showed, and stops adding', () {
+      test('a solved board leaves the keyboard: its colours go', () {
         final g = MultiGame(GameMode.quartet, four, 9);
         g.guess('light'); // solves board 1
         g.guess('dying');
         final m = g.letterMarks();
-        expect(m['l']![1], Mark.correct);
-        // 'y' came after board 1 was solved, so board 1 never saw it
-        expect(m['y']![1], isNull);
-        expect(m['y']![3], Mark.correct);
+        // board 1 is solved, so none of its colours show
+        for (final e in m.entries) {
+          expect(e.value[1], isNull, reason: e.key);
+        }
+        expect(m['y']![3], isNull, reason: 'dying solved board 3');
+        expect(m['l']![0], isNotNull);
       });
     });
   });

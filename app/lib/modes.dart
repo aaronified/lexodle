@@ -185,6 +185,8 @@ class MultiGame {
   Map<String, List<Mark?>> letterMarks() {
     final out = <String, List<Mark?>>{};
     for (var b = 0; b < boards.length; b++) {
+      // a solved board has nothing more to say: its colours leave the keyboard
+      if (boards[b].solved) continue;
       final marks = boards[b].marks;
       for (var r = 0; r < marks.length; r++) {
         for (var i = 0; i < marks[r].length; i++) {
