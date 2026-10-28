@@ -348,6 +348,62 @@ void main() {
       expect(st['bits']!.hits.first, 2);
     });
 
+    test('the ones that count up start again, and count the rounds', () {
+      expect(byId('wins').cycles, isTrue);
+      expect(byId('quick').cycles, isFalse);
+      final states = <String, AchState>{};
+      final earned = <String>[];
+      for (var i = 0; i < 520; i++) {
+        earned.addAll([
+          for (final a in advanceAchievements(states, game(), 'd$i')) a.id,
+        ]);
+      }
+      final st = states['wins']!;
+      // 500 wins finish a round: 1, 25, 100 and 500, then it starts again
+      expect(st.rounds, 1);
+      expect(st.times, 4, reason: 'the medal stays');
+      expect(st.hits[3], 1);
+      expect(st.hits[0], 2, reason: 'a win, and the first of the next round');
+      expect(st.value, 20);
+      expect(earned.where((id) => id == 'wins').length, 5);
+    });
+
+    test('the languages count again from those already won', () {
+      final states = <String, AchState>{};
+      advanceAchievements(
+        states,
+        game(),
+        'a',
+        counts: {'langs': 9, 'mastered': 0, 'completed': 0},
+        languages: 17,
+      );
+      expect(states['languages']!.rounds, 1);
+      expect(states['languages']!.times, 4);
+      expect(states['languages']!.base, 9);
+      advanceAchievements(
+        states,
+        game(),
+        'b',
+        counts: {'langs': 11, 'mastered': 0, 'completed': 0},
+        languages: 17,
+      );
+      expect(states['languages']!.hits[0], 2, reason: '2 more languages');
+      expect(states['languages']!.value, 2);
+    });
+
+    test('a streak counts the runs that get to each level', () {
+      final (st, _) = play([
+        game(),
+        game(),
+        game(),
+        game(won: false),
+        game(),
+        game(),
+        game(),
+      ]);
+      expect(st['streak']!.hits.first, 2);
+    });
+
     test('the counts are kept', () {
       final s = AchState(times: 2, hits: [5, 2, 0, 0]);
       expect(AchState.fromJson(s.toJson()).hits, [5, 2, 0, 0]);

@@ -16,7 +16,7 @@ the easy version to the platinum one.
 | quartet, relay race | wins, last-try wins, spare tries, free rides, daily streaks of their own |
 | playstyles | one for each style, **chameleon** (change style), **many hats** (all six) |
 
-Each is earned once a language's number reaches its target (a best-of number, such as the best
+Every level is counted: once the top level of a counting achievement (wins, games, languages, dailies and the like) is earned, it starts again from 0 and each round is counted, the medal staying; the best-of ones (fastest win, skill, luck, risk, bits) count each game that does what a level asks, and a streak counts each run that gets to a level. The number shows as ×N. Each is earned once a language's number reaches its target (a best-of number, such as the best
 skill, has no bar; a counting one shows how far you are). The page shows the medal on each,
 filters by medal, and lists what you have earned: how many times (for the ones that can be done
 again, such as a win in one guess), the first day and the latest.

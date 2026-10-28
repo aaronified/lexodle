@@ -78,6 +78,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
           times: best.times,
           dates: List.of(best.dates),
           hits: List.of(best.hits),
+          cycle: best.cycle,
+          rounds: best.rounds,
         );
       }
     }
@@ -230,9 +232,14 @@ class _Row extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final done = st.times.clamp(0, a.count);
-    final complete = done >= a.count;
+    // one that counts up starts a new round once done, and counts the rounds
+    final complete = done >= a.count && !a.cycles;
     // what it asks next (or, once complete, its top level)
-    final next = a.atLevel(complete ? a.count - 1 : done);
+    final next = a.atLevel(
+      a.cycles
+          ? st.cycle.clamp(0, a.count - 1)
+          : (done >= a.count ? a.count - 1 : done),
+    );
     final top = done == 0 ? null : a.atLevel(done - 1);
     final medal = medalColor(c, next.medal);
     final earnedColor = top == null ? null : medalColor(c, top.medal);
@@ -421,7 +428,7 @@ class _Row extends StatelessWidget {
                 ),
               ),
               // done again: the games that did what the top level asks
-              if (st.hits.length >= done && st.hits[done - 1] > 1)
+              if (st.hits.length >= done && st.hits[done - 1] >= 1)
                 Text(
                   '×${st.hits[done - 1]}',
                   key: ValueKey('times-${a.id}'),

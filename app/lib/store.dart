@@ -387,6 +387,16 @@ class Achievement {
 
   /// How many levels it has in all.
   int get count => levels.length;
+
+  /// Whether it starts again once its top level is earned: the ones that count
+  /// up do (the wins start from 0, the languages from those won so far), and
+  /// every round is counted. The best-of ones count the games that do it
+  /// again, the streaks the runs that get there, and a few cannot go further.
+  bool get cycles =>
+      track == Track.metric &&
+      hit == null &&
+      !separate &&
+      !const {'completed', 'mastered', 'stylesWorn'}.contains(metric);
 }
 
 /// The metrics that count up (they get a progress bar), and those that count
@@ -744,6 +754,7 @@ final achievements = <Achievement>[
     (n) => 'solve the daily $n days in a row',
     'streakClassic',
     _lv([3, 14, 60, 365], ['kindling', 'bonfire', 'forge', 'eternal flame']),
+    hit: (r, t) => r.daily && r.mode == GameMode.classic && r.dailyStreak == t,
     separate: true,
     icons: const ['candle', 'flame', 'flare', 'sparkles'],
   ),
@@ -762,6 +773,7 @@ final achievements = <Achievement>[
         'quartet phoenix',
       ],
     ),
+    hit: (r, t) => r.daily && r.mode == GameMode.quartet && r.dailyStreak == t,
     separate: true,
     icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
     mode: GameMode.quartet,
@@ -776,6 +788,7 @@ final achievements = <Achievement>[
       [3, 10, 30, 100],
       ['relay kindling', 'relay campfire', 'relay furnace', 'relay phoenix'],
     ),
+    hit: (r, t) => r.daily && r.mode == GameMode.relay && r.dailyStreak == t,
     separate: true,
     icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
     mode: GameMode.relay,
@@ -829,9 +842,13 @@ class AchState {
     Set<String>? seen,
     this.value = 0,
     List<int>? hits,
+    int? cycle,
+    this.rounds = 0,
+    this.base = 0,
   }) : dates = dates ?? [],
        seen = seen ?? {},
-       hits = hits ?? [];
+       hits = hits ?? [],
+       cycle = cycle ?? times;
 
   /// How many times it has been earned, and on which days.
   int times;
@@ -850,6 +867,13 @@ class AchState {
   /// the achievements that can be earned again.
   final List<int> hits;
 
+  /// For the ones that count up and start again once they are done: how many
+  /// levels of the round now are earned, how many rounds are done, and where
+  /// the count of the languages stood when this round began.
+  int cycle;
+  int rounds;
+  double base;
+
   String? get first => dates.isEmpty ? null : dates.first;
   String? get latest => dates.isEmpty ? null : dates.last;
 
@@ -860,6 +884,9 @@ class AchState {
     'seen': seen.toList(),
     if (value != 0) 'value': value,
     if (hits.any((h) => h != 0)) 'hits': hits,
+    if (cycle != times) 'cycle': cycle,
+    if (rounds != 0) 'rounds': rounds,
+    if (base != 0) 'base': base,
   };
 
   static AchState fromJson(Map<String, dynamic> j) => AchState(
@@ -869,6 +896,9 @@ class AchState {
     seen: {for (final x in j['seen'] ?? []) x as String},
     value: (j['value'] ?? 0).toDouble(),
     hits: [for (final h in j['hits'] ?? []) h as int],
+    cycle: j['cycle'],
+    rounds: j['rounds'] ?? 0,
+    base: (j['base'] ?? 0).toDouble(),
   );
 }
 
@@ -982,13 +1012,44 @@ List<Achievement> advanceAchievements(
   int languages = 0,
 }) {
   final earned = <Achievement>[];
+  void ensureHits(Achievement a, AchState st) {
+    while (st.hits.length < a.count) {
+      st.hits.add(0);
+    }
+  }
+
   // every level the number has now reached, in order: one game can earn several
-  void earnLevels(Achievement a, AchState st) {
-    while (st.times < a.count &&
-        a.reached(st.times, st.value, languages: languages)) {
-      earned.add(a.atLevel(st.times));
-      st.times++;
-      st.dates.add(today);
+  void earnLevels(Achievement a, AchState st, {double? count}) {
+    if (!a.cycles) {
+      while (st.times < a.count &&
+          a.reached(st.times, st.value, languages: languages)) {
+        earned.add(a.atLevel(st.times));
+        st.times++;
+        st.cycle = st.times;
+        st.dates.add(today);
+      }
+      return;
+    }
+    // it counts up and starts again: each level is counted every round, and the
+    // medal stays once earned
+    ensureHits(a, st);
+    while (st.cycle < a.count &&
+        a.reached(st.cycle, st.value, languages: languages)) {
+      earned.add(a.atLevel(st.cycle));
+      st.hits[st.cycle]++;
+      if (st.cycle >= st.times) {
+        st.times = st.cycle + 1;
+        st.dates.add(today);
+      }
+      st.cycle++;
+    }
+    if (st.cycle >= a.count) {
+      st.rounds++;
+      st.cycle = 0;
+      st.value = 0;
+      st.progress = 0;
+      st.seen.clear();
+      if (count != null) st.base = count;
     }
   }
 
@@ -1012,10 +1073,11 @@ List<Achievement> advanceAchievements(
     if (a.track != Track.metric) continue;
     final m = metrics[a.metric];
     if (m == null) {
-      // a metric that counts languages
-      final v = (counts[a.metric] ?? 0).toDouble();
-      st.value = v;
-      earnLevels(a, st);
+      // a metric that counts languages: the languages now, less those when the
+      // round began
+      final now = (counts[a.metric] ?? 0).toDouble();
+      st.value = now - st.base;
+      earnLevels(a, st, count: now);
       continue;
     }
     // a game played in a mode the metric is not about leaves it alone: it
@@ -1023,14 +1085,15 @@ List<Achievement> advanceAchievements(
     if (!m.modes.contains(r.mode)) continue;
     st.value = m.step(st, r);
     earnLevels(a, st);
-    // a game that does what a level asks counts again, once it is earned
+    // a game that does what a level asks counts again, once it is earned; a
+    // streak counts the runs that get to each level
     final hit = a.hit;
-    if (hit != null) {
-      while (st.hits.length < a.count) {
-        st.hits.add(0);
-      }
+    final run = a.metric == 'streak';
+    if (hit != null || run) {
+      ensureHits(a, st);
       for (var i = 0; i < st.times && i < a.count; i++) {
-        if (hit(r, a.levels[i].target)) st.hits[i]++;
+        final t = a.levels[i].target;
+        if (run ? st.progress == t : hit!(r, t)) st.hits[i]++;
       }
     }
   }
