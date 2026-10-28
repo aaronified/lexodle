@@ -90,7 +90,7 @@ table.st { font-size: 12px; } table.st td { padding: 6px 3px; line-height: 1.25;
 .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .cols3 > div { min-width: 0; }
 .cols3 .pk b { font-size: 14px; }
-svg.la { display: inline-block; width: 9px; height: 9px; vertical-align: -1px; margin-left: 2px; }
+svg.la { display: inline-block; width: 11px; height: 11px; vertical-align: -1px; margin-left: 3px; }
 
 
 .cols3 + x {}
@@ -276,11 +276,13 @@ function behaviourPopup(g) {
     '<button class="link" type="button" id="allstyles">all six playstyles</button>', 'behaviour');
   $('allstyles').addEventListener('click', () => { closeLayer(); $('samples').click(); });
 }
-// luck as an arrow beside the risk: up when lucky, down when unlucky, the colour deeper the bigger the luck
+// luck beside the risk: a chevron pointing up when lucky and down when unlucky, doubled from 50% up, the colour deeper the bigger the luck
 function luckArrow(l) {
   if (Math.abs(l) < 5) return '<span class="dim" title="luck ' + pc(l) + '">–</span>';
-  const up = l > 0, depth = 30 + 70 * Math.min(1, Math.abs(l) / 100);
-  return '<svg class="la" viewBox="0 0 10 10" role="img" aria-label="luck ' + pc(l) + '" style="color:color-mix(in srgb,var(--' + (up ? 'up' : 'down') + ') ' + Math.round(depth) + '%,var(--dim))"><title>luck ' + pc(l) + '</title><path fill="currentColor" d="' + (up ? 'M5 1 L9.5 9 H0.5 Z' : 'M5 9 L9.5 1 H0.5 Z') + '"/></svg>';
+  const up = l > 0, big = Math.abs(l) >= 50, depth = 30 + 70 * Math.min(1, Math.abs(l) / 100);
+  const chev = y => up ? 'M1.6 ' + (y + 3.2) + ' L5 ' + y + ' L8.4 ' + (y + 3.2) : 'M1.6 ' + y + ' L5 ' + (y + 3.2) + ' L8.4 ' + y;
+  const paths = big ? chev(up ? 1.2 : 1.0) + ' ' + chev(up ? 5.6 : 5.4) : chev(up ? 3.4 : 3.2);
+  return '<svg class="la" viewBox="0 0 10 10" role="img" aria-label="luck ' + pc(l) + '" style="color:color-mix(in srgb,var(--' + (up ? 'up' : 'down') + ') ' + Math.round(depth) + '%,var(--dim))"><title>luck ' + pc(l) + '</title><path d="' + paths + '" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
 function table(list, upto, nav) {
   const head = '<div class="wrap"><table class="st"><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk <span class="luck">▲▼</span></th><th>type</th></tr></thead><tbody>';
