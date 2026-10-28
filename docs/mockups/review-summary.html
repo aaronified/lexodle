@@ -104,16 +104,16 @@ const ANSWER = 'PRISM';
 // pool sizes of every outcome of each guess; the pool you landed in is the next level's word count
 const G = [
   { word: 'STARE', n: 3000, sizes: [184,195,182,169,157,146,136,126,118,109,102,95,88,82,76,71,66,61,57,53,49,46,43,40,37,34,32,30,28,26,24,22,21,19,18,17,15,14,13,12,12,11,10,9,9,8,7,7,6,6,6,5,5,4,4,4,4,3,3,3,3,3,2,2,2,2,2,2,2].concat(Array(41).fill(1)), landedSize: 46, estar: 36.7, bestWord: 'TRACE',
-    top: [['TRACE',100],['CRATE',99],['SLATE',98]], bottom: [['MUMMY',7],['FUZZY',4],['JAZZY',1]],
+    top: [['TRACE',100],['CRATE',99],['SLATE',98]], bottom: [['MUMMY',7],['FUZZY',4],['JAZZY',1]], dstar: 64, dareWord: 'FUZZY',
     dare: [['FUZZY',64,4],['MUMMY',61,7],['JUMBO',58,12]], lucky: [['PRISM',99],['PRIMO',97],['PRISE',96]] },
   { word: 'BRISK', n: 46, sizes: [11,9,8,6,4,3,2,1,1,1], landedSize: 9, estar: 4.2, bestWord: 'CHOIR',
-    top: [['CHOIR',100],['SPLIT',98],['CLOMP',95]], bottom: [['FUZZY',11],['MAMMA',6],['XYLYL',0]],
+    top: [['CHOIR',100],['SPLIT',98],['CLOMP',95]], bottom: [['FUZZY',11],['MAMMA',6],['XYLYL',0]], dstar: 70, dareWord: 'FUZZY',
     dare: [['FUZZY',70,11],['MAMMA',66,6],['XYLYL',62,0]], lucky: [['PRISM',96],['PRISE',91],['PRIMP',87]] },
   { word: 'CRISP', n: 9, sizes: [4,2,1,1,1], landedSize: 2, estar: 1.1, bestWord: 'FRISK',
-    top: [['FRISK',100],['PRISM',97],['GRIST',92]], bottom: [['MUMMY',0],['QUEEN',3],['AUDIO',9]],
+    top: [['FRISK',100],['PRISM',97],['GRIST',92]], bottom: [['MUMMY',0],['QUEEN',3],['AUDIO',9]], dstar: 56, dareWord: 'MUMMY',
     dare: [['MUMMY',56,0],['QUEEN',44,3],['AUDIO',33,9]], lucky: [['PRISM',78],['FRISK',56],['GRIST',44]] },
   { word: 'PRISM', n: 2, sizes: [1,1], landedSize: 1, estar: 1, bestWord: 'PRISM',
-    top: [['PRISM',100],['FRISK',100],['PRISE',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]], ties: true,
+    top: [['PRISM',100],['FRISK',100],['PRISE',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]], ties: true, dstar: 0, dareWord: '',
     dare: [['MUMMY',0,0],['FUZZY',0,0],['JAZZY',0,0]], lucky: [['PRISM',0],['FRISK',0],['PRISE',0]] },
 ];
 
@@ -130,7 +130,9 @@ G.forEach(g => {
   const share = test => g.sizes.filter(test).reduce((a, b) => a + b, 0) / g.n * 100;
   g.wider = share(s => s > g.E + 1e-9);
   g.narrower = share(s => s < g.E - 1e-9);
-  g.daring = g.wider - g.narrower;
+  g.D = g.wider - g.narrower;
+  // scored against the most daring guess, as skill is against the best (D* needs every accepted word)
+  g.daring = g.dstar > 0 ? Math.min(100, Math.max(0, g.D) / g.dstar * 100) : 0;
   g.bigger = share(s => s > g.landedSize);
   g.smaller = share(s => s < g.landedSize);
   g.luck = g.bigger - g.smaller;
@@ -167,13 +169,13 @@ $('head').textContent = 'The word was ' + ANSWER + '. You solved it in ' + G.len
 // ---- summary ----
 let sel = 1;
 function renderRows() {
-  $('rows').innerHTML = G.map((g, i) => '<tr class="pick' + (i === sel ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + N(g.n) + '</td><td class="skill">' + f0(g.skill) + '</td><td class="daring">' + pc(g.daring) + '</td><td class="luck">' + pc(g.luck) + '</td></tr>').join('');
+  $('rows').innerHTML = G.map((g, i) => '<tr class="pick' + (i === sel ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + N(g.n) + '</td><td class="skill">' + f0(g.skill) + '</td><td class="daring">' + f0(g.daring) + '</td><td class="luck">' + pc(g.luck) + '</td></tr>').join('');
   $('rows').querySelectorAll('tr').forEach(tr => {
     const go = () => { sel = +tr.dataset.i; renderAll(); };
     tr.addEventListener('click', go);
     tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
   });
-  $('means').innerHTML = '<tr><td>average</td><td></td><td class="skill">' + f1(M.skill) + '</td><td class="daring">' + sg(M.daring) + '%</td><td class="luck">' + sg(M.luck) + '%</td></tr>';
+  $('means').innerHTML = '<tr><td>average</td><td></td><td class="skill">' + f1(M.skill) + '</td><td class="daring">' + f1(M.daring) + '</td><td class="luck">' + sg(M.luck) + '%</td></tr>';
 }
 function renderTabs() {
   $('tabs').innerHTML = G.map((g, i) => '<button role="tab" type="button" aria-selected="' + (i === sel) + '" data-i="' + i + '">guess ' + (i + 1) + '</button>').join('');
@@ -220,9 +222,9 @@ function plot(g) {
 function renderLevel() {
   const g = G[sel];
   const picks = (title, arr, cls, fmt, extra) => '<div><h3 class="' + cls + '" style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="' + cls + '">' + fmt(p[1]) + (extra ? ' <span class="dim small">' + extra(p) + '</span>' : '') + '</span></div>').join('') + '</div>';
-  const side = g.daring > 10 ? 'Usually a tall pool, with a small chance of a short one.'
-    : g.daring < -10 ? 'Usually a short pool, with a small chance of a tall one.'
-    : 'Tall and short pools are about equally likely.';
+  const side = g.D > 10 ? 'Usually a tall pool, with a small chance of a short one.'
+    : g.D < -10 ? 'Usually a short pool, with a small chance of a tall one: no gamble, so daring is 0.'
+    : 'Tall and short pools are about equally likely, so there is little gamble.';
   $('level').innerHTML =
     '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' + tiles(g.word) + '<span class="dim">' + N(g.n) + ' words possible</span></div>' +
     '<div class="block"><h3>All outcomes of your guess</h3><p class="small dim">Each column is one possible outcome: as wide as its chance, as tall as the pool it leaves. Skill and daring depend only on the columns. Luck depends on which column you landed in. The yellow line splits the chance in half: the middle outcome, luck 0.</p>' + plot(g) + '</div>' +
@@ -235,14 +237,16 @@ function renderLevel() {
       '<span>your shrink, ln(N ÷ E)</span><span>ln(' + f1(g.n / g.E) + ') = ' + f3(g.lnE) + '</span>' +
       '<span>best shrink, ln(N ÷ E*)</span><span>ln(' + f1(g.n / g.estar) + ') = ' + f3(g.room) + '</span>' +
       '<i class="rule"></i><span class="res skill">skill = ' + f3(g.lnE) + ' ÷ ' + f3(g.room) + ' × 100</span><span class="res skill">' + f1(g.skill) + '</span>' +
-    '</div><p class="small dim">E* is the only value not taken from the plot. It comes from scoring every accepted word as a guess.</p></div>' +
+    '</div><p class="small dim">E* and D* are the only values not taken from the plot. Both come from scoring every accepted word as a guess.</p></div>' +
 
     '<div class="block"><h3 class="daring">Daring</h3>' +
-    '<p class="small dim">A daring guess usually leaves a pool taller than E and rarely a much shorter one: a gamble on the short tail. A pool of exactly E counts for neither.</p>' +
+    '<p class="small dim">A daring guess usually leaves a pool taller than E and rarely a much shorter one: a gamble on the short tail. A pool of exactly E counts for neither. Daring is scored against the most daring guess, as skill is against the best.</p>' +
     '<div class="sum">' +
       '<span>chance of a pool taller than E</span><span>' + f1(g.wider) + '%</span>' +
       '<span>chance of a pool shorter than E</span><span>' + f1(g.narrower) + '%</span>' +
-      '<i class="rule"></i><span class="res daring">daring = taller − shorter</span><span class="res daring">' + sg(g.daring) + '%</span>' +
+      '<span>taller − shorter, at least 0</span><span>' + f1(Math.max(0, g.D)) + '%</span>' +
+      '<span>most daring guess, D*' + (g.dareWord ? ' (' + g.dareWord + ')' : '') + '</span><span>' + f1(g.dstar) + '%</span>' +
+      '<i class="rule"></i><span class="res daring">daring = ' + f1(Math.max(0, g.D)) + ' ÷ ' + f1(g.dstar) + ' × 100</span><span class="res daring">' + f1(g.daring) + '</span>' +
     '</div><p class="small dim">' + side + '</p></div>' +
 
     '<div class="block"><h3 class="luck">Luck</h3>' +
@@ -254,8 +258,8 @@ function renderLevel() {
     '</div></div>' +
 
     '<div class="block"><div class="cols">' + picks('best skill', g.top, 'skill', f0) + picks('worst skill', g.bottom, 'skill', f0) +
-      picks('most daring', g.dare, 'daring', pc, p => 'skill ' + p[2]) + picks('luckiest', g.lucky, 'luck', pc) + '</div>' +
-    '<p class="small dim">Among all accepted words. Yours: skill <b class="skill">' + f0(g.skill) + '</b>, daring <b class="daring">' + pc(g.daring) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>. Luckiest is for the actual answer, ' + ANSWER + ': guessing it is always the luckiest.' + (g.ties ? ' With two words left every guess that separates them ties.' : '') + '</p></div>';
+      picks('most daring', g.dare, 'daring', v => g.dstar > 0 ? f0(v / g.dstar * 100) : '0', p => 'skill ' + p[2]) + picks('luckiest', g.lucky, 'luck', pc) + '</div>' +
+    '<p class="small dim">Among all accepted words. Yours: skill <b class="skill">' + f0(g.skill) + '</b>, daring <b class="daring">' + f0(g.daring) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>. Luckiest is for the actual answer, ' + ANSWER + ': guessing it is always the luckiest.' + (g.ties ? ' With two words left every guess that separates them ties.' : '') + '</p></div>';
 }
 
 // ---- tries: bits ----
