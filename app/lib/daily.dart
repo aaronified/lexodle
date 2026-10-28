@@ -141,9 +141,19 @@ int dailyIndex(String lang, String date, int n) {
 
 /// Today's (or [date]'s) daily: the date and its answer.
 class Daily {
-  const Daily(this.date, this.answer);
+  const Daily(
+    this.date,
+    this.answer, {
+    this.length = dailyLength,
+    this.tries = dailyTries,
+  });
   final String date;
   final String answer;
+
+  /// The word length and the tries: the daily's own, or those of a puzzle a
+  /// link carries (its [date] is then empty).
+  final int length;
+  final int tries;
 
   /// The daily of [bank]'s language on [date] (default today), or null when the
   /// language has no words of the daily's length.
@@ -166,10 +176,21 @@ int dailyTriesOf(GameMode mode) => triesFor(mode, dailyTries);
 /// [dailyAnswers] most common words, and share no letter, in the order they are
 /// played.
 class DailyMulti {
-  const DailyMulti(this.date, this.mode, this.answers);
+  DailyMulti(
+    this.date,
+    this.mode,
+    this.answers, {
+    this.length = dailyLength,
+    int? tries,
+  }) : tries = tries ?? dailyTriesOf(mode);
   final String date;
   final GameMode mode;
   final List<String> answers;
+
+  /// The word length and the tries: the daily's own, or those of a puzzle a
+  /// link carries (its [date] is then empty).
+  final int length;
+  final int tries;
 
   /// The daily of [mode] for [bank]'s language on [date] (default today), or
   /// null when the language has too few words of the daily's length.

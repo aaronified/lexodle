@@ -30,10 +30,19 @@ cannot reroll it, and it is played once a day.
 
 ## Sharing a puzzle
 
-The link button in the corner of a daily (any mode) copies a link to that day's puzzle:
-`https://aaronified.github.io/lexodle/#/puzzle?l=en&m=quartet&d=2026-10-28` (language, mode and day).
-Whoever opens it in a browser plays the same words, in that language and mode, with only the colours
-and the tries left, as **practice**: it is never saved or counted (no streak, calendar, history,
-statistics or achievements), and the answer is not in the link. A day that has not come yet, or a
-language or mode the app does not know, opens the home page instead. The link opens the web app; it
-does not open the Android app by itself.
+The link button in the corner of any game (a daily or an ordinary game, in every mode) offers two
+links to copy:
+
+- **the puzzle**: the word (four for a quartet or a relay race) goes in the link only as a hash, so it
+  does not give the word away; the length and the tries are in it;
+- **the puzzle and my guesses**: the same, with the guesses made so far in plain. It opens already
+  played, so whoever opens it sees the guesses and what they showed, and can go on from there.
+
+`https://aaronified.github.io/lexodle/#/puzzle?l=en&m=classic&n=5&t=6&w=<hash>&g=crane.slate`
+
+Whoever opens a link plays it in a browser as **practice**, with only the colours and the tries left:
+it is never saved or counted (no streak, calendar, history, statistics or achievements). The app finds
+the word by hashing the words of that length in the language until one matches; a hash is a disguise,
+not a secret, since anyone can do the same. A link with a damaged hash, a day that has not come yet,
+or a language or mode the app does not know opens the home page instead. The link opens the web app;
+it does not open the Android app by itself.

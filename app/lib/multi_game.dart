@@ -36,6 +36,7 @@ class MultiGamePage extends StatefulWidget {
     this.random,
     this.daily,
     this.practice = false,
+    this.replay = const [],
   });
   final WordBank bank;
 
@@ -46,6 +47,9 @@ class MultiGamePage extends StatefulWidget {
   /// A daily opened by a link: played as practice, so nothing is saved or
   /// counted (no streak, history, statistics or achievements).
   final bool practice;
+
+  /// Guesses a link carries, played at once when the page opens.
+  final List<String> replay;
 
   /// Where the answers are drawn from; tests pass a seeded one.
   final Random? random;
@@ -92,14 +96,24 @@ class _MultiGamePageState extends State<MultiGamePage> {
   @override
   void initState() {
     super.initState();
-    length = _daily == null ? appState.length : dailyLength;
-    tries = _daily == null
-        ? triesFor(mode, appState.tries)
-        : dailyTriesOf(mode);
+    length = _daily?.length ?? appState.length;
+    tries = _daily?.tries ?? triesFor(mode, appState.tries);
     _pool = widget.bank.answers(length);
     _letters = widget.bank.letters(length);
     _reset();
     _resume();
+    _replay();
+  }
+
+  /// The guesses a link carried are played at once, as if the page had been
+  /// left half played. Nothing is saved or counted: it is practice.
+  void _replay() {
+    for (final g in widget.replay) {
+      if (game.over || g.length != length || !widget.bank.valid.contains(g)) {
+        break;
+      }
+      _apply(g, restoring: true);
+    }
   }
 
   /// A daily left half played, or finished, comes back as it was, so that
@@ -383,10 +397,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
       child: Scaffold(
         appBar: AppBar(
           actions: [
-            if (_daily != null)
-              SharePuzzleButton(
-                Puzzle(widget.bank.language.code, mode, _daily.date),
+            SharePuzzleButton(
+              (withGuesses) => Puzzle.hashed(
+                widget.bank.language.code,
+                mode,
+                length: length,
+                tries: tries,
+                answers: [for (final b in game.boards) b.answer],
+                guesses: withGuesses ? List.of(game.guesses) : const [],
               ),
+            ),
           ],
           title: Row(
             mainAxisSize: MainAxisSize.min,
@@ -401,8 +421,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
                             ' · $length · $tries tries'
                       : '${mode.label} · '
                             '${widget.bank.language.name.toLowerCase()}'
-                            ' · ${widget.practice ? 'practice' : 'daily'} · '
-                            '${_daily.date}',
+                            ' · ${widget.practice ? 'practice' : 'daily'}'
+                            '${_daily.date.isEmpty ? '' : ' · ${_daily.date}'}',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                 ),
@@ -666,7 +686,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
             if (_daily != null)
               Caption(
                 widget.practice
-                    ? 'practice ${_daily.date} · not counted'
+                    ? 'practice${_daily.date.isEmpty ? '' : ' ${_daily.date}'} · not counted'
                     : 'daily ${_daily.date} · streak '
                           '${appState.dailyStreakFor(widget.bank.language.code, mode)} · '
                           'the next words come at midnight, your time',
