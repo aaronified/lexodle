@@ -191,13 +191,13 @@ function plot(g) {
     }
     x += w;
   });
-  const yH = y(g.H), yS = y(g.hstar), close = Math.abs(yH - yS) < 12, mid = L + pw / 2;
+  const yH = y(g.H), yS = y(g.hstar), close = Math.abs(yH - yS) < 22, mid = L + pw / 2;
   const lines =
     '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yH + '" y2="' + yH + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="5 3"/>' +
     '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yS + '" y2="' + yS + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="1.5 2.5"/>' +
     '<line x1="' + mid + '" x2="' + mid + '" y1="' + T + '" y2="' + (T + ph) + '" stroke="var(--luck)" stroke-width="1.5"/>';
   const lab = (close
-      ? '<text x="' + (W_ - R) + '" y="' + (Math.min(yH, yS) - 4) + '" text-anchor="end" style="fill:var(--skill)">H = H* = ' + f2(g.H) + '</text>'
+      ? '<text x="' + (W_ - R) + '" y="' + (Math.min(yH, yS) - 4) + '" text-anchor="end" style="fill:var(--skill)">H ' + f2(g.H) + ' (dashed) · H* ' + f2(g.hstar) + ' (dotted)</text>'
       : '<text x="' + (W_ - R) + '" y="' + (yH + 11) + '" text-anchor="end" style="fill:var(--skill)">H ' + f2(g.H) + '</text><text x="' + (W_ - R) + '" y="' + (yS - 4) + '" text-anchor="end" style="fill:var(--skill)">H* ' + f2(g.hstar) + '</text>') +
     '<text x="' + (mid - 4) + '" y="' + (T + 8) + '" text-anchor="end" style="fill:var(--luck)">luck 0</text>';
   const axis =
