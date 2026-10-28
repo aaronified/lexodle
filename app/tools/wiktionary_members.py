@@ -40,7 +40,8 @@ def stream(name):
     req = urllib.request.Request(BASE.format(name), headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=120) as r, gzip.GzipFile(fileobj=r) as f:
         for line in f:
-            if line.startswith(b"INSERT INTO"):
+            # the rows are on the lines after INSERT INTO, or on the same line
+            if line.startswith((b"INSERT INTO", b"(")):
                 yield line.decode("utf-8", errors="replace")
 
 
