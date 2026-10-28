@@ -160,7 +160,7 @@ class _LicencesPageState extends State<LicencesPage> {
               key: ValueKey('licence-header-$r'),
               height: _headH,
               child: Padding(
-                padding: const EdgeInsets.only(left: 24, top: 12),
+                padding: const EdgeInsets.only(left: 19, top: 12),
                 child: Text(
                   r,
                   style: TextStyle(
@@ -182,7 +182,7 @@ class _LicencesPageState extends State<LicencesPage> {
                 MaterialPageRoute<void>(builder: (_) => _LicenceText(p)),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 19),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -258,7 +258,7 @@ class _LicencesPageState extends State<LicencesPage> {
               children: [
                 if (widget.about.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
+                    padding: const EdgeInsets.fromLTRB(19, 0, 19, 10),
                     child: Text(
                       widget.about,
                       key: const ValueKey('about-text'),
@@ -266,7 +266,7 @@ class _LicencesPageState extends State<LicencesPage> {
                     ),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 6),
+                  padding: const EdgeInsets.fromLTRB(19, 0, 19, 6),
                   child: TextField(
                     key: const ValueKey('licences-search'),
                     controller: _search,
@@ -290,7 +290,7 @@ class _LicencesPageState extends State<LicencesPage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
+                  padding: const EdgeInsets.fromLTRB(19, 0, 19, 4),
                   child: Text(
                     _all == null
                         ? 'reading the licences…'
@@ -350,7 +350,7 @@ class _LicenceText extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           key: const ValueKey('licence-text'),
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+          padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
           children: [
             for (final t in p.texts) ...[
               SelectableText(

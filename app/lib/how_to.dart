@@ -120,7 +120,7 @@ class HowToPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                    padding: const EdgeInsets.fromLTRB(19, 0, 19, 32),
                     children: [
                       const Text(
                         'how to play',
@@ -222,7 +222,7 @@ class HowToPage extends StatelessWidget {
                 ),
                 if (onboarding)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                    padding: const EdgeInsets.fromLTRB(19, 8, 19, 16),
                     child: FilledButton(
                       onPressed: () => startDefaultGame(context),
                       child: const Text('start playing'),

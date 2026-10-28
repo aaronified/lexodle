@@ -378,7 +378,7 @@ Future<T?> showHairlineDialog<T>(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(3),
         side: BorderSide(color: c.outline),
@@ -390,7 +390,7 @@ Future<T?> showHairlineDialog<T>(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 8, 0),
+              padding: const EdgeInsets.fromLTRB(19, 8, 8, 0),
               child: Row(
                 children: [
                   if (leading != null) ...[leading, const SizedBox(width: 10)],
@@ -421,7 +421,7 @@ Future<T?> showHairlineDialog<T>(
             ),
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+                padding: const EdgeInsets.fromLTRB(19, 4, 19, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: children,

@@ -370,9 +370,9 @@ class _HomePageState extends State<HomePage> {
                               Expanded(
                                 child: SingleChildScrollView(
                                   padding: const EdgeInsets.fromLTRB(
-                                    24,
+                                    19,
                                     40,
-                                    24,
+                                    19,
                                     24,
                                   ),
                                   child: Column(
@@ -474,9 +474,9 @@ class _HomePageState extends State<HomePage> {
                                 Padding(
                                   key: const ValueKey('pinned-play'),
                                   padding: const EdgeInsets.fromLTRB(
-                                    24,
+                                    19,
                                     8,
-                                    24,
+                                    19,
                                     16,
                                   ),
                                   child: _bottomBar(context, lang),
@@ -509,7 +509,7 @@ class _LanguagePopup extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(3),
         side: BorderSide(color: c.outline),

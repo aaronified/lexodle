@@ -197,7 +197,7 @@ class _SolverPageState extends State<SolverPage> {
                 children: [
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+                      padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
                       children: [
                         const Caption(
                           'type each guess you played, then tap '

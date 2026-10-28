@@ -3,9 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'history.dart';
 import 'logic.dart';
-import 'playstyle.dart';
 import 'review_plots.dart';
 import 'review_text.dart';
 import 'ui.dart';
@@ -212,7 +210,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 children: [
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+                      padding: const EdgeInsets.fromLTRB(19, 4, 19, 16),
                       children: [
                         _progress(c, n),
                         const SizedBox(height: 22),
@@ -258,7 +256,7 @@ class _ReviewPageState extends State<ReviewPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                    padding: const EdgeInsets.fromLTRB(19, 8, 19, 12),
                     child: Row(
                       children: [
                         Expanded(
@@ -409,7 +407,7 @@ class _ReviewPageState extends State<ReviewPage> {
   /// The board with the table beside it. Guesses after the current step stay
   /// blank, so stepping through gives nothing away.
   Widget _board(ColorScheme c) {
-    const wordsW = 60.0, skillW = 32.0, riskW = 62.0;
+    const wordsW = 60.0, skillW = 32.0, riskW = 46.0;
     const gap = 2.0;
     const padX = 8.0, padY = 7.0;
     final head = TextStyle(
@@ -548,7 +546,6 @@ class _ReviewPageState extends State<ReviewPage> {
   ) {
     final m = metric(i);
     final strong = i == step, dimmed = i < step;
-    final b = m.ready ? behaviourOf(guessRowOf(i + 1, m)) : null;
     return [
       SizedBox(
         width: wordsW,
@@ -587,36 +584,6 @@ class _ReviewPageState extends State<ReviewPage> {
                 dimmed: dimmed,
                 color: riskColor(c),
                 key: ValueKey('risk-$i'),
-              ),
-              SizedBox(
-                width: 16,
-                child: b == null
-                    ? null
-                    : GestureDetector(
-                        key: ValueKey('type-$i'),
-                        onTap: () => showHairlineDialog<void>(
-                          context,
-                          title: b.label,
-                          children: [
-                            Text(
-                              b.what,
-                              style: const TextStyle(fontSize: 13, height: 1.5),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'counted when: ${b.rule}',
-                              style: const TextStyle(fontSize: 12, height: 1.5),
-                            ),
-                          ],
-                        ),
-                        child: TablerIcon(
-                          b.icon,
-                          size: 14,
-                          color: c.onSurface.withValues(
-                            alpha: dimmed ? .4 : .7,
-                          ),
-                        ),
-                      ),
               ),
             ],
           ),
