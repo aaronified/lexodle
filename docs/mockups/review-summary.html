@@ -101,47 +101,42 @@ td, th { padding-inline: 4px; }
 
 <script>
 const ANSWER = 'PRISM';
-// pool sizes of every outcome of each guess; the pool you landed in is the next level's word count
+// pool sizes of every outcome of each guess; the pool you landed in is the next level's word count.
+// hstar: expected gain of the best guess; dstar: daring value of the most daring guess (both need every accepted word).
 const G = [
-  { word: 'STARE', n: 3000, sizes: [184,195,182,169,157,146,136,126,118,109,102,95,88,82,76,71,66,61,57,53,49,46,43,40,37,34,32,30,28,26,24,22,21,19,18,17,15,14,13,12,12,11,10,9,9,8,7,7,6,6,6,5,5,4,4,4,4,3,3,3,3,3,2,2,2,2,2,2,2].concat(Array(41).fill(1)), landedSize: 46, estar: 36.7, bestWord: 'TRACE',
-    top: [['TRACE',100],['CRATE',99],['SLATE',98]], bottom: [['MUMMY',7],['FUZZY',4],['JAZZY',1]], dstar: 64, dareWord: 'FUZZY',
-    dare: [['FUZZY',64,4],['MUMMY',61,7],['JUMBO',58,12]], lucky: [['PRISM',99],['PRIMO',97],['PRISE',96]] },
-  { word: 'BRISK', n: 46, sizes: [11,9,8,6,4,3,2,1,1,1], landedSize: 9, estar: 4.2, bestWord: 'CHOIR',
-    top: [['CHOIR',100],['SPLIT',98],['CLOMP',95]], bottom: [['FUZZY',11],['MAMMA',6],['XYLYL',0]], dstar: 70, dareWord: 'FUZZY',
+  { word: 'STARE', n: 3000, sizes: [184,195,182,169,157,146,136,126,118,109,102,95,88,82,76,71,66,61,57,53,49,46,43,40,37,34,32,30,28,26,24,22,21,19,18,17,15,14,13,12,12,11,10,9,9,8,7,7,6,6,6,5,5,4,4,4,4,3,3,3,3,3,2,2,2,2,2,2,2].concat(Array(41).fill(1)), landedSize: 46, hstar: 6.1, bestWord: 'TRACE', dstar: 60, dareWord: 'FUZZY',
+    top: [['TRACE',100],['CRATE',99],['SLATE',98]], bottom: [['MUMMY',7],['FUZZY',4],['JAZZY',1]],
+    dare: [['FUZZY',60,4],['MUMMY',57,7],['JUMBO',52,12]], lucky: [['PRISM',99],['PRIMO',97],['PRISE',96]] },
+  { word: 'BRISK', n: 46, sizes: [11,9,8,6,4,3,2,1,1,1], landedSize: 9, hstar: 3.4, bestWord: 'CHOIR', dstar: 70, dareWord: 'FUZZY',
+    top: [['CHOIR',100],['SPLIT',98],['CLOMP',95]], bottom: [['FUZZY',11],['MAMMA',6],['XYLYL',0]],
     dare: [['FUZZY',70,11],['MAMMA',66,6],['XYLYL',62,0]], lucky: [['PRISM',96],['PRISE',91],['PRIMP',87]] },
-  { word: 'CRISP', n: 9, sizes: [4,2,1,1,1], landedSize: 2, estar: 1.1, bestWord: 'FRISK',
-    top: [['FRISK',100],['PRISM',97],['GRIST',92]], bottom: [['MUMMY',0],['QUEEN',3],['AUDIO',9]], dstar: 56, dareWord: 'MUMMY',
+  { word: 'CRISP', n: 9, sizes: [4,2,1,1,1], landedSize: 2, hstar: 2.6, bestWord: 'FRISK', dstar: 56, dareWord: 'MUMMY',
+    top: [['FRISK',100],['PRISM',97],['GRIST',92]], bottom: [['MUMMY',0],['QUEEN',3],['AUDIO',9]],
     dare: [['MUMMY',56,0],['QUEEN',44,3],['AUDIO',33,9]], lucky: [['PRISM',78],['FRISK',56],['GRIST',44]] },
-  { word: 'PRISM', n: 2, sizes: [1,1], landedSize: 1, estar: 1, bestWord: 'PRISM',
-    top: [['PRISM',100],['FRISK',100],['PRISE',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]], ties: true, dstar: 0, dareWord: '',
+  { word: 'PRISM', n: 2, sizes: [1,1], landedSize: 1, hstar: 1, bestWord: 'PRISM', ties: true, dstar: 0, dareWord: '',
+    top: [['PRISM',100],['FRISK',100],['PRISE',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]],
     dare: [['MUMMY',0,0],['FUZZY',0,0],['JAZZY',0,0]], lucky: [['PRISM',0],['FRISK',0],['PRISE',0]] },
 ];
 
-// ---- the maths ----
+// ---- the maths: everything is information, in bits ----
 const log2 = Math.log2;
 G.forEach(g => {
   g.sizes.sort((a, b) => b - a);
   g.landed = g.sizes.indexOf(g.landedSize);
-  g.sumSq = g.sizes.reduce((a, s) => a + s * s, 0);
-  g.E = g.sumSq / g.n;
-  g.room = Math.log(g.n / g.estar);
-  g.lnE = Math.log(g.n / g.E);
-  g.skill = Math.min(100, Math.max(0, g.lnE / g.room * 100));
-  const share = test => g.sizes.filter(test).reduce((a, b) => a + b, 0) / g.n * 100;
-  g.wider = share(s => s > g.E + 1e-9);
-  g.narrower = share(s => s < g.E - 1e-9);
-  g.D = g.wider - g.narrower;
-  // scored against the most daring guess, as skill is against the best (D* needs every accepted word)
+  // gain of each outcome: bits removed if the answer is in that group
+  g.gains = g.sizes.map(s => log2(g.n / s));
+  g.H = g.sizes.reduce((a, s, i) => a + s / g.n * g.gains[i], 0);          // expected gain
+  g.skill = Math.min(100, g.H / g.hstar * 100);
+  const share = test => g.sizes.reduce((a, s, i) => a + (test(g.gains[i]) ? s : 0), 0) / g.n * 100;
+  g.more = share(x => x > g.H + 1e-9);                                      // chance of gaining more than expected
+  g.less = share(x => x < g.H - 1e-9);
+  g.D = g.less - g.more;
   g.daring = g.dstar > 0 ? Math.min(100, Math.max(0, g.D) / g.dstar * 100) : 0;
-  g.bigger = share(s => s > g.landedSize);
-  g.smaller = share(s => s < g.landedSize);
-  g.luck = g.bigger - g.smaller;
-  // bits
-  g.H = -g.sizes.reduce((a, s) => a + s / g.n * log2(s / g.n), 0);
-  g.bSkill = log2(g.n / g.E);
-  g.bShape = g.H - g.bSkill;
-  g.cut = log2(g.n / g.landedSize);
-  g.bLuck = g.cut - g.H;
+  g.gain = g.gains[g.landed];                                                // what you gained
+  g.bLuck = g.gain - g.H;                                                    // luck in bits
+  g.gotMore = share(x => x > g.gain + 1e-9);
+  g.gotLess = share(x => x < g.gain - 1e-9);
+  g.luck = g.gotLess - g.gotMore;                                            // luck score
 });
 const mean = k => G.reduce((a, g) => a + g[k], 0) / G.length;
 const M = { skill: mean('skill'), daring: mean('daring'), luck: mean('luck') };
@@ -152,9 +147,8 @@ const $ = id => document.getElementById(id);
 const f0 = v => Math.round(v).toString();
 const f1 = v => v.toFixed(1);
 const f2 = v => v.toFixed(2);
-const f3 = v => v.toFixed(3);
-const sg = (v, d = 1) => (Math.abs(v) < Math.pow(10, -d) / 2 ? '' : v < 0 ? '\u2212' : '+') + Math.abs(v).toFixed(d);
-const pc = v => (Math.round(v) === 0 ? '0%' : (v > 0 ? '+' : '\u2212') + Math.abs(Math.round(v)) + '%');
+const sg = (v, d = 1) => (Math.abs(v) < Math.pow(10, -d) / 2 ? '' : v < 0 ? '−' : '+') + Math.abs(v).toFixed(d);
+const pc = v => (Math.round(v) === 0 ? '0%' : (v > 0 ? '+' : '−') + Math.abs(Math.round(v)) + '%');
 const N = v => v.toLocaleString('en-US');
 function tiles(guess) {
   const marks = Array(5).fill('x'), left = {};
@@ -180,79 +174,77 @@ function renderTabs() {
   $('tabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { sel = +b.dataset.i; renderAll(); }));
 }
 
-// ---- plot: one column per outcome, as wide as its chance and as tall as the pool it leaves ----
+// ---- plot: one column per outcome, as wide as its chance and as tall as the bits it gains ----
 function plot(g) {
-  const W_ = 420, H = 186, L = 30, R = 8, T = 10, B = 42, pw = W_ - L - R, ph = H - T - B, max = g.sizes[0] * 1.08;
+  const W_ = 420, H = 186, L = 30, R = 8, T = 10, B = 42, pw = W_ - L - R, ph = H - T - B, max = g.gains[g.gains.length - 1] * 1.08 || 1;
   const y = v => T + ph - v / max * ph;
   let x = L, bars = '', mark = '';
   g.sizes.forEach((s, i) => {
-    const w = s / g.n * pw;
-    const wide = s > g.E + 1e-9, narrow = s < g.E - 1e-9;
-    const fill = wide ? 'var(--daring)' : (narrow ? 'var(--line2)' : 'var(--dim)');
-    bars += '<rect x="' + x.toFixed(2) + '" y="' + y(s).toFixed(2) + '" width="' + Math.max(w - .4, .3).toFixed(2) + '" height="' + (T + ph - y(s)).toFixed(2) + '" fill="' + fill + '" opacity="' + (wide ? .6 : 1) + '"/>';
+    const w = s / g.n * pw, v = g.gains[i];
+    const more = v > g.H + 1e-9, less = v < g.H - 1e-9;
+    const fill = more ? 'var(--daring)' : (less ? 'var(--line2)' : 'var(--dim)');
+    bars += '<rect x="' + x.toFixed(2) + '" y="' + y(v).toFixed(2) + '" width="' + Math.max(w - .4, .3).toFixed(2) + '" height="' + (T + ph - y(v)).toFixed(2) + '" fill="' + fill + '" opacity="' + (more ? .6 : 1) + '"/>';
     if (i === g.landed) {
       const cx = x + w / 2;
-      bars += '<rect x="' + x.toFixed(2) + '" y="' + y(s).toFixed(2) + '" width="' + Math.max(w - .4, 1.5).toFixed(2) + '" height="' + (T + ph - y(s)).toFixed(2) + '" fill="none" stroke="var(--fg)" stroke-width="2"/>';
+      bars += '<rect x="' + x.toFixed(2) + '" y="' + y(v).toFixed(2) + '" width="' + Math.max(w - .4, 1.5).toFixed(2) + '" height="' + Math.max(T + ph - y(v), 1.5).toFixed(2) + '" fill="none" stroke="var(--fg)" stroke-width="2"/>';
       mark = '<path d="M' + (cx - 5) + ' ' + (T + ph + 12) + ' L' + (cx + 5) + ' ' + (T + ph + 12) + ' L' + cx + ' ' + (T + ph + 4) + ' Z" fill="var(--fg)"/><text x="' + Math.min(Math.max(cx, L + 14), W_ - R - 14) + '" y="' + (T + ph + 24) + '" text-anchor="middle" style="fill:var(--fg)">you</text>';
     }
     x += w;
   });
-  const yE = y(g.E), yS = y(g.estar), close = Math.abs(yE - yS) < 12, mid = L + pw / 2;
+  const yH = y(g.H), yS = y(g.hstar), close = Math.abs(yH - yS) < 12, mid = L + pw / 2;
   const lines =
-    '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yE + '" y2="' + yE + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="5 3"/>' +
+    '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yH + '" y2="' + yH + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="5 3"/>' +
     '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + yS + '" y2="' + yS + '" stroke="var(--skill)" stroke-width="1.5" stroke-dasharray="1.5 2.5"/>' +
     '<line x1="' + mid + '" x2="' + mid + '" y1="' + T + '" y2="' + (T + ph) + '" stroke="var(--luck)" stroke-width="1.5"/>';
   const lab = (close
-      ? '<text x="' + (W_ - R) + '" y="' + (Math.min(yE, yS) - 4) + '" text-anchor="end" style="fill:var(--skill)">E = E* = ' + f1(g.E) + '</text>'
-      : '<text x="' + (W_ - R) + '" y="' + (yE - 4) + '" text-anchor="end" style="fill:var(--skill)">E ' + f1(g.E) + '</text><text x="' + (W_ - R) + '" y="' + (yS + 11) + '" text-anchor="end" style="fill:var(--skill)">E* ' + f1(g.estar) + '</text>') +
-    '<text x="' + (mid + 4) + '" y="' + (T + 8) + '" style="fill:var(--luck)">luck 0</text>';
+      ? '<text x="' + (W_ - R) + '" y="' + (Math.min(yH, yS) - 4) + '" text-anchor="end" style="fill:var(--skill)">H = H* = ' + f2(g.H) + '</text>'
+      : '<text x="' + (W_ - R) + '" y="' + (yH + 11) + '" text-anchor="end" style="fill:var(--skill)">H ' + f2(g.H) + '</text><text x="' + (W_ - R) + '" y="' + (yS - 4) + '" text-anchor="end" style="fill:var(--skill)">H* ' + f2(g.hstar) + '</text>') +
+    '<text x="' + (mid - 4) + '" y="' + (T + 8) + '" text-anchor="end" style="fill:var(--luck)">luck 0</text>';
   const axis =
     '<line x1="' + L + '" x2="' + (W_ - R) + '" y1="' + (T + ph) + '" y2="' + (T + ph) + '" stroke="var(--line2)"/>' +
-    '<text x="' + L + '" y="' + (H - 4) + '">tallest pool</text>' +
-    '<text x="' + (W_ - R) + '" y="' + (H - 4) + '" text-anchor="end">shortest pool</text>' +
-    '<text x="' + (L - 4) + '" y="' + (T + 8) + '" text-anchor="end">' + f0(g.sizes[0]) + '</text>' +
+    '<text x="' + L + '" y="' + (H - 4) + '">least gain</text>' +
+    '<text x="' + (W_ - R) + '" y="' + (H - 4) + '" text-anchor="end">most gain</text>' +
+    '<text x="' + (L - 4) + '" y="' + (T + 8) + '" text-anchor="end">' + f0(max / 1.08) + '</text>' +
     '<text x="' + (L - 4) + '" y="' + (T + ph) + '" text-anchor="end">0</text>';
-  const legend = '<span><i style="background:var(--daring);opacity:.6"></i>taller than E (' + f0(g.wider) + '% chance)</span><span><i style="background:var(--line2)"></i>shorter than E (' + f0(g.narrower) + '%)</span><span><i style="border:2px solid var(--fg);background:none"></i>your pool (' + g.landedSize + ')</span>';
-  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Every outcome of ' + g.word + '">' + bars + lines + lab + axis + mark + '</svg><div class="legend">' + legend + '</div>';
+  const legend = '<span><i style="background:var(--daring);opacity:.6"></i>more than expected (' + f0(g.more) + '% chance)</span><span><i style="background:var(--line2)"></i>less than expected (' + f0(g.less) + '%)</span><span><i style="border:2px solid var(--fg);background:none"></i>your gain (' + f2(g.gain) + ' bits)</span>';
+  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Every outcome of ' + g.word + ', as wide as its chance and as tall as its gain in bits">' + bars + lines + lab + axis + mark + '</svg><div class="legend">' + legend + '</div>';
 }
 
 // ---- one level ----
 function renderLevel() {
   const g = G[sel];
   const picks = (title, arr, cls, fmt, extra) => '<div><h3 class="' + cls + '" style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="' + cls + '">' + fmt(p[1]) + (extra ? ' <span class="dim small">' + extra(p) + '</span>' : '') + '</span></div>').join('') + '</div>';
-  const side = g.D > 10 ? 'Usually a tall pool, with a small chance of a short one.'
-    : g.D < -10 ? 'Usually a short pool, with a small chance of a tall one: no gamble, so daring is 0.'
-    : 'Tall and short pools are about equally likely, so there is little gamble.';
+  const side = g.D > 10 ? 'Usually less than expected, with a small chance of much more.'
+    : g.D < -10 ? 'Usually more than expected, with a small chance of much less: no gamble, so daring is 0.'
+    : 'Less and more than expected are about equally likely, so there is little gamble.';
   $('level').innerHTML =
     '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' + tiles(g.word) + '<span class="dim">' + N(g.n) + ' words possible</span></div>' +
-    '<div class="block"><h3>All outcomes of your guess</h3><p class="small dim">Each column is one possible outcome: as wide as its chance, as tall as the pool it leaves. Skill and daring depend only on the columns. Luck depends on which column you landed in. The yellow line splits the chance in half: the middle outcome, luck 0.</p>' + plot(g) + '</div>' +
+    '<div class="block"><h3>All outcomes of your guess</h3><p class="small dim">Each column is one possible outcome: as wide as its chance, as tall as the bits it would gain. The area under the columns is the expected gain. Skill and daring depend only on the columns. Luck depends on which column you landed in. The yellow line splits the chance in half: the middle outcome, luck 0.</p>' + plot(g) + '</div>' +
 
     '<div class="block"><h3 class="skill">Skill</h3>' +
-    '<p class="small dim">How small the pool is on average, compared with the best guess. Logs make halving 3,000 words equal halving 30.</p>' +
+    '<p class="small dim">How many bits the guess is expected to gain, averaged over all possible answers, compared with the best guess. Any answer gives the same skill.</p>' +
     '<div class="sum">' +
-      '<span>average pool, E = Σ size² ÷ N</span><span>' + N(g.sumSq) + ' ÷ ' + N(g.n) + ' = ' + f2(g.E) + '</span>' +
-      '<span>pool of the best guess, E* (' + g.bestWord + ')</span><span>' + f2(g.estar) + '</span>' +
-      '<span>your shrink, ln(N ÷ E)</span><span>ln(' + f1(g.n / g.E) + ') = ' + f3(g.lnE) + '</span>' +
-      '<span>best shrink, ln(N ÷ E*)</span><span>ln(' + f1(g.n / g.estar) + ') = ' + f3(g.room) + '</span>' +
-      '<i class="rule"></i><span class="res skill">skill = ' + f3(g.lnE) + ' ÷ ' + f3(g.room) + ' × 100</span><span class="res skill">' + f1(g.skill) + '</span>' +
-    '</div><p class="small dim">E* and D* are the only values not taken from the plot. Both come from scoring every accepted word as a guess.</p></div>' +
+      '<span>expected gain, H = Σ chance × bits</span><span>' + f2(g.H) + ' bits</span>' +
+      '<span>best guess, H* (' + g.bestWord + ')</span><span>' + f2(g.hstar) + ' bits</span>' +
+      '<i class="rule"></i><span class="res skill">skill = ' + f2(g.H) + ' ÷ ' + f2(g.hstar) + ' × 100</span><span class="res skill">' + f1(g.skill) + '</span>' +
+    '</div><p class="small dim">H* and D* are the only values not taken from the plot. Both come from scoring every accepted word as a guess.</p></div>' +
 
     '<div class="block"><h3 class="daring">Daring</h3>' +
-    '<p class="small dim">A daring guess usually leaves a pool taller than E and rarely a much shorter one: a gamble on the short tail. A pool of exactly E counts for neither. Daring is scored against the most daring guess, as skill is against the best.</p>' +
+    '<p class="small dim">How much the guess gambles on the tail. A daring guess usually gains less than expected and sometimes much more. A gain of exactly H counts for neither. Daring is scored against the most daring guess, as skill is against the best.</p>' +
     '<div class="sum">' +
-      '<span>chance of a pool taller than E</span><span>' + f1(g.wider) + '%</span>' +
-      '<span>chance of a pool shorter than E</span><span>' + f1(g.narrower) + '%</span>' +
-      '<span>taller − shorter, at least 0</span><span>' + f1(Math.max(0, g.D)) + '%</span>' +
+      '<span>chance of less than expected</span><span>' + f1(g.less) + '%</span>' +
+      '<span>chance of more than expected</span><span>' + f1(g.more) + '%</span>' +
+      '<span>less − more, at least 0</span><span>' + f1(Math.max(0, g.D)) + '%</span>' +
       '<span>most daring guess, D*' + (g.dareWord ? ' (' + g.dareWord + ')' : '') + '</span><span>' + f1(g.dstar) + '%</span>' +
       '<i class="rule"></i><span class="res daring">daring = ' + f1(Math.max(0, g.D)) + ' ÷ ' + f1(g.dstar) + ' × 100</span><span class="res daring">' + f1(g.daring) + '</span>' +
     '</div><p class="small dim">' + side + '</p></div>' +
 
     '<div class="block"><h3 class="luck">Luck</h3>' +
-    '<p class="small dim">The answer decides this. Your pool is outlined on the plot.</p>' +
+    '<p class="small dim">The answer decides this. Your gain is outlined on the plot.</p>' +
     '<div class="sum">' +
-      '<span>chance of a taller pool than ' + g.landedSize + '</span><span>' + f1(g.bigger) + '%</span>' +
-      '<span>chance of a shorter pool than ' + g.landedSize + '</span><span>' + f1(g.smaller) + '%</span>' +
-      '<i class="rule"></i><span class="res luck">luck = taller − shorter</span><span class="res luck">' + sg(g.luck) + '%</span>' +
+      '<span>chance of gaining less than ' + f2(g.gain) + ' bits</span><span>' + f1(g.gotLess) + '%</span>' +
+      '<span>chance of gaining more than ' + f2(g.gain) + ' bits</span><span>' + f1(g.gotMore) + '%</span>' +
+      '<i class="rule"></i><span class="res luck">luck = less − more</span><span class="res luck">' + sg(g.luck) + '%</span>' +
     '</div></div>' +
 
     '<div class="block"><div class="cols">' + picks('best skill', g.top, 'skill', f0) + picks('worst skill', g.bottom, 'skill', f0) +
@@ -260,7 +252,7 @@ function renderLevel() {
     '<p class="small dim">Among all accepted words. Yours: skill <b class="skill">' + f0(g.skill) + '</b>, daring <b class="daring">' + f0(g.daring) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>. Luckiest is for the actual answer, ' + ANSWER + ': guessing it is always the luckiest.' + (g.ties ? ' With two words left every guess that separates them ties.' : '') + '</p></div>';
 }
 
-// ---- information gained, in bits: expected gain (Shannon entropy of the outcomes) + luck ----
+// ---- information gained, in bits: expected gain + luck ----
 function bars() {
   const W_ = 420, rowH = 28, L = 64, R = 56, top = 12, cap = log2(243);
   const sx = v => L + v / top * (W_ - L - R), H = G.length * rowH + 30;
@@ -268,25 +260,25 @@ function bars() {
   for (let t = 0; t <= top; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 20) + '" stroke="var(--line)"/><text x="' + sx(t) + '" y="' + (H - 8) + '" text-anchor="middle">' + t + '</text>';
   s += '<line x1="' + sx(cap) + '" x2="' + sx(cap) + '" y1="0" y2="' + (H - 20) + '" stroke="var(--dim)" stroke-dasharray="3 3"/><text x="' + (sx(cap) + 3) + '" y="9">max expected ' + f2(cap) + '</text>';
   G.forEach((g, i) => {
-    const y = i * rowH + 14, h = 14, base = Math.min(g.H, g.cut);
+    const y = i * rowH + 14, h = 14, base = Math.min(g.H, g.gain);
     s += '<text x="0" y="' + (y + 11) + '">' + (i + 1) + ' ' + g.word + '</text>';
     s += '<rect x="' + sx(0) + '" y="' + y + '" width="' + Math.max(sx(base) - sx(0), 0.5) + '" height="' + h + '" fill="var(--skill)"/>';
-    if (g.bLuck > 0.005) s += '<rect x="' + sx(g.H) + '" y="' + y + '" width="' + (sx(g.cut) - sx(g.H)) + '" height="' + h + '" fill="var(--luck)"/>';
-    if (g.bLuck < -0.005) s += '<rect x="' + sx(g.cut) + '" y="' + y + '" width="' + (sx(g.H) - sx(g.cut)) + '" height="' + h + '" fill="none" stroke="var(--luck)" stroke-width="1.5" stroke-dasharray="3 2"/>';
-    s += '<text x="' + (sx(Math.max(g.H, g.cut)) + 5) + '" y="' + (y + 11) + '" style="fill:var(--fg)">' + f2(g.cut) + '</text>';
+    if (g.bLuck > 0.005) s += '<rect x="' + sx(g.H) + '" y="' + y + '" width="' + (sx(g.gain) - sx(g.H)) + '" height="' + h + '" fill="var(--luck)"/>';
+    if (g.bLuck < -0.005) s += '<rect x="' + sx(g.gain) + '" y="' + y + '" width="' + (sx(g.H) - sx(g.gain)) + '" height="' + h + '" fill="none" stroke="var(--luck)" stroke-width="1.5" stroke-dasharray="3 2"/>';
+    s += '<text x="' + (sx(Math.max(g.H, g.gain)) + 5) + '" y="' + (y + 11) + '" style="fill:var(--fg)">' + f2(g.gain) + '</text>';
   });
   return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Expected gain and luck of each guess, in bits">' + s + '</svg>' +
-    '<div class="legend"><span><i style="background:var(--skill)"></i>expected gain</span><span><i style="background:var(--luck)"></i>luck added</span><span><i style="border:1.5px dashed var(--luck);background:none"></i>luck taken away</span></div>';
+    '<div class="legend"><span><i style="background:var(--skill)"></i>expected gain (skill)</span><span><i style="background:var(--luck)"></i>luck added</span><span><i style="border:1.5px dashed var(--luck);background:none"></i>luck taken away</span></div>';
 }
 function renderTries() {
   let cum = 0;
-  const rows = G.map((g, i) => { cum += g.cut; return '<tr><td>' + (i + 1) + ' ' + g.word + '</td><td class="skill">' + f2(g.H) + '</td><td class="luck">' + sg(g.bLuck, 2) + '</td><td><b>' + f2(g.cut) + '</b></td><td>' + f0(cum / needed * 100) + '%</td></tr>'; }).join('');
-  const totH = G.reduce((a, g) => a + g.H, 0), totL = G.reduce((a, g) => a + g.bLuck, 0), totC = G.reduce((a, g) => a + g.cut, 0);
+  const rows = G.map((g, i) => { cum += g.gain; return '<tr><td>' + (i + 1) + ' ' + g.word + '</td><td class="skill">' + f2(g.H) + '</td><td class="luck">' + sg(g.bLuck, 2) + '</td><td><b>' + f2(g.gain) + '</b></td><td>' + f0(cum / needed * 100) + '%</td></tr>'; }).join('');
+  const totH = G.reduce((a, g) => a + g.H, 0), totL = G.reduce((a, g) => a + g.bLuck, 0), totC = G.reduce((a, g) => a + g.gain, 0);
   $('tries').innerHTML =
     '<p>A game ends when the word is found. Finding it among ' + N(G[0].n) + ' words takes log₂ ' + N(G[0].n) + ' = <b>' + f2(needed) + ' bits</b>. Each guess removes some of them.</p>' +
     '<div class="steps">' +
-      '<div class="step"><span>1</span><div><b>Expected gain</b>' +
-        '<p class="small dim">What the guess removes on average over all possible answers: the entropy of its outcomes. It never exceeds log₂ 243 = ' + f2(log2(243)) + ' bits, and a good first guess gets about 5.</p></div></div>' +
+      '<div class="step"><span>1</span><div><b>Expected gain (skill)</b>' +
+        '<p class="small dim">What the guess removes on average over all possible answers. Skill scores it against the best guess. It never exceeds log₂ 243 = ' + f2(log2(243)) + ' bits, and a good first guess gets about 5.</p></div></div>' +
       '<div class="step"><span>2</span><div><b>Luck</b>' +
         '<p class="small dim">What the answer added or took away: bits gained minus expected gain. Over all answers it averages 0.</p></div></div>' +
       '<div class="step"><span>3</span><div><b>Bits gained</b>' +
@@ -295,7 +287,7 @@ function renderTries() {
     '<div class="wrap"><table><thead><tr><th>guess</th><th class="skill">expected</th><th class="luck">luck</th><th>gained</th><th>done</th></tr></thead><tbody>' + rows +
     '</tbody><tfoot><tr><td>total</td><td class="skill">' + f2(totH) + '</td><td class="luck">' + sg(totL, 2) + '</td><td>' + f2(totC) + '</td><td>100%</td></tr></tfoot></table></div>' +
     bars() +
-    '<p class="small dim">Daring is not added. It gauges the gamble: how much a guess relied on landing in a short pool. Whether you landed there is luck.</p>';
+    '<p class="small dim">Daring is not added. It gauges the gamble: how much a guess relied on landing in the tail. Whether you landed there is luck.</p>';
 }
 
 function renderAll() { renderRows(); renderTabs(); renderLevel(); renderTries(); }
