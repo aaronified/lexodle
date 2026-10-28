@@ -138,6 +138,7 @@ class _ModeSwitchState extends State<ModeSwitch> {
           Stack(
             children: [
               SizedBox(
+                width: double.infinity,
                 height: widget.height,
                 child: Tooltip(
                   message: 'game modes',
