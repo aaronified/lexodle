@@ -49,8 +49,8 @@ String riskLine(double? risk) => risk == null
     ? 'risk –: nothing to gamble on, one word or one try was left.'
     : risk.round() == 0
     ? 'risk 0: the guess gained about the same however the clues fell.'
-    : 'risk ${risk.round()}: the guess usually gains less than expected and '
-          'sometimes much more; 100 is the riskiest guess there was.';
+    : 'risk ${risk.round()}: usually gains less than expected, sometimes much '
+          'more; 100 is the riskiest guess.';
 
 /// bits: what the clues gave, against what was expected.
 String bitsLine(double gain, double expected) =>

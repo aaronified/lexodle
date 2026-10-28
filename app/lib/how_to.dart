@@ -8,7 +8,7 @@ import 'ui.dart';
 import 'wiki_links.dart';
 
 /// How to play, kept short: the rule, the colours, the blanks and the cursor,
-/// and the one line of maths (skill + luck + daring = expected tries). Anyone
+/// and the one line of maths (every guess gains bits; skill, luck and risk). Anyone
 /// who wants more follows the link to the wiki.
 ///
 /// On a first visit ([onboarding]) a "start playing" button is pinned under it,
@@ -187,7 +187,7 @@ class HowToPage extends StatelessWidget {
                       const SizedBox(height: 14),
                       heading('the maths'),
                       Text(
-                        'skill + luck + daring = expected tries',
+                        'every guess gains bits of information',
                         key: const ValueKey('maths-line'),
                         style: TextStyle(
                           fontSize: 16,
@@ -198,17 +198,20 @@ class HowToPage extends StatelessWidget {
                       const SizedBox(height: 10),
                       maths(
                         'skill',
-                        'is how well your guesses narrowed the words.',
+                        'is the bits a guess was expected to gain, against the best guess.',
                       ),
-                      maths('luck', 'is how kind the clues turned out to be.'),
                       maths(
-                        'daring',
-                        'is how much you went for the word itself.',
+                        'luck',
+                        'is whether the clues gained more or less than usual.',
+                      ),
+                      maths(
+                        'risk',
+                        'is how much you gambled on a rare big gain.',
                       ),
                       const SizedBox(height: 4),
                       const WikiLink(
                         WikiPage.skillLuckRisk,
-                        label: 'how skill, luck and daring work',
+                        label: 'how skill, luck and risk work',
                       ),
                       const WikiLink(
                         WikiPage.howToPlay,

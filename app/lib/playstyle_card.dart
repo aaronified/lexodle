@@ -243,15 +243,25 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
             style: const TextStyle(fontSize: 12, height: 1.4),
           ),
           const SizedBox(height: 4),
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              TablerIcon(s.early.icon, size: 16, color: c.primary),
-              const SizedBox(width: 6),
-              Text('${s.early.label} early', style: dim),
-              const SizedBox(width: 12),
-              TablerIcon(s.end.icon, size: 16, color: c.primary),
-              const SizedBox(width: 6),
-              Text('${s.end.label} at the end', style: dim),
+              for (final b in [s.early, s.end])
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TablerIcon(b.icon, size: 16, color: c.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      b.phase == Phase.early
+                          ? '${b.label} early'
+                          : '${b.label} at the end',
+                      style: dim,
+                    ),
+                  ],
+                ),
             ],
           ),
         ] else

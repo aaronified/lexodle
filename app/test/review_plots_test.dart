@@ -6,7 +6,6 @@ import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/review.dart';
 import 'package:lexodle/review_plots.dart';
-import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 
 import 'support/text_of.dart';
@@ -25,182 +24,30 @@ void main() {
       'stale',
     ];
 
-    test('groups by pattern; the answer picks the group landed in', () {
-      final o = outcomesOf(words, 'crate', 'grate');
-      expect(o.words, words.length);
-      expect(
-        o.sizes,
-        orderedEquals([...o.sizes]..sort((a, b) => b.compareTo(a))),
-      );
-      final key = patternCode('grate', 'crate');
-      final size = words.where((w) => patternCode(w, 'crate') == key).length;
-      expect(o.pool, size);
-    });
-
-    test('expected pool and luck are the table\'s numbers', () {
-      for (final (guess, answer) in [
-        ('crate', 'grate'),
-        ('slate', 'shape'),
-        ('crane', 'stale'),
-      ]) {
-        final o = outcomesOf(words, guess, answer);
-        final marks = evaluate(answer, guess);
-        final after = filterEligible(words, guess, marks);
-        final m = scoreGuess(words, guess, after.length);
-        expect(o.expected, closeTo(m.expected, 1e-9));
-        expect(o.pool, after.length);
-        expect(o.luck, closeTo(m.luck, 1e-9), reason: '$guess vs $answer');
-      }
-    });
-
-    test('the chances of a bigger and a smaller pool give the luck', () {
-      final o = Outcomes([40, 30, 12, 6, 3, 2, 1, 1, 1], 9.5, 3);
-      expect(o.words, 96);
-      expect(o.chanceBigger, closeTo((40 + 30 + 12) / 96 * 100, 1e-9));
-      expect(o.chanceSmaller, closeTo((3 + 2 + 1 + 1 + 1) / 96 * 100, 1e-9));
-      expect(o.luck, closeTo(o.chanceBigger - o.chanceSmaller, 1e-9));
-    });
-  });
-
-  group('the columns of the plot', () {
-    final o = Outcomes([40, 30, 12, 6, 3, 2, 1, 1, 1], 9.5, 4);
-
-    test('each is as wide as its chance and they fill the plot', () {
-      final slots = splitSlots(o, 480);
-      expect(slots.length, o.sizes.length);
-      expect(slots.first.x0, 0);
-      expect(slots.last.x1, closeTo(480, 1e-9));
-      for (final s in slots) {
-        expect(s.width, closeTo(o.sizes[s.index] / o.words * 480, 1e-9));
-      }
-      for (var i = 0; i + 1 < slots.length; i++) {
-        expect(slots[i].x1, closeTo(slots[i + 1].x0, 1e-9), reason: 'no gap');
-      }
-    });
-
-    test('the biggest pools are on the left, the smallest on the right', () {
-      final slots = splitSlots(o, 300);
-      for (var i = 0; i + 1 < slots.length; i++) {
-        expect(
-          o.sizes[slots[i].index],
-          greaterThanOrEqualTo(o.sizes[slots[i + 1].index]),
-        );
-      }
-    });
-
-    test('how far a column\'s centre is from the middle is its luck', () {
-      // for a pool no other group shares, luck = 2 * (centre / width) - 1
-      final sizes = <double>[60, 25, 9, 4, 2];
-      final oo = Outcomes(sizes, 0, 0);
-      final slots = splitSlots(oo, 1000);
-      for (final s in slots) {
-        final luck = chanceLuck(sizes, sizes[s.index]);
-        expect(luck / 100, closeTo(2 * s.center / 1000 - 1, 1e-9));
-      }
-    });
-
-    test('the median outcome sits at the middle: zero luck', () {
-      final sizes = <double>[10, 10, 10, 10, 10];
-      final slots = splitSlots(Outcomes(sizes, 10, 2), 500);
-      expect(slots[2].center, closeTo(250, 1e-9));
-      expect(chanceLuck(sizes, 10), 0);
-    });
-  });
-
-  group('ranking among the guesses scored', () {
-    const land = Landscape([], [100, 80, 80, 20]);
-    test('rank is how many scored more', () {
-      expect(land.rankOf(100), 0);
-      expect(land.rankOf(80), 1);
-      expect(land.rankOf(20), 3);
-      expect(land.rankOf(50), 3);
-    });
-    test('percentile counts the ones beaten, and half the ties', () {
-      expect(land.percentile(100), (3 + 0.5) / 4 * 100);
-      expect(land.percentile(80), 50);
-      expect(land.percentile(20), 12.5);
-      expect(land.percentile(0), 0);
-    });
-  });
-
-  group('skill does not depend on the answer', () {
     test(
-      'the ranking is a function of the words left and the guesses only',
-      () async {
-        final left = ['abcd', 'abdc', 'acbd'];
-        final candidates = [...left, 'wxyz', 'zzzz'];
-        final land = await analyseGuesses(left, candidates);
-        // there is no answer to pass in: whichever of the three it is, the
-        // skill is the same, whatever pool the answer lands you in
-        for (final answer in left) {
-          for (final g in candidates) {
-            final after = filterEligible(left, g, evaluate(answer, g)).length;
-            final m = scoreGuess(left, g, after, best: land.bestExpected);
-            expect(
-              m.skill,
-              closeTo(
-                scoreGuess(left, g, 1, best: land.bestExpected).skill,
-                1e-9,
-              ),
-              reason: '$g, answer $answer',
-            );
-          }
+      'groups by pattern, biggest first; the answer picks the one landed',
+      () {
+        final o = outcomesOf(words, 'crate', 'grate', null);
+        final chances = o.outcomes.map((x) => x.chance).toList();
+        expect(chances.fold<double>(0, (a, b) => a + b), closeTo(1, 1e-9));
+        for (var k = 1; k < chances.length; k++) {
+          expect(chances[k - 1], greaterThanOrEqualTo(chances[k]));
         }
-        expect(land.skills.first, closeTo(100, 1e-9));
+        expect(o.landed, inInclusiveRange(0, o.outcomes.length - 1));
       },
     );
 
-    test(
-      'guesses that split the rest equally tie, in a stable order',
-      () async {
-        final left = ['abcd', 'abdc', 'acbd'];
-        final land = await analyseGuesses(left, [...left, 'zzzz', 'wxyz']);
-        expect(land.skills.take(3), everyElement(closeTo(100, 1e-9)));
-        expect(land.tiedForBest, 3);
-        expect(land.top.map((r) => r.word), ['abcd', 'abdc', 'acbd']);
-        expect(land.top.every((r) => r.canWin), isTrue);
-      },
-    );
-  });
-
-  group('scoring every candidate', () {
-    final eligible = [
-      'crane',
-      'crate',
-      'grate',
-      'grape',
-      'shape',
-      'slate',
-      'stale',
-      'trace',
-    ];
-    final candidates = [...eligible, 'ounce', 'light', 'crone'];
-
-    test('the skills are kept, best first, and match the picks', () async {
-      final land = await analyseGuesses(eligible, candidates);
-      expect(land.skills.length, candidates.length);
-      expect(
-        land.skills,
-        orderedEquals([...land.skills]..sort((a, b) => b.compareTo(a))),
-      );
-      expect(land.top.first.skill, closeTo(land.skills.first, 1e-9));
-      expect(land.skills.first, closeTo(100, 1e-9));
-      expect(
-        (await recommendTop(eligible, candidates)).map((r) => r.word),
-        land.top.map((r) => r.word),
-      );
+    test('the gain of an outcome is minus the log of its chance', () {
+      final o = outcomesOf(words, 'crate', 'grate', null);
+      for (final x in o.outcomes) {
+        expect(x.gain, closeTo(-log(x.chance) / ln2, 1e-9));
+      }
     });
 
-    test('each candidate\'s skill is what scoring that guess says', () async {
-      final land = await analyseGuesses(
-        eligible,
-        candidates,
-        k: candidates.length,
-      );
-      for (final r in land.top) {
-        final m = scoreGuess(eligible, r.word, 1, best: land.bestExpected);
-        expect(r.skill, closeTo(m.skill, 1e-9), reason: r.word);
-      }
+    test('weights make a common word\'s group likelier', () {
+      final w = {for (final x in words) x: 1, 'slate': 100};
+      final o = outcomesOf(words, 'crate', 'slate', w);
+      expect(o.outcomes[o.landed].chance, greaterThan(.5));
     });
   });
 
@@ -269,52 +116,71 @@ void main() {
       await tester.pump(const Duration(seconds: 40));
     }
 
-    testWidgets('every guess has the one plot of skill and luck', (
+    testWidgets('every guess has the one plot of skill, risk and luck', (
       tester,
     ) async {
       await open(tester, 0);
-      expect(find.byKey(const ValueKey('split-plot')), findsOneWidget);
+      expect(find.byKey(const ValueKey('gain-plot')), findsOneWidget);
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
+      expect(find.byKey(const ValueKey('bits-waterfall')), findsOneWidget);
       expect(find.byKey(const ValueKey('chance-plot')), findsNothing);
-      // the old second plot is gone
-      expect(find.byKey(const ValueKey('skill-plot')), findsNothing);
-      expect(find.byKey(const ValueKey('luck-plot')), findsNothing);
-      final skillText = textOf(
-        tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
-      )!;
-      expect(skillText, startsWith('skill '));
-      expect(skillText, contains('best possible guess'));
-      expect(
-        textOf(tester.widget<Text>(find.byKey(const ValueKey('luck-caption')))),
-        startsWith('luck '),
-      );
       // the plot comes before rarity, which is below
       expect(
-        tester.getTopLeft(find.byKey(const ValueKey('split-plot'))).dy,
+        tester.getTopLeft(find.byKey(const ValueKey('gain-plot'))).dy,
         lessThan(tester.getTopLeft(find.byKey(const ValueKey('freq-plot'))).dy),
       );
-
       await tester.tap(find.text('next'));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('split-plot')), findsOneWidget);
+      expect(find.byKey(const ValueKey('gain-plot')), findsOneWidget);
     });
 
-    testWidgets('skill in the table is measured against the best real guess', (
+    testWidgets('the four pills show skill, luck, risk and bits', (
       tester,
     ) async {
       await open(tester, 0);
-      final shown = find.byWidgetPredicate(
-        (w) => w is Text && w.key != null && '${w.key}'.contains('yours-skill'),
+      for (final k in ['skill', 'luck', 'risk', 'bits']) {
+        expect(find.byKey(ValueKey('pill-$k')), findsOneWidget, reason: k);
+      }
+      final skill = int.parse(
+        textOf(
+          tester.widget<Text>(find.byKey(const ValueKey('pill-value-skill'))),
+        )!,
       );
-      expect(shown, findsOneWidget);
-      final value = int.parse(textOf(tester.widget<Text>(shown))!);
-      expect(value, inInclusiveRange(0, 100));
-      // and it is what the formula gives against the best of every guess
+      expect(skill, inInclusiveRange(0, 100));
       final land = await tester.runAsync(
-        () => analyseGuesses(record.befores[0], bank.guessable(4)),
+        () => analyseGuesses(
+          record.befores[0],
+          bank.guessable(4),
+          answer: answer,
+        ),
       );
-      final expected = record.metrics[0].withBest(land!.bestExpected).skill;
-      expect(value, expected.round());
+      expect(skill, record.metrics[0].withLandscape(land!).skill.round());
+      await tester.tap(find.byKey(const ValueKey('pill-skill')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('expected to gain'), findsOneWidget);
+    });
+
+    testWidgets('the table shows words before and after, skill and risk', (
+      tester,
+    ) async {
+      await open(tester, 0);
+      final m = record.metrics[0];
+      expect(
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('words-0')))),
+        '${m.before}→${m.after}',
+      );
+      expect(find.byKey(const ValueKey('head-skill')), findsOneWidget);
+      expect(find.byKey(const ValueKey('head-risk')), findsOneWidget);
+      expect(find.byKey(const ValueKey('head-luck')), findsNothing);
+    });
+
+    testWidgets('three lists of picks stand side by side', (tester) async {
+      await open(tester, 0);
+      final a = tester.getTopLeft(find.text('best skill')).dy;
+      final b = tester.getTopLeft(find.text('top risk')).dy;
+      final c = tester.getTopLeft(find.text('luckiest')).dy;
+      expect(b, a);
+      expect(c, a);
     });
 
     testWidgets('the last try shows one plot: all that fit are as likely', (
@@ -322,7 +188,7 @@ void main() {
     ) async {
       await open(tester, 2);
       expect(find.byKey(const ValueKey('chance-plot')), findsOneWidget);
-      expect(find.byKey(const ValueKey('split-plot')), findsNothing);
+      expect(find.byKey(const ValueKey('gain-plot')), findsNothing);
       final text = textOf(
         tester.widget<Text>(find.byKey(const ValueKey('chance-caption'))),
       )!;
@@ -331,7 +197,6 @@ void main() {
         tester.widget<Text>(find.byKey(const ValueKey('chance-luck'))),
       )!;
       expect(luck, contains('${fitting.length} words that fit'));
-      expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
     });
 
     testWidgets('rarest is at the right end of the rarity plot', (
@@ -343,35 +208,6 @@ void main() {
       final common = tester.getRect(find.text('most common'));
       expect(rarest.right, closeTo(plot.right, 1));
       expect(common.left, closeTo(plot.left, 1));
-    });
-
-    testWidgets('the highlighted row stands off its tiles and numbers', (
-      tester,
-    ) async {
-      await open(tester, 0);
-      final row = tester.getRect(find.byKey(const ValueKey('row-0')));
-      final inside = [
-        for (final f in [
-          find.descendant(
-            of: find.byKey(const ValueKey('row-0')),
-            matching: find.byType(MarkTile),
-          ),
-          find.descendant(
-            of: find.byKey(const ValueKey('row-0')),
-            matching: find.byType(Text),
-          ),
-        ])
-          for (final e in f.evaluate()) tester.getRect(find.byWidget(e.widget)),
-      ];
-      expect(inside, isNotEmpty);
-      final left = inside.map((r) => r.left).reduce(min);
-      final right = inside.map((r) => r.right).reduce(max);
-      final top = inside.map((r) => r.top).reduce(min);
-      final bottom = inside.map((r) => r.bottom).reduce(max);
-      expect(left - row.left, greaterThanOrEqualTo(8));
-      expect(row.right - right, greaterThanOrEqualTo(8));
-      expect(top - row.top, greaterThanOrEqualTo(5));
-      expect(row.bottom - bottom, greaterThanOrEqualTo(5));
     });
 
     testWidgets('clicking a row of the board goes to that guess', (
@@ -388,7 +224,7 @@ void main() {
     });
   });
 
-  group('the plot itself', () {
+  group('the plots', () {
     Widget host(Widget child) => MaterialApp(
       home: Scaffold(
         body: SingleChildScrollView(
@@ -397,65 +233,43 @@ void main() {
       ),
     );
 
-    testWidgets('says what skill and luck are, in numbers', (tester) async {
-      const o = Outcomes([60, 25, 9, 4, 2], 38.6, 1);
-      await tester.pumpWidget(
-        host(const SplitPlot(outcomes: o, best: 4.0, skill: 62, luck: 20)),
-      );
-      final skill = textOf(
-        tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
-      )!;
-      // one plain line each, with the number; the groups are in the pool panel
-      expect(skill, startsWith('skill 62: '));
-      expect(skill, contains('best possible guess (100)'));
-      final luck = textOf(
-        tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))),
-      )!;
-      expect(luck, startsWith('luck +20: '));
-      expect(luck, contains('kinder than usual'));
-      expect(find.text('0% luck'), findsOneWidget);
-    });
-
-    testWidgets('while the best guess is being found it says so', (
-      tester,
-    ) async {
-      const o = Outcomes([60, 25, 9, 4, 2], 38.6, 1);
+    testWidgets('a crowded gain plot still paints', (tester) async {
+      final chances = [for (var i = 300; i >= 1; i--) i.toDouble()];
+      final total = chances.fold<double>(0, (a, b) => a + b);
+      final o = [
+        for (final c in chances) Outcome(c / total, -log(c / total) / ln2),
+      ];
+      final h = o.fold<double>(0, (a, x) => a + x.chance * x.gain);
       await tester.pumpWidget(
         host(
-          const SplitPlot(
+          GainPlot(
             outcomes: o,
-            best: 1,
-            skill: 62,
-            luck: 20,
-            skillReady: false,
+            landed: 40,
+            expected: h,
+            best: h + 1,
+            word: 'crane',
           ),
         ),
       );
-      expect(
-        textOf(
-          tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
-        ),
-        contains('working out the best real guess'),
-      );
+      expect(find.byKey(const ValueKey('gain-plot')), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a crowded plot still paints, and the landing is marked', (
-      tester,
-    ) async {
-      final sizes = [for (var i = 300; i >= 1; i--) i.toDouble()];
-      final n = sizes.fold<double>(0, (a, b) => a + b);
-      final expected = sizes.fold<double>(0, (a, s) => a + s * s) / n;
-      final o = Outcomes(sizes, expected, 40);
+    testWidgets('the bits waterfall paints every step', (tester) async {
       await tester.pumpWidget(
-        host(SplitPlot(outcomes: o, best: 60, skill: 50, luck: o.luck)),
+        host(
+          const BitsWaterfall(
+            steps: [
+              WaterfallStep('crane', 5.1, 6.0, 5.8),
+              WaterfallStep('slimy', 3.0, 2.0, 3.3),
+            ],
+            needed: 11.5,
+            current: 1,
+          ),
+        ),
       );
-      expect(find.byKey(const ValueKey('split-plot')), findsOneWidget);
+      expect(find.byKey(const ValueKey('bits-waterfall')), findsOneWidget);
       expect(tester.takeException(), isNull);
-      final w = tester.getSize(find.byKey(const ValueKey('split-plot'))).width;
-      final slots = splitSlots(o, w);
-      expect(slots.length, 300);
-      // far too many to be told apart as columns: the thin ones form one area
-      expect(slots.where((s) => s.width < 3).length, greaterThan(250));
     });
   });
 }

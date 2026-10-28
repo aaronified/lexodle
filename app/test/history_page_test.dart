@@ -66,7 +66,7 @@ void main() {
             word: guesses[i],
             skill: skill,
             luck: 0,
-            daring: mode.multi ? null : 30,
+            risk: mode.multi ? null : 30,
             before: 50,
             after: 20,
           ),
@@ -215,7 +215,7 @@ void main() {
           skill: 95,
         );
       }
-      // every guess scored 95 and was given a daring of 30
+      // every guess scored 95 and was given a risk of 30
       appState.styleId = 'analyst';
       appState.stylesHeld = {'analyst', 'maverick'};
       appState.styleChanges = 1;
@@ -245,7 +245,7 @@ void main() {
         '95',
       );
       expect(
-        textOf(tester.widget<Text>(find.byKey(const ValueKey('stat-daring')))),
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('stat-risk')))),
         '30',
       );
       expect(
@@ -290,9 +290,9 @@ void main() {
         await detail(wildcard),
         '${wildcard.name}: ${wildcard.blurb} (not yet)',
       );
-      expect(await detail(steady), endsWith('(not yet)'));
+      expect(await detail(gambler), endsWith('(not yet)'));
       // tapping the open one closes it again
-      await tester.tap(find.byKey(const ValueKey('dot-steady')));
+      await tester.tap(find.byKey(const ValueKey('dot-gambler')));
       await tester.pump();
       expect(find.byKey(const ValueKey('style-detail')), findsNothing);
     },
@@ -450,7 +450,7 @@ void main() {
       expect(find.textContaining('older games again'), findsNothing);
       final rows = h.guessesOf(g.id);
       expect(rows.every((r) => r.skill != 3.14), isTrue);
-      expect(rows.first.daring, isNotNull);
+      expect(rows.first.risk, isNotNull);
       expect(h.byId(g.id)!.version, metricsVersion);
       // and the skill the list shows is the new one
       // (a guess with one word left is not part of it)
@@ -544,7 +544,7 @@ void main() {
               word: pool[1],
               skill: skill,
               luck: 10,
-              daring: 20,
+              risk: 20,
               before: 100,
               after: 50,
             ),
@@ -554,7 +554,7 @@ void main() {
               word: pool[2],
               skill: skill,
               luck: 10,
-              daring: 20,
+              risk: 20,
               before: 50,
               after: 5,
             ),
@@ -581,6 +581,10 @@ void main() {
         for (var k = 0; k < 10; k++) tester.getTopLeft(tile(h, k)).dy,
       ];
       expect(top, orderedEquals([...top]..sort()), reason: 'newest at the top');
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('load-more')),
+        300,
+      );
       expect(find.text('load 10 more · 35 left'), findsOneWidget);
     });
 
@@ -596,7 +600,7 @@ void main() {
       // 45 games, every third one (i % 3 == 0) missed: 15 missed, 30 won
       expect(overall('won').data, '67%');
       expect(overall('skill').data, '80');
-      expect(overall('daring').data, '20');
+      expect(overall('risk').data, '20');
       expect(
         textOf(tester.widget<Text>(find.byKey(const ValueKey('overall-line')))),
         contains('luck +10%'),
@@ -616,6 +620,8 @@ void main() {
       final more = find.byKey(const ValueKey('load-more'));
       Future<void> press() async {
         await tester.scrollUntilVisible(more, 300);
+        await tester.ensureVisible(more);
+        await tester.pump();
         await tester.tap(more);
         await tester.pump();
       }
@@ -662,6 +668,10 @@ void main() {
         ),
         '10000',
       );
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('load-more')),
+        300,
+      );
       expect(find.text('load 10 more · 9990 left'), findsOneWidget);
       expect(tile(h, 9), findsOneWidget);
       expect(tile(h, 10), findsNothing);
@@ -678,9 +688,10 @@ void main() {
       DateTime day, {
       double skill = 70,
       double luck = 0,
-      double? daring = 30,
+      double? risk = 30,
       bool won = true,
       String lang = 'fr',
+      List<GuessRow>? rows,
     }) {
       h.add(
         at: DateTime(
@@ -696,19 +707,21 @@ void main() {
         pool: 500,
         answers: [pool[3]],
         won: won,
-        guesses: [
-          for (var i = 0; i < 2; i++)
-            GuessRow(
-              game: 0,
-              n: i,
-              word: pool[i + 1],
-              skill: skill,
-              luck: luck,
-              daring: daring,
-              before: 100,
-              after: 10,
-            ),
-        ],
+        guesses:
+            rows ??
+            [
+              for (var i = 0; i < 2; i++)
+                GuessRow(
+                  game: 0,
+                  n: i,
+                  word: pool[i + 1],
+                  skill: skill,
+                  luck: luck,
+                  risk: risk,
+                  before: 100,
+                  after: 10,
+                ),
+            ],
       );
     }
 
@@ -720,13 +733,13 @@ void main() {
     ) async {
       await load(tester);
       final h = History();
-      game(h, DateTime(2026, 10, 24), skill: 80, luck: 10, daring: 20);
+      game(h, DateTime(2026, 10, 24), skill: 80, luck: 10, risk: 20);
       game(
         h,
         DateTime(2026, 10, 22),
         skill: 90,
         luck: -20,
-        daring: 40,
+        risk: 40,
         won: false,
       );
       await show(tester, h);
@@ -736,10 +749,8 @@ void main() {
       expect(detail, contains('2 games'));
       expect(detail, contains('50% won'));
       expect(detail, contains('skill 85'));
-      expect(detail, contains('daring 30'));
+      expect(detail, contains('risk 30'));
       expect(detail, contains('luck −5%'));
-      expect(text(tester, 'period-guesses'), startsWith('expected guesses '));
-      expect(text(tester, 'period-guesses'), contains('skill'));
       expect(find.byType(PeriodChart), findsOneWidget);
     });
 
@@ -777,23 +788,13 @@ void main() {
       expect(shown(), {...PeriodSeries.values});
       await tester.tap(find.byKey(const ValueKey('series-luck')));
       await tester.pump();
-      expect(shown(), {
-        PeriodSeries.skill,
-        PeriodSeries.daring,
-        PeriodSeries.guesses,
-      });
+      expect(shown(), {PeriodSeries.skill, PeriodSeries.risk});
       await tester.tap(find.byKey(const ValueKey('series-skill')));
       await tester.pump();
-      expect(shown(), {PeriodSeries.daring, PeriodSeries.guesses});
+      expect(shown(), {PeriodSeries.risk});
       await tester.tap(find.byKey(const ValueKey('series-skill')));
       await tester.pump();
-      expect(shown(), {
-        PeriodSeries.skill,
-        PeriodSeries.daring,
-        PeriodSeries.guesses,
-      });
-      // the guesses have a scale of their own at the right
-      expect(find.text('guesses (right scale)'), findsOneWidget);
+      expect(shown(), {PeriodSeries.skill, PeriodSeries.risk});
       // luck says where its middle is
       expect(find.text('luck (50 = 0%)'), findsOneWidget);
     });
@@ -808,9 +809,8 @@ void main() {
       await show(tester, h);
       final chart = find.byKey(const ValueKey('period-chart'));
       final rect = tester.getRect(chart);
-      // the plot starts after the axis (26 px), stops before the guesses' scale
-      // (16 px) and holds 50 slots
-      final slot = (rect.width - 26 - 16) / 50;
+      // the plot starts after the axis (26 px), runs to the right edge
+      final slot = (rect.width - 26) / 50;
       Offset at(int i) =>
           Offset(rect.left + 26 + slot * (i + .5), rect.center.dy);
 
@@ -842,7 +842,7 @@ void main() {
       game(h, DateTime(2026, 10, 14), skill: 55);
       await show(tester, h);
       final rect = tester.getRect(find.byKey(const ValueKey('period-chart')));
-      final slot = (rect.width - 26 - 16) / 50;
+      final slot = (rect.width - 26) / 50;
       final g = await tester.startGesture(
         Offset(rect.left + 26 + slot * 49.5, rect.center.dy),
       );
@@ -863,14 +863,14 @@ void main() {
     ) async {
       await load(tester);
       final h = History();
-      game(h, DateTime(2026, 10, 24), skill: 80, luck: 20, daring: 10);
+      game(h, DateTime(2026, 10, 24), skill: 80, luck: 20, risk: 10);
       // two weeks earlier (the week between was not played)
-      game(h, DateTime(2026, 10, 10), skill: 70, luck: -10, daring: 40);
+      game(h, DateTime(2026, 10, 10), skill: 70, luck: -10, risk: 40);
       await show(tester, h);
       final change = text(tester, 'period-change');
       expect(change, contains('skill +10'));
       expect(change, contains('luck +30%'));
-      expect(change, contains('daring −30'));
+      expect(change, contains('risk −30'));
       expect(change, endsWith('on the last week you played'));
       // a switched-off line is not reported
       await tester.tap(find.byKey(const ValueKey('series-luck')));
@@ -893,7 +893,24 @@ void main() {
       await load(tester);
       final h = History();
       for (var i = 0; i < 12; i++) {
-        game(h, DateTime(2026, 10, 24), skill: 95, daring: 1);
+        game(
+          h,
+          DateTime(2026, 10, 24),
+          rows: [
+            for (var k = 0; k < 4; k++)
+              GuessRow(
+                game: 0,
+                n: k,
+                word: pool[k + 1],
+                skill: 95,
+                risk: 10,
+                before: k < 2 ? 500 : 8,
+                after: k < 2 ? 200 : 3,
+                rank: k < 2 ? 2 : 3,
+                fresh: 1,
+              ),
+          ],
+        );
       }
       await show(tester, h);
       expect(text(tester, 'period-style'), 'played like a analyst');

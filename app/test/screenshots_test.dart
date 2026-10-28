@@ -169,8 +169,8 @@ void main() {
                   .clamp(0, 100)
                   .toDouble(),
               luck: rng.nextInt(100) - 50.0,
-              daring: (3 + 9 * (1 - along) + rng.nextInt(7)).toDouble(),
-              risk: .5,
+              risk: (3 + 9 * (1 - along) + rng.nextInt(7)).toDouble(),
+              gain: .5,
               before: 600 ~/ (k + 1),
               after: 300 ~/ (k + 1),
             ),

@@ -148,7 +148,7 @@ void main() {
     });
 
     test(
-      'every guess is scored against the best real guess, with its daring',
+      'every guess is scored against the best real guess, with its risk',
       () async {
         final (g, rows) = game([...wrong, answer], answer: answer);
         final fresh = await rescoreClassic(bank, g, rows);
@@ -159,21 +159,22 @@ void main() {
             rec.befores[i],
             bank.guessable(4),
             weights: bank.weightMap(4),
+            answer: rec.answer,
           );
           final want = rec.metrics[i].withLandscape(land);
           expect(fresh[i].word, rec.guesses[i]);
           expect(fresh[i].n, i);
           expect(fresh[i].skill, closeTo(want.skill, 1e-9), reason: 'guess $i');
           expect(fresh[i].luck, closeTo(want.luck, 1e-9));
-          expect(fresh[i].risk, closeTo(want.risk, 1e-9));
+          expect(fresh[i].gain, closeTo(want.gain, 1e-9));
           expect(fresh[i].before, rec.befores[i].length);
           expect(fresh[i].after, want.after);
           if (rec.befores[i].length > 1) {
-            expect(fresh[i].daring, closeTo(want.daring!, 1e-9));
-            expect(fresh[i].daring, inInclusiveRange(0, 100));
+            expect(fresh[i].risk, closeTo(want.risk!, 1e-9));
+            expect(fresh[i].risk, inInclusiveRange(0, 100));
           }
         }
-        expect(fresh.first.daring, isNotNull);
+        expect(fresh.first.risk, isNotNull);
         expect(
           fresh.first.skill,
           isNot(3.14),
@@ -182,7 +183,7 @@ void main() {
       },
     );
 
-    test('the best opening is not daring', () async {
+    test('the best opening has skill 100', () async {
       final first = await analyseGuesses(
         bank.guessable(4),
         bank.guessable(4),
@@ -192,7 +193,7 @@ void main() {
       final (g, rows) = game([best], answer: pool[3], tries: 6);
       final fresh = await rescoreClassic(bank, g, rows);
       expect(fresh.single.skill, closeTo(100, 1e-9));
-      expect(fresh.single.daring, 0);
+      expect(fresh.single.risk, inInclusiveRange(0, 100));
     });
   });
 
@@ -271,7 +272,7 @@ void main() {
           expect(fresh[i].word, guesses[i]);
           expect(fresh[i].skill, closeTo(step.skill, 1e-9), reason: 'step $i');
           expect(fresh[i].luck, closeTo(step.luck, 1e-9));
-          expect(fresh[i].daring, isNull);
+          expect(fresh[i].risk, isNull);
         }
       },
     );
@@ -318,7 +319,7 @@ void main() {
         final rows = h.guessesOf(g.id);
         expect(rows.length, 2);
         expect(rows.every((r) => r.skill != 3.14), isTrue);
-        expect(rows.first.daring, isNotNull);
+        expect(rows.first.risk, isNotNull);
       }
       // the facts of the games are untouched
       expect(h.games.first.answers, [pool[10]]);

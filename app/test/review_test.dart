@@ -62,8 +62,8 @@ void main() {
           w is Text &&
           w.key is ValueKey &&
           (w.key as ValueKey).value.toString().startsWith(prefix);
-      final words = find.byWidgetPredicate((w) => isKey(w, 'pick-word-'));
-      final skills = find.byWidgetPredicate((w) => isKey(w, 'pick-skill-'));
+      final words = find.byWidgetPredicate((w) => isKey(w, 'skill-word-'));
+      final skills = find.byWidgetPredicate((w) => isKey(w, 'skill-value-'));
       final n = words.evaluate().length;
       expect(n, greaterThanOrEqualTo(2), reason: 'several picks are listed');
       expect(skills.evaluate().length, n);
@@ -156,11 +156,11 @@ void main() {
       bool isPick(Widget w) =>
           w is Text &&
           w.key is ValueKey &&
-          (w.key as ValueKey).value.toString().startsWith('pick-word-');
+          (w.key as ValueKey).value.toString().startsWith('skill-word-');
       final shown = [
         for (final e in find.byWidgetPredicate(isPick).evaluate())
           ((e.widget as Text).key as ValueKey).value.toString().substring(
-            'pick-word-'.length,
+            'skill-word-'.length,
           ),
       ];
       expect(shown, isNotEmpty);
@@ -177,7 +177,7 @@ void main() {
           ? '${chance.toStringAsFixed(1)}%'
           : '${chance.round()}%';
       for (final w in shown) {
-        final t = tester.widget<Text>(find.byKey(ValueKey('pick-skill-$w')));
+        final t = tester.widget<Text>(find.byKey(ValueKey('skill-value-$w')));
         expect(t.data, shownChance);
       }
       // luck at the last try is the chance of the pick, not the pool landed in
@@ -199,7 +199,7 @@ void main() {
   );
 
   testWidgets(
-    'the table has a daring column, a number where there was a choice',
+    'the table has a risk column, a number where there was a choice',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       final bank = (await tester.runAsync(
@@ -252,9 +252,9 @@ void main() {
         ),
       );
       await tester.pump(const Duration(seconds: 10)); // the analysis lands
-      expect(find.text('daring'), findsOneWidget, reason: 'the column head');
-      // the first guess was made with a choice and a daring worked out: its row
-      // shows a whole number in that column (the head, then skill, luck, daring)
+      expect(find.byKey(const ValueKey('head-risk')), findsOneWidget);
+      // the first guess was made with a choice and a risk worked out: its row
+      // shows a whole number in that column (words, skill, risk)
       final row = find.byKey(const ValueKey('row-0'));
       final texts = tester
           .widgetList<Text>(
@@ -265,10 +265,10 @@ void main() {
           .toList();
       expect(
         texts,
-        hasLength(5),
-        reason: 'skill, luck, daring, words left, info',
+        hasLength(3),
+        reason: 'words before and after, skill, risk',
       );
-      expect(int.tryParse(texts[2]), isNotNull, reason: 'daring: ${texts[2]}');
+      expect(int.tryParse(texts[2]), isNotNull, reason: 'risk: ${texts[2]}');
     },
   );
 }

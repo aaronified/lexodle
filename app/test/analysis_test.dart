@@ -20,9 +20,10 @@ GameRow play(
   int guesses = 3,
   double skill = 70,
   double luck = 0,
-  double? daring = 40,
+  double? risk = 40,
   int before = 50,
   int version = metricsVersion,
+  List<GuessRow>? rows,
 }) {
   final row = h.add(
     at: noon(date),
@@ -33,18 +34,20 @@ GameRow play(
     pool: 3000,
     answers: mode.multi ? ['aaaaa', 'bbbbb', 'ccccc', 'ddddd'] : ['slate'],
     won: won,
-    guesses: [
-      for (var i = 0; i < guesses; i++)
-        GuessRow(
-          game: 0,
-          n: i,
-          word: 'crane',
-          skill: skill,
-          luck: luck,
-          daring: mode.multi ? null : daring,
-          before: mode.multi ? 0 : before,
-        ),
-    ],
+    guesses:
+        rows ??
+        [
+          for (var i = 0; i < guesses; i++)
+            GuessRow(
+              game: 0,
+              n: i,
+              word: 'crane',
+              skill: skill,
+              luck: luck,
+              risk: mode.multi ? null : risk,
+              before: mode.multi ? 0 : before,
+            ),
+        ],
   );
   if (version != metricsVersion) {
     h.games[h.games.indexWhere((g) => g.id == row.id)] = row.withVersion(
@@ -54,15 +57,32 @@ GameRow play(
   return row;
 }
 
+/// A game played with the best splits early (or gambles when [gamble]) and a
+/// probe at the end: an analyst, or a wildcard.
+List<GuessRow> styleGame({bool gamble = false}) => [
+  for (var k = 0; k < 4; k++)
+    GuessRow(
+      game: 0,
+      n: k,
+      word: 'crane',
+      skill: 70,
+      risk: k < 2 && gamble ? 90 : 10,
+      before: k < 2 ? 500 : 8,
+      after: k < 2 ? 200 : 3,
+      rank: k < 2 && gamble ? 50 : (k < 2 ? 2 : 3),
+      fresh: 1,
+    ),
+];
+
 void main() {
   const today = '2026-10-24'; // a Saturday
 
   group('adding games up', () {
-    test('wins, tries to win, and the means of skill, luck and daring', () {
+    test('wins, tries to win, and the means of skill, luck and risk', () {
       final h = History();
-      play(h, today, skill: 60, luck: -20, daring: 10, guesses: 4);
-      play(h, today, skill: 80, luck: 40, daring: 30, guesses: 2);
-      play(h, today, won: false, skill: 70, luck: 0, daring: 20, guesses: 6);
+      play(h, today, skill: 60, luck: -20, risk: 10, guesses: 4);
+      play(h, today, skill: 80, luck: 40, risk: 30, guesses: 2);
+      play(h, today, won: false, skill: 70, luck: 0, risk: 20, guesses: 6);
       final s = summarise(h, h.games);
       expect(s.games, 3);
       expect(s.won, 2);
@@ -72,7 +92,7 @@ void main() {
       // each guess counts once, so a game of six weighs more than a game of two
       expect(s.skill, closeTo((4 * 60 + 2 * 80 + 6 * 70) / 12, 1e-9));
       expect(s.luck, closeTo((4 * -20 + 2 * 40 + 0) / 12, 1e-9));
-      expect(s.daring, closeTo((4 * 10 + 2 * 30 + 6 * 20) / 12, 1e-9));
+      expect(s.risk, closeTo((4 * 10 + 2 * 30 + 6 * 20) / 12, 1e-9));
       expect(s.meanTries, 3, reason: 'the two wins took 4 and 2');
       expect(s.stale, 0);
     });
@@ -82,7 +102,7 @@ void main() {
       expect(s.isEmpty, isTrue);
       expect(s.games, 0);
       expect(s.winRate, 0);
-      expect(s.daring, isNull);
+      expect(s.risk, isNull);
       expect(s.meanTries, isNull);
       expect(PeriodSeries.skill.of(s), isNull);
       expect(PeriodSeries.luck.plot(s), isNull);
@@ -92,16 +112,16 @@ void main() {
       'a guess with one word left has nothing to choose, so it is left out',
       () {
         final h = History();
-        play(h, today, skill: 50, daring: 30, before: 40);
-        play(h, today, skill: 100, daring: 0, before: 1);
+        play(h, today, skill: 50, risk: 30, before: 40);
+        play(h, today, skill: 100, risk: 0, before: 1);
         final s = summarise(h, h.games);
         expect(s.scored, 3);
         expect(s.skill, 50);
-        expect(s.daring, 30);
+        expect(s.risk, 30);
       },
     );
 
-    test('a quartet counts every step, and has no daring', () {
+    test('a quartet counts every step, and has no risk', () {
       final h = History();
       play(h, today, mode: GameMode.quartet, skill: 60, luck: 10, guesses: 4);
       final s = summarise(h, h.games);
@@ -109,23 +129,15 @@ void main() {
       expect(s.scored, 4);
       expect(s.skill, 60);
       expect(s.luck, 10);
-      expect(s.daring, isNull);
+      expect(s.risk, isNull);
     });
 
     test(
       'a game scored with older maths counts as played, not in the means',
       () {
         final h = History();
-        play(h, today, skill: 90, luck: 10, daring: 20, guesses: 2);
-        play(
-          h,
-          today,
-          skill: 10,
-          luck: -90,
-          daring: 90,
-          guesses: 2,
-          version: 0,
-        );
+        play(h, today, skill: 90, luck: 10, risk: 20, guesses: 2);
+        play(h, today, skill: 10, luck: -90, risk: 90, guesses: 2, version: 0);
         final s = summarise(h, h.games);
         expect(s.games, 2);
         expect(s.won, 2);
@@ -133,7 +145,7 @@ void main() {
         expect(s.scored, 2);
         expect(s.skill, 90);
         expect(s.luck, 10);
-        expect(s.daring, 20);
+        expect(s.risk, 20);
       },
     );
 
@@ -146,7 +158,7 @@ void main() {
             h,
             today,
             skill: 95,
-            daring: 10,
+            risk: 10,
             version: i < 6 ? 0 : metricsVersion,
           );
         }
@@ -159,57 +171,25 @@ void main() {
   });
 
   group('the three lines', () {
-    PlayStats stats({
-      double skill = 70,
-      double luck = 0,
-      double? daring = 40,
-    }) => PlayStats(
-      games: 1,
-      won: 1,
-      classic: 1,
-      scored: 3,
-      skill: skill,
-      luck: luck,
-      daring: daring,
-    );
+    PlayStats stats({double skill = 70, double luck = 0, double? risk = 40}) =>
+        PlayStats(
+          games: 1,
+          won: 1,
+          classic: 1,
+          scored: 3,
+          skill: skill,
+          luck: luck,
+          risk: risk,
+        );
 
-    test('the expected guesses come from skill, luck and daring', () {
-      final good = stats(skill: 95, luck: 0, daring: daringTypical);
-      final bad = stats(skill: 40, luck: 0, daring: daringTypical);
-      final b = guessBreakdown(good)!;
-      // a typical daring adds nothing, and skill only takes guesses off
-      expect(b.daring, closeTo(0, 1e-9));
-      expect(b.skill, lessThan(0));
-      expect(b.luck, closeTo(0, 1e-9));
-      expect(b.total, closeTo(b.base + b.skill, 1e-9));
-      expect(b.total, lessThan(guessBreakdown(bad)!.total));
-      // luck takes guesses off when good and adds them when bad
-      expect(guessBreakdown(stats(luck: 40))!.luck, lessThan(0));
-      expect(guessBreakdown(stats(luck: -40))!.luck, greaterThan(0));
-      // daring below the typical level adds, above takes off
-      expect(guessBreakdown(stats(daring: 0))!.daring, greaterThan(0));
-      expect(guessBreakdown(stats(daring: 30))!.daring, lessThan(0));
-      // it stays within what a game can take, and is plotted 1 to 7
-      expect(
-        guessBreakdown(stats(skill: 100, luck: 100, daring: 100))!.total,
-        1,
-      );
-      expect(
-        PeriodSeries.guesses.plot(stats(skill: 0, luck: -100, daring: 0)),
-        100,
-      );
-      expect(guessBreakdown(stats(daring: null)), isNull);
-    });
-
-    test('each has a name, and skill and daring are drawn as they are', () {
+    test('each has a name, and skill and risk are drawn as they are', () {
       expect(PeriodSeries.values.map((s) => s.label), [
         'skill',
         'luck',
-        'daring',
-        'guesses',
+        'risk',
       ]);
       expect(PeriodSeries.skill.plot(stats(skill: 83)), 83);
-      expect(PeriodSeries.daring.plot(stats(daring: 12)), 12);
+      expect(PeriodSeries.risk.plot(stats(risk: 12)), 12);
     });
 
     test('luck is drawn about the middle, so that 50 is a luck of 0%', () {
@@ -221,7 +201,7 @@ void main() {
     });
 
     test('a line has no value where there is nothing to show', () {
-      expect(PeriodSeries.daring.of(stats(daring: null)), isNull);
+      expect(PeriodSeries.risk.of(stats(risk: null)), isNull);
       const unscored = PlayStats(games: 2, won: 2);
       expect(PeriodSeries.skill.of(unscored), isNull);
       expect(PeriodSeries.luck.plot(unscored), isNull);
@@ -307,15 +287,15 @@ void main() {
       final h = History();
       // the last week: 12 sharp, careful games
       for (var i = 0; i < 12; i++) {
-        play(h, today, skill: 95, daring: 1);
+        play(h, today, rows: styleGame());
       }
       // the week before: 12 loose, bold ones
       for (var i = 0; i < 12; i++) {
-        play(h, '2026-10-15', skill: 40, daring: 30);
+        play(h, '2026-10-15', rows: styleGame(gamble: true));
       }
       // the one before that: too few to rate
       for (var i = 0; i < 3; i++) {
-        play(h, '2026-10-08', skill: 70, daring: 70);
+        play(h, '2026-10-08', skill: 70, risk: 70);
       }
       final w = weeklyPeriods(h, today);
       expect(w[49].style, analyst);
@@ -387,12 +367,12 @@ void main() {
     test('a month has a style once it has the games to rate it', () {
       final h = History();
       for (var i = 0; i < 6; i++) {
-        play(h, '2026-09-03', skill: 70, daring: 5);
-        play(h, '2026-09-20', skill: 70, daring: 5);
+        play(h, '2026-09-03', rows: styleGame());
+        play(h, '2026-09-20', rows: styleGame());
       }
       final m = monthlyPeriods(h, today);
       expect(m[48].stats.games, 12);
-      expect(m[48].style, steady);
+      expect(m[48].style, analyst);
       expect(m.last.style, isNull);
     });
   });

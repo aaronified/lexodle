@@ -29,7 +29,7 @@ GuessMetrics gm(
   double luck,
   int before,
   int after, {
-  double? daring = 40,
+  double? risk = 40,
   int triesLeft = 3,
 }) => GuessMetrics(
   guess: g,
@@ -40,7 +40,7 @@ GuessMetrics gm(
   expected: 1,
   groups: 1,
   largest: 1,
-  daring: daring,
+  risk: risk,
   triesLeft: triesLeft,
 );
 
@@ -49,17 +49,13 @@ void main() {
 
   group('the three colours', () {
     for (final b in [Brightness.light, Brightness.dark]) {
-      test('${b.name}: skill, luck and daring are three different colours', () {
+      test('${b.name}: skill, luck and risk are three different colours', () {
         final c = ColorScheme.fromSeed(seedColor: Colors.teal, brightness: b);
-        final all = {
-          rgb(skillColor(c)),
-          rgb(luckColor(c)),
-          rgb(daringColor(c)),
-        };
+        final all = {rgb(skillColor(c)), rgb(luckColor(c)), rgb(riskColor(c))};
         expect(all, hasLength(3));
         expect(metricColor(c, 'skill'), skillColor(c));
         expect(metricColor(c, 'luck'), luckColor(c));
-        expect(metricColor(c, 'daring'), daringColor(c));
+        expect(metricColor(c, 'risk'), riskColor(c));
       });
     }
 
@@ -68,7 +64,7 @@ void main() {
       final black = buildTheme(Brightness.dark, black: true).colorScheme;
       expect(skillColor(black), skillColor(dark));
       expect(luckColor(black), luckColor(dark));
-      expect(daringColor(black), daringColor(dark));
+      expect(riskColor(black), riskColor(dark));
     });
 
     test('each reads on the page of every theme', () {
@@ -84,7 +80,7 @@ void main() {
         buildTheme(Brightness.dark, black: true),
       ]) {
         final c = t.colorScheme;
-        for (final k in [skillColor(c), luckColor(c), daringColor(c)]) {
+        for (final k in [skillColor(c), luckColor(c), riskColor(c)]) {
           expect(contrast(k, c.surface), greaterThanOrEqualTo(3));
         }
       }
@@ -149,41 +145,43 @@ void main() {
       double l1 = -30,
       double l2 = 0,
     }) => [
-      gm(pool[10], 80, l0, 40, 20, daring: 10, triesLeft: 5),
-      gm(pool[11], 60, l1, 20, 8, daring: 50, triesLeft: 4),
-      gm(pool[3], 30, l2, 8, 1, daring: 90, triesLeft: 3),
+      gm(pool[10], 80, l0, 40, 20, risk: 10, triesLeft: 5),
+      gm(pool[11], 60, l1, 20, 8, risk: 50, triesLeft: 4),
+      gm(pool[3], 30, l2, 8, 1, risk: 90, triesLeft: 3),
     ];
 
     for (final b in [Brightness.light, Brightness.dark]) {
       testWidgets(
-        '${b.name}: luck is the same yellow whether it is plus, minus or zero',
+        '${b.name}: the four pills carry the four colours, the sign carries luck',
         (tester) async {
-          await open(tester, record(three()), step: 2, b: b, settle: false);
+          await open(tester, record(three()), step: 0, b: b, settle: false);
           final c = Theme.of(tester.element(find.byType(ReviewPage)))
               .colorScheme;
-          for (var i = 0; i < 3; i++) {
-            final t = tester.widget<Text>(find.byKey(ValueKey('luck-$i')));
-            expect(rgb(t.style!.color!), rgb(luckColor(c)), reason: 'row $i');
+          for (final (k, color) in [
+            ('skill', skillColor(c)),
+            ('luck', luckColor(c)),
+            ('risk', riskColor(c)),
+            ('bits', bitsColor(c)),
+          ]) {
+            final t = tester.widget<Text>(
+              find.byKey(ValueKey('pill-value-$k')),
+            );
+            expect(rgb(t.style!.color!), rgb(color), reason: k);
           }
-          // the sign carries the direction
           expect(
-            textOf(tester.widget<Text>(find.byKey(const ValueKey('luck-0')))),
-            '+40%',
-          );
-          expect(
-            textOf(tester.widget<Text>(find.byKey(const ValueKey('luck-1')))),
-            '−30%',
-          );
-          expect(
-            textOf(tester.widget<Text>(find.byKey(const ValueKey('luck-2')))),
-            '0%',
+            textOf(
+              tester.widget<Text>(
+                find.byKey(const ValueKey('pill-value-luck')),
+              ),
+            ),
+            '+40',
           );
           await tester.pump(const Duration(seconds: 40));
         },
       );
     }
 
-    testWidgets('the table: header words and numbers carry the three colours', (
+    testWidgets('the table: header words and numbers carry the colours', (
       tester,
     ) async {
       await open(tester, record(three()), step: 2, settle: false);
@@ -191,13 +189,11 @@ void main() {
       Color head(String h) =>
           tester.widget<Text>(find.byKey(ValueKey('head-$h'))).style!.color!;
       expect(head('skill'), skillColor(c));
-      expect(head('luck'), luckColor(c));
-      expect(head('daring'), daringColor(c));
+      expect(head('risk'), riskColor(c));
       for (var i = 0; i < 3; i++) {
         for (final (k, color) in [
           ('skill', skillColor(c)),
-          ('luck', luckColor(c)),
-          ('daring', daringColor(c)),
+          ('risk', riskColor(c)),
         ]) {
           final t = tester.widget<Text>(find.byKey(ValueKey('$k-$i')));
           expect(rgb(t.style!.color!), rgb(color), reason: '$k row $i');
@@ -206,220 +202,31 @@ void main() {
       await tester.pump(const Duration(seconds: 40));
     });
 
-    testWidgets('the captions start with their term in its colour', (
+    testWidgets('a pill explains itself with its term in its colour', (
       tester,
     ) async {
       await open(tester, record(three()), step: 1);
       final c = Theme.of(tester.element(find.byType(ReviewPage))).colorScheme;
-      void lead(String key, Color color, String start) {
-        final t = tester.widget<Text>(find.byKey(ValueKey(key)));
-        final span = t.textSpan! as TextSpan;
-        final first = span.children!.first as TextSpan;
-        expect(first.text, startsWith(start), reason: key);
-        expect(first.style!.color, color, reason: key);
-        // the rest is plain
-        expect((span.children!.last as TextSpan).style, isNull, reason: key);
-      }
-
-      lead('skill-caption', skillColor(c), 'skill ');
-      lead('luck-caption', luckColor(c), 'luck ');
-      lead('daring-line', daringColor(c), 'daring ');
-    });
-
-    group('the expected tries', () {
-      /// Parses "expected tries 4.4 = 9.4 − 3.6 skill + 0.3 luck − 0.8 daring".
-      ({double total, double base, Map<String, double> terms}) parse(
-        String text,
-      ) {
-        final head = RegExp(r'expected tries ([\d.]+) = ([\d.]+)')
-            .firstMatch(text)!;
-        final terms = {
-          for (final m in RegExp(
-            r'([+−]) ([\d.]+) (skill|luck|daring)',
-          ).allMatches(text))
-            m.group(3)!:
-                double.parse(m.group(2)!) * (m.group(1) == '−' ? -1 : 1),
-        };
-        return (
-          total: double.parse(head.group(1)!),
-          base: double.parse(head.group(2)!),
-          terms: terms,
-        );
-      }
-
-      TextSpan formula(WidgetTester tester) =>
-          tester
-                  .widget<Text>(find.byKey(const ValueKey('expected-tries')))
-                  .textSpan!
-              as TextSpan;
-
-      String tenths(double v) => v.toStringAsFixed(1);
-
-      testWidgets('dots until every step has been analysed', (tester) async {
-        await open(tester, record(three()), settle: false);
-        expect(
-          textOf(
-            tester.widget<Text>(find.byKey(const ValueKey('expected-tries'))),
-          ),
-          'expected tries …',
-        );
-        await tester.pump(const Duration(seconds: 40));
-        expect(
-          textOf(
-            tester.widget<Text>(find.byKey(const ValueKey('expected-tries'))),
-          ),
-          startsWith('expected tries '),
-        );
-        expect(
-          textOf(
-            tester.widget<Text>(find.byKey(const ValueKey('expected-tries'))),
-          ),
-          isNot(contains('…')),
-        );
-      });
-
-      testWidgets('the numbers are the breakdown of the game means', (
-        tester,
-      ) async {
-        final r = record(three());
-        // worked out apart from the page: each guess against every real one
-        final scored = <GuessMetrics>[];
-        await tester.runAsync(() async {
-          for (var i = 0; i < r.guesses.length; i++) {
-            final land = await analyseGuesses(
-              r.befores[i],
-              bank.guessable(4),
-              weights: r.weights,
-            );
-            scored.add(r.metrics[i].withLandscape(land));
-          }
-        });
-        double mean(Iterable<double> v) => v.reduce((a, b) => a + b) / v.length;
-        final withDaring = [
-          for (final m in scored)
-            if (m.daring != null) m.daring!,
-        ];
-        expect(withDaring, isNotEmpty);
-        final expected = guessBreakdown(
-          PlayStats(
-            games: 1,
-            scored: scored.length,
-            skill: mean(scored.map((m) => m.skill)),
-            luck: mean(scored.map((m) => m.luck)),
-            daring: mean(withDaring),
-          ),
-        )!;
-
-        await open(tester, r);
-        final shown = parse(
-          textOf(
-            tester.widget<Text>(find.byKey(const ValueKey('expected-tries'))),
-          )!,
-        );
-        expect(shown.total, double.parse(tenths(expected.total)));
-        expect(shown.base, double.parse(tenths(expected.base)));
-        expect(shown.terms['skill'], double.parse(tenths(expected.skill)));
-        expect(shown.terms['luck'], double.parse(tenths(expected.luck)));
-        expect(shown.terms['daring'], double.parse(tenths(expected.daring)));
-      });
-
-      testWidgets(
-        'real minus signs, the terms in their colours, what it took',
-        (tester) async {
-          await open(tester, record(three()));
-          final c = Theme.of(tester.element(find.byType(ReviewPage)))
-              .colorScheme;
-          final text = textOf(
-            tester.widget<Text>(find.byKey(const ValueKey('expected-tries'))),
-          )!;
-          expect(
-            text,
-            isNot(contains(' - ')),
-            reason: 'a real minus, not a hyphen',
-          );
-          expect(text, endsWith('· you took 3'));
-          final span = formula(tester);
-          final colours = <String, Color>{
-            for (final s in span.children!.whereType<TextSpan>())
-              for (final k in ['skill', 'luck', 'daring'])
-                if (s.text!.endsWith(' $k')) k: s.style!.color!,
-          };
-          expect(colours, {
-            'skill': skillColor(c),
-            'luck': luckColor(c),
-            'daring': daringColor(c),
+      for (final (k, color) in [
+        ('skill', skillColor(c)),
+        ('luck', luckColor(c)),
+        ('risk', riskColor(c)),
+      ]) {
+        await tester.tap(find.byKey(ValueKey('pill-$k')));
+        await tester.pumpAndSettle();
+        final spans = <TextSpan>[];
+        for (final w in tester.widgetList<RichText>(find.byType(RichText))) {
+          w.text.visitChildren((s) {
+            if (s is TextSpan && s.text == k && s.style?.color == color) {
+              spans.add(s);
+            }
+            return true;
           });
-          // the words "expected tries" are plain
-          expect((span.children!.first as TextSpan).style, isNull);
-          expect(
-            (span.children!.first as TextSpan).text,
-            startsWith('expected tries'),
-          );
-        },
-      );
-
-      testWidgets('a game that was not solved says so', (tester) async {
-        await open(tester, record(three(), won: false));
-        expect(
-          textOf(
-            tester.widget<Text>(find.byKey(const ValueKey('expected-tries'))),
-          ),
-          endsWith('· not solved'),
-        );
-      });
-
-      testWidgets('daring is left out when no guess had one', (tester) async {
-        // no tries left to speak of: every daring is null
-        final r = record([
-          gm(pool[10], 80, 10, 40, 20, daring: null, triesLeft: 0),
-          gm(pool[3], 50, -10, 20, 1, daring: null, triesLeft: 0),
-        ]);
-        await open(tester, r);
-        final text = textOf(
-          tester.widget<Text>(find.byKey(const ValueKey('expected-tries'))),
-        )!;
-        expect(text, contains(' skill'));
-        expect(text, contains(' luck'));
-        expect(text, isNot(contains('daring')));
-        final shown = parse(text);
-        expect(shown.terms.keys, unorderedEquals(['skill', 'luck']));
-        // the same as the history's, with the daring term at its typical value
-        expect(
-          shown.total,
-          closeTo(
-            double.parse(
-              tenths(
-                breakdownOf(
-                  shown.terms['skill']! / guessPerSkill,
-                  shown.terms['luck']! / guessPerLuck,
-                  null,
-                ).total,
-              ),
-            ),
-            .15,
-          ),
-        );
-      });
-
-      testWidgets('one short line of what it is, and the wiki link', (
-        tester,
-      ) async {
-        await open(tester, record(three()), settle: false);
-        final help = textOf(
-          tester.widget<Text>(
-            find.byKey(const ValueKey('expected-tries-help')),
-          ),
-        )!;
-        expect(help.length, lessThanOrEqualTo(110));
-        expect(
-          find.descendant(
-            of: find.byType(ListView),
-            matching: find.byKey(const ValueKey('wiki-skillLuckDaring')),
-          ),
-          findsWidgets,
-        );
-        await tester.pump(const Duration(seconds: 40));
-      });
+        }
+        expect(spans, isNotEmpty, reason: k);
+        await tester.tapAt(const Offset(2, 2));
+        await tester.pumpAndSettle();
+      }
     });
   });
 
@@ -447,7 +254,7 @@ void main() {
                 word: pool[k + 1],
                 skill: 80,
                 luck: luck,
-                daring: 30,
+                risk: 30,
                 before: 50,
                 after: 20,
               ),
@@ -507,7 +314,7 @@ void main() {
       expect(t.style!.color, luckColor(c));
     });
 
-    testWidgets('skill, luck and daring there have the three colours', (
+    testWidgets('skill, luck and risk there have the three colours', (
       tester,
     ) async {
       await show(tester, played(20));
@@ -516,12 +323,12 @@ void main() {
           tester.widget<Text>(find.byKey(ValueKey('stat-$k'))).style!.color!;
       expect(of('skill'), skillColor(c));
       expect(of('luck'), luckColor(c));
-      expect(of('daring'), daringColor(c));
+      expect(of('risk'), riskColor(c));
       // and their labels
       for (final (k, color) in [
         ('skill', skillColor(c)),
         ('luck', luckColor(c)),
-        ('daring', daringColor(c)),
+        ('risk', riskColor(c)),
       ]) {
         final label = find.descendant(
           of: find.byKey(const ValueKey('profile')),
@@ -543,7 +350,7 @@ void main() {
       final colours = seriesColors(c);
       expect(colours[PeriodSeries.skill], skillColor(c));
       expect(colours[PeriodSeries.luck], luckColor(c));
-      expect(colours[PeriodSeries.daring], daringColor(c));
+      expect(colours[PeriodSeries.risk], riskColor(c));
     });
   });
 

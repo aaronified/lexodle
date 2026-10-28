@@ -148,7 +148,12 @@ class _ReviewPageState extends State<ReviewPage> {
         setState(
           () => picks[i] = [
             for (var k = 0; k < fits.length && k < _listed; k++)
-              Recommendation(fits[k], shares[k] * 100, fits.length.toDouble(), true),
+              Recommendation(
+                fits[k],
+                shares[k] * 100,
+                fits.length.toDouble(),
+                true,
+              ),
           ],
         );
       }
@@ -433,7 +438,11 @@ class _ReviewPageState extends State<ReviewPage> {
                   const Spacer(),
                   SizedBox(
                     width: colW + 12,
-                    child: Text('words', textAlign: TextAlign.right, style: head),
+                    child: Text(
+                      'words',
+                      textAlign: TextAlign.right,
+                      style: head,
+                    ),
                   ),
                   SizedBox(
                     width: colW,
@@ -489,11 +498,18 @@ class _ReviewPageState extends State<ReviewPage> {
                               : MarkTile('', size: tile),
                         ),
                       const Spacer(),
-                      if (i <= step) ..._rowCells(c, i, colW, cell)
+                      if (i <= step)
+                        ..._rowCells(c, i, colW, cell)
                       else ...[
-                        SizedBox(width: colW + 12, child: cell('–', dimmed: true)),
+                        SizedBox(
+                          width: colW + 12,
+                          child: cell('–', dimmed: true),
+                        ),
                         SizedBox(width: colW, child: cell('–', dimmed: true)),
-                        SizedBox(width: colW + 28, child: cell('–', dimmed: true)),
+                        SizedBox(
+                          width: colW + 28,
+                          child: cell('–', dimmed: true),
+                        ),
                       ],
                     ],
                   ),
@@ -549,7 +565,9 @@ class _ReviewPageState extends State<ReviewPage> {
             _luckChevrons(c, m.luck, strong),
             const SizedBox(width: 4),
             cell(
-              !m.ready ? '…' : (m.risk == null ? '–' : m.risk!.round().toString()),
+              !m.ready
+                  ? '…'
+                  : (m.risk == null ? '–' : m.risk!.round().toString()),
               strong: strong,
               dimmed: dimmed,
               color: riskColor(c),
@@ -565,9 +583,15 @@ class _ReviewPageState extends State<ReviewPage> {
                         context,
                         title: b.label,
                         children: [
-                          Text(b.what, style: const TextStyle(fontSize: 13, height: 1.5)),
+                          Text(
+                            b.what,
+                            style: const TextStyle(fontSize: 13, height: 1.5),
+                          ),
                           const SizedBox(height: 6),
-                          Text('counted when: ${b.rule}', style: const TextStyle(fontSize: 12, height: 1.5)),
+                          Text(
+                            'counted when: ${b.rule}',
+                            style: const TextStyle(fontSize: 12, height: 1.5),
+                          ),
                         ],
                       ),
                       child: TablerIcon(
@@ -724,54 +748,59 @@ class _ReviewPageState extends State<ReviewPage> {
       String which,
       List<(String, String)> rows, {
       String? info,
-    }) => Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Flexible(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 10,
-                    letterSpacing: .4,
-                    color: metricColor(c, which),
-                  ),
+    }) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Flexible(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 10,
+                  letterSpacing: .4,
+                  color: metricColor(c, which),
                 ),
               ),
-              if (info != null) ...[
-                const SizedBox(width: 4),
-                InfoDot(info, title: title),
-              ],
+            ),
+            if (info != null) ...[
+              const SizedBox(width: 4),
+              InfoDot(info, title: title),
             ],
-          ),
-          Divider(color: c.outlineVariant),
-          if (rows.isEmpty)
-            const Caption('…')
-          else
-            for (final (w, v) in rows)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        w,
-                        key: ValueKey('$which-word-$w'),
-                        style: const TextStyle(fontSize: 13),
-                      ),
+          ],
+        ),
+        Divider(color: c.outlineVariant),
+        if (rows.isEmpty)
+          const Caption('…')
+        else
+          for (final (w, v) in rows)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      w,
+                      key: ValueKey('$which-word-$w'),
+                      style: const TextStyle(fontSize: 13),
                     ),
-                    Text(
+                  ),
+                  SizedBox(
+                    width: 40,
+                    child: Text(
                       v,
                       key: ValueKey('$which-value-$w'),
-                      style: TextStyle(fontSize: 13, color: metricColor(c, which)),
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: metricColor(c, which),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-        ],
-      ),
+            ),
+      ],
     );
 
     if (finalTry) {
@@ -779,7 +808,8 @@ class _ReviewPageState extends State<ReviewPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           column('likeliest', 'skill', [
-            if (top != null) for (final p in top) (p.word, pct(p.skill)),
+            if (top != null)
+              for (final p in top) (p.word, pct(p.skill)),
           ]),
           Text(
             r.weights != null
@@ -801,25 +831,30 @@ class _ReviewPageState extends State<ReviewPage> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            column(
-              'best skill',
-              'skill',
-              [
+            Expanded(
+              child: column('best skill', 'skill', [
                 if (top != null)
                   for (final p in top) (p.word, '${p.skill.round()}'),
-              ],
+              ]),
             ),
             const SizedBox(width: 12),
-            column('top risk', 'risk', [
-              if (land != null)
-                for (final p in land.riskiest)
-                  (p.word, best <= 0 ? '0' : '${(p.raw / best * 100).round()}'),
-            ]),
+            Expanded(
+              child: column('top risk', 'risk', [
+                if (land != null)
+                  for (final p in land.riskiest)
+                    (
+                      p.word,
+                      best <= 0 ? '0' : '${(p.raw / best * 100).round()}',
+                    ),
+              ]),
+            ),
             const SizedBox(width: 12),
-            column('luckiest', 'luck', [
-              if (land != null)
-                for (final p in land.luckiest) (p.word, signedLuck(p.luck)),
-            ]),
+            Expanded(
+              child: column('luckiest', 'luck', [
+                if (land != null)
+                  for (final p in land.luckiest) (p.word, signedLuck(p.luck)),
+              ]),
+            ),
           ],
         ),
         reviewLink(WikiPage.solverAndLearn, label: 'how my picks are chosen'),
@@ -827,7 +862,6 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 }
-
 
 /// The heights of the plot for [words] (most common first): each word's
 /// log-weight scaled to 0..1 between the rarest and the most common word of

@@ -30,7 +30,7 @@ GuessMetrics gm(
   double luck,
   int before,
   int after, {
-  double? daring,
+  double? risk,
 }) => GuessMetrics(
   guess: g,
   skill: skill,
@@ -40,7 +40,7 @@ GuessMetrics gm(
   expected: 1,
   groups: 1,
   largest: 1,
-  daring: daring,
+  risk: risk,
 );
 
 void main() {
@@ -51,20 +51,32 @@ void main() {
   group('the shared lines', () {
     test('skill carries its number and says what it is against', () {
       expect(skillLine(82.4), startsWith('skill 82: '));
-      expect(skillLine(82.4), contains('best possible guess (100)'));
+      expect(skillLine(82.4), contains('best guess\'s (100)'));
       fits(skillLine(100));
     });
 
-    test('luck carries its sign: plus is kinder, minus is harsher', () {
+    test('luck carries its sign: plus gained more, minus less', () {
       expect(luckLine(40), startsWith('luck +40: '));
-      expect(luckLine(40), contains('kinder than usual'));
+      expect(luckLine(40), contains('gained more than usual'));
       expect(luckLine(-35.4), startsWith('luck −35: '));
-      expect(luckLine(-35.4), contains('harsher than usual'));
+      expect(luckLine(-35.4), contains('gained less than usual'));
       expect(luckLine(0.3), startsWith('luck 0: '));
       expect(luckLine(0.3), contains('average'));
       for (final v in [-100.0, -40.0, 0.0, 40.0, 100.0]) {
         fits(luckLine(v));
       }
+    });
+
+    test('risk and bits carry their numbers', () {
+      expect(riskLine(60), startsWith('risk 60: '));
+      expect(riskLine(0), startsWith('risk 0: '));
+      expect(riskLine(null), startsWith('risk –: '));
+      expect(bitsLine(2.345, 3), startsWith('bits 2.35: '));
+      expect(bitsLine(2.345, 3), contains('cut 3.00'));
+      for (final v in [null, 0.0, 60.0, 100.0]) {
+        fits(riskLine(v));
+      }
+      fits(bitsLine(2.345, 3));
     });
 
     test('the fixed lines are short', () {
@@ -221,46 +233,6 @@ void main() {
         ),
       ),
     );
-    const o = Outcomes([60, 25, 9, 4, 2], 38.6, 1);
-
-    testWidgets('the split plot: numbers and signs, one link', (tester) async {
-      Uri? opened;
-      wikiOpener = (u) async {
-        opened = u;
-        return true;
-      };
-      await tester.pumpWidget(
-        host(const SplitPlot(outcomes: o, best: 4.0, skill: 62, luck: 20)),
-      );
-      final skill = textOf(
-        tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
-      )!;
-      final luck = textOf(
-        tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))),
-      )!;
-      expect(skill, startsWith('skill 62: '));
-      expect(luck, startsWith('luck +20: '));
-      expect(luck, contains('kinder'));
-      fits(skill);
-      fits(luck);
-      expect(find.byType(WikiLink), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('wiki-skillLuckDaring')));
-      expect(opened, WikiPage.skillLuckDaring.uri);
-    });
-
-    testWidgets('a negative luck reads harsher, with a minus sign', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        host(const SplitPlot(outcomes: o, best: 4.0, skill: 31, luck: -62)),
-      );
-      final luck = textOf(
-        tester.widget<Text>(find.byKey(const ValueKey('luck-caption'))),
-      )!;
-      expect(luck, startsWith('luck −62: '));
-      expect(luck, contains('harsher'));
-    });
-
     testWidgets('the last-try plot: the line, the chance, a link', (
       tester,
     ) async {
@@ -285,8 +257,8 @@ void main() {
       expect(luck, contains('3 words that fit'));
       expect(luck, contains('33% chance'));
       fits(luck);
-      await tester.tap(find.byKey(const ValueKey('wiki-skillLuckDaring')));
-      expect(opened, WikiPage.skillLuckDaring.uri);
+      await tester.tap(find.byKey(const ValueKey('wiki-skillLuckRisk')));
+      expect(opened, WikiPage.skillLuckRisk.uri);
     });
 
     testWidgets('a last try that did not fit says it had no chance', (
@@ -372,35 +344,35 @@ void main() {
       await tester.pump(const Duration(seconds: 40));
     }
 
-    const lineKeys = [
-      'skill-caption',
-      'luck-caption',
-      'chance-caption',
-      'chance-luck',
-      'daring-line',
-      'pick-each',
-    ];
+    const lineKeys = ['chance-caption', 'chance-luck', 'pick-each'];
 
     testWidgets('every explanation on every step is short', (tester) async {
       var seen = 0;
       for (var step = 0; step < 3; step++) {
         await open(tester, step);
-        await tester.tap(find.text('explain this table'));
-        await tester.pump();
         for (final k in lineKeys) {
           for (final e in find.byKey(ValueKey(k)).evaluate()) {
             fits(textOf(e.widget as Text)!, what: k);
             seen++;
           }
         }
-        // the table help and the step comment
+        // each pill's explanation, and the step comment
+        for (final k in ['skill', 'luck', 'risk', 'bits']) {
+          await tester.tap(find.byKey(ValueKey('pill-$k')));
+          await tester.pumpAndSettle();
+          for (final e in find.byType(RichText).evaluate()) {
+            final t = (e.widget as RichText).text.toPlainText();
+            if (t.startsWith('$k ')) {
+              fits(t, what: '$k, step $step');
+              seen++;
+            }
+          }
+          await tester.tapAt(const Offset(2, 2));
+          await tester.pumpAndSettle();
+        }
         for (final e in find.byType(Text).evaluate()) {
           final t = textOf(e.widget as Text) ?? '';
-          if (t.startsWith('skill:') ||
-              t.startsWith('luck:') ||
-              t.startsWith('words left:') ||
-              t.startsWith('The ') && t.contains('possible words split') ||
-              t.startsWith('Terrific') ||
+          if (t.startsWith('Terrific') ||
               t.startsWith('Good choice') ||
               t.startsWith('Decent') ||
               t.startsWith('A missed') ||
@@ -415,64 +387,54 @@ void main() {
       expect(seen, greaterThan(12));
     });
 
-    testWidgets('the numbers in the lines are the table\'s', (tester) async {
+    testWidgets('the numbers in the pills are the table\'s', (tester) async {
       await open(tester, 0);
       final m = record.metrics[0];
       final land = await tester.runAsync(
-        () => analyseGuesses(record.befores[0], bank.guessable(4)),
+        () => analyseGuesses(
+          record.befores[0],
+          bank.guessable(4),
+          answer: record.answer,
+        ),
       );
-      final skill = m.withBest(land!.bestExpected).skill.round();
+      final skill = m.withLandscape(land!).skill.round();
       expect(
         textOf(
-          tester.widget<Text>(find.byKey(const ValueKey('skill-caption'))),
+          tester.widget<Text>(find.byKey(const ValueKey('pill-value-skill'))),
         ),
-        startsWith('skill $skill: '),
+        '$skill',
       );
+      await tester.tap(find.byKey(const ValueKey('pill-luck')));
+      await tester.pumpAndSettle();
       expect(
-        textOf(tester.widget<Text>(find.byKey(const ValueKey('luck-caption')))),
-        startsWith(luckLine(m.luck).split(':').first),
+        find.textContaining(luckLine(m.luck).split(':').first),
+        findsOneWidget,
       );
     });
 
-    testWidgets('links open the wiki: pool, plots, picks, table help', (
-      tester,
-    ) async {
+    testWidgets('links open the wiki: pills, picks', (tester) async {
       final opened = <Uri>[];
       wikiOpener = (u) async {
         opened.add(u);
         return true;
       };
       await open(tester, 0);
-      expect(
-        find.byKey(const ValueKey('wiki-skillLuckDaring')),
-        findsNWidgets(3),
-        reason: 'one under the formula, one under the pool, one under the plot',
-      );
       expect(find.byKey(const ValueKey('wiki-solverAndLearn')), findsOneWidget);
-      for (final k in ['wiki-skillLuckDaring', 'wiki-solverAndLearn']) {
-        final f = find.byKey(ValueKey(k)).first;
-        await tester.ensureVisible(f);
-        await tester.tap(f);
-      }
-      expect(opened, [
-        WikiPage.skillLuckDaring.uri,
-        WikiPage.solverAndLearn.uri,
-      ]);
-      // the table help has its own link, only when open
-      await tester.tap(find.text('explain this table'));
-      await tester.pump();
-      expect(
-        find.byKey(const ValueKey('wiki-skillLuckDaring')),
-        findsNWidgets(4),
-      );
+      final f = find.byKey(const ValueKey('wiki-solverAndLearn'));
+      await tester.ensureVisible(f);
+      await tester.tap(f);
+      expect(opened, [WikiPage.solverAndLearn.uri]);
+      // each pill's explanation links to the page on skill, luck and risk
+      await tester.tap(find.byKey(const ValueKey('pill-risk')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('wiki-skillLuckRisk')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('wiki-skillLuckRisk')));
+      expect(opened.last, WikiPage.skillLuckRisk.uri);
     });
 
-    testWidgets('the last try has no pool panel but still links', (
-      tester,
-    ) async {
+    testWidgets('the last try still links', (tester) async {
       await open(tester, 2);
-      expect(find.byKey(const ValueKey('wiki-skillLuckDaring')), findsWidgets);
-      expect(find.byKey(const ValueKey('wiki-solverAndLearn')), findsOneWidget);
+      expect(find.byKey(const ValueKey('wiki-skillLuckRisk')), findsWidgets);
     });
   });
 
@@ -567,7 +529,7 @@ void main() {
           help.any((t) => t.startsWith('head start:')),
           mode == GameMode.relay,
         );
-        final link = find.byKey(const ValueKey('wiki-skillLuckDaring'));
+        final link = find.byKey(const ValueKey('wiki-skillLuckRisk'));
         expect(link, findsOneWidget);
         await tester.ensureVisible(link);
         await tester.tap(link);
@@ -575,7 +537,7 @@ void main() {
         await tester.ensureVisible(picks);
         await tester.tap(picks);
         expect(opened, [
-          WikiPage.skillLuckDaring.uri,
+          WikiPage.skillLuckRisk.uri,
           WikiPage.solverAndLearn.uri,
         ]);
         // every step's comment and opened-board line is short

@@ -9,13 +9,13 @@ import 'package:lexodle/playstyle.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// [n] classic games in [lang], every guess at [skill] and [daring].
+/// [n] classic games in [lang], played in the style of [early] and [end].
 void play(
   AppState s,
   String lang,
   int n, {
-  double skill = 95,
-  double daring = 1,
+  Behaviour early = Behaviour.maximiser,
+  Behaviour end = Behaviour.prober,
 }) {
   for (var i = 0; i < n; i++) {
     s.history.add(
@@ -33,11 +33,15 @@ void play(
             game: 0,
             n: k,
             word: 'crane',
-            skill: skill,
-            luck: 0,
-            daring: daring,
-            before: 50,
-            after: 10,
+            skill: 70,
+            before: k < 2 ? 500 : 8,
+            after: k < 2 ? 200 : 3,
+            risk: k < 2 && early == Behaviour.gambler ? 90 : 10,
+            rank: k < 2
+                ? (early == Behaviour.maximiser ? 2 : 50)
+                : (end == Behaviour.prober ? 3 : 60),
+            fresh: k < 2 && early == Behaviour.eliminator ? 5 : 1,
+            fits: k >= 2 && end == Behaviour.closer,
           ),
       ],
     );
@@ -50,8 +54,8 @@ void main() {
   test('each language has its own playstyle', () async {
     final s = AppState();
     await s.load();
-    play(s, 'en', 20, skill: 95, daring: 1);
-    play(s, 'fr', 20, skill: 40, daring: 30);
+    play(s, 'en', 20);
+    play(s, 'fr', 20, early: Behaviour.gambler);
     s.updateStyle(lang: 'en');
     s.updateStyle(lang: 'fr');
     expect(s.styleOf('en'), analyst);
@@ -69,9 +73,9 @@ void main() {
   test('one language\'s games do not move another\'s style', () async {
     final s = AppState();
     await s.load();
-    play(s, 'en', 20, skill: 95, daring: 1);
+    play(s, 'en', 20);
     s.updateStyle(lang: 'en');
-    play(s, 'fr', 200, skill: 40, daring: 30);
+    play(s, 'fr', 200, early: Behaviour.gambler);
     s.updateStyle(lang: 'en');
     expect(s.styleOf('en'), analyst, reason: 'the 100 are English ones');
     expect(s.styleChangesOf('en'), 0);
@@ -152,7 +156,7 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'lang': 'fr',
         'style': 'gambler',
-        'stylesHeld': ['gambler', 'steady'],
+        'stylesHeld': ['gambler', 'analyst'],
         'styleChanges': 2,
         'dailyLog': jsonEncode({'2026-10-23': dailySolved}),
         'dailyBest': 7,
@@ -165,7 +169,7 @@ void main() {
       await s.load();
       expect(s.styleOf('fr'), gambler);
       expect(s.styleOf('en'), isNull);
-      expect(s.stylesHeldOf('fr'), {'gambler', 'steady'});
+      expect(s.stylesHeldOf('fr'), {'gambler', 'analyst'});
       expect(s.styleChangesOf('fr'), 2);
       expect(s.dailyLogOf('fr')['2026-10-23'], dailySolved);
       expect(s.dailyBestOf('fr'), 7);

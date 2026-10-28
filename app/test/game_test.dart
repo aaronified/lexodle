@@ -180,13 +180,15 @@ void main() {
     await tester.tap(find.text('review'));
     await tester.pumpAndSettle();
     expect(find.text('your first guess'), findsOneWidget);
-    expect(find.text('the pool'), findsOneWidget);
-    expect(find.text('my picks'), findsOneWidget);
+    expect(find.byKey(const ValueKey('pill-skill')), findsOneWidget);
+    expect(find.text('best skill'), findsOneWidget);
 
     // ...where the helper has gone back over the step: picks and a reading
     await tester.pump(const Duration(seconds: 10));
     expect(find.text('working it out…'), findsNothing);
-    expect(find.text('you landed in'), findsOneWidget);
+    expect(find.text('top risk'), findsOneWidget);
+    expect(find.text('luckiest'), findsOneWidget);
+    expect(find.byKey(const ValueKey('gain-0')), findsOneWidget);
 
     // browse one by one: next, then back with the arrow key
     await tester.tap(find.text('next'));

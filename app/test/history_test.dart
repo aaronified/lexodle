@@ -24,8 +24,8 @@ List<GuessRow> rows(List<String> words, {double skill = 70}) => [
       word: words[i],
       skill: skill,
       luck: 5,
-      daring: 30,
-      risk: .4,
+      risk: 30,
+      gain: .4,
       before: 100 - i * 10,
       after: 90 - i * 10,
     ),
@@ -187,8 +187,8 @@ void main() {
       final g = back.guessesOf(back.games[0].id).first;
       expect(g.word, 'crane');
       expect(g.skill, 70);
-      expect(g.daring, 30);
-      expect(g.risk, .4);
+      expect(g.risk, 30);
+      expect(g.gain, .4);
       // and new games carry on from the highest id
       final next = addGame(back);
       expect(next.id, greaterThan(back.games[1].id));
@@ -208,7 +208,7 @@ void main() {
         guesses: [const GuessRow(game: 0, n: 0, word: 'slate', skill: 100)],
       );
       final back = History.fromJson(jsonDecode(jsonEncode(h.toJson())));
-      expect(back.guesses.single.daring, isNull);
+      expect(back.guesses.single.risk, isNull);
     });
 
     test('scores are kept to three decimals', () {
@@ -250,7 +250,7 @@ void main() {
         1, // drawn by frequency
       ]);
       final guess = (j['guesses'] as List).first as List;
-      expect(guess, [g.id, 0, 'crane', 70, 5, 30, .4, 100, 90]);
+      expect(guess, [g.id, 0, 'crane', 70, 5, 30, 100, 90, .4, null, 0, 0, 0]);
       // a guess without a daring has a null in its place
       h.add(
         at: 6,
@@ -299,7 +299,7 @@ void main() {
       expect(back.games.first.daily, '2026-10-24');
       expect(back.games.last.won, isFalse);
       expect(back.guesses.length, h.guesses.length);
-      expect(back.guesses.first.daring, 30);
+      expect(back.guesses.first.risk, 30);
     });
 
     test('a bad row of the compact form is refused', () {
@@ -558,8 +558,8 @@ void main() {
                 word: 'abcdefgh',
                 skill: 87.123,
                 luck: -12.345,
-                daring: 45.678,
-                risk: 1.234,
+                risk: 45.678,
+                gain: 1.234,
                 before: 6000,
                 after: 3000,
               ),
@@ -950,7 +950,7 @@ void main() {
       // the scores are cached, and so is the choice the player had
       expect(rowsOf.every((r) => r.skill >= 0 && r.skill <= 100), isTrue);
       expect(rowsOf.first.before, bank.guessable(4).length);
-      expect(rowsOf.first.daring, isNotNull, reason: 'the analysis had landed');
+      expect(rowsOf.first.risk, isNotNull, reason: 'the analysis had landed');
     });
   });
 }
