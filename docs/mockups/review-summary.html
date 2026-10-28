@@ -85,8 +85,9 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 table.st { font-size: 12px; } table.st td { padding: 6px 3px; line-height: 1.25; } table.st th { padding: 4px 3px; } table.st td .tile { width: 15px; height: 15px; font-size: 9px; } table.st td .tiles { gap: 1px; }
 .sb { border: 0; background: transparent; color: var(--primary); font-size: 16px; line-height: 1; padding: 0; margin: 0; cursor: pointer; display: inline-block; vertical-align: middle; width: 16px; height: 16px; }
 .sb:hover { color: var(--fg); }
-.bh { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-.bhi { display: inline-block; width: 14px; height: 14px; color: var(--primary); font-size: 14px; }
+.bh { white-space: nowrap; }
+.bhi { display: inline-block; width: 14px; height: 14px; color: var(--primary); font-size: 14px; vertical-align: -2px; margin-right: 5px; }
+.bhi svg { display: block; }
 .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .cols3 > div { min-width: 0; }
 .cols3 .pk b { font-size: 14px; }
