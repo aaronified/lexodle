@@ -60,3 +60,5 @@ example Indonesian has about 2,400 at five letters); the game modes menu shows t
   Catalan flag is drawn for this project
 
 Roman numerals (xviii, xiii) are left out of every list: a dictionary accepts them, but they are not words to guess or to set as a daily.
+
+Swear words and slurs are left out of every list too (a short hand-picked list per language, `tools/swears.py`, made after going through the hits of the LDNOOBW lists, CC BY 4.0). Ordinary words that such lists also catch (`comer`, `hård`, `sexy`) and anatomy words (`penis`, `nipple`) stay. Taking words out shifts which word a day picks.

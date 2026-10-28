@@ -278,7 +278,6 @@ cura	32359
 dedo	32359
 rios	32359
 seca	32359
-puta	32282
 caça	31622
 cães	31622
 quão	31622
@@ -361,7 +360,6 @@ visa	19498
 cola	19054
 lobo	19054
 vias	19054
-foda	19009
 dama	18620
 nave	18620
 raiz	18620
@@ -1227,7 +1225,6 @@ aipo	575
 anis	575
 gora	575
 ruma	575
-cona	574
 boda	562
 bojo	562
 caca	562
@@ -2307,7 +2304,6 @@ estes	223872
 força	223872
 dados	218776
 manhã	218776
-merda	213796
 porém	213796
 atrás	208929
 deixa	208929
@@ -2478,7 +2474,6 @@ morto	89125
 acaba	87096
 amiga	87096
 mudou	87096
-porra	87096
 casas	85113
 torna	85113
 andar	83176
@@ -2980,7 +2975,6 @@ lesão	15488
 levei	15488
 olhem	15488
 tinta	15488
-vadia	15488
 afeta	15135
 andam	15135
 casou	15135
@@ -3104,7 +3098,6 @@ sumiu	12302
 trato	12302
 tropa	12302
 úteis	12302
-foder	12274
 besta	12022
 brava	12022
 focar	12022
@@ -3509,7 +3502,6 @@ tenso	5623
 terno	5623
 traiu	5623
 vales	5623
-bosta	5495
 corri	5495
 cuido	5495
 durma	5495
@@ -3650,7 +3642,6 @@ short	4456
 adota	4365
 autos	4365
 chove	4365
-corno	4365
 dizes	4365
 douro	4365
 guiar	4365
@@ -3733,7 +3724,6 @@ teres	3890
 íamos	3890
 apito	3801
 avise	3801
-bicha	3801
 fardo	3801
 finas	3801
 frito	3801
@@ -3753,7 +3743,6 @@ acesa	3715
 andes	3715
 aroma	3715
 ateus	3715
-cagar	3715
 cedeu	3715
 darei	3715
 duros	3715
@@ -3968,7 +3957,6 @@ sofro	2630
 tonto	2630
 ibope	2624
 lives	2624
-putas	2624
 arcar	2570
 aspas	2570
 balsa	2570
@@ -4055,7 +4043,6 @@ feixe	2290
 fetal	2290
 gávea	2290
 milha	2290
-veado	2290
 vulgo	2290
 abria	2238
 adega	2238
@@ -4490,7 +4477,6 @@ bangu	1256
 lixão	1256
 obvio	1256
 tecto	1256
-viado	1256
 acolá	1230
 areal	1230
 cachê	1230
@@ -5243,7 +5229,6 @@ monto	457
 velar	457
 fêmur	456
 vencê	456
-fodas	446
 xampu	446
 aceda	446
 casem	446
@@ -6893,7 +6878,6 @@ frege	48
 maqui	48
 emfim	48
 lócus	48
-queca	48
 vovôs	48
 bretã	48
 cimas	48
@@ -9606,7 +9590,6 @@ sugiro	6165
 tímido	6165
 animar	6025
 açores	6025
-cacete	6025
 captar	6025
 compõe	6025
 dilema	6025
@@ -11208,7 +11191,6 @@ bundão	1172
 vômito	1172
 zombie	1172
 astuto	1148
-boceta	1148
 bordão	1148
 brisas	1148
 cajado	1148
@@ -11659,7 +11641,6 @@ junina	792
 orixás	792
 aprovo	776
 baixem	776
-cabrão	776
 decano	776
 devota	776
 elevam	776
@@ -15246,7 +15227,6 @@ resolvi	10715
 seremos	10715
 sombras	10715
 voltada	10715
-caralho	10690
 bilhete	10471
 boletim	10471
 buracos	10471
@@ -17653,7 +17633,6 @@ sorriem	1348
 validar	1348
 varíola	1348
 decolar	1346
-punheta	1346
 abafado	1318
 afetará	1318
 agendar	1318
@@ -19178,7 +19157,6 @@ acomoda	524
 afetava	524
 anciões	524
 atuavam	524
-biscate	524
 capinha	524
 casamos	524
 cheiram	524

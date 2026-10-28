@@ -395,7 +395,6 @@ kona	27542
 link	27542
 melk	27542
 oppi	27542
-ræva	27542
 tore	27542
 fylt	26915
 skog	26915
@@ -500,7 +499,6 @@ veit	19054
 bråk	18620
 pene	18620
 sann	18620
-shit	18620
 sjel	18620
 ulik	18620
 vilt	18620
@@ -628,7 +626,6 @@ slet	12302
 smør	12302
 feit	12022
 mora	12022
-pikk	12022
 spis	12022
 tynt	12022
 vinn	12022
@@ -4061,13 +4058,11 @@ leser	93325
 pappa	93325
 selve	93325
 endre	91201
-jævla	91201
 orden	91201
 skade	91201
 stund	91201
 veier	91201
 alder	89125
-dritt	89125
 føles	89125
 vinne	89125
 ærlig	89125
@@ -4546,7 +4541,6 @@ tvert	18197
 angst	17782
 brent	17782
 drite	17782
-fitte	17782
 fylke	17782
 roman	17782
 sanne	17782
@@ -6926,7 +6920,6 @@ friår	537
 harpe	537
 heiet	537
 knoll	537
-kuker	537
 køene	537
 raten	537
 slapt	537
@@ -7136,7 +7129,6 @@ otter	436
 propp	436
 rigid	436
 rocka	436
-ræven	436
 senat	436
 smuss	436
 spurv	436
@@ -10080,7 +10072,6 @@ privat	70794
 skaffe	70794
 greier	69183
 henger	69183
-jævlig	69183
 faller	67608
 fremst	67608
 hundre	67608
@@ -12298,7 +12289,6 @@ hissig	1905
 holden	1905
 iskrem	1905
 maktet	1905
-nigger	1905
 ordnes	1905
 renhet	1905
 renser	1905
@@ -14371,7 +14361,6 @@ myrder	371
 nattog	371
 navnga	371
 oppfør	371
-pakkis	371
 pølsen	371
 rynket	371
 ryster	371
@@ -18750,7 +18739,6 @@ parafin	1000
 provins	1000
 rituell	1000
 sporter	1000
-ståpikk	1000
 tilhold	1000
 treårig	1000
 uaktsom	1000
@@ -22088,7 +22076,6 @@ angående	27542
 beskrive	27542
 bestille	27542
 forandre	27542
-forbanna	27542
 kjøretøy	27542
 militære	27542
 nordiske	27542

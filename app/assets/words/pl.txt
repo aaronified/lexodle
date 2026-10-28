@@ -181,7 +181,6 @@ nasi	67608
 tata	67608
 woli	67608
 znak	67608
-chuj	66069
 duża	66069
 miło	66069
 syna	66069
@@ -428,7 +427,6 @@ każe	19498
 masy	19498
 bije	19054
 cykl	19054
-dupa	19054
 foto	19054
 mija	19054
 otóż	19054
@@ -767,7 +765,6 @@ głąb	7585
 hala	7585
 ogon	7585
 rury	7585
-suka	7585
 uzna	7585
 waży	7585
 łapy	7585
@@ -1161,7 +1158,6 @@ maga	3548
 masą	3548
 nico	3548
 roll	3548
-suką	3548
 trza	3548
 zona	3548
 ładu	3548
@@ -1223,7 +1219,6 @@ zgon	3235
 cofa	3162
 czar	3162
 dbał	3162
-dupą	3162
 esej	3162
 kant	3162
 lima	3162
@@ -1386,7 +1381,6 @@ peso	2511
 pień	2511
 plaż	2511
 razi	2511
-srać	2511
 umyj	2511
 śmie	2511
 bing	2454
@@ -1646,7 +1640,6 @@ alta	1621
 base	1621
 burt	1621
 cacy	1621
-cipa	1621
 dell	1621
 deus	1621
 gaga	1621
@@ -2590,7 +2583,6 @@ buki	478
 capa	478
 dojo	478
 dęte	478
-fiut	478
 koma	478
 lśni	478
 pika	478
@@ -2774,7 +2766,6 @@ tria	389
 upie	389
 volt	389
 wyją	389
-cipą	380
 ciął	380
 dolę	380
 figa	380
@@ -5742,7 +5733,6 @@ prawo	354813
 dwóch	346736
 ponad	338844
 część	331131
-kurwa	323593
 miała	316227
 swoim	309029
 gdyby	301995
@@ -5941,7 +5931,6 @@ myślą	77624
 szkół	77624
 witam	77624
 braku	75857
-gówno	75857
 spoko	75857
 staje	75857
 stara	75857
@@ -6606,7 +6595,6 @@ flagę	15135
 jasny	15135
 klasę	15135
 kursu	15135
-kurwy	15135
 legii	15135
 organ	15135
 ranny	15135
@@ -6723,7 +6711,6 @@ byciu	12589
 godne	12589
 gruby	12589
 głębi	12589
-jebać	12589
 kawał	12589
 latać	12589
 lekki	12589
@@ -7572,7 +7559,6 @@ czerń	4786
 gęsto	4786
 kopać	4786
 kurwo	4786
-kutas	4786
 lance	4786
 luźne	4786
 matmy	4786
@@ -8169,7 +8155,6 @@ lasem	2818
 lotem	2818
 newsa	2818
 panda	2818
-pizda	2818
 poker	2818
 pompa	2818
 rabin	2818
@@ -8358,7 +8343,6 @@ kolce	2398
 komik	2398
 kubka	2398
 kulkę	2398
-kurwą	2398
 marny	2398
 masek	2398
 minąć	2398
@@ -8474,7 +8458,6 @@ bauer	2187
 błysk	2187
 celna	2187
 cenią	2187
-ciota	2187
 dumne	2187
 error	2187
 fajek	2187
@@ -8505,7 +8488,6 @@ civic	2137
 dawni	2137
 dobić	2137
 downa	2137
-dupek	2137
 dzban	2137
 enter	2137
 farta	2137
@@ -9106,7 +9088,6 @@ paląc	1380
 petit	1380
 pirat	1380
 piłam	1380
-pojeb	1380
 popęd	1380
 prasą	1380
 splot	1380
@@ -10154,7 +10135,6 @@ kruki	724
 laika	724
 marną	724
 nośna	724
-pizdą	724
 potas	724
 płcie	724
 rolkę	724
@@ -10478,7 +10458,6 @@ buzie	602
 bąbel	602
 całuj	602
 centa	602
-ciotą	602
 czyha	602
 fanek	602
 filie	602
@@ -12751,7 +12730,6 @@ chleba	15135
 chroni	15135
 czułem	15135
 drodzy	15135
-jebany	15135
 kosmos	15135
 księgi	15135
 letnim	15135
@@ -13857,7 +13835,6 @@ zajęci	5754
 anioły	5623
 apteki	5623
 bridge	5623
-burdel	5623
 debile	5623
 fabryk	5623
 fabułę	5623
@@ -14081,7 +14058,6 @@ brania	4897
 dekret	4897
 dobrać	4897
 dobrem	4897
-dziwka	4897
 groźne	4897
 komary	4897
 kostka	4897
@@ -15064,7 +15040,6 @@ czołgu	2754
 dodany	2754
 doping	2754
 dzikim	2754
-dziwką	2754
 fizykę	2754
 gazetą	2754
 głośna	2754
@@ -15974,7 +15949,6 @@ opaskę	1778
 orzech	1778
 plonów	1778
 pozwie	1778
-ruchać	1778
 rzeźbę	1778
 rzutów	1778
 skarżą	1778
@@ -23147,7 +23121,6 @@ biurowe	1445
 bliższy	1445
 brudnej	1445
 chorują	1445
-chujnia	1445
 cieście	1445
 cyferki	1445
 dałabym	1445
@@ -26632,7 +26605,6 @@ plemiona	3467
 podwyżek	3467
 pogodowe	3467
 pogodzie	3467
-pojebany	3467
 portfelu	3467
 potworów	3467
 potężnym	3467
@@ -28527,7 +28499,6 @@ uczyniło	1698
 uderzają	1698
 umierali	1698
 unikalną	1698
-wkurwiać	1698
 wstępnym	1698
 wulgarne	1698
 wyczytać	1698

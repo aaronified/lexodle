@@ -1280,7 +1280,6 @@ moči	5128
 módě	5128
 oxid	5128
 sedl	5128
-srát	5128
 sudí	5128
 tkáň	5128
 trek	5128
@@ -1585,7 +1584,6 @@ umýt	3235
 víně	3235
 věků	3235
 zdmi	3235
-zmrd	3235
 akné	3162
 atom	3162
 genů	3162
@@ -1966,7 +1964,6 @@ oním	1819
 opcí	1819
 orli	1819
 pata	1819
-píča	1819
 rudě	1819
 ráži	1819
 sjet	1819
@@ -3382,7 +3379,6 @@ lvům	346
 lávu	346
 lézí	346
 pesa	346
-pica	346
 plny	346
 raky	346
 runa	346
@@ -6287,7 +6283,6 @@ dávno	87096
 holka	87096
 holky	87096
 kraji	87096
-kurva	87096
 soudu	87096
 února	87096
 říkal	87096
@@ -6608,7 +6603,6 @@ líbit	37153
 možno	37153
 naším	37153
 oběti	37153
-prdel	37153
 téhle	37153
 zpráv	37153
 česky	37153
@@ -6717,7 +6711,6 @@ brání	30199
 dárky	30199
 forma	30199
 hosté	30199
-hovno	30199
 jízdy	30199
 modré	30199
 něhož	30199
@@ -7994,7 +7987,6 @@ bouři	7244
 děcko	7244
 děkan	7244
 filtr	7244
-hajzl	7244
 hádám	7244
 jižně	7244
 kupte	7244
@@ -9133,7 +9125,6 @@ zisků	3311
 úzkou	3311
 častá	3311
 čluny	3311
-čurák	3311
 armád	3235
 bitev	3235
 boháč	3235
@@ -9281,7 +9272,6 @@ kecat	2951
 koňmi	2951
 košem	2951
 krutá	2951
-kunda	2951
 lůžku	2951
 mumie	2951
 opřel	2951
@@ -11081,7 +11071,6 @@ láhví	1047
 malin	1047
 mastí	1047
 mizet	1047
-mrdat	1047
 mušlí	1047
 najet	1047
 nosný	1047
@@ -11613,7 +11602,6 @@ hochy	812
 holým	812
 hrnou	812
 jarem	812
-jebat	812
 kadet	812
 klečí	812
 klíny	812
@@ -15383,7 +15371,6 @@ putuje	4073
 rezerv	4073
 různou	4073
 sloupu	4073
-sračka	4073
 stovka	4073
 stěnou	4073
 tlusté	4073
@@ -23752,7 +23739,6 @@ polívky	1949
 portálů	1949
 potopil	1949
 povrchy	1949
-prdelka	1949
 prodané	1949
 ptactva	1949
 pěchota	1949

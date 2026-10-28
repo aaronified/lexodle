@@ -108,7 +108,6 @@ anzi	112201
 idee	112201
 nero	112201
 pena	112201
-culo	109647
 pari	109647
 vale	109647
 armi	107151
@@ -257,7 +256,6 @@ buio	30199
 okay	30199
 cure	29512
 dite	29512
-figa	29512
 fumo	29512
 pone	29512
 puro	29512
@@ -469,7 +467,6 @@ cava	9549
 fifa	9549
 nudi	9549
 pesa	9549
-sega	9549
 dosi	9332
 esca	9332
 fast	9332
@@ -627,7 +624,6 @@ muti	5248
 rado	5248
 albo	5128
 ante	5128
-fica	5128
 fior	5128
 noci	5128
 nona	5128
@@ -656,7 +652,6 @@ iene	4786
 mala	4786
 sodo	4786
 bara	4677
-culi	4677
 elsa	4677
 guru	4677
 molo	4677
@@ -1985,7 +1980,6 @@ volte	407380
 negli	398107
 video	398107
 quasi	380189
-cazzo	371535
 certo	371535
 sulle	371535
 nulla	354813
@@ -2082,7 +2076,6 @@ linea	158489
 mente	158489
 tempi	158489
 uniti	158489
-merda	151356
 aiuto	147910
 colpa	147910
 libri	147910
@@ -2504,7 +2497,6 @@ tolto	25118
 vabbè	25118
 barca	24547
 bravi	24547
-cazzi	24547
 pieni	24547
 sacro	24547
 unita	24547
@@ -2515,7 +2507,6 @@ fisso	23988
 messe	23988
 pesca	23988
 tagli	23988
-tette	23988
 tieni	23988
 viola	23988
 petto	23442
@@ -2558,7 +2549,6 @@ odore	21379
 parto	21379
 pesci	21379
 ritmo	21379
-troia	21379
 varia	21379
 darti	20892
 falsa	20892
@@ -3301,7 +3291,6 @@ pompe	4897
 sacre	4897
 stock	4897
 tappo	4897
-troie	4897
 trust	4897
 yacht	4897
 bozza	4786
@@ -3409,7 +3398,6 @@ balia	4073
 cessi	4073
 curia	4073
 falli	4073
-merde	4073
 parlò	4073
 promo	4073
 scade	4073
@@ -3659,7 +3647,6 @@ fughe	2691
 urina	2691
 ambra	2630
 boxer	2630
-cagna	2630
 calza	2630
 datti	2630
 diete	2630
@@ -3698,7 +3685,6 @@ ebola	2511
 fieno	2511
 parer	2511
 parta	2511
-pirla	2511
 rette	2511
 risse	2511
 sfido	2511
@@ -3798,7 +3784,6 @@ duole	2137
 furie	2137
 inviò	2137
 merlo	2137
-pippa	2137
 pitti	2137
 polpa	2137
 rombo	2137
@@ -6329,7 +6314,6 @@ giaci	61
 minia	61
 neumi	61
 punga	61
-sorca	61
 spezi	61
 afide	60
 biade	60
@@ -8245,7 +8229,6 @@ marine	12882
 scelti	12882
 viveva	12882
 caduti	12589
-cagare	12589
 contea	12589
 creati	12589
 estesa	12589
@@ -9047,7 +9030,6 @@ traumi	4073
 verrai	4073
 annata	3981
 branca	3981
-cagata	3981
 casual	3981
 cenare	3981
 diremo	3981
@@ -9188,7 +9170,6 @@ vivete	3467
 abisso	3388
 bocche	3388
 civici	3388
-frocio	3388
 mirano	3388
 nativa	3388
 notano	3388
@@ -10044,7 +10025,6 @@ figaro	1513
 gelida	1513
 odiata	1513
 pilato	1513
-sborra	1513
 sdraio	1513
 spessi	1513
 stagni	1513
@@ -11133,7 +11113,6 @@ baleno	616
 braghe	616
 brilli	616
 bronco	616
-checca	616
 croate	616
 decori	616
 fabula	616
@@ -12964,7 +12943,6 @@ svende	162
 tregue	162
 anidro	158
 badava	158
-belino	158
 cenano	158
 colava	158
 cromia	158
@@ -13904,7 +13882,6 @@ lacrime	22908
 leggera	22908
 marchio	22908
 rilievo	22908
-stronzo	22908
 suonare	22908
 tuttora	22908
 antiche	22387
@@ -14044,7 +14021,6 @@ femmina	17782
 minacce	17782
 operare	17782
 pittore	17782
-puttana	17782
 scherzi	17782
 sentite	17782
 agenzie	17378
@@ -14232,7 +14208,6 @@ indiani	13182
 mancava	13182
 opposta	13182
 parlate	13182
-stronzi	13182
 vederla	13182
 accorto	12882
 addetto	12882
@@ -14294,7 +14269,6 @@ valgono	12302
 anonima	12022
 buttare	12022
 buttato	12022
-cazzata	12022
 diocesi	12022
 farmaco	12022
 gaetano	12022
@@ -14317,7 +14291,6 @@ partono	11748
 provate	11748
 rimedio	11748
 rinnovo	11748
-scopare	11748
 seguaci	11748
 vederti	11748
 vivente	11748
@@ -14343,7 +14316,6 @@ scatole	11481
 settimo	11481
 spieghi	11481
 sposata	11481
-stronza	11481
 tariffe	11481
 termina	11481
 trailer	11481
@@ -14410,7 +14382,6 @@ miniera	10471
 mutande	10471
 precisi	10471
 pullman	10471
-puttane	10471
 reagire	10471
 ridotti	10471
 saudita	10471
@@ -15003,7 +14974,6 @@ polacca	5754
 polizza	5754
 quercia	5754
 riporto	5754
-scopata	5754
 serviti	5754
 solista	5754
 sorrisi	5754
@@ -15498,7 +15468,6 @@ forzati	3890
 gramsci	3890
 innesto	3890
 patrono	3890
-pompino	3890
 primari	3890
 recante	3890
 segnalo	3890
@@ -15516,7 +15485,6 @@ eccessi	3801
 emblema	3801
 eritrea	3801
 fiocchi	3801
-fottere	3801
 fragili	3801
 fragole	3801
 gattini	3801
@@ -16078,7 +16046,6 @@ ballano	2630
 biasimo	2630
 caselle	2630
 cassino	2630
-cazzone	2630
 cessato	2630
 chianti	2630
 chiappe	2630
@@ -16122,7 +16089,6 @@ cedendo	2570
 coltiva	2570
 coniato	2570
 corazza	2570
-cornuto	2570
 diacono	2570
 diresse	2570
 estinto	2570
@@ -16367,7 +16333,6 @@ spinale	2238
 suzanne	2238
 terminò	2238
 zingaro	2238
-zoccola	2238
 abbatte	2187
 ansiosa	2187
 codardo	2187
@@ -18491,7 +18456,6 @@ sfinito	776
 sismici	776
 statici	776
 tendone	776
-terrone	776
 trachea	776
 transit	776
 tropico	776
@@ -19758,7 +19722,6 @@ sessione	28183
 studiato	28183
 accaduto	27542
 certezza	27542
-coglioni	27542
 consegna	27542
 consente	27542
 dichiara	27542
@@ -19817,7 +19780,6 @@ sessuali	25118
 trattare	25118
 avvocati	24547
 campioni	24547
-coglione	24547
 fastidio	24547
 gratuito	24547
 palestra	24547
@@ -21323,7 +21285,6 @@ tassisti	4265
 trovasse	4265
 barbecue	4168
 bloccano	4168
-bordello	4168
 bruciata	4168
 chiederà	4168
 commedie	4168
@@ -24391,7 +24352,6 @@ arredare	870
 asociale	870
 bisnonna	870
 boccetta	870
-bocchino	870
 canarino	870
 capivano	870
 castrato	870
@@ -24802,7 +24762,6 @@ spremuta	758
 stuprate	758
 tibetana	758
 tortelli	758
-trombare	758
 truccati	758
 tuffarsi	758
 vichingo	758
@@ -24904,7 +24863,6 @@ inondato	724
 lanciava	724
 mantelli	724
 mascelle	724
-mignotta	724
 mimetica	724
 mostrino	724
 orbitale	724

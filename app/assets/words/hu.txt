@@ -127,7 +127,6 @@ gond	85113
 mást	85113
 nézz	85113
 halt	83176
-szar	83176
 amik	81283
 cikk	81283
 hisz	81283
@@ -196,7 +195,6 @@ city	56234
 dalt	56234
 mély	56234
 déli	54954
-fasz	54954
 éhes	54954
 hete	53703
 függ	52480
@@ -695,7 +693,6 @@ hűtő	7762
 kent	7762
 naná	7762
 okai	7762
-pöcs	7762
 vára	7762
 árut	7762
 elve	7585
@@ -720,7 +717,6 @@ mibe	7244
 bújt	7079
 hord	7079
 rács	7079
-geci	6918
 gömb	6918
 hőse	6918
 krém	6918
@@ -876,7 +872,6 @@ elvi	4265
 gong	4265
 hadi	4265
 irat	4265
-pina	4265
 szol	4265
 tagú	4265
 tomi	4265
@@ -924,7 +919,6 @@ idol	3630
 ivás	3630
 meri	3630
 rang	3630
-szár	3630
 tárt	3630
 vonz	3630
 égre	3630
@@ -1223,7 +1217,6 @@ exit	1621
 flip	1621
 kend	1621
 koma	1621
-segg	1621
 árus	1621
 esve	1584
 fejt	1584
@@ -1613,7 +1606,6 @@ tanár	114815
 teszi	114815
 darab	112201
 kiadó	112201
-kurva	112201
 könyv	112201
 megye	112201
 mások	112201
@@ -1855,7 +1847,6 @@ módja	38904
 nyugi	38904
 példa	38904
 siker	38904
-szart	38904
 tömeg	38904
 tőled	38904
 zenét	38904
@@ -2305,7 +2296,6 @@ sereg	14791
 anime	14454
 diéta	14454
 díját	14454
-faszt	14454
 helló	14454
 híján	14454
 hűvös	14454
@@ -2393,7 +2383,6 @@ homok	12882
 ikrek	12882
 kiírt	12882
 opera	12882
-picsa	12882
 éjfél	12882
 útnak	12882
 őrség	12882
@@ -2604,7 +2593,6 @@ kézbe	9549
 mágia	9549
 nyeri	9549
 nyerő	9549
-punci	9549
 roman	9549
 sapka	9549
 szerv	9549
@@ -4719,7 +4707,6 @@ ereit	1071
 fióka	1071
 fővám	1071
 fűzfa	1071
-gecik	1071
 gáton	1071
 hited	1071
 hites	1071
@@ -6267,7 +6254,6 @@ kicsik	8511
 kikötő	8511
 nyilas	8511
 rendre	8511
-seggét	8511
 sovány	8511
 tartás	8511
 tervét	8511
@@ -6382,7 +6368,6 @@ nyitni	7762
 pogány	7762
 profit	7762
 seggem	7762
-szarok	7762
 szörny	7762
 tornát	7762
 tudnád	7762
@@ -11687,7 +11672,6 @@ motorja	5623
 napelem	5623
 napokig	5623
 offline	5623
-seggfej	5623
 startup	5623
 szoknya	5623
 tajvani	5623
@@ -12549,7 +12533,6 @@ utalhat	3235
 akkorát	3162
 ananász	3162
 apátság	3162
-balfasz	3162
 belépőt	3162
 birtoka	3162
 csajnak	3162

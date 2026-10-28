@@ -316,7 +316,6 @@ tote	30902
 user	30902
 denk	30199
 bord	29512
-fick	29512
 graf	29512
 jobs	29512
 lieb	29512
@@ -633,7 +632,6 @@ theo	7762
 ward	7762
 duft	7585
 gene	7585
-hure	7585
 kiew	7585
 pole	7585
 port	7585
@@ -1888,7 +1886,6 @@ karte	70794
 sonne	70794
 tiere	70794
 trägt	70794
-arsch	69183
 frank	69183
 handy	69183
 komme	69183
@@ -2230,7 +2227,6 @@ pizza	19952
 arena	19498
 liege	19498
 motiv	19498
-porno	19498
 raten	19498
 virus	19498
 dreck	19054
@@ -2579,7 +2575,6 @@ buche	8912
 bucht	8912
 chips	8912
 erden	8912
-fickt	8912
 karin	8912
 leber	8912
 meier	8912
@@ -2658,7 +2653,6 @@ flash	7943
 geste	7943
 kinos	7943
 prime	7943
-fotze	7762
 frohe	7762
 frost	7762
 fürth	7762
@@ -2893,7 +2887,6 @@ ebert	5248
 eifel	5248
 garde	5248
 hexen	5248
-huren	5248
 lenkt	5248
 multi	5248
 neuss	5248
@@ -2929,7 +2922,6 @@ jutta	5011
 lotte	5011
 moore	5011
 mäuse	5011
-neger	5011
 piano	5011
 scham	5011
 schob	5011
@@ -3009,7 +3001,6 @@ begab	4365
 gabel	4365
 gotha	4365
 knien	4365
-nutte	4365
 risse	4365
 spitz	4365
 weges	4365
@@ -6377,7 +6368,6 @@ soviel	30902
 stress	30902
 umfeld	30902
 anhand	30199
-ficken	30199
 gucken	30199
 kuchen	30199
 kurzem	30199
@@ -6872,7 +6862,6 @@ bitter	11481
 ironie	11481
 julius	11481
 lehren	11481
-muschi	11481
 nervös	11481
 netten	11481
 nächte	11481
@@ -7187,7 +7176,6 @@ reines	7585
 räuber	7585
 schräg	7585
 sydney	7585
-vögeln	7585
 widmet	7585
 ärztin	7585
 chinas	7413
@@ -7583,7 +7571,6 @@ mental	4786
 morris	4786
 neffen	4786
 neigen	4786
-nutten	4786
 saugen	4786
 seriös	4786
 wessen	4786
@@ -7933,7 +7920,6 @@ lästig	3388
 obigen	3388
 ordnen	3388
 packte	3388
-pissen	3388
 rauben	3388
 schwan	3388
 seuche	3388
@@ -8022,7 +8008,6 @@ abkehr	3090
 ananas	3090
 ansehe	3090
 brahms	3090
-bumsen	3090
 darwin	3090
 examen	3090
 falken	3090
@@ -8055,7 +8040,6 @@ essays	3019
 fairer	3019
 farmer	3019
 faulen	3019
-fotzen	3019
 guinea	3019
 hüften	3019
 hündin	3019
@@ -8394,7 +8378,6 @@ morbus	2290
 orakel	2290
 pardon	2290
 phönix	2290
-pimmel	2290
 probst	2290
 sparta	2290
 taufen	2290
@@ -8692,7 +8675,6 @@ zielte	1778
 brauen	1737
 dehnen	1737
 extern	1737
-ficker	1737
 freche	1737
 hilfst	1737
 kitsch	1737
@@ -9048,7 +9030,6 @@ mandel	1288
 mantra	1288
 mische	1288
 mäntel	1288
-pisser	1288
 prüfte	1288
 punsch	1288
 romano	1288
@@ -9670,7 +9651,6 @@ tampon	812
 tirols	812
 umbaus	812
 vorhut	812
-wichse	812
 wichst	812
 wirres	812
 abwurf	794
@@ -9920,7 +9900,6 @@ caruso	660
 dealen	660
 dämmen	660
 fabeln	660
-fickte	660
 furzen	660
 götzen	660
 hebung	660
@@ -10895,7 +10874,6 @@ geckos	295
 heftet	295
 hesses	295
 hutton	295
-kanake	295
 kegler	295
 neuron	295
 randes	295
@@ -13507,7 +13485,6 @@ neusten	4466
 stammte	4466
 vampire	4466
 vorzüge	4466
-wichser	4466
 caritas	4365
 firefox	4365
 gewirkt	4365
@@ -13636,7 +13613,6 @@ vorgeht	3890
 wedding	3890
 wegfall	3890
 weithin	3890
-wichsen	3890
 willkür	3890
 abläufe	3801
 aufrufe	3801
@@ -18458,7 +18434,6 @@ gehörten	15135
 handbuch	15135
 konzerte	15135
 längeren	15135
-schlampe	15135
 sportler	15135
 vereinen	15135
 vorwürfe	15135

@@ -223,7 +223,6 @@ medi	52480
 llet	51286
 peus	51286
 poca	51286
-puta	51286
 toca	51286
 avió	50118
 dura	50118
@@ -3170,7 +3169,6 @@ blanc	87096
 dient	87096
 penso	87096
 volia	87096
-merda	85113
 mínim	85113
 regne	85113
 parís	83176
@@ -3606,7 +3604,6 @@ barca	17378
 bella	17378
 benet	17378
 cívic	17378
-fotre	17378
 llatí	17378
 natal	17378
 parcs	17378
@@ -3713,7 +3710,6 @@ calen	13182
 coure	13182
 dieta	13182
 fibra	13182
-fotut	13182
 pagès	13182
 tabac	13182
 turcs	13182
@@ -3818,7 +3814,6 @@ evita	10232
 fetge	10232
 finca	10232
 mirem	10232
-putes	10232
 rodar	10232
 setze	10232
 turca	10232
@@ -3991,7 +3986,6 @@ dosis	7244
 llana	7244
 posta	7244
 sabrà	7244
-cagar	7079
 güell	7079
 icona	7079
 lents	7079
@@ -4125,7 +4119,6 @@ fonda	5623
 fulls	5623
 moria	5623
 odien	5623
-polla	5623
 tronc	5623
 allau	5495
 borda	5495
@@ -4983,7 +4976,6 @@ sopes	1445
 venem	1445
 beuen	1412
 burra	1412
-cabró	1412
 canti	1412
 cinca	1412
 clica	1412
@@ -5600,7 +5592,6 @@ crees	630
 crien	630
 curós	630
 dotzè	630
-fotré	630
 fugim	630
 haiku	630
 joier	630
@@ -10779,7 +10770,6 @@ dinars	3890
 dirien	3890
 drames	3890
 estand	3890
-follar	3890
 gaudim	3890
 marisc	3890
 mentit	3890
@@ -11017,7 +11007,6 @@ suspèn	3019
 tastat	3019
 balada	2951
 buidar	2951
-cagada	2951
 dedico	2951
 dictat	2951
 erosió	2951
@@ -11567,7 +11556,6 @@ fereix	1737
 forner	1737
 ganxet	1737
 grades	1737
-putada	1737
 regnar	1737
 retocs	1737
 riuada	1737
@@ -13478,7 +13466,6 @@ galena	354
 gratar	354
 jugaré	354
 lúcida	354
-mamada	354
 marido	354
 pallàs	354
 perdon	354
@@ -15154,7 +15141,6 @@ dirigir	57543
 enguany	57543
 cantant	56234
 canviat	56234
-collons	56234
 context	56234
 càrrecs	56234
 dedicat	56234
@@ -17357,7 +17343,6 @@ assiris	2238
 ballada	2238
 bitlles	2238
 busseig	2238
-cabrons	2238
 canviïn	2238
 clatell	2238
 despert	2238

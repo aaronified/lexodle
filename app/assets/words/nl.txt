@@ -294,13 +294,11 @@ game	42657
 mate	42657
 neus	42657
 paus	42657
-shit	42657
 slot	42657
 trap	42657
 sexy	41686
 dode	40738
 jack	40738
-kont	40738
 ring	40738
 data	39810
 gele	39810
@@ -415,7 +413,6 @@ boel	21877
 brak	21877
 fles	21877
 geil	21877
-hoer	21877
 keus	21877
 pakt	21877
 pure	21877
@@ -493,7 +490,6 @@ zoet	15488
 have	15135
 leed	15135
 shop	15135
-slet	15135
 tank	15135
 trio	15135
 erom	14791
@@ -694,7 +690,6 @@ koel	7413
 pier	7413
 tuig	7413
 vlot	7413
-wijf	7413
 clan	7244
 haai	7244
 pool	7244
@@ -923,7 +918,6 @@ kuip	3890
 laad	3890
 memo	3890
 smet	3890
-teef	3890
 vork	3890
 gaga	3801
 idem	3801
@@ -1271,7 +1265,6 @@ tóch	1659
 wouw	1659
 berk	1621
 blut	1621
-drol	1621
 dupe	1621
 egel	1621
 gouw	1621
@@ -1486,7 +1479,6 @@ icon	1000
 mort	1000
 prei	1000
 roti	1000
-snol	1000
 toko	1000
 vlas	1000
 bind	977
@@ -7734,7 +7726,6 @@ ziekte	58884
 geluid	57543
 lachen	57543
 leidde	57543
-neuken	57543
 strand	57543
 stukje	57543
 tweets	57543
@@ -8059,7 +8050,6 @@ excuus	19054
 grijze	19054
 moslim	19054
 normen	19054
-pijpen	19054
 slagen	19054
 steekt	19054
 vliegt	19054
@@ -8399,7 +8389,6 @@ putten	9332
 ringen	9332
 roeien	9332
 rommel	9332
-stront	9332
 timing	9332
 trends	9332
 erkent	9120
@@ -8694,7 +8683,6 @@ boksen	5754
 cruise	5754
 grijpt	5754
 jassen	5754
-naaien	5754
 opdoen	5754
 pardon	5754
 puntje	5754
@@ -8946,7 +8934,6 @@ gekund	4168
 geland	4168
 gordel	4168
 kiezer	4168
-kloten	4168
 kompas	4168
 omgang	4168
 pieten	4168
@@ -9061,7 +9048,6 @@ kusten	3715
 nesten	3715
 onwijs	3715
 ranger	3715
-rukken	3715
 scouts	3715
 skills	3715
 tepels	3715
@@ -9153,7 +9139,6 @@ leende	3388
 negers	3388
 plagen	3388
 scheur	3388
-schijt	3388
 schuil	3388
 somber	3388
 tinten	3388
@@ -9485,7 +9470,6 @@ scheer	2290
 schiep	2290
 schouw	2290
 smeris	2290
-beffen	2238
 behang	2238
 bewoog	2238
 bijles	2238
@@ -10377,7 +10361,6 @@ doelde	933
 freaky	933
 gedane	933
 gespen	933
-hufter	933
 kitsch	933
 kuiten	933
 likeur	933
@@ -11349,7 +11332,6 @@ geblaf	416
 gokker	416
 haakje	416
 hekelt	416
-hoerig	416
 jetski	416
 kansel	416
 knudde	416
@@ -11546,7 +11528,6 @@ keepte	354
 klepel	354
 kreken	354
 nering	354
-oetlul	354
 pausen	354
 piston	354
 preses	354
@@ -11733,7 +11714,6 @@ potige	309
 purper	309
 quaker	309
 regiem	309
-rotzak	309
 salvia	309
 satans	309
 stylus	309
@@ -14579,7 +14559,6 @@ abortus	6309
 beheert	6309
 creatie	6309
 datgene	6309
-flikker	6309
 gewacht	6309
 herzien	6309
 strakke	6309
@@ -20596,7 +20575,6 @@ director	5370
 finalist	5370
 gezegend	5370
 indirect	5370
-klootzak	5370
 lesbisch	5370
 levendig	5370
 meeneemt	5370
@@ -21967,7 +21945,6 @@ pedofiel	1445
 piercing	1445
 resetten	1445
 revanche	1445
-schijten	1445
 schurken	1445
 sensuele	1445
 slijtage	1445
