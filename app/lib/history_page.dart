@@ -10,7 +10,7 @@ import 'language_picker.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'period_chart.dart';
-import 'playstyle_card.dart';
+import 'playstyle_card.dart' show StatTile, hairlineCard;
 import 'replay.dart';
 import 'routes.dart';
 import 'ui.dart';
@@ -20,7 +20,7 @@ import 'words.dart';
 /// There can be thousands, so the rest are loaded as they are asked for.
 const historyPageSize = 10;
 
-/// The player's history: their playstyle and what it is read from, an analysis
+/// The player's history: an analysis
 /// of every game (overall, and week by week and month by month over the last 50
 /// of each), then the games, newest first, ten at a time. A game opens its
 /// review, rebuilt from the guesses. Games saved under an older version of the
@@ -131,13 +131,15 @@ class _HistoryPageState extends State<HistoryPage> {
                 final more = total - shown;
                 // the cards, the note about the games, then the games (built
                 // as they scroll into view), then the button for more
-                const fixed = 5;
+                const fixed = 4;
                 return Stack(
                   children: [
                     ListView.builder(
                       padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                       itemCount: fixed + shown + (more > 0 ? 1 : 0),
-                      itemBuilder: (context, i) {
+                      itemBuilder: (context, row) {
+                        // the playstyle is not on this page: it has its own
+                        final i = row == 0 ? 0 : row + 1;
                         // (these are not const: a const widget is not rebuilt
                         // when this builder runs, and they must follow the
                         // history as it changes, after games are scored again)
@@ -155,7 +157,6 @@ class _HistoryPageState extends State<HistoryPage> {
                             ),
                           );
                         }
-                        if (i == 1) return _Block(PlaystyleCard(_lang));
                         // ignore: prefer_const_constructors
                         if (i == 2) return _Block(_Overall(_lang));
                         if (i == 3) {
@@ -206,7 +207,7 @@ class _HistoryPageState extends State<HistoryPage> {
                             ),
                           );
                         }
-                        final k = i - fixed;
+                        final k = row - fixed;
                         if (k < shown) {
                           // newest first: the list is the history read backwards
                           final g = mine[total - 1 - k];
@@ -510,20 +511,6 @@ class _TrendState extends State<_Trend> {
             key: const ValueKey('period-detail'),
             style: const TextStyle(fontSize: 12, height: 1.4),
           ),
-          if (p.style != null) ...[
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                TablerIcon(p.style!.icon, size: 18, color: c.primary),
-                const SizedBox(width: 6),
-                Text(
-                  'played like a ${p.style!.name}',
-                  key: const ValueKey('period-style'),
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
-          ],
           if (changes.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text.rich(

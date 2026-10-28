@@ -11,8 +11,6 @@ import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-int _of(Medal m) => achievements.where((a) => a.medal == m).length;
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 

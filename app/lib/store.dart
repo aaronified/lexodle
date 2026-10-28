@@ -267,6 +267,7 @@ class Achievement {
        tag = null,
        separate = false,
        icons = const [],
+       hit = null,
        level = 0;
 
   /// An achievement of [levels], earned level by level as its [metric] reaches
@@ -286,6 +287,7 @@ class Achievement {
     GameMode? mode,
     this.separate = false,
     this.icons = const [],
+    this.hit,
   }) : track = Track.metric,
        modes = _anyMode,
        _description = '',
@@ -310,7 +312,8 @@ class Achievement {
       smaller = a.smaller,
       tag = a.tag,
       separate = a.separate,
-      icons = a.icons;
+      icons = a.icons,
+      hit = a.hit;
 
   final String id;
 
@@ -336,6 +339,11 @@ class Achievement {
   final GameMode? tag;
   final bool separate;
   final List<String> icons;
+
+  /// Whether a game does what a level of [target] asks, for the achievements
+  /// that can be earned again: every such game is counted once the level is
+  /// earned (null for the ones that count up, which cannot be done again).
+  final bool Function(GameResult r, int target)? hit;
 
   /// Which level this is, when it stands for one (an earned one, say).
   final int level;
@@ -447,6 +455,7 @@ final achievements = <Achievement>[
     (n) => n == 1 ? 'win on the first guess' : 'win in $n guesses or fewer',
     'fastest',
     _lv([4, 3, 2, 1], ['quick draw', 'sharpshooter', 'two shot', 'one shot']),
+    hit: (r, t) => r.won && r.used <= t,
     smaller: true,
   ),
   Achievement.leveled(
@@ -472,6 +481,7 @@ final achievements = <Achievement>[
       [70, 80, 90, 95],
       ['steady hand', 'sharp mind', 'pure skill', 'flawless'],
     ),
+    hit: (r, t) => r.won && r.skills.isNotEmpty && r.avgSkill >= t,
   ),
   Achievement.leveled(
     'skill_every',
@@ -483,6 +493,7 @@ final achievements = <Achievement>[
       [60, 75, 90, 95],
       ['no slip', 'clean sheet', 'clean sweep', 'skill issue'],
     ),
+    hit: (r, t) => r.won && r.skills.isNotEmpty && r.skills.reduce(min) > t,
     strict: true,
   ),
   Achievement.leveled(
@@ -495,6 +506,7 @@ final achievements = <Achievement>[
       [20, 40, 60, 80],
       ['lucky break', 'fortune’s child', 'charmed', 'blessed'],
     ),
+    hit: (r, t) => r.won && r.luck != null && r.luck! >= t,
   ),
   Achievement.leveled(
     'risk',
@@ -503,6 +515,7 @@ final achievements = <Achievement>[
     (n) => 'win with an average risk of $n or more',
     'bestRisk',
     _lv([25, 40, 55, 70], ['dabbler', 'risk taker', 'daredevil', 'all in']),
+    hit: (r, t) => r.won && r.risk != null && r.risk! >= t,
   ),
   Achievement.leveled(
     'bits',
@@ -511,6 +524,7 @@ final achievements = <Achievement>[
     (n) => 'gain $n bits or more with one guess',
     'bestBits',
     _lv([6, 8, 10, 12], ['big bite', 'wide net', 'landslide', 'jackpot']),
+    hit: (r, t) => r.maxBits >= t,
   ),
   Achievement.leveled(
     'lengths',
@@ -615,6 +629,7 @@ final achievements = <Achievement>[
       [3, 4, 5, 6],
       ['room to spare', 'comfortable', 'plenty in hand', 'walk in the park'],
     ),
+    hit: (r, t) => r.won && r.tries - r.used >= t,
     mode: GameMode.quartet,
   ),
   Achievement.leveled(
@@ -627,6 +642,7 @@ final achievements = <Achievement>[
       [70, 80, 85, 90],
       ['steady four', 'sharp four', 'keen four', 'flawless four'],
     ),
+    hit: (r, t) => r.won && r.skills.isNotEmpty && r.avgSkill > t,
     strict: true,
     mode: GameMode.quartet,
   ),
@@ -812,8 +828,10 @@ class AchState {
     this.progress = 0,
     Set<String>? seen,
     this.value = 0,
+    List<int>? hits,
   }) : dates = dates ?? [],
-       seen = seen ?? {};
+       seen = seen ?? {},
+       hits = hits ?? [];
 
   /// How many times it has been earned, and on which days.
   int times;
@@ -828,6 +846,10 @@ class AchState {
   /// The number a metric achievement reads: a count, or a best so far.
   double value;
 
+  /// How many games did what each level asks (the first one earned it), for
+  /// the achievements that can be earned again.
+  final List<int> hits;
+
   String? get first => dates.isEmpty ? null : dates.first;
   String? get latest => dates.isEmpty ? null : dates.last;
 
@@ -837,6 +859,7 @@ class AchState {
     'progress': progress,
     'seen': seen.toList(),
     if (value != 0) 'value': value,
+    if (hits.any((h) => h != 0)) 'hits': hits,
   };
 
   static AchState fromJson(Map<String, dynamic> j) => AchState(
@@ -845,6 +868,7 @@ class AchState {
     progress: j['progress'] ?? 0,
     seen: {for (final x in j['seen'] ?? []) x as String},
     value: (j['value'] ?? 0).toDouble(),
+    hits: [for (final h in j['hits'] ?? []) h as int],
   );
 }
 
@@ -999,6 +1023,16 @@ List<Achievement> advanceAchievements(
     if (!m.modes.contains(r.mode)) continue;
     st.value = m.step(st, r);
     earnLevels(a, st);
+    // a game that does what a level asks counts again, once it is earned
+    final hit = a.hit;
+    if (hit != null) {
+      while (st.hits.length < a.count) {
+        st.hits.add(0);
+      }
+      for (var i = 0; i < st.times && i < a.count; i++) {
+        if (hit(r, a.levels[i].target)) st.hits[i]++;
+      }
+    }
   }
   return earned;
 }

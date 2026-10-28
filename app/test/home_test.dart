@@ -106,6 +106,9 @@ void main() {
       final daily = tester.getRect(find.byKey(const ValueKey('daily-button')));
       final style = tester.getRect(find.byKey(const ValueKey('style-chip')));
       expect(mode.bottom, lessThan(play.top));
+      // the button spans the row: its edges are play's left and daily's right
+      expect(mode.left, play.left);
+      expect(mode.right, daily.right);
       expect(daily.top, play.top);
       expect(play.right, lessThan(daily.left));
       expect(style.bottom, lessThan(mode.top));

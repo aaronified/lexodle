@@ -11,6 +11,7 @@ import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/period_chart.dart';
 import 'package:lexodle/playstyle.dart';
+import 'package:lexodle/playstyle_card.dart';
 import 'package:lexodle/review.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/store.dart';
@@ -273,8 +274,14 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: buildTheme(Brightness.dark),
-          home: const HistoryPage(),
-          onGenerateRoute: onGenerateRoute,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ListenableBuilder(
+                listenable: appState,
+                builder: (context, _) => PlaystyleCard('fr'),
+              ),
+            ),
+          ),
         ),
       );
       await tester.pump();
@@ -310,7 +317,8 @@ void main() {
       await show(tester, played(-20));
       final t = tester.widget<Text>(find.byKey(const ValueKey('stat-luck')));
       expect(textOf(t), '−20%');
-      final c = Theme.of(tester.element(find.byType(HistoryPage))).colorScheme;
+      final c = Theme.of(tester.element(find.byType(PlaystyleCard)))
+          .colorScheme;
       expect(t.style!.color, luckColor(c));
     });
 
@@ -318,7 +326,8 @@ void main() {
       tester,
     ) async {
       await show(tester, played(20));
-      final c = Theme.of(tester.element(find.byType(HistoryPage))).colorScheme;
+      final c = Theme.of(tester.element(find.byType(PlaystyleCard)))
+          .colorScheme;
       Color of(String k) =>
           tester.widget<Text>(find.byKey(ValueKey('stat-$k'))).style!.color!;
       expect(of('skill'), skillColor(c));
@@ -346,7 +355,8 @@ void main() {
 
     testWidgets('the trend lines use the three colours too', (tester) async {
       await show(tester, played(20));
-      final c = Theme.of(tester.element(find.byType(HistoryPage))).colorScheme;
+      final c = Theme.of(tester.element(find.byType(PlaystyleCard)))
+          .colorScheme;
       final colours = seriesColors(c);
       expect(colours[PeriodSeries.skill], skillColor(c));
       expect(colours[PeriodSeries.luck], luckColor(c));
