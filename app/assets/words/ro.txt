@@ -340,7 +340,6 @@ test	31622
 ulei	31622
 afle	30902
 opri	30902
-viii	30902
 acei	30199
 domn	30199
 fine	30199
@@ -497,7 +496,6 @@ vouă	14791
 gras	14454
 util	14454
 vise	14454
-xiii	14454
 colo	14125
 eroi	14125
 fani	14125
@@ -545,7 +543,6 @@ fură	12589
 lent	12589
 link	12589
 rată	12589
-xvii	12589
 șefa	12589
 arii	12302
 bagă	12302
@@ -1244,7 +1241,6 @@ umil	2187
 uzat	2187
 vioi	2187
 vize	2187
-xxii	2187
 azur	2137
 cata	2137
 hala	2137
@@ -2299,7 +2295,6 @@ oprea	18197
 plâng	18197
 roagă	18197
 vorbe	18197
-xviii	18197
 șofer	18197
 coadă	17782
 copac	17782
@@ -3968,7 +3963,6 @@ trași	1949
 venin	1949
 viciu	1949
 vălul	1949
-xxiii	1949
 șefia	1949
 șurub	1949
 boxul	1905

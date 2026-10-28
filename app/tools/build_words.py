@@ -5,7 +5,7 @@ Every language is built the same way:
 1. candidates: the words `wordfreq` knows for the language, Latin letters only,
    4 to 8 letters long, most frequent first;
 2. filter: a candidate is kept only if the language's Hunspell dictionary
-   accepts it (inflected forms included). Hunspell stores proper nouns
+   accepts it (inflected forms included), and it is not a Roman numeral. Hunspell stores proper nouns
    capitalised, and the candidates are lowercase, so names (david, texas) and
    most abbreviations drop out. German nouns are capitalised in its dictionary,
    so German also tries the capitalised form;
@@ -49,6 +49,8 @@ from pathlib import Path
 
 APP = Path(__file__).resolve().parent.parent
 OUT = APP / "assets" / "words"
+# a Roman numeral, which no word list should hold
+ROMAN = re.compile(r"^m{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$")
 DICTS = Path(__file__).resolve().parent / "dictionaries"
 LENGTHS = range(4, 9)
 POOL = 6000  # words kept per language and length
@@ -242,6 +244,8 @@ def build(code, wf, dictdir, heading):
 
     HEADINGS[code] = heading
     cands = candidates(wf)
+    # Roman numerals (xviii) pass a dictionary but are no words to guess
+    cands = {n: [(w, z) for w, z in c if not ROMAN.match(w)] for n, c in cands.items()}
     dirs = dictdir if isinstance(dictdir, list) else [dictdir]
     accepts, kind = [], None
     for dd in dirs:
