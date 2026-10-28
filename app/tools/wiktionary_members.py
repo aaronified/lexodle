@@ -64,11 +64,11 @@ def main():
                 target[int(m[1])] = names[m[3]]
     print(f"  {len(target)} categories", file=sys.stderr)
     print("categorylinks…", file=sys.stderr)
-    pages = {}  # page id -> heading
+    pages = {}  # page id -> the headings it is a lemma or a form of
     for line in stream("categorylinks"):
         for m in CATLINK.finditer(line):
             if m[4] == "page" and int(m[5]) in target:
-                pages[int(m[1])] = target[int(m[5])]
+                pages.setdefault(int(m[1]), set()).add(target[int(m[5])])
     print(f"  {len(pages)} pages", file=sys.stderr)
     print("page…", file=sys.stderr)
     members = {h: set() for h in headings.values()}
@@ -77,7 +77,10 @@ def main():
             if m[2] == "0" and int(m[1]) in pages:
                 t = m[3].replace("_", " ")
                 if t == t.lower() and 4 <= len(t) <= 8 and is_latin_word(t):
-                    members[pages[int(m[1])]].add(t)
+                    # a word two languages share (from: English, Welsh) counts
+                    # for each of them
+                    for h in pages[int(m[1])]:
+                        members[h].add(t)
     OUT.mkdir(parents=True, exist_ok=True)
     for h, ws in members.items():
         (OUT / f"wiktionary-{h}-members.txt").write_text("\n".join(sorted(ws)), encoding="utf-8")
