@@ -1,3 +1,5 @@
+> **Superseded.** Written for the expected-pool version of the maths (skill from the expected pool, daring, the tries fit). Skill, luck and risk are now measured in bits; see `docs/paper/main.tex`. Kept for the record.
+
 # Signed daring, and how evenly skill, luck and daring spread: a proposal to review
 
 Written 2026-10-25 for a maths review. Nothing here is built yet.

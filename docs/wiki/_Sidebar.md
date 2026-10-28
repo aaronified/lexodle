@@ -6,7 +6,7 @@ Playing
 - [Solver and learn mode](Solver-and-learn-mode)
 
 Your play
-- [Skill, luck and daring](Skill-luck-and-risk)
+- [Skill, luck and risk](Skill-luck-and-risk)
 - [History and playstyles](History-and-playstyles)
 - [Languages](Languages)
 - [Achievements](Achievements)

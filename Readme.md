@@ -73,8 +73,8 @@
   <tr>
     <td width="60%">
       <h3>🎯 Every guess is scored</h3>
-      <b>Skill</b> says how well the guess split the words left, <b>luck</b> how the answer fell,
-      and <b>daring</b> how far you went for the word instead of the clues. The review steps
+      <b>Skill</b> says how many bits the guess was expected to gain, <b>luck</b> how the answer fell,
+      and <b>risk</b> how far you leaned on a rare big gain. The review steps
       through your game against the best picks at each point.
       <a href="https://github.com/aaronified/lexodle/wiki/Skill-luck-and-risk">What the numbers mean</a>.
     </td>
@@ -84,12 +84,11 @@
 
 <table>
   <tr>
-    <td width="40%"><img src="docs/screenshots/features/history.png" width="100%" alt="The overall numbers and a line chart of skill, luck, daring and expected guesses over 50 weeks"></td>
+    <td width="40%"><img src="docs/screenshots/features/history.png" width="100%" alt="The overall numbers and a line chart of skill, luck and risk over 50 weeks"></td>
     <td width="60%">
       <h3>📈 A history that explains your play</h3>
       Every game is kept, however many, with a chart over the last 50 weeks or months of skill,
-      luck, daring and the guesses a game is expected to take, broken into what each one added
-      or took off.
+      luck and risk.
       <a href="https://github.com/aaronified/lexodle/wiki/History-and-playstyles">History</a>.
     </td>
   </tr>
@@ -99,11 +98,11 @@
   <tr>
     <td width="60%">
       <h3>🎭 Six playstyles</h3>
-      From analyst to wildcard: skill tells how sharp you are, daring whether you work the clues or
-      go for the word. It moves as you play, and each language has its own.
+      From analyst to gambler: an early habit (maximiser, eliminator or gambler) and an end habit
+      (prober or closer), read from how each guess scored. It moves as you play, and each language has its own.
       <a href="https://github.com/aaronified/lexodle/wiki/History-and-playstyles#playstyles">The six</a>.
     </td>
-    <td width="40%"><img src="docs/screenshots/features/playstyle.png" width="100%" alt="The playstyle card: a maverick, its skill and daring, and the six styles with those held marked"></td>
+    <td width="40%"><img src="docs/screenshots/features/playstyle.png" width="100%" alt="The playstyle card: a maverick, its habits, and the six styles with those held marked"></td>
   </tr>
 </table>
 
@@ -160,7 +159,7 @@ flutter run -d chrome
 `flutter build apk` also works; a version tag (`v0.1.0`) makes the [release workflow](.github/workflows/release.yml) build and attach the APK. The [wiki](https://github.com/aaronified/lexodle/wiki) has the file map,
 how the [word lists](https://github.com/aaronified/lexodle/wiki/Word-lists) are built, the screenshots and the
 deploy ([developing](https://github.com/aaronified/lexodle/wiki/Developing)); the
-[paper](docs/paper) has the maths of skill, risk, luck and daring with its experiments.
+[paper](docs/paper) has the maths of skill, luck and risk in bits, with its simulations.
 
 ## Credits
 

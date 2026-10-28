@@ -1,23 +1,32 @@
 # Achievements
 
-49 achievements, each with its own icon, saved in your browser (nothing is sent anywhere): first
-light, one shot, last breath, no mercy, brevity, long haul, **pure skill** (win with every guess
-above 90 skill), **skill issue** (win 10 games with every guess above 95 skill), full range, three
-in a row, seven in a row, polyglot, nine tongues, regular, veteran, dustwalker and persistent; ones for
-the quartet and the relay race; language mastery; and, for the daily, a **streak ladder** (3, 7,
-14, 30, 60, 100, 200 and 365 days), **double fire** and **twice as hot** (ten double fires). Each
-playstyle has one, there is one for changing playstyle (**chameleon**) and one for having been
-all six (**many hats**).
+97 achievements, saved in your browser (nothing is sent anywhere). Every one has a medal:
+**bronze**, **silver**, **gold** or **platinum**, and a family of them climbs in difficulty, from
+the easy version to the platinum one.
 
-They are earned per language ([Languages](Languages)), except the ones that count languages and
-the mastery badges. Numbered achievements show a progress bar. Once earned, they start again from
-0 and can be earned again; the other achievements can be earned again too (first light aside),
-and every earning is counted. A history table lists each achievement you have earned: how many
-times, the first day and the latest.
+| Family | Rungs |
+| --- | --- |
+| wins, games played, win streak | 1/25/100/500 wins; 10/50/250/1,000 games; 3/7/15/30 in a row |
+| fastest win, last-try wins | in 4, 3, 2, 1 guesses; a win on the last try 1/10/30/100 times |
+| skill | average skill 70/80/90/95; every guess above 60/75/90; 10 wins above 95 |
+| luck, risk, bits | average luck +20/40/60/80; average risk 25/40/55/70; 6/8/10/12 bits in one guess |
+| lengths, languages | a 4-letter and an 8-letter win, every length; 2/3/6/9 languages |
+| mastery, completionist | master 1/3/6/all languages; complete 1/3/6/all |
+| dailies | 5/25/100/365 solved; streaks of 3/14/60/365; double fires 1/10/50/200 |
+| quartet, relay race | wins, last-try wins, spare tries, free rides, daily streaks of their own |
+| playstyles | one for each style, **chameleon** (change style), **many hats** (all six) |
+
+Each is earned once a language's number reaches its target (a best-of number, such as the best
+skill, has no bar; a counting one shows how far you are). The page shows the medal on each,
+filters by medal, and lists what you have earned: how many times (for the ones that can be done
+again, such as a win in one guess), the first day and the latest.
+
+They are earned per language ([Languages](Languages)), except the ones that count languages
+(polyglot, mastery, completionist).
 
 **Completionist** is earned in a language by earning every one of that language's own achievements
 (the ones that count languages and the mastery badges aside); it collects a badge for each language
-completed, kept for good. **Tower of babel** is earned once, when you are a completionist in every
+completed, kept for good. **Tower of babel** (platinum) is earned once, when you are a completionist in every
 language there is.
 
 The page has an **all** filter beside the flags: every achievement then wears the flag of every

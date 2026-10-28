@@ -1,3 +1,5 @@
+> **Superseded.** Written for the expected-pool version of the maths (skill from the expected pool, daring, the tries fit). Skill, luck and risk are now measured in bits; see `docs/paper/main.tex`. Kept for the record.
+
 # Whole-paper verification (Opus subagent, 2026-10-25)
 
 Scope: the reviewer read all of `docs/paper/main.tex`, checked every proof, traced every saved number to

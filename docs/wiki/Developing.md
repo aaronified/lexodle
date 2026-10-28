@@ -15,7 +15,7 @@ flutter run -d chrome
 
 | Path | What it is |
 | ---- | ---------- |
-| `app/lib/logic.dart` | Guess scoring, eligible-word filter, skill, luck, risk and daring, the recommenders, weighted word pick |
+| `app/lib/logic.dart` | Guess scoring, eligible-word filter, skill, luck and risk in bits, the recommenders, weighted word pick |
 | `app/lib/solver.dart`, `multi_solver.dart`, `learn.dart` | The solver (one board, and the quartet / relay race) and learn mode |
 | `app/lib/multi_analysis.dart`, `modes.dart` | The maths and the state of the quartet and the relay race |
 | `app/lib/keyboard.dart`, `guess_input.dart` | The on-screen keyboard and the row a guess is typed into |
@@ -27,8 +27,8 @@ flutter run -d chrome
 | `app/lib/store.dart`, `backup.dart` | Settings, the per-language state, the achievement definitions; the backup file |
 | `app/lib/achievements_page.dart`, `language_picker.dart` | The achievements page and the flag picker |
 | `app/assets/words/` | Generated word lists, one file per language |
-| `app/tools/` | Word-list generator, a live Wiktionary check, `calibrate_styles.dart` (simulated players for the playstyle thresholds) and `predict_tries.dart` (tries against skill, luck and daring) |
-| `docs/paper/` | The maths of skill, risk, luck and daring, with the experiments |
+| `app/tools/` | Word-list generator, a live Wiktionary check, `calibrate_styles.dart` (simulated players for the playstyle thresholds) and `predict_tries.dart` (tries against skill, luck and risk) |
+| `docs/paper/` | The maths of skill, luck and risk in bits, with the simulations |
 | `docs/wiki/` | These pages |
 | `docs/screenshots/` | The pictures in the README |
 

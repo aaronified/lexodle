@@ -9,4 +9,5 @@
 
 ## Environment
 
-- Dart and Flutter are not installed in the cloud session. App code cannot be compiled or tested there, so design in a mockup first.
+- Dart and Flutter are not installed in the cloud session, but they can be: download the Flutter SDK from storage.googleapis.com into `/home/user/sdk` (pub.dev is reachable; the GitHub flutter repo is not), then `flutter pub get`, `dart analyze` and `flutter test` in `app`. Design in a mockup first, then build and test.
+- No LaTeX is installed: check `docs/paper/*.tex` with `python docs/paper/check_tex.py`, and say the PDFs are stale.

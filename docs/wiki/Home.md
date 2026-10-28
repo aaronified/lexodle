@@ -11,7 +11,7 @@ has the highlights; these pages have the detail.
 - [Solver and learn mode](Solver-and-learn-mode): help for a game played elsewhere, and practising the best guess
 
 **Your play**
-- [Skill, luck and daring](Skill-luck-and-risk): how a guess is scored, and the review
+- [Skill, luck and risk](Skill-luck-and-risk): how a guess is scored, and the review
 - [History and playstyles](History-and-playstyles): the history, the charts, the six playstyles
 - [Languages](Languages): everything above is kept per language, with its flag
 - [Achievements](Achievements)

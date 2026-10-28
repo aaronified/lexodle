@@ -1,3 +1,5 @@
+> **Superseded.** Written for the expected-pool version of the maths (skill from the expected pool, daring, the tries fit). Skill, luck and risk are now measured in bits; see `docs/paper/main.tex`. Kept for the record.
+
 # Skill, risk and luck: status and plan
 
 Written 2026-10-19 so the next session can start from here. The maths and the paper
