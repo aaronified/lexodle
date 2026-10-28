@@ -4,12 +4,14 @@ Every language is built the same way:
 
 1. candidates: the words `wordfreq` knows for the language, Latin letters only,
    4 to 8 letters long, most frequent first;
-2. filter: a candidate is kept only if the language's Hunspell dictionary
-   accepts it (inflected forms included), and it is not a Roman numeral. Hunspell stores proper nouns
+2. filter: a candidate is kept if the language's Hunspell dictionary accepts it
+   (inflected forms included) or en.wiktionary.org has it as a lemma or a form
+   of the language (the dictionary lacks many words Wiktionary has, and the
+   other way round), and it is not a Roman numeral or a swear word. Hunspell stores proper nouns
    capitalised, and the candidates are lowercase, so names (david, texas) and
    most abbreviations drop out. German nouns are capitalised in its dictionary,
    so German also tries the capitalised form;
-3. the first POOL accepted words of each length are kept, with a weight from
+3. the first POOL accepted words of each length are kept (30,000: in practice all), with a weight from
    their frequency.
 
 Spelling variants (English US / UK, Portuguese Brazil / Portugal) are one
@@ -55,13 +57,14 @@ OUT = APP / "assets" / "words"
 ROMAN = re.compile(r"^m{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$")
 DICTS = Path(__file__).resolve().parent / "dictionaries"
 LENGTHS = range(4, 9)
-POOL = 6000  # words kept per language and length
+POOL = 30_000  # most words kept per language and length
 MIN_POOL = 400  # a length with fewer words than this is not offered
-EXAMINE = 80_000  # most candidates tried per length
+EXAMINE = 250_000  # most candidates tried per length
 FREQUENCY_ONLY_ZIPF = 3.0
 
-# lists that also need a Wiktionary entry (see the module docstring)
-WIKTIONARY_CHECKED = {"pt"}
+# lists whose dictionary words also need a Wiktionary entry: the Portuguese
+# dictionary accepts many names in lowercase (see the module docstring)
+WIKTIONARY_REQUIRED = {"pt"}
 WIKT_API = "https://en.wiktionary.org/w/api.php"
 WIKT_UA = "lexodle-build/1.0 (https://github.com/aaronified/lexodle)"
 
@@ -223,19 +226,22 @@ def acceptor(code, wf, dictdir):
     from spylls.hunspell import Dictionary
 
     if dictdir is None:
-        return (lambda w, z: z >= FREQUENCY_ONLY_ZIPF), "frequency"
+        return (lambda w, z: z >= FREQUENCY_ONLY_ZIPF), (lambda w: False), "frequency"
     d = Dictionary.from_files(str(fetch(dictdir)[0]))
     if wf == "de":
         accept = lambda w, z: d.lookup(w) or d.lookup(w.capitalize())  # noqa: E731
     else:
         accept = lambda w, z: d.lookup(w)  # noqa: E731
-    kind = "hunspell"
-    if code in WIKTIONARY_CHECKED:
+    kind = "hunspell+wiktionary"
+    if code in WIKTIONARY_REQUIRED:
         members = wiktionary_members(HEADINGS[code])
         hunspell_ok = accept
         accept = lambda w, z: w in members and hunspell_ok(w, z)  # noqa: E731
-        kind = "hunspell+wiktionary"
-    return accept, kind
+    # a name: the dictionary has the capitalised word and not the lowercase one
+    # (German capitalises every noun, so it has no such test)
+    is_name = (lambda w: False) if wf == "de" else (  # noqa: E731
+        lambda w: bool(d.lookup(w.capitalize())) and not d.lookup(w))
+    return accept, is_name, kind
 
 
 HEADINGS = {}
@@ -252,16 +258,23 @@ def build(code, wf, dictdir, heading):
         for n, c in cands.items()
     }
     dirs = dictdir if isinstance(dictdir, list) else [dictdir]
-    accepts, kind = [], None
+    accepts, names, kind = [], [], None
     for dd in dirs:
-        acc, kind = acceptor(code, wf, dd)
+        acc, nm, kind = acceptor(code, wf, dd)
         accepts.append(acc)
+        names.append(nm)
+    members = wiktionary_members(heading)
+
+    def listed(w):
+        """Wiktionary has the word, which no dictionary accepts, and it is no name."""
+        return w in members and not any(nm(w) for nm in names)
+
     lines, lengths, counts = [], [], {}
     for n in LENGTHS:
         kept = []
         if len(accepts) == 1:
             for w, z in cands[n][:EXAMINE]:
-                if accepts[0](w, z):
+                if accepts[0](w, z) or listed(w):
                     kept.append((w, max(1, int(10 ** z))))
                     if len(kept) >= POOL:
                         break
@@ -276,6 +289,8 @@ def build(code, wf, dictdir, heading):
                 if len(top) >= POOL and raw <= top[0]:
                     break
                 votes = sum(1 for acc in accepts if acc(w, z))
+                if not votes and listed(w):
+                    votes = len(accepts)  # no variant is singled out
                 if votes:
                     avg = max(1, round(raw * votes / len(accepts)))
                     kept.append((w, avg))
@@ -301,7 +316,9 @@ def write_sources(manifest):
         if src is None:
             rows.append(f"| {name} (`{code}`) | frequency only (zipf >= 3) | none (no dictionary) |")
         else:
-            extra = " + en.wiktionary.org lemma check" if built.get(code) == "hunspell+wiktionary" else ""
+            extra = " or an en.wiktionary.org entry (not a name)" if built.get(code) == "hunspell+wiktionary" else ""
+            if code in WIKTIONARY_REQUIRED:
+                extra = ", and for dictionary words an en.wiktionary.org entry"
             ds = " and ".join(f"`{d}`" for d in dirs)
             merged = ", variants merged (weights averaged)" if len(dirs) > 1 else ""
             lic = "; ".join(f"`{d}`: {fetch(d)[1]}" if len(dirs) > 1 else fetch(d)[1] for d in dirs)
@@ -309,7 +326,7 @@ def write_sources(manifest):
     (OUT / "SOURCES.md").write_text(
         "# Word list sources\n\n"
         "Candidates come from [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0). "
-        "Each is kept only if the language's Hunspell dictionary accepts it; only the filtered "
+        "Each is kept if the language's Hunspell dictionary accepts it or en.wiktionary.org has it as a lemma or form of the language ; only the filtered "
         "word lists are shipped, not the dictionaries. The licence is the one each dictionary "
         "package states for its dictionary and affix files.\n\n"
         "| Language | Filter | Dictionary licence |\n| --- | --- | --- |\n" + "\n".join(rows) + "\n",

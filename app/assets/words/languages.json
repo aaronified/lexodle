@@ -12,18 +12,19 @@
    8
   ],
   "counts": {
-   "4": 2670,
-   "5": 5000,
-   "6": 5986,
-   "7": 5990,
-   "8": 5997
+   "4": 7431,
+   "5": 12176,
+   "6": 15202,
+   "7": 17522,
+   "8": 18019
   },
-  "filter": "hunspell"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "es",
   "name": "Español",
   "wikt": "Spanish",
+  "flag": "svg:es",
   "lengths": [
    4,
    5,
@@ -32,19 +33,19 @@
    8
   ],
   "counts": {
-   "4": 2500,
-   "5": 5993,
-   "6": 5989,
-   "7": 5996,
-   "8": 5999
+   "4": 3551,
+   "5": 8843,
+   "6": 14754,
+   "7": 21880,
+   "8": 26333
   },
-  "filter": "hunspell",
-  "flag": "svg:es"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "fr",
   "name": "Français",
   "wikt": "French",
+  "flag": "svg:fr",
   "lengths": [
    4,
    5,
@@ -53,19 +54,19 @@
    8
   ],
   "counts": {
-   "4": 2322,
-   "5": 5987,
-   "6": 5987,
-   "7": 5994,
-   "8": 5995
+   "4": 2723,
+   "5": 6633,
+   "6": 11728,
+   "7": 16394,
+   "8": 19393
   },
-  "filter": "hunspell",
-  "flag": "svg:fr"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "de",
   "name": "Deutsch",
   "wikt": "German",
+  "flag": "svg:de",
   "lengths": [
    4,
    5,
@@ -74,19 +75,19 @@
    8
   ],
   "counts": {
-   "4": 1656,
-   "5": 4213,
-   "6": 5987,
-   "7": 5998,
-   "8": 5999
+   "4": 1988,
+   "5": 4732,
+   "6": 8627,
+   "7": 13083,
+   "8": 20266
   },
-  "filter": "hunspell",
-  "flag": "svg:de"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "it",
   "name": "Italiano",
   "wikt": "Italian",
+  "flag": "svg:it",
   "lengths": [
    4,
    5,
@@ -95,14 +96,13 @@
    8
   ],
   "counts": {
-   "4": 1924,
-   "5": 5381,
-   "6": 5990,
-   "7": 5986,
-   "8": 5994
+   "4": 2415,
+   "5": 6184,
+   "6": 10462,
+   "7": 18352,
+   "8": 22126
   },
-  "filter": "hunspell",
-  "flag": "svg:it"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "pt",
@@ -117,18 +117,19 @@
    8
   ],
   "counts": {
-   "4": 2195,
-   "5": 5987,
-   "6": 5997,
-   "7": 5997,
-   "8": 6000
+   "4": 2633,
+   "5": 6632,
+   "6": 10334,
+   "7": 14623,
+   "8": 17351
   },
-  "filter": "hunspell+wiktionary"
+  "filter": "wiktionary"
  },
  {
   "code": "nl",
   "name": "Nederlands",
   "wikt": "Dutch",
+  "flag": "svg:nl",
   "lengths": [
    4,
    5,
@@ -137,19 +138,19 @@
    8
   ],
   "counts": {
-   "4": 2748,
-   "5": 4731,
-   "6": 5988,
-   "7": 5999,
-   "8": 5998
+   "4": 2989,
+   "5": 5124,
+   "6": 8725,
+   "7": 12176,
+   "8": 15912
   },
-  "filter": "hunspell",
-  "flag": "svg:nl"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "pl",
   "name": "Polski",
   "wikt": "Polish",
+  "flag": "svg:pl",
   "lengths": [
    4,
    5,
@@ -158,19 +159,19 @@
    8
   ],
   "counts": {
-   "4": 5683,
-   "5": 5988,
-   "6": 5995,
-   "7": 5999,
-   "8": 5998
+   "4": 5936,
+   "5": 14051,
+   "6": 22959,
+   "7": 30000,
+   "8": 30000
   },
-  "filter": "hunspell",
-  "flag": "svg:pl"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "sv",
   "name": "Svenska",
   "wikt": "Swedish",
+  "flag": "svg:se",
   "lengths": [
    4,
    5,
@@ -179,19 +180,19 @@
    8
   ],
   "counts": {
-   "4": 3079,
-   "5": 5994,
-   "6": 5996,
-   "7": 6000,
-   "8": 6000
+   "4": 3456,
+   "5": 7790,
+   "6": 13666,
+   "7": 18059,
+   "8": 22166
   },
-  "filter": "hunspell",
-  "flag": "svg:se"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "da",
   "name": "Dansk",
   "wikt": "Danish",
+  "flag": "svg:dk",
   "lengths": [
    4,
    5,
@@ -200,19 +201,19 @@
    8
   ],
   "counts": {
-   "4": 1581,
-   "5": 2596,
-   "6": 3455,
-   "7": 3443,
-   "8": 3117
+   "4": 1593,
+   "5": 2598,
+   "6": 3459,
+   "7": 3445,
+   "8": 3119
   },
-  "filter": "hunspell",
-  "flag": "svg:dk"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "nb",
   "name": "Norsk",
   "wikt": "Norwegian Bokmål",
+  "flag": "svg:no",
   "lengths": [
    4,
    5,
@@ -221,19 +222,19 @@
    8
   ],
   "counts": {
-   "4": 3868,
-   "5": 5995,
-   "6": 5997,
-   "7": 5999,
-   "8": 5999
+   "4": 3953,
+   "5": 7375,
+   "6": 10988,
+   "7": 13639,
+   "8": 17186
   },
-  "filter": "hunspell",
-  "flag": "svg:no"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "tr",
   "name": "Türkçe",
   "wikt": "Turkish",
+  "flag": "svg:tr",
   "lengths": [
    4,
    5,
@@ -242,19 +243,19 @@
    8
   ],
   "counts": {
-   "4": 1805,
-   "5": 4235,
-   "6": 5855,
-   "7": 5999,
-   "8": 6000
+   "4": 1858,
+   "5": 4319,
+   "6": 5911,
+   "7": 7809,
+   "8": 8072
   },
-  "filter": "hunspell",
-  "flag": "svg:tr"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "ro",
   "name": "Română",
   "wikt": "Romanian",
+  "flag": "svg:ro",
   "lengths": [
    4,
    5,
@@ -263,19 +264,19 @@
    8
   ],
   "counts": {
-   "4": 1631,
-   "5": 3018,
-   "6": 4454,
-   "7": 5419,
-   "8": 5424
+   "4": 1674,
+   "5": 3067,
+   "6": 4492,
+   "7": 5444,
+   "8": 5433
   },
-  "filter": "hunspell",
-  "flag": "svg:ro"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "cs",
   "name": "Čeština",
   "wikt": "Czech",
+  "flag": "svg:cz",
   "lengths": [
    4,
    5,
@@ -284,19 +285,19 @@
    8
   ],
   "counts": {
-   "4": 5995,
-   "5": 5992,
-   "6": 5999,
-   "7": 5999,
-   "8": 6000
+   "4": 6328,
+   "5": 17375,
+   "6": 30000,
+   "7": 30000,
+   "8": 30000
   },
-  "filter": "hunspell",
-  "flag": "svg:cz"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "id",
   "name": "Indonesia",
   "wikt": "Indonesian",
+  "flag": "svg:id",
   "lengths": [
    4,
    5,
@@ -305,19 +306,19 @@
    8
   ],
   "counts": {
-   "4": 1314,
-   "5": 2380,
-   "6": 2231,
-   "7": 2626,
-   "8": 2438
+   "4": 1386,
+   "5": 2465,
+   "6": 2310,
+   "7": 2695,
+   "8": 2514
   },
-  "filter": "hunspell",
-  "flag": "svg:id"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "hu",
   "name": "Magyar",
   "wikt": "Hungarian",
+  "flag": "svg:hu",
   "lengths": [
    4,
    5,
@@ -326,19 +327,19 @@
    8
   ],
   "counts": {
-   "4": 1422,
-   "5": 3375,
-   "6": 4939,
-   "7": 5687,
-   "8": 5902
+   "4": 1448,
+   "5": 3424,
+   "6": 4967,
+   "7": 5738,
+   "8": 5942
   },
-  "filter": "hunspell",
-  "flag": "svg:hu"
+  "filter": "hunspell+wiktionary"
  },
  {
   "code": "ca",
   "name": "Català",
   "wikt": "Catalan",
+  "flag": "svg:ca",
   "lengths": [
    4,
    5,
@@ -347,13 +348,12 @@
    8
   ],
   "counts": {
-   "4": 2960,
-   "5": 5992,
-   "6": 5996,
-   "7": 5998,
-   "8": 6000
+   "4": 3019,
+   "5": 6570,
+   "6": 10080,
+   "7": 13205,
+   "8": 14818
   },
-  "filter": "hunspell",
-  "flag": "svg:ca"
+  "filter": "hunspell+wiktionary"
  }
 ]

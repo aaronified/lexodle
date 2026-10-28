@@ -160,7 +160,7 @@ void main() {
           expect(l.counts[n], isNotNull, reason: '${l.code} $n');
           expect(
             l.counts[n],
-            inInclusiveRange(400, 6000),
+            inInclusiveRange(400, 30000),
             reason: '${l.code} $n',
           );
         }

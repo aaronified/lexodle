@@ -10,20 +10,22 @@ app/tools/.venv/Scripts/python app/tools/build_words.py
 
 Every language is built the same way. The candidates are the words
 [wordfreq](https://github.com/rspeer/wordfreq) knows, Latin letters only, 4 to 8 letters, most
-frequent first. Each is kept only if the language's Hunspell dictionary accepts it, with inflected
-forms included, using [spylls](https://github.com/zverok/spylls) and the dictionaries from
+frequent first. Each is kept if the language's Hunspell dictionary accepts it, with inflected
+forms included, **or** en.wiktionary.org has it as a lemma or a form of the language and it is not a name (the
+dictionary lacks many words Wiktionary has, and the other way round; a name is a word whose
+capitalised form the dictionary has and the lowercase form it has not: `texas`, `paris`), using [spylls](https://github.com/zverok/spylls) and the dictionaries from
 [wooorm/dictionaries](https://github.com/wooorm/dictionaries) (LibreOffice's for Indonesian).
 Hunspell stores proper nouns capitalised and the candidates are lowercase, so names and most
 abbreviations drop out; German nouns are capitalised in its dictionary, so German also tries the
-capitalised form. Each language keeps up to 6,000 words per length as valid guesses, with a weight
-from their frequency.
+capitalised form. Every word that passes is kept as a valid guess, with a weight from its frequency (the build
+caps a length at 30,000 words, which no language reaches).
 
 Spelling variants are one language each: English (US and UK) is `en`, Portuguese (Brazil and
 Portugal) is `pt`. wordfreq has one frequency list per language and each variant's dictionary
 filters it differently (`colour` passes the UK dictionary and not the US one), so a merged language
 keeps a word if **any** of its dictionaries accepts it, and its weight is the **average of the
 weights the variants give it**: the full weight when both accept the word, half of it when only one
-does (the other variant never uses it). The first 6,000 by that averaged weight are kept, so
+does (the other variant never uses it); a word only Wiktionary has counts for both. So
 `color` and `colour` are both words, each with half the weight of a word both spell alike.
 There is no migration of progress saved under the old codes `en-GB` and `pt-PT`: the app
 falls back to the first language for a code it does not know, and that data is ignored. Flags are the SVGs in `app/assets/flags`, one per language (two side by side, each cropped
@@ -32,8 +34,8 @@ to half, for a merged one), set in the table of `build_words.py`.
 ## Known gaps
 
 Names are the weak point of a dictionary filter. The Portuguese dictionary stores many names as
-ordinary lowercase entries (`brasil`, `lisboa`, `jorge`), so the two Portuguese lists get a second
-filter: a word must also have its lowercase page on en.wiktionary.org as a Portuguese lemma or
+ordinary lowercase entries (`brasil`, `lisboa`, `jorge`), so a Portuguese dictionary word is
+kept only if it also has its lowercase page on en.wiktionary.org as a Portuguese lemma or
 non-lemma form, which names do not (`paulo`, `maria`, `pedro`). The shipped list is built with it
 (`python app/tools/build_words.py en pt` rebuilds the two merged languages; the one-off download of
 Wiktionary's category lists takes about 15 minutes). Finnish was removed: it has no Hunspell dictionary in
@@ -45,8 +47,7 @@ word lists are shipped.
 
 The difficulty grid has no word pool: the answer can be any word of the chosen length, drawn by
 frequency when the game modes checkbox is on, evenly when it is off. The daily draws evenly from
-the 3,000 most common words. Some languages have fewer than 6,000 words at some lengths (for
-example Indonesian has about 2,400 at five letters); the game modes menu shows the real count.
+the 3,000 most common words. Languages differ in size (English has about 12,000 words of five letters, Indonesian about 2,500); the game modes menu shows the real count.
 
 ## Credits and licences
 

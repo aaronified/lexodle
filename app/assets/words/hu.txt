@@ -25,6 +25,7 @@ szép	549540
 akik	537031
 jobb	537031
 újra	512861
+őket	501187
 ezen	478630
 című	467735
 vele	467735
@@ -134,6 +135,7 @@ szex	81283
 apró	79432
 hajó	79432
 jogi	79432
+áron	79432
 évre	79432
 esik	77624
 kint	77624
@@ -164,6 +166,7 @@ bíró	66069
 elől	66069
 mára	66069
 utat	66069
+évet	66069
 ebbe	64565
 érzi	64565
 öreg	64565
@@ -186,6 +189,7 @@ szél	60255
 zárt	60255
 hang	58884
 időm	58884
+éven	58884
 őszi	58884
 amin	57543
 falu	57543
@@ -288,6 +292,7 @@ várt	32359
 deák	31622
 edző	31622
 erőt	31622
+jenő	31622
 mögé	31622
 tört	31622
 vers	31622
@@ -394,6 +399,7 @@ adsz	20417
 anno	20417
 béna	20417
 song	20417
+szal	20417
 műve	19952
 tied	19952
 vízi	19952
@@ -502,6 +508,7 @@ hali	13803
 hitt	13803
 kamu	13803
 mező	13803
+mizu	13803
 népe	13803
 punk	13803
 skót	13803
@@ -538,6 +545,7 @@ egér	12302
 fiuk	12302
 híre	12302
 lágy	12302
+prof	12302
 szül	12302
 tető	12302
 zóna	12302
@@ -565,6 +573,7 @@ küzd	11481
 lőni	11481
 néma	11481
 vágó	11481
+égen	11481
 írók	11481
 ülni	11481
 body	11220
@@ -598,6 +607,7 @@ záró	10715
 bébi	10471
 esni	10471
 vert	10471
+azta	10232
 betű	10232
 gála	10232
 izom	10232
@@ -665,6 +675,7 @@ ring	8511
 rizs	8511
 teát	8511
 árul	8511
+chip	8317
 ciki	8317
 lánc	8317
 manó	8317
@@ -714,6 +725,7 @@ unom	7413
 eskü	7244
 hopp	7244
 mibe	7244
+para	7244
 bújt	7079
 hord	7079
 rács	7079
@@ -721,6 +733,7 @@ gömb	6918
 hőse	6918
 krém	6918
 lift	6918
+sing	6918
 ámen	6918
 alvó	6760
 hunt	6760
@@ -880,6 +893,7 @@ yard	4265
 ágyú	4265
 árok	4265
 árpa	4265
+bali	4168
 bart	4168
 bőrű	4168
 széf	4168
@@ -888,6 +902,7 @@ tavi	4168
 trió	4168
 öten	4168
 hírű	4073
+jaja	4073
 veje	4073
 fejű	3981
 kést	3981
@@ -933,6 +948,7 @@ tyúk	3548
 törő	3548
 tűri	3548
 zöme	3548
+ágon	3548
 éhen	3548
 alja	3467
 csőd	3467
@@ -944,6 +960,7 @@ tömb	3467
 utol	3467
 égés	3467
 önre	3467
+övet	3467
 agya	3388
 akna	3388
 coca	3388
@@ -992,6 +1009,7 @@ pult	3090
 arcú	3019
 bűne	3019
 csel	3019
+flex	3019
 inga	3019
 nana	3019
 puma	3019
@@ -1076,6 +1094,7 @@ végű	2398
 fánk	2344
 honi	2344
 klón	2344
+meta	2344
 múló	2344
 szab	2344
 utód	2344
@@ -1105,6 +1124,7 @@ tabu	2238
 kezű	2187
 kötő	2187
 lövi	2187
+tess	2187
 élre	2187
 írek	2187
 blúz	2137
@@ -1162,6 +1182,7 @@ gőzt	1905
 láva	1905
 rakj	1905
 rúzs	1905
+vili	1905
 vizű	1905
 ásni	1905
 area	1862
@@ -1275,6 +1296,7 @@ egek	1412
 eléd	1412
 kórt	1412
 lejt	1412
+mani	1412
 mezt	1412
 nővé	1412
 zulu	1412
@@ -1300,6 +1322,7 @@ súgó	1348
 tofu	1348
 tőrt	1348
 ártó	1348
+ívet	1348
 őrei	1348
 bari	1318
 bézs	1318
@@ -1315,11 +1338,13 @@ tára	1318
 érés	1318
 ölik	1318
 úrfi	1318
+furi	1288
 gall	1288
 lövő	1288
 okra	1288
 róna	1288
 szeg	1288
+tali	1288
 ében	1288
 ajkú	1258
 bakó	1258
@@ -1379,6 +1404,7 @@ hűek	1122
 imám	1122
 ráér	1122
 ujjú	1122
+vive	1122
 avas	1096
 deli	1096
 dúló	1096
@@ -1425,6 +1451,7 @@ olyan	2089296
 lehet	1905460
 nincs	1548816
 pedig	1258925
+nekem	1230268
 egyik	1071519
 ilyen	1071519
 miért	1000000
@@ -1443,6 +1470,7 @@ aztán	616595
 előtt	616595
 amely	602559
 semmi	588843
+neked	562341
 saját	549540
 ahogy	537031
 három	537031
@@ -1475,6 +1503,7 @@ német	316227
 ismét	309029
 tehát	309029
 egyre	301995
+engem	301995
 sokat	301995
 belül	295120
 tudod	295120
@@ -1548,6 +1577,7 @@ fogja	165958
 marad	165958
 venni	165958
 napot	162181
+nekik	162181
 tette	162181
 pénzt	158489
 előre	154881
@@ -1578,6 +1608,7 @@ azóta	131825
 gyere	131825
 külön	131825
 meleg	131825
+téged	131825
 éjjel	131825
 díjat	128824
 ennél	128824
@@ -1586,6 +1617,7 @@ segít	128824
 tudsz	128824
 beteg	125892
 külső	125892
+véget	125892
 annál	123026
 ekkor	123026
 kevés	123026
@@ -1651,6 +1683,7 @@ drága	89125
 eladó	89125
 nézni	89125
 fogsz	87096
+gyula	87096
 jelen	87096
 kettő	87096
 orvos	87096
@@ -1696,6 +1729,7 @@ ipari	67608
 lánya	67608
 látod	67608
 nyelv	67608
+néven	67608
 válik	67608
 estét	66069
 időre	66069
@@ -1807,6 +1841,7 @@ habár	43651
 meccs	43651
 mehet	43651
 szerb	43651
+téren	43651
 várni	43651
 zavar	43651
 üzlet	43651
@@ -1829,6 +1864,7 @@ bátor	40738
 földi	40738
 kezét	40738
 képen	40738
+tisza	40738
 élünk	40738
 adják	39810
 alakú	39810
@@ -1852,6 +1888,7 @@ tőled	38904
 zenét	38904
 címen	38018
 díjas	38018
+house	38018
 hölgy	38018
 kötet	38018
 pálya	38018
@@ -1907,6 +1944,7 @@ főnök	33884
 hagyd	33884
 index	33884
 kezem	33884
+tagok	33884
 ahova	33113
 ahová	33113
 gépet	33113
@@ -2013,6 +2051,7 @@ fizet	25703
 gépek	25703
 heves	25703
 hátul	25703
+jogok	25703
 mobil	25703
 neves	25703
 vegye	25703
@@ -2033,6 +2072,7 @@ magán	25118
 soros	25118
 írták	25118
 adjon	24547
+edzés	24547
 félre	24547
 hajót	24547
 terve	24547
@@ -2089,6 +2129,7 @@ tudná	22387
 vonzó	22387
 végét	22387
 cukor	21877
+céget	21877
 célba	21877
 fenti	21877
 hagyj	21877
@@ -2145,6 +2186,7 @@ szett	19952
 ötven	19952
 autós	19498
 fogni	19498
+húgom	19498
 időnk	19498
 jönne	19498
 nulla	19498
@@ -2205,6 +2247,7 @@ jövőt	17378
 későn	17378
 lábam	17378
 posta	17378
+soron	17378
 vágni	17378
 zárta	17378
 érzel	17378
@@ -2302,6 +2345,7 @@ hűvös	14454
 miami	14454
 nyoma	14454
 rákos	14454
+sorok	14454
 állsz	14454
 éltem	14454
 óvoda	14454
@@ -2468,6 +2512,7 @@ kijön	11220
 mesés	11220
 nézed	11220
 rémes	11220
+távon	11220
 vehet	11220
 érzik	11220
 írást	11220
@@ -2561,6 +2606,7 @@ végző	10000
 anyák	9772
 aradi	9772
 búcsú	9772
+dehát	9772
 dunai	9772
 eltér	9772
 eurós	9772
@@ -2597,6 +2643,7 @@ roman	9549
 sapka	9549
 szerv	9549
 teher	9549
+ugrás	9549
 értsd	9549
 evett	9332
 gárda	9332
@@ -2661,6 +2708,7 @@ lépek	8709
 málna	8709
 márka	8709
 opció	8709
+orrom	8709
 pajzs	8709
 rokon	8709
 spray	8709
@@ -2675,6 +2723,7 @@ blokk	8511
 ehető	8511
 hibák	8511
 kacsa	8511
+karib	8511
 keddi	8511
 kézre	8511
 kínál	8511
@@ -2721,8 +2770,10 @@ jókat	8128
 kései	8128
 kúria	8128
 lehel	8128
+látás	8128
 mersz	8128
 papok	8128
+rakás	8128
 szája	8128
 tökös	8128
 utunk	8128
@@ -2880,6 +2931,7 @@ kilós	6760
 kubai	6760
 kvázi	6760
 nyisd	6760
+párom	6760
 rákot	6760
 sajna	6760
 tenné	6760
@@ -3017,6 +3069,8 @@ járta	5754
 kapun	5754
 ketté	5754
 kezén	5754
+kozma	5754
+károk	5754
 kódex	5754
 magja	5754
 nézne	5754
@@ -3042,6 +3096,7 @@ modul	5623
 néger	5623
 pornó	5623
 sebaj	5623
+sztem	5623
 távot	5623
 tölts	5623
 vádak	5623
@@ -3061,6 +3116,7 @@ körre	5495
 mosdó	5495
 művét	5495
 padló	5495
+párok	5495
 ruhád	5495
 sebek	5495
 térre	5495
@@ -3162,6 +3218,7 @@ tinta	4897
 védik	4897
 vélem	4897
 állna	4897
+admin	4786
 apjuk	4786
 apáca	4786
 bacon	4786
@@ -3327,11 +3384,13 @@ védve	3981
 alább	3890
 betűt	3890
 búvár	3890
+chips	3890
 gipsz	3890
 gátló	3890
 idegi	3890
 jelöl	3890
 kezed	3890
+magok	3890
 mérés	3890
 roncs	3890
 vevők	3890
@@ -3396,6 +3455,7 @@ hippi	3630
 húzós	3630
 javul	3630
 jogai	3630
+karon	3630
 közük	3630
 párti	3630
 tetőt	3630
@@ -3417,6 +3477,8 @@ ezrei	3548
 fekve	3548
 ijedt	3548
 karja	3548
+karok	3548
+korok	3548
 közeg	3548
 lényt	3548
 menta	3548
@@ -3431,6 +3493,7 @@ véded	3548
 úrral	3548
 üdítő	3548
 birka	3467
+borok	3467
 falba	3467
 főzés	3467
 gének	3467
@@ -3615,6 +3678,7 @@ fluor	2818
 hasát	2818
 hegye	2818
 húzás	2818
+jogon	2818
 kilóg	2818
 körön	2818
 lakta	2818
@@ -3639,6 +3703,7 @@ grill	2754
 honos	2754
 hálót	2754
 hősei	2754
+jégen	2754
 jólét	2754
 kapna	2754
 márki	2754
@@ -3728,6 +3793,7 @@ védje	2570
 ámbár	2570
 ásott	2570
 borús	2511
+elven	2511
 estém	2511
 fejti	2511
 fenék	2511
@@ -3817,6 +3883,7 @@ botot	2290
 dajka	2290
 fiára	2290
 gatya	2290
+inget	2290
 kopog	2290
 perez	2290
 ponty	2290
@@ -3843,6 +3910,7 @@ kiált	2238
 kérve	2238
 lapra	2238
 lopja	2238
+lécci	2238
 lónak	2238
 lóval	2238
 manga	2238
@@ -4134,6 +4202,7 @@ hulló	1698
 kongó	1698
 lanka	1698
 néked	1698
+sávok	1698
 tálat	1698
 tüzek	1698
 tüzér	1698
@@ -4405,6 +4474,7 @@ perre	1348
 rommá	1348
 rókák	1348
 somló	1348
+szvsz	1348
 szőrű	1348
 taxit	1348
 terét	1348
@@ -4541,6 +4611,7 @@ fogas	1202
 fákra	1202
 fújta	1202
 hátuk	1202
+húrok	1202
 javít	1202
 jutva	1202
 kijut	1202
@@ -4570,6 +4641,7 @@ bamba	1174
 benti	1174
 csikó	1174
 céged	1174
+cégen	1174
 cérna	1174
 dühbe	1174
 fejez	1174
@@ -4590,11 +4662,13 @@ pajta	1174
 parki	1174
 pengő	1174
 ranch	1174
+vetés	1174
 védőt	1174
 ónodi	1174
 útnál	1174
 astor	1148
 banya	1148
+bárok	1148
 bérel	1148
 curie	1148
 dalos	1148
@@ -4654,6 +4728,7 @@ nőben	1122
 primo	1122
 párra	1122
 savat	1122
+sumér	1122
 szóda	1122
 tanok	1122
 távra	1122
@@ -4875,6 +4950,7 @@ belőle	181970
 fiatal	181970
 iskola	181970
 komoly	181970
+nekünk	181970
 azokat	177827
 elleni	177827
 gyerek	177827
@@ -4946,6 +5022,7 @@ amiért	107151
 július	107151
 egyéni	104712
 munkát	104712
+nektek	104712
 pontos	104712
 eléggé	102329
 jönnek	102329
@@ -5031,6 +5108,7 @@ erősen	66069
 kivéve	66069
 rohadt	66069
 régóta	66069
+tagjai	66069
 eddigi	64565
 fogunk	64565
 község	64565
@@ -5068,6 +5146,7 @@ végére	60255
 önálló	60255
 amiről	58884
 mentem	58884
+nyáron	58884
 vettek	58884
 akivel	57543
 eltűnt	57543
@@ -5162,6 +5241,7 @@ körüli	44668
 mentén	44668
 pontot	44668
 tudnék	44668
+általa	44668
 egyike	43651
 elérni	43651
 fáradt	43651
@@ -5274,6 +5354,7 @@ tudtak	33884
 veszem	33884
 érinti	33884
 brazil	33113
+design	33113
 esélye	33113
 fényes	33113
 földre	33113
@@ -5516,6 +5597,7 @@ vallás	21877
 viseli	21877
 anyaga	21379
 anyját	21379
+asszem	21379
 belüli	21379
 előnye	21379
 fejjel	21379
@@ -5533,6 +5615,7 @@ rendet	21379
 szállt	21379
 szíved	21379
 szólok	21379
+tervet	21379
 tudtok	21379
 értékű	21379
 cikkek	20892
@@ -5718,6 +5801,7 @@ tények	15488
 zavaró	15488
 bajban	15135
 bruttó	15135
+buddha	15135
 góllal	15135
 hullám	15135
 indián	15135
@@ -5766,6 +5850,7 @@ esetek	14125
 feküdt	14125
 fogtam	14125
 gyalog	14125
+hangok	14125
 hívjon	14125
 húsvét	14125
 lopott	14125
@@ -5880,6 +5965,7 @@ jogász	12302
 jusson	12302
 kijött	12302
 klassz	12302
+korunk	12302
 késsel	12302
 küldök	12302
 lennem	12302
@@ -5978,6 +6064,7 @@ moziba	11220
 nőkkel	11220
 ribanc	11220
 szemek	11220
+szívet	11220
 verset	11220
 várban	11220
 zsíros	11220
@@ -6361,6 +6448,7 @@ edzeni	7762
 esőben	7762
 faluba	7762
 gyulai	7762
+hangon	7762
 kalmár	7762
 kamion	7762
 lyukat	7762
@@ -6463,6 +6551,7 @@ vérzik	7244
 ígérem	7244
 üresen	7244
 amazon	7079
+bazmeg	7079
 csapás	7079
 efféle	7079
 ejtett	7079
@@ -6561,6 +6650,7 @@ nézzen	6606
 olajos	6606
 szalon	6606
 száját	6606
+tágabb	6606
 tárgyú	6606
 térnek	6606
 vagány	6606
@@ -6633,6 +6723,7 @@ fejben	6165
 főúton	6165
 fűződő	6165
 gombok	6165
+holdat	6165
 holtak	6165
 jópofa	6165
 karóra	6165
@@ -6806,6 +6897,7 @@ halnia	5370
 henger	5370
 holtan	5370
 isznak	5370
+jordán	5370
 jutnom	5370
 kegyes	5370
 kocsim	5370
@@ -7086,6 +7178,7 @@ hazája	4265
 jeleit	4265
 kellős	4265
 képlet	4265
+lángok	4265
 légzés	4265
 lövést	4265
 mindaz	4265
@@ -7188,6 +7281,7 @@ poklot	3981
 párnát	3981
 romlik	3981
 sietve	3981
+szöget	3981
 tanárt	3981
 tételt	3981
 írható	3981
@@ -7428,6 +7522,7 @@ bencés	3311
 buszra	3311
 bácsit	3311
 diákja	3311
+drogok	3311
 döntőt	3311
 ezekbe	3311
 falhoz	3311
@@ -7482,6 +7577,7 @@ korára	3235
 kérdez	3235
 linkek	3235
 moholy	3235
+nemtom	3235
 nyomod	3235
 primer	3235
 rangot	3235
@@ -7997,6 +8093,7 @@ mostam	2344
 patika	2344
 robban	2344
 románc	2344
+script	2344
 sehová	2344
 sperma	2344
 svédek	2344
@@ -8117,6 +8214,7 @@ kijevi	2187
 klubba	2187
 kívánó	2187
 lenned	2187
+látása	2187
 magvak	2187
 mecset	2187
 mezőre	2187
@@ -8406,6 +8504,7 @@ fázisa	1862
 homlok	1862
 hússal	1862
 kakaót	1862
+karjai	1862
 kérhet	1862
 küszöb	1862
 lottón	1862
@@ -8882,6 +8981,7 @@ zárlat	1513
 adatik	1479
 advent	1479
 akarni	1479
+andris	1479
 anyagú	1479
 betelt	1479
 bányát	1479
@@ -9148,6 +9248,7 @@ gender	1318
 gyárba	1318
 hétkor	1318
 iparos	1318
+kedvet	1318
 kiütés	1318
 lejött	1318
 leplet	1318
@@ -9170,6 +9271,7 @@ terhét	1318
 tettet	1318
 térrel	1318
 tüskék	1318
+utánna	1318
 vállon	1318
 végzem	1318
 vívtak	1318
@@ -9653,6 +9755,7 @@ labdák	1047
 lagúna	1047
 lapból	1047
 litert	1047
+látást	1047
 medúza	1047
 megkap	1047
 mosnom	1047
@@ -9848,6 +9951,7 @@ voltunk	91201
 sikeres	89125
 spanyol	89125
 szegény	89125
+világon	89125
 délután	87096
 igazság	87096
 magukat	87096
@@ -9866,6 +9970,7 @@ hozzánk	81283
 könnyen	81283
 közepén	81283
 színház	81283
+titeket	81283
 választ	81283
 lengyel	79432
 nyitott	79432
@@ -9889,6 +9994,7 @@ mondott	74131
 osztály	74131
 baleset	72443
 galéria	72443
+könyvet	72443
 magának	72443
 sikerül	72443
 barátom	70794
@@ -9940,6 +10046,7 @@ tartják	57543
 állatok	57543
 érkezik	57543
 jelenik	56234
+nyelven	56234
 okozott	56234
 anélkül	54954
 leszünk	54954
@@ -10100,6 +10207,7 @@ századi	34673
 akarják	33884
 előttem	33884
 ezáltal	33884
+határon	33884
 katonák	33884
 kezdjük	33884
 nyugodt	33884
@@ -10111,6 +10219,7 @@ kedvező	33113
 kurvára	33113
 későbbi	33113
 tisztán	33113
+anyagok	32359
 azokkal	32359
 ismerte	32359
 közölte	32359
@@ -10159,6 +10268,7 @@ ilyenek	30199
 kerülni	30199
 közepes	30199
 megvolt	30199
+nyelvet	30199
 rejtett	30199
 változó	30199
 étterem	30199
@@ -10286,6 +10396,7 @@ oldalak	23988
 pénzért	23988
 rosszat	23988
 vezetés	23988
+virágok	23988
 állomás	23988
 érzésem	23988
 akikkel	23442
@@ -10490,6 +10601,7 @@ hallgat	16595
 hétvége	16595
 hónapra	16595
 kezdték	16595
+légyszi	16595
 okokból	16595
 ruhákat	16595
 szobába	16595
@@ -10543,6 +10655,7 @@ döntőbe	15488
 eszköze	15488
 etnikai	15488
 hónapot	15488
+károkat	15488
 mágikus	15488
 mérgező	15488
 nevelés	15488
@@ -10646,6 +10759,7 @@ alapból	13489
 aranyat	13489
 beszélő	13489
 gyémánt	13489
+jogokat	13489
 követik	13489
 köztünk	13489
 küldtek	13489
@@ -10671,6 +10785,7 @@ szemébe	13182
 színpad	13182
 viszlát	13182
 viszony	13182
+általuk	13182
 érdemel	13182
 érezzük	13182
 örökség	13182
@@ -10845,6 +10960,7 @@ szándék	10964
 sütőben	10964
 tanácsa	10964
 teremtő	10964
+általam	10964
 élvezem	10964
 értékét	10964
 alkotta	10715
@@ -10888,6 +11004,7 @@ reményt	10471
 repülés	10471
 szóltál	10471
 tesztek	10471
+udvaron	10471
 vendége	10471
 vereség	10471
 érkezés	10471
@@ -10961,9 +11078,11 @@ melyből	9772
 meredek	9772
 mialatt	9772
 másikra	9772
+méteren	9772
 neveket	9772
 oldalas	9772
 olyasmi	9772
+papíron	9772
 részleg	9772
 szorult	9772
 várjunk	9772
@@ -11023,6 +11142,7 @@ engedem	9120
 felsőbb	9120
 figyelő	9120
 gyertya	9120
+határok	9120
 határos	9120
 határán	9120
 katalán	9120
@@ -11168,6 +11288,7 @@ listára	8128
 melegek	8128
 melyhez	8128
 mondunk	8128
+motorok	8128
 máshova	8128
 mögötti	8128
 osztani	8128
@@ -11205,12 +11326,14 @@ mentett	7943
 mértéke	7943
 múzeumi	7943
 rajthoz	7943
+sztárok	7943
 teheted	7943
 totális	7943
 tárolás	7943
 tömegek	7943
 vízesés	7943
 ötletem	7943
+újságok	7943
 alkotói	7762
 angolok	7762
 azáltal	7762
@@ -11316,6 +11439,7 @@ homogén	7244
 hírhedt	7244
 kalcium	7244
 kiváltó	7244
+kontakt	7244
 kártyák	7244
 készíti	7244
 követel	7244
@@ -11509,6 +11633,7 @@ főnököm	6309
 grafika	6309
 gyengéd	6309
 gyárban	6309
+haverok	6309
 játszol	6309
 játékát	6309
 kabátot	6309
@@ -11603,10 +11728,12 @@ minősül	5888
 méretét	5888
 növelni	5888
 pasival	5888
+rovarok	5888
 szüleit	5888
 termelt	5888
 terveit	5888
 titkára	5888
+táborok	5888
 témához	5888
 vegyünk	5888
 vidáman	5888
@@ -11676,9 +11803,11 @@ startup	5623
 szoknya	5623
 tajvani	5623
 trükkös	5623
+tömeget	5623
 túlélés	5623
 udvarán	5623
 vidékre	5623
+világok	5623
 vágyott	5623
 vízálló	5623
 zavarba	5623
@@ -11737,6 +11866,7 @@ képzést	5370
 kérhető	5370
 kínaiul	5370
 köveket	5370
+lovagok	5370
 lángoló	5370
 melegen	5370
 milliók	5370
@@ -11869,6 +11999,7 @@ katonái	4897
 keretén	4897
 kiégett	4897
 leírást	4897
+látásra	4897
 magadat	4897
 magyart	4897
 markáns	4897
@@ -11953,6 +12084,7 @@ vulkáni	4677
 értelmi	4677
 ésszerű	4677
 beljebb	4570
+bitcoin	4570
 dobozos	4570
 egyének	4570
 elküldi	4570
@@ -11969,6 +12101,7 @@ korának	4570
 léptünk	4570
 lövedék	4570
 masszív	4570
+műsorok	4570
 nyomdai	4570
 perckor	4570
 romboló	4570
@@ -12084,6 +12217,7 @@ meglett	4265
 novella	4265
 néppárt	4265
 népének	4265
+papírok	4265
 pénzhez	4265
 rendezi	4265
 sugárzó	4265
@@ -12523,9 +12657,11 @@ mozdult	3235
 rendelj	3235
 sebeket	3235
 sértett	3235
+tagokat	3235
 társult	3235
 tőletek	3235
 utalhat	3235
+viharok	3235
 áramkör	3235
 érdekek	3235
 érezzék	3235
@@ -12578,6 +12714,7 @@ beléjük	3090
 birkózó	3090
 csillog	3090
 ekkorra	3090
+emberen	3090
 feeling	3090
 finomat	3090
 fénnyel	3090
@@ -12782,6 +12919,7 @@ tanácsi	2818
 tehenek	2818
 táplált	2818
 témával	2818
+valszeg	2818
 védjegy	2818
 végéről	2818
 áldását	2818
@@ -13138,6 +13276,7 @@ lábbeli	2344
 magvető	2344
 majonéz	2344
 marhára	2344
+muszály	2344
 műfajok	2344
 nyitnak	2344
 nógrádi	2344
@@ -13146,6 +13285,7 @@ rektora	2344
 repedés	2344
 seregét	2344
 sokrétű	2344
+sorokat	2344
 sorolni	2344
 sorából	2344
 szilvás	2344
@@ -13684,6 +13824,7 @@ aludtak	1862
 anyagra	1862
 belátni	1862
 bérelte	1862
+búvárok	1862
 cégének	1862
 elemzői	1862
 előnyre	1862
@@ -13691,6 +13832,7 @@ emelnek	1862
 fenekét	1862
 focizni	1862
 félelme	1862
+főtéren	1862
 gyorsak	1862
 gyömbér	1862
 gyűjtők	1862
@@ -13715,6 +13857,7 @@ melegem	1862
 melóban	1862
 műtéten	1862
 nevéről	1862
+piccolo	1862
 pápának	1862
 párkány	1862
 szexelt	1862
@@ -13752,12 +13895,14 @@ macskám	1819
 madaras	1819
 menniük	1819
 módokon	1819
+műsoron	1819
 nyitrai	1819
 nyílást	1819
 oldalai	1819
 poszter	1819
 régmúlt	1819
 sampont	1819
+satöbbi	1819
 senkire	1819
 szaladt	1819
 szavazó	1819
@@ -14104,6 +14249,7 @@ léptékű	1584
 megyébe	1584
 megölje	1584
 mintájú	1584
+motoron	1584
 mélyben	1584
 méretük	1584
 méterig	1584
@@ -14319,6 +14465,7 @@ szebben	1479
 szálasi	1479
 súllyal	1479
 terepre	1479
+tetszés	1479
 teátrum	1479
 töltsék	1479
 tűzálló	1479
@@ -14335,6 +14482,7 @@ végzést	1479
 éreztek	1479
 érvényű	1479
 adódnak	1445
+anyagon	1445
 anyaság	1445
 becsüli	1445
 bemenet	1445
@@ -14479,6 +14627,7 @@ határőr	1380
 hatásra	1380
 horgony	1380
 hupikék	1380
+jackpot	1380
 jegyese	1380
 jogutód	1380
 jókedvű	1380
@@ -14511,6 +14660,7 @@ tellett	1380
 távlati	1380
 töltésű	1380
 türelmi	1380
+világom	1380
 vonások	1380
 várossá	1380
 völgyek	1380
@@ -14847,6 +14997,7 @@ blokkok	1202
 bízzunk	1202
 csendőr	1202
 doppler	1202
+edzések	1202
 elhozni	1202
 empátia	1202
 fajtájú	1202
@@ -15045,6 +15196,7 @@ vonalas	1148
 védenek	1148
 védikus	1148
 zálogba	1148
+záporok	1148
 ágyúval	1148
 állvány	1148
 átnézni	1148
@@ -15064,6 +15216,7 @@ engemet	1122
 fejtett	1122
 fogkefe	1122
 fórumot	1122
+gitárok	1122
 gödörbe	1122
 hagynom	1122
 hajóján	1122
@@ -15300,6 +15453,7 @@ hotelek	1047
 hátterű	1047
 irántam	1047
 irányok	1047
+karokat	1047
 keréken	1047
 kezdjék	1047
 kicsike	1047
@@ -15461,6 +15615,7 @@ történet	123026
 csinálni	120226
 igazából	120226
 ingyenes	120226
+magyarok	120226
 használt	117489
 hirtelen	117489
 továbbra	117489
@@ -15650,6 +15805,7 @@ területi	39810
 ajánlott	38904
 hadsereg	38904
 melyeket	38904
+országok	38904
 tartotta	38904
 többsége	38904
 gondolta	38018
@@ -15881,6 +16037,7 @@ ismertem	21877
 kórházba	21877
 mondanak	21877
 olimpián	21877
+szöveget	21877
 területe	21877
 állítják	21877
 balatoni	21379
@@ -15997,6 +16154,7 @@ számolni	18197
 szövegek	18197
 térképen	18197
 barátság	17782
+boldogan	17782
 elkezdte	17782
 ellenben	17782
 fogjátok	17782
@@ -16077,6 +16235,7 @@ veszélyt	16218
 boldoggá	15848
 bírósági	15848
 cserélni	15848
+egységet	15848
 győzelme	15848
 hiányzol	15848
 irányító	15848
@@ -16187,6 +16346,7 @@ meghalni	13489
 munkaerő	13489
 mutatták	13489
 szigetre	13489
+tengeren	13489
 tudomást	13489
 vezetnek	13489
 önállóan	13489
@@ -16234,9 +16394,11 @@ nézzetek	12589
 próbálni	12589
 vállalta	12589
 völgyben	12589
+összeget	12589
 belföldi	12302
 egymásba	12302
 elárulta	12302
+hangokat	12302
 lehettek	12302
 panoráma	12302
 plébánia	12302
@@ -16395,6 +16557,7 @@ lányával	10471
 lépéssel	10471
 megadott	10471
 nemzetek	10471
+polgárok	10471
 producer	10471
 szervező	10471
 tanácsok	10471
@@ -16496,6 +16659,7 @@ végzetes	9772
 írásbeli	9772
 baseball	9549
 biológia	9549
+boldogok	9549
 elküldte	9549
 felkelni	9549
 földközi	9549
@@ -16503,6 +16667,7 @@ gyalogos	9549
 gyűjteni	9549
 harcosok	9549
 hullámok	9549
+hátulról	9549
 kollégák	9549
 kristály	9549
 követték	9549
@@ -16815,6 +16980,7 @@ elveszti	7413
 emelkedő	7413
 eseménye	7413
 fenyeget	7413
+gazdagok	7413
 góljával	7413
 hallható	7413
 hangszer	7413
@@ -16860,6 +17026,7 @@ váltotta	7244
 ügyvédje	7244
 őszinték	7244
 bementem	7079
+csomagok	7079
 csöndben	7079
 egyházak	7079
 elkapott	7079
@@ -16875,6 +17042,7 @@ könyvből	7079
 mutattam	7079
 napsütés	7079
 nyújtani	7079
+pendrive	7079
 pillangó	7079
 példánya	7079
 reggelig	7079
@@ -17105,6 +17273,7 @@ törekvés	6025
 tüntetés	6025
 vacsorát	6025
 vallotta	6025
+világunk	6025
 várandós	6025
 őrmester	6025
 alapozva	5888
@@ -17207,6 +17376,7 @@ dehogyis	5495
 elaludni	5495
 elkezdem	5495
 figyelte	5495
+gazdagon	5495
 helyiség	5495
 helyüket	5495
 hidegben	5495
@@ -17305,6 +17475,7 @@ arénában	5128
 barátait	5128
 beindult	5128
 betegnek	5128
+bolgárok	5128
 egészből	5128
 ellátást	5128
 felülről	5128
@@ -17326,6 +17497,7 @@ tervezel	5128
 tudtátok	5128
 türelmet	5128
 udvarias	5128
+vámpírok	5128
 épségben	5128
 építését	5128
 anyaggal	5011
@@ -17428,6 +17600,7 @@ intézete	4677
 juttatta	4677
 kezelték	4677
 kitűnően	4677
+kiőrlésű	4677
 komáromi	4677
 képeznek	4677
 kölcsönt	4677
@@ -17588,6 +17761,7 @@ spórolni	4265
 szárazon	4265
 szélvédő	4265
 tanulunk	4265
+vietnami	4265
 zenekara	4265
 zsidókat	4265
 érezhető	4265
@@ -17672,6 +17846,7 @@ vehetnek	4073
 vetettem	4073
 városába	4073
 végezzen	4073
+általunk	4073
 éjszakák	4073
 évekbeli	4073
 akartunk	3981
@@ -17984,6 +18159,7 @@ legősibb	3311
 léteztek	3311
 mandarin	3311
 mélysége	3311
+nagyfokú	3311
 palotába	3311
 páncélos	3311
 pünkösdi	3311
@@ -18311,6 +18487,7 @@ nézheted	2818
 olvassák	2818
 rohantam	2818
 részeken	2818
+sorokban	2818
 stílusok	2818
 szabadok	2818
 szavakba	2818
@@ -18655,6 +18832,7 @@ segítene	2398
 siralmas	2398
 tanulást	2398
 várkonyi	2398
+végtagok	2398
 ásványok	2398
 átadásra	2398
 érvénybe	2398
@@ -18678,8 +18856,10 @@ gépkocsi	2344
 idejüket	2344
 jegyezni	2344
 jeleként	2344
+jogokkal	2344
 járjanak	2344
 járásban	2344
+karokkal	2344
 kazettás	2344
 kismamák	2344
 kísértés	2344
@@ -18765,6 +18945,7 @@ vándorló	2290
 érintése	2290
 óceánban	2290
 ültettek	2290
+barbárok	2238
 becslése	2238
 becsülik	2238
 beismerő	2238
@@ -18833,6 +19014,7 @@ eladások	2187
 elfogult	2187
 elkerüli	2187
 eltökélt	2187
+előleget	2187
 erősítve	2187
 felemelt	2187
 fényképe	2187
@@ -19004,6 +19186,7 @@ földmérő	2041
 függelék	2041
 fürdőzés	2041
 georgina	2041
+harangok	2041
 harsányi	2041
 hatalmuk	2041
 határnál	2041
@@ -19101,6 +19284,7 @@ túlélték	1995
 vezérkar	1995
 vidékről	1995
 vikingek	1995
+zártkörű	1995
 átveszik	1995
 bolognai	1949
 céljaira	1949
@@ -19134,6 +19318,7 @@ miképpen	1949
 modellel	1949
 motorját	1949
 másnapra	1949
+norvégok	1949
 olvastuk	1949
 piacokon	1949
 pályáján	1949
@@ -19198,6 +19383,7 @@ relatíve	1905
 sikerhez	1905
 stresszt	1905
 státuszt	1905
+szalagok	1905
 szobámat	1905
 szégyent	1905
 szülőnek	1905
@@ -19528,6 +19714,7 @@ megadjuk	1698
 mennyből	1698
 mennyien	1698
 mocsaras	1698
+mártírok	1698
 másikhoz	1698
 műsorral	1698
 műveiből	1698
@@ -19683,6 +19870,7 @@ tehettem	1621
 temérdek	1621
 termelők	1621
 támadója	1621
+térséget	1621
 tüntetve	1621
 tüzérség	1621
 ugyanoda	1621
@@ -19739,6 +19927,7 @@ mogyorós	1584
 munkácsi	1584
 munkától	1584
 májustól	1584
+nadrágok	1584
 nyolckor	1584
 nyomtató	1584
 növendék	1584
@@ -20441,6 +20630,7 @@ belement	1258
 belsőleg	1258
 bombázók	1258
 boncolás	1258
+bárokban	1258
 csatolva	1258
 detektor	1258
 egyeztek	1258
@@ -20649,6 +20839,7 @@ kultusza	1202
 kérhetsz	1202
 készülsz	1202
 legvégül	1202
+lovagjai	1202
 lépésnek	1202
 megverni	1202
 meteorit	1202
@@ -20741,6 +20932,7 @@ papírral	1174
 próbálsz	1174
 raboltak	1174
 rajzolás	1174
+raktáron	1174
 rombolni	1174
 rádiónak	1174
 sanghaji	1174
@@ -21247,6 +21439,7 @@ botanika	1023
 bravúros	1023
 brazilok	1023
 cseréjét	1023
+doktorok	1023
 dologtól	1023
 elemekre	1023
 elhiszik	1023
@@ -21262,6 +21455,7 @@ gyanúját	1023
 hajdanán	1023
 hatásfok	1023
 honlapok	1023
+huszárok	1023
 inzulint	1023
 iróniája	1023
 jobbkeze	1023
