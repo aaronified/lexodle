@@ -95,10 +95,10 @@ body { padding-bottom: 96px; }
   <header style="display:flex;flex-direction:column;gap:12px">
     <h1>REVIEW</h1>
     <div class="pills" id="pills"></div>
+    <div id="board"></div>
     <div><h2 id="title"></h2><p class="dim" id="sub"></p></div>
     <p class="note">Mockup. Words and pool sizes are invented. All other figures come from the formulas.</p>
   </header>
-  <section id="board"></section>
   <section id="step" style="display:flex;flex-direction:column;gap:18px"></section>
   <button class="link" type="button" id="samples">Sample games: pure skill and pure risk</button>
 </main>
@@ -263,9 +263,13 @@ function waterfall(list, upto) {
 }
 
 // ---- the table of guesses ----
-function table(list, upto, withTotal) {
-  const rows = list.slice(0, upto + 1).map((g, i) => '<tr><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + N(g.n) + '</td><td class="skill">' + f0(g.skill) + '</td><td class="risk">' + f0(g.risk) + '</td><td class="luck">' + pc(g.luck) + '</td><td class="bits">' + f2(g.gain) + '</td></tr>').join('');
-  return '<div class="wrap"><table><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk</th><th class="luck">luck</th><th class="bits">bits</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+function table(list, upto, nav) {
+  const head = '<div class="wrap"><table><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk</th><th class="luck">luck</th><th class="bits">bits</th></tr></thead><tbody>';
+  const rows = (nav ? list : list.slice(0, upto + 1)).map((g, i) => {
+    const seen = i <= upto, dim = '<span class="dim">·</span>';
+    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (seen ? N(g.n) : dim) + '</td><td class="skill">' + (seen ? f0(g.skill) : dim) + '</td><td class="risk">' + (seen ? f0(g.risk) : dim) + '</td><td class="luck">' + (seen ? pc(g.luck) : dim) + '</td><td class="bits">' + (seen ? f2(g.gain) : dim) + '</td></tr>';
+  }).join('');
+  return head + rows + '</tbody></table></div>';
 }
 
 // ---- tips behind the info dots ----
@@ -284,7 +288,12 @@ function renderStep() {
   const g = G[step], n = G.length;
   $('title').textContent = 'your ' + ORD[step] + ' guess';
   $('sub').textContent = 'the word was ' + ANSWER;
-  $('board').innerHTML = table(G, step);
+  $('board').innerHTML = table(G, step, true);
+  $('board').querySelectorAll('tr.pick').forEach(tr => {
+    const jump = () => { step = +tr.dataset.i; renderStep(); window.scrollTo(0, 0); };
+    tr.addEventListener('click', jump);
+    tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jump(); } });
+  });
   const picks = (title, arr, cls, fmt, extra) => '<div><h3 class="' + cls + '" style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="' + cls + '">' + fmt(p[1]) + (extra ? ' <span class="dim small">' + extra(p) + '</span>' : '') + '</span></div>').join('') + '</div>';
   const side = g.D > 10 ? 'Usually less than expected, with a small chance of much more.'
     : g.D < -10 ? 'Usually more than expected, with a small chance of much less: no gamble, so risk is 0.'
