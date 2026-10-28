@@ -324,6 +324,36 @@ void main() {
     });
   });
 
+  group('earned again', () {
+    test('a game that does what a level asks counts again, from the first', () {
+      final (st, _) = play([
+        game(used: 3),
+        game(used: 4),
+        game(used: 3),
+        game(used: 2),
+      ]);
+      // levels: 4 or fewer, 3 or fewer, 2, 1
+      expect(st['quick']!.hits, [4, 3, 1, 0]);
+    });
+
+    test('best-of numbers count again, count-up ones do not', () {
+      expect(byId('quick').hit, isNotNull);
+      expect(byId('bits').hit, isNotNull);
+      expect(byId('wins').hit, isNull);
+      final (st, _) = play([
+        game(maxBits: 6.5),
+        game(maxBits: 7),
+        game(maxBits: 5),
+      ]);
+      expect(st['bits']!.hits.first, 2);
+    });
+
+    test('the counts are kept', () {
+      final s = AchState(times: 2, hits: [5, 2, 0, 0]);
+      expect(AchState.fromJson(s.toJson()).hits, [5, 2, 0, 0]);
+    });
+  });
+
   group('daily', () {
     test('a daily is counted, and double fires climb their own ladder', () {
       final (st, _) = play([

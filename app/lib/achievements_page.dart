@@ -74,7 +74,11 @@ class _AchievementsPageState extends State<AchievementsPage> {
         if (st != null && st.times > (best?.times ?? 0)) best = st;
       }
       if (best != null) {
-        out[a.id] = AchState(times: best.times, dates: List.of(best.dates));
+        out[a.id] = AchState(
+          times: best.times,
+          dates: List.of(best.dates),
+          hits: List.of(best.hits),
+        );
       }
     }
     return out;
@@ -416,6 +420,16 @@ class _Row extends StatelessWidget {
                   color: earnedColor,
                 ),
               ),
+              // done again: the games that did what the top level asks
+              if (st.hits.length >= done && st.hits[done - 1] > 1)
+                Text(
+                  '×${st.hits[done - 1]}',
+                  key: ValueKey('times-${a.id}'),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: earnedColor,
+                  ),
+                ),
               Caption(st.latest ?? ''),
             ],
           );
