@@ -85,6 +85,11 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 table.st { font-size: 12px; } table.st td { padding: 6px 3px; line-height: 1.25; } table.st th { padding: 4px 3px; } table.st td .tile { width: 15px; height: 15px; font-size: 9px; } table.st td .tiles { gap: 1px; }
 .sb { border: 0; background: transparent; color: var(--primary); font-size: 16px; line-height: 1; padding: 0; margin: 0; cursor: pointer; display: inline-block; vertical-align: middle; width: 16px; height: 16px; }
 .sb:hover { color: var(--fg); }
+.bh { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.bhi { display: inline-block; width: 14px; height: 14px; color: var(--primary); font-size: 14px; }
+.cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.cols3 > div { min-width: 0; }
+.cols3 .pk b { font-size: 14px; }
 </style>
 <main>
   <header style="display:flex;flex-direction:column;gap:12px">
@@ -126,7 +131,7 @@ const G = PLAY.detective;
 const log2 = Math.log2;
 function score(g) {
   g.word = g.word.toUpperCase();
-  if (g.unscored) { g.skill = g.risk = g.luck = null; g.gain = 0; g.H = 0; g.bLuck = 0; g.hstar = 0; return; }
+  if (g.unscored) { g.skill = 100; g.risk = 0; g.luck = 0; g.gain = 0; g.H = 0; g.bLuck = 0; g.hstar = 0; g.after = 0; return; }
   g.sizes.sort((a, b) => b - a);
   g.landed = g.sizes.indexOf(g.landedSize);
   g.gains = g.sizes.map(s => log2(g.n / s));                                  // bits an outcome gains
@@ -139,6 +144,7 @@ function score(g) {
   g.D = g.less - g.more;
   if (g.dstar == null) g.dstar = Math.max(g.D, 0);
   g.risk = g.dstar > 0 ? Math.min(100, Math.max(0, g.D) / g.dstar * 100) : 0;
+  g.after = g.win ? 0 : g.landedSize;
   g.gain = g.gains[g.landed];                                                  // what you gained
   g.bLuck = g.gain - g.H;                                                      // luck in bits
   g.gotMore = share(x => x > g.gain + 1e-9);
@@ -171,7 +177,7 @@ function colorize(root) {
   while (w.nextNode()) nodes.push(w.currentNode);
   nodes.forEach(n => {
     const p = n.parentElement;
-    if (!p || p.closest('.skill,.luck,.risk,.bits,.sym,svg,script,style,code,math,button')) return;
+    if (!p || p.closest('.skill,.luck,.risk,.bits,.sym,.tile,svg,script,style,code,math,button')) return;
     if (!/\b(skill|luck|risk)\b|H\*?|D\*|\u03a3/i.test(n.nodeValue)) return;
     const span = document.createElement('span');
     span.innerHTML = n.nodeValue.replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -219,7 +225,7 @@ function plot(g) {
 
 // ---- the waterfall: bits stack up guess by guess, racing to the bits needed ----
 function waterfall(list, upto) {
-  const W_ = 420, rowH = 34, L = 62, R = 14, top = 12, rows = upto + 1;
+  const W_ = 420, rowH = 34, L = 62, R = 36, top = 12, rows = upto + 1;
   const sx = v => L + v / top * (W_ - L - R), H = rows * rowH + 44;
   let s = '', cum = 0;
   for (let t = 0; t <= top; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="18" y2="' + (H - 20) + '" stroke="var(--outlinev)"/><text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>';
@@ -267,12 +273,12 @@ function behaviourPopup(g) {
   $('allstyles').addEventListener('click', () => { closeLayer(); $('samples').click(); });
 }
 function table(list, upto, nav) {
-  const head = '<div class="wrap"><table class="st"><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk</th><th class="luck">luck</th><th class="bits">bits</th><th>type</th></tr></thead><tbody>';
+  const head = '<div class="wrap"><table class="st"><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk</th><th>type</th></tr></thead><tbody>';
   const rows = (nav ? list : list.slice(0, upto + 1)).map((g, i) => {
-    const seen = i <= upto && !g.unscored, dim = '<span class="dim">·</span>';
-    const counted = i <= upto && !g.unscored && g.label && g.label !== 'none';
+    const seen = i <= upto, dim = '<span class="dim">·</span>';
+    const counted = seen && !g.unscored && g.label && g.label !== 'none';
     const type = counted ? '<button class="sb" type="button" data-b="' + i + '" title="' + g.label + '" aria-label="' + g.label + '">' + ic(BEHAV[g.label].icon) + '</button>' : dim;
-    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (i <= upto ? N(g.n) : dim) + '</td><td class="skill">' + (seen ? f0(g.skill) : dim) + '</td><td class="risk">' + (seen ? f0(g.risk) : dim) + '</td><td class="luck">' + (seen ? pc(g.luck) : dim) + '</td><td class="bits">' + (seen ? f2(g.gain) : dim) + '</td><td>' + type + '</td></tr>';
+    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (seen ? N(g.n) + ' <span class="dim">→</span> ' + N(g.after) : dim) + '</td><td class="skill">' + (seen ? f0(g.skill) : dim) + '</td><td class="risk">' + (seen ? f0(g.risk) : dim) + '</td><td>' + type + '</td></tr>';
   }).join('');
   return head + rows + '</tbody></table></div>';
 }
@@ -300,14 +306,18 @@ function renderStep() {
     tr.addEventListener('click', jump);
     tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jump(); } });
   });
-  const picks = (title, arr, cls, fmt, extra) => '<div><h3 class="' + cls + '" style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><b>' + p[0] + '</b><span class="' + cls + '">' + fmt(p[1]) + (extra ? ' <span class="dim small">' + extra(p) + '</span>' : '') + '</span></div>').join('') + '</div>';
+  const picks = (title, arr, cls, fmt, extra) => '<div><h3 class="' + cls + '" style="margin-bottom:4px">' + title + '</h3>' + arr.map(p => '<div class="pk"><span><b>' + p[0] + '</b>' + (extra ? '<br><span class="dim small">' + extra(p) + '</span>' : '') + '</span><span class="' + cls + '">' + fmt(p[1]) + '</span></div>').join('') + '</div>';
   const side = g.D > 10 ? 'Usually less than expected, with a small chance of much more.'
     : g.D < -10 ? 'Usually more than expected, with a small chance of much less: no gamble, so risk is 0.'
     : 'Less and more than expected are about equally likely, so there is little gamble.';
   const wf = waterfall(G, step);
   const done = wf.total / needed * 100;
   if (g.unscored) {
-    $('step').innerHTML = '<p>One word was left, so there was nothing to choose and nothing to score. Playing it ended the game.</p><div class="block">' + hd('Bits gained', 'bits', TIP.bits) + '<div class="sum"><span>so far, of ' + f2(needed) + ' needed</span><span><b>' + f2(wf.total) + '</b> (' + f0(done) + '%)</span></div>' + wf.svg + '</div>';
+    $('step').innerHTML = '<p>One word was left, so there was nothing to choose: playing it is the only play. Nothing was left to learn, and it ended the game.</p>' +
+      '<div class="block">' + hd('Skill', 'skill', TIP.skill) + '<div class="sum"><span>words left, before and after</span><span>1 → 0</span><span class="res skill">skill: the only play</span><span class="res skill">100</span></div></div>' +
+      '<div class="block">' + hd('Risk', 'risk', TIP.risk) + '<div class="sum"><span class="res risk">risk: one outcome, no gamble</span><span class="res risk">0</span></div></div>' +
+      '<div class="block">' + hd('Luck', 'luck', TIP.luck) + '<div class="sum"><span class="res luck">luck: one outcome, no chance</span><span class="res luck">0%</span></div></div>' +
+      '<div class="block">' + hd('Bits gained', 'bits', TIP.bits) + '<div class="sum"><span>this guess: all the information was already in</span><span><b>0.00</b> bits</span><span>so far, of ' + f2(needed) + ' needed</span><span><b>' + f2(wf.total) + '</b> (' + f0(done) + '%)</span></div>' + wf.svg + '</div>';
     colorize($('board')); colorize($('step'));
     $('back').disabled = step === 0;
     $('next').textContent = step === n - 1 ? 'done' : 'next';
@@ -338,8 +348,7 @@ function renderStep() {
       '<div class="sum"><span>this guess: skill + luck</span><span>' + f2(g.H) + ' ' + sg(g.bLuck, 2) + ' = <b>' + f2(g.gain) + ' bits</b></span>' +
       '<span>so far, of ' + f2(needed) + ' needed</span><span><b>' + f2(wf.total) + '</b> (' + f0(done) + '%)</span></div>' + wf.svg + '</div>' +
 
-    '<div class="block">' + hd('Picks', '', TIP.picks) + '<div class="cols">' + picks('best skill', g.top, 'skill', f0) + picks('worst skill', g.bottom, 'skill', f0) +
-      picks('highest risk', g.risky, 'risk', v => g.dstar > 0 ? f0(v / g.dstar * 100) : '0', p => 'skill ' + p[2]) + picks('luckiest', g.lucky, 'luck', pc) + '</div>' +
+    '<div class="block">' + hd('Picks', '', TIP.picks) + '<div class="cols3">' + picks('best skill', g.top, 'skill', f0) + picks('top risk', g.risky, 'risk', v => g.dstar > 0 ? f0(v / g.dstar * 100) : '0', p => 'skill ' + p[2]) + picks('luckiest', g.lucky, 'luck', pc) + '</div>' +
       '<p class="small dim">Yours: skill <b class="skill">' + f0(g.skill) + '</b>, risk <b class="risk">' + f0(g.risk) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>.' + '</p></div>';
   colorize($('board')); colorize($('step'));
   $('back').disabled = step === 0;
@@ -457,26 +466,27 @@ function judgeGame(game) {
     let best = null, bv = 0; labels.forEach(l => { if (share[l] > bv + 1e-9) { bv = share[l]; best = l; } }); return { gs, share, labels, best: bv >= 0.4 ? best : null }; };
   return { early: phase('early', ['gambler', 'maximiser', 'eliminator']), end: phase('end', ['closer', 'prober']) };
 }
+const bh = n => '<span class="bh"><span class="bhi">' + ic(BEHAV[n].icon) + '</span>' + n + '</span>';
 function sampleHtml(id) {
   const st = STYLES.find(x => x.id === id), game = PLAY[id], last = game.length - 1, wf = waterfall(game, last), j = judgeGame(game);
   const rows = game.map((g, i) => '<tr><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + N(g.n) + (g.unscored ? '' : '<br><span class="dim">' + g.phase + '</span>') + '</td><td>' + (g.unscored ? '·' : rankText(g.rank).replace('top ', '')) + '</td><td class="risk">' + (g.unscored ? '·' : f0(g.risk)) + '</td><td>' + (g.unscored ? '·' : g.fresh) + '</td><td style="white-space:normal"><b>' + (g.unscored || g.label === 'none' ? '·' : g.label) + '</b>' + (g.unscored ? '' : '<br><span class="dim">' + (g.fits ? 'fits' : 'no fit') + '</span>') + '</td></tr>').join('');
   const line = (ph, name, o) => '<p class="small"><b>' + name + '</b> · ' + o.gs.length + ' guess' + (o.gs.length === 1 ? '' : 'es') + ': ' +
-    o.labels.map(l => l + ' ' + o.gs.filter(g => g.label === l).length + '/' + o.gs.length + ' = ' + pct(o.share[l])).join(', ') + '. ' + (o.best ? 'Habit: <b>' + o.best + '</b> (' + pct(o.share[o.best]) + ', at least 40%).' : 'No habit reaches 40%.') + '</p>';
+    o.labels.map(l => bh(l) + ' ' + o.gs.filter(g => g.label === l).length + '/' + o.gs.length + ' = ' + pct(o.share[l])).join(', ') + '. ' + (o.best ? 'Habit: ' + bh(o.best) + ' (' + pct(o.share[o.best]) + ', at least 40%).' : 'No habit reaches 40%.') + '</p>';
   const mean = k => { const sc = game.filter(g => !g.unscored); return sc.reduce((a, g) => a + g[k], 0) / sc.length; };
   const won = game[last].win;
   return '<div class="hd"><b style="font-size:18px">' + st.name + '</b><button class="dot" type="button" aria-label="Explain" data-tip="' + esc(st.text + ' ' + RULE[st.early] + ' counts as ' + st.early + ' early. ' + RULE[st.end] + ' counts as ' + st.end + ' at the end.') + '">i</button></div>' +
-    '<p class="small dim">' + st.early + ' early · ' + st.end + ' at the end</p><p>' + st.text + '</p>' +
+    '<p class="small dim">' + bh(st.early) + ' early · ' + bh(st.end) + ' at the end</p><p>' + st.text + '</p>' +
     '<div class="sub hd">this game, guess by guess <button class="dot" type="button" aria-label="Explain" data-tip="' + esc(TIPS.how) + '">i</button></div>' +
     '<div class="wrap"><table class="st"><thead><tr><th>guess</th><th>words</th><th>top</th><th class="risk">risk</th><th>new</th><th>counted</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '<div class="sub hd">the calculation <button class="dot" type="button" aria-label="Explain" data-tip="' + esc(TIPS.order) + '">i</button></div>' +
     line('early', 'early game', j.early) + line('end', 'end game', j.end) +
-    '<p><b>' + (j.early.best || '?') + ' + ' + (j.end.best || '?') + ' = ' + (STYLES.find(x => x.early === j.early.best && x.end === j.end.best)?.name || 'not decided') + '</b></p>' +
+    '<p><b>' + (j.early.best ? bh(j.early.best) : '?') + ' + ' + (j.end.best ? bh(j.end.best) : '?') + ' = ' + (STYLES.find(x => x.early === j.early.best && x.end === j.end.best)?.name || 'not decided') + '</b></p>' +
     '<p class="small dim">One game decides nothing. The app does this over your last 100 classic games.</p>' +
     '<p class="small">This game: skill <b class="skill">' + f0(mean('skill')) + '</b>, risk <b class="risk">' + f0(mean('risk')) + '</b>, luck <b class="luck">' + sg(mean('luck'), 0) + '%</b>. ' + (won ? 'Solved in ' + game.length + ' guesses.' : 'Not solved.') + ' Bits gained ' + f2(wf.total) + ' of ' + f2(needed) + '.</p>' + wf.svg;
 }
-const EVIDENCE = [['Analyst', 'maximiser 100%', 'prober 79%'], ['Maverick', 'maximiser 100%', 'closer 100%'], ['Detective', 'eliminator 87%', 'prober 86%'], ['Sweeper', 'eliminator 87%', 'closer 100%'], ['Wildcard', 'gambler 70%', 'prober 58%'], ['Gambler', 'gambler 65%', 'closer 98%']];
+const EVIDENCE = [['Analyst', ['maximiser', '100%'], ['prober', '79%']], ['Maverick', ['maximiser', '100%'], ['closer', '100%']], ['Detective', ['eliminator', '87%'], ['prober', '86%']], ['Sweeper', ['eliminator', '87%'], ['closer', '100%']], ['Wildcard', ['gambler', '70%'], ['prober', '58%']], ['Gambler', ['gambler', '65%'], ['closer', '98%']]];
 const STYLE_EVIDENCE = '<div class="sub hd">does it work <button class="dot" type="button" aria-label="Explain" data-tip="40 simulated games per style on the real word list, answers drawn from the 3,000 commonest words. Each simulated player follows its style\u2019s habit. The table shows the share of its early and end guesses counted as the habit it was built to have. All six are read back as the style they were built as. Not measured on people.">i</button></div>' +
-  '<div class="wrap"><table><thead><tr><th>simulated</th><th>early habit</th><th>end habit</th></tr></thead><tbody>' + EVIDENCE.map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>').join('') + '</tbody></table></div>';
+  '<div class="wrap"><table><thead><tr><th>simulated</th><th>early habit</th><th>end habit</th></tr></thead><tbody>' + EVIDENCE.map(r => '<tr><td>' + r[0] + '</td><td>' + bh(r[1][0]) + ' ' + r[1][1] + '</td><td>' + bh(r[2][0]) + ' ' + r[2][1] + '</td></tr>').join('') + '</tbody></table></div>';
 $('samples').addEventListener('click', () => {
   const draw = id => {
     openLayer('<h2><span>Playstyles</span><button class="close" type="button">close</button></h2>' +
