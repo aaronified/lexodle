@@ -1,199 +1,196 @@
 <title>Lexodle Home</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap">
 <style>
-/* Layout: a phone-width column. Everything about play sits at the bottom: the mode button above the play and daily buttons. */
+/* The app's look: JetBrains Mono, lowercase, hairline borders, flat surfaces, a pink accent on olive-black (dark) or cream (light). Dark values are sampled from the app's screenshots; light ones are close estimates. */
 :root {
-  --bg: #f6f6f3; --surface: #ffffff; --fg: #1b1c1a; --dim: #5d605b; --line: #dcdcd6; --line2: #b9bab3;
-  --skill: #1f5fd0; --luck: #9a7400; --risk: #2e7d32; --accent: #1b1c1a; --onaccent: #f6f6f3;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bg: #fefbe8; --fg: #1d1d11; --dim: #6c6b5e; --outline: #7c7a62; --outlinev: #cac8ae;
+  --primary: #8c4b84; --onprimary: #ffffff; --secondary: #4a6b3f; --yellow: #d9a800; --flame: #8a8d2a; --absent: #e5e3cf; --bar: #b5b39d; --hl: #efecd6;
+  --skill: #1f5fd0; --luck: #9a7400; --risk: #2e7d32; --bits: #7a4fd0;
+  --font: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #121311; --surface: #1b1c1a; --fg: #ecece8; --dim: #a3a59e; --line: #2f302d; --line2: #4a4b47;
-  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --accent: #ecece8; --onaccent: #121311; color-scheme: dark; } }
+  --bg: #141409; --fg: #e6e3d1; --dim: #9e9c8d; --outline: #949279; --outlinev: #494833;
+  --primary: #f6b0ea; --onprimary: #4f1c4c; --secondary: #b4cea5; --yellow: #f0c219; --flame: #c7cb82; --absent: #313125; --bar: #535245; --hl: #26201b;
+  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --bits: #a98bff; color-scheme: dark; } }
 :root[data-theme="dark"] {
-  --bg: #121311; --surface: #1b1c1a; --fg: #ecece8; --dim: #a3a59e; --line: #2f302d; --line2: #4a4b47;
-  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --accent: #ecece8; --onaccent: #121311; color-scheme: dark; }
+  --bg: #141409; --fg: #e6e3d1; --dim: #9e9c8d; --outline: #949279; --outlinev: #494833;
+  --primary: #f6b0ea; --onprimary: #4f1c4c; --secondary: #b4cea5; --yellow: #f0c219; --flame: #c7cb82; --absent: #313125; --bar: #535245; --hl: #26201b;
+  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --bits: #a98bff; color-scheme: dark; }
+
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5;
-  padding-block: 12px 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.app { max-width: 480px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 20px; }
-.top { display: flex; justify-content: space-between; align-items: center; }
-.logo { font-size: 22px; font-weight: 700; letter-spacing: .04em; }
-.sq { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line2); border-radius: 4px; background: transparent; color: var(--fg); cursor: pointer; font: inherit; }
-.scroll { flex: 1; display: flex; flex-direction: column; gap: 18px; min-height: 0; }
-h3 { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin: 0; font-weight: 600; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
-.style { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.style b { font-size: 18px; }
-.dim { color: var(--dim); } .small { font-size: 12px; }
-.streaks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.streak { border: 1px solid var(--line); border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 2px; background: var(--bg); }
-.streak.on { border-color: var(--fg); }
-.streak b { font-size: 20px; font-variant-numeric: tabular-nums; }
-.streak span { font-size: 11px; color: var(--dim); }
-.ach { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
-.ach:last-child { border-bottom: 0; }
-.play { display: flex; flex-direction: column; gap: 8px; touch-action: pan-y; user-select: none; }
-.mode { position: relative; height: 56px; border: 1px solid var(--line2); border-radius: 4px; background: var(--surface); color: var(--fg); font: inherit; cursor: pointer; overflow: hidden; padding: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.45; text-transform: lowercase;
+  padding-left: max(0px, env(safe-area-inset-left, 0px)); padding-right: max(0px, env(safe-area-inset-right, 0px)); }
+.app { max-width: 480px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+.scroll { flex: 1; overflow-y: auto; padding: 40px 24px 24px; display: flex; flex-direction: column; }
+.head { display: flex; align-items: center; gap: 16px; }
+.logo { display: block; width: 56px; height: 44px; flex: none; }
+.title { flex: 1; font-size: 36px; font-weight: 700; line-height: 1.1; }
+.icon { width: 1em; height: 1em; fill: currentColor; display: block; }
+.iconbtn { width: 48px; height: 48px; display: grid; place-items: center; background: transparent; border: 0; color: var(--fg); cursor: pointer; font-size: 28px; }
+.caption { font-size: 12px; letter-spacing: 2px; color: var(--dim); }
+.lang { margin-top: 28px; height: 56px; border: 1px solid var(--outline); border-radius: 4px; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: transparent; color: var(--fg); font: inherit; font-size: 16px; text-align: left; cursor: pointer; width: 100%; }
+.lang span.n { flex: 1; letter-spacing: 1px; }
+.flag { width: 24px; height: 16px; flex: none; }
+.streak { margin-top: 20px; border: 1px solid var(--outlinev); border-radius: 3px; padding: 12px 12px 8px; }
+.srow { display: flex; align-items: center; gap: 6px; }
+.srow .num { font-size: 28px; font-weight: 700; }
+.srow .cap { flex: 1; margin-left: 4px; }
+.srow .best { font-size: 11px; color: var(--dim); display: flex; align-items: center; gap: 8px; }
+.week { display: flex; margin-top: 8px; }
+.day { flex: 1; margin: 0 1px; padding: 6px 0; border: 1px solid transparent; border-radius: 3px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--dim); }
+.day.today { border-color: color-mix(in srgb, var(--fg) 50%, transparent); }
+.flames { display: flex; height: 22px; align-items: center; color: var(--outlinev); }
+.flames.on { color: var(--flame); }
+.flames .icon { font-size: 22px; } .flames.two .icon { font-size: 18px; } .flames.two .icon + .icon { margin-left: -4px; }
+hr { border: 0; border-top: 1px solid var(--outlinev); margin: 28px 0 12px; }
+.menu { width: 100%; height: 52px; margin-bottom: 8px; border: 1px solid var(--outline); border-radius: 3px; background: transparent; color: var(--primary); font: inherit; letter-spacing: 1.2px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+.menu .glyphs { display: flex; gap: 6px; font-size: 22px; margin-left: auto; }
+.menu.with { position: relative; } .menu.with .glyphs { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); margin: 0; }
+.srow2 { display: flex; gap: 8px; }
+.sq { width: 52px; height: 52px; flex: none; border: 1px solid var(--outline); border-radius: 3px; background: transparent; color: var(--primary); display: grid; place-items: center; font-size: 28px; cursor: pointer; }
+.pinned { padding: 8px 24px 16px; display: flex; flex-direction: column; gap: 6px; }
+.freq { display: flex; align-items: center; padding-left: 4px; gap: 8px; font-size: 13px; color: var(--dim); cursor: pointer; border: 0; background: transparent; font-family: inherit; text-align: left; }
+.freq span { flex: 1; }
+.sw { width: 40px; height: 22px; border-radius: 11px; border: 2px solid var(--outline); position: relative; flex: none; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--outline); }
+.sw.on { background: var(--primary); border-color: var(--primary); } .sw.on::after { left: 20px; background: var(--onprimary); }
+.playarea { display: flex; flex-direction: column; gap: 8px; touch-action: pan-y; user-select: none; }
+.mode { position: relative; height: 52px; border: 1px solid var(--outline); border-radius: 3px; background: transparent; color: var(--fg); font: inherit; letter-spacing: 1.2px; cursor: pointer; overflow: hidden; padding: 0; }
 .mode .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 36px; }
+.mode .slide .icon { font-size: 24px; color: var(--primary); }
+.mode .nm { text-align: left; line-height: 1.1; }
+.mode .nm small { display: block; font-size: 11px; color: var(--dim); letter-spacing: 0; margin-top: 2px; }
 .mode .chev { position: absolute; top: 50%; transform: translateY(-50%); color: var(--dim); font-size: 18px; }
 .mode .l { left: 12px; } .mode .r { right: 12px; }
-.mode .name { font-weight: 600; font-size: 16px; line-height: 1.15; text-align: left; }
-.mode .sub { font-size: 11px; color: var(--dim); font-weight: 400; display: block; }
 .row { display: flex; gap: 8px; }
-.btn { flex: 1; height: 52px; border-radius: 4px; font: inherit; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; }
-.btn.fill { background: var(--accent); color: var(--onaccent); border: 1px solid var(--accent); }
-.btn.line { background: transparent; color: var(--fg); border: 1px solid var(--line2); }
-.btn small { font-weight: 400; font-size: 11px; }
+.btn { flex: 1; height: 52px; border-radius: 3px; font: inherit; letter-spacing: 1.5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; }
+.btn.fill { background: var(--primary); color: var(--onprimary); border: 1px solid var(--primary); font-weight: 700; font-size: 15px; }
+.btn.line { background: transparent; color: var(--primary); border: 1px solid var(--outline); letter-spacing: 1.2px; }
+.btn small { font-size: 11px; letter-spacing: 0; color: var(--primary); opacity: .9; }
 .dots { display: flex; justify-content: center; gap: 6px; }
-.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line2); }
-.dots i.on { background: var(--fg); }
-.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 4px; font-size: 13px; z-index: 50; max-width: calc(100% - 32px); }
-.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.5); display: flex; justify-content: center; align-items: center; padding: 16px max(16px, env(safe-area-inset-left, 0px)); overscroll-behavior: contain; }
-.modal { background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; max-width: 440px; width: 100%; max-height: 90%; overflow: auto; padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 14px; overscroll-behavior: contain; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--outlinev); }
+.dots i.on { background: var(--primary); }
+.toast { position: fixed; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 3px; font-size: 13px; z-index: 50; max-width: calc(100% - 32px); }
+.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.55); display: flex; justify-content: center; align-items: center; padding: 24px 16px; overscroll-behavior: contain; }
+.modal { background: var(--bg); color: var(--fg); border: 1px solid var(--outline); border-radius: 3px; max-width: 440px; width: 100%; max-height: 100%; overflow: auto; display: flex; flex-direction: column; overscroll-behavior: contain; }
 .modal > * { flex-shrink: 0; }
-.modal h2 { display: flex; justify-content: space-between; align-items: center; margin: 0; font-size: 18px; }
-.close { font: inherit; background: transparent; border: 1px solid var(--line2); color: var(--fg); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
-.opt { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
-.opt[aria-checked="true"] { border-color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.opt b { font-size: 15px; }
+.mhead { display: flex; align-items: center; padding: 8px 8px 0 24px; }
+.mhead b { flex: 1; font-size: 18px; }
+.mbody { padding: 4px 24px 24px; display: flex; flex-direction: column; gap: 12px; }
+.opt { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border: 1px solid var(--outlinev); border-radius: 3px; background: transparent; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+.opt[aria-checked="true"] { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 15%, transparent); }
+.opt b { font-size: 15px; letter-spacing: 1px; }
+.small { font-size: 12px; } .dimt { color: var(--dim); }
 .hd { display: flex; align-items: center; gap: 8px; }
-.dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--dim); background: transparent; color: var(--dim); font: italic 700 11px/1 Georgia, serif; cursor: pointer; display: grid; place-items: center; padding: 0; flex: none; }
-.pop { position: absolute; z-index: 60; max-width: min(320px, calc(100vw - 32px)); background: var(--surface); color: var(--fg); border: 1px solid var(--line2); border-radius: 6px; padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,.25); font-size: 13px; line-height: 1.45; }
-.sty { display: flex; gap: 8px; align-items: center; }
-.row3 { display: flex; gap: 8px; flex-wrap: wrap; }
-.pill { font: inherit; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1.5px solid currentColor; background: transparent; }
-.skill { color: var(--skill); } .luck { color: var(--luck); } .risk { color: var(--risk); }
-button:focus-visible { outline: 2px solid var(--skill); outline-offset: 2px; }
+.dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--dim); background: transparent; color: var(--dim); font: italic 700 11px/1 Georgia, serif; text-transform: none; cursor: pointer; display: grid; place-items: center; padding: 0; flex: none; }
+.pop { position: fixed; z-index: 60; max-width: min(320px, calc(100vw - 32px)); background: var(--bg); color: var(--fg); border: 1px solid var(--outline); border-radius: 3px; padding: 10px 12px; font-size: 13px; line-height: 1.45; }
+button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 </style>
 
 <div class="app">
-  <div class="top">
-    <span class="logo">lexodle</span>
-    <button class="sq" type="button" aria-label="settings" id="settings">&#9881;</button>
+  <div class="scroll" id="scroll">
+    <div class="head">
+      <svg class="logo" viewBox="0 0 96 76" aria-hidden="true"><rect x="0" y="40" width="30" height="30" rx="5" fill="var(--bar)"/><rect x="26" y="22" width="30" height="30" rx="5" fill="var(--yellow)"/><rect x="52" y="4" width="30" height="30" rx="5" fill="var(--secondary)"/></svg>
+      <span class="title">lexodle</span>
+      <button class="iconbtn" type="button" aria-label="settings" id="settings">ICON_settings</button>
+    </div>
+    <div class="caption" style="margin-top:6px">a word game, in many tongues</div>
+    <button class="lang" type="button" id="lang"><svg class="flag" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#f4f4f4"/><g fill="#b22234"><rect y="0" width="24" height="1.6"/><rect y="3.2" width="24" height="1.6"/><rect y="6.4" width="24" height="1.6"/><rect y="9.6" width="24" height="1.6"/><rect y="12.8" width="24" height="1.6"/></g><rect width="10" height="8.8" fill="#3c3b6e"/></svg><span class="n">english (us)</span><span style="color:var(--dim)">&#9662;</span></button>
+    <div class="streak" id="streak"></div>
+    <hr>
+    <button class="menu with" type="button" id="ach"><span class="t">achievements  12/49</span><span class="glyphs" style="color:var(--primary)">ICON_award ICON_crown ICON_trophy</span></button>
+    <div class="srow2"><button class="sq" type="button" id="stylebtn" aria-label="playstyle: analyst">ICON_microscope</button><button class="menu" type="button" style="margin:0;flex:1" id="history">history</button></div>
+    <button class="menu" type="button" style="margin-top:8px" id="how">how to play</button>
   </div>
-
-  <div class="scroll">
-    <div class="card">
-      <div class="hd"><h3>Playstyle</h3><button class="dot" type="button" aria-label="Explain" data-tip="Read from your last 100 classic games. Early game habit (maximiser, eliminator or gambler) plus end game habit (prober or closer). Tap to see how it is judged.">i</button></div>
-      <div class="style"><div><b>Analyst</b><div class="small dim">maximiser early, prober at the end</div></div><button class="sq" type="button" id="stylebtn" aria-label="Open playstyle">&#9656;</button></div>
-    </div>
-
-    <div class="card">
-      <div class="hd"><h3>Daily streaks</h3><button class="dot" type="button" aria-label="Explain" data-tip="Each mode has its own daily word and its own streak. The day counts for a mode when you solve that mode's daily.">i</button></div>
-      <div class="streaks" id="streaks"></div>
-    </div>
-
-    <div class="card">
-      <h3>Recent achievements</h3>
-      <div><div class="ach"><span>win a quartet with 3 or more tries left</span><span class="dim small">today</span></div>
-      <div class="ach"><span>win a daily in three guesses</span><span class="dim small">2 days ago</span></div>
-      <div class="ach"><span>win a relay race on your very last try</span><span class="dim small">last week</span></div></div>
-    </div>
-  </div>
-
-  <div class="play" id="play">
-    <button class="mode" type="button" id="mode" aria-label="Game modes. Swipe to change mode."><span class="chev l">&#8249;</span><div class="slide" id="slide"></div><span class="chev r">&#8250;</span></button>
-    <div class="dots" id="dots" aria-hidden="true"></div>
-    <div class="row">
-      <button class="btn fill" type="button" id="playbtn">play</button>
-      <button class="btn line" type="button" id="dailybtn"></button>
+  <div class="pinned">
+    <button class="freq" type="button" id="freq"><span id="freqt">all words equally likely</span><i class="sw" id="sw"></i></button>
+    <div class="playarea" id="play">
+      <button class="mode" type="button" id="mode" aria-label="game modes. swipe to change mode."><span class="chev l">&#8249;</span><div class="slide" id="slide"></div><span class="chev r">&#8250;</span></button>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+      <div class="row"><button class="btn fill" type="button" id="playbtn">play</button><button class="btn line" type="button" id="dailybtn"></button></div>
     </div>
   </div>
 </div>
 <div id="layer"></div>
 
 <script>
-// The three modes. Each has its own daily: the word (or words) is drawn from the date, the language and the mode, the same for everyone.
-const MODES = [
-  { id: 'classic', label: 'classic', sub: 'one word', tries: 6, dailyTries: 6, streak: 12,
-    daily: { state: 'done', text: 'solved 4/6' }, rule: 'one word, 6 tries' },
-  { id: 'quartet', label: 'quartet', sub: 'four words at once · +3 tries', tries: 9, dailyTries: 9, streak: 3,
-    daily: { state: 'going', text: '5/9' }, rule: 'four words that share every guess, 9 tries' },
-  { id: 'relay', label: 'relay race', sub: 'four words, one after the other · +4 tries', tries: 10, dailyTries: 10, streak: 0,
-    daily: { state: 'new', text: '' }, rule: 'four words one after the other, 10 tries' },
-];
-let mi = 0;
+const ICONS = {"flame": ["M10 2c0 -.88 1.056 -1.331 1.692 -.722c1.958 1.876 3.096 5.995 1.75 9.12l-.08 .174l.012 .003c.625 .133 1.203 -.43 2.303 -2.173l.14 -.224a1 1 0 0 1 1.582 -.153c1.334 1.435 2.601 4.377 2.601 6.27c0 4.265 -3.591 7.705 -8 7.705s-8 -3.44 -8 -7.706c0 -2.252 1.022 -4.716 2.632 -6.301l.605 -.589c.241 -.236 .434 -.43 .618 -.624c1.43 -1.512 2.145 -2.924 2.145 -4.78"], "settings": ["M14.647 4.081a.724 .724 0 0 0 1.08 .448c2.439 -1.485 5.23 1.305 3.745 3.744a.724 .724 0 0 0 .447 1.08c2.775 .673 2.775 4.62 0 5.294a.724 .724 0 0 0 -.448 1.08c1.485 2.439 -1.305 5.23 -3.744 3.745a.724 .724 0 0 0 -1.08 .447c-.673 2.775 -4.62 2.775 -5.294 0a.724 .724 0 0 0 -1.08 -.448c-2.439 1.485 -5.23 -1.305 -3.745 -3.744a.724 .724 0 0 0 -.447 -1.08c-2.775 -.673 -2.775 -4.62 0 -5.294a.724 .724 0 0 0 .448 -1.08c-1.485 -2.439 1.305 -5.23 3.744 -3.745a.722 .722 0 0 0 1.08 -.447c.673 -2.775 4.62 -2.775 5.294 0zm-2.647 4.919a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z"], "chess-knight": ["M8.959 1.99l-.147 .028l-.115 .029a1 1 0 0 0 -.646 1.27l.749 2.245l-2.815 1.735a2 2 0 0 0 -.655 2.751l.089 .133a2 2 0 0 0 1.614 .819l1.563 -.001l-1.614 4.674a1 1 0 0 0 .945 1.327h7.961a1 1 0 0 0 1 -.978l.112 -5c0 -3.827 -1.555 -6.878 -4.67 -7.966l-2.399 -.83l-.375 -.121l-.258 -.074l-.135 -.031l-.101 -.013l-.055 -.001l-.048 .003z", "M18 18h-12a1 1 0 0 0 -1 1a2 2 0 0 0 2 2h10a2 2 0 0 0 1.987 -1.768l.011 -.174a1 1 0 0 0 -.998 -1.058z"], "layout-grid": ["M9 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z", "M19 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z", "M9 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z", "M19 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"], "puzzle": ["M10 2a3 3 0 0 1 2.995 2.824l.005 .176v1h3a2 2 0 0 1 1.995 1.85l.005 .15v3h1a3 3 0 0 1 .176 5.995l-.176 .005h-1v3a2 2 0 0 1 -1.85 1.995l-.15 .005h-3a2 2 0 0 1 -1.995 -1.85l-.005 -.15v-1a1 1 0 0 0 -1.993 -.117l-.007 .117v1a2 2 0 0 1 -1.85 1.995l-.15 .005h-3a2 2 0 0 1 -1.995 -1.85l-.005 -.15v-3a2 2 0 0 1 1.85 -1.995l.15 -.005h1a1 1 0 0 0 .117 -1.993l-.117 -.007h-1a2 2 0 0 1 -1.995 -1.85l-.005 -.15v-3a2 2 0 0 1 1.85 -1.995l.15 -.005h3v-1a3 3 0 0 1 3 -3z"], "microscope": ["M15.707 4.293l3 3a1 1 0 0 1 0 1.414l-1.553 1.555a7 7 0 0 1 -.256 9.74l2.102 -.002a1 1 0 0 1 0 2h-14a1 1 0 0 1 0 -2h1v-1a1 1 0 0 1 0 -2h2a1 1 0 0 1 0 2v1h4a5 5 0 0 0 3.737 -8.323l-3.03 3.03a1 1 0 0 1 -1.414 0l-.793 -.792l-.793 .792a1 1 0 1 1 -1.414 -1.414l.792 -.793l-.792 -.793a1 1 0 0 1 0 -1.414l6 -6a1 1 0 0 1 1.414 0m2 -2l3 3a1 1 0 1 1 -1.414 1.414l-3 -3a1 1 0 1 1 1.414 -1.414"], "dice-5": ["M18.333 2c1.96 0 3.56 1.537 3.662 3.472l.005 .195v12.666c0 1.96 -1.537 3.56 -3.472 3.662l-.195 .005h-12.666a3.667 3.667 0 0 1 -3.662 -3.472l-.005 -.195v-12.666c0 -1.96 1.537 -3.56 3.472 -3.662l.195 -.005h12.666zm-2.833 12a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3m-7 0a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3m3.5 -3.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3m-3.5 -3.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3m7 0a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3"], "cards": ["M10.348 3.169l-7.15 3.113a2 2 0 0 0 -1.03 2.608l4.92 11.895a1.96 1.96 0 0 0 2.59 1.063l7.142 -3.11a2.002 2.002 0 0 0 1.036 -2.611l-4.92 -11.894a1.96 1.96 0 0 0 -2.588 -1.064z", "M16 3a2 2 0 0 1 1.995 1.85l.005 .15v3.5a1 1 0 0 1 -1.993 .117l-.007 -.117v-3.5h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z", "M19.08 5.61a1 1 0 0 1 1.31 -.53c.257 .108 .505 .21 .769 .314a2 2 0 0 1 1.114 2.479l-.056 .146l-2.298 5.374a1 1 0 0 1 -1.878 -.676l.04 -.11l2.296 -5.371l-.366 -.148l-.402 -.167a1 1 0 0 1 -.53 -1.312z"], "feather": ["M8 9.585v6.415h6.414l-2.707 2.707a1 1 0 0 1 -.112 .097l-.11 .071l-.114 .054l-.105 .035l-.149 .03l-.117 .006h-4.586l-1.707 1.707a1 1 0 1 1 -1.414 -1.414l1.707 -1.709v-4.584l.003 -.075l.017 -.126l.03 -.111l.044 -.111l.052 -.098l.067 -.096l.08 -.09z", "M19.414 11l-3 3h-4.914l2.914 -3z", "M13 4.586v4.998l-3 3v-4.999z", "M16.482 3a4.515 4.515 0 0 1 4.518 4.514a4.7 4.7 0 0 1 -.239 1.487l-5.761 -.001v-5.76c.469 -.158 .968 -.24 1.482 -.24"], "scale": ["M12 2a1 1 0 0 1 1 1v1.152l5.159 .86a.98 .98 0 0 1 .636 .38l.041 .059l.058 .102l3.024 6.05l.035 .094l.025 .096l.016 .1l.005 .12l-.003 .061a3.996 3.996 0 0 1 -3.996 3.926a4 4 0 0 1 -4 -4a1 1 0 0 1 .106 -.447l2.393 -4.79l-3.499 -.583v12.82h4a1 1 0 0 1 0 2h-10a1 1 0 0 1 0 -2h4v-12.82l-3.5 .583l2.418 4.84l.035 .094l.025 .096l.016 .1l.005 .12l-.003 .061a3.996 3.996 0 0 1 -3.996 3.926a4 4 0 0 1 -4 -4a1 1 0 0 1 .106 -.447l3.034 -6.065l.039 -.061l.025 -.034a.98 .98 0 0 1 .636 -.38l5.16 -.862v-1.151a1 1 0 0 1 1 -1"], "award": ["M19.496 13.983l1.966 3.406a1.001 1.001 0 0 1 -.705 1.488l-.113 .011l-.112 -.001l-2.933 -.19l-1.303 2.636a1.001 1.001 0 0 1 -1.608 .26l-.082 -.094l-.072 -.11l-1.968 -3.407a8.994 8.994 0 0 0 6.93 -3.999z", "M11.43 17.982l-1.966 3.408a1.001 1.001 0 0 1 -1.622 .157l-.076 -.1l-.064 -.114l-1.304 -2.635l-2.931 .19a1.001 1.001 0 0 1 -1.022 -1.29l.04 -.107l.05 -.1l1.968 -3.409a8.994 8.994 0 0 0 6.927 4.001z", "M12 2l.24 .004a7 7 0 0 1 6.76 6.996l-.003 .193l-.007 .192l-.018 .245l-.026 .242l-.024 .178a6.985 6.985 0 0 1 -.317 1.268l-.116 .308l-.153 .348a7.001 7.001 0 0 1 -12.688 -.028l-.13 -.297l-.052 -.133l-.08 -.217l-.095 -.294a6.96 6.96 0 0 1 -.093 -.344l-.06 -.271l-.049 -.271l-.02 -.139l-.039 -.323l-.024 -.365l-.006 -.292a7 7 0 0 1 6.76 -6.996l.24 -.004z"], "crown": ["M19 19h-14c-.5 0 -.9 -.3 -1 -.8l-2 -10c0 -.4 .1 -.8 .5 -1.1c.4 -.2 .8 -.2 1.1 0l4.1 3.3l3.4 -5.1c.4 -.6 1.3 -.6 1.7 0l3.4 5.1l4.1 -3.3c.3 -.3 .8 -.3 1.1 0c.4 .2 .5 .6 .5 1.1l-2 10c0 .5 -.5 .8 -1 .8z"], "trophy": ["M17 3a1 1 0 0 1 .993 .883l.007 .117v2.17a3 3 0 1 1 0 5.659v.171a6.002 6.002 0 0 1 -5 5.917v2.083h3a1 1 0 0 1 .117 1.993l-.117 .007h-8a1 1 0 0 1 -.117 -1.993l.117 -.007h3v-2.083a6.002 6.002 0 0 1 -4.996 -5.692l-.004 -.225v-.171a3 3 0 0 1 -3.996 -2.653l-.003 -.176l.005 -.176a3 3 0 0 1 3.995 -2.654l-.001 -2.17a1 1 0 0 1 1 -1h10zm-12 5a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m14 0a1 1 0 1 0 0 2a1 1 0 0 0 0 -2"], "compass": ["M17 3.34a10 10 0 1 1 -15 8.66l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 14.66a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m3.684 -10.949l-6 2a1 1 0 0 0 -.633 .633l-2.007 6.026l-.023 .086l-.017 .113l-.004 .068v.044l.009 .111l.012 .07l.04 .144l.045 .1l.054 .095l.064 .09l.069 .075l.084 .074l.098 .07l.1 .054l.078 .033l.105 .033l.109 .02l.043 .005l.068 .004h.044l.111 -.009l.07 -.012l.02 -.006l.019 -.002l.074 -.022l6 -2a1 1 0 0 0 .633 -.633l2 -6a1 1 0 0 0 -1.265 -1.265zm-1.265 2.529l-1.21 3.629l-3.629 1.21l1.21 -3.629l3.629 -1.21zm-9.419 1.42a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m14 0a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m-7 -7a1 1 0 1 0 0 2a1 1 0 0 0 0 -2"], "bolt": ["M13 2l.018 .001l.016 .001l.083 .005l.011 .002h.011l.038 .009l.052 .008l.016 .006l.011 .001l.029 .011l.052 .014l.019 .009l.015 .004l.028 .014l.04 .017l.021 .012l.022 .01l.023 .015l.031 .017l.034 .024l.018 .011l.013 .012l.024 .017l.038 .034l.022 .017l.008 .01l.014 .012l.036 .041l.026 .027l.006 .009c.12 .147 .196 .322 .218 .513l.001 .012l.002 .041l.004 .064v6h5a1 1 0 0 1 .868 1.497l-.06 .091l-8 11c-.568 .783 -1.808 .38 -1.808 -.588v-6h-5a1 1 0 0 1 -.868 -1.497l.06 -.091l8 -11l.01 -.013l.018 -.024l.033 -.038l.018 -.022l.009 -.008l.013 -.014l.04 -.036l.028 -.026l.008 -.006a1 1 0 0 1 .402 -.199l.011 -.001l.027 -.005l.074 -.013l.011 -.001l.041 -.002z"], "bulb": ["M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z", "M12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z", "M21 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z", "M4.893 4.893a1 1 0 0 1 1.32 -.083l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 0 -1.414z", "M17.693 4.893a1 1 0 0 1 1.497 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7z", "M14 18a1 1 0 0 1 1 1a3 3 0 0 1 -6 0a1 1 0 0 1 .883 -.993l.117 -.007h4z", "M12 6a6 6 0 0 1 3.6 10.8a1 1 0 0 1 -.471 .192l-.129 .008h-6a1 1 0 0 1 -.6 -.2a6 6 0 0 1 3.6 -10.8z"], "confetti": ["M3 5a1 1 0 0 1 1 -1a1 1 0 0 1 1.993 -.117l.007 .117a1 1 0 0 1 .117 1.993l-.117 .007a1 1 0 1 1 -2 0a1 1 0 0 1 -1 -1m7.53 -1.243a1 1 0 1 1 1.94 .486l-.5 2a1 1 0 1 1 -1.94 -.486zm6.47 1.243a1 1 0 0 1 1 -1a1 1 0 0 1 1.993 -.117l.007 .117a1 1 0 0 1 .117 1.993l-.117 .007a1 1 0 0 1 -2 0a1 1 0 0 1 -1 -1m-8.81 4.293l6.517 6.518a1 1 0 0 1 -.29 1.617l-9.573 4.387a2 2 0 0 1 -2.661 -2.652l4.39 -9.58a1 1 0 0 1 1.616 -.29m7.517 -1a1 1 0 0 1 0 1.414l-1 1a1 1 0 0 1 -1.414 -1.414l1 -1a1 1 0 0 1 1.414 0m4.05 3.237a1 1 0 0 1 .486 1.94l-2 .5a1 1 0 0 1 -.486 -1.94zm-2.756 7.47a1 1 0 0 1 1 -1a1 1 0 0 1 1.993 -.117l.007 .117a1 1 0 0 1 .117 1.993l-.117 .007a1 1 0 0 1 -2 0a1 1 0 0 1 -1 -1"], "sparkles": ["M16 19a1 1 0 0 1 0 -2a1 1 0 0 0 1 -1c0 -1.333 2 -1.333 2 0a1 1 0 0 0 1 1c1.333 0 1.333 2 0 2a1 1 0 0 0 -1 1c0 1.333 -2 1.333 -2 0a1 1 0 0 0 -1 -1", "M3 11a5 5 0 0 0 5 -5c0 -1.333 2 -1.333 2 0a5 5 0 0 0 5 5c1.333 0 1.333 2 0 2a5 5 0 0 0 -5 5a1 1 0 0 1 -2 0a5 5 0 0 0 -5 -5c-1.333 0 -1.333 -2 0 -2", "M16 7a1 1 0 0 1 0 -2a1 1 0 0 0 1 -1c0 -1.333 2 -1.333 2 0a1 1 0 0 0 1 1c1.333 0 1.333 2 0 2a1 1 0 0 0 -1 1c0 1.333 -2 1.333 -2 0a1 1 0 0 0 -1 -1"], "clock": ["M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 2.66a1 1 0 0 0 -.993 .883l-.007 .117v5l.009 .131a1 1 0 0 0 .197 .477l.087 .1l3 3l.094 .082a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-2.707 -2.708v-4.585l-.007 -.117a1 1 0 0 0 -.993 -.883z"], "bomb": ["M14.499 3.996a2.2 2.2 0 0 1 1.556 .645l3.302 3.301a2.2 2.2 0 0 1 0 3.113l-.567 .567l.043 .192a8.5 8.5 0 0 1 -3.732 8.83l-.23 .144a8.5 8.5 0 1 1 -2.687 -15.623l.192 .042l.567 -.566a2.2 2.2 0 0 1 1.362 -.636zm-4.499 5.004a4 4 0 0 0 -4 4a1 1 0 0 0 2 0a2 2 0 0 1 2 -2a1 1 0 0 0 0 -2z", "M21 2a1 1 0 0 1 .117 1.993l-.117 .007h-1c0 .83 -.302 1.629 -.846 2.25l-.154 .163l-1.293 1.293a1 1 0 0 1 -1.497 -1.32l.083 -.094l1.293 -1.292c.232 -.232 .375 -.537 .407 -.86l.007 -.14a2 2 0 0 1 1.85 -1.995l.15 -.005h1z"]};
+const ic = (n, extra) => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"' + (extra || '') + '>' + ICONS[n].map(d => '<path d="' + d + '"/>').join('') + '</svg>';
+document.querySelectorAll('*').forEach(el => { if (el.children.length === 0 || el.classList.contains('glyphs') || el.tagName === 'BUTTON') el.innerHTML = el.innerHTML.replace(/ICON_([a-z-]+)/g, (m, n) => ICONS[n] ? ic(n) : m); });
 const $ = id => document.getElementById(id);
 const esc = t => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-
-function face(m) { return '<span class="name">' + m.label + '<span class="sub">' + m.sub + '</span></span>'; }
+// Each mode has its own daily (drawn from the date, the language and the mode, the same for everyone) and its own streak.
+const MODES = [
+  { id: 'classic', label: 'classic', sub: 'one word', icon: 'puzzle', tries: 6, streak: 13, best: 12, daily: 'solved in 4', rule: 'one word, 6 tries',
+    week: [1, 1, 2, 1, 1, 2, -1], letters: 'smtwtfs' },
+  { id: 'quartet', label: 'quartet', sub: 'four words at once · +3 tries', icon: 'layout-grid', tries: 9, streak: 3, best: 5, daily: '5/9', rule: 'four words that share every guess, 9 tries',
+    week: [0, 0, 0, 1, 1, 1, -1], letters: 'smtwtfs' },
+  { id: 'relay', label: 'relay race', sub: 'four words, one after the other · +4 tries', icon: 'chess-knight', tries: 10, streak: 0, best: 2, daily: '', rule: 'four words one after the other, 10 tries',
+    week: [0, 2, 0, 0, 0, 0, -1], letters: 'smtwtfs' },
+];
+let mi = 0, freq = false;
+function flames(t) { return '<div class="flames' + (t >= 1 ? ' on' : '') + (t === 2 ? ' two' : '') + '">' + ic('flame') + (t === 2 ? ic('flame') : '') + '</div>'; }
+function renderStreak() {
+  const m = MODES[mi];
+  $('streak').innerHTML = '<div class="srow"><span style="font-size:34px;color:' + (m.week[6] >= 1 ? 'var(--flame)' : 'var(--outlinev)') + '">' + ic('flame') + '</span><span class="num">' + m.streak + '</span><span class="caption cap">day streak</span><span class="best"><span>' + m.label + '</span><span>best ' + m.best + '</span></span></div>' +
+    '<div class="week">' + m.week.map((t, i) => '<div class="day' + (i === 6 ? ' today' : '') + '"><span>' + m.letters[i] + '</span>' + flames(t) + '</div>').join('') + '</div>';
+}
 function renderMode() {
   const m = MODES[mi];
-  $('slide').innerHTML = face(m);
+  $('slide').innerHTML = ic(m.icon) + '<span class="nm">' + m.label + '<small>' + m.sub + '</small></span>';
   $('dots').innerHTML = MODES.map((x, i) => '<i class="' + (i === mi ? 'on' : '') + '"></i>').join('');
-  // play carries no mode text. The daily shows how today's daily of this mode stands.
-  const d = m.daily;
-  $('dailybtn').innerHTML = 'daily' + (d.text ? '<small>' + d.text + '</small>' : '');
-  $('streaks').innerHTML = MODES.map((x, i) => '<div class="streak' + (i === mi ? ' on' : '') + '"><b>' + x.streak + '</b><span>' + x.label + '</span></div>').join('');
+  // play shows no mode text. The daily shows where today's daily of this mode stands.
+  $('dailybtn').innerHTML = 'daily' + (m.daily ? '<small>' + m.daily + '</small>' : '');
+  renderStreak();
 }
 function setMode(i) { mi = (i + MODES.length) % MODES.length; renderMode(); }
 
-// ---- swipe: one swipe changes the mode for play and daily alike; a tap on the mode button opens game modes ----
+// swipe: one swipe changes the mode for play and daily alike; a tap on the mode button opens game modes
 (() => {
   const area = $('play'), slide = $('slide'); let x0 = null, dx = 0, moved = false;
   area.addEventListener('pointerdown', e => { x0 = e.clientX; dx = 0; moved = false; });
-  area.addEventListener('pointermove', e => {
-    if (x0 === null) return; dx = e.clientX - x0;
-    if (Math.abs(dx) > 6) moved = true;
-    if (moved) slide.style.transform = 'translateX(' + Math.max(-90, Math.min(90, dx * .6)) + 'px)';
-  });
-  const end = () => {
-    if (x0 === null) return;
-    slide.style.transform = '';
-    if (moved && Math.abs(dx) > 50) setMode(mi + (dx < 0 ? 1 : -1));
-    x0 = null;
-  };
+  area.addEventListener('pointermove', e => { if (x0 === null) return; dx = e.clientX - x0; if (Math.abs(dx) > 6) moved = true; if (moved) slide.style.transform = 'translateX(' + Math.max(-90, Math.min(90, dx * .6)) + 'px)'; });
+  const end = () => { if (x0 === null) return; slide.style.transform = ''; if (moved && Math.abs(dx) > 50) setMode(mi + (dx < 0 ? 1 : -1)); x0 = null; };
   area.addEventListener('pointerup', end); area.addEventListener('pointercancel', end);
   area.addEventListener('click', e => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
-  area.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') setMode(mi - 1); if (e.key === 'ArrowRight') setMode(mi + 1); });
 })();
+document.addEventListener('keydown', e => { if ($('layer').firstChild) { if (e.key === 'Escape') closeLayer(); return; } if (e.key === 'ArrowLeft') setMode(mi - 1); if (e.key === 'ArrowRight') setMode(mi + 1); closePop && e.key === 'Escape' && closePop(); });
 
-// ---- toast and popups ----
 let toastT;
 function toast(t) { document.querySelectorAll('.toast').forEach(n => n.remove()); const n = document.createElement('div'); n.className = 'toast'; n.textContent = t; document.body.appendChild(n); clearTimeout(toastT); toastT = setTimeout(() => n.remove(), 1800); }
 let pop = null;
-const closePop = () => { if (pop) { pop.remove(); pop = null; } };
+function closePop() { if (pop) { pop.remove(); pop = null; } }
 document.addEventListener('click', e => {
   const d = e.target.closest('.dot');
   if (!d) { if (!e.target.closest('.pop')) closePop(); return; }
   const same = pop && pop.dataset.for === d.dataset.tip; closePop(); if (same) return;
   pop = document.createElement('div'); pop.className = 'pop'; pop.dataset.for = d.dataset.tip; pop.textContent = d.dataset.tip; document.body.appendChild(pop);
   const r = d.getBoundingClientRect(), w = pop.offsetWidth;
-  pop.style.left = Math.max(16, Math.min(r.left + scrollX - 8, scrollX + document.documentElement.clientWidth - w - 16)) + 'px';
-  pop.style.top = (r.bottom + scrollY + 6) + 'px';
+  pop.style.left = Math.max(16, Math.min(r.left - 8, document.documentElement.clientWidth - w - 16)) + 'px'; pop.style.top = (r.bottom + 6) + 'px';
 });
-function lockScroll(on) { document.documentElement.style.overflow = on ? 'hidden' : ''; document.body.style.overflow = on ? 'hidden' : ''; }
-function openLayer(html, label) {
-  $('layer').innerHTML = '<div class="overlay" id="ov"><div class="modal" role="dialog" aria-modal="true" aria-label="' + esc(label) + '">' + html + '</div></div>';
-  lockScroll(true);
+function openLayer(html) {
+  $('layer').innerHTML = '<div class="overlay" id="ov"><div class="modal" role="dialog" aria-modal="true">' + html + '</div></div>';
+  $('scroll').style.overflow = 'hidden';
   $('ov').addEventListener('click', e => { if (e.target === $('ov')) closeLayer(); });
-  $('layer').querySelector('.close').addEventListener('click', closeLayer);
-  $('layer').querySelector('.close').focus();
+  $('layer').querySelector('[data-close]').addEventListener('click', closeLayer);
 }
-function closeLayer() { $('layer').innerHTML = ''; lockScroll(false); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { if ($('layer').firstChild) closeLayer(); else closePop(); } });
-
-// ---- game modes: opened by the mode button ----
+function closeLayer() { $('layer').innerHTML = ''; $('scroll').style.overflow = ''; }
 function openModes() {
   const draw = () => {
-    openLayer('<h2><span>game modes</span><button class="close" type="button">close</button></h2>' +
-      '<div class="hd"><h3>mode</h3><button class="dot" type="button" aria-label="Explain" data-tip="The mode you pick here is the one play and daily start. Swiping the mode button on the home page changes it too. Quartet and relay race have extra tries because one guess serves every board. The daily of each mode uses fixed settings: five letters, the words share no letter, and the tries shown here.">i</button></div>' +
-      '<div role="radiogroup" aria-label="mode" style="display:flex;flex-direction:column;gap:8px">' + MODES.map((m, i) =>
-        '<button class="opt" role="radio" aria-checked="' + (i === mi) + '" data-i="' + i + '" type="button"><b>' + m.label + '</b><span class="small dim">' + m.sub + '</span><span class="small dim">daily: ' + m.rule + '</span></button>').join('') + '</div>' +
-      '<div class="hd"><h3>difficulty</h3></div><p class="small dim" style="margin:0">tries ' + MODES[mi].tries + ' · five letters · helper level normal (kept from your settings)</p>' +
-      '<div class="row3"><button class="close" type="button" data-go="solver">solver</button><button class="close" type="button" data-go="learn">learn</button></div>', 'game modes');
+    openLayer('<div class="mhead"><b>game modes</b><button class="iconbtn" type="button" data-close aria-label="close" style="font-size:22px">&#10005;</button></div><div class="mbody">' +
+      '<div class="hd"><span class="caption">mode</span><button class="dot" type="button" aria-label="explain" data-tip="the mode you pick here is the one play and daily start. swiping the mode button on the home page changes it too. quartet and relay race have extra tries because one guess serves every board. each mode has its own daily and its own streak. the daily of a mode uses fixed settings: five letters, the words share no letter, and the tries shown here.">i</button></div>' +
+      MODES.map((m, i) => '<button class="opt" role="radio" aria-checked="' + (i === mi) + '" data-i="' + i + '" type="button"><b>' + m.label + '</b><span class="small dimt">' + m.sub + '</span><span class="small dimt">daily: ' + m.rule + '</span></button>').join('') +
+      '<span class="caption">difficulty</span><span class="small dimt">tries ' + MODES[mi].tries + ' · five letters · helper normal, kept from your settings</span></div>');
     $('layer').querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => { setMode(+b.dataset.i); draw(); }));
-    $('layer').querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { closeLayer(); toast('opens the ' + b.dataset.go); }));
   };
   draw();
 }
-
 $('mode').addEventListener('click', openModes);
 $('playbtn').addEventListener('click', () => toast('play: ' + MODES[mi].label));
-$('dailybtn').addEventListener('click', () => toast('daily ' + MODES[mi].label + (MODES[mi].daily.state === 'done' ? ': already solved today' : ': ' + MODES[mi].rule)));
-$('settings').addEventListener('click', () => toast('settings'));
-$('stylebtn').addEventListener('click', () => toast('opens the playstyle page'));
+$('dailybtn').addEventListener('click', () => toast('daily ' + MODES[mi].label + (MODES[mi].daily.startsWith('solved') ? ': already solved today' : ': ' + MODES[mi].rule)));
+$('freq').addEventListener('click', () => { freq = !freq; $('sw').classList.toggle('on', freq); $('freqt').textContent = freq ? 'common words likelier' : 'all words equally likely'; toast(freq ? 'answers are drawn by how common each word is. the daily always uses equal chances.' : 'every word of the length is equally likely. the daily always does.'); });
+['settings', 'lang', 'ach', 'stylebtn', 'history', 'how'].forEach(id => $(id).addEventListener('click', () => toast(id)));
 renderMode();
 </script>
