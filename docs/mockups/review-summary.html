@@ -94,7 +94,7 @@ td, th { padding-inline: 4px; }
   </section>
 
   <section>
-    <h3>Tries</h3>
+    <h3>Information gained</h3>
     <div class="card" id="tries"></div>
   </section>
 </main>
@@ -146,8 +146,6 @@ G.forEach(g => {
 const mean = k => G.reduce((a, g) => a + g[k], 0) / G.length;
 const M = { skill: mean('skill'), daring: mean('daring'), luck: mean('luck') };
 const needed = log2(G[0].n);
-const avg = { skill: mean('bSkill'), shape: mean('bShape'), luck: mean('bLuck'), cut: mean('cut') };
-const atAverageLuck = needed / (avg.skill + avg.shape);
 
 // ---- helpers ----
 const $ = id => document.getElementById(id);
@@ -262,43 +260,42 @@ function renderLevel() {
     '<p class="small dim">Among all accepted words. Yours: skill <b class="skill">' + f0(g.skill) + '</b>, daring <b class="daring">' + f0(g.daring) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>. Luckiest is for the actual answer, ' + ANSWER + ': guessing it is always the luckiest.' + (g.ties ? ' With two words left every guess that separates them ties.' : '') + '</p></div>';
 }
 
-// ---- tries: bits ----
-function waterfall() {
-  const W_ = 420, rowH = 26, L = 92, R = 44, rows = [
-    ['needed', 0, needed, 'var(--fg)', f1(needed)],
-    ['skill', 0, avg.skill * G.length, 'var(--skill)', f1(avg.skill * G.length)],
-    ['shape', avg.skill * G.length, (avg.skill + avg.shape) * G.length, 'var(--dim)', f1(avg.shape * G.length)],
-    ['luck', (avg.skill + avg.shape) * G.length, needed, 'var(--luck)', sg(avg.luck * G.length)],
-  ];
-  const top = Math.ceil(Math.max(needed, (avg.skill + avg.shape) * G.length) / 2) * 2;
-  const sx = v => L + v / top * (W_ - L - R), H = rows.length * rowH + 26;
+// ---- information gained, in bits: expected gain (Shannon entropy of the outcomes) + luck ----
+function bars() {
+  const W_ = 420, rowH = 28, L = 64, R = 56, top = 12, cap = log2(243);
+  const sx = v => L + v / top * (W_ - L - R), H = G.length * rowH + 30;
   let s = '';
-  for (let t = 0; t <= top; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 18) + '" stroke="var(--line)"/><text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>';
-  rows.forEach((r, i) => {
-    const a = Math.min(r[1], r[2]), b = Math.max(r[1], r[2]), y = i * rowH + 5;
-    s += '<text x="0" y="' + (y + 12) + '">' + r[0] + '</text><rect x="' + sx(a) + '" y="' + y + '" width="' + Math.max(sx(b) - sx(a), 1.5) + '" height="16" fill="' + r[3] + '"/><text x="' + (sx(b) + 5) + '" y="' + (y + 12) + '" style="fill:var(--fg)">' + r[4] + '</text>';
+  for (let t = 0; t <= top; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 20) + '" stroke="var(--line)"/><text x="' + sx(t) + '" y="' + (H - 8) + '" text-anchor="middle">' + t + '</text>';
+  s += '<line x1="' + sx(cap) + '" x2="' + sx(cap) + '" y1="0" y2="' + (H - 20) + '" stroke="var(--dim)" stroke-dasharray="3 3"/><text x="' + (sx(cap) + 3) + '" y="9">max expected ' + f2(cap) + '</text>';
+  G.forEach((g, i) => {
+    const y = i * rowH + 14, h = 14, base = Math.min(g.H, g.cut);
+    s += '<text x="0" y="' + (y + 11) + '">' + (i + 1) + ' ' + g.word + '</text>';
+    s += '<rect x="' + sx(0) + '" y="' + y + '" width="' + Math.max(sx(base) - sx(0), 0.5) + '" height="' + h + '" fill="var(--skill)"/>';
+    if (g.bLuck > 0.005) s += '<rect x="' + sx(g.H) + '" y="' + y + '" width="' + (sx(g.cut) - sx(g.H)) + '" height="' + h + '" fill="var(--luck)"/>';
+    if (g.bLuck < -0.005) s += '<rect x="' + sx(g.cut) + '" y="' + y + '" width="' + (sx(g.H) - sx(g.cut)) + '" height="' + h + '" fill="none" stroke="var(--luck)" stroke-width="1.5" stroke-dasharray="3 2"/>';
+    s += '<text x="' + (sx(Math.max(g.H, g.cut)) + 5) + '" y="' + (y + 11) + '" style="fill:var(--fg)">' + f2(g.cut) + '</text>';
   });
-  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Bits supplied by skill, shape and luck against the bits needed">' + s + '</svg>';
+  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Expected gain and luck of each guess, in bits">' + s + '</svg>' +
+    '<div class="legend"><span><i style="background:var(--skill)"></i>expected gain</span><span><i style="background:var(--luck)"></i>luck added</span><span><i style="border:1.5px dashed var(--luck);background:none"></i>luck taken away</span></div>';
 }
 function renderTries() {
-  const rows = G.map((g, i) => '<tr><td>' + (i + 1) + ' ' + g.word + '</td><td class="skill">' + f2(g.bSkill) + '</td><td>' + f2(g.bShape) + '</td><td class="luck">' + sg(g.bLuck, 2) + '</td><td><b>' + f2(g.cut) + '</b></td></tr>').join('');
+  let cum = 0;
+  const rows = G.map((g, i) => { cum += g.cut; return '<tr><td>' + (i + 1) + ' ' + g.word + '</td><td class="skill">' + f2(g.H) + '</td><td class="luck">' + sg(g.bLuck, 2) + '</td><td><b>' + f2(g.cut) + '</b></td><td>' + f0(cum / needed * 100) + '%</td></tr>'; }).join('');
+  const totH = G.reduce((a, g) => a + g.H, 0), totL = G.reduce((a, g) => a + g.bLuck, 0), totC = G.reduce((a, g) => a + g.cut, 0);
   $('tries').innerHTML =
-    '<p>A game ends when one word is left. Every guess removes some bits from the pool. Skill is a score out of 100, so it is converted to bits first.</p>' +
+    '<p>A game ends when the word is found. Finding it among ' + N(G[0].n) + ' words takes log₂ ' + N(G[0].n) + ' = <b>' + f2(needed) + ' bits</b>. Each guess removes some of them.</p>' +
     '<div class="steps">' +
-      '<div class="step"><span>1</span><div><b>Bits needed</b>' +
-        '<div class="sum"><span>log₂(' + N(G[0].n) + ' words)</span><span class="res">' + f2(needed) + '</span></div></div></div>' +
-      '<div class="step"><span>2</span><div><b>Bits each guess removed</b>' +
-        '<p class="small dim">skill = log₂(N ÷ E). shape = Shannon entropy of the outcomes minus skill. luck = what the answer added or took away. The four rows add up to the bits needed.</p>' +
-        '<div class="wrap"><table><thead><tr><th>guess</th><th>skill</th><th>shape</th><th>luck</th><th>removed</th></tr></thead><tbody>' + rows +
-        '</tbody><tfoot><tr><td>total</td><td class="skill">' + f2(avg.skill * G.length) + '</td><td>' + f2(avg.shape * G.length) + '</td><td class="luck">' + sg(avg.luck * G.length, 2) + '</td><td>' + f2(avg.cut * G.length) + '</td></tr></tfoot></table></div></div></div>' +
-      '<div class="step"><span>3</span><div><b>Tries you took</b>' +
-        '<div class="sum"><span>bits needed ÷ average bits removed</span><span>' + f2(needed) + ' ÷ ' + f2(avg.cut) + ' = <b>' + f1(needed / avg.cut) + '</b></span></div></div></div>' +
-      '<div class="step"><span>4</span><div><b>Tries at average luck</b>' +
-        '<p class="small dim">Luck averages 0 over all answers. Without it, each guess removes skill plus shape bits.</p>' +
-        '<div class="sum"><span>' + f2(needed) + ' ÷ (' + f2(avg.skill) + ' + ' + f2(avg.shape) + ')</span><span class="res">' + f1(atAverageLuck) + ' tries</span>' +
-        '<span>effect of your luck</span><span class="res luck">' + sg(needed / avg.cut - atAverageLuck) + ' tries</span></div></div></div>' +
-    '</div>' + waterfall() +
-    '<p class="small dim">Bars: bits supplied by each part, against the bits needed. Daring is not in this sum. It reports which side the tail is on.</p>';
+      '<div class="step"><span>1</span><div><b>Expected gain</b>' +
+        '<p class="small dim">What the guess removes on average over all possible answers: the entropy of its outcomes. It never exceeds log₂ 243 = ' + f2(log2(243)) + ' bits, and a good first guess gets about 5.</p></div></div>' +
+      '<div class="step"><span>2</span><div><b>Luck</b>' +
+        '<p class="small dim">What the answer added or took away: bits gained minus expected gain. Over all answers it averages 0.</p></div></div>' +
+      '<div class="step"><span>3</span><div><b>Bits gained</b>' +
+        '<p class="small dim">Expected gain + luck = log₂(words before ÷ words in your pool). The last guess takes everything that is left.</p></div></div>' +
+    '</div>' +
+    '<div class="wrap"><table><thead><tr><th>guess</th><th class="skill">expected</th><th class="luck">luck</th><th>gained</th><th>done</th></tr></thead><tbody>' + rows +
+    '</tbody><tfoot><tr><td>total</td><td class="skill">' + f2(totH) + '</td><td class="luck">' + sg(totL, 2) + '</td><td>' + f2(totC) + '</td><td>100%</td></tr></tfoot></table></div>' +
+    bars() +
+    '<p class="small dim">Daring is not added. It gauges the gamble: how much a guess relied on landing in a short pool. Whether you landed there is luck.</p>';
 }
 
 function renderAll() { renderRows(); renderTabs(); renderLevel(); renderTries(); }
