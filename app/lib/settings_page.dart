@@ -37,7 +37,7 @@ class SettingsPage extends StatelessWidget {
               listenable: appState,
               builder: (context, _) {
                 return ListView(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                  padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                   children: [
                     const Caption('theme'),
                     const SizedBox(height: 10),

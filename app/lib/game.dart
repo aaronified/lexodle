@@ -476,7 +476,7 @@ class _GamePageState extends State<GamePage> {
           (box.maxWidth - 32 - gap * (length - 1)) / length,
         );
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
           child: Center(
             child: Column(
               children: [
@@ -669,7 +669,7 @@ class _GamePageState extends State<GamePage> {
         maxHeight: MediaQuery.sizeOf(context).height * .5,
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 19),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

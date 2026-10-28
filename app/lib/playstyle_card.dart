@@ -365,7 +365,7 @@ class PlaystyleDialog extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(3),
         side: BorderSide(color: c.outline),
@@ -378,7 +378,7 @@ class PlaystyleDialog extends StatelessWidget {
           children: [
             // the close button sits 8 from the top and the right edge
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 8, 0),
+              padding: const EdgeInsets.fromLTRB(19, 8, 8, 0),
               child: Row(
                 children: [
                   const Expanded(
@@ -407,7 +407,7 @@ class PlaystyleDialog extends StatelessWidget {
             ),
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 4, 24, 8),
+                padding: const EdgeInsets.fromLTRB(19, 4, 19, 8),
                 // it listens, so a game finished behind it is read at once
                 child: ListenableBuilder(
                   listenable: appState,
@@ -417,7 +417,7 @@ class PlaystyleDialog extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+              padding: const EdgeInsets.fromLTRB(19, 0, 19, 12),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(

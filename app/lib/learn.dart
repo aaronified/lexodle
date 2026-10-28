@@ -222,7 +222,7 @@ class _LearnPageState extends State<LearnPage> {
                 children: [
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+                      padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
                       children: [
                         const Caption(
                           'you know the answer. find the guess that cuts '

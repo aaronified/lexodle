@@ -152,7 +152,7 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
                 children: [
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+                      padding: const EdgeInsets.fromLTRB(19, 4, 19, 16),
                       children: [
                         _progress(c, n),
                         const SizedBox(height: 22),
@@ -215,7 +215,7 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                    padding: const EdgeInsets.fromLTRB(19, 8, 19, 12),
                     child: Row(
                       children: [
                         Expanded(

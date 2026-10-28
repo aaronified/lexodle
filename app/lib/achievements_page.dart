@@ -121,7 +121,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
               final mine = all ? _merged(codes) : appState.achOf(_lang);
               final won = appState.stats.langsWon.toList()..sort();
               return ListView(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                 children: [
                   LanguagePicker(
                     codes: codes,
@@ -549,7 +549,7 @@ class MasteryPage extends StatelessWidget {
                       )
                       .length;
                   return ListView(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                    padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                     children: [
                       Caption('$done of ${langs.length} languages mastered'),
                       const SizedBox(height: 8),

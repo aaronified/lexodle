@@ -476,7 +476,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         final tile = min(40.0, (boardWidth - gap * (length - 1)) / length);
         Widget board(int i) => _board(c, i, tile, gap);
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
           child: Column(
             children: [
               for (var row = 0; row < mode.boards; row += 2)
@@ -655,7 +655,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         maxHeight: MediaQuery.sizeOf(context).height * .5,
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 19),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

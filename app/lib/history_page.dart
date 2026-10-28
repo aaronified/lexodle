@@ -135,7 +135,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 return Stack(
                   children: [
                     ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                      padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                       itemCount: fixed + shown + (more > 0 ? 1 : 0),
                       itemBuilder: (context, row) {
                         // the playstyle is not on this page: it has its own
