@@ -102,10 +102,10 @@ body { padding-bottom: 96px; }
     <div class="pills" id="pills"></div>
     <div id="board"></div>
     <div><h2 id="title"></h2><p class="dim" id="sub"></p></div>
-    <p class="note">Mockup. Words and pool sizes are invented. All other figures come from the formulas.</p>
+    <p class="note">Mockup. The games, pools, picks and numbers are real: computed from the English word list, answers equally likely.</p>
   </header>
   <section id="step" style="display:flex;flex-direction:column;gap:18px"></section>
-  <button class="link" type="button" id="samples">Sample games: pure skill and pure risk</button>
+  <button class="link" type="button" id="samples">Playstyles: one game for each</button>
 </main>
 <nav class="nav" aria-label="Guess navigation"><div>
   <button class="btn" type="button" id="back">back</button>
@@ -116,45 +116,26 @@ body { padding-bottom: 96px; }
 <script>
 const ANSWER = 'PRISM';
 const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
-// Pool sizes of every outcome of each guess. The pool you landed in is the next guess's word count.
-// hstar: expected gain of the best guess. dstar: raw risk of the riskiest guess. Both need every accepted word scored.
-const G = [
-  { word: 'STARE', n: 3000, sizes: [184,195,182,169,157,146,136,126,118,109,102,95,88,82,76,71,66,61,57,53,49,46,43,40,37,34,32,30,28,26,24,22,21,19,18,17,15,14,13,12,12,11,10,9,9,8,7,7,6,6,6,5,5,4,4,4,4,3,3,3,3,3,2,2,2,2,2,2,2].concat(Array(41).fill(1)), landedSize: 46, hstar: 6.1, bestWord: 'TRACE', dstar: 60, riskWord: 'FUZZY',
-    top: [['TRACE',100],['CRATE',99],['SLATE',98]], bottom: [['MUMMY',7],['FUZZY',4],['JAZZY',1]],
-    risky: [['FUZZY',60,4],['MUMMY',57,7],['JUMBO',52,12]], lucky: [['PRISM',99],['PRIMO',97],['PRISE',96]] },
-  { word: 'BRISK', n: 46, sizes: [11,9,8,6,4,3,2,1,1,1], landedSize: 9, hstar: 3.4, bestWord: 'CHOIR', dstar: 70, riskWord: 'FUZZY',
-    top: [['CHOIR',100],['SPLIT',98],['CLOMP',95]], bottom: [['FUZZY',11],['MAMMA',6],['XYLYL',0]],
-    risky: [['FUZZY',70,11],['MAMMA',66,6],['XYLYL',62,0]], lucky: [['PRISM',96],['PRISE',91],['PRIMP',87]] },
-  { word: 'CRISP', n: 9, sizes: [4,2,1,1,1], landedSize: 2, hstar: 2.6, bestWord: 'FRISK', dstar: 56, riskWord: 'MUMMY',
-    top: [['FRISK',100],['PRISM',97],['GRIST',92]], bottom: [['MUMMY',0],['QUEEN',3],['AUDIO',9]],
-    risky: [['MUMMY',56,0],['QUEEN',44,3],['AUDIO',33,9]], lucky: [['PRISM',78],['FRISK',56],['GRIST',44]] },
-  { word: 'PRISM', n: 2, sizes: [1,1], landedSize: 1, hstar: 1, bestWord: 'PRISM', ties: true, dstar: 0, riskWord: '',
-    top: [['PRISM',100],['FRISK',100],['PRISE',100]], bottom: [['MUMMY',0],['FUZZY',0],['JAZZY',0]],
-    risky: [['MUMMY',0,0],['FUZZY',0,0],['JAZZY',0,0]], lucky: [['PRISM',0],['FRISK',0],['PRISE',0]] },
+// Real games, played by simulated players of each style against the answer PRISM.
+// Words: the app's English list. Answers: its 3,000 commonest five-letter words, all equally likely.
+// Guesses: all 5,030 five-letter words. sizes: the pool each outcome leaves. hstar and dstar: the best expected gain and the
+// riskiest raw value over every accepted guess, found by scoring them all at that point of the game.
+const PLAY = {"analyst":[{"word":"TARES","n":3000,"sizes":[210,173,124,94,87,85,83,77,73,72,70,66,65,58,56,52,49,49,47,47,40,39,36,34,33,32,28,27,27,26,26,24,24,24,23,23,23,22,20,20,20,20,19,18,17,17,17,16,16,15,15,15,14,14,14,14,14,13,13,13,13,13,13,12,12,11,11,11,11,10,10,10,10,10,9,9,9,9,9,9,9,9,9,8,8,8,8,7,7,7,7,7,7,6,6,6,5,5,5,5,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":15,"hstar":6.2629,"dstar":59,"bestWord":"TARES","riskWord":"WAZOO","top":[["TARES",100],["RATES",98],["TEARS",98]],"bottom":[["XXXIX",19],["XXXII",20],["XXXVI",23]],"risky":[["WAZOO",59,50],["AFFIX",56.733333333333334,45],["KAZOO",56.266666666666666,50]],"lucky":[["PRISM",99],["PRESS",100],["OPIUM",100]],"win":false},{"word":"MICRO","n":15,"sizes":[2,2,1,1,1,1,1,1,1,1,1,1,1],"landedSize":1,"hstar":3.6402,"dstar":86.67,"bestWord":"MICRO","riskWord":"SERVE","top":[["MICRO",100],["SNICK",100],["SICKO",96]],"bottom":[["AGREE",0],["TAXES",0],["TEXTS",0]],"risky":[["SERVE",86.66666666666667,35],["STAYS",86.66666666666667,35],["SAVES",86.66666666666667,35]],"lucky":[["PRISM",67],["SEEMS",93],["CREAM",93]],"win":false},{"word":"prism","n":1,"sizes":[1],"landedSize":1,"hstar":0,"dstar":0,"win":true,"unscored":true}],"maverick":[{"word":"STARE","n":3000,"sizes":[210,169,134,134,121,121,91,84,76,75,69,63,62,60,60,60,53,52,51,51,48,47,39,36,36,33,32,31,28,28,28,27,27,26,24,24,23,20,19,19,19,19,18,17,16,16,15,13,12,12,12,11,11,11,11,11,11,11,10,10,10,10,9,9,9,9,9,8,8,8,8,7,7,7,7,7,7,7,7,6,6,6,6,6,6,5,5,5,5,5,5,5,5,5,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":53,"hstar":6.2629,"dstar":59,"bestWord":"TARES","riskWord":"WAZOO","top":[["TARES",100],["RATES",98],["TEARS",98]],"bottom":[["XXXIX",19],["XXXII",20],["XXXVI",23]],"risky":[["WAZOO",59,50],["AFFIX",56.733333333333334,45],["KAZOO",56.266666666666666,50]],"lucky":[["PRISM",99],["PRESS",100],["OPIUM",100]],"win":false},{"word":"POUND","n":53,"sizes":[8,7,7,5,4,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1],"landedSize":1,"hstar":4.1285,"dstar":96.23,"bestWord":"DOING","riskWord":"OTTER","top":[["DOING",100],["CORGI",97],["COIFS",97]],"bottom":[["STATE",0],["START",0],["EXTRA",0]],"risky":[["OTTER",96.22641509433963,27],["STEER",96.22641509433963,3],["EATER",96.22641509433963,3]],"lucky":[["PRISM",83],["MAKES",98],["GAMES",98]],"win":false},{"word":"prism","n":1,"sizes":[1],"landedSize":1,"hstar":0,"dstar":0,"win":true,"unscored":true}],"steady":[{"word":"RATES","n":3000,"sizes":[210,173,124,91,87,85,85,83,73,72,71,69,67,66,58,56,56,51,49,45,43,40,39,38,38,36,32,31,27,27,26,25,24,23,23,23,23,22,21,21,21,20,20,19,19,19,19,18,18,17,17,16,16,15,15,15,14,13,13,13,12,12,12,12,11,11,10,10,10,10,9,9,9,9,9,8,8,8,8,7,7,7,7,7,6,6,6,6,6,6,6,6,6,5,5,5,5,4,4,4,4,4,4,4,4,4,4,4,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":21,"hstar":6.2629,"dstar":59,"bestWord":"TARES","riskWord":"WAZOO","top":[["TARES",100],["RATES",98],["TEARS",98]],"bottom":[["XXXIX",19],["XXXII",20],["XXXVI",23]],"risky":[["WAZOO",59,50],["AFFIX",56.733333333333334,45],["KAZOO",56.266666666666666,50]],"lucky":[["PRISM",99],["PRESS",100],["OPIUM",100]],"win":false},{"word":"SCRUM","n":21,"sizes":[3,3,3,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":1,"hstar":3.8442,"dstar":90.48,"bestWord":"LOCUM","riskWord":"ADDED","top":[["LOCUM",100],["CROUP",97],["SCRUM",97]],"bottom":[["RATES",0],["TAXES",0],["TEXTS",0]],"risky":[["ADDED",90.47619047619048,7],["TASTE",90.47619047619048,7],["TESTS",90.47619047619048,7]],"lucky":[["PRISM",62],["PHONE",95],["SEEMS",95]],"win":false},{"word":"prism","n":1,"sizes":[1],"landedSize":1,"hstar":0,"dstar":0,"win":true,"unscored":true}],"gambler":[{"word":"ABOUT","n":3000,"sizes":[534,499,254,179,172,172,151,80,75,70,66,61,59,55,43,43,40,38,36,30,23,23,17,16,14,14,12,11,11,11,11,10,10,9,9,8,8,7,7,5,5,4,4,4,4,4,4,4,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":499,"hstar":6.2629,"dstar":59,"bestWord":"TARES","riskWord":"WAZOO","top":[["TARES",100],["RATES",98],["TEARS",98]],"bottom":[["XXXIX",19],["XXXII",20],["XXXVI",23]],"risky":[["WAZOO",59,50],["AFFIX",56.733333333333334,45],["KAZOO",56.266666666666666,50]],"lucky":[["PRISM",99],["PRESS",100],["OPIUM",100]],"win":false},{"word":"WHICH","n":499,"sizes":[141,110,62,18,17,15,14,11,10,8,8,8,8,8,6,5,5,4,4,4,4,4,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":62,"hstar":6.0722,"dstar":97.6,"bestWord":"RILES","riskWord":"ABUZZ","top":[["RILES",100],["LINES",99],["SIREN",99]],"bottom":[["ABOUT",0],["OUTTA",0],["QUOTA",0]],"risky":[["ABUZZ",97.59519038076152,2],["JABOT",97.1943887775551,2],["BOOST",92.38476953907816,20]],"lucky":[["PRISM",95],["MOUSE",100],["PAUSE",100]],"win":false},{"word":"DRIVE","n":62,"sizes":[13,9,5,4,3,3,3,3,3,2,2,2,2,1,1,1,1,1,1,1,1],"landedSize":5,"hstar":4.9075,"dstar":93.55,"bestWord":"LENDS","riskWord":"CURIA","top":[["LENDS",100],["RENDS",100],["NERDS",100]],"bottom":[["ABOUT",0],["WHICH",0],["WATCH",0]],"risky":[["CURIA",93.54838709677419,24],["CURIO",93.54838709677419,24],["ATRIA",93.54838709677419,24]],"lucky":[["PRISM",87],["SMITH",98],["STEAM",98]],"win":false},{"word":"GRILL","n":5,"sizes":[2,2,1],"landedSize":2,"hstar":2.3219,"dstar":60,"bestWord":"GRIPS","riskWord":"GRILL","top":[["GRIPS",100],["PRISM",100],["MEANS",100]],"bottom":[["ABOUT",0],["THEIR",0],["THERE",0]],"risky":[["GRILL",60,66],["THESE",60,66],["YEARS",60,66]],"lucky":[["PRISM",0],["MAYBE",80],["MAJOR",80]],"win":false},{"word":"PRISM","n":2,"sizes":[1,1],"landedSize":1,"hstar":1,"dstar":0,"bestWord":"PRISM","riskWord":"PRISM","top":[["PRISM",100],["FRISK",100],["AFTER",100]],"bottom":[["ABOUT",0],["THEIR",0],["THERE",0]],"risky":[["PRISM",0,100],["FRISK",0,100],["AFTER",0,100]],"lucky":[["PRISM",0],["ABOUT",0],["THEIR",0]],"win":true}],"wanderer":[{"word":"RULER","n":3000,"sizes":[533,328,268,248,220,180,132,91,87,86,81,58,56,47,44,40,32,31,30,30,24,24,21,20,19,18,16,16,16,13,10,10,9,8,8,8,7,7,7,6,6,5,5,5,5,4,4,4,4,4,4,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":268,"hstar":6.2629,"dstar":59,"bestWord":"TARES","riskWord":"WAZOO","top":[["TARES",100],["RATES",98],["TEARS",98]],"bottom":[["XXXIX",19],["XXXII",20],["XXXVI",23]],"risky":[["WAZOO",59,50],["AFFIX",56.733333333333334,45],["KAZOO",56.266666666666666,50]],"lucky":[["PRISM",99],["PRESS",100],["OPIUM",100]],"win":false},{"word":"SLACK","n":268,"sizes":[48,32,28,23,22,17,11,9,7,6,6,6,6,5,4,3,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,1,1,1],"landedSize":32,"hstar":5.6501,"dstar":99.25,"bestWord":"COAST","riskWord":"LEXER","top":[["COAST",100],["COATS",100],["TOADS",98]],"bottom":[["RULER",0],["QUEUE",0],["QUEER",0]],"risky":[["LEXER",99.25373134328358,1],["REEVE",96.26865671641791,3],["LEVEL",96.26865671641791,2]],"lucky":[["PRISM",94],["PULSE",100],["PULLS",100]],"win":false},{"word":"SWINE","n":32,"sizes":[13,6,5,3,1,1,1,1,1],"landedSize":6,"hstar":4.0869,"dstar":93.75,"bestWord":"DROPS","riskWord":"CHECK","top":[["DROPS",100],["DRIFT",99],["PRODS",98]],"bottom":[["LEVEL",0],["LEAVE",0],["CLEAR",0]],"risky":[["CHECK",93.75,5],["SHALL",93.75,5],["HEAVY",93.75,5]],"lucky":[["PRISM",69],["ALBUM",97],["RATES",97]],"win":false},{"word":"OCEAN","n":6,"sizes":[6],"landedSize":6,"hstar":2.585,"dstar":66.67,"bestWord":"ADOPT","riskWord":"YEARS","top":[["ADOPT",100],["TENDS",100],["DEBTS",100]],"bottom":[["WHICH",0],["WHERE",0],["NEVER",0]],"risky":[["YEARS",66.66666666666666,25],["HOUSE",66.66666666666666,25],["MONEY",66.66666666666666,25]],"lucky":[["PRISM",83],["FIRST",83],["YEARS",83]],"win":false},{"word":"SKIED","n":6,"sizes":[4,2],"landedSize":4,"hstar":2.585,"dstar":66.67,"bestWord":"ADOPT","riskWord":"YEARS","top":[["ADOPT",100],["TENDS",100],["DEBTS",100]],"bottom":[["WHICH",0],["WHERE",0],["NEVER",0]],"risky":[["YEARS",66.66666666666666,25],["HOUSE",66.66666666666666,25],["MONEY",66.66666666666666,25]],"lucky":[["PRISM",83],["FIRST",83],["YEARS",83]],"win":false},{"word":"TYKES","n":4,"sizes":[1,1,1,1],"landedSize":1,"hstar":2,"dstar":50,"bestWord":"TRIPS","riskWord":"YEARS","top":[["TRIPS",100],["GRIPS",100],["GRITS",100]],"bottom":[["WHICH",0],["WOULD",0],["COULD",0]],"risky":[["YEARS",50,41],["HOUSE",50,41],["MONEY",50,41]],"lucky":[["PRISM",50],["YEARS",75],["HOUSE",75]],"win":false}],"wildcard":[{"word":"WAZOO","n":3000,"sizes":[1048,498,442,397,93,51,46,46,43,39,38,32,29,27,24,19,17,15,14,11,9,6,5,5,5,4,3,3,3,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":1048,"hstar":6.2629,"dstar":59,"bestWord":"TARES","riskWord":"WAZOO","top":[["TARES",100],["RATES",98],["TEARS",98]],"bottom":[["XXXIX",19],["XXXII",20],["XXXVI",23]],"risky":[["WAZOO",59,50],["AFFIX",56.733333333333334,45],["KAZOO",56.266666666666666,50]],"lucky":[["PRISM",99],["PRESS",100],["OPIUM",100]],"win":false},{"word":"XXXIX","n":1048,"sizes":[550,415,55,11,4,4,3,2,1,1,1,1],"landedSize":415,"hstar":6.4196,"dstar":84.16,"bestWord":"TIRES","riskWord":"XXXIX","top":[["TIRES",100],["TRIES",99],["TILES",98]],"bottom":[["WAZOO",0],["KAZOO",9],["WOOZY",12]],"risky":[["XXXIX",84.16030534351145,23],["XXXII",83.01526717557252,24],["XXXVI",82.25190839694656,25]],"lucky":[["PRISM",98],["DRAMA",100],["MOUSE",100]],"win":false},{"word":"TINES","n":415,"sizes":[28,25,24,23,17,15,15,14,12,11,11,10,10,9,8,8,7,7,7,6,6,5,5,5,5,5,5,5,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"landedSize":11,"hstar":5.6068,"dstar":97.11,"bestWord":"TINES","riskWord":"XXXII","top":[["TINES",100],["TIRES",100],["TILES",100]],"bottom":[["WAZOO",0],["XXXIX",0],["XXXII",2]],"risky":[["XXXII",97.10843373493975,2],["XXXIV",87.46987951807229,6],["XXXVI",85.06024096385542,8]],"lucky":[["PRISM",96],["MADAM",100],["OPIUM",100]],"win":false},{"word":"BLIMP","n":11,"sizes":[1,1,1,1,1,1,1,1,1,1,1],"landedSize":1,"hstar":3.4594,"dstar":81.82,"bestWord":"BLIMP","riskWord":"SPEAK","top":[["BLIMP",100],["BRICK",95],["SLUMP",95]],"bottom":[["AGAIN",0],["VIDEO",0],["GIVEN",0]],"risky":[["SPEAK",81.81818181818183,74],["SPANK",81.81818181818183,74],["SPOOK",81.81818181818183,74]],"lucky":[["PRISM",55],["PAGES",91],["STEAM",91]],"win":false},{"word":"prism","n":1,"sizes":[1],"landedSize":1,"hstar":0,"dstar":0,"win":true,"unscored":true}]};
+const STYLES = [
+  { id: 'analyst',  name: 'Analyst',  tier: 'sharp', side: 'careful', text: 'Plays the best split every time, from any word in the list.' },
+  { id: 'maverick', name: 'Maverick', tier: 'sharp', side: 'bold',    text: 'Plays near-best splits, and of those the one with the longest tail.' },
+  { id: 'steady',   name: 'Steady',   tier: 'solid', side: 'careful', text: 'Plays the best split among the words that still fit the clues.' },
+  { id: 'gambler',  name: 'Gambler',  tier: 'solid', side: 'bold',    text: 'Always shoots for the word: plays the commonest word that still fits.' },
+  { id: 'wanderer', name: 'Wanderer', tier: 'loose', side: 'careful', text: 'Plays any word at random and ignores the clues.' },
+  { id: 'wildcard', name: 'Wildcard', tier: 'loose', side: 'bold',    text: 'Plays the riskiest guess on the first two turns, then settles down with the best splits.' },
 ];
-// Sample games: a player who always plays the best guess, and one who always plays the riskiest.
-const S1 = [111,108,104,101,97,93,90,86,83,80,77,74,71,69,66,64,61,59,57,55,53,51,49,47,45,44,42,40,39,37,36,35,33,32,31,30,29,28,27,26,25,24,23,22,21,20,20,19,18,18,17,16,16,15,14,14,13,13,12,12,12,11,11,10,10,10,9,9,8,8,8,8,7,7,7,7,6,6,6,6,5,5,5,5,5,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
-const SAMPLES = {
-  skill: { title: 'Pure skill', text: 'Always plays the guess with the highest skill. It never gambles, and it solves the word in three guesses.',
-    game: [
-      { word: 'TRACE', n: 3000, sizes: S1, landedSize: 21, dstar: 60 },
-      { word: 'CHOIR', n: 21, sizes: [3,2,2,2,2,2,2,1,1,1,1,1,1], landedSize: 3, dstar: 90 },
-      { word: 'PRISM', n: 3, sizes: [1,1,1], landedSize: 1, dstar: 33 },
-    ] },
-  risk: { title: 'Pure risk', text: 'Always plays the riskiest guess. Its one lucky hit comes on the third guess. It runs out of guesses with 24 words left.',
-    game: [
-      { word: 'FUZZY', n: 3000, sizes: [2700,43,39,33,28,24,20,17,15,12,11,9,8,6,5,5,4,3,3,2,2,2,1,1,1,1,1,1,1,1,1], landedSize: 2700, hstar: 6.1 },
-      { word: 'MUMMY', n: 2700, sizes: [2430,40,35,30,25,22,18,16,13,11,10,8,7,6,5,4,4,3,3,2,2,2,1,1,1,1], landedSize: 2430, hstar: 5.9 },
-      { word: 'JAZZY', n: 2430, sizes: [2187,39,31,27,23,20,17,14,12,10,9,7,6,5,5,4,3,3,2,2,2,1,1], landedSize: 31, hstar: 5.8 },
-      { word: 'XYLYL', n: 31, sizes: [29,1,1], landedSize: 29, hstar: 4.0 },
-      { word: 'KUDZU', n: 29, sizes: [26,1,1,1], landedSize: 26, hstar: 3.9 },
-      { word: 'JUMBO', n: 26, sizes: [24,1,1], landedSize: 24, hstar: 3.7 },
-    ] },
-};
+const G = PLAY.steady;
 
 // ---- the maths: everything is information, in bits ----
 const log2 = Math.log2;
 function score(g) {
+  g.word = g.word.toUpperCase();
+  if (g.unscored) { g.skill = g.risk = g.luck = null; g.gain = 0; g.H = 0; g.bLuck = 0; g.hstar = 0; return; }
   g.sizes.sort((a, b) => b - a);
   g.landed = g.sizes.indexOf(g.landedSize);
   g.gains = g.sizes.map(s => log2(g.n / s));                                  // bits an outcome gains
@@ -173,8 +154,7 @@ function score(g) {
   g.gotLess = share(x => x < g.gain - 1e-9);
   g.luck = g.gotLess - g.gotMore;                                              // luck score
 }
-G.forEach(score);
-Object.values(SAMPLES).forEach(p => p.game.forEach(score));
+Object.values(PLAY).forEach(game => game.forEach(score));
 const needed = log2(G[0].n);
 
 // ---- helpers ----
@@ -271,8 +251,8 @@ function waterfall(list, upto) {
 function table(list, upto, nav) {
   const head = '<div class="wrap"><table><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk</th><th class="luck">luck</th><th class="bits">bits</th></tr></thead><tbody>';
   const rows = (nav ? list : list.slice(0, upto + 1)).map((g, i) => {
-    const seen = i <= upto, dim = '<span class="dim">·</span>';
-    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (seen ? N(g.n) : dim) + '</td><td class="skill">' + (seen ? f0(g.skill) : dim) + '</td><td class="risk">' + (seen ? f0(g.risk) : dim) + '</td><td class="luck">' + (seen ? pc(g.luck) : dim) + '</td><td class="bits">' + (seen ? f2(g.gain) : dim) + '</td></tr>';
+    const seen = i <= upto && !g.unscored, dim = '<span class="dim">·</span>';
+    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (i <= upto ? N(g.n) : dim) + '</td><td class="skill">' + (seen ? f0(g.skill) : dim) + '</td><td class="risk">' + (seen ? f0(g.risk) : dim) + '</td><td class="luck">' + (seen ? pc(g.luck) : dim) + '</td><td class="bits">' + (seen ? f2(g.gain) : dim) + '</td></tr>';
   }).join('');
   return head + rows + '</tbody></table></div>';
 }
@@ -283,7 +263,7 @@ const TIP = {
   skill: 'Skill is how many bits the guess is expected to gain, averaged over all possible answers, compared with the best guess. Any answer gives the same skill. H* comes from scoring every accepted word as a guess, so it is not on the plot.',
   risk: 'Risk is how much the guess gambles on the tail. A risky guess usually gains less than expected and sometimes much more. A gain of exactly H counts for neither side. Risk is scored against the riskiest guess, as skill is against the best. D* comes from scoring every accepted word.',
   luck: 'The answer decides luck. Your gain is outlined on the plot. Luck is the chance of gaining less than you did minus the chance of gaining more, from −100% to +100%.',
-  picks: 'Scores among all accepted words. The luckiest picks are for the actual answer: guessing it is always the luckiest.',
+  picks: 'Scores among all accepted words. The luckiest picks are for the actual answer. Guessing the answer itself is listed first, then the two next luckiest.',
   bits: 'A game ends when the word is found. Finding one among N words takes log₂ N bits, whatever you play. Each guess adds its expected gain (blue, your skill), then luck (yellow adds, dashed takes away). The thin line shows where the best guess was expected to land. The last guess takes everything that is left. Risk is not added: it gauges the gamble, and whether the gamble paid off is luck.',
 };
 
@@ -305,6 +285,13 @@ function renderStep() {
     : 'Less and more than expected are about equally likely, so there is little gamble.';
   const wf = waterfall(G, step);
   const done = wf.total / needed * 100;
+  if (g.unscored) {
+    $('step').innerHTML = '<p>One word was left, so there was nothing to choose and nothing to score. Playing it ended the game.</p><div class="block">' + hd('Bits gained', 'bits', TIP.bits) + '<div class="sum"><span>so far, of ' + f2(needed) + ' needed</span><span><b>' + f2(wf.total) + '</b> (' + f0(done) + '%)</span></div>' + wf.svg + '</div>';
+    colorize($('board')); colorize($('step'));
+    $('back').disabled = step === 0;
+    $('next').textContent = step === n - 1 ? 'done' : 'next';
+    return;
+  }
   $('step').innerHTML =
     '<div class="block" style="border-top:0;padding-top:0">' + hd('All outcomes of your guess', '', TIP.plot) + plot(g) + '</div>' +
 
@@ -332,7 +319,7 @@ function renderStep() {
 
     '<div class="block">' + hd('Picks', '', TIP.picks) + '<div class="cols">' + picks('best skill', g.top, 'skill', f0) + picks('worst skill', g.bottom, 'skill', f0) +
       picks('highest risk', g.risky, 'risk', v => g.dstar > 0 ? f0(v / g.dstar * 100) : '0', p => 'skill ' + p[2]) + picks('luckiest', g.lucky, 'luck', pc) + '</div>' +
-      '<p class="small dim">Yours: skill <b class="skill">' + f0(g.skill) + '</b>, risk <b class="risk">' + f0(g.risk) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>.' + (g.ties ? ' With two words left every guess that separates them ties.' : '') + '</p></div>';
+      '<p class="small dim">Yours: skill <b class="skill">' + f0(g.skill) + '</b>, risk <b class="risk">' + f0(g.risk) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>.' + '</p></div>';
   colorize($('board')); colorize($('step'));
   $('back').disabled = step === 0;
   $('next').textContent = step === n - 1 ? 'done' : 'next';
@@ -430,21 +417,28 @@ $('pills').querySelectorAll('.pill').forEach(b => b.addEventListener('click', ()
   openLayer('<h2><span class="' + h.cls + '">' + h.title + '</span><button class="close" type="button">close</button></h2>' + h.html, h.title);
 }));
 
-// ---- sample games ----
-function sampleHtml(key) {
-  const p = SAMPLES[key], last = p.game.length - 1, wf = waterfall(p.game, last);
-  const gl = p.game[last], solved = gl.landedSize === 1 || gl.sizes.length === 1;
-  const result = key === 'skill' ? 'Solved in ' + p.game.length + ' guesses.' : 'Not solved: ' + gl.landedSize + ' words left after ' + p.game.length + ' guesses.';
-  return '<p>' + p.text + '</p>' + table(p.game, last) + '<p class="small dim">' + result + ' Bits gained ' + f2(wf.total) + ' of ' + f2(needed) + '.</p>' + wf.svg;
+// ---- sample games: one for each playstyle ----
+function sampleHtml(id) {
+  const st = STYLES.find(x => x.id === id), game = PLAY[id], last = game.length - 1, wf = waterfall(game, last);
+  const scored = game.filter(g => !g.unscored);
+  const mean = k => scored.reduce((a, g) => a + g[k], 0) / scored.length;
+  const won = game[last].win;
+  const result = (won ? 'Solved in ' + game.length + ' guesses.' : 'Not solved after ' + game.length + ' guesses.') + ' Bits gained ' + f2(wf.total) + ' of ' + f2(needed) + '.';
+  return '<p><b>' + st.name + '</b>: ' + st.tier + ' and ' + st.side + '. ' + st.text + '</p>' + table(game, last) +
+    '<p class="small">This game: skill <b class="skill">' + f0(mean('skill')) + '</b>, risk <b class="risk">' + f0(mean('risk')) + '</b>, luck <b class="luck">' + sg(mean('luck'), 0) + '%</b>. ' + result + '</p>' + wf.svg;
 }
+const STYLE_RULES = '<p class="sub">How a style is read</p><p>Skill and risk are averaged over a player\u2019s guesses that had a choice. The average skill gives the tier: sharp from 95, loose below 70, solid between. Risk then splits each tier, and the split differs by tier because the two move together: 18 for sharp, 23 for solid, 40 for loose. Above the split is bold, below it careful.</p>' +
+  '<div class="wrap"><table><thead><tr><th>style</th><th class="skill">skill</th><th class="risk">risk</th><th>tries</th></tr></thead><tbody>' +
+  [['Analyst', 100, 12, 3.6], ['Maverick', 97, 25, 3.7], ['Steady', 93, 20, 3.6], ['Gambler', 78, 26, 4.2], ['Wanderer', 54, 29, 5.5], ['Wildcard', 65, 55, 4.8]].map(r => '<tr><td>' + r[0] + '</td><td class="skill">' + r[1] + '</td><td class="risk">' + r[2] + '</td><td>' + r[3].toFixed(1) + '</td></tr>').join('') +
+  '</tbody></table></div><p class="small dim">Means over 150 simulated games per style, answers drawn from the 3,000 commonest words. Not measured on people.</p>';
 $('samples').addEventListener('click', () => {
-  const draw = key => {
-    openLayer('<h2><span>Sample games</span><button class="close" type="button">close</button></h2>' +
-      '<p class="small dim">Invented for the mockup. Same word list, same answer, ' + ANSWER + '.</p>' +
-      '<div class="pills"><button class="pill skill" type="button" data-s="skill"' + (key === 'skill' ? ' style="background:color-mix(in srgb,currentColor 16%,transparent)"' : '') + '>pure skill</button><button class="pill risk" type="button" data-s="risk"' + (key === 'risk' ? ' style="background:color-mix(in srgb,currentColor 16%,transparent)"' : '') + '>pure risk</button></div>' + sampleHtml(key), 'Sample games');
+  const draw = id => {
+    openLayer('<h2><span>Playstyles</span><button class="close" type="button">close</button></h2>' +
+      '<p class="small dim">One simulated game for each style: same word list, same answer, ' + ANSWER + '.</p>' +
+      '<div class="pills">' + STYLES.map(x => '<button class="pill" type="button" data-s="' + x.id + '"' + (x.id === id ? ' style="background:color-mix(in srgb,currentColor 16%,transparent)"' : '') + '>' + x.name.toLowerCase() + '</button>').join('') + '</div>' + sampleHtml(id) + STYLE_RULES, 'Playstyles');
     $('layer').querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => draw(b.dataset.s)));
   };
-  draw('skill');
+  draw('analyst');
 });
 
 renderStep();
