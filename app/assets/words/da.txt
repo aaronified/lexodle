@@ -202,7 +202,6 @@ hård	72443
 ramt	72443
 snak	72443
 talt	72443
-fuck	70794
 følg	70794
 jord	69183
 krop	69183
@@ -239,7 +238,6 @@ bord	57543
 føle	57543
 jens	57543
 knap	57543
-lort	57543
 ugen	57543
 skam	56234
 skud	56234
@@ -543,7 +541,6 @@ magi	16218
 rosa	16218
 sans	16218
 seje	16218
-shit	16218
 zone	16218
 hjul	15848
 livs	15848
@@ -2096,7 +2093,6 @@ drama	26915
 front	26915
 håbet	26915
 højst	26915
-luder	26915
 nyhed	26915
 opgør	26915
 slemt	26915
@@ -2322,7 +2318,6 @@ tales	15488
 vaske	15488
 brune	15135
 dømme	15135
-fisse	15135
 groft	15135
 right	15135
 rydde	15135
@@ -5638,7 +5633,6 @@ koblet	6309
 lysere	6309
 mangle	6309
 nathan	6309
-røvhul	6309
 satire	6309
 smagen	6309
 søjler	6309

@@ -2091,7 +2091,6 @@ salib	16218
 semak	16218
 solid	16218
 tegak	16218
-tolol	16218
 deras	15848
 ganja	15848
 mabuk	15848
@@ -2430,7 +2429,6 @@ taruh	8128
 tetes	8128
 umroh	8128
 ajari	7943
-banci	7943
 bidik	7943
 caleg	7943
 ember	7943
@@ -2903,7 +2901,6 @@ kukuh	3467
 lupus	3467
 madam	3467
 mamak	3467
-memek	3467
 mutan	3467
 praja	3467
 retro	3467
@@ -3898,7 +3895,6 @@ tulang	95499
 kosong	93325
 puncak	93325
 padamu	91201
-anjing	89125
 pabrik	89125
 cerdas	87096
 berisi	85113
@@ -4383,7 +4379,6 @@ melayu	14791
 pistol	14791
 putera	14791
 sepele	14791
-sialan	14791
 tengok	14791
 batuan	14454
 carter	14454
@@ -4760,7 +4755,6 @@ bising	6165
 buncit	6165
 guntur	6165
 kelabu	6165
-kontol	6165
 mancur	6165
 ransel	6165
 rontok	6165
@@ -5006,7 +5000,6 @@ takluk	4073
 agresi	3981
 cambuk	3981
 embrio	3981
-goblok	3981
 heroik	3981
 instal	3981
 lesung	3981
@@ -6805,7 +6798,6 @@ kemarau	11220
 kurangi	11220
 anggrek	10964
 bajunya	10964
-bangsat	10964
 diculik	10964
 general	10964
 kutukan	10964
@@ -6997,7 +6989,6 @@ menyapu	7585
 nasabah	7585
 orgasme	7585
 paginya	7585
-pelacur	7585
 petinju	7585
 seberat	7585
 sindrom	7585
@@ -7099,7 +7090,6 @@ traktir	6456
 berbaur	6309
 ditukar	6309
 jasmani	6309
-kampret	6309
 keriput	6309
 kuatnya	6309
 lipstik	6309
@@ -8103,7 +8093,6 @@ imitasi	1698
 intelek	1698
 kakatua	1698
 kentara	1698
-keparat	1698
 kesasar	1698
 korteks	1698
 kuadran	1698
@@ -9337,7 +9326,6 @@ virginia	10471
 aspirasi	10232
 berbulan	10232
 berdebat	10232
-brengsek	10232
 indikasi	10232
 kelautan	10232
 lantaran	10232
@@ -9594,7 +9582,6 @@ pusatnya	6309
 semangka	6309
 sesegera	6309
 ternilai	6309
-bajingan	6165
 bertepuk	6165
 diwarnai	6165
 karnaval	6165

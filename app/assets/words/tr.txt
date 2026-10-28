@@ -933,7 +933,6 @@ kürk	6165
 kışı	6165
 norm	6165
 safa	6165
-siki	6165
 söke	6165
 umre	6165
 zarf	6165
@@ -1090,7 +1089,6 @@ vaaz	4466
 ısıl	4466
 büfe	4365
 erin	4365
-götü	4365
 ille	4365
 jale	4365
 kaka	4365
@@ -1631,7 +1629,6 @@ yeti	1479
 şaha	1479
 acır	1445
 efor	1445
-göte	1445
 koda	1445
 lift	1445
 mesh	1445
@@ -3828,7 +3825,6 @@ telli	6456
 terzi	6456
 türbe	6456
 uysal	6456
-yarak	6456
 çakal	6456
 ödevi	6456
 ödüle	6456
@@ -4541,7 +4537,6 @@ sahih	3388
 sazan	3388
 sözel	3388
 sıkıp	3388
-taşak	3388
 telef	3388
 tıkır	3388
 uygar	3388
@@ -4725,7 +4720,6 @@ celil	2884
 donup	2884
 fitil	2884
 greve	2884
-götün	2884
 iliği	2884
 indik	2884
 ipini	2884
@@ -5412,7 +5406,6 @@ lüksü	1698
 malım	1698
 metne	1698
 misak	1698
-sikin	1698
 sırta	1698
 tarza	1698
 varıp	1698
@@ -6291,7 +6284,6 @@ bilmem	79432
 geçici	79432
 haberi	79432
 lideri	79432
-orospu	79432
 şehrin	79432
 derken	77624
 emekli	77624
@@ -6378,7 +6370,6 @@ modeli	58884
 olumlu	58884
 olurum	58884
 sevdim	58884
-siktir	58884
 ulaşım	58884
 yaygın	58884
 çekici	58884
@@ -8437,7 +8428,6 @@ cevher	5370
 eminiz	5370
 eğilim	5370
 eşiyle	5370
-götten	5370
 gülmek	5370
 güçlük	5370
 hırslı	5370
@@ -10463,7 +10453,6 @@ içimiz	1819
 içkiye	1819
 iğneyi	1819
 jürisi	1819
-kaltak	1819
 kitabi	1819
 kumdan	1819
 kunduz	1819
@@ -11893,7 +11882,6 @@ soktuk	1023
 somalı	1023
 sopayı	1023
 sorsak	1023
-sıçmak	1023
 telini	1023
 uğultu	1023
 vereni	1023
@@ -14557,7 +14545,6 @@ vahşice	5623
 vurulan	5623
 yöneldi	5623
 çatalca	5623
-çingene	5623
 ödemesi	5623
 şekerim	5623
 adınızı	5495

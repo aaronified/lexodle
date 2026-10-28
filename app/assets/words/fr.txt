@@ -322,7 +322,6 @@ voté	24547
 cons	23988
 pars	23988
 paru	23988
-pute	23988
 vues	23988
 paie	23442
 solo	23442
@@ -375,7 +374,6 @@ rive	17782
 rois	17782
 sons	17782
 tape	17782
-bite	17378
 cote	17378
 dose	17378
 ours	17378
@@ -1127,7 +1125,6 @@ topo	1288
 acta	1258
 chip	1258
 erre	1258
-pédé	1258
 watt	1258
 élit	1258
 anis	1230
@@ -2136,7 +2133,6 @@ kots	35
 lini	35
 umbo	35
 bics	34
-bité	34
 guis	34
 toué	34
 arde	33
@@ -2422,7 +2418,6 @@ voilà	177827
 plein	173780
 série	173780
 jouer	169824
-merde	169824
 parmi	169824
 peine	169824
 allez	165958
@@ -2638,7 +2633,6 @@ quels	43651
 repas	43651
 aimes	42657
 canal	42657
-chier	42657
 comte	42657
 glace	42657
 piste	42657
@@ -3279,7 +3273,6 @@ ajout	7943
 brute	7943
 cuire	7943
 fosse	7943
-nique	7943
 tarte	7943
 volée	7943
 aimée	7762
@@ -3445,7 +3438,6 @@ banal	5888
 dorée	5888
 gilet	5888
 neufs	5888
-putes	5888
 pôles	5888
 reins	5888
 resta	5888
@@ -3527,7 +3519,6 @@ vagin	5128
 étang	5128
 bacon	5011
 bijou	5011
-conne	5011
 files	5011
 gaule	5011
 gazon	5011
@@ -3591,7 +3582,6 @@ datée	4570
 diras	4570
 dires	4570
 farce	4570
-nègre	4570
 perse	4570
 philo	4570
 sceau	4570
@@ -4128,7 +4118,6 @@ fichu	1949
 fiefs	1949
 gamer	1949
 hanté	1949
-merdé	1949
 munie	1949
 nouer	1949
 poupe	1949
@@ -4166,7 +4155,6 @@ geler	1862
 junte	1862
 lutté	1862
 nexus	1862
-négro	1862
 packs	1862
 pence	1862
 pissé	1862
@@ -4351,7 +4339,6 @@ matte	1479
 miner	1479
 morse	1479
 naine	1479
-niqué	1479
 notée	1479
 pores	1479
 rates	1479
@@ -5630,7 +5617,6 @@ stops	316
 taies	316
 velux	316
 walls	316
-étron	316
 azure	309
 barba	309
 bleds	309
@@ -5655,7 +5641,6 @@ utero	309
 aérés	301
 badin	301
 berné	301
-bitte	301
 cocus	301
 félon	301
 guida	301
@@ -7627,7 +7612,6 @@ vièle	30
 volve	30
 vulgo	30
 carys	30
-conné	30
 druse	30
 gades	30
 gelas	30
@@ -7787,7 +7771,6 @@ lusse	24
 mussa	24
 obier	24
 oxime	24
-pûtes	24
 rejeu	24
 rifts	24
 riper	24
@@ -8438,7 +8421,6 @@ celles	117489
 succès	117489
 filles	114815
 nature	114815
-putain	114815
 chemin	112201
 espace	112201
 bureau	109647
@@ -8675,13 +8657,11 @@ sauver	45708
 savais	45708
 totale	45708
 agents	44668
-bordel	44668
 cadeau	44668
 colère	44668
 dormir	44668
 dépend	44668
 ferait	44668
-foutre	44668
 hasard	44668
 phrase	44668
 pointe	44668
@@ -8995,7 +8975,6 @@ parlez	20417
 prière	20417
 pseudo	20417
 réunis	20417
-salope	20417
 sauter	20417
 signal	20417
 sièges	20417
@@ -9628,7 +9607,6 @@ convoi	7413
 copier	7413
 débris	7413
 décors	7413
-enculé	7413
 idiots	7413
 idéale	7413
 levant	7413
@@ -9832,7 +9810,6 @@ initié	5888
 libère	5888
 livrée	5888
 penche	5888
-pisser	5888
 poupée	5888
 rousse	5888
 sacrés	5888
@@ -10115,7 +10092,6 @@ gorges	4265
 lancés	4265
 mamans	4265
 moelle	4265
-niquer	4265
 octroi	4265
 palier	4265
 rallye	4265
@@ -10270,7 +10246,6 @@ odieux	3630
 pendre	3630
 plaies	3630
 puzzle	3630
-pédale	3630
 sourds	3630
 verset	3630
 violée	3630
@@ -10428,7 +10403,6 @@ plombs	3090
 poutre	3090
 pêches	3090
 romane	3090
-salaud	3090
 torche	3090
 amorce	3019
 billes	3019
@@ -10841,7 +10815,6 @@ voûtes	2187
 aliens	2137
 anodin	2137
 augure	2137
-bander	2137
 bidons	2137
 brisés	2137
 broche	2137
@@ -11340,7 +11313,6 @@ caveau	1445
 chiale	1445
 créera	1445
 digues	1445
-encule	1445
 foirer	1445
 futile	1445
 gronde	1445
@@ -12930,7 +12902,6 @@ tempes	501
 tibias	501
 tissée	501
 tourte	501
-trique	501
 utérin	501
 écœuré	501
 affilé	489
@@ -14032,7 +14003,6 @@ entour	251
 exècre	251
 fumeux	251
 glanés	251
-gouine	251
 huppée	251
 koalas	251
 mièvre	251
@@ -14916,7 +14886,6 @@ souffre	20417
 éditeur	20417
 carbone	19952
 cellule	19952
-connard	19952
 devoirs	19952
 horizon	19952
 inspiré	19952
@@ -16512,7 +16481,6 @@ claquer	3311
 corrige	3311
 détesté	3311
 enculer	3311
-enfoiré	3311
 envahit	3311
 licorne	3311
 ludique	3311
@@ -16553,7 +16521,6 @@ tranché	3235
 étudiée	3235
 allures	3162
 altesse	3162
-branler	3162
 caporal	3162
 carnage	3162
 chorale	3162
@@ -17952,7 +17919,6 @@ savoure	1348
 sermons	1348
 siègent	1348
 sortons	1348
-tapette	1348
 vermine	1348
 écoutés	1348
 achevés	1318
@@ -18404,7 +18370,6 @@ hautain	1047
 jongler	1047
 lactose	1047
 malaria	1047
-merdeux	1047
 nuancée	1047
 occupes	1047
 plastic	1047
@@ -19520,7 +19485,6 @@ bridges	616
 bronzés	616
 cailles	616
 calment	616
-chiasse	616
 chorizo	616
 coudées	616
 curcuma	616
@@ -20800,7 +20764,6 @@ analyses	18197
 ateliers	18197
 augmenté	18197
 concerts	18197
-couilles	18197
 exécutif	18197
 inscrits	18197
 libéraux	18197
@@ -22278,7 +22241,6 @@ approché	3467
 arrivons	3467
 atténuer	3467
 building	3467
-chiottes	3467
 convenir	3467
 cylindre	3467
 dauphins	3467
@@ -22441,7 +22403,6 @@ compacte	3090
 comprimé	3090
 contenue	3090
 coopérer	3090
-emmerder	3090
 enfermés	3090
 ennemies	3090
 flottant	3090
@@ -22698,7 +22659,6 @@ témoigné	2630
 étendent	2630
 accumule	2570
 baissent	2570
-connasse	2570
 corridor	2570
 crochets	2570
 créative	2570
@@ -24130,7 +24090,6 @@ arrondir	1122
 attester	1122
 bordures	1122
 bougeait	1122
-branleur	1122
 cabernet	1122
 changées	1122
 coffrets	1122

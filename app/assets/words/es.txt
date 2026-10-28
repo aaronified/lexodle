@@ -114,7 +114,6 @@ sola	117489
 hago	114815
 hija	114815
 hubo	112201
-puta	112201
 diez	109647
 boca	107151
 malo	107151
@@ -180,7 +179,6 @@ luna	61659
 piso	61659
 anda	58884
 cita	58884
-culo	58884
 cuya	58884
 pies	58884
 dejo	57543
@@ -279,10 +277,8 @@ tuya	29512
 creó	28840
 cura	28840
 gira	28840
-pedo	28840
 raíz	28840
 muro	28183
-puto	28183
 vías	28183
 beso	27542
 dime	27542
@@ -294,7 +290,6 @@ vean	26915
 cena	26302
 suya	26302
 boda	25703
-coño	25703
 dada	25703
 fama	25703
 fría	25703
@@ -566,7 +561,6 @@ chef	7585
 vial	7585
 cese	7413
 clic	7413
-cono	7413
 kilo	7413
 lava	7413
 vago	7413
@@ -2941,7 +2935,6 @@ pista	35481
 quedo	35481
 ritmo	35481
 goles	34673
-joder	34673
 logró	34673
 muere	34673
 obvio	34673
@@ -3066,7 +3059,6 @@ gordo	24547
 locos	24547
 nieve	24547
 pacto	24547
-putas	24547
 quise	24547
 tonto	24547
 venía	24547
@@ -3107,7 +3099,6 @@ hijas	22908
 jefes	22908
 manga	22908
 vende	22908
-verga	22908
 bolas	22387
 calma	22387
 creía	22387
@@ -3572,7 +3563,6 @@ gripe	8511
 luisa	8511
 odian	8511
 pasto	8511
-putos	8511
 roban	8511
 valer	8511
 venas	8511
@@ -3603,7 +3593,6 @@ hazlo	7943
 honda	7943
 libra	7943
 pinto	7943
-polla	7943
 ubica	7943
 vuela	7943
 anexo	7762
@@ -3641,7 +3630,6 @@ ratón	7585
 roles	7585
 vaina	7585
 veían	7585
-zorra	7585
 adoro	7413
 faltó	7413
 forro	7413
@@ -4037,7 +4025,6 @@ tibia	3981
 vejez	3981
 borra	3890
 bruta	3890
-culos	3890
 darás	3890
 deban	3890
 denso	3890
@@ -8546,7 +8533,6 @@ puedes	275422
 amigos	269153
 buenos	269153
 cambio	269153
-mierda	269153
 muerte	269153
 través	269153
 podría	263026
@@ -8853,7 +8839,6 @@ sueños	42657
 vender	42657
 viajar	42657
 actuar	41686
-carajo	41686
 cerrar	41686
 cuello	41686
 década	41686
@@ -9280,7 +9265,6 @@ camisa	15488
 cargar	15488
 estrés	15488
 hombro	15488
-jodido	15488
 luchas	15488
 millas	15488
 mérito	15488
@@ -9320,7 +9304,6 @@ invita	14791
 libras	14791
 masiva	14791
 ocurra	14791
-pinche	14791
 podéis	14791
 reduce	14791
 usados	14791
@@ -9344,7 +9327,6 @@ pistas	14125
 recoge	14125
 serios	14125
 épocas	14125
-cabrón	13803
 claves	13803
 costas	13803
 darnos	13803
@@ -10000,7 +9982,6 @@ entere	5754
 fibras	5754
 fierro	5754
 filial	5754
-jodida	5754
 octava	5754
 pasivo	5754
 pautas	5754
@@ -10297,7 +10278,6 @@ cápita	4168
 esperó	4168
 huerto	4168
 lloran	4168
-mamada	4168
 pulgar	4168
 salgas	4168
 tejado	4168
@@ -10308,10 +10288,8 @@ andino	4073
 cajero	4073
 cedido	4073
 cursar	4073
-follar	4073
 gastan	4073
 honrar	4073
-marica	4073
 mueres	4073
 repita	4073
 tortas	4073
@@ -12896,7 +12874,6 @@ ponéis	575
 ponías	575
 pretor	575
 pétalo	575
-ramera	575
 repare	575
 reparó	575
 sudado	575
@@ -14047,7 +14024,6 @@ nueves	288
 pagase	288
 penada	288
 percal	288
-pinché	288
 planté	288
 podios	288
 riegan	288
@@ -15147,7 +15123,6 @@ informa	20417
 lanzado	20417
 llevará	20417
 merecen	20417
-pendejo	20417
 promesa	20417
 quiénes	20417
 sanidad	20417
@@ -16213,7 +16188,6 @@ impresa	5623
 influye	5623
 lagunas	5623
 manuela	5623
-mierdas	5623
 núcleos	5623
 obrador	5623
 oficios	5623
@@ -17739,7 +17713,6 @@ iceberg	1995
 ingrese	1995
 jesuita	1995
 liviano	1995
-maricón	1995
 matamos	1995
 narciso	1995
 novatos	1995
@@ -17991,7 +17964,6 @@ balones	1737
 barajas	1737
 basilio	1737
 caminas	1737
-capullo	1737
 constar	1737
 cómodas	1737
 desmayo	1737
@@ -21624,7 +21596,6 @@ insultar	8317
 mejorado	8317
 mostraba	8317
 pacífica	8317
-pendejos	8317
 permitía	8317
 plantear	8317
 recibida	8317
