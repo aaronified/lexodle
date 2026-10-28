@@ -35,6 +35,47 @@ void main() {
       }
     });
 
+    test('a hashed puzzle reads back, with its guesses', () {
+      final p = Puzzle.hashed(
+        'fr',
+        GameMode.quartet,
+        length: 5,
+        tries: 9,
+        answers: ['crane', 'light', 'house', 'dying'],
+        guesses: ['abcde', 'fghij'],
+      );
+      expect(p.link, isNot(contains('crane')));
+      final back = Puzzle.parse(
+        Uri.parse(p.link.substring(p.link.indexOf('#') + 1)),
+        today: '2026-10-28',
+      )!;
+      expect(back.lang, 'fr');
+      expect(back.mode, GameMode.quartet);
+      expect((back.length, back.tries), (5, 9));
+      expect(back.hashes, p.hashes);
+      expect(back.guesses, ['abcde', 'fghij']);
+    });
+
+    test('the hash is the same everywhere, and tells words apart', () {
+      expect(wordHash('crane'), wordHash('crane'));
+      expect(wordHash('crane'), hasLength(16));
+      expect(wordHash('crane'), isNot(wordHash('crate')));
+      expect(RegExp(r'^[0-9a-f]{16}$').hasMatch(wordHash('crane')), isTrue);
+    });
+
+    test('a hashed link that is not a puzzle is not one', () {
+      final h = wordHash('crane');
+      Puzzle? p(String q) => Puzzle.parse(Uri.parse('/puzzle?$q'));
+      expect(p('l=en&m=classic&n=5&t=6&w=$h'), isNotNull);
+      expect(p('l=en&m=classic&n=5&t=6&w=$h.$h'), isNull, reason: 'one word');
+      expect(p('l=en&m=quartet&n=5&t=9&w=$h'), isNull, reason: 'four words');
+      expect(p('l=en&m=classic&n=5&t=6&w=nothex'), isNull);
+      expect(p('l=en&m=classic&n=3&t=6&w=$h'), isNull, reason: 'length');
+      expect(p('l=en&m=classic&n=5&t=0&w=$h'), isNull, reason: 'tries');
+      expect(p('l=en&m=classic&n=5&t=2&w=$h&g=crane.slate.audio'), isNull);
+      expect(p('l=en&m=classic&n=5&t=6&w=$h&g=cran'), isNull, reason: 'length');
+    });
+
     test('a link that names no puzzle is not one', () {
       Puzzle? p(String q) =>
           Puzzle.parse(Uri.parse('/puzzle?$q'), today: '2026-10-28');
@@ -134,28 +175,85 @@ void main() {
       expect(find.byType(GamePage), findsNothing);
     });
 
-    testWidgets('the link button copies the link', (tester) async {
-      String? copied;
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        (call) async {
-          if (call.method == 'Clipboard.setData') {
-            copied = (call.arguments as Map)['text'] as String;
-          }
-          return null;
-        },
-      );
-      addTearDown(
-        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+    testWidgets(
+      'the share menu copies the puzzle, hashed, or with the guesses',
+      (tester) async {
+        final bank = await english(tester);
+        final answers = DailyMulti.of(
+          bank,
+          GameMode.relay,
+          '2026-10-24',
+        )!.answers;
+        String? copied;
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
           SystemChannels.platform,
-          null,
-        ),
+          (call) async {
+            if (call.method == 'Clipboard.setData') {
+              copied = (call.arguments as Map)['text'] as String;
+            }
+            return null;
+          },
+        );
+        addTearDown(
+          () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            SystemChannels.platform,
+            null,
+          ),
+        );
+        await open(tester, '/puzzle?l=en&m=relay&d=2026-10-24');
+        // the puzzle: the words only as hashes
+        await tester.tap(find.byKey(const ValueKey('share-puzzle')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('share-word')));
+        await tester.pump();
+        expect(find.text('link copied'), findsOneWidget);
+        for (final w in answers) {
+          expect(copied, isNot(contains(w)), reason: 'the word is hashed');
+          expect(copied, contains(wordHash(w)));
+        }
+        expect(copied, isNot(contains('&g=')));
+        final p = Puzzle.parse(
+          Uri.parse(copied!.substring(copied!.indexOf('#') + 1)),
+          today: '2026-10-28',
+        )!;
+        expect(p.mode, GameMode.relay);
+        expect(p.answersIn(bank), answers);
+        // with a guess made, the guesses go in plain
+        for (final ch in 'crane'.split('')) {
+          await tester.sendKeyEvent(_key(ch), character: ch);
+        }
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('share-puzzle')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('share-guesses')));
+        await tester.pump();
+        expect(copied, contains('&g=crane'));
+        for (final w in answers) {
+          expect(copied, isNot(contains(w)));
+        }
+      },
+    );
+
+    testWidgets('a link with the guesses opens already played', (tester) async {
+      final bank = await english(tester);
+      final answer = Daily.of(bank, '2026-10-24')!.answer;
+      final p = Puzzle.hashed(
+        'en',
+        GameMode.classic,
+        length: 5,
+        tries: 6,
+        answers: [answer],
+        guesses: ['crane', 'slate'],
       );
-      await open(tester, '/puzzle?l=en&m=relay&d=2026-10-24');
-      await tester.tap(find.byKey(const ValueKey('share-puzzle')));
-      await tester.pump();
-      expect(copied, Puzzle('en', GameMode.relay, '2026-10-24').link);
-      expect(find.text('link copied'), findsOneWidget);
+      await open(tester, p.link.substring(p.link.indexOf('#') + 1));
+      expect(find.byType(GamePage), findsOneWidget);
+      expect(find.textContaining('shared puzzle'), findsNothing);
+      expect(find.text('practice'), findsNothing);
+      // two guesses are on the board, four tries are left
+      expect(find.text('4 tries left'), findsOneWidget);
+      expect(appState.history.games, isEmpty);
+      expect(appState.stats.played, 0);
     });
   });
 }

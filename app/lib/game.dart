@@ -29,6 +29,7 @@ class GamePage extends StatefulWidget {
     this.random,
     this.daily,
     this.practice = false,
+    this.replay = const [],
   });
   final WordBank bank;
 
@@ -42,6 +43,9 @@ class GamePage extends StatefulWidget {
   /// A daily opened by a link: played as practice, so nothing is saved or
   /// counted (no streak, history, statistics or achievements).
   final bool practice;
+
+  /// Guesses a link carries, played at once when the page opens.
+  final List<String> replay;
 
   @override
   State<GamePage> createState() => _GamePageState();
@@ -93,12 +97,22 @@ class _GamePageState extends State<GamePage> {
   @override
   void initState() {
     super.initState();
-    length = _daily == null ? appState.length : dailyLength;
-    tries = _daily == null ? appState.tries : dailyTries;
+    length = _daily?.length ?? appState.length;
+    tries = _daily?.tries ?? appState.tries;
     _pool = widget.bank.answers(length);
     _letters = widget.bank.letters(length);
     _reset();
     _resume();
+    _replay();
+  }
+
+  /// The guesses a link carried are played at once, as if the page had been
+  /// left half played. Nothing is saved or counted: it is practice.
+  void _replay() {
+    for (final g in widget.replay) {
+      if (over || g.length != length || !widget.bank.valid.contains(g)) break;
+      _apply(g, restoring: true);
+    }
   }
 
   /// A daily left half played, or finished, comes back as it was, so that
@@ -136,7 +150,7 @@ class _GamePageState extends State<GamePage> {
     // exception: only its 3,000 words can be the answer, and the scores
     // (against the chance of each possible answer) are of those.
     eligible = List.of(
-      _daily == null
+      _daily == null || _daily.date.isEmpty
           ? widget.bank.guessable(length)
           : widget.bank.answers(length).take(dailyAnswers),
     );
@@ -397,14 +411,16 @@ class _GamePageState extends State<GamePage> {
       child: Scaffold(
         appBar: AppBar(
           actions: [
-            if (_daily != null)
-              SharePuzzleButton(
-                Puzzle(
-                  widget.bank.language.code,
-                  GameMode.classic,
-                  _daily.date,
-                ),
+            SharePuzzleButton(
+              (withGuesses) => Puzzle.hashed(
+                widget.bank.language.code,
+                GameMode.classic,
+                length: length,
+                tries: tries,
+                answers: [answer],
+                guesses: withGuesses ? List.of(guesses) : const [],
               ),
+            ),
           ],
           title: Row(
             mainAxisSize: MainAxisSize.min,
@@ -417,8 +433,8 @@ class _GamePageState extends State<GamePage> {
                       ? '${widget.bank.language.name.toLowerCase()} · '
                             '$length · $tries tries'
                       : '${widget.bank.language.name.toLowerCase()} · '
-                            '${widget.practice ? 'practice' : 'daily'} · '
-                            '${_daily.date}',
+                            '${widget.practice ? 'practice' : 'daily'}'
+                            '${_daily.date.isEmpty ? '' : ' · ${_daily.date}'}',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                 ),
@@ -676,7 +692,7 @@ class _GamePageState extends State<GamePage> {
             if (_daily != null)
               Caption(
                 widget.practice
-                    ? 'practice ${_daily.date} · not counted'
+                    ? 'practice${_daily.date.isEmpty ? '' : ' ${_daily.date}'} · not counted'
                     : 'daily ${_daily.date} · streak ${appState.dailyStreak} · '
                           'the next word comes at midnight, your time',
               ),

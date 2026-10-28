@@ -288,16 +288,33 @@ class _PuzzleGateState extends State<PuzzleGate> {
         final bank = snap.data;
         if (bank == null) return const HomePage();
         final p = widget.puzzle;
+        final answers = p.answersIn(bank);
+        if (answers == null || answers.isEmpty) return const HomePage();
         if (p.mode.multi) {
-          final d = DailyMulti.of(bank, p.mode, p.date);
-          return d == null
-              ? const HomePage()
-              : MultiGamePage(bank: bank, daily: d, practice: true);
+          return MultiGamePage(
+            bank: bank,
+            practice: true,
+            replay: p.guesses,
+            daily: DailyMulti(
+              p.date,
+              p.mode,
+              answers,
+              length: p.date.isEmpty ? p.length : dailyLength,
+              tries: p.date.isEmpty ? p.tries : null,
+            ),
+          );
         }
-        final d = Daily.of(bank, p.date);
-        return d == null
-            ? const HomePage()
-            : GamePage(bank: bank, daily: d, practice: true);
+        return GamePage(
+          bank: bank,
+          practice: true,
+          replay: p.guesses,
+          daily: Daily(
+            p.date,
+            answers.first,
+            length: p.date.isEmpty ? p.length : dailyLength,
+            tries: p.date.isEmpty ? p.tries : dailyTries,
+          ),
+        );
       },
     );
   }
