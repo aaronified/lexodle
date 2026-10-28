@@ -6,17 +6,17 @@
 :root {
   --bg: #fefbe8; --fg: #1d1d11; --dim: #6c6b5e; --outline: #7c7a62; --outlinev: #cac8ae;
   --primary: #8c4b84; --onprimary: #ffffff; --secondary: #4a6b3f; --yellow: #d9a800; --flame: #8a8d2a; --absent: #e5e3cf; --bar: #b5b39d; --hl: #efecd6;
-  --skill: #1f5fd0; --luck: #9a7400; --risk: #2e7d32; --bits: #7a4fd0;
+  --skill: #1f5fd0; --luck: #9a7400; --risk: #2e7d32; --bits: #7a4fd0; --bronze: #a45f1d; --silver: #6f7782; --gold: #a57c00; --platinum: #2f8a99; --up: #1f8a3a; --down: #c0392b;
   --font: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #141409; --fg: #e6e3d1; --dim: #9e9c8d; --outline: #949279; --outlinev: #494833;
   --primary: #f6b0ea; --onprimary: #4f1c4c; --secondary: #b4cea5; --yellow: #f0c219; --flame: #c7cb82; --absent: #313125; --bar: #535245; --hl: #26201b;
-  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --bits: #a98bff; color-scheme: dark; } }
+  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --bits: #a98bff; --bronze: #d28a4d; --silver: #c4c8cf; --gold: #f0c219; --platinum: #7fdcd8; --up: #6fe08a; --down: #ff7a66; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #141409; --fg: #e6e3d1; --dim: #9e9c8d; --outline: #949279; --outlinev: #494833;
   --primary: #f6b0ea; --onprimary: #4f1c4c; --secondary: #b4cea5; --yellow: #f0c219; --flame: #c7cb82; --absent: #313125; --bar: #535245; --hl: #26201b;
-  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --bits: #a98bff; color-scheme: dark; }
+  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --bits: #a98bff; --bronze: #d28a4d; --silver: #c4c8cf; --gold: #f0c219; --platinum: #7fdcd8; --up: #6fe08a; --down: #ff7a66; color-scheme: dark; }
 
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5; text-transform: lowercase;
@@ -90,6 +90,10 @@ table.st { font-size: 12px; } table.st td { padding: 6px 3px; line-height: 1.25;
 .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .cols3 > div { min-width: 0; }
 .cols3 .pk b { font-size: 14px; }
+svg.la { display: inline-block; width: 9px; height: 9px; vertical-align: -1px; margin-left: 2px; }
+
+
+.cols3 + x {}
 </style>
 <main>
   <header style="display:flex;flex-direction:column;gap:12px">
@@ -97,7 +101,7 @@ table.st { font-size: 12px; } table.st td { padding: 6px 3px; line-height: 1.25;
     <div class="pills" id="pills"></div>
     <div id="board"></div>
     <div><h2 id="title"></h2><p class="dim" id="sub"></p></div>
-    <p class="note">Mockup. The games, pools, picks and numbers are real: computed from the English word list, answers equally likely.</p>
+    <p class="note">Mockup. Real games on the English word list, answers equally likely.</p>
   </header>
   <section id="step" style="display:flex;flex-direction:column;gap:18px"></section>
   <button class="link" type="button" id="samples">playstyles: one game for each</button>
@@ -131,7 +135,7 @@ const G = PLAY.detective;
 const log2 = Math.log2;
 function score(g) {
   g.word = g.word.toUpperCase();
-  if (g.unscored) { g.skill = 100; g.risk = 0; g.luck = 0; g.gain = 0; g.H = 0; g.bLuck = 0; g.hstar = 0; g.after = 0; return; }
+  if (g.unscored) { Object.assign(g, { sizes: [1], landedSize: 1, landed: 0, gains: [0], H: 0, hstar: 0, dstar: 0, less: 0, more: 0, D: 0, gotLess: 0, gotMore: 0, gain: 0, bLuck: 0, skill: 100, risk: 0, luck: 0, after: 0, bestWord: g.word, riskWord: '' }); return; }
   g.sizes.sort((a, b) => b - a);
   g.landed = g.sizes.indexOf(g.landedSize);
   g.gains = g.sizes.map(s => log2(g.n / s));                                  // bits an outcome gains
@@ -272,13 +276,19 @@ function behaviourPopup(g) {
     '<button class="link" type="button" id="allstyles">all six playstyles</button>', 'behaviour');
   $('allstyles').addEventListener('click', () => { closeLayer(); $('samples').click(); });
 }
+// luck as an arrow beside the risk: up when lucky, down when unlucky, the colour deeper the bigger the luck
+function luckArrow(l) {
+  if (Math.abs(l) < 5) return '<span class="dim" title="luck ' + pc(l) + '">–</span>';
+  const up = l > 0, depth = 30 + 70 * Math.min(1, Math.abs(l) / 100);
+  return '<svg class="la" viewBox="0 0 10 10" role="img" aria-label="luck ' + pc(l) + '" style="color:color-mix(in srgb,var(--' + (up ? 'up' : 'down') + ') ' + Math.round(depth) + '%,var(--dim))"><title>luck ' + pc(l) + '</title><path fill="currentColor" d="' + (up ? 'M5 1 L9.5 9 H0.5 Z' : 'M5 9 L9.5 1 H0.5 Z') + '"/></svg>';
+}
 function table(list, upto, nav) {
-  const head = '<div class="wrap"><table class="st"><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk</th><th>type</th></tr></thead><tbody>';
+  const head = '<div class="wrap"><table class="st"><thead><tr><th>guess</th><th>words</th><th class="skill">skill</th><th class="risk">risk <span class="luck">▲▼</span></th><th>type</th></tr></thead><tbody>';
   const rows = (nav ? list : list.slice(0, upto + 1)).map((g, i) => {
     const seen = i <= upto, dim = '<span class="dim">·</span>';
     const counted = seen && !g.unscored && g.label && g.label !== 'none';
     const type = counted ? '<button class="sb" type="button" data-b="' + i + '" title="' + g.label + '" aria-label="' + g.label + '">' + ic(BEHAV[g.label].icon) + '</button>' : dim;
-    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (seen ? N(g.n) + ' <span class="dim">→</span> ' + N(g.after) : dim) + '</td><td class="skill">' + (seen ? f0(g.skill) : dim) + '</td><td class="risk">' + (seen ? f0(g.risk) : dim) + '</td><td>' + type + '</td></tr>';
+    return '<tr' + (nav ? ' class="pick' + (i === upto ? ' sel' : '') + '" tabindex="0" data-i="' + i + '"' : '') + '><td>' + (i + 1) + ' ' + tiles(g.word) + '</td><td>' + (seen ? N(g.n) + ' <span class="dim">→</span> ' + N(g.after) : dim) + '</td><td class="skill">' + (seen ? f0(g.skill) : dim) + '</td><td class="risk">' + (seen ? f0(g.risk) + ' ' + luckArrow(g.luck) : dim) + '</td><td>' + type + '</td></tr>';
   }).join('');
   return head + rows + '</tbody></table></div>';
 }
@@ -312,44 +322,34 @@ function renderStep() {
     : 'Less and more than expected are about equally likely, so there is little gamble.';
   const wf = waterfall(G, step);
   const done = wf.total / needed * 100;
-  if (g.unscored) {
-    $('step').innerHTML = '<p>One word was left, so there was nothing to choose: playing it is the only play. Nothing was left to learn, and it ended the game.</p>' +
-      '<div class="block">' + hd('Skill', 'skill', TIP.skill) + '<div class="sum"><span>words left, before and after</span><span>1 → 0</span><span class="res skill">skill: the only play</span><span class="res skill">100</span></div></div>' +
-      '<div class="block">' + hd('Risk', 'risk', TIP.risk) + '<div class="sum"><span class="res risk">risk: one outcome, no gamble</span><span class="res risk">0</span></div></div>' +
-      '<div class="block">' + hd('Luck', 'luck', TIP.luck) + '<div class="sum"><span class="res luck">luck: one outcome, no chance</span><span class="res luck">0%</span></div></div>' +
-      '<div class="block">' + hd('Bits gained', 'bits', TIP.bits) + '<div class="sum"><span>this guess: all the information was already in</span><span><b>0.00</b> bits</span><span>so far, of ' + f2(needed) + ' needed</span><span><b>' + f2(wf.total) + '</b> (' + f0(done) + '%)</span></div>' + wf.svg + '</div>';
-    colorize($('board')); colorize($('step'));
-    $('back').disabled = step === 0;
-    $('next').textContent = step === n - 1 ? 'done' : 'next';
-    return;
-  }
+  const one = g.unscored;
   $('step').innerHTML =
     '<div class="block" style="border-top:0;padding-top:0">' + hd('All outcomes of your guess', '', TIP.plot) + plot(g) + '</div>' +
 
     '<div class="block">' + hd('Skill', 'skill', TIP.skill) + '<div class="sum">' +
       '<span>expected gain, H = Σ chance × bits</span><span>' + f2(g.H) + ' bits</span>' +
       '<span>best guess, H* (' + g.bestWord + ')</span><span>' + f2(g.hstar) + ' bits</span>' +
-      '<i class="rule"></i><span class="res skill">skill = ' + f2(g.H) + ' ÷ ' + f2(g.hstar) + ' × 100</span><span class="res skill">' + f1(g.skill) + '</span></div></div>' +
+      '<i class="rule"></i><span class="res skill">' + (one ? 'skill: one word left, the only play' : 'skill = ' + f2(g.H) + ' ÷ ' + f2(g.hstar) + ' × 100') + '</span><span class="res skill">' + f1(g.skill) + '</span></div></div>' +
 
     '<div class="block">' + hd('Risk', 'risk', TIP.risk) + '<div class="sum">' +
       '<span>chance of less than expected</span><span>' + f1(g.less) + '%</span>' +
       '<span>chance of more than expected</span><span>' + f1(g.more) + '%</span>' +
       '<span>less − more, at least 0</span><span>' + f1(Math.max(0, g.D)) + '%</span>' +
       '<span>riskiest guess, D*' + (g.riskWord ? ' (' + g.riskWord + ')' : '') + '</span><span>' + f1(g.dstar) + '%</span>' +
-      '<i class="rule"></i><span class="res risk">risk = ' + f1(Math.max(0, g.D)) + ' ÷ ' + f1(g.dstar) + ' × 100</span><span class="res risk">' + f1(g.risk) + '</span></div>' +
-      '<p class="small dim">' + side + '</p></div>' +
+      '<i class="rule"></i><span class="res risk">' + (one ? 'risk: one outcome, no gamble' : 'risk = ' + f1(Math.max(0, g.D)) + ' ÷ ' + f1(g.dstar) + ' × 100') + '</span><span class="res risk">' + f1(g.risk) + '</span></div>' +
+      (one ? '' : '<p class="small dim">' + side + '</p>') + '</div>' +
 
     '<div class="block">' + hd('Luck', 'luck', TIP.luck) + '<div class="sum">' +
       '<span>chance of gaining less than ' + f2(g.gain) + ' bits</span><span>' + f1(g.gotLess) + '%</span>' +
       '<span>chance of gaining more than ' + f2(g.gain) + ' bits</span><span>' + f1(g.gotMore) + '%</span>' +
-      '<i class="rule"></i><span class="res luck">luck = less − more</span><span class="res luck">' + sg(g.luck) + '%</span></div></div>' +
+      '<i class="rule"></i><span class="res luck">' + (one ? 'luck: one outcome' : 'luck = less − more') + '</span><span class="res luck">' + sg(g.luck) + '%</span></div></div>' +
 
     '<div class="block">' + hd('Bits gained', 'bits', TIP.bits) +
       '<div class="sum"><span>this guess: skill + luck</span><span>' + f2(g.H) + ' ' + sg(g.bLuck, 2) + ' = <b>' + f2(g.gain) + ' bits</b></span>' +
       '<span>so far, of ' + f2(needed) + ' needed</span><span><b>' + f2(wf.total) + '</b> (' + f0(done) + '%)</span></div>' + wf.svg + '</div>' +
 
-    '<div class="block">' + hd('Picks', '', TIP.picks) + '<div class="cols3">' + picks('best skill', g.top, 'skill', f0) + picks('top risk', g.risky, 'risk', v => g.dstar > 0 ? f0(v / g.dstar * 100) : '0', p => 'skill ' + p[2]) + picks('luckiest', g.lucky, 'luck', pc) + '</div>' +
-      '<p class="small dim">Yours: skill <b class="skill">' + f0(g.skill) + '</b>, risk <b class="risk">' + f0(g.risk) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>.' + '</p></div>';
+    (one ? '' : '<div class="block">' + hd('Picks', '', TIP.picks) + '<div class="cols3">' + picks('best skill', g.top, 'skill', f0) + picks('top risk', g.risky, 'risk', v => g.dstar > 0 ? f0(v / g.dstar * 100) : '0', p => 'skill ' + p[2]) + picks('luckiest', g.lucky, 'luck', pc) + '</div>' +
+      '<p class="small dim">Yours: skill <b class="skill">' + f0(g.skill) + '</b>, risk <b class="risk">' + f0(g.risk) + '</b>, luck <b class="luck">' + pc(g.luck) + '</b>.' + '</p></div>');
   colorize($('board')); colorize($('step'));
   $('back').disabled = step === 0;
   $('next').textContent = step === n - 1 ? 'done' : 'next';
