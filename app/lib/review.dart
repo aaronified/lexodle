@@ -3,8 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'analysis.dart';
+import 'history.dart';
 import 'logic.dart';
+import 'playstyle.dart';
 import 'review_plots.dart';
 import 'review_text.dart';
 import 'ui.dart';
@@ -62,11 +63,11 @@ class GameRecord {
       i + 1 < befores.length ? befores[i + 1] : finalEligible;
 }
 
-/// Steps back through a finished game, one guess at a time, in the manner of
-/// WordleBot's review: the board with a skill / luck / words left / info
-/// gained table, your guess beside the best picks, and a short reading of the
-/// step. The alternatives are worked out here, after the game, one step after
-/// another.
+/// Steps back through a finished game, one guess at a time: the four numbers of
+/// the guess (skill, luck, risk, bits), the board with its table, the plot of
+/// how the guess could have come out, three lists of picks side by side, and the
+/// bits gained over the game. The alternatives are worked out here, after the
+/// game, one step after another.
 class ReviewPage extends StatefulWidget {
   const ReviewPage({super.key, required this.record, this.initialStep = 0});
   final GameRecord record;
@@ -79,10 +80,9 @@ class ReviewPage extends StatefulWidget {
 class _ReviewPageState extends State<ReviewPage> {
   GameRecord get r => widget.record;
   late int step = widget.initialStep.clamp(0, r.guesses.length - 1);
-  bool explain = false;
   final picks = <int, List<Recommendation>>{};
 
-  /// How every guess scored, per step, for the skill plot.
+  /// How every guess scored, per step.
   final landscapes = <int, Landscape>{};
 
   /// How common each word the game accepts is (its weight in the list).
@@ -91,7 +91,6 @@ class _ReviewPageState extends State<ReviewPage> {
       w: r.bank.guessWeights(r.length)[i],
   };
 
-  /// How many picks are named, as on every other step.
   static const _listed = 3;
 
   /// The last try: there is nothing left to learn from a guess, so only words
@@ -104,14 +103,13 @@ class _ReviewPageState extends State<ReviewPage> {
     _analyse();
   }
 
-  /// The metrics of guess [i], with skill measured against the best real guess
-  /// once the analysis of that step has found it; until then the skill is
-  /// provisional ([GuessMetrics.ready] is false, or measured against 1).
-  GuessMetrics metric(int i) => () {
+  /// The metrics of guess [i], with skill and risk measured against the best
+  /// real guess once the analysis of that step has found it.
+  GuessMetrics metric(int i) {
     final m = r.metrics[i];
     final land = landscapes[i];
     return land == null ? m : m.withLandscape(land);
-  }();
+  }
 
   /// The chance each of [fits] is the answer: equal, or by the weights of the
   /// law the game drew its answer by.
@@ -123,8 +121,7 @@ class _ReviewPageState extends State<ReviewPage> {
     return [for (final x in fits) weightOf(x) / total];
   }
 
-  /// Whether the guess at [i] fits every clue given before it: it need not be
-  /// one of the words the answer can be (a daily draws from 3,000 only).
+  /// Whether the guess at [i] fits every clue given before it.
   bool _fitsClues(int i) {
     final g = r.guesses[i];
     for (var j = 0; j < i; j++) {
@@ -133,13 +130,19 @@ class _ReviewPageState extends State<ReviewPage> {
     return true;
   }
 
+  /// The bits it takes to find the answer from the start.
+  double get _needed {
+    final first = r.befores.first;
+    final at = first.indexOf(r.answer);
+    if (at < 0) return log(max(first.length, 1)) / ln2;
+    return bitsOf(_chances(first)[at]);
+  }
+
   Future<void> _analyse() async {
     final guessable = r.bank.guessable(r.length);
     for (var i = 0; i < r.guesses.length; i++) {
       final finalTry = _isFinalTry(i);
       if (finalTry) {
-        // every possible word, each with its chance; the skill field carries
-        // that chance, in percent, since no split matters any more
         final fits = r.befores[i];
         final shares = _chances(fits);
         setState(
@@ -154,14 +157,17 @@ class _ReviewPageState extends State<ReviewPage> {
           ],
         );
       }
-      // every step is scored against every real guess, last try included: the
-      // best of them is what skill is measured against
       final ready = r.analysis != null && i < r.analysis!.length
           ? r.analysis![i]
           : null;
       final land =
           await (ready ??
-              analyseGuesses(r.befores[i], guessable, weights: r.weights));
+              analyseGuesses(
+                r.befores[i],
+                guessable,
+                weights: r.weights,
+                answer: r.answer,
+              ));
       if (!mounted) return;
       setState(() {
         if (!finalTry) picks[i] = land.top;
@@ -177,10 +183,6 @@ class _ReviewPageState extends State<ReviewPage> {
     final last = step == n - 1;
     final m = metric(step);
     final top = picks[step];
-    final dim = TextStyle(
-      fontSize: 11,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
 
     return Focus(
       autofocus: true,
@@ -223,55 +225,18 @@ class _ReviewPageState extends State<ReviewPage> {
                         ),
                         const SizedBox(height: 4),
                         Caption('the word was ${r.answer}'),
+                        const SizedBox(height: 14),
+                        _pills(c, m),
                         const SizedBox(height: 16),
                         _board(c),
-                        const SizedBox(height: 10),
-                        _formula(c, dim),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            alignment: Alignment.centerLeft,
-                            minimumSize: const Size(0, 36),
-                          ),
-                          onPressed: () => setState(() => explain = !explain),
-                          child: Text(
-                            explain ? 'hide explanation' : 'explain this table',
-                            style: TextStyle(color: c.primary),
-                          ),
-                        ),
-                        if (explain)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                for (final line in [
-                                  ...tableHelp,
-                                  'words left: the words still possible. '
-                                      'info gained: how close you are to one '
-                                      'word.',
-                                ])
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 3),
-                                    child: Text(
-                                      line,
-                                      style: dim.copyWith(height: 1.4),
-                                    ),
-                                  ),
-                                reviewLink(
-                                  WikiPage.skillLuckDaring,
-                                  label: 'how skill, luck and daring work',
-                                ),
-                              ],
-                            ),
-                          ),
-                        const SizedBox(height: 14),
-                        _picks(c, m, top),
                         const SizedBox(height: 18),
                         ..._quality(c, m),
+                        _picks(c, m, top),
+                        const SizedBox(height: 18),
+                        _bits(c),
+                        const SizedBox(height: 18),
                         _frequency(c),
                         const SizedBox(height: 18),
-                        if (!_isFinalTry(step)) _pool(c, m, top),
                         Text(
                           top == null
                               ? 'Working out the alternatives…'
@@ -323,74 +288,6 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  /// "expected tries 4.4 = 9.4 − 3.6 skill + 0.3 luck − 0.8 daring", from the
-  /// means of this game, with what it took beside it. Dots until every step
-  /// has been analysed (daring needs it). A game with no daring leaves that
-  /// term out.
-  Widget _formula(ColorScheme c, TextStyle dim) {
-    const style = TextStyle(fontSize: 13, height: 1.5);
-    final landed = landscapes.length >= r.guesses.length;
-    var n = 0, dn = 0;
-    var skill = 0.0, luck = 0.0, daring = 0.0;
-    if (landed) {
-      for (var i = 0; i < r.guesses.length; i++) {
-        final m = metric(i);
-        if (m.before <= 1) continue;
-        skill += m.skill;
-        luck += m.luck;
-        n++;
-        if (m.daring != null) {
-          daring += m.daring!;
-          dn++;
-        }
-      }
-    }
-    // every guess had one word left: nothing was scored, so nothing to add up
-    if (landed && n == 0) return const SizedBox();
-    final took = r.won ? 'you took ${r.guesses.length}' : 'not solved';
-    final List<InlineSpan> spans;
-    if (!landed) {
-      spans = const [TextSpan(text: 'expected tries …')];
-    } else {
-      final b = breakdownOf(skill / n, luck / n, dn == 0 ? null : daring / dn);
-      TextSpan term(double v, String name, Color color) => TextSpan(
-        text: ' ${v < 0 ? '−' : '+'} ${v.abs().toStringAsFixed(1)} $name',
-        style: TextStyle(color: color),
-      );
-      spans = [
-        TextSpan(
-          text:
-              'expected tries ${b.total.toStringAsFixed(1)} = '
-              '${b.base.toStringAsFixed(1)}',
-        ),
-        term(b.skill, 'skill', skillColor(c)),
-        term(b.luck, 'luck', luckColor(c)),
-        if (dn > 0) term(b.daring, 'daring', daringColor(c)),
-        TextSpan(text: ' · $took'),
-      ];
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text.rich(
-          TextSpan(children: spans),
-          key: const ValueKey('expected-tries'),
-          style: style,
-        ),
-        Text(
-          'each term is the tries that skill, luck and daring added or took '
-          'off, over the whole game.',
-          key: const ValueKey('expected-tries-help'),
-          style: dim.copyWith(height: 1.4),
-        ),
-        reviewLink(
-          WikiPage.skillLuckDaring,
-          label: 'how skill, luck and daring work',
-        ),
-      ],
-    );
-  }
-
   /// One segment per guess, the current one in the accent colour; tap to jump.
   Widget _progress(ColorScheme c, int n) => Row(
     children: [
@@ -419,12 +316,87 @@ class _ReviewPageState extends State<ReviewPage> {
     ],
   );
 
+  /// The four numbers of the guess, each a pill that explains itself on tap.
+  Widget _pills(ColorScheme c, GuessMetrics m) {
+    final ready = m.ready;
+    final bits = m.gain;
+    Widget pill(String which, String value, String text) => Expanded(
+      child: InkWell(
+        key: ValueKey('pill-$which'),
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => showHairlineDialog<void>(
+          context,
+          title: which,
+          children: [
+            Text.rich(
+              TextSpan(children: measureSpans(c, text)),
+              style: const TextStyle(fontSize: 13, height: 1.5),
+            ),
+            reviewLink(WikiPage.skillLuckRisk, label: 'how $which works'),
+          ],
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: c.outlineVariant),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            children: [
+              Text(
+                value,
+                key: ValueKey('pill-value-$which'),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: metricColor(c, which),
+                ),
+              ),
+              Text(
+                which,
+                style: TextStyle(
+                  fontSize: 10,
+                  letterSpacing: .4,
+                  color: c.onSurface.withValues(alpha: dimAlpha),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return Row(
+      children: [
+        pill('skill', ready ? '${m.skill.round()}' : '…', skillLine(m.skill)),
+        const SizedBox(width: 8),
+        pill('luck', signedLuck(m.luck), luckLine(m.luck)),
+        const SizedBox(width: 8),
+        pill(
+          'risk',
+          !ready ? '…' : (m.risk == null ? '–' : '${m.risk!.round()}'),
+          riskLine(m.risk),
+        ),
+        const SizedBox(width: 8),
+        pill('bits', bits.toStringAsFixed(2), bitsLine(bits, m.expectedGain)),
+      ],
+    );
+  }
+
+  /// A chevron for luck: one for a little, two for a lot, up or down.
+  Widget _luckChevrons(ColorScheme c, double luck, bool strong) {
+    final a = luck.abs();
+    if (a < 10) return const SizedBox(width: 14);
+    final name = a >= 50
+        ? (luck > 0 ? 'chevrons-up' : 'chevrons-down')
+        : (luck > 0 ? 'chevron-up' : 'chevron-down');
+    return TablerIcon(name, size: 14, color: luckColor(c));
+  }
+
   /// The board with the table beside it. Guesses after the current step stay
   /// blank, so stepping through gives nothing away.
   Widget _board(ColorScheme c) {
-    const colW = 40.0;
+    const colW = 52.0;
     const gap = 2.0;
-    // the highlight of the current row stands off the tiles and the numbers
     const padX = 10.0, padY = 7.0;
     final head = TextStyle(
       fontSize: 9,
@@ -438,27 +410,24 @@ class _ReviewPageState extends State<ReviewPage> {
       bool dimmed = false,
       Color? color,
       Key? key,
-    }) => SizedBox(
-      width: colW,
-      child: Text(
-        t,
-        key: key,
-        textAlign: TextAlign.right,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: strong ? FontWeight.bold : FontWeight.normal,
-          color: color != null
-              ? (strong ? color : color.withValues(alpha: dimmed ? .5 : .75))
-              : strong
-              ? c.primary
-              : c.onSurface.withValues(alpha: dimmed ? .4 : .55),
-        ),
+    }) => Text(
+      t,
+      key: key,
+      textAlign: TextAlign.right,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: strong ? FontWeight.bold : FontWeight.normal,
+        color: color != null
+            ? (strong ? color : color.withValues(alpha: dimmed ? .5 : .75))
+            : strong
+            ? c.primary
+            : c.onSurface.withValues(alpha: dimmed ? .4 : .55),
       ),
     );
 
     return LayoutBuilder(
       builder: (context, box) {
-        final area = box.maxWidth - colW * 5 - 8 - padX * 2;
+        final area = box.maxWidth - colW * 3 - 56 - padX * 2;
         final tile = min(30.0, (area - gap * (r.length - 1)) / r.length);
         return Column(
           children: [
@@ -467,33 +436,37 @@ class _ReviewPageState extends State<ReviewPage> {
               child: Row(
                 children: [
                   const Spacer(),
-                  for (final h in const [
-                    'skill',
-                    'luck',
-                    'daring',
-                    'words\nleft',
-                    'info\ngained',
-                  ])
-                    SizedBox(
-                      width: colW,
-                      child: Text(
-                        h,
-                        key: ValueKey('head-$h'),
-                        textAlign: TextAlign.right,
-                        style: switch (h) {
-                          'skill' => head.copyWith(color: skillColor(c)),
-                          'luck' => head.copyWith(color: luckColor(c)),
-                          'daring' => head.copyWith(color: daringColor(c)),
-                          _ => head,
-                        },
-                      ),
+                  SizedBox(
+                    width: colW + 12,
+                    child: Text(
+                      'words',
+                      textAlign: TextAlign.right,
+                      style: head,
                     ),
+                  ),
+                  SizedBox(
+                    width: colW,
+                    child: Text(
+                      'skill',
+                      key: const ValueKey('head-skill'),
+                      textAlign: TextAlign.right,
+                      style: head.copyWith(color: skillColor(c)),
+                    ),
+                  ),
+                  SizedBox(
+                    width: colW + 28,
+                    child: Text(
+                      'risk',
+                      key: const ValueKey('head-risk'),
+                      textAlign: TextAlign.right,
+                      style: head.copyWith(color: riskColor(c)),
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 6),
             for (var i = 0; i < r.guesses.length; i++) ...[
-              // a row is a button: tap it to go to that guess
               InkWell(
                 key: ValueKey('row-$i'),
                 borderRadius: BorderRadius.circular(6),
@@ -525,47 +498,19 @@ class _ReviewPageState extends State<ReviewPage> {
                               : MarkTile('', size: tile),
                         ),
                       const Spacer(),
-                      if (i <= step) ...[
-                        cell(
-                          metric(i).ready
-                              ? metric(i).skill.round().toString()
-                              : '…',
-                          strong: i == step,
-                          dimmed: i < step,
-                          color: skillColor(c),
-                          key: ValueKey('skill-$i'),
+                      if (i <= step)
+                        ..._rowCells(c, i, colW, cell)
+                      else ...[
+                        SizedBox(
+                          width: colW + 12,
+                          child: cell('–', dimmed: true),
                         ),
-                        cell(
-                          luckText(metric(i).luck),
-                          strong: i == step,
-                          dimmed: i < step,
-                          color: luckColor(c),
-                          key: ValueKey('luck-$i'),
+                        SizedBox(width: colW, child: cell('–', dimmed: true)),
+                        SizedBox(
+                          width: colW + 28,
+                          child: cell('–', dimmed: true),
                         ),
-                        cell(
-                          // none when there was no choice (one word left)
-                          !metric(i).ready
-                              ? '…'
-                              : metric(i).daring == null
-                              ? '–'
-                              : metric(i).daring!.round().toString(),
-                          strong: i == step,
-                          dimmed: i < step,
-                          color: daringColor(c),
-                          key: ValueKey('daring-$i'),
-                        ),
-                        cell(
-                          metric(i).after.toString(),
-                          strong: i == step,
-                          dimmed: i < step,
-                        ),
-                        cell(
-                          '${infoGained(r.initial, metric(i).after).round()}%',
-                          strong: i == step,
-                          dimmed: i < step,
-                        ),
-                      ] else
-                        for (var k = 0; k < 5; k++) cell('–', dimmed: true),
+                      ],
                     ],
                   ),
                 ),
@@ -582,123 +527,89 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  /// How the guess divided the pool of possible words, and how the pool you
-  /// landed in compares with the average one for that guess.
-  Widget _pool(ColorScheme c, GuessMetrics m, List<Recommendation>? top) {
-    if (m.before <= 1) return const SizedBox();
-    String fmt(double v) =>
-        v < 10 ? v.toStringAsFixed(1) : v.round().toString();
-    final dim = TextStyle(
-      fontSize: 11,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
-    final landed = m.landedSize <= m.expected + 1e-9
-        ? c.secondary
-        : yellowOf(c);
-
-    Widget bar(String label, double value, Color color, {bool strong = false}) {
-      final frac = (value / m.before).clamp(0.015, 1.0);
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
+  List<Widget> _rowCells(
+    ColorScheme c,
+    int i,
+    double colW,
+    Widget Function(String, {bool strong, bool dimmed, Color? color, Key? key})
+    cell,
+  ) {
+    final m = metric(i);
+    final strong = i == step, dimmed = i < step;
+    final b = m.ready ? behaviourOf(guessRowOf(i + 1, m)) : null;
+    return [
+      SizedBox(
+        width: colW + 12,
+        child: cell(
+          '${m.before}→${m.after}',
+          strong: strong,
+          dimmed: dimmed,
+          key: ValueKey('words-$i'),
+        ),
+      ),
+      SizedBox(
+        width: colW,
+        child: cell(
+          m.ready ? m.skill.round().toString() : '…',
+          strong: strong,
+          dimmed: dimmed,
+          color: skillColor(c),
+          key: ValueKey('skill-$i'),
+        ),
+      ),
+      SizedBox(
+        width: colW + 28,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            SizedBox(
-              width: 128,
-              child: Text(
-                label,
-                style: strong
-                    ? const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)
-                    : dim,
-              ),
+            _luckChevrons(c, m.luck, strong),
+            const SizedBox(width: 4),
+            cell(
+              !m.ready
+                  ? '…'
+                  : (m.risk == null ? '–' : m.risk!.round().toString()),
+              strong: strong,
+              dimmed: dimmed,
+              color: riskColor(c),
+              key: ValueKey('risk-$i'),
             ),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, box) => Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    width: box.maxWidth * frac,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(2),
+            SizedBox(
+              width: 16,
+              child: b == null
+                  ? null
+                  : GestureDetector(
+                      key: ValueKey('type-$i'),
+                      onTap: () => showHairlineDialog<void>(
+                        context,
+                        title: b.label,
+                        children: [
+                          Text(
+                            b.what,
+                            style: const TextStyle(fontSize: 13, height: 1.5),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'counted when: ${b.rule}',
+                            style: const TextStyle(fontSize: 12, height: 1.5),
+                          ),
+                        ],
+                      ),
+                      child: TablerIcon(
+                        b.icon,
+                        size: 14,
+                        color: c.onSurface.withValues(alpha: dimmed ? .4 : .7),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 48,
-              child: Text(
-                fmt(value),
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: strong ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
             ),
           ],
         ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Caption('the pool'),
-          const SizedBox(height: 6),
-          Text(
-            'The ${m.before} possible words split into ${m.groups} groups; '
-            'the biggest held ${m.largest}.',
-            style: const TextStyle(fontSize: 13, height: 1.4),
-          ),
-          const SizedBox(height: 8),
-          bar(
-            'before your guess',
-            m.before.toDouble(),
-            c.onSurface.withValues(alpha: .25),
-          ),
-          bar('expected after', m.expected, c.onSurface.withValues(alpha: .5)),
-          if (top != null && top.isNotEmpty)
-            bar(
-              'best pick expects',
-              top.first.expected,
-              c.primary.withValues(alpha: .8),
-            ),
-          bar('you landed in', m.landedSize, landed, strong: true),
-          if (m.daring != null) ...[
-            const SizedBox(height: 6),
-            metricLine(
-              context,
-              !m.possible
-                  ? 'daring 0: this guess could not be the answer, so it only '
-                        'probed.'
-                  : m.triesLeft <= 1
-                  ? 'daring 0: with one try left, going for the word is the '
-                        'only play.'
-                  : 'daring ${m.daring!.round()}: how much you went for the '
-                        'word itself rather than the clues.',
-              'daring',
-              key: const ValueKey('daring-line'),
-              style: const TextStyle(fontSize: 13, height: 1.4),
-            ),
-          ],
-          reviewLink(
-            WikiPage.skillLuckDaring,
-            label: 'how skill, luck and daring work',
-          ),
-        ],
       ),
-    );
+    ];
   }
 
-  /// The plots of how good the guess was: where it ranked among every guess
-  /// I scored (skill) and where among the outcomes it could have had it landed
-  /// (luck). On the last try nothing is left to learn, so they give way to one
-  /// plot of the words that fit, all equally likely. Nothing to plot when one
-  /// word was left.
+  /// The plot of how the guess could have come out. On the last try nothing is
+  /// left to learn, so it gives way to one plot of the words that fit. Nothing
+  /// to plot when one word was left.
   List<Widget> _quality(ColorScheme c, GuessMetrics m) {
     final before = r.befores[step];
     if (before.length <= 1) return const [];
@@ -714,29 +625,54 @@ class _ReviewPageState extends State<ReviewPage> {
       ];
     }
     final land = landscapes[step];
+    final o = _outcomes.putIfAbsent(
+      step,
+      () => outcomesOf(before, m.guess, r.answer, r.weights),
+    );
     return [
-      SplitPlot(
-        key: ValueKey('split-$step'),
-        outcomes: _outcomes.putIfAbsent(
-          step,
-          () => outcomesOf(before, m.guess, r.answer, weights: r.weights),
-        ),
-        best: land?.bestExpected ?? m.best,
-        skill: m.skill,
-        luck: m.luck,
-        skillReady: land != null || m.ready,
+      GainPlot(
+        key: ValueKey('gain-$step'),
+        outcomes: o.outcomes,
+        landed: o.landed,
+        expected: m.expectedGain,
+        best: land?.bestGain,
+        word: m.guess,
       ),
       const SizedBox(height: 18),
     ];
   }
 
-  /// The outcomes of each step's guess, worked out when first shown.
-  final _outcomes = <int, Outcomes>{};
+  final _outcomes = <int, ({List<Outcome> outcomes, int landed})>{};
+
+  /// The bits gained guess by guess, up to the one on show.
+  Widget _bits(ColorScheme c) {
+    final steps = [
+      for (var i = 0; i < r.guesses.length; i++)
+        WaterfallStep(
+          r.guesses[i],
+          metric(i).expectedGain,
+          metric(i).gain,
+          landscapes[i]?.bestGain,
+        ),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Caption('bits'),
+            const SizedBox(width: 6),
+            InfoDot(bitsHelp, title: 'bits'),
+          ],
+        ),
+        const SizedBox(height: 6),
+        BitsWaterfall(steps: steps, needed: _needed, current: step),
+      ],
+    );
+  }
 
   /// How common the words still possible were, most common first, with your
-  /// guess and the answer marked where they stand. Heights are on a log scale
-  /// (how common a word is spans orders of magnitude) shared by every step, so
-  /// the shape can be compared as the pool shrinks.
+  /// guess and the answer marked where they stand.
   Widget _frequency(ColorScheme c) {
     final words = r.befores[step];
     if (words.isEmpty) return const SizedBox();
@@ -778,7 +714,6 @@ class _ReviewPageState extends State<ReviewPage> {
           ),
         ),
         const SizedBox(height: 4),
-        // the two ends of the axis on one line, at its two ends
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -799,123 +734,129 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
+  /// Three lists side by side: the best skill, the highest risk and the
+  /// luckiest guess for this answer. The last try lists the likeliest words.
   Widget _picks(ColorScheme c, GuessMetrics m, List<Recommendation>? top) {
     final finalTry = _isFinalTry(step);
     final fits = r.befores[step];
+    final land = landscapes[step];
     String pct(double v) =>
         v == 0 ? '0%' : (v < 10 ? '${v.toStringAsFixed(1)}%' : '${v.round()}%');
-    // Two real columns: the words share one edge, and the skill sits in a
-    // fixed-width column of its own, whatever size the line is set in.
-    Widget line(
-      String word,
-      double skill, {
-      bool big = false,
-      bool wordRight = false,
-      String keys = 'pick',
-      String? shown,
-    }) {
-      final style = TextStyle(
-        fontSize: big ? 20 : 15,
-        fontWeight: big ? FontWeight.bold : FontWeight.normal,
-      );
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: Row(
+
+    Widget column(
+      String title,
+      String which,
+      List<(String, String)> rows, {
+      String? info,
+    }) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
           children: [
-            Expanded(
+            Flexible(
               child: Text(
-                word,
-                key: ValueKey('$keys-word-$word'),
-                style: style,
-                textAlign: wordRight ? TextAlign.right : TextAlign.left,
+                title,
+                style: TextStyle(
+                  fontSize: 10,
+                  letterSpacing: .4,
+                  color: metricColor(c, which),
+                ),
               ),
             ),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 44,
-              child: Text(
-                shown ?? '${skill.round()}',
-                key: ValueKey('$keys-skill-$word'),
-                style: style.copyWith(color: skillColor(c)),
-                textAlign: TextAlign.right,
-              ),
-            ),
+            if (info != null) ...[
+              const SizedBox(width: 4),
+              InfoDot(info, title: title),
+            ],
           ],
         ),
-      );
-    }
-
-    final row = Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Caption('your guess'),
-              Divider(color: c.outlineVariant),
-              line(
-                m.guess,
-                m.skill,
-                big: true,
-                keys: 'yours',
-                shown: finalTry
-                    ? pct(m.winChance * 100) // pool words only
-                    : null,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 24),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: const Caption('my picks'),
-              ),
-              Divider(color: c.outlineVariant),
-              if (top == null)
-                const Caption('working it out…')
-              else if (finalTry) ...[
-                for (var i = 0; i < top.length; i++)
-                  line(
-                    top[i].word,
-                    top[i].skill,
-                    big: i == 0,
-                    wordRight: true,
-                    shown: pct(top[i].skill),
+        Divider(color: c.outlineVariant),
+        if (rows.isEmpty)
+          const Caption('…')
+        else
+          for (final (w, v) in rows)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      w,
+                      key: ValueKey('$which-word-$w'),
+                      style: const TextStyle(fontSize: 13),
+                    ),
                   ),
-                Text(
-                  r.weights != null
-                      ? (fits.length > top.length
-                            ? 'the likeliest of the ${fits.length} words that '
-                                  'fit'
-                            : 'by how likely each is')
-                      : fits.length > top.length
-                      ? 'any of the ${fits.length} words that fit, equally '
-                            'likely'
-                      : 'each equally likely',
-                  key: const ValueKey('pick-each'),
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: c.onSurface.withValues(alpha: dimAlpha),
+                  SizedBox(
+                    width: 40,
+                    child: Text(
+                      v,
+                      key: ValueKey('$which-value-$w'),
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: metricColor(c, which),
+                      ),
+                    ),
                   ),
-                ),
-              ] else
-                for (var i = 0; i < top.length; i++)
-                  line(top[i].word, top[i].skill, big: i == 0, wordRight: true),
-            ],
-          ),
-        ),
+                ],
+              ),
+            ),
       ],
     );
+
+    if (finalTry) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          column('likeliest', 'skill', [
+            if (top != null)
+              for (final p in top) (p.word, pct(p.skill)),
+          ]),
+          Text(
+            r.weights != null
+                ? 'by how likely each of the ${fits.length} words that fit is'
+                : 'each of the ${fits.length} words that fit is equally likely',
+            key: const ValueKey('pick-each'),
+            style: TextStyle(
+              fontSize: 11,
+              color: c.onSurface.withValues(alpha: dimAlpha),
+            ),
+          ),
+        ],
+      );
+    }
+    final best = land?.bestRisk ?? 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        row,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: column('best skill', 'skill', [
+                if (top != null)
+                  for (final p in top) (p.word, '${p.skill.round()}'),
+              ]),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: column('top risk', 'risk', [
+                if (land != null)
+                  for (final p in land.riskiest)
+                    (
+                      p.word,
+                      best <= 0 ? '0' : '${(p.raw / best * 100).round()}',
+                    ),
+              ]),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: column('luckiest', 'luck', [
+                if (land != null)
+                  for (final p in land.luckiest) (p.word, signedLuck(p.luck)),
+              ]),
+            ),
+          ],
+        ),
         reviewLink(WikiPage.solverAndLearn, label: 'how my picks are chosen'),
       ],
     );

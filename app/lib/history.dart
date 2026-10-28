@@ -1,11 +1,11 @@
 import 'logic.dart';
 import 'modes.dart';
 
-/// The version of the numbers cached on a guess row (skill, luck, daring, risk
-/// and the pool sizes). Bump it whenever the maths in logic.dart changes: every
+/// The version of the numbers cached on a guess row (skill, luck, risk, the
+/// bits and what the playstyle reads). Bump it whenever the maths in logic.dart changes: every
 /// game saved under an older one is then stale and is worked out again from its
 /// guesses, which are the facts (see [History.stale]).
-const metricsVersion = 4;
+const metricsVersion = 5;
 
 /// The most games kept. A player can have thousands; the oldest go beyond this,
 /// which keeps what is saved (a browser allows about 5 MB) and what a backup
@@ -203,10 +203,14 @@ class GuessRow {
     required this.word,
     this.skill = 0,
     this.luck = 0,
-    this.daring,
-    this.risk = 0,
+    this.risk,
     this.before = 0,
     this.after = 0,
+    this.gain = 0,
+    this.rank,
+    this.fresh = 0,
+    this.fits = false,
+    this.greens = 0,
   });
 
   /// The [GameRow.id] it belongs to, and its place in the game from 0.
@@ -214,18 +218,29 @@ class GuessRow {
   final int n;
   final String word;
 
-  /// Skill (0 to 100), luck (-100 to 100), daring (0 to 100, null when not
-  /// known or no choice was open) and risk (bits) of the guess. For a quartet
-  /// or relay race, skill and luck are the step's weighted mean over its boards
-  /// and there is no daring.
+  /// Skill (0 to 100), luck (-100 to 100) and risk (0 to 100, null when not
+  /// known or no choice was open) of the guess. For a quartet or relay race,
+  /// skill and luck are the step's weighted mean over its boards and there is no
+  /// risk.
   final double skill;
   final double luck;
-  final double? daring;
-  final double risk;
+  final double? risk;
 
   /// Words possible before and after it (0 for a quartet or relay race).
   final int before;
   final int after;
+
+  /// The bits the outcome gained.
+  final double gain;
+
+  /// What the playstyle reads: how many of the guesses scored in its position
+  /// gained more (percent; null when not known), how many of its letters were
+  /// new to the game, whether it fits every clue (it could be the answer), and
+  /// how many greens were known.
+  final double? rank;
+  final int fresh;
+  final bool fits;
+  final int greens;
 
   GuessRow withGame(int id) => GuessRow(
     game: id,
@@ -233,39 +248,60 @@ class GuessRow {
     word: word,
     skill: skill,
     luck: luck,
-    daring: daring,
     risk: risk,
     before: before,
     after: after,
+    gain: gain,
+    rank: rank,
+    fresh: fresh,
+    fits: fits,
+    greens: greens,
   );
 
-  /// The row as saved, a list in this order (null for no daring).
+  /// The row as saved, a list in this order (null for no risk or rank).
   List<Object?> toRow() => [
     game,
     n,
     word,
     _r(skill),
     _r(luck),
-    daring == null ? null : _r(daring!),
-    _r(risk),
+    risk == null ? null : _r(risk!),
     before,
     after,
+    _r(gain),
+    rank == null ? null : _r(rank!),
+    fresh,
+    fits ? 1 : 0,
+    greens,
   ];
 
-  /// Reads a row as [toRow] wrote it, or the map an earlier version wrote.
+  /// Reads a row as [toRow] wrote it, or the older list or map an earlier
+  /// version wrote (those are stale, and worked out again).
   static GuessRow fromAny(Object? raw) {
     if (raw is Map) return fromJson(raw.cast<String, dynamic>());
-    if (raw is! List || raw.length != 9) throw const FormatException('guess');
+    if (raw is! List || (raw.length != 9 && raw.length != 13)) {
+      throw const FormatException('guess');
+    }
     return fromJson({
       'g': raw[0],
       'n': raw[1],
       'w': raw[2],
       's': raw[3],
       'l': raw[4],
-      'd': raw[5],
-      'r': raw[6],
-      'b': raw[7],
-      'a': raw[8],
+      if (raw.length == 13) ...{
+        'r': raw[5],
+        'b': raw[6],
+        'a': raw[7],
+        'x': raw[8],
+        'k': raw[9],
+        'f': raw[10],
+        't': raw[11],
+        'e': raw[12],
+      } else ...{
+        // the first nine: daring, risk in bits, then the pool sizes
+        'b': raw[7],
+        'a': raw[8],
+      },
     });
   }
 
@@ -275,10 +311,14 @@ class GuessRow {
     'w': word,
     's': _r(skill),
     'l': _r(luck),
-    if (daring != null) 'd': _r(daring!),
-    'r': _r(risk),
+    if (risk != null) 'r': _r(risk!),
     'b': before,
     'a': after,
+    'x': _r(gain),
+    if (rank != null) 'k': _r(rank!),
+    'f': fresh,
+    't': fits ? 1 : 0,
+    'e': greens,
   };
 
   static GuessRow fromJson(Map<String, dynamic> j) {
@@ -286,17 +326,22 @@ class GuessRow {
     if (word is! String || word.isEmpty || word.length > 12) {
       throw const FormatException('word');
     }
-    final d = j['d'];
+    final r = j['r'];
+    final k = j['k'];
     return GuessRow(
       game: _int(j['g'], 0, _big),
       n: _int(j['n'], 0, 40),
       word: word,
       skill: _num(j['s'], 0, 100),
       luck: _num(j['l'], -100, 100),
-      daring: d == null ? null : _num(d, 0, 100),
-      risk: _num(j['r'], 0, 100),
+      risk: r == null ? null : _num(r, 0, 100),
       before: _int(j['b'], 0, 1000000),
       after: _int(j['a'], 0, 1000000),
+      gain: j['x'] == null ? 0 : _num(j['x'], 0, 1000),
+      rank: k == null ? null : _num(k, 0, 100),
+      fresh: j['f'] == null ? 0 : _int(j['f'], 0, 12),
+      fits: j['t'] == 1,
+      greens: j['e'] == null ? 0 : _int(j['e'], 0, 12),
     );
   }
 }
@@ -309,10 +354,14 @@ GuessRow guessRowOf(int n, GuessMetrics m) => GuessRow(
   word: m.guess,
   skill: m.skill,
   luck: m.luck,
-  daring: m.daring,
   risk: m.risk,
   before: m.before,
   after: m.after,
+  gain: m.gain,
+  rank: m.rank,
+  fresh: m.fresh,
+  fits: m.possible,
+  greens: m.greens,
 );
 
 const _big = 1000000000;

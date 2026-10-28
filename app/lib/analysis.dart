@@ -2,7 +2,7 @@ import 'daily.dart';
 import 'history.dart';
 import 'playstyle.dart';
 
-/// What a set of games adds up to. The means of skill, luck and daring are over
+/// What a set of games adds up to. The means of skill, luck and risk are over
 /// the guesses of the games scored with the current maths ([metricsVersion]); a
 /// game saved under older maths still counts as played and won, but is left out
 /// of the means until it has been scored again, so that two weeks are never
@@ -15,7 +15,7 @@ class PlayStats {
     this.scored = 0,
     this.skill = 0,
     this.luck = 0,
-    this.daring,
+    this.risk,
     this.meanTries,
     this.stale = 0,
   });
@@ -23,7 +23,7 @@ class PlayStats {
   final int games;
   final int won;
 
-  /// How many were classic (the only ones with a daring).
+  /// How many were classic (the only ones with a risk).
   final int classic;
 
   /// How many guesses the means are over.
@@ -31,8 +31,8 @@ class PlayStats {
   final double skill;
   final double luck;
 
-  /// Null when no guess in them had a daring.
-  final double? daring;
+  /// Null when no guess in them had a risk.
+  final double? risk;
 
   /// Guesses used per won game; null when none was won.
   final double? meanTries;
@@ -51,8 +51,8 @@ class PlayStats {
 /// every step counts, since its skill and luck are means over its boards.
 PlayStats summarise(History h, Iterable<GameRow> games) {
   var n = 0, won = 0, classic = 0, stale = 0;
-  var scored = 0, daringN = 0, wonN = 0;
-  var skill = 0.0, luck = 0.0, daring = 0.0, tries = 0.0;
+  var scored = 0, riskN = 0, wonN = 0;
+  var skill = 0.0, luck = 0.0, risk = 0.0, tries = 0.0;
   for (final g in games) {
     n++;
     if (g.isClassic) classic++;
@@ -71,10 +71,10 @@ PlayStats summarise(History h, Iterable<GameRow> games) {
       skill += r.skill;
       luck += r.luck;
       scored++;
-      final d = r.daring;
+      final d = r.risk;
       if (d != null) {
-        daring += d;
-        daringN++;
+        risk += d;
+        riskN++;
       }
     }
   }
@@ -85,7 +85,7 @@ PlayStats summarise(History h, Iterable<GameRow> games) {
     scored: scored,
     skill: scored == 0 ? 0 : skill / scored,
     luck: scored == 0 ? 0 : luck / scored,
-    daring: daringN == 0 ? null : daring / daringN,
+    risk: riskN == 0 ? null : risk / riskN,
     meanTries: wonN == 0 ? null : tries / wonN,
     stale: stale,
   );
@@ -134,9 +134,9 @@ Period _period(
   end: end,
   stats: summarise(h, games),
   style: classify(
-    traitsOfGames(h, [
+    habitsOfGames(h, [
       for (final g in games)
-        if (g.isClassic && g.version == metricsVersion) g,
+        if (g.isClassic) g,
     ]),
   ),
 );
@@ -209,93 +209,34 @@ List<Period> monthlyPeriods(
   ];
 }
 
-/// The expected number of guesses a game takes, read from skill, luck and
-/// daring by the linear fit of tools/predict_tries3.dart (the mean of its fits
-/// under the three answer laws, every word equally likely, by frequency, and
-/// the daily, English at five letters, 2,500 games each, docs/paper Section
-/// 9.6):
-///
-///   guesses = 9.38 - 0.0563 skill - 0.0164 luck - 0.0445 daring
-///
-/// with skill and daring from 0 to 100 and luck from -100 to 100. It is an
-/// estimate from simulated players, not measured on people. The terms are shown
-/// as what each one does to a base: skill is never worse than none, so it only
-/// takes guesses off; luck takes off when positive and adds when negative; daring
-/// is measured from a typical level, [daringTypical], so going for the word less
-/// than usual adds guesses and more takes them off.
-const guessIntercept = 9.38;
-const guessPerSkill = -0.0563;
-const guessPerLuck = -0.0164;
-const guessPerDaring = -0.0445;
-const daringTypical = 10.0;
-
-/// What skill, luck and daring did to the expected guesses of a period.
-class GuessBreakdown {
-  const GuessBreakdown(this.base, this.skill, this.luck, this.daring);
-
-  /// What a player with no skill, average luck and typical daring is expected
-  /// to need.
-  final double base;
-
-  /// Each term, in guesses: negative takes guesses off.
-  final double skill, luck, daring;
-
-  /// The expected guesses, kept within the 1 to 7 a game can take (7 for a
-  /// game not solved).
-  double get total => (base + skill + luck + daring).clamp(1.0, 7.0);
-}
-
-/// The breakdown for [s], or null when it lacks a score or a daring.
-GuessBreakdown? guessBreakdown(PlayStats s) {
-  final d = s.daring;
-  if (s.isEmpty || s.scored == 0 || d == null) return null;
-  return breakdownOf(s.skill, s.luck, d);
-}
-
-/// The breakdown for means of [skill], [luck] and [daring]. With no daring
-/// (null) that term is 0, as for a typical daring.
-GuessBreakdown breakdownOf(double skill, double luck, double? daring) =>
-    GuessBreakdown(
-      guessIntercept + guessPerDaring * daringTypical,
-      guessPerSkill * skill,
-      guessPerLuck * luck,
-      daring == null ? 0 : guessPerDaring * (daring - daringTypical),
-    );
-
-/// The measures the chart of periods follows, each a line. The first three are
-/// drawn on a scale from 0 to 100; the expected guesses are drawn against their
-/// own scale, from 1 to 7, at the right edge.
+/// The measures the chart of periods follows, each a line, drawn on a scale from
+/// 0 to 100.
 enum PeriodSeries {
   skill('skill'),
   luck('luck'),
-  daring('daring'),
-  guesses('guesses');
+  risk('risk');
 
   const PeriodSeries(this.label);
   final String label;
 
-  /// The value of [s] as the measure itself (skill and daring 0 to 100, luck
+  /// The value of [s] as the measure itself (skill and risk 0 to 100, luck
   /// -100 to 100), or null when there is none: no games, nothing scored, or no
-  /// daring to average.
+  /// risk to average.
   double? of(PlayStats s) {
     if (s.isEmpty || s.scored == 0) return null;
-    if (this == PeriodSeries.guesses) return guessBreakdown(s)?.total;
     return switch (this) {
       PeriodSeries.skill => s.skill,
       PeriodSeries.luck => s.luck,
-      PeriodSeries.daring => s.daring,
-      PeriodSeries.guesses => null,
+      PeriodSeries.risk => s.risk,
     };
   }
 
-  /// Where it is drawn, 0 to 100 on the one axis. Skill and daring are as they
+  /// Where it is drawn, 0 to 100 on the one axis. Skill and risk are as they
   /// are; luck, which runs from -100 to 100 about 0, is shifted to sit about 50,
   /// so the middle of the chart is a luck of 0%.
   double? plot(PlayStats s) {
     final v = of(s);
     if (v == null) return null;
-    // the guesses run from 1 (the bottom) to 7 (the top) on the right scale
-    if (this == PeriodSeries.guesses) return (v - 1) / 6 * 100;
     return this == PeriodSeries.luck ? (v + 100) / 2 : v;
   }
 }

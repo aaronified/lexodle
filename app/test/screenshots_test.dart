@@ -169,8 +169,8 @@ void main() {
                   .clamp(0, 100)
                   .toDouble(),
               luck: rng.nextInt(100) - 50.0,
-              daring: (3 + 9 * (1 - along) + rng.nextInt(7)).toDouble(),
-              risk: .5,
+              risk: (3 + 9 * (1 - along) + rng.nextInt(7)).toDouble(),
+              gain: .5,
               before: 600 ~/ (k + 1),
               after: 300 ~/ (k + 1),
             ),
@@ -426,13 +426,13 @@ void main() {
   testWidgets('the achievements, with their flags', (t) async {
     await prepare(t);
     appState.setAch(lang, {
-      'first_light': AchState(times: 1, dates: ['2026-09-02']),
-      'one_shot': AchState(times: 2, dates: ['2026-09-20', '2026-10-11']),
+      'wins': AchState(times: 1, dates: ['2026-09-02']),
+      'quick': AchState(times: 2, dates: ['2026-09-20', '2026-10-11']),
       'last_breath': AchState(times: 1, dates: ['2026-10-03']),
-      'wins_10': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
+      'dailies': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
       'streak_3': AchState(times: 3, dates: ['2026-10-01']),
-      'daily_3': AchState(times: 1, dates: ['2026-10-05'], progress: 6),
-      'bilingual': AchState(times: 1, dates: ['2026-10-02']),
+      'daily_streak': AchState(times: 1, dates: ['2026-10-05'], progress: 6),
+      'languages': AchState(times: 1, dates: ['2026-10-02']),
     });
     appState.stats.langsWon = {'en', 'fr', 'de'};
     final key = GlobalKey();

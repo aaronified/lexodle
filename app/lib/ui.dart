@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'logic.dart';
+import 'medal.dart';
 import 'words.dart';
+
+export 'medal.dart' show Medal;
 
 /// How strongly secondary text (captions, notes) shows against the page: dim,
 /// but still readable (4.5:1) in both themes.
@@ -37,7 +40,7 @@ Color markBorder(ColorScheme c, Mark m) => markColors(c, m).$1;
 double markBorderWidth(Mark m) => 1;
 
 /// The one colour of each measure, wherever it shows: skill is blue, luck
-/// yellow, daring green. A number keeps its colour whatever its sign or size;
+/// yellow, risk green, bits violet. A number keeps its colour whatever its sign or size;
 /// for luck the +/- sign carries the direction. The shades are brighter on the
 /// dark and black pages and deeper on the light one, so they read on all three.
 Color skillColor(ColorScheme c) => c.brightness == Brightness.dark
@@ -48,19 +51,70 @@ Color luckColor(ColorScheme c) => c.brightness == Brightness.dark
     ? const Color(0xFFF2C230)
     : const Color(0xFF9A7400);
 
-Color daringColor(ColorScheme c) => c.brightness == Brightness.dark
+Color riskColor(ColorScheme c) => c.brightness == Brightness.dark
     ? const Color(0xFF5CB85C)
     : const Color(0xFF2E7D32);
 
-/// The colour of the measure [which] ('skill', 'luck', 'daring').
+Color bitsColor(ColorScheme c) => c.brightness == Brightness.dark
+    ? const Color(0xFFA98BFF)
+    : const Color(0xFF7A4FD0);
+
+/// The colour of the measure [which] ('skill', 'luck', 'risk', 'bits').
 Color metricColor(ColorScheme c, String which) => switch (which) {
   'skill' => skillColor(c),
   'luck' => luckColor(c),
-  _ => daringColor(c),
+  'bits' => bitsColor(c),
+  _ => riskColor(c),
 };
 
+/// [text] with the words skill, luck and risk (and only those) in their own
+/// colours, wherever they stand in it. Returns spans to put in a [Text.rich].
+List<InlineSpan> measureSpans(ColorScheme c, String text) {
+  final spans = <InlineSpan>[];
+  var at = 0;
+  for (final m in RegExp(
+    r'\b(skill|luck|risk)\b',
+    caseSensitive: false,
+  ).allMatches(text)) {
+    if (m.start > at) spans.add(TextSpan(text: text.substring(at, m.start)));
+    spans.add(
+      TextSpan(
+        text: m[0],
+        style: TextStyle(color: metricColor(c, m[0]!.toLowerCase())),
+      ),
+    );
+    at = m.end;
+  }
+  if (at < text.length) spans.add(TextSpan(text: text.substring(at)));
+  return spans;
+}
+
+/// A text whose words skill, luck and risk are in their own colours.
+Widget measureText(
+  BuildContext context,
+  String text, {
+  TextStyle? style,
+  Key? key,
+  TextAlign? textAlign,
+}) => Text.rich(
+  TextSpan(children: measureSpans(Theme.of(context).colorScheme, text)),
+  key: key,
+  style: style,
+  textAlign: textAlign,
+);
+
+Color medalColor(ColorScheme c, Medal m) {
+  final dark = c.brightness == Brightness.dark;
+  return switch (m) {
+    Medal.bronze => dark ? const Color(0xFFD28A4D) : const Color(0xFFA45F1D),
+    Medal.silver => dark ? const Color(0xFFC4C8CF) : const Color(0xFF6F7782),
+    Medal.gold => dark ? const Color(0xFFF0C219) : const Color(0xFFA57C00),
+    Medal.platinum => dark ? const Color(0xFF7FDCD8) : const Color(0xFF2F8A99),
+  };
+}
+
 /// A line that starts with a measure's term and number ('skill 82', 'luck +20',
-/// 'daring 30'): the words up to the first colon or dot in the measure's colour,
+/// 'risk 30'): the words up to the first colon or dot in the measure's colour,
 /// the rest plain. Returns plain text when [text] does not start with [lead].
 Widget metricLine(
   BuildContext context,
@@ -296,3 +350,127 @@ TextSpan metricParts(ColorScheme c, List<(String, String?)> parts) => TextSpan(
       which == null ? TextSpan(text: t) : metricSpan(c, t, which),
   ],
 );
+
+/// A hairline dialog in the app's look: the page's own background, a close
+/// cross at the top right and a title. [children] scroll.
+Future<T?> showHairlineDialog<T>(
+  BuildContext context, {
+  required String title,
+  Color? titleColor,
+  Widget? leading,
+  required List<Widget> children,
+}) => showDialog<T>(
+  context: context,
+  builder: (context) {
+    final c = Theme.of(context).colorScheme;
+    return Dialog(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(3),
+        side: BorderSide(color: c.outline),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 8, 0),
+              child: Row(
+                children: [
+                  if (leading != null) ...[leading, const SizedBox(width: 10)],
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: titleColor,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    key: const ValueKey('dialog-close'),
+                    tooltip: 'close',
+                    icon: const Icon(Icons.close),
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.center,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 48,
+                      height: 48,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: children,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  },
+);
+
+/// A small round "i" that opens [text] in a dialog: the long explanations live
+/// behind it, beside the heading they belong to. The words skill, luck and risk
+/// in the text are in their own colours.
+class InfoDot extends StatelessWidget {
+  const InfoDot(this.text, {super.key, this.title = ''});
+  final String text;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    return Semantics(
+      button: true,
+      label: 'explain',
+      excludeSemantics: true,
+      child: InkResponse(
+        onTap: () => showHairlineDialog<void>(
+          context,
+          title: title,
+          children: [
+            Text.rich(
+              TextSpan(children: measureSpans(c, text)),
+              style: const TextStyle(fontSize: 13, height: 1.5),
+            ),
+          ],
+        ),
+        radius: 16,
+        child: Container(
+          width: 18,
+          height: 18,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: dim, width: 1.5),
+          ),
+          child: Text(
+            'i',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              fontStyle: FontStyle.italic,
+              color: dim,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

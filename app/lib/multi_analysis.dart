@@ -10,9 +10,9 @@ import 'logic.dart';
 /// board with n words still possible, a guess splits them into groups, and the
 /// expected size of the group you land in is E = n * sum(q^2), q being the
 /// chance of each group (its size over n when the words are equally likely).
-/// Its skill is ln(n / E) / ln(n / E*) * 100, how far E got from "no
-/// information" towards the best real guess's E*, and its luck is the chance of
-/// landing in a bigger group less that of a smaller one.
+/// Its skill is H / H* * 100, the expected gain of the guess (the entropy of
+/// its split, in bits) as a share of the best real guess's H*, and its luck is
+/// the chance of gaining less than you did less that of gaining more.
 ///
 /// A guess in a quartet is made for every unsolved board at once, so its
 /// skill and luck are the average over those boards, each weighted by how much
@@ -162,14 +162,14 @@ Future<MultiLandscape> analyseMulti(
   Map<String, int>? weights,
 }) async {
   final cands = candidates.toList();
-  final bests = List<double>.filled(live.length, 1);
+  final bests = List<double>.filled(live.length, 0);
   final active = [
     for (var i = 0; i < live.length; i++)
       if (live[i].isNotEmpty) i,
   ];
   if (active.isEmpty || cands.isEmpty) return MultiLandscape(const [], bests);
 
-  // the sum of squared group sizes of every candidate, once per distinct list
+  // the expected gain of every candidate, once per distinct list
   final sums = Map<List<String>, Float64List>.identity();
   final sets = Map<List<String>, Set<String>>.identity();
   var work = 0;
@@ -178,7 +178,7 @@ Future<MultiLandscape> analyseMulti(
     if (sums.containsKey(board)) continue;
     final ss = Float64List(cands.length);
     for (var c = 0; c < cands.length; c++) {
-      ss[c] = expectedPool(board, cands[c], weights: weights);
+      ss[c] = splitStats(board, cands[c], weights).h;
       if (++work % 20 == 0) await Future<void>.delayed(Duration.zero);
     }
     sums[board] = ss;
@@ -186,8 +186,8 @@ Future<MultiLandscape> analyseMulti(
   }
   for (final i in active) {
     final board = live[i];
-    final lowest = sums[board]!.reduce((a, b) => a < b ? a : b);
-    bests[i] = lowest;
+    final highest = sums[board]!.reduce((a, b) => a > b ? a : b);
+    bests[i] = highest;
   }
 
   final boardWeights = {for (final i in active) i: boardWeight(live[i].length)};
@@ -202,7 +202,7 @@ Future<MultiLandscape> analyseMulti(
       if (fit) fits++;
       final skill = n == 1
           ? (fit ? 100.0 : 0.0)
-          : skillAgainst(n, sums[board]![c], bests[i]);
+          : skillOf(sums[board]![c], bests[i]);
       sum += boardWeights[i]! * skill;
     }
     scored.add(MultiPick(cands[c], sum / total, fits));

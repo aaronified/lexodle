@@ -9,13 +9,13 @@ import 'package:lexodle/playstyle.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// [n] classic games in [lang], every guess at [skill] and [daring].
+/// [n] classic games in [lang], played in the style of [early] and [end].
 void play(
   AppState s,
   String lang,
   int n, {
-  double skill = 95,
-  double daring = 1,
+  Behaviour early = Behaviour.maximiser,
+  Behaviour end = Behaviour.prober,
 }) {
   for (var i = 0; i < n; i++) {
     s.history.add(
@@ -33,11 +33,15 @@ void play(
             game: 0,
             n: k,
             word: 'crane',
-            skill: skill,
-            luck: 0,
-            daring: daring,
-            before: 50,
-            after: 10,
+            skill: 70,
+            before: k < 2 ? 500 : 8,
+            after: k < 2 ? 200 : 3,
+            risk: k < 2 && early == Behaviour.gambler ? 90 : 10,
+            rank: k < 2
+                ? (early == Behaviour.maximiser ? 2 : 50)
+                : (end == Behaviour.prober ? 3 : 60),
+            fresh: k < 2 && early == Behaviour.eliminator ? 5 : 1,
+            fits: k >= 2 && end == Behaviour.closer,
           ),
       ],
     );
@@ -50,8 +54,8 @@ void main() {
   test('each language has its own playstyle', () async {
     final s = AppState();
     await s.load();
-    play(s, 'en', 20, skill: 95, daring: 1);
-    play(s, 'fr', 20, skill: 40, daring: 30);
+    play(s, 'en', 20);
+    play(s, 'fr', 20, early: Behaviour.gambler);
     s.updateStyle(lang: 'en');
     s.updateStyle(lang: 'fr');
     expect(s.styleOf('en'), analyst);
@@ -69,9 +73,9 @@ void main() {
   test('one language\'s games do not move another\'s style', () async {
     final s = AppState();
     await s.load();
-    play(s, 'en', 20, skill: 95, daring: 1);
+    play(s, 'en', 20);
     s.updateStyle(lang: 'en');
-    play(s, 'fr', 200, skill: 40, daring: 30);
+    play(s, 'fr', 200, early: Behaviour.gambler);
     s.updateStyle(lang: 'en');
     expect(s.styleOf('en'), analyst, reason: 'the 100 are English ones');
     expect(s.styleChangesOf('en'), 0);
@@ -108,26 +112,25 @@ void main() {
   test('achievements count in the language they were earned in', () async {
     final s = AppState();
     await s.load();
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 25; i++) {
       s.recordGame(won('en'));
     }
     s.recordGame(won('fr'));
-    // ten wins in English earn "regular"; French has had one
-    expect(s.achOf('en')['wins_10']!.times, 1);
-    expect(s.achOf('fr')['wins_10']!.times, 0);
-    expect(s.achOf('fr')['wins_10']!.progress, 1);
-    expect(s.achOf('fr')['first_light']!.times, 1);
+    // 25 wins in English earn "regular"; French has had one
+    expect(s.achOf('en')['wins']!.times, 2);
+    expect(s.achOf('fr')['wins']!.times, 1);
+    expect(s.achOf('fr')['wins']!.value, 1);
     // the ones that span languages are shared, and see both
-    expect(s.achOf('en')['bilingual']!.times, 1);
-    expect(s.achOf('fr')['bilingual']!.times, 1);
+    expect(s.achOf('en')['languages']!.times, 1);
+    expect(s.achOf('fr')['languages']!.times, 1);
     expect(
-      identical(s.achOf('en')['bilingual'], s.achOf('de')['bilingual']),
+      identical(s.achOf('en')['languages'], s.achOf('de')['languages']),
       isTrue,
     );
     // and which are shared is a property of the achievement
-    expect(achievementById('bilingual')!.global, isTrue);
-    expect(achievementById('mastery')!.global, isTrue);
-    expect(achievementById('wins_10')!.global, isFalse);
+    expect(achievementById('languages')!.global, isTrue);
+    expect(achievementById('mastery_badges')!.global, isTrue);
+    expect(achievementById('wins')!.global, isFalse);
   });
 
   test('all of it is saved, and read back, per language', () async {
@@ -142,37 +145,38 @@ void main() {
     expect(again.styleOf('en'), analyst);
     expect(again.dailyStreakFor('fr'), 1);
     expect(again.dailyLogOf('fr')[dailyDate()], dailyDouble);
-    expect(again.achOf('de')['first_light']!.times, 1);
-    expect(again.achOf('en')['first_light']?.times ?? 0, 0);
+    expect(again.achOf('de')['wins']!.times, 1);
+    expect(again.achOf('en')['wins']?.times ?? 0, 0);
   });
 
   test(
     'what was kept before each language had its own goes to the one in use',
     () async {
       SharedPreferences.setMockInitialValues({
+        'achievementsVersion': AppState.achievementsVersion,
         'lang': 'fr',
         'style': 'gambler',
-        'stylesHeld': ['gambler', 'steady'],
+        'stylesHeld': ['gambler', 'analyst'],
         'styleChanges': 2,
         'dailyLog': jsonEncode({'2026-10-23': dailySolved}),
         'dailyBest': 7,
         'ach': jsonEncode({
-          'first_light': AchState(times: 1, dates: ['2026-10-01']).toJson(),
-          'bilingual': AchState(times: 1, dates: ['2026-10-02']).toJson(),
+          'wins': AchState(times: 1, dates: ['2026-10-01']).toJson(),
+          'languages': AchState(times: 1, dates: ['2026-10-02']).toJson(),
         }),
       });
       final s = AppState();
       await s.load();
       expect(s.styleOf('fr'), gambler);
       expect(s.styleOf('en'), isNull);
-      expect(s.stylesHeldOf('fr'), {'gambler', 'steady'});
+      expect(s.stylesHeldOf('fr'), {'gambler', 'analyst'});
       expect(s.styleChangesOf('fr'), 2);
       expect(s.dailyLogOf('fr')['2026-10-23'], dailySolved);
       expect(s.dailyBestOf('fr'), 7);
       expect(s.dailyBestOf('en'), 0);
-      expect(s.achOf('fr')['first_light']!.times, 1);
-      expect(s.achOf('en')['first_light'], isNull);
-      expect(s.achOf('en')['bilingual']!.times, 1, reason: 'a shared one');
+      expect(s.achOf('fr')['wins']!.times, 1);
+      expect(s.achOf('en')['wins'], isNull);
+      expect(s.achOf('en')['languages']!.times, 1, reason: 'a shared one');
     },
   );
 
@@ -198,8 +202,8 @@ void main() {
       );
       expect(other.styleOf('en'), analyst);
       expect(other.dailyStreakFor('fr'), 1);
-      expect(other.achOf('de')['first_light']!.times, 1);
-      expect(other.achOf('en')['first_light']?.times ?? 0, 0);
+      expect(other.achOf('de')['wins']!.times, 1);
+      expect(other.achOf('en')['wins']?.times ?? 0, 0);
     },
   );
 
@@ -221,7 +225,7 @@ void main() {
       ..['version'] = 1;
     final b = parseBackup(jsonEncode(j));
     expect(b.languages!.keys, ['fr']);
-    expect(b.languages!['fr']!.achievements.containsKey('first_light'), isTrue);
-    expect(b.achievements.containsKey('first_light'), isFalse);
+    expect(b.languages!['fr']!.achievements.containsKey('wins'), isTrue);
+    expect(b.achievements.containsKey('wins'), isFalse);
   });
 }

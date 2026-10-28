@@ -223,6 +223,8 @@ class _GamePageState extends State<GamePage> {
         // skill is measured against the best real guess, which the
         // background analysis is still finding out
         provisional: analyseWhilePlaying,
+        fresh: freshLetters(word, guesses.take(guesses.length - 1)),
+        greens: knownGreens(marks.take(marks.length - 1)),
       ),
     );
     befores.add(eligible);
@@ -238,6 +240,7 @@ class _GamePageState extends State<GamePage> {
           before,
           widget.bank.guessable(length),
           weights: _law,
+          answer: answer,
         ),
       );
       _analysis.add(job);
@@ -278,6 +281,7 @@ class _GamePageState extends State<GamePage> {
     final epoch = _epoch;
     void record() {
       final d = _daily;
+      final traits = gameTraits(metrics);
       GameResult result({
         int streak = 0,
         String? style,
@@ -291,6 +295,9 @@ class _GamePageState extends State<GamePage> {
         used: guesses.length,
         won: won,
         skills: [for (final m in metrics) m.skill],
+        luck: traits.luck,
+        risk: traits.risk,
+        maxBits: traits.maxBits,
         daily: d != null,
         dailyStreak: streak,
         style: style,

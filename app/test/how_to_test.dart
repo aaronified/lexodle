@@ -133,15 +133,15 @@ void main() {
   ) async {
     await tester.pumpWidget(const MaterialApp(home: HowToPage()));
     await tester.pump();
-    expect(find.text('skill + luck + daring = expected tries'), findsOneWidget);
+    expect(find.text('every guess gains bits of information'), findsOneWidget);
     for (final line in [
-      'is how well your guesses narrowed the words.',
-      'is how kind the clues turned out to be.',
-      'is how much you went for the word itself.',
+      'is the bits a guess was expected to gain, against the best guess.',
+      'is whether the clues gained more or less than usual.',
+      'is how much you gambled on a rare big gain.',
     ]) {
       expect(find.textContaining(line, findRichText: true), findsOneWidget);
     }
-    expect(find.byKey(const ValueKey('wiki-skillLuckDaring')), findsOneWidget);
+    expect(find.byKey(const ValueKey('wiki-skillLuckRisk')), findsOneWidget);
     expect(find.byKey(const ValueKey('wiki-howToPlay')), findsOneWidget);
   });
 

@@ -196,7 +196,7 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
                                     ),
                                   ),
                                 reviewLink(
-                                  WikiPage.skillLuckDaring,
+                                  WikiPage.skillLuckRisk,
                                   label: 'how skill, luck and daring work',
                                 ),
                               ],

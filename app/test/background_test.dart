@@ -136,7 +136,7 @@ void main() {
     await tester.pumpAndSettle();
     // one frame in, no "working it out": the first step's picks are there
     expect(find.text('working it out…'), findsNothing);
-    expect(find.text('my picks'), findsOneWidget);
+    expect(find.text('best skill'), findsOneWidget);
     await tester.pump(const Duration(seconds: 30)); // let anything left finish
   });
 
@@ -201,7 +201,7 @@ void main() {
         all,
         guess,
         1,
-        best: land!.bestExpected,
+        best: land!.bestGain,
         triesLeft: appState.tries,
         weights: law,
         afterWords: filterEligible(all, guess, evaluate(answer, guess)),

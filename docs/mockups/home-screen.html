@@ -1,0 +1,465 @@
+<title>Lexodle Home</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* The app's look: JetBrains Mono, lowercase, hairline borders, flat surfaces, a pink accent on olive-black (dark) or cream (light). Dark values are sampled from the app's screenshots; light ones are close estimates. */
+:root {
+  --bg: #fefbe8; --fg: #1d1d11; --dim: #6c6b5e; --outline: #7c7a62; --outlinev: #cac8ae;
+  --primary: #8c4b84; --onprimary: #ffffff; --secondary: #4a6b3f; --yellow: #d9a800; --flame: #8a8d2a; --absent: #e5e3cf; --bar: #b5b39d; --hl: #efecd6;
+  --skill: #1f5fd0; --luck: #9a7400; --risk: #2e7d32; --bits: #7a4fd0; --bronze: #a45f1d; --silver: #6f7782; --gold: #a57c00; --platinum: #2f8a99;
+  --font: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141409; --fg: #e6e3d1; --dim: #9e9c8d; --outline: #949279; --outlinev: #494833;
+  --primary: #f6b0ea; --onprimary: #4f1c4c; --secondary: #b4cea5; --yellow: #f0c219; --flame: #c7cb82; --absent: #313125; --bar: #535245; --hl: #26201b;
+  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --bits: #a98bff; --bronze: #d28a4d; --silver: #c4c8cf; --gold: #f0c219; --platinum: #7fdcd8; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #141409; --fg: #e6e3d1; --dim: #9e9c8d; --outline: #949279; --outlinev: #494833;
+  --primary: #f6b0ea; --onprimary: #4f1c4c; --secondary: #b4cea5; --yellow: #f0c219; --flame: #c7cb82; --absent: #313125; --bar: #535245; --hl: #26201b;
+  --skill: #4c8dff; --luck: #f2c230; --risk: #5cb85c; --bits: #a98bff; --bronze: #d28a4d; --silver: #c4c8cf; --gold: #f0c219; --platinum: #7fdcd8; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.45; text-transform: lowercase;
+  padding-left: max(0px, env(safe-area-inset-left, 0px)); padding-right: max(0px, env(safe-area-inset-right, 0px)); }
+.app { max-width: 480px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+.scroll { flex: 1; overflow-y: auto; padding: 40px 24px 24px; display: flex; flex-direction: column; }
+.head { display: flex; align-items: center; gap: 16px; }
+.logo { display: block; width: 56px; height: 44px; flex: none; }
+.title { flex: 1; font-size: 36px; font-weight: 700; line-height: 1.1; }
+.icon { width: 1em; height: 1em; fill: currentColor; display: block; }
+.iconbtn { width: 48px; height: 48px; display: grid; place-items: center; background: transparent; border: 0; color: var(--fg); cursor: pointer; font-size: 28px; }
+.caption { font-size: 12px; letter-spacing: 2px; color: var(--dim); }
+.lang { margin-top: 28px; height: 56px; border: 1px solid var(--outline); border-radius: 4px; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: transparent; color: var(--fg); font: inherit; font-size: 16px; text-align: left; cursor: pointer; width: 100%; }
+.lang span.n { flex: 1; letter-spacing: 1px; }
+.flag { width: 24px; height: 16px; flex: none; }
+.streak { margin-top: 20px; border: 1px solid var(--outlinev); border-radius: 3px; padding: 12px 12px 8px; }
+.srow { display: flex; align-items: center; gap: 6px; }
+.srow .num { font-size: 28px; font-weight: 700; }
+.srow .cap { flex: 1; margin-left: 4px; }
+.srow .best { font-size: 11px; color: var(--dim); display: flex; align-items: center; gap: 8px; }
+.week { display: flex; margin-top: 8px; }
+.day { flex: 1; margin: 0 1px; padding: 6px 0; border: 1px solid transparent; border-radius: 3px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--dim); }
+.day.today { border-color: color-mix(in srgb, var(--fg) 50%, transparent); }
+.flames { display: flex; height: 22px; align-items: center; color: var(--outlinev); }
+.flames.on { color: var(--flame); }
+.flames .icon { font-size: 22px; } .flames.two .icon { font-size: 18px; } .flames.two .icon + .icon { margin-left: -4px; }
+hr { border: 0; border-top: 1px solid var(--outlinev); margin: 28px 0 12px; }
+.menu { width: 100%; height: 52px; margin-bottom: 8px; border: 1px solid var(--outline); border-radius: 3px; background: transparent; color: var(--primary); font: inherit; letter-spacing: 1.2px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+.menu .glyphs { display: flex; gap: 6px; font-size: 22px; margin-left: auto; }
+.menu.with { position: relative; } .menu.with .glyphs { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); margin: 0; }
+.srow2 { display: flex; gap: 8px; }
+.sq { width: 52px; height: 52px; flex: none; border: 1px solid var(--outline); border-radius: 3px; background: transparent; color: var(--primary); display: grid; place-items: center; font-size: 28px; cursor: pointer; }
+.pinned { padding: 8px 24px 16px; display: flex; flex-direction: column; gap: 6px; }
+.freq { display: flex; align-items: center; padding-left: 4px; gap: 8px; font-size: 13px; color: var(--dim); cursor: pointer; border: 0; background: transparent; font-family: inherit; text-align: left; }
+.freq span { flex: 1; }
+.sw { width: 40px; height: 22px; border-radius: 11px; border: 2px solid var(--outline); position: relative; flex: none; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--outline); }
+.sw.on { background: var(--primary); border-color: var(--primary); } .sw.on::after { left: 20px; background: var(--onprimary); }
+.playarea { display: flex; flex-direction: column; gap: 8px; touch-action: pan-y; user-select: none; }
+.mode { display: block; width: 100%; position: relative; height: 52px; border: 1px solid var(--outline); border-radius: 3px; background: transparent; color: var(--fg); font: inherit; letter-spacing: 1.2px; cursor: pointer; overflow: hidden; padding: 0; }
+.mode .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 36px; }
+.mode .slide .icon { font-size: 24px; color: var(--primary); }
+.mode .nm { text-align: left; line-height: 1.1; }
+.mode .nm small { display: block; font-size: 11px; color: var(--dim); letter-spacing: 0; margin-top: 2px; }
+.modebar { position: relative; }
+.chev { position: absolute; top: 1px; bottom: 1px; width: 44px; border: 0; background: transparent; color: var(--dim); font: inherit; font-size: 22px; cursor: pointer; z-index: 2; }
+.chev.l { left: 1px; } .chev.r { right: 1px; }
+.chev:hover { color: var(--primary); }
+.row { display: flex; gap: 8px; }
+.btn { flex: 1; height: 52px; border-radius: 3px; font: inherit; letter-spacing: 1.5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; }
+.btn.fill { background: var(--primary); color: var(--onprimary); border: 1px solid var(--primary); font-weight: 700; font-size: 15px; }
+.btn.line { background: transparent; color: var(--primary); border: 1px solid var(--outline); letter-spacing: 1.2px; }
+.btn small { font-size: 11px; letter-spacing: 0; color: var(--primary); opacity: .9; }
+.dots { display: flex; justify-content: center; gap: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--outlinev); }
+.dots i.on { background: var(--primary); }
+.toast { position: fixed; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 3px; font-size: 13px; z-index: 50; max-width: calc(100% - 32px); }
+.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.55); display: flex; justify-content: center; align-items: center; padding: 24px 16px; overscroll-behavior: contain; }
+.modal { background: var(--bg); color: var(--fg); border: 1px solid var(--outline); border-radius: 3px; max-width: 440px; width: 100%; max-height: 100%; overflow: auto; display: flex; flex-direction: column; overscroll-behavior: contain; }
+.step { height: 64px; border: 1px solid var(--outline); border-radius: 3px; display: flex; align-items: center; overflow: hidden; }
+.step button.ch { width: 48px; height: 48px; flex: none; border: 0; background: transparent; color: var(--fg); font-size: 22px; cursor: pointer; }
+.step button.ch:disabled { color: var(--outlinev); cursor: default; }
+.step .view { flex: 1; height: 64px; position: relative; overflow: hidden; touch-action: pan-y; }
+.step .item { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 4px; }
+.step .item b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.step .item span { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.sdots { display: flex; justify-content: center; margin-top: 8px; }
+.sdots i { width: 6px; height: 6px; border-radius: 50%; margin: 0 3px; background: var(--outlinev); }
+.sdots i.on { background: var(--primary); }
+.note11 { font-size: 11px; color: var(--dim); }
+.share { display: flex; align-items: center; }
+.share .cap { flex: 1; }
+input[type=range] { width: 100%; accent-color: var(--primary); }
+input[type=range]:disabled { opacity: .38; }
+.mx { display: grid; grid-template-columns: 84px repeat(4, 1fr); align-items: center; }
+.mx .h { text-align: center; font-size: 12px; font-weight: 700; line-height: 1.2; }
+.mx .h small { display: block; font-weight: 400; font-size: 10px; letter-spacing: .8px; color: var(--dim); }
+.mx .r { font-size: 12px; font-weight: 700; padding-right: 8px; }
+.cell { margin: 2px; height: 46px; border-radius: 3px; border: 1px solid; background: transparent; cursor: pointer; padding: 0; font: inherit; }
+.chk { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; background: transparent; border: 0; color: var(--fg); font: inherit; text-align: left; padding: 0; }
+.chk i { width: 18px; height: 18px; border: 2px solid var(--outline); border-radius: 2px; flex: none; margin-top: 2px; display: grid; place-items: center; font-style: normal; font-size: 13px; line-height: 1; }
+.chk i.on { background: var(--primary); border-color: var(--primary); color: var(--onprimary); }
+.capr { font-size: 12px; letter-spacing: 2px; color: var(--dim); }
+.fbtn { flex: 1; height: 52px; border-radius: 3px; font: inherit; letter-spacing: 1.2px; cursor: pointer; }
+.fbtn.fill { background: var(--primary); color: var(--onprimary); border: 1px solid var(--primary); font-weight: 700; font-size: 15px; }
+.fbtn.line { background: transparent; color: var(--primary); border: 1px solid var(--outline); }
+.modal > * { flex-shrink: 0; }
+.mhead { display: flex; align-items: center; padding: 8px 8px 0 24px; }
+.mhead b { flex: 1; font-size: 18px; }
+.mbody { padding: 4px 24px 24px; display: flex; flex-direction: column; gap: 12px; }
+.opt { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border: 1px solid var(--outlinev); border-radius: 3px; background: transparent; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+.opt[aria-checked="true"] { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 15%, transparent); }
+.opt b { font-size: 15px; letter-spacing: 1px; }
+.small { font-size: 12px; } .dimt { color: var(--dim); }
+.hd { display: flex; align-items: center; gap: 8px; }
+.dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--dim); background: transparent; color: var(--dim); font: italic 700 11px/1 Georgia, serif; text-transform: none; cursor: pointer; display: grid; place-items: center; padding: 0; flex: none; }
+.pop { position: fixed; z-index: 60; max-width: min(320px, calc(100vw - 32px)); background: var(--bg); color: var(--fg); border: 1px solid var(--outline); border-radius: 3px; padding: 10px 12px; font-size: 13px; line-height: 1.45; }
+button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.page { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow-y: auto; overscroll-behavior: contain; }
+.page .in { max-width: 480px; margin: 0 auto; padding: 0 0 32px; }
+.bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; font-size: 22px; font-weight: 700; }
+.pbody { padding: 8px 24px 0; }
+.chips { display: flex; gap: 8px; }
+.chip { height: 36px; padding: 0 12px; border: 1px solid var(--outlinev); border-radius: 3px; background: transparent; color: var(--fg); font: inherit; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.chip.on { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 15%, transparent); }
+.stats { display: flex; margin-top: 16px; }
+.stats div { flex: 1; } .stats b { display: block; font-size: 28px; line-height: 1.1; } .stats span { font-size: 12px; letter-spacing: 2px; color: var(--dim); }
+.medals { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 4px; }
+.mp { height: 32px; padding: 0 12px; border-radius: 999px; border: 1.5px solid currentColor; background: transparent; font: inherit; font-size: 12px; letter-spacing: 1px; cursor: pointer; }
+.mp.on { background: color-mix(in srgb, currentColor 18%, transparent); }
+.arow { border-top: 1px solid var(--outlinev); padding: 14px 0; }
+.ahead { display: flex; align-items: center; gap: 16px; }
+.aicon { font-size: 44px; flex: none; display: block; width: 44px; height: 44px; }
+.aicon .icon { width: 44px; height: 44px; }
+.atext { flex: 1; min-width: 0; }
+.atext b { font-weight: 700; }
+.atext .tag { font-size: 10px; letter-spacing: 1.5px; margin-left: 8px; }
+.atext .d { font-size: 12px; }
+.aright { text-align: right; font-size: 11px; color: var(--dim); }
+.aright b { display: block; font-size: 14px; color: var(--primary); }
+.bar2 { margin: 10px 0 0 60px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--dim); }
+.bar2 i { flex: 1; height: 6px; border-radius: 3px; background: var(--outlinev); overflow: hidden; display: block; }
+.bar2 i b { display: block; height: 100%; }
+.modetag { display: inline-flex; width: 14px; height: 14px; vertical-align: -2px; margin-left: 6px; color: var(--dim); }
+</style>
+
+<div class="app">
+  <div class="scroll" id="scroll">
+    <div class="head">
+      <svg class="logo" viewBox="0 0 96 76" aria-hidden="true"><rect x="0" y="40" width="30" height="30" rx="5" fill="var(--bar)"/><rect x="26" y="22" width="30" height="30" rx="5" fill="var(--yellow)"/><rect x="52" y="4" width="30" height="30" rx="5" fill="var(--secondary)"/></svg>
+      <span class="title">lexodle</span>
+      <button class="iconbtn" type="button" aria-label="settings" id="settings">ICON_settings</button>
+    </div>
+    <div class="caption" style="margin-top:6px">a word game, in many tongues</div>
+    <button class="lang" type="button" id="lang"><svg class="flag" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#f4f4f4"/><g fill="#b22234"><rect y="0" width="24" height="1.6"/><rect y="3.2" width="24" height="1.6"/><rect y="6.4" width="24" height="1.6"/><rect y="9.6" width="24" height="1.6"/><rect y="12.8" width="24" height="1.6"/></g><rect width="10" height="8.8" fill="#3c3b6e"/></svg><span class="n">english (us)</span><span style="color:var(--dim)">&#9662;</span></button>
+    <div class="streak" id="streak"></div>
+    <hr>
+    <button class="menu with" type="button" id="ach"><span class="t">achievements  ACHN</span><span class="glyphs" style="color:var(--primary)">ICON_award ICON_crown ICON_trophy</span></button>
+    <div class="srow2"><button class="sq" type="button" id="stylebtn" aria-label="playstyle: analyst">ICON_microscope</button><button class="menu" type="button" style="margin:0;flex:1" id="history">history</button></div>
+    <button class="menu" type="button" style="margin-top:8px" id="how">how to play</button>
+  </div>
+  <div class="pinned">
+    <button class="freq" type="button" id="freq"><span id="freqt">all words equally likely</span><i class="sw" id="sw"></i></button>
+    <div class="playarea" id="play">
+      <div class="modebar"><button class="mode" type="button" id="mode" aria-label="game modes"><div class="slide" id="slide"></div></button><button class="chev l" type="button" id="prev" aria-label="previous mode">&#8249;</button><button class="chev r" type="button" id="next" aria-label="next mode">&#8250;</button></div>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+      <div class="row"><button class="btn fill" type="button" id="playbtn">play</button><button class="btn line" type="button" id="dailybtn"></button></div>
+    </div>
+  </div>
+</div>
+<div id="layer"></div>
+<div class="page" id="page" style="display:none"></div>
+
+<script>
+const ICONS = {"shield-check": ["M11.998 2l.118 .007l.059 .008l.061 .013l.111 .034a.993 .993 0 0 1 .217 .112l.104 .082l.255 .218a11 11 0 0 0 7.189 2.537l.342 -.01a1 1 0 0 1 1.005 .717a13 13 0 0 1 -9.208 16.25a1 1 0 0 1 -.502 0a13 13 0 0 1 -9.209 -16.25a1 1 0 0 1 1.005 -.717a11 11 0 0 0 7.531 -2.527l.263 -.225l.096 -.075a.993 .993 0 0 1 .217 -.112l.112 -.034a.97 .97 0 0 1 .119 -.021l.115 -.007zm3.71 7.293a1 1 0 0 0 -1.415 0l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z"], "settings": ["M14.647 4.081a.724 .724 0 0 0 1.08 .448c2.439 -1.485 5.23 1.305 3.745 3.744a.724 .724 0 0 0 .447 1.08c2.775 .673 2.775 4.62 0 5.294a.724 .724 0 0 0 -.448 1.08c1.485 2.439 -1.305 5.23 -3.744 3.745a.724 .724 0 0 0 -1.08 .447c-.673 2.775 -4.62 2.775 -5.294 0a.724 .724 0 0 0 -1.08 -.448c-2.439 1.485 -5.23 -1.305 -3.745 -3.744a.724 .724 0 0 0 -.447 -1.08c-2.775 -.673 -2.775 -4.62 0 -5.294a.724 .724 0 0 0 .448 -1.08c-1.485 -2.439 1.305 -5.23 3.744 -3.745a.722 .722 0 0 0 1.08 -.447c.673 -2.775 4.62 -2.775 5.294 0zm-2.647 4.919a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z"], "sun-high": ["M12 19a1 1 0 0 1 1 1v2a1 1 0 0 1 -2 0v-2a1 1 0 0 1 1 -1m-4.95 -2.05a1 1 0 0 1 0 1.414l-1.414 1.414a1 1 0 1 1 -1.414 -1.414l1.414 -1.414a1 1 0 0 1 1.414 0m11.314 0l1.414 1.414a1 1 0 0 1 -1.414 1.414l-1.414 -1.414a1 1 0 0 1 1.414 -1.414m-5.049 -9.836a5 5 0 1 1 -2.532 9.674a5 5 0 0 1 2.532 -9.674m-9.315 3.886a1 1 0 0 1 0 2h-2a1 1 0 0 1 0 -2zm18 0a1 1 0 0 1 0 2h-2a1 1 0 0 1 0 -2zm-16.364 -6.778l1.414 1.414a1 1 0 0 1 -1.414 1.414l-1.414 -1.414a1 1 0 0 1 1.414 -1.414m14.142 0a1 1 0 0 1 0 1.414l-1.414 1.414a1 1 0 0 1 -1.414 -1.414l1.414 -1.414a1 1 0 0 1 1.414 0m-7.778 -3.222a1 1 0 0 1 1 1v2a1 1 0 0 1 -2 0v-2a1 1 0 0 1 1 -1"], "layout-grid": ["M9 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z", "M19 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z", "M9 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z", "M19 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"], "gift": ["M11 14v8h-4a3 3 0 0 1 -3 -3v-4a1 1 0 0 1 1 -1h6zm8 0a1 1 0 0 1 1 1v4a3 3 0 0 1 -3 3h-4v-8h6zm-2.5 -12a3.5 3.5 0 0 1 3.163 5h.337a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-7v-5h-2v5h-7a2 2 0 0 1 -2 -2v-1a2 2 0 0 1 2 -2h.337a3.486 3.486 0 0 1 -.337 -1.5c0 -1.933 1.567 -3.5 3.483 -3.5c1.755 -.03 3.312 1.092 4.381 2.934l.136 .243c1.033 -1.914 2.56 -3.114 4.291 -3.175l.209 -.002zm-9 2a1.5 1.5 0 0 0 0 3h3.143c-.741 -1.905 -1.949 -3.02 -3.143 -3zm8.983 0c-1.18 -.02 -2.385 1.096 -3.126 3h3.143a1.5 1.5 0 1 0 -.017 -3z"], "apps": ["M9 3h-4a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2z", "M9 13h-4a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2z", "M19 13h-4a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2z", "M17 3a1 1 0 0 1 .993 .883l.007 .117v2h2a1 1 0 0 1 .117 1.993l-.117 .007h-2v2a1 1 0 0 1 -1.993 .117l-.007 -.117v-2h-2a1 1 0 0 1 -.117 -1.993l.117 -.007h2v-2a1 1 0 0 1 1 -1z"], "laurel-wreath": ["M16.956 2.057c.355 .124 .829 .375 1.303 .796a3.77 3.77 0 0 1 1.246 2.204c.173 .989 -.047 1.894 -.519 2.683l-.123 .194q -.097 .147 -.196 .272q .066 .234 .117 .471q .26 -.178 .545 -.307c.851 -.389 1.727 -.442 2.527 -.306q .226 .04 .346 .076a1 1 0 0 1 .689 .712l.029 .13q .015 .08 .03 .18a4.45 4.45 0 0 1 -.324 2.496a3.94 3.94 0 0 1 -1.71 1.85l-.242 .12a4.23 4.23 0 0 1 -2.234 .349a9 9 0 0 1 -.443 1.023c.37 .016 .748 .093 1.128 .24c.732 .28 1.299 .758 1.711 1.367a3.95 3.95 0 0 1 .654 1.613a1 1 0 0 1 -.356 .917a3.8 3.8 0 0 1 -.716 .443c-.933 .455 -1.978 .588 -3.043 .179l-.032 -.015l-.205 -.086a3.6 3.6 0 0 1 -1.33 -1.069l-.143 -.197a4 4 0 0 1 -.26 -.433a6 6 0 0 1 -.927 .511q .18 .262 .337 .56a7.4 7.4 0 0 1 .66 1.747a1 1 0 0 1 -1.95 .444l-.028 -.11a6 6 0 0 0 -.449 -1.143c-.342 -.645 -.71 -.968 -1.048 -.968s-.706 .323 -1.048 .969a5.6 5.6 0 0 0 -.367 .874l-.082 .269l-.028 .11a1 1 0 0 1 -1.95 -.444a7.3 7.3 0 0 1 .66 -1.747q .158 -.298 .337 -.561a6.4 6.4 0 0 1 -.93 -.508a4 4 0 0 1 -.256 .43c-.366 .541 -.855 .98 -1.473 1.267l-.238 .1c-.994 .382 -1.97 .292 -2.855 -.091l-.188 -.087a3.8 3.8 0 0 1 -.716 -.443a1 1 0 0 1 -.356 -.917a3.95 3.95 0 0 1 .654 -1.613a3.6 3.6 0 0 1 1.71 -1.368c.38 -.146 .758 -.223 1.13 -.24a9 9 0 0 1 -.445 -1.023a4.23 4.23 0 0 1 -2.233 -.348a4 4 0 0 1 -.916 -.587l-.207 -.191a4 4 0 0 1 -.724 -.977l-.105 -.216a4.45 4.45 0 0 1 -.265 -2.806a1 1 0 0 1 .69 -.712q .119 -.036 .345 -.076c.801 -.135 1.678 -.082 2.53 .308q .283 .129 .545 .304q .048 -.235 .112 -.47a5 5 0 0 1 -.194 -.272c-.556 -.832 -.83 -1.806 -.642 -2.877l.05 -.242a3.75 3.75 0 0 1 1.027 -1.803l.169 -.159a4 4 0 0 1 1.303 -.796a1 1 0 0 1 .975 .178c.2 .168 .462 .446 .719 .83c.556 .833 .83 1.807 .642 2.878a3.77 3.77 0 0 1 -1.246 2.204c-.303 .27 -.607 .47 -.879 .61a7.5 7.5 0 0 0 -.255 1.971c0 3.502 2.285 6.272 5 6.272s5 -2.77 5 -6.276a7.6 7.6 0 0 0 -.253 -1.967a4.3 4.3 0 0 1 -.881 -.61a3.77 3.77 0 0 1 -1.246 -2.204c-.188 -1.07 .086 -2.045 .642 -2.877c.257 -.385 .52 -.663 .72 -.831a1 1 0 0 1 .974 -.178"], "speedboat": ["M14 7a1 1 0 0 1 .832 .445l1.702 2.555h5.466a1 1 0 0 1 .833 1.554l-3.1 4.66a4 4 0 0 1 -3.333 1.786h-14.4a1 1 0 0 1 -.936 -1.351l1.5 -4a1 1 0 0 1 .936 -.649h1.756l.9 -3h-.156a1 1 0 0 1 -.993 -.883l-.007 -.117a1 1 0 0 1 1 -1zm-6.657 5h1.887c.383 0 .762 -.074 1.12 -.219l3.557 -1.418q .186 -.075 .377 -.135l-.82 -1.228h-5.22z"], "flag": ["M4 5a1 1 0 0 1 .3 -.714a6 6 0 0 1 8.213 -.176l.351 .328a4 4 0 0 0 5.272 0l.249 -.227c.61 -.483 1.527 -.097 1.61 .676l.005 .113v9a1 1 0 0 1 -.3 .714a6 6 0 0 1 -8.213 .176l-.351 -.328a4 4 0 0 0 -5.136 -.114v6.552a1 1 0 0 1 -1.993 .117l-.007 -.117v-16z"], "candle": ["M14 9a2 2 0 0 1 2 2v10a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-10a2 2 0 0 1 2 -2z", "M11.254 1.334a1 1 0 0 1 1.491 0l1.452 1.623a3 3 0 0 1 -4.196 4.28c-1.195 -1.07 -1.339 -2.889 -.297 -4.166z"], "cards": ["M10.348 3.169l-7.15 3.113a2 2 0 0 0 -1.03 2.608l4.92 11.895a1.96 1.96 0 0 0 2.59 1.063l7.142 -3.11a2.002 2.002 0 0 0 1.036 -2.611l-4.92 -11.894a1.96 1.96 0 0 0 -2.588 -1.064z", "M16 3a2 2 0 0 1 1.995 1.85l.005 .15v3.5a1 1 0 0 1 -1.993 .117l-.007 -.117v-3.5h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z", "M19.08 5.61a1 1 0 0 1 1.31 -.53c.257 .108 .505 .21 .769 .314a2 2 0 0 1 1.114 2.479l-.056 .146l-2.298 5.374a1 1 0 0 1 -1.878 -.676l.04 -.11l2.296 -5.371l-.366 -.148l-.402 -.167a1 1 0 0 1 -.53 -1.312z"], "diamonds": ["M12 2.005c-.777 0 -1.508 .367 -1.971 .99l-5.362 6.895c-.89 1.136 -.89 3.083 0 4.227l5.375 6.911a2.457 2.457 0 0 0 3.93 -.017l5.361 -6.894c.89 -1.136 .89 -3.083 0 -4.227l-5.375 -6.911a2.446 2.446 0 0 0 -1.958 -.974z"], "flame": ["M10 2c0 -.88 1.056 -1.331 1.692 -.722c1.958 1.876 3.096 5.995 1.75 9.12l-.08 .174l.012 .003c.625 .133 1.203 -.43 2.303 -2.173l.14 -.224a1 1 0 0 1 1.582 -.153c1.334 1.435 2.601 4.377 2.601 6.27c0 4.265 -3.591 7.705 -8 7.705s-8 -3.44 -8 -7.706c0 -2.252 1.022 -4.716 2.632 -6.301l.605 -.589c.241 -.236 .434 -.43 .618 -.624c1.43 -1.512 2.145 -2.924 2.145 -4.78"], "bike": ["M5 14a4 4 0 1 1 -4 4l.005 -.2a4 4 0 0 1 3.995 -3.8", "M19 14a4 4 0 1 1 -4 4l.005 -.2a4 4 0 0 1 3.995 -3.8", "M14.832 7.445l1.703 2.555h2.465a1 1 0 0 1 .993 .883l.007 .117a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -.832 -.445l-1.396 -2.093l-3.275 2.62l2.21 2.21a1 1 0 0 1 .284 .577l.009 .131v4a1 1 0 0 1 -2 0v-3.585l-2.707 -2.708a1 1 0 0 1 -.01 -1.403l.092 -.085l5 -4a1 1 0 0 1 1.457 .226", "M17 3a2 2 0 1 1 -2 2l.005 -.15a2 2 0 0 1 1.995 -1.85"], "info-circle": ["M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -19.995 .324l-.005 -.324l.004 -.28c.148 -5.393 4.566 -9.72 9.996 -9.72zm0 9h-1l-.117 .007a1 1 0 0 0 0 1.986l.117 .007v3l.007 .117a1 1 0 0 0 .876 .876l.117 .007h1l.117 -.007a1 1 0 0 0 .876 -.876l.007 -.117l-.007 -.117a1 1 0 0 0 -.764 -.857l-.112 -.02l-.117 -.006v-3l-.007 -.117a1 1 0 0 0 -.876 -.876l-.117 -.007zm.01 -3l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007z"], "square-number-3": ["M18.333 2c1.96 0 3.56 1.537 3.662 3.472l.005 .195v12.666c0 1.96 -1.537 3.56 -3.472 3.662l-.195 .005h-12.666a3.667 3.667 0 0 1 -3.662 -3.472l-.005 -.195v-12.666c0 -1.96 1.537 -3.56 3.472 -3.662l.195 -.005h12.666zm-5.333 5h-2l-.15 .005a2 2 0 0 0 -1.85 1.995a1 1 0 0 0 1.974 .23l.02 -.113l.006 -.117h2v2h-2l-.133 .007c-1.111 .12 -1.154 1.73 -.128 1.965l.128 .021l.133 .007h2v2h-2l-.007 -.117a1 1 0 0 0 -1.993 .117a2 2 0 0 0 1.85 1.995l.15 .005h2l.15 -.005a2 2 0 0 0 1.844 -1.838l.006 -.157v-2l-.005 -.15a1.988 1.988 0 0 0 -.17 -.667l-.075 -.152l-.019 -.032l.02 -.03a2.01 2.01 0 0 0 .242 -.795l.007 -.174v-2l-.005 -.15a2 2 0 0 0 -1.838 -1.844l-.157 -.006z"], "scale": ["M12 2a1 1 0 0 1 1 1v1.152l5.159 .86a.98 .98 0 0 1 .636 .38l.041 .059l.058 .102l3.024 6.05l.035 .094l.025 .096l.016 .1l.005 .12l-.003 .061a3.996 3.996 0 0 1 -3.996 3.926a4 4 0 0 1 -4 -4a1 1 0 0 1 .106 -.447l2.393 -4.79l-3.499 -.583v12.82h4a1 1 0 0 1 0 2h-10a1 1 0 0 1 0 -2h4v-12.82l-3.5 .583l2.418 4.84l.035 .094l.025 .096l.016 .1l.005 .12l-.003 .061a3.996 3.996 0 0 1 -3.996 3.926a4 4 0 0 1 -4 -4a1 1 0 0 1 .106 -.447l3.034 -6.065l.039 -.061l.025 -.034a.98 .98 0 0 1 .636 -.38l5.16 -.862v-1.151a1 1 0 0 1 1 -1"], "clock": ["M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 2.66a1 1 0 0 0 -.993 .883l-.007 .117v5l.009 .131a1 1 0 0 0 .197 .477l.087 .1l3 3l.094 .082a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-2.707 -2.708v-4.585l-.007 -.117a1 1 0 0 0 -.993 -.883z"], "bulb": ["M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z", "M12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z", "M21 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z", "M4.893 4.893a1 1 0 0 1 1.32 -.083l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 0 -1.414z", "M17.693 4.893a1 1 0 0 1 1.497 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7z", "M14 18a1 1 0 0 1 1 1a3 3 0 0 1 -6 0a1 1 0 0 1 .883 -.993l.117 -.007h4z", "M12 6a6 6 0 0 1 3.6 10.8a1 1 0 0 1 -.471 .192l-.129 .008h-6a1 1 0 0 1 -.6 -.2a6 6 0 0 1 3.6 -10.8z"], "chess-knight": ["M8.959 1.99l-.147 .028l-.115 .029a1 1 0 0 0 -.646 1.27l.749 2.245l-2.815 1.735a2 2 0 0 0 -.655 2.751l.089 .133a2 2 0 0 0 1.614 .819l1.563 -.001l-1.614 4.674a1 1 0 0 0 .945 1.327h7.961a1 1 0 0 0 1 -.978l.112 -5c0 -3.827 -1.555 -6.878 -4.67 -7.966l-2.399 -.83l-.375 -.121l-.258 -.074l-.135 -.031l-.101 -.013l-.055 -.001l-.048 .003z", "M18 18h-12a1 1 0 0 0 -1 1a2 2 0 0 0 2 2h10a2 2 0 0 0 1.987 -1.768l.011 -.174a1 1 0 0 0 -.998 -1.058z"], "sparkles": ["M16 19a1 1 0 0 1 0 -2a1 1 0 0 0 1 -1c0 -1.333 2 -1.333 2 0a1 1 0 0 0 1 1c1.333 0 1.333 2 0 2a1 1 0 0 0 -1 1c0 1.333 -2 1.333 -2 0a1 1 0 0 0 -1 -1", "M3 11a5 5 0 0 0 5 -5c0 -1.333 2 -1.333 2 0a5 5 0 0 0 5 5c1.333 0 1.333 2 0 2a5 5 0 0 0 -5 5a1 1 0 0 1 -2 0a5 5 0 0 0 -5 -5c-1.333 0 -1.333 -2 0 -2", "M16 7a1 1 0 0 1 0 -2a1 1 0 0 0 1 -1c0 -1.333 2 -1.333 2 0a1 1 0 0 0 1 1c1.333 0 1.333 2 0 2a1 1 0 0 0 -1 1c0 1.333 -2 1.333 -2 0a1 1 0 0 0 -1 -1"], "flare": ["M11.106 2.553a1 1 0 0 1 1.788 0l2.851 5.701l5.702 2.852a1 1 0 0 1 .11 1.725l-.11 .063l-5.702 2.851l-2.85 5.702a1 1 0 0 1 -1.726 .11l-.063 -.11l-2.852 -5.702l-5.701 -2.85a1 1 0 0 1 -.11 -1.726l.11 -.063l5.701 -2.852z"], "world": ["M21.165 16a10 10 0 0 1 -8.434 5.973a1 1 0 0 0 .617 -.444a18 18 0 0 0 2.28 -5.528z", "M8.372 16a18 18 0 0 0 2.28 5.53a1 1 0 0 0 .616 .443a10 10 0 0 1 -8.433 -5.973z", "M13.57 16a16 16 0 0 1 -1.57 3.884a16 16 0 0 1 -1.57 -3.884", "M8.034 10a18 18 0 0 0 0 4h-5.832a10 10 0 0 1 -.002 -4z", "M13.952 10a16 16 0 0 1 0 4h-3.904a16 16 0 0 1 0 -4z", "M21.8 10a10.05 10.05 0 0 1 -.002 4h-5.832c.149 -1.329 .149 -2.67 0 -4z", "M11.267 2.027a1 1 0 0 0 -.615 .444a18 18 0 0 0 -2.28 5.529h-5.54a10.01 10.01 0 0 1 8.334 -5.967z", "M12 4.116a16 16 0 0 1 1.57 3.885h-3.14c.34 -1.317 .85 -2.6 1.53 -3.817z", "M12.733 2.026a10.01 10.01 0 0 1 8.435 5.974h-5.54a18 18 0 0 0 -2.28 -5.53a1 1 0 0 0 -.517 -.414z"], "compass": ["M17 3.34a10 10 0 1 1 -15 8.66l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 14.66a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m3.684 -10.949l-6 2a1 1 0 0 0 -.633 .633l-2.007 6.026l-.023 .086l-.017 .113l-.004 .068v.044l.009 .111l.012 .07l.04 .144l.045 .1l.054 .095l.064 .09l.069 .075l.084 .074l.098 .07l.1 .054l.078 .033l.105 .033l.109 .02l.043 .005l.068 .004h.044l.111 -.009l.07 -.012l.02 -.006l.019 -.002l.074 -.022l6 -2a1 1 0 0 0 .633 -.633l2 -6a1 1 0 0 0 -1.265 -1.265zm-1.265 2.529l-1.21 3.629l-3.629 1.21l1.21 -3.629l3.629 -1.21zm-9.419 1.42a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m14 0a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m-7 -7a1 1 0 1 0 0 2a1 1 0 0 0 0 -2"], "dice-5": ["M18.333 2c1.96 0 3.56 1.537 3.662 3.472l.005 .195v12.666c0 1.96 -1.537 3.56 -3.472 3.662l-.195 .005h-12.666a3.667 3.667 0 0 1 -3.662 -3.472l-.005 -.195v-12.666c0 -1.96 1.537 -3.56 3.472 -3.662l.195 -.005h12.666zm-2.833 12a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3m-7 0a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3m3.5 -3.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3m-3.5 -3.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3m7 0a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0 -3"], "boom": ["M7.514 3.836c.151 -.909 1.346 -1.147 1.834 -.366c2.294 3.67 4.275 4.048 5.758 1.083c.471 -.944 1.894 -.608 1.894 .447c0 2.448 1.552 4 4 4c.89 0 1.337 1.077 .707 1.707c-1.61 1.61 -1.61 2.975 0 4.581c.63 .63 .185 1.707 -.706 1.708c-2.448 .003 -3.001 .556 -3.001 3.004c0 .961 -1.223 1.369 -1.8 .6c-2.325 -3.1 -5.494 -2.856 -7.368 -.045c-.503 .754 -1.67 .504 -1.818 -.39c-.365 -2.188 -1.04 -2.656 -4.178 -3.179a1 1 0 0 1 -.543 -1.693c1.618 -1.618 1.618 -3.027 -.053 -4.981l-.009 -.013l-.013 -.014l-.044 -.062l-.01 -.011l-.006 -.013l-.038 -.066l-.017 -.028l-.001 -.004l-.027 -.066l-.019 -.041a1 1 0 0 1 -.051 -.233l-.002 -.045l-.003 -.068a1 1 0 0 1 .06 -.328l.009 -.023l.023 -.049l.011 -.029l.009 -.015l.007 -.016l.019 -.029l.02 -.035l.012 -.017l.013 -.022l.027 -.034l.011 -.016l.018 -.02l.02 -.025l.021 -.02l.015 -.017l.035 -.032l.02 -.019l.009 -.007l.018 -.015l.055 -.039l.018 -.015l.008 -.004l.01 -.007l.061 -.034l.028 -.016l.004 -.002l.063 -.026l.044 -.019a1 1 0 0 1 .115 -.032l.004 -.002l.267 -.063c2.39 -.613 3.934 -2.19 4.411 -4.523z"], "microscope": ["M15.707 4.293l3 3a1 1 0 0 1 0 1.414l-1.553 1.555a7 7 0 0 1 -.256 9.74l2.102 -.002a1 1 0 0 1 0 2h-14a1 1 0 0 1 0 -2h1v-1a1 1 0 0 1 0 -2h2a1 1 0 0 1 0 2v1h4a5 5 0 0 0 3.737 -8.323l-3.03 3.03a1 1 0 0 1 -1.414 0l-.793 -.792l-.793 .792a1 1 0 1 1 -1.414 -1.414l.792 -.793l-.792 -.793a1 1 0 0 1 0 -1.414l6 -6a1 1 0 0 1 1.414 0m2 -2l3 3a1 1 0 1 1 -1.414 1.414l-3 -3a1 1 0 1 1 1.414 -1.414"], "mood-crazy-happy": ["M17 3.34a10 10 0 1 1 -15 8.66l.005 -.324a10 10 0 0 1 14.995 -8.336m-1.8 10.946a1 1 0 0 0 -1.414 .014a2.5 2.5 0 0 1 -3.572 0a1 1 0 0 0 -1.428 1.4a4.5 4.5 0 0 0 6.428 0a1 1 0 0 0 -.014 -1.414m-7.493 -6.493a1 1 0 0 0 -1.414 1.414l.792 .793l-.792 .793a1 1 0 0 0 1.414 1.414l.793 -.792l.793 .792a1 1 0 1 0 1.414 -1.414l-.792 -.793l.792 -.793a1 1 0 1 0 -1.414 -1.414l-.793 .792zm7 0a1 1 0 0 0 -1.414 1.414l.792 .793l-.792 .793a1 1 0 0 0 1.414 1.414l.793 -.792l.793 .792a1 1 0 0 0 1.414 -1.414l-.792 -.793l.792 -.793a1 1 0 1 0 -1.414 -1.414l-.793 .792z"], "campfire": ["M19.757 16.03a1 1 0 0 1 .597 1.905l-.111 .035l-16 4a1 1 0 0 1 -.597 -1.905l.111 -.035l16 -4z", "M3.03 16.757a1 1 0 0 1 1.098 -.749l.115 .022l16 4a1 1 0 0 1 -.37 1.962l-.116 -.022l-16 -4a1 1 0 0 1 -.727 -1.213z", "M13.553 2.106c-4.174 2.086 -6.553 5.358 -6.553 8.894a5 5 0 0 0 10 0c0 -1.047 -.188 -1.808 -.606 -2.705l-.169 -.345l-.33 -.647c-.621 -1.24 -.895 -2.338 -.895 -4.303a1 1 0 0 0 -1.447 -.894z"], "butterfly": ["M17.117 6.244l.228 .076a5.5 5.5 0 0 1 1.24 9.738l-.063 .039l.02 .034a4 4 0 0 1 .101 3.533l-.093 .19a4 4 0 0 1 -5.55 1.608v-14.857a5.5 5.5 0 0 1 4.118 -.36", "M8.505 6c.885 0 1.736 .21 2.495 .597v14.87a4 4 0 0 1 -1.012 .41l-.196 .045a4 4 0 0 1 -4.424 -5.587l.118 -.238l-.035 -.023a5.5 5.5 0 0 1 -2.397 -5.258l.034 -.233a5.5 5.5 0 0 1 5.417 -4.583", "M14.445 2.168a1 1 0 0 1 1.11 1.664l-3 2a1 1 0 0 1 -1.11 0l-3 -2a1 1 0 0 1 1.11 -1.664l2.444 1.63z"], "hourglass": ["M17 2a2 2 0 0 1 1.995 1.85l.005 .15v2a6.996 6.996 0 0 1 -3.393 6a6.994 6.994 0 0 1 3.388 5.728l.005 .272v2a2 2 0 0 1 -1.85 1.995l-.15 .005h-10a2 2 0 0 1 -1.995 -1.85l-.005 -.15v-2a6.996 6.996 0 0 1 3.393 -6a6.994 6.994 0 0 1 -3.388 -5.728l-.005 -.272v-2a2 2 0 0 1 1.85 -1.995l.15 -.005h10z"], "confetti": ["M3 5a1 1 0 0 1 1 -1a1 1 0 0 1 1.993 -.117l.007 .117a1 1 0 0 1 .117 1.993l-.117 .007a1 1 0 1 1 -2 0a1 1 0 0 1 -1 -1m7.53 -1.243a1 1 0 1 1 1.94 .486l-.5 2a1 1 0 1 1 -1.94 -.486zm6.47 1.243a1 1 0 0 1 1 -1a1 1 0 0 1 1.993 -.117l.007 .117a1 1 0 0 1 .117 1.993l-.117 .007a1 1 0 0 1 -2 0a1 1 0 0 1 -1 -1m-8.81 4.293l6.517 6.518a1 1 0 0 1 -.29 1.617l-9.573 4.387a2 2 0 0 1 -2.661 -2.652l4.39 -9.58a1 1 0 0 1 1.616 -.29m7.517 -1a1 1 0 0 1 0 1.414l-1 1a1 1 0 0 1 -1.414 -1.414l1 -1a1 1 0 0 1 1.414 0m4.05 3.237a1 1 0 0 1 .486 1.94l-2 .5a1 1 0 0 1 -.486 -1.94zm-2.756 7.47a1 1 0 0 1 1 -1a1 1 0 0 1 1.993 -.117l.007 .117a1 1 0 0 1 .117 1.993l-.117 .007a1 1 0 0 1 -2 0a1 1 0 0 1 -1 -1"], "square-number-4": ["M18.333 2c1.96 0 3.56 1.537 3.662 3.472l.005 .195v12.666c0 1.96 -1.537 3.56 -3.472 3.662l-.195 .005h-12.666a3.667 3.667 0 0 1 -3.662 -3.472l-.005 -.195v-12.666c0 -1.96 1.537 -3.56 3.472 -3.662l.195 -.005h12.666zm-4.333 5a1 1 0 0 0 -.993 .883l-.007 .117v3h-2v-3l-.007 -.117a1 1 0 0 0 -1.986 0l-.007 .117v3l.005 .15a2 2 0 0 0 1.838 1.844l.157 .006h2v3l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-8l-.007 -.117a1 1 0 0 0 -.993 -.883z"], "crown": ["M19 19h-14c-.5 0 -.9 -.3 -1 -.8l-2 -10c0 -.4 .1 -.8 .5 -1.1c.4 -.2 .8 -.2 1.1 0l4.1 3.3l3.4 -5.1c.4 -.6 1.3 -.6 1.7 0l3.4 5.1l4.1 -3.3c.3 -.3 .8 -.3 1.1 0c.4 .2 .5 .6 .5 1.1l-2 10c0 .5 -.5 .8 -1 .8z"], "square-number-7": ["M18.333 2c1.96 0 3.56 1.537 3.662 3.472l.005 .195v12.666c0 1.96 -1.537 3.56 -3.472 3.662l-.195 .005h-12.666a3.667 3.667 0 0 1 -3.662 -3.472l-.005 -.195v-12.666c0 -1.96 1.537 -3.56 3.472 -3.662l.195 -.005h12.666zm-4.333 5h-4l-.117 .007a1 1 0 0 0 -.876 .876l-.007 .117l.007 .117a1 1 0 0 0 .876 .876l.117 .007h2.718l-1.688 6.757l-.022 .115a1 1 0 0 0 1.927 .482l.035 -.111l2 -8l.021 -.112a1 1 0 0 0 -.878 -1.125l-.113 -.006z"], "feather": ["M8 9.585v6.415h6.414l-2.707 2.707a1 1 0 0 1 -.112 .097l-.11 .071l-.114 .054l-.105 .035l-.149 .03l-.117 .006h-4.586l-1.707 1.707a1 1 0 1 1 -1.414 -1.414l1.707 -1.709v-4.584l.003 -.075l.017 -.126l.03 -.111l.044 -.111l.052 -.098l.067 -.096l.08 -.09z", "M19.414 11l-3 3h-4.914l2.914 -3z", "M13 4.586v4.998l-3 3v-4.999z", "M16.482 3a4.515 4.515 0 0 1 4.518 4.514a4.7 4.7 0 0 1 -.239 1.487l-5.761 -.001v-5.76c.469 -.158 .968 -.24 1.482 -.24"], "chef-hat": ["M19 19.002v1.998a1 1 0 0 1 -.883 .993l-.117 .007h-12a1 1 0 0 1 -1 -1v-1.994a1 1 0 0 1 1 -1l12 -.004a1 1 0 0 1 1 1", "M12 2a5 5 0 0 1 4.533 2.888l.06 .137l.136 -.009a5 5 0 0 1 4.99 3.477l.063 .213a5 5 0 0 1 -2.696 5.831l-.087 .037v1.428a1 1 0 0 1 -1 1l-12 .004a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.433l-.123 -.055a5 5 0 0 1 -2.6 -3.001l-.064 -.223a5 5 0 0 1 5.193 -6.27l.066 -.142a5 5 0 0 1 4.302 -2.877z"], "diamond": ["M18 4a1 1 0 0 1 .783 .378l.074 .108l3 5a1 1 0 0 1 -.032 1.078l-.08 .103l-8.53 9.533a1.7 1.7 0 0 1 -1.215 .51c-.4 0 -.785 -.14 -1.11 -.417l-.135 -.126l-8.5 -9.5a1 1 0 0 1 -.172 -1.067l.06 -.115l3.013 -5.022l.064 -.09a.982 .982 0 0 1 .155 -.154l.089 -.064l.088 -.05l.05 -.023l.06 -.025l.109 -.032l.112 -.02l.117 -.005h12zm-8.886 3.943a1 1 0 0 0 -1.371 .343l-.6 1l-.06 .116a1 1 0 0 0 .177 1.07l2 2.2l.09 .088a1 1 0 0 0 1.323 -.02l.087 -.09a1 1 0 0 0 -.02 -1.323l-1.501 -1.65l.218 -.363l.055 -.103a1 1 0 0 0 -.398 -1.268z"], "replace": ["M8 2h-4a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2z", "M20 14h-4a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2z", "M16.707 2.293a1 1 0 0 1 .083 1.32l-.083 .094l-1.293 1.293h3.586a3 3 0 0 1 2.995 2.824l.005 .176v3a1 1 0 0 1 -1.993 .117l-.007 -.117v-3a1 1 0 0 0 -.883 -.993l-.117 -.007h-3.585l1.292 1.293a1 1 0 0 1 -1.32 1.497l-.094 -.083l-3 -3a.98 .98 0 0 1 -.28 -.872l.036 -.146l.04 -.104c.058 -.126 .14 -.24 .245 -.334l2.959 -2.958a1 1 0 0 1 1.414 0z", "M3 12a1 1 0 0 1 .993 .883l.007 .117v3a1 1 0 0 0 .883 .993l.117 .007h3.585l-1.292 -1.293a1 1 0 0 1 -.083 -1.32l.083 -.094a1 1 0 0 1 1.32 -.083l.094 .083l3 3a.98 .98 0 0 1 .28 .872l-.036 .146l-.04 .104a1.02 1.02 0 0 1 -.245 .334l-2.959 2.958a1 1 0 0 1 -1.497 -1.32l.083 -.094l1.291 -1.293h-3.584a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-3a1 1 0 0 1 1 -1z"], "badges": ["M16.486 12.143l-4.486 2.69l-4.486 -2.69a1 1 0 0 0 -1.514 .857v4a1 1 0 0 0 .486 .857l5 3a1 1 0 0 0 1.028 0l5 -3a1 1 0 0 0 .486 -.857v-4a1 1 0 0 0 -1.514 -.857z", "M16.486 3.143l-4.486 2.69l-4.486 -2.69a1 1 0 0 0 -1.514 .857v4a1 1 0 0 0 .486 .857l5 3a1 1 0 0 0 1.028 0l5 -3a1 1 0 0 0 .486 -.857v-4a1 1 0 0 0 -1.514 -.857z"], "bomb": ["M14.499 3.996a2.2 2.2 0 0 1 1.556 .645l3.302 3.301a2.2 2.2 0 0 1 0 3.113l-.567 .567l.043 .192a8.5 8.5 0 0 1 -3.732 8.83l-.23 .144a8.5 8.5 0 1 1 -2.687 -15.623l.192 .042l.567 -.566a2.2 2.2 0 0 1 1.362 -.636zm-4.499 5.004a4 4 0 0 0 -4 4a1 1 0 0 0 2 0a2 2 0 0 1 2 -2a1 1 0 0 0 0 -2z", "M21 2a1 1 0 0 1 .117 1.993l-.117 .007h-1c0 .83 -.302 1.629 -.846 2.25l-.154 .163l-1.293 1.293a1 1 0 0 1 -1.497 -1.32l.083 -.094l1.293 -1.292c.232 -.232 .375 -.537 .407 -.86l.007 -.14a2 2 0 0 1 1.85 -1.995l.15 -.005h1z"], "building-broadcast-tower": ["M12 10a2 2 0 0 1 1.497 3.327l2.452 7.357a1 1 0 1 1 -1.898 .632l-.44 -1.316h-3.224l-.438 1.317a1 1 0 0 1 -1.152 .663l-.113 -.03a1 1 0 0 1 -.633 -1.265l2.452 -7.357a2 2 0 0 1 -.503 -1.328l.005 -.15a2 2 0 0 1 1.995 -1.85", "M18.093 4.078a10 10 0 0 1 3.137 11.776a1 1 0 0 1 -1.846 -.77a8 8 0 1 0 -14.769 0a1 1 0 0 1 -1.846 .77a10 10 0 0 1 15.324 -11.776", "M15.657 7.243a6 6 0 0 1 1.882 7.066a1 1 0 1 1 -1.846 -.77a4 4 0 1 0 -7.384 0a1 1 0 1 1 -1.846 .77a6 6 0 0 1 9.194 -7.066"], "square-number-8": ["M18.333 2c1.96 0 3.56 1.537 3.662 3.472l.005 .195v12.666c0 1.96 -1.537 3.56 -3.472 3.662l-.195 .005h-12.666a3.667 3.667 0 0 1 -3.662 -3.472l-.005 -.195v-12.666c0 -1.96 1.537 -3.56 3.472 -3.662l.195 -.005h12.666zm-5.333 5h-2l-.15 .005a2 2 0 0 0 -1.844 1.838l-.006 .157v2l.005 .15c.018 .236 .077 .46 .17 .667l.075 .152l.018 .03l-.018 .032c-.133 .24 -.218 .509 -.243 .795l-.007 .174v2l.005 .15a2 2 0 0 0 1.838 1.844l.157 .006h2l.15 -.005a2 2 0 0 0 1.844 -1.838l.006 -.157v-2l-.005 -.15a1.988 1.988 0 0 0 -.17 -.667l-.075 -.152l-.019 -.032l.02 -.03a2.01 2.01 0 0 0 .242 -.795l.007 -.174v-2l-.005 -.15a2 2 0 0 0 -1.838 -1.844l-.157 -.006zm0 6v2h-2v-2h2zm0 -4v2h-2v-2h2z"], "award": ["M19.496 13.983l1.966 3.406a1.001 1.001 0 0 1 -.705 1.488l-.113 .011l-.112 -.001l-2.933 -.19l-1.303 2.636a1.001 1.001 0 0 1 -1.608 .26l-.082 -.094l-.072 -.11l-1.968 -3.407a8.994 8.994 0 0 0 6.93 -3.999z", "M11.43 17.982l-1.966 3.408a1.001 1.001 0 0 1 -1.622 .157l-.076 -.1l-.064 -.114l-1.304 -2.635l-2.931 .19a1.001 1.001 0 0 1 -1.022 -1.29l.04 -.107l.05 -.1l1.968 -3.409a8.994 8.994 0 0 0 6.927 4.001z", "M12 2l.24 .004a7 7 0 0 1 6.76 6.996l-.003 .193l-.007 .192l-.018 .245l-.026 .242l-.024 .178a6.985 6.985 0 0 1 -.317 1.268l-.116 .308l-.153 .348a7.001 7.001 0 0 1 -12.688 -.028l-.13 -.297l-.052 -.133l-.08 -.217l-.095 -.294a6.96 6.96 0 0 1 -.093 -.344l-.06 -.271l-.049 -.271l-.02 -.139l-.039 -.323l-.024 -.365l-.006 -.292a7 7 0 0 1 6.76 -6.996l.24 -.004z"], "lungs": ["M12 3a1 1 0 0 1 1 1v5a2 2 0 0 0 1 1.732v-3.475c0 -1.242 .995 -2.257 2.233 -2.257c.372 0 .738 .094 1.122 .307l.18 .117c1.695 1.23 2.76 3.035 3.773 6.34q .674 2.204 .692 5.06c.016 2.195 -1.657 4.024 -3.843 4.168l-.237 .008c-2.17 0 -3.92 -1.787 -3.92 -3.98v-4.146a4 4 0 0 1 -1.893 -1.112l-.107 -.118l-.107 .118a4 4 0 0 1 -1.892 1.112l-.001 4.146c0 2.193 -1.75 3.98 -3.919 3.98l-.268 -.01c-2.155 -.142 -3.827 -1.971 -3.811 -4.165q .018 -2.858 .692 -5.06c1.011 -3.307 2.076 -5.112 3.822 -6.375l.188 -.117a2.2 2.2 0 0 1 1.064 -.273c1.237 0 2.232 1.015 2.232 2.257l.001 3.475a2 2 0 0 0 .999 -1.732v-5a1 1 0 0 1 1 -1"], "bolt": ["M13 2l.018 .001l.016 .001l.083 .005l.011 .002h.011l.038 .009l.052 .008l.016 .006l.011 .001l.029 .011l.052 .014l.019 .009l.015 .004l.028 .014l.04 .017l.021 .012l.022 .01l.023 .015l.031 .017l.034 .024l.018 .011l.013 .012l.024 .017l.038 .034l.022 .017l.008 .01l.014 .012l.036 .041l.026 .027l.006 .009c.12 .147 .196 .322 .218 .513l.001 .012l.002 .041l.004 .064v6h5a1 1 0 0 1 .868 1.497l-.06 .091l-8 11c-.568 .783 -1.808 .38 -1.808 -.588v-6h-5a1 1 0 0 1 -.868 -1.497l.06 -.091l8 -11l.01 -.013l.018 -.024l.033 -.038l.018 -.022l.009 -.008l.013 -.014l.04 -.036l.028 -.026l.008 -.006a1 1 0 0 1 .402 -.199l.011 -.001l.027 -.005l.074 -.013l.011 -.001l.041 -.002z"], "bubble-text": ["M12.4 2l.253 .005a6.34 6.34 0 0 1 5.235 3.166l.089 .163l.178 .039a6.33 6.33 0 0 1 4.254 3.406l.105 .228a6.334 6.334 0 0 1 -5.74 8.865l-.144 -.002l-.037 .052a5.26 5.26 0 0 1 -5.458 1.926l-.186 -.051l-3.435 2.06a1 1 0 0 1 -1.508 -.743l-.006 -.114v-2.435l-.055 -.026a3.67 3.67 0 0 1 -1.554 -1.498l-.102 -.199a3.67 3.67 0 0 1 -.312 -2.14l.038 -.21l-.116 -.092a5.8 5.8 0 0 1 -1.887 -6.025l.071 -.238a5.8 5.8 0 0 1 5.42 -4.004h.157l.15 -.165a6.33 6.33 0 0 1 4.33 -1.963zm1.6 11h-5a1 1 0 0 0 0 2h5a1 1 0 0 0 0 -2m3 -4h-10a1 1 0 1 0 0 2h10a1 1 0 0 0 0 -2"], "clover": ["M12.712 13.297l3.398 3.442a3.104 3.104 0 0 1 0 4.351a3.04 3.04 0 0 1 -4.036 .27l-.075 -.062l-.073 .062a3.04 3.04 0 0 1 -1.664 .634l-.203 .007a3.04 3.04 0 0 1 -2.17 -.91a3.104 3.104 0 0 1 .002 -4.354l3.397 -3.44a1 1 0 0 1 1.424 0m8.378 -5.407a3.04 3.04 0 0 1 .27 4.037l-.062 .073l.062 .075a3.04 3.04 0 0 1 .634 1.664l.007 .203a3.04 3.04 0 0 1 -.91 2.17a3.104 3.104 0 0 1 -4.354 -.002l-3.44 -3.397a1 1 0 0 1 0 -1.424l3.443 -3.399a3.104 3.104 0 0 1 4.351 0m-13.827 .002l3.44 3.397a1 1 0 0 1 0 1.424l-3.444 3.397a3.104 3.104 0 0 1 -4.351 0a3.04 3.04 0 0 1 -.27 -4.036l.062 -.075l-.062 -.073a3.04 3.04 0 0 1 -.634 -1.664l-.007 -.203c0 -.816 .328 -1.598 .91 -2.17a3.104 3.104 0 0 1 4.354 .002m6.678 -5.891a3.04 3.04 0 0 1 2.17 .91a3.104 3.104 0 0 1 -.002 4.354l-3.397 3.44a1 1 0 0 1 -1.424 0l-3.397 -3.444a3.104 3.104 0 0 1 0 -4.351a3.04 3.04 0 0 1 4.036 -.27l.073 .062l.075 -.062a3.04 3.04 0 0 1 1.664 -.634z"], "trophy": ["M17 3a1 1 0 0 1 .993 .883l.007 .117v2.17a3 3 0 1 1 0 5.659v.171a6.002 6.002 0 0 1 -5 5.917v2.083h3a1 1 0 0 1 .117 1.993l-.117 .007h-8a1 1 0 0 1 -.117 -1.993l.117 -.007h3v-2.083a6.002 6.002 0 0 1 -4.996 -5.692l-.004 -.225v-.171a3 3 0 0 1 -3.996 -2.653l-.003 -.176l.005 -.176a3 3 0 0 1 3.995 -2.654l-.001 -2.17a1 1 0 0 1 1 -1h10zm-12 5a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m14 0a1 1 0 1 0 0 2a1 1 0 0 0 0 -2"], "temperature-plus": ["M10 2a3 3 0 0 1 3 3v7.965l.075 .056a5 5 0 0 1 1.81 5.01l-.055 .227a5 5 0 1 1 -7.905 -5.237l.075 -.056v-7.965a3 3 0 0 1 2.824 -2.995zm9 3a1 1 0 0 1 1 1v2h2a1 1 0 0 1 0 2h-2v2a1 1 0 0 1 -2 0v-2h-2a1 1 0 0 1 0 -2h2v-2a1 1 0 0 1 1 -1m-9 -1a1 1 0 0 0 -1 1v4h2v-4a1 1 0 0 0 -1 -1"], "puzzle": ["M10 2a3 3 0 0 1 2.995 2.824l.005 .176v1h3a2 2 0 0 1 1.995 1.85l.005 .15v3h1a3 3 0 0 1 .176 5.995l-.176 .005h-1v3a2 2 0 0 1 -1.85 1.995l-.15 .005h-3a2 2 0 0 1 -1.995 -1.85l-.005 -.15v-1a1 1 0 0 0 -1.993 -.117l-.007 .117v1a2 2 0 0 1 -1.85 1.995l-.15 .005h-3a2 2 0 0 1 -1.995 -1.85l-.005 -.15v-3a2 2 0 0 1 1.85 -1.995l.15 -.005h1a1 1 0 0 0 .117 -1.993l-.117 -.007h-1a2 2 0 0 1 -1.995 -1.85l-.005 -.15v-3a2 2 0 0 1 1.85 -1.995l.15 -.005h3v-1a3 3 0 0 1 3 -3z"], "balloon": ["M12 1a7 7 0 0 1 7 7c0 5.457 -3.028 10 -7 10c-3.9 0 -6.89 -4.379 -6.997 -9.703l-.003 -.297l.004 -.24a7 7 0 0 1 6.996 -6.76zm0 4a1 1 0 0 0 0 2l.117 .007a1 1 0 0 1 .883 .993l.007 .117a1 1 0 0 0 1.993 -.117a3 3 0 0 0 -3 -3z", "M12 16a1 1 0 0 1 .993 .883l.007 .117v1a3 3 0 0 1 -2.824 2.995l-.176 .005h-3a1 1 0 0 0 -.993 .883l-.007 .117a1 1 0 0 1 -2 0a3 3 0 0 1 2.824 -2.995l.176 -.005h3a1 1 0 0 0 .993 -.883l.007 -.117v-1a1 1 0 0 1 1 -1z"]};
+const ic = (n, extra) => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"' + (extra || '') + '>' + ICONS[n].map(d => '<path d="' + d + '"/>').join('') + '</svg>';
+document.querySelectorAll('*').forEach(el => { if (el.children.length === 0 || el.classList.contains('glyphs') || el.tagName === 'BUTTON') el.innerHTML = el.innerHTML.replace(/ICON_([a-z-]+)/g, (m, n) => ICONS[n] ? ic(n) : m); });
+const $ = id => document.getElementById(id);
+const esc = t => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+// Each mode has its own daily (drawn from the date, the language and the mode, the same for everyone) and its own streak.
+const MODES = [
+  { id: 'classic', label: 'classic', sub: 'one word', icon: 'puzzle', tries: 6, streak: 13, best: 12, daily: 'solved in 4', rule: 'one word, 6 tries',
+    week: [1, 1, 2, 1, 1, 2, -1], letters: 'smtwtfs' },
+  { id: 'quartet', label: 'quartet', sub: 'four words at once · +3 tries', icon: 'layout-grid', tries: 9, streak: 3, best: 5, daily: '5/9', rule: 'four words that share every guess, 9 tries',
+    week: [0, 0, 0, 1, 1, 1, -1], letters: 'smtwtfs' },
+  { id: 'relay', label: 'relay race', sub: 'four words, one after the other · +4 tries', icon: 'chess-knight', tries: 10, streak: 0, best: 2, daily: '', rule: 'four words one after the other, 10 tries',
+    week: [0, 2, 0, 0, 0, 0, -1], letters: 'smtwtfs' },
+];
+let mi = 0, freq = false;
+function flames(t) { return '<div class="flames' + (t >= 1 ? ' on' : '') + (t === 2 ? ' two' : '') + '">' + ic('flame') + (t === 2 ? ic('flame') : '') + '</div>'; }
+function renderStreak() {
+  const m = MODES[mi];
+  $('streak').innerHTML = '<div class="srow"><span style="font-size:34px;color:' + (m.week[6] >= 1 ? 'var(--flame)' : 'var(--outlinev)') + '">' + ic('flame') + '</span><span class="num">' + m.streak + '</span><span class="caption cap">day streak</span><span class="best"><span>' + m.label + '</span><span>best ' + m.best + '</span></span></div>' +
+    '<div class="week">' + m.week.map((t, i) => '<div class="day' + (i === 6 ? ' today' : '') + '"><span>' + m.letters[i] + '</span>' + flames(t) + '</div>').join('') + '</div>';
+}
+function renderMode() {
+  const m = MODES[mi];
+  $('slide').innerHTML = ic(m.icon) + '<span class="nm">' + m.label + '<small>' + m.sub + '</small></span>';
+  $('dots').innerHTML = MODES.map((x, i) => '<i class="' + (i === mi ? 'on' : '') + '"></i>').join('');
+  // play shows no mode text. The daily shows where today's daily of this mode stands.
+  $('dailybtn').innerHTML = 'daily' + (m.daily ? '<small>' + m.daily + '</small>' : '');
+  renderStreak();
+}
+function setMode(i) { mi = (i + MODES.length) % MODES.length; renderMode(); }
+
+// swipe: one swipe changes the mode for play and daily alike; a tap on the mode button opens game modes
+(() => {
+  const area = $('play'), slide = $('slide'); let x0 = null, dx = 0, moved = false;
+  area.addEventListener('pointerdown', e => { x0 = e.clientX; dx = 0; moved = false; });
+  area.addEventListener('pointermove', e => { if (x0 === null) return; dx = e.clientX - x0; if (Math.abs(dx) > 6) moved = true; if (moved) slide.style.transform = 'translateX(' + Math.max(-90, Math.min(90, dx * .6)) + 'px)'; });
+  const end = () => { if (x0 === null) return; slide.style.transform = ''; if (moved && Math.abs(dx) > 50) setMode(mi + (dx < 0 ? 1 : -1)); x0 = null; };
+  area.addEventListener('pointerup', end); area.addEventListener('pointercancel', end);
+  area.addEventListener('click', e => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+})();
+document.addEventListener('keydown', e => { if ($('layer').firstChild) return; if (e.key === 'ArrowLeft') setMode(mi - 1); if (e.key === 'ArrowRight') setMode(mi + 1); if (e.key === 'Escape') closePop(); });
+
+let toastT;
+function toast(t) { document.querySelectorAll('.toast').forEach(n => n.remove()); const n = document.createElement('div'); n.className = 'toast'; n.textContent = t; document.body.appendChild(n); clearTimeout(toastT); toastT = setTimeout(() => n.remove(), 1800); }
+let pop = null;
+function closePop() { if (pop) { pop.remove(); pop = null; } }
+document.addEventListener('click', e => {
+  const d = e.target.closest('.dot');
+  if (!d) { if (!e.target.closest('.pop')) closePop(); return; }
+  const same = pop && pop.dataset.for === d.dataset.tip; closePop(); if (same) return;
+  pop = document.createElement('div'); pop.className = 'pop'; pop.dataset.for = d.dataset.tip; pop.textContent = d.dataset.tip; document.body.appendChild(pop);
+  const r = d.getBoundingClientRect(), w = pop.offsetWidth;
+  pop.style.left = Math.max(16, Math.min(r.left - 8, document.documentElement.clientWidth - w - 16)) + 'px'; pop.style.top = (r.bottom + 6) + 'px';
+});
+
+// ---- the game modes screen: as the app has it (game_modes_dialog.dart). The one addition is the note about the daily under the mode. ----
+const OPT = { share: 10, tries: 6, length: 5, freq: false, helper: 1 };
+const HELPERS = [['off', 'nothing until the game ends'], ['skill only', 'skill after each guess'], ['skill + luck', 'skill and luck after each guess'], ['full help', 'skill, luck and words left']];
+const TRIES = [['easy', 8], ['normal', 6], ['hard', 4], ['brutal', 3]];
+const LENGTHS = [[8, 6000], [7, 6000], [6, 6000], [5, 5030], [4, 2707]];
+const hsl = hex => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  let h = 0, s = 0; if (d) { s = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; } return [h, s, l]; };
+function diffColor(t) {
+  const cs = getComputedStyle(document.documentElement), a = hsl(cs.getPropertyValue('--secondary').trim()), b = hsl(cs.getPropertyValue('--primary').trim());
+  const L = (x, y) => x + (y - x) * Math.max(0, Math.min(1, t)); return 'hsl(' + L(a[0], b[0]) + ' ' + L(a[1], b[1]) * 100 + '% ' + L(a[2], b[2]) * 100 + '%)';
+}
+const thousands = n => n.toLocaleString('en-US');
+function stepper(id, items, idx) {
+  return '<div class="step" id="' + id + '" role="group"><button class="ch" type="button" data-d="-1" ' + (idx === 0 ? 'disabled' : '') + ' aria-label="previous">&#8249;</button><div class="view"><div class="item"><b>' + items[idx][0] + '</b><span>' + items[idx][1] + '</span></div></div><button class="ch" type="button" data-d="1" ' + (idx === items.length - 1 ? 'disabled' : '') + ' aria-label="next">&#8250;</button></div>' +
+    '<div class="sdots">' + items.map((_, i) => '<i class="' + (i === idx ? 'on' : '') + '"></i>').join('') + '</div>';
+}
+function wireStepper(id, idx, n, onChange) {
+  const el = $(id); if (!el) return;
+  el.querySelectorAll('.ch').forEach(b => b.addEventListener('click', () => { const t = idx + +b.dataset.d; if (t >= 0 && t < n) onChange(t); }));
+  const view = el.querySelector('.view'), item = el.querySelector('.item'); let x0 = null, dx = 0;
+  view.addEventListener('pointerdown', e => { x0 = e.clientX; dx = 0; });
+  view.addEventListener('pointermove', e => { if (x0 === null) return; dx = e.clientX - x0; item.style.transform = 'translateX(' + dx + 'px)'; item.style.opacity = 1 - Math.min(1, Math.abs(dx) / view.offsetWidth); });
+  const end = () => { if (x0 === null) return; x0 = null; item.style.transform = ''; item.style.opacity = ''; const t = idx + (dx < 0 ? 1 : -1); if (Math.abs(dx) > view.offsetWidth * .3 && t >= 0 && t < n) onChange(t); };
+  view.addEventListener('pointerup', end); view.addEventListener('pointercancel', end);
+}
+function openModes() {
+  const draw = () => {
+    const m = MODES[mi], multi = mi > 0, selCol = TRIES.findIndex(t => t[1] === OPT.tries), selRow = LENGTHS.findIndex(l => l[0] === OPT.length), span = LENGTHS.length - 1 + 3;
+    const cells = LENGTHS.map(([len], r) => '<div class="r">' + len + ' letters</div>' + TRIES.map(([nm, tr], c) => { const col = diffColor((r + c) / span), sel = r === selRow && c === selCol;
+      return '<button class="cell" type="button" data-t="' + tr + '" data-l="' + len + '" aria-label="' + tr + ' tries, ' + len + ' letters" style="background:' + (sel ? col : 'color-mix(in srgb,' + col + ' 32%,transparent)') + ';border-color:' + (sel ? 'var(--bg)' : 'color-mix(in srgb,' + col + ' 70%,transparent)') + ';border-width:' + (sel ? 2 : 1) + 'px;color:var(--bg)">' + (sel ? '&#10003;' : '') + '</button>'; }).join('')).join('');
+    const avail = LENGTHS[selRow][1];
+    $('layer').innerHTML = '<div class="overlay" id="ov"><div class="modal" role="dialog" aria-modal="true" aria-label="game modes">' +
+      '<div class="mhead"><b>game modes</b><button class="iconbtn" type="button" data-close aria-label="close" style="font-size:22px">&#10005;</button></div><div class="mbody" style="gap:0">' +
+      '<span class="capr">mode</span><div style="height:10px"></div>' + stepper('st-mode', MODES.map(x => [x.label, x.sub]), mi) +
+      '<div class="note11" style="margin-top:8px">the daily of ' + m.label + ' always uses fixed settings: five letters, the words share no letter, ' + m.tries + ' tries.</div>' +
+      '<div style="height:16px"></div><div class="share"><span class="capr cap">shared letters</span><b style="color:' + (multi ? 'var(--primary)' : 'var(--dim)') + '">' + OPT.share + '%</b></div>' +
+      '<input id="share" type="range" min="0" max="30" value="' + OPT.share + '" ' + (multi ? '' : 'disabled') + ' aria-label="shared letters">' +
+      '<div class="note11">' + (!multi ? 'one word has nothing to share. this applies to quartet and relay race.' : OPT.share === 0 ? 'the words never share a letter, as far as the language allows.' : 'the chance that the words share a letter. lower makes them more different.') + '</div>' +
+      '<div style="height:24px"></div><span class="capr">difficulty</span><div style="height:10px"></div>' +
+      '<div class="mx"><div></div>' + TRIES.map(([nm, tr]) => '<div class="h">' + tr + ' tries<small>' + nm + '</small></div>').join('') + cells + '</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:12px"><i style="width:10px;height:10px;border-radius:2px;background:' + diffColor((selRow + selCol) / span) + '"></i><span style="font-size:12px">' + TRIES[selCol][0] + ' · ' + OPT.length + ' letters: ' + OPT.tries + ' tries, ' + thousands(avail) + ' words of this length</span></div>' +
+      '<div style="height:12px"></div><button class="chk" type="button" id="freqchk"><i class="' + (OPT.freq ? 'on' : '') + '">' + (OPT.freq ? '&#10003;' : '') + '</i><span>draw words by how common they are<br><span class="note11">' + (OPT.freq ? 'common words come up more often. the daily never does this: its word is any word of the length.' : 'every word of the length is as likely as any other, rare ones too. the daily always does this.') + '</span></span></button>' +
+      '<div style="height:24px"></div><span class="capr">helper</span><div style="height:10px"></div><div style="opacity:' + (multi ? .38 : 1) + ';pointer-events:' + (multi ? 'none' : 'auto') + '">' + stepper('st-help', HELPERS, OPT.helper) + '</div>' +
+      '<div class="note11" style="margin-top:10px">' + (multi ? 'the helper shows in classic mode only. whatever you choose, everything is revealed when the game ends.' : 'whatever you choose, everything is revealed when the game ends.') + '</div>' +
+      '<div style="height:24px"></div><span class="capr">play or solve</span><div style="height:10px"></div><div style="display:flex;gap:8px"><button class="fbtn fill" type="button" data-go="play">play</button><button class="fbtn line" type="button" data-go="the solver">open the solver</button></div>' +
+      '<button class="fbtn line" type="button" data-go="learn" style="width:100%;margin-top:8px">learn: find the best guess</button>' +
+      '</div></div></div>';
+    $('scroll').style.overflow = 'hidden';
+    $('ov').addEventListener('click', e => { if (e.target === $('ov')) closeModes(); });
+    $('layer').querySelector('[data-close]').addEventListener('click', closeModes);
+    wireStepper('st-mode', mi, MODES.length, t => { setMode(t); draw(); });
+    wireStepper('st-help', OPT.helper, HELPERS.length, t => { OPT.helper = t; draw(); });
+    $('share').addEventListener('input', e => { OPT.share = +e.target.value; draw(); $('share').focus(); });
+    $('freqchk').addEventListener('click', () => { OPT.freq = !OPT.freq; draw(); });
+    $('layer').querySelectorAll('.cell').forEach(b => b.addEventListener('click', () => { OPT.tries = +b.dataset.t; OPT.length = +b.dataset.l; draw(); }));
+    $('layer').querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { closeModes(); toast(b.dataset.go + ': this screen is already built and remains as it is'); }));
+  };
+  draw();
+}
+function closeModes() { $('layer').innerHTML = ''; $('scroll').style.overflow = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('layer').firstChild) closeModes(); });
+$('mode').addEventListener('click', openModes);
+$('prev').addEventListener('click', () => setMode(mi - 1));
+$('next').addEventListener('click', () => setMode(mi + 1));
+$('playbtn').addEventListener('click', () => toast('play: ' + MODES[mi].label));
+$('dailybtn').addEventListener('click', () => toast('daily ' + MODES[mi].label + (MODES[mi].daily.startsWith('solved') ? ': already solved today' : ': ' + MODES[mi].rule)));
+$('freq').addEventListener('click', () => { freq = !freq; $('sw').classList.toggle('on', freq); $('freqt').textContent = freq ? 'common words likelier' : 'all words equally likely'; toast(freq ? 'answers are drawn by how common each word is. the daily always uses equal chances.' : 'every word of the length is equally likely. the daily always does.'); });
+['settings', 'lang', 'stylebtn', 'history', 'how'].forEach(id => $(id).addEventListener('click', () => toast('this screen is already built and remains as it is')));
+// ---- achievements: every achievement has a medal. A family climbs from bronze (the easy version) to platinum. ----
+// [id, icon, title, description, medal (b s g p), metric, target, mode]
+const FAMILIES = [
+  ['wins', [
+    ['first_light', 'sun-high', 'first light', 'win a game', 'b', 'wins', 1],
+    ['wins_25', 'clover', 'regular', 'win 25 games', 's', 'wins', 25],
+    ['wins_100', 'shield-check', 'veteran', 'win 100 games', 'g', 'wins', 100],
+    ['wins_500', 'crown', 'dustwalker', 'win 500 games', 'p', 'wins', 500]]],
+  ['played', [
+    ['played_10', 'bike', 'persistent', 'play 10 games', 'b', 'played', 10],
+    ['played_50', 'speedboat', 'devoted', 'play 50 games', 's', 'played', 50],
+    ['played_250', 'hourglass', 'diehard', 'play 250 games', 'g', 'played', 250],
+    ['played_1000', 'building-broadcast-tower', 'lifer', 'play 1,000 games', 'p', 'played', 1000]]],
+  ['streak', [
+    ['streak_3', 'square-number-3', 'three in a row', 'win 3 games in a row', 'b', 'streak', 3],
+    ['streak_7', 'square-number-7', 'seven in a row', 'win 7 games in a row', 's', 'streak', 7],
+    ['streak_15', 'balloon', 'fifteen in a row', 'win 15 games in a row', 'g', 'streak', 15],
+    ['streak_30', 'diamonds', 'thirty in a row', 'win 30 games in a row', 'p', 'streak', 30]]],
+  ['quick', [
+    ['quick_4', 'flare', 'quick draw', 'win in 4 guesses or fewer', 'b', 'fastest', 4],
+    ['quick_3', 'compass', 'sharpshooter', 'win in 3 guesses or fewer', 's', 'fastest', 3],
+    ['quick_2', 'bulb', 'two shot', 'win in 2 guesses', 'g', 'fastest', 2],
+    ['one_shot', 'bolt', 'one shot', 'win on the first guess', 'p', 'fastest', 1]]],
+  ['last', [
+    ['last_1', 'lungs', 'last breath', 'win on your very last try (4+ tries)', 'b', 'lastTry', 1],
+    ['last_10', 'bomb', 'living dangerously', 'win on your very last try 10 times', 's', 'lastTry', 10],
+    ['last_30', 'clock', 'edge of the seat', 'win on your very last try 30 times', 'g', 'lastTry', 30],
+    ['last_100', 'cards', 'nine lives', 'win on your very last try 100 times', 'p', 'lastTry', 100]]],
+  ['skillavg', [
+    ['skillavg_70', 'scale', 'steady hand', 'win with an average skill of 70 or more', 'b', 'bestSkillAvg', 70],
+    ['skillavg_80', 'microscope', 'sharp mind', 'win with an average skill of 80 or more', 's', 'bestSkillAvg', 80],
+    ['skillavg_90', 'diamond', 'pure skill', 'win with an average skill of 90 or more', 'g', 'bestSkillAvg', 90],
+    ['skillavg_95', 'laurel-wreath', 'flawless', 'win with an average skill of 95 or more', 'p', 'bestSkillAvg', 95]]],
+  ['every', [
+    ['every_60', 'badges', 'no slip', 'win with every guess above 60 skill', 'b', 'bestEvery', 60],
+    ['every_75', 'award', 'clean sheet', 'win with every guess above 75 skill', 's', 'bestEvery', 75],
+    ['every_90', 'sparkles', 'clean sweep', 'win with every guess above 90 skill', 'g', 'bestEvery', 90],
+    ['skill_issue', 'mood-crazy-happy', 'skill issue', 'win 10 games with every guess above 95 skill', 'p', 'every95', 10]]],
+  ['luck', [
+    ['luck_20', 'gift', 'lucky break', 'win with an average luck of +20% or more', 'b', 'bestLuck', 20],
+    ['luck_40', 'confetti', 'fortune’s child', 'win with an average luck of +40% or more', 's', 'bestLuck', 40],
+    ['luck_60', 'butterfly', 'charmed', 'win with an average luck of +60% or more', 'g', 'bestLuck', 60],
+    ['luck_80', 'clover', 'blessed', 'win with an average luck of +80% or more', 'p', 'bestLuck', 80]]],
+  ['risk', [
+    ['risk_25', 'dice-5', 'dabbler', 'win with an average risk of 25 or more', 'b', 'bestRisk', 25],
+    ['risk_40', 'cards', 'risk taker', 'win with an average risk of 40 or more', 's', 'bestRisk', 40],
+    ['risk_55', 'boom', 'daredevil', 'win with an average risk of 55 or more', 'g', 'bestRisk', 55],
+    ['risk_70', 'bomb', 'all in', 'win with an average risk of 70 or more', 'p', 'bestRisk', 70]]],
+  ['bits', [
+    ['bits_6', 'apps', 'big bite', 'gain 6 bits or more with one guess', 'b', 'bestBits', 6],
+    ['bits_8', 'world', 'wide net', 'gain 8 bits or more with one guess', 's', 'bestBits', 8],
+    ['bits_10', 'trophy', 'landslide', 'gain 10 bits or more with one guess', 'g', 'bestBits', 10],
+    ['bits_12', 'flag', 'jackpot', 'gain 12 bits or more with one guess', 'p', 'bestBits', 12]]],
+  ['length', [
+    ['brevity', 'square-number-4', 'brevity', 'win a 4-letter word', 'b', 'won4', 1],
+    ['long_haul', 'square-number-8', 'long haul', 'win an 8-letter word', 's', 'won8', 1],
+    ['full_range', 'compass', 'full range', 'win at every length, 4 to 8', 'g', 'lengths', 5]]],
+  ['languages', [
+    ['bilingual', 'bubble-text', 'bilingual', 'win in 2 languages', 'b', 'langs', 2],
+    ['polyglot_3', 'world', 'polyglot', 'win in 3 languages', 's', 'langs', 3],
+    ['polyglot_6', 'world', 'six tongues', 'win in 6 languages', 'g', 'langs', 6],
+    ['polyglot_9', 'world', 'nine tongues', 'win in 9 languages', 'p', 'langs', 9]]],
+  ['mastery', [
+    ['mastery_1', 'feather', 'learner', 'master a language: win once at every length and difficulty', 'b', 'mastered', 1],
+    ['mastery_3', 'feather', 'scholar', 'master 3 languages', 's', 'mastered', 3],
+    ['mastery_6', 'feather', 'master', 'master 6 languages', 'g', 'mastered', 6],
+    ['mastery_all', 'feather', 'sage', 'master every language', 'p', 'mastered', 20]]],
+  ['completionist', [
+    ['complete_1', 'badges', 'completionist', 'earn every achievement of a language', 'b', 'completed', 1],
+    ['complete_3', 'badges', 'collector', 'be a completionist in 3 languages', 's', 'completed', 3],
+    ['complete_6', 'badges', 'archivist', 'be a completionist in 6 languages', 'g', 'completed', 6],
+    ['tower_of_babel', 'building-broadcast-tower', 'tower of babel', 'be a completionist in every language', 'p', 'completed', 20]]],
+  ['dailies', [
+    ['dailies_5', 'candle', 'daily habit', 'solve 5 dailies', 'b', 'dailies', 5],
+    ['dailies_25', 'campfire', 'daily ritual', 'solve 25 dailies', 's', 'dailies', 25],
+    ['dailies_100', 'flame', 'daily devotion', 'solve 100 dailies', 'g', 'dailies', 100],
+    ['dailies_365', 'sparkles', 'a year of dailies', 'solve 365 dailies', 'p', 'dailies', 365]]],
+  ['fire_classic', [
+    ['daily_3', 'candle', 'kindling', 'solve the daily 3 days in a row', 'b', 'streakClassic', 3],
+    ['daily_14', 'flame', 'bonfire', 'solve the daily 14 days in a row', 's', 'streakClassic', 14],
+    ['daily_60', 'flare', 'forge', 'solve the daily 60 days in a row', 'g', 'streakClassic', 60],
+    ['daily_365', 'sparkles', 'eternal flame', 'solve the daily 365 days in a row', 'p', 'streakClassic', 365]]],
+  ['fire_quartet', [
+    ['dq_3', 'candle', 'quartet kindling', 'solve the quartet daily 3 days in a row', 'b', 'streakQuartet', 3, 'quartet'],
+    ['dq_10', 'campfire', 'quartet campfire', 'solve the quartet daily 10 days in a row', 's', 'streakQuartet', 10, 'quartet'],
+    ['dq_30', 'temperature-plus', 'quartet furnace', 'solve the quartet daily 30 days in a row', 'g', 'streakQuartet', 30, 'quartet'],
+    ['dq_100', 'butterfly', 'quartet phoenix', 'solve the quartet daily 100 days in a row', 'p', 'streakQuartet', 100, 'quartet']]],
+  ['fire_relay', [
+    ['dr_3', 'candle', 'relay kindling', 'solve the relay daily 3 days in a row', 'b', 'streakRelay', 3, 'relay'],
+    ['dr_10', 'campfire', 'relay campfire', 'solve the relay daily 10 days in a row', 's', 'streakRelay', 10, 'relay'],
+    ['dr_30', 'temperature-plus', 'relay furnace', 'solve the relay daily 30 days in a row', 'g', 'streakRelay', 30, 'relay'],
+    ['dr_100', 'butterfly', 'relay phoenix', 'solve the relay daily 100 days in a row', 'p', 'streakRelay', 100, 'relay']]],
+  ['double', [
+    ['double_1', 'flame', 'double fire', 'solve a daily in 3 guesses, or with every guess at 80 skill or more', 'b', 'doubles', 1],
+    ['double_10', 'flare', 'twice as hot', 'earn 10 double fires', 's', 'doubles', 10],
+    ['double_50', 'boom', 'blazing', 'earn 50 double fires', 'g', 'doubles', 50],
+    ['double_200', 'sparkles', 'inferno', 'earn 200 double fires', 'p', 'doubles', 200]]],
+  ['quartet', [
+    ['quartet_win', 'layout-grid', 'all four', 'win a quartet', 'b', 'quartetWins', 1, 'quartet'],
+    ['quartet_last', 'lungs', 'last gasp', 'win a quartet on your very last try', 'b', 'quartetLast', 1, 'quartet'],
+    ['quartet_spare', 'layout-grid', 'room to spare', 'win a quartet with 3 or more tries left', 's', 'quartetSpare', 3, 'quartet'],
+    ['quartet_10', 'layout-grid', 'quartet regular', 'win 10 quartets', 's', 'quartetWins', 10, 'quartet'],
+    ['quartet_50', 'layout-grid', 'quartet veteran', 'win 50 quartets', 'g', 'quartetWins', 50, 'quartet'],
+    ['quartet_sharp', 'microscope', 'sharp four', 'win a quartet with an average skill above 80', 'g', 'quartetSkill', 80, 'quartet'],
+    ['quartet_200', 'layout-grid', 'quartet legend', 'win 200 quartets', 'p', 'quartetWins', 200, 'quartet'],
+    ['luckiest', 'clover', 'luckiest man alive', 'win a quartet or a relay race with one guess for each word', 'p', 'oneEach', 1]]],
+  ['relay', [
+    ['relay_win', 'chess-knight', 'finish line', 'win a relay race', 'b', 'relayWins', 1, 'relay'],
+    ['relay_last', 'lungs', 'photo finish', 'win a relay race on your very last try', 'b', 'relayLast', 1, 'relay'],
+    ['relay_free', 'chess-knight', 'free ride', 'win a relay race with a word solved the moment it opened', 's', 'relayFree', 1, 'relay'],
+    ['relay_10', 'chess-knight', 'relay regular', 'win 10 relay races', 's', 'relayWins', 10, 'relay'],
+    ['relay_50', 'chess-knight', 'relay veteran', 'win 50 relay races', 'g', 'relayWins', 50, 'relay'],
+    ['relay_200', 'chess-knight', 'relay legend', 'win 200 relay races', 'p', 'relayWins', 200, 'relay']]],
+  ['styles', [
+    ['style_wildcard', 'cards', 'wildcard', 'be rated the wildcard playstyle', 'b', 'style_wildcard', 1],
+    ['style_gambler', 'dice-5', 'gambler', 'be rated the gambler playstyle', 'b', 'style_gambler', 1],
+    ['style_sweeper', 'flag', 'sweeper', 'be rated the sweeper playstyle', 's', 'style_sweeper', 1],
+    ['style_detective', 'compass', 'detective', 'be rated the detective playstyle', 's', 'style_detective', 1],
+    ['style_analyst', 'microscope', 'analyst', 'be rated the analyst playstyle', 'g', 'style_analyst', 1],
+    ['style_maverick', 'chess-knight', 'maverick', 'be rated the maverick playstyle', 'g', 'style_maverick', 1],
+    ['chameleon', 'replace', 'chameleon', 'change your playstyle', 'b', 'styleChanges', 1],
+    ['many_hats', 'puzzle', 'many hats', 'have been every one of the 6 playstyles', 'p', 'stylesWorn', 6]]],
+];
+// A made-up player, for the demo
+const PROFILE = { wins: 100, played: 113, streak: 8, fastest: 3, lastTry: 3, bestSkillAvg: 83, bestEvery: 78, every95: 0, bestLuck: 47, bestRisk: 31, bestBits: 9.1, won4: 1, won8: 0, lengths: 3, langs: 3, mastered: 1, completed: 0,
+  dailies: 41, streakClassic: 13, streakQuartet: 3, streakRelay: 0, doubles: 9, quartetWins: 12, quartetLast: 1, quartetSpare: 3, quartetSkill: 84, oneEach: 0, relayWins: 4, relayLast: 0, relayFree: 1, style_wildcard: 0, style_gambler: 0, style_sweeper: 0, style_detective: 1, style_analyst: 1, style_maverick: 0, styleChanges: 3, stylesWorn: 2 };
+const FASTEST = { fastest: true };  // for these the smaller number is the better one
+const TIMES = { first_light: 1, one_shot: 0, quick_4: 22, quick_3: 6, last_1: 3 };
+const MEDAL = { b: 'bronze', s: 'silver', g: 'gold', p: 'platinum' };
+
+const COUNTED = new Set(['wins', 'played', 'streak', 'lastTry', 'every95', 'lengths', 'langs', 'mastered', 'completed', 'dailies', 'streakClassic', 'streakQuartet', 'streakRelay', 'doubles', 'quartetWins', 'relayWins', 'stylesWorn']);
+const ROWS = FAMILIES.flatMap(([fam, rows]) => rows.map(r => ({ id: r[0], icon: r[1], title: r[2], desc: r[3], medal: r[4], m: r[5], t: r[6], mode: r[7] || '', fam })));
+const earnedOf = r => r.m === 'fastest' ? PROFILE.fastest > 0 && PROFILE.fastest <= r.t : (PROFILE[r.m] || 0) >= r.t;
+const DATES = ['2026-09-02', '2026-09-14', '2026-09-27', '2026-10-03', '2026-10-11', '2026-10-19', '2026-10-24'];
+const dateOf = id => DATES[[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % DATES.length];
+let medalFilter = 'all';
+function openAchievements() {
+  const earnedN = ROWS.filter(earnedOf).length;
+  const medalCount = k => { const rs = ROWS.filter(r => r.medal === k); return [rs.filter(earnedOf).length, rs.length]; };
+  const flag = '<svg class="flag" viewBox="0 0 24 16" style="width:14px;height:10px;display:inline-block"><rect width="24" height="16" fill="#f4f4f4"/><g fill="#b22234"><rect y="0" width="24" height="1.6"/><rect y="3.2" width="24" height="1.6"/><rect y="6.4" width="24" height="1.6"/><rect y="9.6" width="24" height="1.6"/><rect y="12.8" width="24" height="1.6"/></g><rect width="10" height="8.8" fill="#3c3b6e"/></svg>';
+  const row = r => {
+    const e = earnedOf(r), col = 'var(--' + MEDAL[r.medal] + ')', v = PROFILE[r.m] || 0;
+    const times = TIMES[r.id] !== undefined ? TIMES[r.id] : 1;
+    const bar = !e && COUNTED.has(r.m) ? '<div class="bar2"><i><b style="width:' + Math.round(Math.min(v, r.t) / r.t * 100) + '%;background:' + col + '"></b></i><span>' + v + '/' + r.t + '</span></div>' : '';
+    const modeIc = r.mode ? '<span class="modetag">' + ic(r.mode === 'quartet' ? 'layout-grid' : 'chess-knight') + '</span>' : '';
+    return '<div class="arow"><div class="ahead"><span class="aicon" style="color:' + (e ? col : 'color-mix(in srgb,var(--fg) 22%,transparent)') + '">' + ic(r.icon) + '</span>' +
+      '<div class="atext" style="opacity:' + (e ? 1 : .55) + '"><b>' + r.title + '</b><span class="tag" style="color:' + col + '">' + MEDAL[r.medal] + '</span>' + modeIc + '<div class="d">' + r.desc + '</div><div style="margin-top:5px">' + flag + '</div></div>' +
+      (e ? '<div class="aright"><b>&times;' + times + '</b>' + dateOf(r.id) + '</div>' : '') + '</div>' + bar + '</div>';
+  };
+  const draw = () => {
+    const rows = ROWS.filter(r => medalFilter === 'all' || r.medal === medalFilter);
+    $('page').innerHTML = '<div class="in"><div class="bar"><button class="iconbtn" type="button" id="aback" aria-label="back" style="font-size:22px">&#8592;</button><span>achievements</span></div><div class="pbody">' +
+      '<div class="chips"><button class="chip" type="button">all</button><button class="chip on" type="button">' + flag + ' en</button></div>' +
+      '<div class="caption" style="margin-top:12px">' + earnedN + ' of ' + ROWS.length + ' earned in en</div>' +
+      '<div class="stats"><div><b>113</b><span>played</span></div><div><b>100</b><span>won</span></div><div><b>0</b><span>streak</span></div><div><b>8</b><span>best</span></div></div>' +
+      '<div class="medals">' + [['all', 'var(--fg)', earnedN, ROWS.length], ...['b', 's', 'g', 'p'].map(k => [MEDAL[k], 'var(--' + MEDAL[k] + ')', ...medalCount(k)])].map(([k, c, a, b]) => '<button class="mp' + (medalFilter === k ? ' on' : '') + '" type="button" data-m="' + k + '" style="color:' + c + '">' + k + ' ' + a + '/' + b + '</button>').join('') + '</div>' +
+      rows.map(row).join('') + '</div></div>';
+    $('aback').addEventListener('click', closeAchievements);
+    $('page').querySelectorAll('.mp').forEach(b => b.addEventListener('click', () => { medalFilter = b.dataset.m; draw(); $('page').scrollTop = 0; }));
+  };
+  $('page').style.display = 'block'; draw(); $('page').scrollTop = 0; $('scroll').style.overflow = 'hidden';
+}
+function closeAchievements() { $('page').style.display = 'none'; $('page').innerHTML = ''; $('scroll').style.overflow = ''; }
+$('ach').addEventListener('click', openAchievements);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('page').style.display === 'block') closeAchievements(); });
+document.querySelector('#ach .t').textContent = 'achievements  ' + ROWS.filter(earnedOf).length + '/' + ROWS.length;
+renderMode();
+</script>

@@ -1,28 +1,48 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/history.dart';
-import 'package:lexodle/history_page.dart';
-import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/playstyle.dart';
-import 'package:lexodle/playstyle_card.dart';
-import 'package:lexodle/ui.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Adds [n] games of [guesses] guesses each, every guess scored [skill] and
-/// [daring] with [before] words possible.
+/// The rows of one game played in a style: two early guesses and two at the end.
+List<GuessRow> rowsOf(Behaviour early, Behaviour end) => [
+  for (var k = 0; k < 2; k++)
+    GuessRow(
+      game: 0,
+      n: k,
+      word: 'crane',
+      skill: 70,
+      before: 500,
+      after: 200,
+      risk: early == Behaviour.gambler ? 90 : 10,
+      rank: early == Behaviour.maximiser ? 2 : 50,
+      fresh: early == Behaviour.eliminator ? 5 : 1,
+    ),
+  for (var k = 2; k < 4; k++)
+    GuessRow(
+      game: 0,
+      n: k,
+      word: 'slate',
+      skill: 70,
+      before: 8,
+      after: 3,
+      risk: 0,
+      rank: end == Behaviour.prober ? 3 : 60,
+      fits: end == Behaviour.closer,
+    ),
+];
+
+/// Adds [n] games played in the style of [early] and [end].
 void addGames(
   History h,
   int n, {
-  double skill = 70,
-  double? daring = 5,
-  int guesses = 4,
-  int before = 50,
+  Behaviour early = Behaviour.maximiser,
+  Behaviour end = Behaviour.prober,
   GameMode mode = GameMode.classic,
 }) {
   for (var i = 0; i < n; i++) {
@@ -35,43 +55,10 @@ void addGames(
       pool: 3000,
       answers: mode.multi ? ['aaaaa', 'bbbbb', 'ccccc', 'ddddd'] : ['slate'],
       won: true,
-      guesses: [
-        for (var k = 0; k < guesses; k++)
-          GuessRow(
-            game: 0,
-            n: k,
-            word: 'crane',
-            skill: skill,
-            luck: 0,
-            daring: daring,
-            before: before,
-            after: before ~/ 2,
-          ),
-      ],
+      guesses: rowsOf(early, end),
     );
   }
 }
-
-Traits t(double skill, double daring, {int games = 20, int guesses = 80}) =>
-    Traits(skill: skill, daring: daring, games: games, guesses: guesses);
-
-GameResult styled({
-  String? style,
-  bool changed = false,
-  int held = 0,
-  bool won = true,
-}) => GameResult(
-  lang: 'en',
-  length: 5,
-  tries: 6,
-  used: 4,
-  won: won,
-  pool: 3000,
-  skills: const [70, 70, 70, 70],
-  style: style,
-  styleChanged: changed,
-  stylesHeld: held,
-);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -79,255 +66,162 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
 
   group('the playstyles', () {
-    test('there are six, with their own ids, names and icons', () {
-      expect(playstyles.length, 6);
-      expect({for (final p in playstyles) p.id}.length, 6);
-      expect({for (final p in playstyles) p.name}.length, 6);
-      expect({for (final p in playstyles) p.icon}.length, 6);
-      // two halves of each of the three skill tiers
-      for (var tier = 0; tier < 3; tier++) {
-        for (final bold in [false, true]) {
-          expect(
-            playstyles.where((p) => p.sharpness == tier && p.bold == bold),
-            hasLength(1),
-            reason: 'tier $tier bold $bold',
-          );
-        }
+    test('there are six, each an early habit and an end habit', () {
+      expect(playstyles.map((p) => p.id), [
+        'analyst',
+        'maverick',
+        'detective',
+        'sweeper',
+        'wildcard',
+        'gambler',
+      ]);
+      expect(playstyles.toSet().length, 6);
+      for (final p in playstyles) {
+        expect(p.early.phase, Phase.early);
+        expect(p.end.phase, Phase.end);
+        expect(styleOf(p.early, p.end), p);
       }
     });
 
     test('every icon is a Tabler filled glyph in the assets', () {
-      for (final p in playstyles) {
-        final f = File('assets/icons/${p.icon}.svg');
-        expect(f.existsSync(), isTrue, reason: p.id);
-        expect(f.readAsStringSync(), contains('icons-tabler-filled'));
+      final icons = [
+        ...playstyles.map((p) => p.icon),
+        ...Behaviour.values.map((b) => b.icon),
+      ];
+      for (final i in icons) {
+        expect(File('assets/icons/$i.svg').existsSync(), isTrue, reason: i);
       }
-      // and the placeholder for a player who is not rated yet
-      expect(File('assets/icons/puzzle.svg').existsSync(), isTrue);
     });
 
     test('a style is found by the id it was saved under', () {
       for (final p in playstyles) {
-        expect(playstyleById(p.id), same(p));
+        expect(playstyleById(p.id), p);
       }
-      expect(playstyleById('nope'), isNull);
+      expect(playstyleById('time-traveller'), isNull);
       expect(playstyleById(null), isNull);
     });
   });
 
-  group('reading the traits', () {
-    test('they are the means over every guess that had a choice', () {
-      final h = History();
-      addGames(h, 5, skill: 60, daring: 4);
-      addGames(h, 5, skill: 80, daring: 8);
-      final x = traitsOf(h)!;
-      expect(x.skill, 70);
-      expect(x.daring, 6);
-      expect(x.games, 10);
-      expect(x.guesses, 40);
-    });
-
-    test(
-      'a guess with one word left has nothing to choose, so it is left out',
-      () {
-        final h = History();
-        addGames(h, 5, skill: 50, daring: 6);
-        addGames(
-          h,
-          5,
-          skill: 100,
-          daring: 0,
-          before: 1,
-        ); // the last, sure guess
-        final x = traitsOf(h)!;
-        expect(x.skill, 50);
-        expect(x.daring, 6);
-        expect(x.guesses, 20);
-      },
+  group('counting a guess', () {
+    GuessRow row({
+      int before = 500,
+      int greens = 0,
+      double? risk = 10,
+      double? rank = 50,
+      int fresh = 1,
+      bool fits = false,
+    }) => GuessRow(
+      game: 0,
+      n: 0,
+      word: 'crane',
+      before: before,
+      greens: greens,
+      risk: risk,
+      rank: rank,
+      fresh: fresh,
+      fits: fits,
     );
 
-    test('a guess without a daring still counts for skill, not for daring', () {
+    test('the phases follow the words left and the greens known', () {
+      expect(phaseOf(1, 0), isNull);
+      expect(phaseOf(64, 0), Phase.early);
+      expect(phaseOf(63, 0), Phase.middle);
+      expect(phaseOf(16, 0), Phase.end);
+      expect(phaseOf(40, 3), Phase.end);
+      expect(phaseOf(40, 2), Phase.middle);
+    });
+
+    test('early: a gamble first, then a best split, then fresh letters', () {
+      expect(behaviourOf(row(risk: 80, rank: 1)), Behaviour.gambler);
+      expect(behaviourOf(row(risk: 74, rank: 10)), Behaviour.maximiser);
+      expect(behaviourOf(row(rank: 11, fresh: 4)), Behaviour.eliminator);
+      expect(behaviourOf(row(rank: 11, fresh: 3)), isNull);
+    });
+
+    test('end: a guess that fits is a closer, else a prober', () {
+      expect(behaviourOf(row(before: 8, fits: true)), Behaviour.closer);
+      expect(behaviourOf(row(before: 8, rank: 5)), Behaviour.prober);
+      expect(behaviourOf(row(before: 8, rank: 40)), isNull);
+      expect(behaviourOf(row(before: 2, rank: 0)), isNull);
+    });
+
+    test('the middle game and a single word count as nothing', () {
+      expect(behaviourOf(row(before: 30, rank: 0, fits: true)), isNull);
+      expect(behaviourOf(row(before: 1, fits: true)), isNull);
+    });
+  });
+
+  group('reading the habits', () {
+    test('a habit needs 40% of the guesses of its phase', () {
       final h = History();
-      addGames(h, 5, skill: 60, daring: 4);
-      addGames(h, 5, skill: 80, daring: null);
-      final x = traitsOf(h)!;
-      expect(x.skill, 70);
-      expect(x.daring, 4);
-      expect(x.guesses, 20, reason: 'only those with a daring');
+      addGames(h, 10);
+      final habits = habitsOf(h);
+      expect(habits.share(Behaviour.maximiser), 1);
+      expect(habits.share(Behaviour.prober), 1);
+      expect(habits.habit(Phase.early), Behaviour.maximiser);
+      expect(habits.habit(Phase.end), Behaviour.prober);
+      expect(habits.rated, isTrue);
+    });
+
+    test('rated takes enough games and enough guesses', () {
+      final h = History();
+      addGames(h, minRatedGames - 1);
+      expect(habitsOf(h).rated, isFalse);
+      addGames(h, 1);
+      expect(habitsOf(h).rated, isTrue);
     });
 
     test('only the last 100 games are read', () {
       final h = History();
-      addGames(h, 60, skill: 20, daring: 30); // pushed out
-      addGames(h, 100, skill: 90, daring: 1);
-      final x = traitsOf(h)!;
-      expect(x.games, 100);
-      expect(x.skill, 90);
-      expect(x.daring, 1);
+      addGames(h, 100, early: Behaviour.gambler, end: Behaviour.closer);
+      addGames(h, 100);
+      expect(habitsOf(h).habit(Phase.early), Behaviour.maximiser);
+    });
+
+    test('every style reads back as the one played', () {
+      for (final p in playstyles) {
+        final h = History();
+        addGames(h, 12, early: p.early, end: p.end);
+        expect(classify(habitsOf(h)), p, reason: p.id);
+      }
+    });
+
+    test('a player not yet rated has no style', () {
+      final h = History();
+      addGames(h, 3);
+      expect(classify(habitsOf(h)), isNull);
+      expect(classify(null), isNull);
+    });
+
+    test('a habit within the margin of the top is kept', () {
+      // 100 early guesses: 50 maximiser, 45 gambler, the rest nothing
+      const counts = {
+        Behaviour.gambler: 45,
+        Behaviour.maximiser: 50,
+        Behaviour.eliminator: 0,
+        Behaviour.closer: 0,
+        Behaviour.prober: 40,
+      };
+      const habits = Habits(50, counts, {Phase.early: 100, Phase.end: 60});
+      expect(classify(habits)!.early, Behaviour.maximiser);
+      expect(classify(habits, current: gambler)!.early, Behaviour.gambler);
+      expect(classify(habits, current: analyst)!.early, Behaviour.maximiser);
+    });
+
+    test('the traits are the means over the guesses that had a choice', () {
+      final h = History();
+      addGames(h, 2);
+      final t = traitsOf(h)!;
+      expect(t.skill, 70);
+      expect(t.games, 2);
+      expect(t.guesses, 8);
     });
 
     test('only classic games count, a daily among them', () {
       final h = History();
-      addGames(h, 10, skill: 90, daring: 1);
-      addGames(h, 30, skill: 10, daring: 30, mode: GameMode.quartet);
-      addGames(h, 30, skill: 10, daring: 30, mode: GameMode.relay);
-      final x = traitsOf(h)!;
-      expect(x.games, 10);
-      expect(x.skill, 90);
-      h.add(
-        at: 1,
-        lang: 'en',
-        mode: GameMode.classic,
-        length: 5,
-        tries: 6,
-        pool: 3000,
-        answers: ['slate'],
-        won: true,
-        daily: '2026-10-24',
-        guesses: const [
-          GuessRow(
-            game: 0,
-            n: 0,
-            word: 'crane',
-            skill: 90,
-            daring: 1,
-            before: 50,
-          ),
-        ],
-      );
-      expect(traitsOf(h)!.games, 11);
-    });
-
-    test('with no daring anywhere there is nothing to read', () {
-      expect(traitsOf(History()), isNull);
-      final h = History();
-      addGames(h, 20, daring: null);
+      addGames(h, 20, mode: GameMode.quartet);
+      expect(habitsOf(h).games, 0);
       expect(traitsOf(h), isNull);
-      addGames(History(), 3, before: 1);
-    });
-
-    test('rated takes enough games and enough guesses', () {
-      expect(t(90, 10, games: minRatedGames - 1).rated, isFalse);
-      expect(t(90, 10, games: minRatedGames).rated, isTrue);
-      expect(t(90, 10, guesses: minRatedGuesses - 1).rated, isFalse);
-      expect(t(90, 10, guesses: minRatedGuesses).rated, isTrue);
-    });
-  });
-
-  group('the six cells', () {
-    Playstyle? at(double skill, double daring) => classify(t(skill, daring));
-
-    test('each skill tier splits into careful and bold', () {
-      expect(at(95, 1), analyst);
-      expect(at(95, 10), maverick);
-      expect(at(70, 5), steady);
-      expect(at(70, 25), gambler);
-      expect(at(40, 5), wanderer);
-      expect(at(40, 25), wildcard);
-    });
-
-    test('the lines between the tiers', () {
-      expect(at(sharpFrom, 0), analyst, reason: 'on the line is the higher');
-      expect(at(sharpFrom - .01, 0), steady);
-      expect(at(looseBelow, 0), steady, reason: 'on the line is the higher');
-      expect(at(looseBelow - .01, 0), wanderer);
-      expect(at(100, 0), analyst);
-      expect(at(0, 0), wanderer);
-    });
-
-    test('the daring split is a little different in each tier', () {
-      // sharp: 2.5, solid: 12, loose: 12
-      expect(at(90, 2.49), analyst);
-      expect(at(90, 2.5), maverick);
-      expect(at(70, 11.99), steady);
-      expect(at(70, 12), gambler);
-      expect(at(40, 11.99), wanderer);
-      expect(at(40, 12), wildcard);
-      expect(at(90, 100), maverick);
-      expect(at(40, 100), wildcard);
-    });
-
-    test('a player who is not rated has no style', () {
-      expect(classify(null), isNull);
-      expect(classify(t(90, 1, games: 3)), isNull);
-      expect(classify(t(90, 1, guesses: 5)), isNull);
-    });
-
-    test('simulated players land where the calibration says they do', () {
-      // the means of tools/calibrate_styles.dart over many games (see
-      // docs/paper/experiments/results/daring_calibration.txt)
-      final bots = <String, (double, double, Playstyle)>{
-        'best, English': (100, 0, analyst),
-        'near-best, English': (99.0, 0.3, analyst),
-        'near-best, French': (98.9, 0.4, analyst),
-        'near-best, German': (97.8, 0.8, analyst),
-        'best fit, eight letters': (99.0, 0.5, analyst),
-        'best fit, English': (91.4, 4.0, maverick),
-        'best fit, French': (87.1, 4.8, maverick),
-        'best fit, German': (88.7, 3.5, maverick),
-        'commonest word, English': (66.3, 19.7, gambler),
-        'commonest word, French': (63.7, 20.7, gambler),
-        'commonest word, German': (62.6, 20.2, gambler),
-        'any word that fits, English': (70.7, 21.4, gambler),
-        'any word that fits, German': (64.6, 24.0, gambler),
-        'commonest word, eight letters': (77.1, 16.7, gambler),
-        'ignores the clues, English': (48.2, 6.0, wanderer),
-        'ignores the clues, French': (45.3, 5.5, wanderer),
-        'ignores the clues, German': (41.5, 7.3, wanderer),
-        'rare words, ignoring the clues': (46.3, 6.5, wanderer),
-        'ignores the clues, eight letters': (68.9, 7.0, steady),
-      };
-      for (final e in bots.entries) {
-        final (skill, daring, want) = e.value;
-        expect(at(skill, daring), want, reason: e.key);
-      }
-    });
-  });
-
-  group('staying put near a line', () {
-    Playstyle? from(Playstyle current, double skill, double daring) =>
-        classify(t(skill, daring), current: current);
-
-    test(
-      'a style is kept while the skill is within the margin of its edge',
-      () {
-        // analyst is sharp: 85 and up; it holds down to 85 - margin
-        expect(from(analyst, 85 - skillMargin + .5, 0), analyst);
-        expect(from(analyst, 85 - skillMargin - .5, 0), steady);
-        // steady is solid: it holds up to 85 + margin, and down to 58 - margin
-        expect(from(steady, 85 + skillMargin - .5, 0), steady);
-        expect(from(steady, 85 + skillMargin + .5, 0), analyst);
-        expect(from(steady, 58 - skillMargin + .5, 0), steady);
-        expect(from(steady, 58 - skillMargin - .5, 0), wanderer);
-        // wanderer is loose: it holds up to 58 + margin
-        expect(from(wanderer, 58 + skillMargin - .5, 0), wanderer);
-        expect(from(wanderer, 58 + skillMargin + .5, 0), steady);
-      },
-    );
-
-    test('and the same for daring', () {
-      expect(from(analyst, 90, 2.5 + daringMargin - .5), analyst);
-      expect(from(analyst, 90, 2.5 + daringMargin + .5), maverick);
-      expect(from(maverick, 90, 2.5 - daringMargin + .5), maverick);
-      expect(from(maverick, 90, 2.5 - daringMargin - .5), analyst);
-      expect(from(steady, 70, 12 + daringMargin - .5), steady);
-      expect(from(gambler, 70, 12 - daringMargin + .5), gambler);
-      expect(from(gambler, 70, 12 - daringMargin - .5), steady);
-    });
-
-    test('a player far from their style is moved at once', () {
-      expect(from(analyst, 40, 30), wildcard);
-      expect(from(wildcard, 95, 0), analyst);
-    });
-
-    test('with no style yet the lines are exact', () {
-      expect(classify(t(84.9, 0)), steady);
-      expect(classify(t(85, 0)), analyst);
-    });
-
-    test('the margins are small next to the tiers', () {
-      expect(skillMargin, lessThan((sharpFrom - looseBelow) / 4));
-      expect(daringMargin, lessThan(3));
     });
   });
 
@@ -337,71 +231,34 @@ void main() {
       final s = AppState();
       await s.load();
       expect(s.style, isNull);
-      final seen = <String>[];
       var changes = 0;
-
-      void play(int n, {required double skill, required double daring}) {
+      void play(int n, Behaviour early, Behaviour end) {
         for (var i = 0; i < n; i++) {
-          addGames(s.history, 1, skill: skill, daring: daring);
-          final u = s.updateStyle();
-          if (u.changed) changes++;
-          final id = u.style?.id;
-          if (id != null && (seen.isEmpty || seen.last != id)) seen.add(id);
+          addGames(s.history, 1, early: early, end: end);
+          if (s.updateStyle().changed) changes++;
         }
       }
 
-      // not rated until there are games enough
-      play(minRatedGames - 1, skill: 95, daring: 1);
+      play(minRatedGames - 1, Behaviour.maximiser, Behaviour.prober);
       expect(s.style, isNull);
-      expect(s.stylesHeld, isEmpty);
-      play(1, skill: 95, daring: 1);
+      play(1, Behaviour.maximiser, Behaviour.prober);
       expect(s.style, analyst);
       expect(changes, 0, reason: 'being rated for the first time is no change');
-
-      // 100 games at the top, then a long run of bold, middling play
-      play(90, skill: 95, daring: 1);
-      expect(s.style, analyst);
-      play(120, skill: 70, daring: 30);
+      play(120, Behaviour.gambler, Behaviour.closer);
       expect(s.style, gambler, reason: 'the last 100 are all gambler');
-
-      expect(seen.first, 'analyst');
-      expect(seen.last, 'gambler');
       expect(s.stylesHeld, containsAll(['analyst', 'gambler']));
       expect(s.styleChanges, changes);
       expect(changes, greaterThanOrEqualTo(1));
-      // the margins stop it flapping between neighbours on the way
-      expect(changes, lessThanOrEqualTo(4), reason: '$seen');
-    });
-
-    test('a player can go back to a style they have had', () async {
-      SharedPreferences.setMockInitialValues({});
-      final s = AppState();
-      await s.load();
-      void play(int n, double skill, double daring) {
-        for (var i = 0; i < n; i++) {
-          addGames(s.history, 1, skill: skill, daring: daring);
-          s.updateStyle();
-        }
-      }
-
-      play(100, 95, 1);
-      expect(s.style, analyst);
-      play(100, 40, 30);
-      expect(s.style, wildcard);
-      play(100, 95, 1);
-      expect(s.style, analyst);
-      expect(s.stylesHeld, {'analyst', 'wildcard', ...s.stylesHeld});
-      expect(s.styleChanges, greaterThanOrEqualTo(2));
     });
 
     test('a quartet does not move a classic player', () async {
       SharedPreferences.setMockInitialValues({});
       final s = AppState();
       await s.load();
-      addGames(s.history, 20, skill: 95, daring: 1);
+      addGames(s.history, 20);
       s.updateStyle();
       expect(s.style, analyst);
-      addGames(s.history, 50, skill: 10, daring: 30, mode: GameMode.quartet);
+      addGames(s.history, 50, early: Behaviour.gambler, mode: GameMode.quartet);
       final u = s.updateStyle();
       expect(u.style, analyst);
       expect(u.changed, isFalse);
@@ -411,9 +268,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final s = AppState();
       await s.load();
-      addGames(s.history, 20, skill: 95, daring: 1);
+      addGames(s.history, 20);
       s.updateStyle();
-      // the history is lost (a damaged save is dropped)
       s.history = History();
       final u = s.updateStyle();
       expect(u.style, analyst);
@@ -428,9 +284,9 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final s = AppState();
         await s.load();
-        addGames(s.history, 20, skill: 95, daring: 1);
+        addGames(s.history, 20);
         s.updateStyle();
-        addGames(s.history, 200, skill: 40, daring: 30);
+        addGames(s.history, 200, early: Behaviour.gambler);
         for (var i = 0; i < 5; i++) {
           s.updateStyle();
         }
@@ -463,7 +319,7 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final s = AppState();
         await s.load();
-        addGames(s.history, 20, skill: 95, daring: 1);
+        addGames(s.history, 20);
         s.updateStyle();
         final backup = parseBackup(backupToText(s));
         expect(backup.languages!['en']!.style, 'analyst');
@@ -488,7 +344,7 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final s = AppState();
         await s.load();
-        addGames(s.history, 20, skill: 95, daring: 1);
+        addGames(s.history, 20);
         s.updateStyle();
         final j = jsonDecode(backupToText(s)) as Map<String, dynamic>
           ..remove('languages');
@@ -541,368 +397,6 @@ void main() {
           reason: '$bad',
         );
       }
-    });
-  });
-
-  group('the achievements', () {
-    Achievement byId(String id) => achievements.firstWhere((a) => a.id == id);
-
-    test('there is one for each playstyle, one for changing, one for all', () {
-      for (final p in playstyles) {
-        final a = byId('style_${p.id}');
-        expect(a.icon, p.icon);
-        expect(a.title, p.name);
-        expect(a.repeat, isFalse);
-      }
-      expect(byId('chameleon').icon, 'replace');
-      expect(byId('many_hats').icon, 'chef-hat');
-    });
-
-    test(
-      'a playstyle is earned the first game that leaves the player in it',
-      () {
-        final states = <String, AchState>{};
-        var earned = advanceAchievements(states, styled(), 'd0');
-        expect(earned.map((a) => a.id), isNot(contains('style_analyst')));
-        earned = advanceAchievements(
-          states,
-          styled(style: 'analyst', held: 1),
-          'd1',
-        );
-        expect(earned.map((a) => a.id), contains('style_analyst'));
-        expect(earned.map((a) => a.id), isNot(contains('style_maverick')));
-        earned = advanceAchievements(
-          states,
-          styled(style: 'analyst', held: 1),
-          'd2',
-        );
-        expect(earned.map((a) => a.id), isNot(contains('style_analyst')));
-        expect(states['style_analyst']!.times, 1);
-      },
-    );
-
-    test('changing playstyle is earned once, on the first change', () {
-      final states = <String, AchState>{};
-      var earned = advanceAchievements(
-        states,
-        styled(style: 'analyst', held: 1),
-        'd1',
-      );
-      expect(earned.map((a) => a.id), isNot(contains('chameleon')));
-      earned = advanceAchievements(
-        states,
-        styled(style: 'maverick', changed: true, held: 2),
-        'd2',
-      );
-      expect(earned.map((a) => a.id), contains('chameleon'));
-      earned = advanceAchievements(
-        states,
-        styled(style: 'analyst', changed: true, held: 2),
-        'd3',
-      );
-      expect(earned.map((a) => a.id), isNot(contains('chameleon')));
-      expect(states['chameleon']!.times, 1);
-    });
-
-    test('having been every playstyle is earned at the sixth', () {
-      final states = <String, AchState>{};
-      for (var held = 1; held < playstyles.length; held++) {
-        final earned = advanceAchievements(
-          states,
-          styled(style: playstyles[held - 1].id, held: held),
-          'd$held',
-        );
-        expect(earned.map((a) => a.id), isNot(contains('many_hats')));
-      }
-      final earned = advanceAchievements(
-        states,
-        styled(style: playstyles.last.id, held: playstyles.length),
-        'done',
-      );
-      expect(earned.map((a) => a.id), contains('many_hats'));
-    });
-
-    test('a quartet, which has no style to give, earns none of them', () {
-      final states = <String, AchState>{};
-      final r = GameResult(
-        lang: 'en',
-        length: 5,
-        tries: 9,
-        used: 5,
-        won: true,
-        mode: GameMode.quartet,
-        skills: const [90],
-      );
-      final earned = advanceAchievements(states, r, 'q');
-      expect(
-        earned.where((a) => a.id.startsWith('style_') || a.id == 'chameleon'),
-        isEmpty,
-      );
-    });
-  });
-
-  group('on the home page', () {
-    /// Opens the home page with [style] as the player's. (Settings are loaded
-    /// first: loading would otherwise wipe a style set before it.)
-    Future<void> home(
-      WidgetTester tester, {
-      Size size = const Size(420, 1700),
-      String? style,
-    }) async {
-      await tester.binding.setSurfaceSize(size);
-      await appState.load();
-      appState.history = History();
-      appState.styleId = style;
-      await tester.pumpWidget(const LexodleApp());
-      await tester.pumpAndSettle();
-    }
-
-    String tip(WidgetTester tester) => tester
-        .widget<Tooltip>(
-          find.ancestor(
-            of: find.byKey(const ValueKey('style-chip')),
-            matching: find.byType(Tooltip),
-          ),
-        )
-        .message!;
-
-    testWidgets('a player not yet rated sees how many games to go', (
-      tester,
-    ) async {
-      await home(tester);
-      expect(find.byKey(const ValueKey('style-icon-unrated')), findsOneWidget);
-      expect(tip(tester), contains('0/$minRatedGames'));
-      addGames(appState.history, 4);
-      appState.refresh();
-      await tester.pumpAndSettle();
-      expect(tip(tester), contains('4/$minRatedGames'));
-      expect(
-        find.bySemanticsLabel(RegExp('not rated yet, 4/')),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('a rated player sees the icon of their style', (tester) async {
-      for (final p in playstyles) {
-        await home(tester, style: p.id);
-        expect(
-          find.byKey(ValueKey('style-icon-${p.id}')),
-          findsOneWidget,
-          reason: p.id,
-        );
-        expect(tip(tester), contains(p.name), reason: p.id);
-        expect(find.byKey(const ValueKey('style-icon-unrated')), findsNothing);
-        await tester.pumpWidget(const SizedBox());
-      }
-    });
-
-    testWidgets('the tooltip says what the style means', (tester) async {
-      await home(tester, style: 'maverick');
-      expect(tip(tester), contains('maverick'));
-      expect(tip(tester), contains(maverick.blurb));
-    });
-
-    testWidgets('it is a box at the left of the row under achievements', (
-      tester,
-    ) async {
-      for (final style in [null, 'analyst', 'wildcard']) {
-        await home(tester, style: style);
-        final chip = find.byKey(const ValueKey('style-chip'));
-        expect(tester.widget(chip), isA<OutlinedButton>());
-        final box = tester.getRect(chip);
-        final hist = tester.getRect(
-          find.byKey(const ValueKey('history-button')),
-        );
-        final ach = tester.getRect(
-          find.byKey(const ValueKey('achievements-button')),
-        );
-        final modes = tester.getRect(
-          find.descendant(
-            of: find.byTooltip('game modes'),
-            matching: find.byType(OutlinedButton),
-          ),
-        );
-        expect(box.width, box.height, reason: '$style: square');
-        expect(box.size, modes.size, reason: '$style: as big as the other box');
-        expect(box.top, hist.top, reason: '$style: on the history row');
-        expect(box.height, hist.height, reason: '$style: as tall as history');
-        expect(box.right, lessThan(hist.left), reason: '$style: to its left');
-        expect(box.top, greaterThan(ach.bottom), reason: '$style: under it');
-        expect(box.left, ach.left, reason: '$style: at the page edge');
-        // and it is no longer in the header
-        expect(
-          box.top,
-          greaterThan(tester.getBottomLeft(find.text('lexodle')).dy),
-          reason: '$style: below the title',
-        );
-        await tester.pumpWidget(const SizedBox());
-      }
-    });
-
-    testWidgets('the history button goes straight to the history, unrated', (
-      tester,
-    ) async {
-      await home(tester);
-      expect(find.byKey(const ValueKey('history-link')), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('history-button')));
-      await tester.pumpAndSettle();
-      expect(find.byType(HistoryPage), findsOneWidget);
-      expect(find.byType(PlaystyleDialog), findsNothing);
-      expect(find.text('no games yet'), findsOneWidget);
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-      expect(find.byType(HistoryPage), findsNothing);
-    });
-
-    group('the playstyle button opens the playstyle card', () {
-      /// A rated player: 20 classic games, and analyst as their playstyle.
-      Future<void> rated(WidgetTester tester) async {
-        await home(tester, style: 'analyst');
-        addGames(appState.history, 20);
-        appState.styleId = 'analyst';
-        appState.refresh();
-        await tester.pumpAndSettle();
-      }
-
-      Future<void> openCard(WidgetTester tester) async {
-        await tester.tap(find.byKey(const ValueKey('style-chip')));
-        await tester.pumpAndSettle();
-      }
-
-      testWidgets('not the history page, even unrated', (tester) async {
-        await home(tester);
-        await openCard(tester);
-        expect(find.byType(PlaystyleDialog), findsOneWidget);
-        expect(find.byType(PlaystyleCard), findsOneWidget);
-        expect(find.byType(HistoryPage), findsNothing);
-        expect(find.text('not rated yet'), findsOneWidget);
-      });
-
-      testWidgets('it shows the style, and skill, luck and daring in their '
-          'colours', (tester) async {
-        await rated(tester);
-        await openCard(tester);
-        final c = Theme.of(tester.element(find.byType(PlaystyleDialog)))
-            .colorScheme;
-        expect(
-          find.byKey(const ValueKey('profile-icon-analyst')),
-          findsOneWidget,
-        );
-        expect(
-          tester.widget<Text>(find.byKey(const ValueKey('profile-name'))).data,
-          'analyst',
-        );
-        for (final (label, colour) in [
-          ('skill', skillColor(c)),
-          ('luck', luckColor(c)),
-          ('daring', daringColor(c)),
-        ]) {
-          final value = find.byKey(ValueKey('stat-$label'));
-          expect(value, findsOneWidget, reason: label);
-          expect(
-            tester.widget<Text>(value).style?.color,
-            colour,
-            reason: label,
-          );
-          final caption = find.descendant(
-            of: find.byType(PlaystyleDialog),
-            matching: find.text(label),
-          );
-          expect(caption, findsOneWidget, reason: label);
-          expect(
-            tester.widget<Text>(caption).style?.color,
-            colour,
-            reason: '$label caption',
-          );
-        }
-      });
-
-      testWidgets('the card is a box like game modes, with the cross centred '
-          'at its top right', (tester) async {
-        await home(tester);
-        await openCard(tester);
-        final dialog = tester.widget<Dialog>(find.byType(Dialog));
-        final shape = dialog.shape! as RoundedRectangleBorder;
-        expect(shape.borderRadius, BorderRadius.circular(3));
-        expect(
-          dialog.backgroundColor,
-          Theme.of(tester.element(find.byType(Dialog))).scaffoldBackgroundColor,
-        );
-        // (the box itself, not the dialog's inset around it)
-        final box = tester.getRect(
-          find
-              .descendant(
-                of: find.byType(Dialog),
-                matching: find.byType(Material),
-              )
-              .first,
-        );
-        final close = find.byKey(const ValueKey('playstyle-close'));
-        expect(tester.getSize(close), const Size(48, 48));
-        final icon = tester.getCenter(
-          find.descendant(of: close, matching: find.byIcon(Icons.close)),
-        );
-        expect(icon, tester.getCenter(close), reason: 'the cross is centred');
-        expect(box.right - tester.getRect(close).right, 8);
-        expect(tester.getRect(close).top - box.top, 8);
-      });
-
-      testWidgets('the cross and back close it, and home is still there', (
-        tester,
-      ) async {
-        await home(tester);
-        await openCard(tester);
-        await tester.tap(find.byKey(const ValueKey('playstyle-close')));
-        await tester.pumpAndSettle();
-        expect(find.byType(PlaystyleDialog), findsNothing);
-        expect(find.byKey(const ValueKey('style-chip')), findsOneWidget);
-        await openCard(tester);
-        await tester.binding.handlePopRoute();
-        await tester.pumpAndSettle();
-        expect(find.byType(PlaystyleDialog), findsNothing);
-        expect(find.byKey(const ValueKey('style-chip')), findsOneWidget);
-      });
-
-      testWidgets('its history button goes to the history, and back is home', (
-        tester,
-      ) async {
-        await home(tester);
-        await openCard(tester);
-        await tester.tap(find.byKey(const ValueKey('playstyle-history')));
-        await tester.pumpAndSettle();
-        expect(find.byType(HistoryPage), findsOneWidget);
-        expect(find.byType(PlaystyleDialog), findsNothing);
-        await tester.pageBack();
-        await tester.pumpAndSettle();
-        expect(find.byType(HistoryPage), findsNothing);
-        expect(find.byType(PlaystyleDialog), findsNothing);
-        expect(find.byKey(const ValueKey('style-chip')), findsOneWidget);
-      });
-
-      testWidgets('the history page shows the same card at its top', (
-        tester,
-      ) async {
-        await rated(tester);
-        await tester.tap(find.byKey(const ValueKey('history-button')));
-        await tester.pumpAndSettle();
-        expect(find.byType(PlaystyleCard), findsOneWidget);
-        expect(find.byKey(const ValueKey('profile-name')), findsOneWidget);
-      });
-    });
-
-    testWidgets('the row fits the narrowest phone', (tester) async {
-      await home(tester, size: const Size(320, 1700), style: 'wanderer');
-      // (the text of the error, so a failure says which widget overflowed)
-      expect(tester.takeException()?.toString(), isNull);
-      final chip = tester.getRect(find.byKey(const ValueKey('style-chip')));
-      final modes = tester.getRect(
-        find.descendant(
-          of: find.byTooltip('game modes'),
-          matching: find.byType(OutlinedButton),
-        ),
-      );
-      expect(chip.left, greaterThanOrEqualTo(0));
-      expect(modes.right, lessThanOrEqualTo(320));
     });
   });
 }

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'language_picker.dart';
 import 'main.dart';
+import 'modes.dart';
 import 'routes.dart';
 import 'store.dart';
 import 'ui.dart';
 import 'words.dart';
 
-int achievementCount() => achievements.length;
+int achievementCount() => levelCount;
 
 /// The achievements. Each language has its own (except the few that count
 /// languages, and the mastery badges), so the page is about one language at a
@@ -26,6 +27,7 @@ class AchievementsPage extends StatefulWidget {
 class _AchievementsPageState extends State<AchievementsPage> {
   String _lang = appState.lang;
   Map<String, Language> _langs = {};
+  Medal? _medal;
 
   @override
   void initState() {
@@ -65,19 +67,35 @@ class _AchievementsPageState extends State<AchievementsPage> {
         if (st != null) out[a.id] = st;
         continue;
       }
-      var times = 0;
-      final dates = <String>[];
+      // the furthest level of any language, with the days it was reached
+      AchState? best;
       for (final l in codes) {
         final st = appState.achOf(l)[a.id];
-        if (st == null) continue;
-        times += st.times;
-        dates.addAll(st.dates);
+        if (st != null && st.times > (best?.times ?? 0)) best = st;
       }
-      if (times > 0) {
-        out[a.id] = AchState(times: times, dates: dates..sort());
+      if (best != null) {
+        out[a.id] = AchState(times: best.times, dates: List.of(best.dates));
       }
     }
     return out;
+  }
+
+  /// The medal of the highest level earned of [a], or null for none.
+  Medal? _topMedal(Map<String, AchState> mine, Achievement a) {
+    final n = (mine[a.id]?.times ?? 0).clamp(0, a.count);
+    return n == 0 ? null : a.levels[n - 1].medal;
+  }
+
+  /// How many levels of medal [m] (every medal when null) are earned.
+  int _earnedAt(Map<String, AchState> mine, Medal? m) {
+    var n = 0;
+    for (final a in achievements) {
+      final t = (mine[a.id]?.times ?? 0).clamp(0, a.count);
+      for (var i = 0; i < t; i++) {
+        if (m == null || a.levels[i].medal == m) n++;
+      }
+    }
+    return n;
   }
 
   @override
@@ -108,8 +126,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
                   ),
                   const SizedBox(height: 12),
                   Caption(
-                    '${mine.values.where((x) => x.times > 0).length} of '
-                    '${achievements.length} earned '
+                    '${achievements.fold(0, (n, a) => n + (mine[a.id]?.times ?? 0))} of '
+                    '$levelCount levels earned '
                     '${all ? 'in any language' : 'in $_lang'}',
                   ),
                   const SizedBox(height: 16),
@@ -121,46 +139,48 @@ class _AchievementsPageState extends State<AchievementsPage> {
                       _Stat('best', s.best),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  for (final a in achievements) ...[
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final m in [null, ...Medal.values])
+                        _MedalPill(
+                          m,
+                          earned: _earnedAt(mine, m),
+                          total: m == null ? levelCount : achievements.length,
+                          on: _medal == m,
+                          onTap: () => setState(() => _medal = m),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  for (final a in achievements.where(
+                    (a) => _medal == null || _topMedal(mine, a) == _medal,
+                  )) ...[
                     const Divider(),
-                    a.track == Track.badges
-                        ? _BadgeRow(
-                            a,
-                            mine[a.id] ?? AchState(),
-                            mastery: a.id == 'mastery',
-                          )
-                        : _Row(
-                            a,
-                            mine[a.id] ?? AchState(),
-                            // one language's own wears its flag; one that counts
-                            // languages wears theirs
-                            badges: a.id == towerOfBabelId
-                                // every language there is, bright once completed
-                                ? (_langs.keys.toList()..sort())
-                                : a.global
-                                ? won
-                                : all
-                                ? codes
-                                : [_lang],
-                            // "all": the languages it is not yet earned in are dim
-                            dimmed: a.id == towerOfBabelId
-                                ? {
-                                    for (final l in _langs.keys)
-                                      if (!appState.completedIn(l)) l,
-                                  }
-                                : all && !a.global
-                                ? {
-                                    for (final l in codes)
-                                      if ((appState.achOf(l)[a.id]?.times ??
-                                              0) ==
-                                          0)
-                                        l,
-                                  }
-                                : const {},
-                            // progress is a language's own
-                            showBar: !(all && !a.global),
-                          ),
+                    _Row(
+                      a,
+                      mine[a.id] ?? AchState(),
+                      languages: _langs.length,
+                      // one language's own wears its flag; one that counts
+                      // languages wears theirs
+                      badges: a.global
+                          ? won
+                          : all
+                          ? codes
+                          : [_lang],
+                      // "all": the languages it is not yet earned in are dim
+                      dimmed: all && !a.global
+                          ? {
+                              for (final l in codes)
+                                if ((appState.achOf(l)[a.id]?.times ?? 0) == 0)
+                                  l,
+                            }
+                          : const {},
+                      // progress is a language's own
+                      showBar: !(all && !a.global),
+                    ),
                   ],
                   const SizedBox(height: 28),
                   const Caption('history'),
@@ -176,8 +196,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
   }
 }
 
-/// One achievement: its glyph, what it asks for, how often it has been earned
-/// and, for numbered ones, a bar showing progress towards the next time.
+/// One achievement: its glyph in the medal of the highest level earned, what
+/// the next level asks for, a pip for each level, and a bar towards the next. A
+/// streak shows an icon for each of its levels instead.
 class _Row extends StatelessWidget {
   const _Row(
     this.a,
@@ -185,9 +206,13 @@ class _Row extends StatelessWidget {
     this.badges = const [],
     this.dimmed = const {},
     this.showBar = true,
+    this.languages = 0,
   });
   final Achievement a;
   final AchState st;
+
+  /// How many languages there are, for the targets that count them.
+  final int languages;
 
   /// Of those, the ones drawn dim (where it has not been earned), and whether
   /// the progress bar is shown.
@@ -200,199 +225,276 @@ class _Row extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final earned = st.times > 0;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+    final done = st.times.clamp(0, a.count);
+    final complete = done >= a.count;
+    // what it asks next (or, once complete, its top level)
+    final next = a.atLevel(complete ? a.count - 1 : done);
+    final top = done == 0 ? null : a.atLevel(done - 1);
+    final medal = medalColor(c, next.medal);
+    final earnedColor = top == null ? null : medalColor(c, top.medal);
+    final ghost = c.onSurface.withValues(alpha: .22);
+    // a tap lists every level: its name, what it asks, and when it was earned
+    void tap() => showHairlineDialog<void>(
+      context,
+      title: a.family,
+      children: [
+        for (var i = 0; i < a.count; i++)
+          Padding(
+            key: ValueKey('detail-${a.id}-$i'),
+            padding: const EdgeInsets.only(bottom: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TablerIcon(
+                  a.atLevel(i).icon,
+                  size: 32,
+                  color: i < done ? medalColor(c, a.levels[i].medal) : ghost,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              a.levels[i].name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            a.levels[i].medal.name,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: medalColor(c, a.levels[i].medal),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        a.atLevel(i).description,
+                        style: const TextStyle(fontSize: 12, height: 1.4),
+                      ),
+                      if (i < done && i < st.dates.length) Caption(st.dates[i]),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (a.metric == 'mastered')
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, Routes.mastery);
+            },
+            child: const Text('language by language'),
+          ),
+      ],
+    );
+    final target = a.targetAt(next.level, languages: languages);
+
+    Widget pips() => Row(
+      key: ValueKey('levels-${a.id}'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < a.count; i++)
+          Container(
+            key: ValueKey('level-${a.id}-$i'),
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(right: 4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: i < done ? medalColor(c, a.levels[i].medal) : null,
+              border: Border.all(color: i < done ? Colors.transparent : ghost),
+            ),
+          ),
+      ],
+    );
+
+    final glyph = a.separate
+        ? Row(
+            key: ValueKey('streak-icons-${a.id}'),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < a.count; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: Column(
+                    children: [
+                      TablerIcon(
+                        a.atLevel(i).icon,
+                        key: ValueKey('streak-icon-${a.id}-$i'),
+                        size: 34,
+                        color: i < done
+                            ? medalColor(c, a.levels[i].medal)
+                            : ghost,
+                      ),
+                      Text(
+                        '${a.levels[i].target}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: c.onSurface.withValues(alpha: dimAlpha),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          )
+        : TablerIcon(a.icon, size: 44, color: earnedColor ?? ghost);
+
+    final text = Opacity(
+      opacity: done > 0 ? 1 : .55,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              // earned at least once: the accent colour; not yet: a faint ghost
-              TablerIcon(
-                a.icon,
-                size: 44,
-                color: earned ? c.primary : c.onSurface.withValues(alpha: .22),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Opacity(
-                  opacity: earned ? 1 : .55,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        a.title,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(a.description, style: const TextStyle(fontSize: 12)),
-                      if (badges.isNotEmpty) ...[
-                        const SizedBox(height: 5),
-                        Wrap(
-                          key: ValueKey('badges-${a.id}'),
-                          spacing: 3,
-                          runSpacing: 3,
-                          children: [
-                            for (final code in badges)
-                              Opacity(
-                                key: ValueKey('badge-${a.id}-$code'),
-                                opacity: dimmed.contains(code) ? .3 : 1,
-                                child: languageBadge(code, size: 11),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
+              Flexible(
+                child: Text(
+                  // the name changes as the levels are reached
+                  (top ?? next).title,
+                  key: ValueKey('name-${a.id}'),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
-              if (earned)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '×${st.times}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: c.primary,
-                      ),
-                    ),
-                    Caption(st.latest ?? ''),
-                  ],
+              const SizedBox(width: 8),
+              Text(
+                next.medal.name,
+                key: ValueKey('medal-${a.id}'),
+                style: TextStyle(fontSize: 11, color: medal),
+              ),
+              if (a.tag != null) ...[
+                const SizedBox(width: 6),
+                TablerIcon(
+                  a.tag == GameMode.quartet ? 'layout-grid' : 'chess-knight',
+                  size: 13,
+                  color: c.onSurface.withValues(alpha: dimAlpha),
                 ),
+              ],
             ],
           ),
-          if (a.numbered && showBar) ...[
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 60),
-              child: _Bar(progress: st.progress, target: a.target),
+          const SizedBox(height: 2),
+          Text(next.description, style: const TextStyle(fontSize: 12)),
+          if (!a.separate) ...[const SizedBox(height: 6), pips()],
+          if (badges.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Wrap(
+              key: ValueKey('badges-${a.id}'),
+              spacing: 3,
+              runSpacing: 3,
+              children: [
+                for (final code in badges)
+                  Opacity(
+                    key: ValueKey('badge-${a.id}-$code'),
+                    opacity: dimmed.contains(code) ? .3 : 1,
+                    child: languageBadge(code, size: 11),
+                  ),
+              ],
             ),
           ],
         ],
       ),
     );
+
+    final right = done == 0
+        ? null
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '$done/${a.count}',
+                key: ValueKey('count-${a.id}'),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: earnedColor,
+                ),
+              ),
+              Caption(st.latest ?? ''),
+            ],
+          );
+
+    return InkWell(
+      key: ValueKey('${a.id}-row'),
+      onTap: tap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (a.separate) ...[
+              Row(
+                children: [
+                  Expanded(child: text),
+                  ?right,
+                ],
+              ),
+              const SizedBox(height: 10),
+              glyph,
+            ] else
+              Row(
+                children: [
+                  glyph,
+                  const SizedBox(width: 16),
+                  Expanded(child: text),
+                  ?right,
+                ],
+              ),
+            if (a.numbered && showBar && !complete) ...[
+              const SizedBox(height: 10),
+              Padding(
+                padding: EdgeInsets.only(left: a.separate ? 0 : 60),
+                child: _Bar(
+                  progress: st.value.toInt(),
+                  target: target,
+                  color: medal,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 
-/// The language mastery achievement: one achievement, a badge for every
-/// language mastered, kept for good. Tap it for the language by language list.
-class _BadgeRow extends StatelessWidget {
-  const _BadgeRow(this.a, this.st, {this.mastery = true});
-  final Achievement a;
-  final AchState st;
-
-  /// The language mastery (which opens its list) or the completionist (which
-  /// only collects its badges).
-  final bool mastery;
+/// One medal's filter: its name and how many of its achievements are earned.
+class _MedalPill extends StatelessWidget {
+  const _MedalPill(
+    this.medal, {
+    required this.earned,
+    required this.total,
+    required this.on,
+    required this.onTap,
+  });
+  final Medal? medal;
+  final int earned, total;
+  final bool on;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final earned = st.seen.isNotEmpty;
+    final color = medal == null ? c.onSurface : medalColor(c, medal!);
     return InkWell(
-      key: ValueKey('${a.id}-row'),
-      onTap: mastery
-          ? () => Navigator.pushNamed(context, Routes.mastery)
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: FutureBuilder<List<Language>>(
-          future: WordBank.languages(),
-          builder: (context, snap) {
-            final langs = snap.data ?? const <Language>[];
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    TablerIcon(
-                      a.icon,
-                      size: 44,
-                      color: earned
-                          ? c.primary
-                          : c.onSurface.withValues(alpha: .22),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Opacity(
-                        opacity: earned ? 1 : .55,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              a.title,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              a.description,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '${st.seen.length}/${langs.length}',
-                          key: ValueKey('${a.id}-count'),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: earned ? c.primary : null,
-                          ),
-                        ),
-                        if (mastery)
-                          Icon(
-                            Icons.chevron_right,
-                            size: 18,
-                            color: c.onSurface.withValues(alpha: dimAlpha),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(left: 60),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      // the badges collected: a flag for every language mastered
-                      for (final l in langs)
-                        if (st.seen.contains(l.code))
-                          Container(
-                            key: ValueKey('badge-${l.code}'),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: c.primary),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            child: FlagBadge(l.flag, size: 18),
-                          ),
-                      if (!earned)
-                        Text(
-                          'no badges yet',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: c.onSurface.withValues(alpha: dimAlpha),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
+      key: ValueKey('medal-filter-${medal?.name ?? 'all'}'),
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          border: Border.all(color: on ? color : c.outlineVariant),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          '${medal?.name ?? 'all'} $earned/$total',
+          style: TextStyle(fontSize: 12, color: color),
         ),
       ),
     );
@@ -491,9 +593,10 @@ class _MasteryRow extends StatelessWidget {
 
 /// Progress towards the next earning. It starts again from 0 each time.
 class _Bar extends StatelessWidget {
-  const _Bar({required this.progress, required this.target});
+  const _Bar({required this.progress, required this.target, this.color});
   final int progress;
   final int target;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -517,7 +620,7 @@ class _Bar extends StatelessWidget {
                   height: 4,
                   width: box.maxWidth * frac,
                   decoration: BoxDecoration(
-                    color: c.primary,
+                    color: color ?? c.primary,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

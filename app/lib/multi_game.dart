@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'background.dart';
+import 'daily.dart';
 import 'guess_input.dart';
 import 'haptics.dart';
 import 'history.dart';
@@ -27,8 +28,12 @@ import 'words.dart';
 /// out in the background: the Wiktionary entry of every answer is looked up
 /// and each guess is analysed as soon as it is made.
 class MultiGamePage extends StatefulWidget {
-  const MultiGamePage({super.key, required this.bank, this.random});
+  const MultiGamePage({super.key, required this.bank, this.random, this.daily});
   final WordBank bank;
+
+  /// Set to play the daily quartet or relay race: its four words and the fixed
+  /// daily difficulty, instead of a game drawn at random.
+  final DailyMulti? daily;
 
   /// Where the answers are drawn from; tests pass a seeded one.
   final Random? random;
@@ -41,15 +46,20 @@ class _MultiGamePageState extends State<MultiGamePage> {
   late final Random _rng = widget.random ?? Random();
   final _focus = FocusNode();
 
-  late final GameMode mode = appState.mode;
+  late final DailyMulti? _daily = widget.daily;
+  late final GameMode mode = _daily?.mode ?? appState.mode;
   late final int length;
   late final int tries;
 
-  /// Whether the answers are drawn by how common each word is.
-  late final bool freq = appState.useFrequency;
+  /// Whether the answers are drawn by how common each word is. Never for a
+  /// daily: its words are equally likely, among the most common.
+  late final bool freq = _daily == null && appState.useFrequency;
 
-  /// How many words the answers were drawn from: every word of the length.
-  late final int pool = widget.bank.answers(length).length;
+  /// How many words the answers were drawn from: every word of the length, and
+  /// for a daily the most common [dailyAnswers] of them.
+  late final int pool = _daily == null
+      ? widget.bank.answers(length).length
+      : min(dailyAnswers, widget.bank.answers(length).length);
   late final List<String> _pool;
   late final Set<String> _letters;
 
@@ -70,11 +80,31 @@ class _MultiGamePageState extends State<MultiGamePage> {
   @override
   void initState() {
     super.initState();
-    length = appState.length;
-    tries = triesFor(mode, appState.tries);
+    length = _daily == null ? appState.length : dailyLength;
+    tries = _daily == null
+        ? triesFor(mode, appState.tries)
+        : dailyTriesOf(mode);
     _pool = widget.bank.answers(length);
     _letters = widget.bank.letters(length);
     _reset();
+    _resume();
+  }
+
+  /// A daily left half played, or finished, comes back as it was, so that
+  /// closing the page cannot reroll it. Nothing is recorded again: the game was
+  /// counted when it ended.
+  void _resume() {
+    final d = _daily;
+    if (d == null) return;
+    final saved = appState.dailyFor(widget.bank.language.code, d.date, mode);
+    if (saved == null) return;
+    for (final g in saved.guesses) {
+      // a damaged save stops the replay rather than breaking the game
+      if (game.over || g.length != length || !widget.bank.valid.contains(g)) {
+        break;
+      }
+      _apply(g, restoring: true);
+    }
   }
 
   @override
@@ -92,15 +122,19 @@ class _MultiGamePageState extends State<MultiGamePage> {
     unlocked = [];
     game = MultiGame(
       mode,
-      chooseTargets(
-        _pool,
-        widget.bank.answerWeights(length, frequency: freq),
-        mode.boards,
-        appState.share,
-        _rng,
-      ),
+      _daily?.answers ??
+          chooseTargets(
+            _pool,
+            widget.bank.answerWeights(length, frequency: freq),
+            mode.boards,
+            appState.share,
+            _rng,
+          ),
       tries,
       words: widget.bank.guessable(length),
+      possible: _daily == null
+          ? null
+          : widget.bank.answers(length).take(dailyAnswers).toList(),
       provisional: analyseWhilePlaying,
       weights: _law,
     );
@@ -160,38 +194,52 @@ class _MultiGamePageState extends State<MultiGamePage> {
       setState(() => message = 'not in the word list');
       return;
     }
-    setState(() {
-      game.guess(word);
-      input.clear();
-      message = '';
-      // analyse this guess in the background, at once: the best real split on
-      // each board (for the skill) and the picks of the review
-      final index = game.steps.length - 1;
-      final step = game.steps[index];
-      final epoch = _epoch;
-      if (analyseWhilePlaying) {
-        final job = _jobs.add(
-          () => analyseMulti(
-            step.liveBefore,
-            widget.bank.guessable(length),
-            weights: _law,
-          ),
-        );
-        _analysis.add(job);
-        job.then<void>((land) {
-          if (!mounted || epoch != _epoch) return;
-          setState(() {
-            game.steps[index] = game.steps[index].withBests(land.bests);
-          });
-        }, onError: (_) {});
-      } else {
-        _analysis.add(null);
-      }
-      if (game.over) {
-        Haptics.fire(game.won ? Haptic.win : Haptic.lose);
-        _finish();
-      }
-    });
+    setState(() => _apply(word));
+  }
+
+  /// Plays [word], which has been checked. [restoring] replays a saved daily
+  /// guess: it is not saved or recorded again.
+  void _apply(String word, {bool restoring = false}) {
+    game.guess(word);
+    input.clear();
+    message = '';
+    // analyse this guess in the background, at once: the best real split on
+    // each board (for the skill) and the picks of the review
+    final index = game.steps.length - 1;
+    final step = game.steps[index];
+    final epoch = _epoch;
+    if (analyseWhilePlaying) {
+      final job = _jobs.add(
+        () => analyseMulti(
+          step.liveBefore,
+          widget.bank.guessable(length),
+          weights: _law,
+        ),
+      );
+      _analysis.add(job);
+      job.then<void>((land) {
+        if (!mounted || epoch != _epoch) return;
+        setState(() {
+          game.steps[index] = game.steps[index].withBests(land.bests);
+        });
+      }, onError: (_) {});
+    } else {
+      _analysis.add(null);
+    }
+    final d = _daily;
+    if (d != null && !restoring) {
+      appState.saveDaily(
+        widget.bank.language.code,
+        d.date,
+        game.guesses,
+        won: game.over ? game.won : null,
+        mode: mode,
+      );
+    }
+    if (game.over && !restoring) {
+      Haptics.fire(game.won ? Haptic.win : Haptic.lose);
+      _finish();
+    }
   }
 
   /// The finished game counts towards the achievements of its mode. Skill is
@@ -199,6 +247,20 @@ class _MultiGamePageState extends State<MultiGamePage> {
   void _finish() {
     final epoch = _epoch;
     void record() {
+      final d = _daily;
+      final code = widget.bank.language.code;
+      final result = GameResult(
+        lang: code,
+        length: length,
+        tries: tries,
+        used: game.guesses.length,
+        won: game.won,
+        pool: pool,
+        mode: mode,
+        skills: [for (final s in game.steps) s.skill],
+        freeRides: game.freeRides,
+        daily: d != null,
+      );
       // a step's skill and luck are the means over the boards it was made for;
       // a quartet or relay race has no daring or pool sizes of its own
       appState.recordHistory(
@@ -220,10 +282,19 @@ class _MultiGamePageState extends State<MultiGamePage> {
               luck: game.steps[i].luck,
             ),
         ],
+        daily: d?.date ?? '',
       );
+      final streak = d == null
+          ? 0
+          : appState.recordDaily(
+              d.date,
+              result.dailyTier,
+              lang: code,
+              mode: mode,
+            );
       unlocked = appState.recordGame(
         GameResult(
-          lang: widget.bank.language.code,
+          lang: code,
           length: length,
           tries: tries,
           used: game.guesses.length,
@@ -232,6 +303,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
           mode: mode,
           skills: [for (final s in game.steps) s.skill],
           freeRides: game.freeRides,
+          daily: d != null,
+          dailyStreak: streak,
         ),
       );
     }
@@ -302,8 +375,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  '${mode.label} · ${widget.bank.language.name.toLowerCase()}'
-                  ' · $length · $tries tries',
+                  _daily == null
+                      ? '${mode.label} · '
+                            '${widget.bank.language.name.toLowerCase()}'
+                            ' · $length · $tries tries'
+                      : '${mode.label} · '
+                            '${widget.bank.language.name.toLowerCase()}'
+                            ' · daily · ${_daily.date}',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                 ),
@@ -552,16 +630,24 @@ class _MultiGamePageState extends State<MultiGamePage> {
                     ),
                   ),
                 ),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 36),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                // a daily is played once: the next words come tomorrow
+                if (_daily == null)
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                    ),
+                    onPressed: () => setState(_reset),
+                    child: const Text('replay'),
                   ),
-                  onPressed: () => setState(_reset),
-                  child: const Text('replay'),
-                ),
               ],
             ),
+            if (_daily != null)
+              Caption(
+                'daily ${_daily.date} · streak '
+                '${appState.dailyStreakFor(widget.bank.language.code, mode)} · '
+                'the next words come at midnight, your time',
+              ),
             const SizedBox(height: 10),
             for (final a in unlocked)
               Padding(

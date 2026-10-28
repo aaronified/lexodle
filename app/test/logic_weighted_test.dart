@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/logic.dart';
 
-/// Skill, luck and daring under an answer law: every possible word equally
+/// Skill, luck and risk under an answer law: every possible word equally
 /// likely (weights null), or each by its weight.
 void main() {
   const words = [
@@ -69,7 +69,7 @@ void main() {
           expect(w.skill, closeTo(u.skill, 1e-9), reason: '$g/$a');
           expect(w.luck, closeTo(u.luck, 1e-9), reason: '$g/$a');
           expect(w.expected, closeTo(u.expected, 1e-9));
-          expect(w.risk, closeTo(u.risk, 1e-9));
+          expect(w.rawRisk, closeTo(u.rawRisk, 1e-9));
           expect(w.winChance, closeTo(u.winChance, 1e-12));
         }
       }
@@ -132,30 +132,30 @@ void main() {
 
     test('the best guess of the analysis scores 100, none more', () async {
       final land = await analyseGuesses(words, words, weights: weights);
-      expect(land.skills.first, closeTo(100, 1e-9));
-      expect(land.skills.every((s) => s <= 100 + 1e-9 && s >= -1e-9), isTrue);
+      expect(land.gains.first, closeTo(land.bestGain, 1e-9));
+      expect(land.gains.every((g) => g <= land.bestGain + 1e-9), isTrue);
       final top = land.top.first;
-      final m = score(top.word, 'mean', weights, best: land.bestExpected);
+      final m = score(top.word, 'mean', weights, best: land.bestGain);
       expect(m.skill, closeTo(100, 1e-9));
     });
 
     test('the analysis finds a different best under the weights', () async {
       final w = await analyseGuesses(words, words, weights: weights);
       final u = await analyseGuesses(words, words);
-      expect(w.bestExpected, isNot(closeTo(u.bestExpected, 1e-9)));
+      expect(w.bestGain, isNot(closeTo(u.bestGain, 1e-9)));
     });
 
     test('two words: the best split scores 100 whatever the weights', () async {
       final two = ['team', 'mean'];
       final land = await analyseGuesses(two, two, weights: weights);
-      expect(land.skills.first, closeTo(100, 1e-9));
+      expect(land.top.first.skill, closeTo(100, 1e-9));
       final m = scoreGuess(
         two,
         'team',
         1,
         weights: weights,
         afterWords: const ['team'],
-        best: land.bestExpected,
+        best: land.bestGain,
       );
       expect(m.skill, closeTo(100, 1e-9));
     });
@@ -194,7 +194,7 @@ void main() {
     });
   });
 
-  group('daring under the weights', () {
+  group('winning under the weights', () {
     test('the chance of winning now is the guess\'s share of the weight', () {
       final total = words.fold<int>(0, (a, w) => a + weights[w]!);
       expect(
@@ -211,22 +211,15 @@ void main() {
         closeTo(1 / words.length, 1e-12),
       );
     });
-
-    test('a likelier word is less daring, the rest equal', () {
-      double daring(double win) =>
-          daringOf(possible: true, winChance: win, skill: 50, triesLeft: 4);
-      expect(daring(.6), lessThan(daring(.1)));
-    });
   });
 
   group('the risk of a split', () {
-    test('equal weights give the usual risk, a tail more', () {
-      final u = score('team', 'mean', null).risk;
-      final w = score('team', 'mean', weights).risk;
-      expect(u, greaterThanOrEqualTo(0));
-      expect(w, greaterThanOrEqualTo(0));
-      expect(splitRiskMass([1, 1, 1, 1]), closeTo(0, 1e-12));
-      expect(splitRiskMass([97, 1, 1, 1]), greaterThan(0.1));
+    test('equal chances give no risk to an even split, a tail some', () {
+      const four = ['aa', 'ab', 'ba', 'bb'];
+      expect(scoreGuess(four, 'ab', 1).rawRisk, closeTo(0, 1e-9));
+      final u = score('team', 'mean', null).rawRisk;
+      final w = score('team', 'mean', weights).rawRisk;
+      expect(u, isNot(closeTo(w, 1e-9)), reason: 'the law changes the tail');
     });
   });
 

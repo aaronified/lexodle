@@ -191,7 +191,7 @@ void main() {
               expect(m.ready, isTrue);
               expect(m.best, closeTo(land.bests[i], 1e-12));
               // never better than the best real guess found, never below 0
-              expect(m.expected, greaterThanOrEqualTo(land.bests[i] - 1e-9));
+              expect(m.expectedGain, lessThanOrEqualTo(land.bests[i] + 1e-9));
               expect(m.skill, inInclusiveRange(0, 100));
             }
           }

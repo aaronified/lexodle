@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'daily.dart';
 import 'main.dart';
+import 'modes.dart';
+import 'store.dart' show achievementById;
 import 'ui.dart';
 
 /// The home page's daily streak: a fire with the days in a row, and the last
@@ -22,11 +24,14 @@ class DailyStreak extends StatelessWidget {
     final c = Theme.of(context).colorScheme;
     final today = dailyDate();
     final week = dailyRolling(today);
-    final streak = appState.dailyStreak;
+    // the streak of the mode in view: each has a daily and a streak of its own
+    final mode = appState.mode;
+    final log = appState.dailyLogOf(appState.lang, mode);
+    final best = appState.dailyBestOf(appState.lang, mode);
+    final streak = appState.dailyStreakFor(appState.lang, mode);
     final lit = c.tertiary;
     final unlit = c.outlineVariant;
-    final solvedToday =
-        (appState.dailyLog[today] ?? dailyMissed) >= dailySolved;
+    final solvedToday = (log[today] ?? dailyMissed) >= dailySolved;
 
     Widget flames(String date, int tier) {
       final on = tier >= dailySolved;
@@ -78,7 +83,7 @@ class DailyStreak extends StatelessWidget {
 
     Widget day(int i) {
       final date = week[i];
-      final tier = appState.dailyLog[date];
+      final tier = log[date];
       final isToday = date == today;
       return Semantics(
         container: true,
@@ -128,11 +133,12 @@ class DailyStreak extends StatelessWidget {
           Semantics(
             container: true,
             excludeSemantics: true,
-            label: 'daily streak: $streak days, best ${appState.dailyBest}',
+            label: '${mode.label} daily streak: $streak days, best $best',
             child: Row(
               children: [
                 TablerIcon(
-                  'flame',
+                  // the icon of the highest streak level the streak has reached
+                  _streakIcon(mode, streak),
                   key: const ValueKey('streak-flame'),
                   size: 34,
                   color: solvedToday ? lit : unlit,
@@ -158,13 +164,26 @@ class DailyStreak extends StatelessWidget {
                 // the streak is the language's own: say whose
                 languageBadge(appState.lang, size: 13),
                 const SizedBox(width: 8),
-                Text(
-                  'best ${appState.dailyBest}',
-                  key: const ValueKey('streak-best'),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: c.onSurface.withValues(alpha: dimAlpha),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      mode.label,
+                      key: const ValueKey('streak-mode'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: c.onSurface.withValues(alpha: dimAlpha),
+                      ),
+                    ),
+                    Text(
+                      'best $best',
+                      key: const ValueKey('streak-best'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: c.onSurface.withValues(alpha: dimAlpha),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -179,4 +198,22 @@ class DailyStreak extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The icon of the streak achievement of [mode] at the level [streak] days has
+/// reached: the same icons as the achievement, for the streak now; a flame
+/// before the first level.
+String _streakIcon(GameMode mode, int streak) {
+  final id = switch (mode) {
+    GameMode.classic => 'daily_streak',
+    GameMode.quartet => 'quartet_streak',
+    GameMode.relay => 'relay_streak',
+  };
+  final a = achievementById(id);
+  if (a == null) return 'flame';
+  var reached = 0;
+  for (var i = 0; i < a.count; i++) {
+    if (streak >= a.levels[i].target) reached = i + 1;
+  }
+  return reached == 0 ? 'flame' : a.atLevel(reached - 1).icon;
 }

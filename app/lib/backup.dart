@@ -51,12 +51,15 @@ class Backup {
   final Map<String, AchState> achievements;
 
   /// How many different achievements it has earned, in every language.
-  int get earned =>
-      achievements.values.where((s) => s.times > 0).length +
-      (languages?.values ?? const <LanguageKept>[]).fold(
-        0,
-        (n, k) => n + k.achievements.values.where((s) => s.times > 0).length,
-      );
+  int get earned {
+    int count(Map<String, AchState> m) =>
+        shownAchievements.where((a) => (m[a.id]?.times ?? 0) > 0).length;
+    return count(achievements) +
+        (languages?.values ?? const <LanguageKept>[]).fold(
+          0,
+          (n, k) => n + count(k.achievements),
+        );
+  }
 }
 
 /// The backup of what [state] holds now, as the text of the file.
@@ -81,7 +84,16 @@ String backupToText(AppState state, {DateTime? now}) {
             'held': state.stylesHeldOf(l).toList()..sort(),
             'changes': state.styleChangesOf(l),
           },
-          'daily': {'log': state.dailyLogOf(l), 'best': state.dailyBestOf(l)},
+          'daily': {
+            'log': state.dailyLogOf(l),
+            'best': state.dailyBestOf(l),
+            // the daily quartet and relay race have a log and a streak of their own
+            for (final m in GameMode.values.where((m) => m.multi))
+              m.name: {
+                'log': state.dailyLogOf(l, m),
+                'best': state.dailyBestOf(l, m),
+              },
+          },
           'achievements': {
             for (final e in state.achOf(l).entries)
               if (!(achievementById(e.key)?.global ?? true))
@@ -140,7 +152,7 @@ Backup parseBackup(String text) {
     final all = _achievements(raw['achievements']);
     final history = _history(raw['history']);
     final isGlobal = {
-      for (final a in achievements.where((a) => a.global)) a.id,
+      for (final a in allAchievements.where((a) => a.global)) a.id,
     };
     Map<String, LanguageKept>? languages;
     if (raw['languages'] != null) {
@@ -161,6 +173,7 @@ Backup parseBackup(String text) {
           changes: play?.changes,
           dailyLog: daily?.$1,
           dailyBest: daily?.$2,
+          dailyModes: _dailyModes(v['daily']),
           achievements: _achievements(v['achievements']),
         );
       }
@@ -269,7 +282,7 @@ Stats _stats(Object? raw) {
 Map<String, AchState> _achievements(Object? raw) {
   if (raw == null) return {};
   if (raw is! Map) _bad('achievements');
-  final known = {for (final a in achievements) a.id};
+  final known = {for (final a in allAchievements) a.id};
   final out = <String, AchState>{};
   for (final e in raw.entries) {
     // an achievement this version does not have is left out, not an error
@@ -336,6 +349,16 @@ History? _history(Object? raw) {
   final best = raw['best'] ?? 0;
   if (best is! int || best < 0 || best > _bigCount) _bad('best streak');
   return (log, best);
+}
+
+/// The daily log and best streak of the quartet and the relay race in a
+/// language's daily, by mode name; none for a file from before they had one.
+Map<String, (Map<String, int>, int)> _dailyModes(Object? raw) {
+  if (raw is! Map) return const {};
+  return {
+    for (final m in GameMode.values.where((m) => m.multi))
+      if (raw[m.name] != null) m.name: _daily(raw[m.name])!,
+  };
 }
 
 /// A file the player chose to restore.

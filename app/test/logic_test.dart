@@ -139,89 +139,58 @@ void main() {
     });
   });
 
-  group('skill against the best real guess', () {
-    test('0 for no split, 100 for as even as the best real word', () {
-      expect(skillAgainst(20, 20, 3), 0);
-      expect(skillAgainst(20, 3, 3), 100);
-      expect(skillAgainst(20, 6.8, 1), closeTo(36.01, .01));
-      // the same guess is worth more when the best a real word can do is worse
-      expect(skillAgainst(20, 6.8, 3), closeTo(56.87, .01));
+  group('skill is the expected gain against the best real guess', () {
+    const field = ['aa', 'ab', 'ac'];
+    // 'ab' splits the three words into {ab} and {aa, ac}
+    final h = -(1 / 3) * log(1 / 3) / ln2 - (2 / 3) * log(2 / 3) / ln2;
+
+    test('0 for no gain, 100 for the best, on a straight scale', () {
+      expect(skillOf(0, 3), 0);
+      expect(skillOf(3, 3), 100);
+      expect(skillOf(1.5, 3), 50);
+      expect(skillOf(4, 3), 100, reason: 'cannot beat the best');
+      expect(skillOf(0, 0), 100, reason: 'no guess gains anything');
     });
 
-    test('it is on a log scale: each factor of two in E is the same step', () {
-      // N = 1024, E* = 1: a guess that leaves 512, 256, ... words on average
-      // is worth 10, 20, ... each a tenth of the way
-      for (var k = 1; k <= 10; k++) {
-        expect(skillAgainst(1024, 1024 / pow(2, k), 1), closeTo(k * 10, 1e-9));
-      }
-      // the guess that leaves 10% and the one that leaves 1% are far apart,
-      // where on a linear scale they would be 99 and 90 apart by a hair
+    test('the expected gain is the entropy of the split, in bits', () {
+      final m = scoreGuess(field, 'ab', 2);
+      expect(m.expectedGain, closeTo(h, 1e-9));
+      // a split into singletons gains log2 of the words
       expect(
-        skillAgainst(5000, 5000 / 100, 1) - skillAgainst(5000, 5000 / 10, 1),
-        closeTo(100 * log(10) / log(5000), 1e-9),
+        scoreGuess(const ['aa', 'ab', 'ba', 'bb'], 'ab', 1).expectedGain,
+        closeTo(2, 1e-9),
+        reason: 'four equal groups',
       );
-    });
-
-    test('it is the guess\'s collision entropy as a share of the best\'s', () {
-      // H2 = -ln(sum p^2) = ln(N / E), so skill = H2(guess) / H2(best)
-      final rng = Random(4);
-      for (var i = 0; i < 200; i++) {
-        final sizes = [
-          for (var k = 0; k < 2 + rng.nextInt(30); k++) 1 + rng.nextInt(50),
-        ];
-        final n = sizes.fold(0, (a, b) => a + b);
-        final e = sizes.fold<int>(0, (a, s) => a + s * s) / n;
-        final h2 = -log(sizes.fold<double>(0, (a, s) => a + pow(s / n, 2)));
-        final best = 1 + rng.nextDouble() * (e - 1).clamp(0, double.infinity);
-        final h2Best = log(n / best);
-        if (h2Best <= 1e-9) continue;
-        expect(
-          skillAgainst(n, e, best),
-          closeTo((h2 / h2Best * 100).clamp(0, 100), 1e-9),
-        );
-      }
+      expect(scoreGuess(field, 'zz', 3).expectedGain, 0);
     });
 
     test('a finer split is always worth more', () {
-      // refining the partition lowers E, so skill rises (Lemma 1, Proposition 2)
-      expect(skillAgainst(100, 10, 2), lessThan(skillAgainst(100, 9, 2)));
-      expect(skillAgainst(100, 100, 2), 0);
-      expect(skillAgainst(100, 2, 2), 100);
-    });
-
-    test('it is clamped to 0 to 100 and a lone word is 100', () {
-      expect(skillAgainst(20, 2, 3), 100, reason: 'cannot beat the best');
-      expect(skillAgainst(20, 25, 3), 0);
-      expect(skillAgainst(1, 1, 1), 100);
-      expect(skillAgainst(5, 5, 5), 100, reason: 'no guess splits anything');
+      final coarse = scoreGuess(field, 'ab', 2).expectedGain;
+      final fine = scoreGuess(const ['aa', 'ab', 'ba'], 'ab', 1).expectedGain;
+      expect(fine, greaterThan(coarse));
     });
 
     test('scoreGuess takes the best when it knows it', () {
-      const field = ['aa', 'ab', 'ac'];
-      final absolute = scoreGuess(field, 'ab', 2); // best taken as 1
-      expect(absolute.skill, closeTo(53.50, .01));
-      expect(absolute.ready, isTrue);
-      final relative = scoreGuess(field, 'ab', 2, best: 5 / 3);
-      expect(relative.skill, 100, reason: 'it is the best split there is');
-      expect(relative.best, closeTo(5 / 3, 1e-9));
       final provisional = scoreGuess(field, 'ab', 2, provisional: true);
       expect(provisional.ready, isFalse);
-      expect(provisional.skill, closeTo(53.50, .01));
+      // until H* is known it is the finest split, every word alone: log2 3
+      expect(provisional.skill, closeTo(h / (log(3) / ln2) * 100, 1e-9));
+      final relative = scoreGuess(field, 'ab', 2, best: h);
+      expect(relative.skill, closeTo(100, 1e-9));
+      expect(relative.best, closeTo(h, 1e-9));
+      expect(relative.ready, isTrue);
     });
 
     test('withBest refines the skill and leaves luck alone', () {
-      const field = ['aa', 'ab', 'ac'];
       final p = scoreGuess(field, 'ab', 2, provisional: true);
-      final r = p.withBest(5 / 3);
+      final r = p.withBest(h);
       expect(r.ready, isTrue);
-      expect(r.skill, 100);
+      expect(r.skill, closeTo(100, 1e-9));
       expect(r.luck, p.luck);
-      expect(r.expected, p.expected);
-      expect(r.withBest(5 / 3).skill, 100, reason: 'idempotent');
-      // a lone word keeps its 100 or 0
+      expect(r.expectedGain, p.expectedGain);
+      expect(r.withBest(h).skill, closeTo(100, 1e-9), reason: 'idempotent');
       final hit = scoreGuess(['aa'], 'aa', 1, provisional: true).withBest(1);
       expect(hit.skill, 100);
-      expect(hit.ready, isTrue);
       final miss = scoreGuess(['aa'], 'bb', 1, provisional: true).withBest(1);
       expect(miss.skill, 0);
     });
@@ -230,22 +199,17 @@ void main() {
       'measured against every real guess, the best one scores 100',
       () async {
         const eligible = ['crane', 'crate', 'grate', 'grape', 'shape', 'slate'];
-        final land = await analyseGuesses(eligible, [
-          ...eligible,
-          'light',
-          'ounce',
-        ]);
-        expect(land.skills.first, closeTo(100, 1e-9));
+        final all = [...eligible, 'light', 'ounce'];
+        final land = await analyseGuesses(eligible, all);
         expect(land.top.first.skill, closeTo(100, 1e-9));
-        // E* is the smallest expected pool among the guesses scored
-        final lowest = [
-          for (final g in [...eligible, 'light', 'ounce'])
-            scoreGuess(eligible, g, 1).expected,
-        ].reduce((a, b) => a < b ? a : b);
-        expect(land.bestExpected, closeTo(lowest, 1e-9));
-        // and every guess's skill is its place between N and E*
-        for (final g in [...eligible, 'light', 'ounce']) {
-          final m = scoreGuess(eligible, g, 1, best: land.bestExpected);
+        // H* is the largest expected gain among the guesses scored
+        final highest = [
+          for (final g in all) scoreGuess(eligible, g, 1).expectedGain,
+        ].reduce(max);
+        expect(land.bestGain, closeTo(highest, 1e-9));
+        expect(land.gains.first, closeTo(highest, 1e-9));
+        for (final g in all) {
+          final m = scoreGuess(eligible, g, 1, best: land.bestGain);
           expect(m.skill, inInclusiveRange(0, 100));
         }
       },
@@ -342,10 +306,10 @@ void main() {
       expect(m.skill, 100);
       expect(m.luck, 0); // landed in a pool of 1, and 1 was the average
     });
-    test('partial split: skill 53.5 on the log scale; luck is signed against the average pool', () {
+    test('partial split: skill 57.9 against every word alone; luck is signed against the average gain', () {
       // groups for guess "ab": {aa, ac} and {ab}  ->  E = 5/3
       final unlucky = scoreGuess(field, 'ab', 2);
-      expect(unlucky.skill, closeTo(53.50, .01));
+      expect(unlucky.skill, closeTo(57.94, .01));
       // groups of 2 and 1: landing in the 2 is the likelier outcome (2 in 3),
       // so the chance of a bigger pool is 0 and of a smaller one 1 in 3
       expect(unlucky.luck, closeTo(-33.33, .01));
@@ -538,68 +502,77 @@ void main() {
     });
   });
 
-  group('risk and daring', () {
-    test('a split into equal groups has no risk', () {
-      // 8 words in 4 groups of 2: sum c^2 = 16, sum c log2 c = 8
-      expect(splitRisk(8, 16, 8), closeTo(0, 1e-12));
-      expect(splitRisk(1, 1, 0), 0);
+  group('risk', () {
+    // twelve words in a well-known family give splits of every shape
+    const words = [
+      'crane',
+      'crate',
+      'trace',
+      'brace',
+      'grace',
+      'slate',
+      'stare',
+      'share',
+      'shale',
+      'whale',
+      'while',
+      'white',
+      'write',
+      'wrote',
+      'quote',
+      'quite',
+    ];
+
+    test('a split into equal groups has no raw risk', () {
+      final even = scoreGuess(const ['aa', 'ab', 'ba', 'bb'], 'ab', 1);
+      expect(even.rawRisk, closeTo(0, 1e-9));
     });
 
     test('a tail of one big group is risky', () {
-      // 8 words as 7 + 1: usually nearly everything is left, once nothing
-      final sumSq = 7 * 7 + 1;
-      final clogc = 7 * (log(7) / ln2);
-      expect(splitRisk(8, sumSq, clogc), closeTo(0.1868, 1e-3));
-      // at a fixed size, the more lopsided the two groups, the more risk
-      double two(int big) {
-        final small = 8 - big;
-        return splitRisk(
-          8,
-          big * big + small * small,
-          big * (log(big) / ln2) + (small > 1 ? small * (log(small) / ln2) : 0),
-        );
-      }
-
-      expect(two(4), closeTo(0, 1e-12)); // equal halves
-      expect(two(5), greaterThan(two(4)));
-      expect(two(6), greaterThan(two(5)));
-      expect(two(7), greaterThan(two(6)));
+      // 7 words alike and one apart: usually little is learnt, once a lot
+      const tail = [
+        'aaaa',
+        'aaab',
+        'aaac',
+        'aaad',
+        'aaae',
+        'aaaf',
+        'aaag',
+        'zzzz',
+      ];
+      expect(scoreGuess(tail, 'zzzz', 1).rawRisk, greaterThan(0));
     });
 
-    test('risk is never negative', () {
-      for (final sizes in [
-        [1, 1, 1],
-        [5],
-        [3, 3, 3],
-        [10, 1, 1, 1],
-        [2, 2, 1, 1, 1, 1],
-      ]) {
-        final n = sizes.reduce((a, b) => a + b);
-        final sq = sizes.fold<int>(0, (a, s) => a + s * s);
-        final cl = sizes.fold<double>(0, (a, s) => a + s * (log(s) / ln2));
-        expect(splitRisk(n, sq, cl), greaterThanOrEqualTo(0), reason: '$sizes');
+    test('risk is a share of the riskiest guess, 0 to 100', () async {
+      final land = await analyseGuesses(words, words);
+      expect(land.bestRisk, greaterThan(0));
+      for (final g in words) {
+        final m = scoreGuess(words, g, 1, triesLeft: 5).withLandscape(land);
+        expect(m.risk, isNotNull);
+        expect(m.risk, inInclusiveRange(0, 100), reason: g);
       }
+      final top = land.riskiest.first;
+      final m = scoreGuess(
+        words,
+        top.word,
+        1,
+        triesLeft: 5,
+      ).withLandscape(land);
+      expect(m.risk, closeTo(100, 1e-6), reason: 'the riskiest guess is 100');
     });
 
     test(
-      'daring is going for the whole word, at a cost, with tries to spare',
-      () {
-        double d(bool p, double w, double s, int t) =>
-            daringOf(possible: p, winChance: w, skill: s, triesLeft: t);
-        // a probe is not an attempt at the word
-        expect(d(false, 0, 40, 5), 0);
-        // the last try is the only play
-        expect(d(true, 0.1, 40, 1), 0);
-        // going for an unlikely word with a poor split, six tries left
-        expect(d(true, 0, 0, 6), closeTo(100 * 5 / 6, 1e-9));
-        // the best split costs nothing; a sure word is no gamble
-        expect(d(true, 0.1, 100, 6), 0);
-        expect(d(true, 1, 0, 6), 0);
-        // fewer tries to spare, less daring
-        expect(d(true, 0.2, 50, 2), closeTo(100 * .5 * .8 * .5, 1e-9));
-        expect(d(true, 0.2, 50, 4), greaterThan(d(true, 0.2, 50, 2)));
-        // a more likely word is a smaller gamble
-        expect(d(true, 0.5, 50, 4), lessThan(d(true, 0.1, 50, 4)));
+      'with one word or one try left there is nothing to gamble on',
+      () async {
+        const two = ['crane', 'crate'];
+        final land = await analyseGuesses(['crane'], words);
+        final lone = scoreGuess(['crane'], 'crane', 0, solved: true);
+        expect(lone.withLandscape(land).risk, isNull);
+        final last = scoreGuess(two, 'crane', 1, triesLeft: 1);
+        expect(
+          last.withLandscape(await analyseGuesses(two, words)).risk,
+          isNull,
+        );
       },
     );
 
@@ -620,62 +593,6 @@ void main() {
         weights: {'aa': 1, 'ab': 6, 'ac': 2, 'bd': 1},
       );
       expect(weighted.winChance, closeTo(.6, 1e-9));
-    });
-
-    test(
-      'a position scored for real carries its daring once analysed',
-      () async {
-        const words = [
-          'crane',
-          'crate',
-          'trace',
-          'brace',
-          'grace',
-          'slate',
-          'stare',
-          'share',
-          'shale',
-          'whale',
-          'while',
-          'white',
-          'write',
-          'wrote',
-          'quote',
-          'quite',
-        ];
-        final land = await analyseGuesses(words, words);
-        final eligible = List.of(words);
-        final after = filterEligible(
-          eligible,
-          'crane',
-          evaluate('trace', 'crane'),
-        );
-        final m = scoreGuess(
-          eligible,
-          'crane',
-          after.length,
-          provisional: true,
-          triesLeft: 5,
-        );
-        expect(m.risk, greaterThanOrEqualTo(0));
-        expect(m.daring, isNull, reason: 'not known until the analysis lands');
-        final done = m.withLandscape(land);
-        expect(done.ready, isTrue);
-        expect(done.daring, isNotNull);
-        expect(done.daring, inInclusiveRange(0, 100));
-        expect(done.best, land.bestExpected);
-        expect(done.risk, m.risk, reason: 'the risk is a fact of the guess');
-        // without the tries left, daring is not known
-        final unknown = scoreGuess(eligible, 'crane', after.length);
-        expect(unknown.withLandscape(land).daring, isNull);
-      },
-    );
-
-    test('with one word left there is no choice to be daring about', () async {
-      const words = ['crane', 'crate', 'trace'];
-      final land = await analyseGuesses(['crane'], words);
-      final m = scoreGuess(['crane'], 'crane', 0, solved: true);
-      expect(m.withLandscape(land).daring, isNull);
     });
   });
 

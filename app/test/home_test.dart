@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/daily.dart';
+import 'package:lexodle/difficulty.dart';
 import 'package:lexodle/history_page.dart';
 import 'package:lexodle/playstyle_card.dart';
 import 'package:lexodle/home.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/mode_wheel.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,16 +38,16 @@ void main() {
   group('frequency row', () {
     Finder label() => find.byKey(const ValueKey('frequency-label'));
 
-    testWidgets('says which it is, just above the play row', (tester) async {
+    testWidgets('says which it is, just above the mode button', (tester) async {
       await home(tester);
       expect(tester.widget<Text>(label()).data, 'common words likelier');
       appState.setup(useFrequency: false);
       await tester.pump();
       expect(tester.widget<Text>(label()).data, 'all words equally likely');
       final row = tester.getRect(find.byKey(const ValueKey('frequency-row')));
-      final play = tester.getRect(find.widgetWithText(FilledButton, 'play'));
-      expect(row.bottom, lessThanOrEqualTo(play.top));
-      expect(play.top - row.bottom, lessThan(16));
+      final mode = tester.getRect(find.byKey(const ValueKey('mode-button')));
+      expect(row.bottom, lessThanOrEqualTo(mode.top));
+      expect(mode.top - row.bottom, lessThan(16));
     });
 
     testWidgets('the switch toggles it and a toast says more', (tester) async {
@@ -78,194 +79,120 @@ void main() {
     });
   });
 
-  group('mode on the play row', () {
-    testWidgets('the mode name is under play', (tester) async {
+  group('the mode button above play', () {
+    testWidgets('it names the mode; play shows no mode text', (tester) async {
       for (final m in GameMode.values) {
         appState.setup(mode: m);
         await home(tester);
-        expect(find.widgetWithText(FilledButton, 'play'), findsOneWidget);
+        expect(find.byKey(ValueKey('mode-name-${m.name}')), findsOneWidget);
         expect(
           find.descendant(
             of: find.widgetWithText(FilledButton, 'play'),
             matching: find.text(m.label),
           ),
-          findsOneWidget,
+          findsNothing,
           reason: m.label,
         );
         await tester.pumpWidget(const SizedBox());
       }
     });
 
-    testWidgets('the game modes icon follows the mode', (tester) async {
-      await home(tester);
-      final seen = <IconData>{};
-      for (final m in GameMode.values) {
-        appState.setup(mode: m);
-        await tester.pump();
-        final icon = find.byKey(ValueKey('modes-icon-${m.name}'));
-        expect(icon, findsOneWidget, reason: m.name);
-        expect(
-          find.descendant(of: find.byTooltip('game modes'), matching: icon),
-          findsOneWidget,
-        );
-        seen.add(tester.widget<Icon>(icon).icon!);
-      }
-      expect(seen.length, GameMode.values.length);
-    });
-
-    testWidgets('play, daily and game modes are the row; the style is not', (
+    testWidgets('the button is above play and the daily, which share a row', (
       tester,
     ) async {
       await home(tester);
+      final mode = tester.getRect(find.byKey(const ValueKey('mode-button')));
       final play = tester.getRect(find.widgetWithText(FilledButton, 'play'));
       final daily = tester.getRect(find.byKey(const ValueKey('daily-button')));
-      final modes = tester.getRect(
-        find.descendant(
-          of: find.byTooltip('game modes'),
-          matching: find.byType(OutlinedButton),
-        ),
-      );
       final style = tester.getRect(find.byKey(const ValueKey('style-chip')));
+      expect(mode.bottom, lessThan(play.top));
       expect(daily.top, play.top);
-      expect(modes.top, play.top);
       expect(play.right, lessThan(daily.left));
-      expect(daily.right, lessThan(modes.left));
-      expect(modes.width, modes.height);
-      expect(style.bottom, lessThan(play.top));
-    });
-  });
-
-  group('the mode wheel', () {
-    GameMode mode = GameMode.classic;
-    var plays = 0;
-
-    Future<void> wheel(WidgetTester tester, GameMode start) async {
-      mode = start;
-      plays = 0;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: SizedBox(
-                width: 300,
-                child: StatefulBuilder(
-                  builder: (context, setState) => ModeWheel(
-                    mode: mode,
-                    onChanged: (m) => setState(() => mode = m),
-                    onPlay: () => plays++,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    final target = find.byKey(const ValueKey('mode-wheel'));
-
-    testWidgets('shows play, the mode and a chevron on each side', (
-      tester,
-    ) async {
-      await wheel(tester, GameMode.classic);
-      expect(find.text('play'), findsOneWidget);
-      expect(find.text('classic'), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_left), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(style.bottom, lessThan(mode.top));
     });
 
-    testWidgets('a long drag left goes to the next mode, and loops', (
-      tester,
-    ) async {
-      await wheel(tester, GameMode.classic);
-      await tester.drag(target, const Offset(-200, 0));
-      await tester.pumpAndSettle();
-      expect(mode, GameMode.quartet);
-      await tester.drag(target, const Offset(-200, 0));
-      await tester.pumpAndSettle();
-      expect(mode, GameMode.relay);
-      await tester.drag(target, const Offset(-200, 0));
-      await tester.pumpAndSettle();
-      expect(mode, GameMode.classic);
-      expect(find.text('classic'), findsOneWidget);
-      expect(plays, 0);
+    testWidgets('the chevrons turn the loop both ways', (tester) async {
+      await home(tester);
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pump();
+      expect(appState.mode, GameMode.quartet);
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pump();
+      expect(appState.mode, GameMode.relay);
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pump();
+      expect(appState.mode, GameMode.classic);
+      await tester.tap(find.byKey(const ValueKey('mode-prev')));
+      await tester.pump();
+      expect(appState.mode, GameMode.relay);
     });
 
-    testWidgets('a long drag right goes back, and loops the other way', (
-      tester,
-    ) async {
-      await wheel(tester, GameMode.classic);
-      await tester.drag(target, const Offset(200, 0));
-      await tester.pumpAndSettle();
-      expect(mode, GameMode.relay);
-      await tester.drag(target, const Offset(200, 0));
-      await tester.pumpAndSettle();
-      expect(mode, GameMode.quartet);
-    });
-
-    testWidgets('a fling changes it even when short', (tester) async {
-      await wheel(tester, GameMode.quartet);
-      await tester.fling(target, const Offset(-60, 0), 2000);
-      await tester.pumpAndSettle();
-      expect(mode, GameMode.relay);
-    });
-
-    testWidgets('a short drag springs back and plays nothing', (tester) async {
-      await wheel(tester, GameMode.classic);
-      await tester.drag(target, const Offset(-40, 0));
-      await tester.pumpAndSettle();
-      expect(mode, GameMode.classic);
-      expect(plays, 0);
-      expect(find.text('play'), findsOneWidget);
-      expect(find.text('quartet'), findsNothing);
-      // back in place
-      final center = tester.getCenter(find.text('play')).dx;
-      expect(center, closeTo(tester.getCenter(target).dx, 1));
-    });
-
-    testWidgets(
-      'the content follows the finger, with the next name coming in',
-      (tester) async {
-        await wheel(tester, GameMode.classic);
-        final start = tester.getCenter(find.text('classic')).dx;
-        final g = await tester.startGesture(tester.getCenter(target));
-        await g.moveBy(const Offset(-30, 0));
-        await g.moveBy(const Offset(-60, 0));
-        await tester.pump();
-        expect(tester.getCenter(find.text('classic')).dx, lessThan(start - 50));
-        // dragging left: the next mode (quartet) comes in from the right
-        expect(find.text('quartet'), findsOneWidget);
-        expect(tester.getCenter(find.text('quartet')).dx, greaterThan(start));
-        await g.moveBy(const Offset(120, 0));
-        await tester.pump();
-        // dragging right of rest: the previous one (relay race) from the left
-        expect(find.text('relay race'), findsOneWidget);
-        await g.up();
-        await tester.pumpAndSettle();
-        expect(mode, GameMode.classic);
-      },
-    );
-
-    testWidgets('a tap still plays', (tester) async {
-      await wheel(tester, GameMode.classic);
-      await tester.tap(find.widgetWithText(FilledButton, 'play'));
-      await tester.pumpAndSettle();
-      expect(plays, 1);
-      expect(mode, GameMode.classic);
-    });
-
-    testWidgets('on home, a swipe changes the app mode, not the page', (
+    testWidgets('a swipe over the area changes the mode, not the page', (
       tester,
     ) async {
       await home(tester);
       await tester.drag(
-        find.byKey(const ValueKey('mode-wheel')),
-        const Offset(-250, 0),
+        find.byKey(const ValueKey('mode-button')),
+        const Offset(-200, 0),
       );
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.quartet);
       expect(find.byType(HomePage), findsOneWidget);
-      expect(find.byKey(const ValueKey('modes-icon-quartet')), findsOneWidget);
+      await tester.drag(
+        find.widgetWithText(FilledButton, 'play'),
+        const Offset(200, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.classic);
+    });
+
+    testWidgets('a short drag does nothing, a tap opens the game modes', (
+      tester,
+    ) async {
+      await home(tester);
+      await tester.drag(
+        find.byKey(const ValueKey('mode-button')),
+        const Offset(-20, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.classic);
+      await tester.tap(find.byKey(const ValueKey('mode-button')));
+      await tester.pumpAndSettle();
+      expect(find.byType(DifficultyMatrix), findsOneWidget);
+    });
+
+    testWidgets('the dots show where the mode is in the loop', (tester) async {
+      await home(tester);
+      Color dot(GameMode m) =>
+          ((tester
+                      .widget<Container>(
+                        find.byKey(ValueKey('mode-dot-${m.name}')),
+                      )
+                      .decoration!
+                  as BoxDecoration)
+              .color)!;
+      expect(dot(GameMode.classic), isNot(dot(GameMode.quartet)));
+      expect(dot(GameMode.quartet), dot(GameMode.relay));
+    });
+
+    testWidgets('the daily and its streak follow the mode', (tester) async {
+      appState.setup(mode: GameMode.quartet);
+      appState.recordDaily(dailyDate(), dailySolved, mode: GameMode.quartet);
+      await home(tester);
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('streak-mode'))).data,
+        'quartet',
+      );
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('streak-count'))).data,
+        '1',
+      );
+      appState.setup(mode: GameMode.classic);
+      await tester.pump();
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('streak-count'))).data,
+        '0',
+      );
     });
   });
 
@@ -334,23 +261,23 @@ void main() {
     });
 
     testWidgets('the three newest by date, newest first', (tester) async {
-      appState.ach['first_light'] = AchState(times: 1, dates: ['2026-01-01']);
-      appState.ach['one_shot'] = AchState(
+      appState.ach['wins'] = AchState(times: 1, dates: ['2026-01-01']);
+      appState.ach['quick'] = AchState(
         times: 2,
         dates: ['2026-02-01', '2026-05-01'],
       );
-      appState.ach['last_breath'] = AchState(times: 1, dates: ['2026-03-01']);
-      appState.ach['no_mercy'] = AchState(times: 1, dates: ['2026-04-01']);
+      appState.ach['last_try'] = AchState(times: 1, dates: ['2026-03-01']);
+      appState.ach['played'] = AchState(times: 1, dates: ['2026-04-01']);
       await home(tester);
       expect(glyphs(), findsOneWidget);
       Finder g(String id) => find.byKey(ValueKey('recent-ach-$id'));
-      expect(g('one_shot'), findsOneWidget);
-      expect(g('no_mercy'), findsOneWidget);
-      expect(g('last_breath'), findsOneWidget);
-      expect(g('first_light'), findsNothing);
+      expect(g('quick'), findsOneWidget);
+      expect(g('played'), findsOneWidget);
+      expect(g('last_try'), findsOneWidget);
+      expect(g('wins'), findsNothing);
       // newest first, left to right, inside the achievements button
       final xs = [
-        for (final id in ['one_shot', 'no_mercy', 'last_breath'])
+        for (final id in ['quick', 'played', 'last_try'])
           tester.getCenter(g(id)).dx,
       ];
       expect(xs[0], lessThan(xs[1]));
@@ -372,12 +299,9 @@ void main() {
     });
 
     testWidgets('fewer than three show what there is', (tester) async {
-      appState.ach['first_light'] = AchState(times: 1, dates: ['2026-01-01']);
+      appState.ach['wins'] = AchState(times: 1, dates: ['2026-01-01']);
       await home(tester);
-      expect(
-        find.byKey(const ValueKey('recent-ach-first_light')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const ValueKey('recent-ach-wins')), findsOneWidget);
       expect(
         find.descendant(of: glyphs(), matching: find.byType(Padding)),
         findsOneWidget,

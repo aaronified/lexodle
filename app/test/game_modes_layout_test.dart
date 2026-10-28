@@ -95,7 +95,10 @@ void main() {
             )
             .first,
       );
-      expect(shared - modeChoice.dy, lessThan(40));
+      expect(
+        shared - modeChoice.dy,
+        lessThan(100),
+      ); // the daily note sits between
     },
   );
 

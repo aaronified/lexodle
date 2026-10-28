@@ -15,7 +15,7 @@ class LearnFeedback {
   const LearnFeedback(this.skill, this.best, this.bestWords);
   final double skill;
 
-  /// The best skill is always 100; this is the expected pool it leaves.
+  /// The best skill is always 100; this is the expected gain, in bits, it has.
   final double best;
 
   /// The best guesses of that position, best first.
@@ -150,9 +150,9 @@ class _LearnPageState extends State<LearnPage> {
       weights: law,
       afterWords: after,
       provisional: true,
-    ).withBest(land.bestExpected);
+    ).withBest(land.bestGain);
     setState(() {
-      feedback[index] = LearnFeedback(measured.skill, land.bestExpected, [
+      feedback[index] = LearnFeedback(measured.skill, land.bestGain, [
         for (final r in land.top) r.word,
       ]);
     });
