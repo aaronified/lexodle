@@ -254,21 +254,25 @@ function renderLevel() {
 
 // ---- information gained, in bits: expected gain + luck ----
 function bars() {
-  const W_ = 420, rowH = 28, L = 64, R = 56, top = 12, cap = log2(243);
-  const sx = v => L + v / top * (W_ - L - R), H = G.length * rowH + 30;
-  let s = '';
-  for (let t = 0; t <= top; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 20) + '" stroke="var(--line)"/><text x="' + sx(t) + '" y="' + (H - 8) + '" text-anchor="middle">' + t + '</text>';
-  s += '<line x1="' + sx(cap) + '" x2="' + sx(cap) + '" y1="0" y2="' + (H - 20) + '" stroke="var(--dim)" stroke-dasharray="3 3"/><text x="' + (sx(cap) + 3) + '" y="9">max expected ' + f2(cap) + '</text>';
+  const W_ = 420, rowH = 30, L = 62, R = 14, top = 12, rows = G.length + 1;
+  const sx = v => L + v / top * (W_ - L - R), H = rows * rowH + 40;
+  let s = '', cum = 0;
+  for (let t = 0; t <= top; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="18" y2="' + (H - 20) + '" stroke="var(--line)"/><text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>';
   G.forEach((g, i) => {
-    const y = i * rowH + 14, h = 14, base = Math.min(g.H, g.gain);
-    s += '<text x="0" y="' + (y + 11) + '">' + (i + 1) + ' ' + g.word + '</text>';
-    s += '<rect x="' + sx(0) + '" y="' + y + '" width="' + Math.max(sx(base) - sx(0), 0.5) + '" height="' + h + '" fill="var(--skill)"/>';
-    if (g.bLuck > 0.005) s += '<rect x="' + sx(g.H) + '" y="' + y + '" width="' + (sx(g.gain) - sx(g.H)) + '" height="' + h + '" fill="var(--luck)"/>';
-    if (g.bLuck < -0.005) s += '<rect x="' + sx(g.gain) + '" y="' + y + '" width="' + (sx(g.H) - sx(g.gain)) + '" height="' + h + '" fill="none" stroke="var(--luck)" stroke-width="1.5" stroke-dasharray="3 2"/>';
-    s += '<text x="' + (sx(Math.max(g.H, g.gain)) + 5) + '" y="' + (y + 11) + '" style="fill:var(--fg)">' + f2(g.gain) + '</text>';
+    const y = i * rowH + 26, h = 16, st = cum, end = cum + g.gain, exp = st + g.H;
+    s += '<text x="0" y="' + (y + 12) + '">' + (i + 1) + ' ' + g.word + '</text>';
+    s += '<rect x="' + sx(st) + '" y="' + y + '" width="' + Math.max(sx(Math.min(exp, end)) - sx(st), 0.5) + '" height="' + h + '" fill="var(--skill)"/>';
+    if (g.bLuck > 0.005) s += '<rect x="' + sx(exp) + '" y="' + y + '" width="' + (sx(end) - sx(exp)) + '" height="' + h + '" fill="var(--luck)"/>';
+    if (g.bLuck < -0.005) s += '<rect x="' + sx(end) + '" y="' + y + '" width="' + (sx(exp) - sx(end)) + '" height="' + h + '" fill="none" stroke="var(--luck)" stroke-width="1.5" stroke-dasharray="3 2"/>';
+    s += '<line x1="' + sx(end) + '" x2="' + sx(end) + '" y1="' + (y + h) + '" y2="' + (y + rowH) + '" stroke="var(--dim)"/>';
+    s += '<text x="' + (sx(Math.max(end, exp)) + 5) + '" y="' + (y + 12) + '" style="fill:var(--fg)">' + f2(end) + '</text>';
+    cum = end;
   });
-  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Expected gain and luck of each guess, in bits">' + s + '</svg>' +
-    '<div class="legend"><span><i style="background:var(--skill)"></i>expected gain (skill)</span><span><i style="background:var(--luck)"></i>luck added</span><span><i style="border:1.5px dashed var(--luck);background:none"></i>luck taken away</span></div>';
+  const y = G.length * rowH + 26;
+  s += '<text x="0" y="' + (y + 12) + '" style="fill:var(--fg)">total</text><rect x="' + sx(0) + '" y="' + y + '" width="' + (sx(cum) - sx(0)) + '" height="16" fill="var(--fg)" opacity=".85"/>';
+  s += '<line x1="' + sx(needed) + '" x2="' + sx(needed) + '" y1="16" y2="' + (H - 20) + '" stroke="var(--fg)" stroke-width="1.5"/><text x="' + (sx(needed) - 4) + '" y="11" text-anchor="end" style="fill:var(--fg)">needed ' + f2(needed) + ' bits</text>';
+  return '<svg viewBox="0 0 ' + W_ + ' ' + H + '" role="img" aria-label="Each guess adds its expected gain and luck, stacking up to the ' + f2(needed) + ' bits needed">' + s + '</svg>' +
+    '<div class="legend"><span><i style="background:var(--skill)"></i>expected gain</span><span><i style="background:var(--luck)"></i>luck added</span><span><i style="border:1.5px dashed var(--luck);background:none"></i>luck taken away</span></div>';
 }
 function renderTries() {
   let cum = 0;
@@ -287,7 +291,7 @@ function renderTries() {
     '<div class="wrap"><table><thead><tr><th>guess</th><th class="skill">expected</th><th class="luck">luck</th><th>gained</th><th>done</th></tr></thead><tbody>' + rows +
     '</tbody><tfoot><tr><td>total</td><td class="skill">' + f2(totH) + '</td><td class="luck">' + sg(totL, 2) + '</td><td>' + f2(totC) + '</td><td>100%</td></tr></tfoot></table></div>' +
     bars() +
-    '<p class="small dim">Daring is not added. It gauges the gamble: how much a guess relied on landing in the tail. Whether you landed there is luck.</p>';
+    '<p class="small dim">Each guess starts where the last one ended. The race ends at the same line for every game: ' + f2(needed) + ' bits. Luck decides how many guesses it takes to get there. Daring is not added. It gauges the gamble: how much a guess relied on landing in the tail.</p>';
 }
 
 function renderAll() { renderRows(); renderTabs(); renderLevel(); renderTries(); }
