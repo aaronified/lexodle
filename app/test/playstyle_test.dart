@@ -202,11 +202,7 @@ void main() {
         Behaviour.closer: 0,
         Behaviour.prober: 40,
       };
-      const habits = Habits(
-        50,
-        counts,
-        {Phase.early: 100, Phase.end: 60},
-      );
+      const habits = Habits(50, counts, {Phase.early: 100, Phase.end: 60});
       expect(classify(habits)!.early, Behaviour.maximiser);
       expect(classify(habits, current: gambler)!.early, Behaviour.gambler);
       expect(classify(habits, current: analyst)!.early, Behaviour.maximiser);
@@ -403,5 +399,4 @@ void main() {
       }
     });
   });
-
 }

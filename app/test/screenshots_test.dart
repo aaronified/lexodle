@@ -429,7 +429,7 @@ void main() {
       'first_light': AchState(times: 1, dates: ['2026-09-02']),
       'one_shot': AchState(times: 2, dates: ['2026-09-20', '2026-10-11']),
       'last_breath': AchState(times: 1, dates: ['2026-10-03']),
-      'wins_10': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
+      'wins_25': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
       'streak_3': AchState(times: 3, dates: ['2026-10-01']),
       'daily_3': AchState(times: 1, dates: ['2026-10-05'], progress: 6),
       'bilingual': AchState(times: 1, dates: ['2026-10-02']),

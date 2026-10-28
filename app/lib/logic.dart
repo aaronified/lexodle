@@ -55,7 +55,6 @@ bool _same(List<Mark> a, List<Mark> b) {
   return true;
 }
 
-
 /// Bits in a chance: the information of an event that has chance [q].
 double bitsOf(double q) => q <= 0 ? 0 : -log(q) / ln2;
 
@@ -175,36 +174,39 @@ class GuessMetrics {
   /// Luck in bits: the gain less the expected gain. It averages 0 over answers.
   double get luckBits => gain - expectedGain;
 
-  GuessMetrics _with({double? skill, double? best, bool? ready, double? risk, double? rank}) =>
-      GuessMetrics(
-        guess: guess,
-        skill: skill ?? this.skill,
-        luck: luck,
-        before: before,
-        after: after,
-        expected: expected,
-        groups: groups,
-        largest: largest,
-        best: best ?? this.best,
-        ready: ready ?? this.ready,
-        risk: risk ?? this.risk,
-        gain: gain,
-        expectedGain: expectedGain,
-        rawRisk: rawRisk,
-        rank: rank ?? this.rank,
-        possible: possible,
-        winChance: winChance,
-        triesLeft: triesLeft,
-        landed: landed,
-        fresh: fresh,
-        greens: greens,
-      );
+  GuessMetrics _with({
+    double? skill,
+    double? best,
+    bool? ready,
+    double? risk,
+    double? rank,
+  }) => GuessMetrics(
+    guess: guess,
+    skill: skill ?? this.skill,
+    luck: luck,
+    before: before,
+    after: after,
+    expected: expected,
+    groups: groups,
+    largest: largest,
+    best: best ?? this.best,
+    ready: ready ?? this.ready,
+    risk: risk ?? this.risk,
+    gain: gain,
+    expectedGain: expectedGain,
+    rawRisk: rawRisk,
+    rank: rank ?? this.rank,
+    possible: possible,
+    winChance: winChance,
+    triesLeft: triesLeft,
+    landed: landed,
+    fresh: fresh,
+    greens: greens,
+  );
 
   /// The same metrics with skill measured against [best] (H*).
   GuessMetrics withBest(double best) => _with(
-    skill: before <= 1 || triesLeft == 1
-        ? skill
-        : skillOf(expectedGain, best),
+    skill: before <= 1 || triesLeft == 1 ? skill : skillOf(expectedGain, best),
     best: best,
     ready: true,
   );
@@ -234,7 +236,6 @@ double skillOf(double h, double best) {
   if (best <= 1e-12) return 100; // no guess gains anything: nothing to beat
   return (h / best * 100).clamp(0.0, 100.0).toDouble();
 }
-
 
 /// A luck score as text: +80%, -45%, 0%. Written with a real minus sign.
 String luckText(double v) {
@@ -421,9 +422,7 @@ GuessMetrics scoreGuess(
   final possible = eligibleBefore.contains(guess);
   int weightOf(String w) => weights == null ? 1 : max(weights[w] ?? 1, 1);
   final st = splitStats(eligibleBefore, guess, weights);
-  final winChance = possible && st.total > 0
-      ? weightOf(guess) / st.total
-      : 0.0;
+  final winChance = possible && st.total > 0 ? weightOf(guess) / st.total : 0.0;
   // With one word left a guess cannot split anything; it is either that word
   // (100) or a wasted turn (0).
   var topWeight = 0;
@@ -473,7 +472,10 @@ GuessMetrics scoreGuess(
 /// How many distinct letters of [guess] appear in none of the [earlier] guesses.
 int freshLetters(String guess, Iterable<String> earlier) {
   final seen = {for (final g in earlier) ...g.split('')};
-  return {for (final c in guess.split('')) if (!seen.contains(c)) c}.length;
+  return {
+    for (final c in guess.split(''))
+      if (!seen.contains(c)) c,
+  }.length;
 }
 
 /// How many positions the [earlier] marks have shown to be green.
@@ -614,7 +616,9 @@ Future<Landscape> analyseGuesses(
     gain: s.h,
   );
 
-  final words = n <= 2 ? eligible.take(max(k, 2)).toList() : candidates.toList();
+  final words = n <= 2
+      ? eligible.take(max(k, 2)).toList()
+      : candidates.toList();
   final scored = <(String, SplitStats)>[];
   for (final w in words) {
     scored.add((w, splitStats(eligible, w, weights, answer: answer)));
@@ -651,8 +655,7 @@ Future<Landscape> analyseGuesses(
   if (answer != null) {
     final luck = <(String, double)>[
       for (final (w, s) in scored)
-        if (s.landedMass != null)
-          (w, s.luckOf(s.landedMass!).roundToDouble()),
+        if (s.landedMass != null) (w, s.luckOf(s.landedMass!).roundToDouble()),
     ];
     final self = luck.where((e) => e.$1 == answer).toList();
     final others = luck.where((e) => e.$1 != answer).toList()
@@ -973,4 +976,30 @@ String chooseWord(List<String> words, List<int> weights, Random rng) {
     if (r <= 0) return words[i];
   }
   return words.last;
+}
+
+/// What a finished game says about how it was played: the mean luck and risk of
+/// the guesses that had a choice (null when none had), and the most bits one
+/// guess gained.
+({double? luck, double? risk, double maxBits}) gameTraits(
+  List<GuessMetrics> ms,
+) {
+  var luck = 0.0, risk = 0.0, n = 0, rn = 0;
+  var bits = 0.0;
+  for (final m in ms) {
+    if (m.gain > bits) bits = m.gain;
+    if (m.before <= 1) continue;
+    luck += m.luck;
+    n++;
+    final k = m.risk;
+    if (k != null) {
+      risk += k;
+      rn++;
+    }
+  }
+  return (
+    luck: n == 0 ? null : luck / n,
+    risk: rn == 0 ? null : risk / rn,
+    maxBits: bits,
+  );
 }

@@ -280,6 +280,7 @@ class _GamePageState extends State<GamePage> {
     final epoch = _epoch;
     void record() {
       final d = _daily;
+      final traits = gameTraits(metrics);
       GameResult result({
         int streak = 0,
         String? style,
@@ -293,6 +294,9 @@ class _GamePageState extends State<GamePage> {
         used: guesses.length,
         won: won,
         skills: [for (final m in metrics) m.skill],
+        luck: traits.luck,
+        risk: traits.risk,
+        maxBits: traits.maxBits,
         daily: d != null,
         dailyStreak: streak,
         style: style,

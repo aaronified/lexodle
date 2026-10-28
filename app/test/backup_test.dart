@@ -33,7 +33,8 @@ AppState sample() {
       'fr': {'5:6', '6:4'},
     };
   s.ach['first_light'] = AchState(times: 1, dates: ['2026-10-01']);
-  s.ach['wins_10'] = AchState(progress: 4);
+  s.ach['one_shot'] = AchState(times: 1, dates: ['2026-10-02']);
+  s.ach['wins_25'] = AchState(value: 4);
   s.ach['mastery'] = AchState(times: 1, dates: ['2026-10-09'], seen: {'fr'});
   return s;
 }
@@ -82,9 +83,9 @@ void main() {
       expect((m['stats'] as Map)['played'], 12);
       // the achievements that belong to no language, then each language's own
       expect((m['achievements'] as Map).keys, contains('mastery'));
-      expect((m['achievements'] as Map).keys, isNot(contains('wins_10')));
+      expect((m['achievements'] as Map).keys, isNot(contains('wins_25')));
       final en = (m['languages'] as Map)[(m['settings'] as Map)['lang']] as Map;
-      expect((en['achievements'] as Map).keys, contains('wins_10'));
+      expect((en['achievements'] as Map).keys, contains('wins_25'));
       expect(en.keys, containsAll(['playstyle', 'daily', 'achievements']));
     });
 
@@ -130,7 +131,7 @@ void main() {
       expect(fresh.settingsJson(), source.settingsJson());
       expect(fresh.stats.toJson(), source.stats.toJson());
       expect(fresh.unlockedCount, source.unlockedCount);
-      expect(fresh.ach['wins_10']!.progress, 4);
+      expect(fresh.ach['wins_25']!.value, 4);
       expect(fresh.ach['mastery']!.seen, {'fr'});
 
       // it was written to storage, so a restart finds it
@@ -166,7 +167,7 @@ void main() {
     test('it replaces the achievements as well, not adds to them', () async {
       final s = AppState();
       await s.load();
-      s.ach['one_shot'] = AchState(times: 4, dates: ['x']);
+      s.ach['quick_3'] = AchState(times: 4, dates: ['x']);
       final b = parseBackup(backupToText(sample()));
       s.restore(
         settings: b.settings,
@@ -174,7 +175,7 @@ void main() {
         ach: b.achievements,
         languages: b.languages,
       );
-      expect(s.ach.containsKey('one_shot'), isFalse);
+      expect(s.ach.containsKey('quick_3'), isFalse);
     });
 
     test('listeners are told, so the screens follow', () async {
@@ -307,7 +308,7 @@ void main() {
       expect(b.achievements.containsKey('mastery'), isTrue);
       final kept = b.languages![code]!.achievements;
       expect(kept.containsKey('from_the_past'), isFalse);
-      expect(kept.containsKey('wins_10'), isTrue);
+      expect(kept.containsKey('wins_25'), isTrue);
     });
 
     test('a file with only some parts is accepted for those parts', () {

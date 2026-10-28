@@ -292,15 +292,15 @@ void main() {
   group('the achievements', () {
     Achievement byId(String id) => achievements.firstWhere((a) => a.id == id);
 
-    test('there is a streak ladder, each rung earned once', () {
+    test('there is a classic streak ladder, each rung earned once', () {
       final ladder = achievements
-          .where((a) => a.track == Track.dailyStreak)
+          .where((a) => a.metric == 'streakClassic')
           .map((a) => a.target)
           .toList();
-      expect(ladder, [3, 7, 14, 30, 60, 100, 200, 365]);
+      expect(ladder, [3, 14, 60, 365]);
       final states = <String, AchState>{};
       final earned = <String>[];
-      for (var day = 1; day <= 8; day++) {
+      for (var day = 1; day <= 15; day++) {
         earned.addAll([
           for (final a in advanceAchievements(
             states,
@@ -311,10 +311,9 @@ void main() {
         ]);
       }
       expect(earned.where((id) => id == 'daily_3'), hasLength(1));
-      expect(earned, contains('daily_7'));
-      expect(earned, isNot(contains('daily_14')));
-      // the bar follows the streak and is not reset when a rung is earned
-      expect(states['daily_7']!.progress, 8);
+      expect(earned, contains('daily_14'));
+      expect(earned, isNot(contains('daily_60')));
+      expect(states['daily_14']!.value, 15);
       expect(states['daily_3']!.times, 1);
     });
 
@@ -324,7 +323,7 @@ void main() {
       advanceAchievements(states, dailyResult(streak: 4), 'b');
       // a miss and a fresh run to 3
       advanceAchievements(states, dailyResult(won: false, streak: 0), 'c');
-      expect(states['daily_3']!.progress, 0);
+      expect(states['daily_3']!.value, 4, reason: 'the best is kept');
       final again = advanceAchievements(states, dailyResult(streak: 3), 'd');
       expect(again.map((a) => a.id), isNot(contains('daily_3')));
       expect(states['daily_3']!.times, 1);
@@ -343,34 +342,32 @@ void main() {
         dailyStreak: 50,
       );
       final earned = advanceAchievements(states, plain, 'x');
-      expect(earned.where((a) => a.track == Track.dailyStreak), isEmpty);
-      expect(states['daily_3']?.progress ?? 0, 0);
-      expect(earned.map((a) => a.id), isNot(contains('double_fire')));
+      expect(earned.map((a) => a.id), isNot(contains('daily_14')));
+      expect(states['daily_3']?.value ?? 0, 0);
+      expect(earned.map((a) => a.id), isNot(contains('double_1')));
     });
 
-    test(
-      'a double fire is earned by a daily, and ten of them by a counter',
-      () {
-        final states = <String, AchState>{};
-        final first = advanceAchievements(
-          states,
-          dailyResult(used: 2, streak: 1),
-          'a',
-        );
-        expect(first.map((a) => a.id), contains('double_fire'));
-        expect(byId('double_10').numbered, isTrue);
-        for (var i = 0; i < 9; i++) {
-          advanceAchievements(states, dailyResult(used: 2, streak: 2), 'b$i');
-        }
-        expect(states['double_10']!.times, 1);
-        final plain = advanceAchievements(
-          states,
-          dailyResult(used: 5, streak: 3),
-          'c',
-        );
-        expect(plain.map((a) => a.id), isNot(contains('double_fire')));
-      },
-    );
+    test('a double fire is earned by a daily, and counted up the ladder', () {
+      final states = <String, AchState>{};
+      final first = advanceAchievements(
+        states,
+        dailyResult(used: 2, streak: 1),
+        'a',
+      );
+      expect(first.map((a) => a.id), contains('double_1'));
+      expect(byId('double_10').numbered, isTrue);
+      for (var i = 0; i < 9; i++) {
+        advanceAchievements(states, dailyResult(used: 2, streak: 2), 'b$i');
+      }
+      expect(states['double_10']!.times, 1);
+      final plain = advanceAchievements(
+        states,
+        dailyResult(used: 5, streak: 3),
+        'c',
+      );
+      expect(plain.map((a) => a.id), isNot(contains('double_50')));
+      expect(states['double_10']!.value, 10);
+    });
   });
 
   group('the saved log', () {

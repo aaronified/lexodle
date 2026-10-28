@@ -43,7 +43,9 @@ class Outcome {
       return c != 0 ? c : a.compareTo(b);
     });
   return (
-    outcomes: [for (final k in keys) Outcome(mass[k]! / total, bitsOf(mass[k]! / total))],
+    outcomes: [
+      for (final k in keys) Outcome(mass[k]! / total, bitsOf(mass[k]! / total)),
+    ],
     landed: max(0, keys.indexOf(key)),
   );
 }
@@ -166,12 +168,7 @@ class GainPainter extends CustomPainter {
     for (var i = 0; i < outcomes.length; i++) {
       final o = outcomes[i];
       final cw = o.chance * w;
-      final r = Rect.fromLTRB(
-        x,
-        y(o.gain),
-        x + max(cw - .4, .3),
-        top + h,
-      );
+      final r = Rect.fromLTRB(x, y(o.gain), x + max(cw - .4, .3), top + h);
       final color = o.gain > expected + 1e-9
           ? more
           : o.gain < expected - 1e-9
@@ -220,8 +217,15 @@ class GainPainter extends CustomPainter {
         ..color = luck
         ..strokeWidth = 1.5,
     );
-    _text(canvas, 'luck 0', Offset(mid - 4, top), color: luck, align: TextAlign.right);
-    final hLabel = 'H ${expected.toStringAsFixed(2)}'
+    _text(
+      canvas,
+      'luck 0',
+      Offset(mid - 4, top),
+      color: luck,
+      align: TextAlign.right,
+    );
+    final hLabel =
+        'H ${expected.toStringAsFixed(2)}'
         '${best == null ? '' : ' · H* ${best!.toStringAsFixed(2)}'}';
     _text(
       canvas,
@@ -260,7 +264,12 @@ class GainPainter extends CustomPainter {
       Offset(size.width - right, size.height - 12),
       align: TextAlign.right,
     );
-    _text(canvas, topGain.toStringAsFixed(0), Offset(left - 4, top), align: TextAlign.right);
+    _text(
+      canvas,
+      topGain.toStringAsFixed(0),
+      Offset(left - 4, top),
+      align: TextAlign.right,
+    );
     _text(canvas, '0', Offset(left - 4, top + h - 11), align: TextAlign.right);
   }
 
@@ -413,8 +422,16 @@ class WaterfallPainter extends CustomPainter {
           ..strokeWidth = 1.5;
         final r = Rect.fromLTRB(x(end), y, x(exp), y + h);
         for (var dx = r.left; dx < r.right; dx += 5) {
-          canvas.drawLine(Offset(dx, r.top), Offset(min(dx + 3, r.right), r.top), p);
-          canvas.drawLine(Offset(dx, r.bottom), Offset(min(dx + 3, r.right), r.bottom), p);
+          canvas.drawLine(
+            Offset(dx, r.top),
+            Offset(min(dx + 3, r.right), r.top),
+            p,
+          );
+          canvas.drawLine(
+            Offset(dx, r.bottom),
+            Offset(min(dx + 3, r.right), r.bottom),
+            p,
+          );
         }
         canvas.drawLine(r.topLeft, r.bottomLeft, p);
         canvas.drawLine(r.topRight, r.bottomRight, p);

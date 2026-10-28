@@ -339,18 +339,18 @@ void main() {
         times: 2,
         dates: ['2026-02-01', '2026-05-01'],
       );
-      appState.ach['last_breath'] = AchState(times: 1, dates: ['2026-03-01']);
-      appState.ach['no_mercy'] = AchState(times: 1, dates: ['2026-04-01']);
+      appState.ach['last_1'] = AchState(times: 1, dates: ['2026-03-01']);
+      appState.ach['quick_4'] = AchState(times: 1, dates: ['2026-04-01']);
       await home(tester);
       expect(glyphs(), findsOneWidget);
       Finder g(String id) => find.byKey(ValueKey('recent-ach-$id'));
       expect(g('one_shot'), findsOneWidget);
-      expect(g('no_mercy'), findsOneWidget);
-      expect(g('last_breath'), findsOneWidget);
+      expect(g('quick_4'), findsOneWidget);
+      expect(g('last_1'), findsOneWidget);
       expect(g('first_light'), findsNothing);
       // newest first, left to right, inside the achievements button
       final xs = [
-        for (final id in ['one_shot', 'no_mercy', 'last_breath'])
+        for (final id in ['one_shot', 'quick_4', 'last_1'])
           tester.getCenter(g(id)).dx,
       ];
       expect(xs[0], lessThan(xs[1]));

@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:math' show min;
 
 import 'package:flutter/foundation.dart';
 
@@ -11,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'daily.dart';
 import 'difficulty.dart';
 import 'history.dart';
+import 'medal.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'words.dart';
@@ -60,6 +62,9 @@ class GameResult {
     this.style,
     this.styleChanged = false,
     this.stylesHeld = 0,
+    this.luck,
+    this.risk,
+    this.maxBits = 0,
   });
   final String lang;
   final int length;
@@ -93,6 +98,12 @@ class GameResult {
   final String? style;
   final bool styleChanged;
   final int stylesHeld;
+
+  /// The mean luck and risk of the guesses that had a choice (null when none
+  /// had), and the most bits one guess gained. A classic game only.
+  final double? luck;
+  final double? risk;
+  final double maxBits;
 
   /// A double fire: a win in three guesses or fewer, or with every guess at 80
   /// skill or more.
@@ -218,13 +229,9 @@ enum Track {
   /// Collects badges that stay earned (one per language mastered); no target.
   badges,
 
-  /// The daily streak reaching the target. It is earned once, and its bar
-  /// follows the streak instead of starting again.
-  dailyStreak,
-
-  /// Earned once, when the app finds a condition over everything kept to be true
-  /// (see [AppState.recordGame]), not by a game.
-  granted,
+  /// A number kept over the games (see [metrics]) reaching the target. Every
+  /// achievement a player sees is of this kind.
+  metric,
 }
 
 class Achievement {
@@ -238,7 +245,34 @@ class Achievement {
     this.repeat = true,
     this.qualifies = _always,
     this.modes = _classicOnly,
-  });
+    this.medal = Medal.bronze,
+    this.metric = '',
+    this.strict = false,
+    this.smaller = false,
+    this.again = false,
+  }) : tag = null;
+
+  /// An achievement earned once a [metric] reaches [target], with its [medal].
+  /// [strict]: it has to pass the target; [smaller]: the smaller number is the
+  /// better one (the fastest win); [again]: every game that does it again is
+  /// counted once earned. [mode] is the mode it is about, for its tag.
+  const Achievement.metric(
+    this.id,
+    this.icon,
+    this.title,
+    this.description,
+    this.medal,
+    this.metric,
+    this.target, {
+    this.strict = false,
+    this.smaller = false,
+    this.again = false,
+    GameMode? mode,
+  }) : track = Track.metric,
+       repeat = false,
+       qualifies = _always,
+       modes = _anyMode,
+       tag = mode;
   final String id;
 
   /// Name of a Tabler filled icon in assets/icons.
@@ -256,14 +290,26 @@ class Achievement {
   /// For events: the game meets the condition. For counters: the game counts.
   final bool Function(GameResult r) qualifies;
 
-  /// The modes whose games count for it. Most that assume a single word (one
-  /// shot, last breath, skill) are classic only; the general ones (a win, a
-  /// streak, a language) take any.
+  /// The modes whose games count for it.
   final Set<GameMode> modes;
 
-  /// Whether it has a target and so a progress bar (a badge collection has not).
-  bool get numbered =>
-      track != Track.event && track != Track.badges && track != Track.granted;
+  final Medal medal;
+
+  /// The number it reads (see [metrics]), how it is compared with [target], and
+  /// whether it is counted again once earned.
+  final String metric;
+  final bool strict;
+  final bool smaller;
+  final bool again;
+
+  /// The mode it is about, shown on it (quartet or relay), if any.
+  final GameMode? tag;
+
+  /// Whether it has a target and a progress bar: it counts up to the target
+  /// (a best-of number, such as the best skill, has none).
+  bool get numbered => track == Track.metric
+      ? _counted.contains(metric)
+      : track != Track.event && track != Track.badges;
 
   /// Whether it spans languages (the ones that count languages, and the mastery
   /// badges), so belongs to none. Every other is earned, and counted, in one
@@ -271,8 +317,41 @@ class Achievement {
   bool get global =>
       track == Track.languages ||
       track == Track.badges ||
-      track == Track.granted;
+      (track == Track.metric && _globalMetrics.contains(metric));
+
+  /// Whether [v] of its metric earns it, with [languages] languages in the app.
+  bool reached(double v, {int languages = 0}) {
+    var t = target.toDouble();
+    if (_globalMetrics.contains(metric) && languages > 0 && t > languages) {
+      t = languages.toDouble(); // "every language"
+    }
+    if (smaller) return v > 0 && v <= t;
+    return strict ? v > t : v >= t;
+  }
 }
+
+/// The metrics that count up (they get a progress bar), and those that count
+/// languages (kept once for the player, not per language).
+const _counted = {
+  'wins',
+  'played',
+  'streak',
+  'lastTry',
+  'every95',
+  'lengths',
+  'langs',
+  'mastered',
+  'completed',
+  'dailies',
+  'streakClassic',
+  'streakQuartet',
+  'streakRelay',
+  'doubles',
+  'quartetWins',
+  'relayWins',
+  'stylesWorn',
+};
+const _globalMetrics = {'langs', 'mastered', 'completed'};
 
 bool _always(GameResult r) => true;
 
@@ -281,358 +360,979 @@ const _anyMode = {GameMode.classic, GameMode.quartet, GameMode.relay};
 const _quartetOnly = {GameMode.quartet};
 const _relayOnly = {GameMode.relay};
 
-/// Every achievement. Numbered ones show a progress bar and, once earned, start
-/// again from 0; events can be earned again too, and every earning is counted.
 /// The achievement with [id], or null for one this version does not have.
 Achievement? achievementById(String id) {
-  for (final a in achievements) {
+  for (final a in allAchievements) {
     if (a.id == id) return a;
   }
   return null;
 }
 
+/// Every achievement, 97 of them, each with a medal: a family climbs from the
+/// bronze (the easy version) to the platinum. Each is earned once, in each
+/// language, when its metric reaches its target.
 final achievements = <Achievement>[
-  Achievement(
+  // wins
+  Achievement.metric(
     'first_light',
     'sun-high',
     'first light',
     'win a game',
-    repeat: false,
-    qualifies: (r) => r.won,
-    modes: _anyMode,
+    Medal.bronze,
+    'wins',
+    1,
   ),
-  Achievement(
-    'one_shot',
-    'bolt',
-    'one shot',
-    'win on the first guess',
-    qualifies: (r) => r.won && r.used == 1,
+  Achievement.metric(
+    'wins_25',
+    'clover',
+    'regular',
+    'win 25 games',
+    Medal.silver,
+    'wins',
+    25,
   ),
-  Achievement(
-    'last_breath',
-    'lungs',
-    'last breath',
-    'win on your very last try (4+ tries)',
-    qualifies: (r) => r.won && r.used == r.tries && r.tries >= 4,
+  Achievement.metric(
+    'wins_100',
+    'shield-check',
+    'veteran',
+    'win 100 games',
+    Medal.gold,
+    'wins',
+    100,
   ),
-  Achievement(
-    'no_mercy',
-    'bomb',
-    'no mercy',
-    'win with 3 tries or fewer',
-    qualifies: (r) => r.won && r.tries <= 3,
+  Achievement.metric(
+    'wins_500',
+    'crown',
+    'dustwalker',
+    'win 500 games',
+    Medal.platinum,
+    'wins',
+    500,
   ),
-  Achievement(
-    'brevity',
-    'square-number-4',
-    'brevity',
-    'win a 4-letter word',
-    qualifies: (r) => r.won && r.length == 4,
-    modes: _anyMode,
+  // played
+  Achievement.metric(
+    'played_10',
+    'bike',
+    'persistent',
+    'play 10 games',
+    Medal.bronze,
+    'played',
+    10,
   ),
-  Achievement(
-    'long_haul',
-    'square-number-8',
-    'long haul',
-    'win an 8-letter word',
-    qualifies: (r) => r.won && r.length == 8,
-    modes: _anyMode,
+  Achievement.metric(
+    'played_50',
+    'speedboat',
+    'devoted',
+    'play 50 games',
+    Medal.silver,
+    'played',
+    50,
   ),
-  Achievement(
-    'pure_skill',
-    'diamond',
-    'pure skill',
-    'win with every guess above 90 skill',
-    qualifies: (r) => r.wonAllAbove(90),
+  Achievement.metric(
+    'played_250',
+    'hourglass',
+    'diehard',
+    'play 250 games',
+    Medal.gold,
+    'played',
+    250,
   ),
-  Achievement(
-    'skill_issue',
-    'mood-crazy-happy',
-    'skill issue',
-    'win 10 games with every guess above 95 skill',
-    track: Track.counter,
-    target: 10,
-    qualifies: (r) => r.wonAllAbove(95),
+  Achievement.metric(
+    'played_1000',
+    'building-broadcast-tower',
+    'lifer',
+    'play 1,000 games',
+    Medal.platinum,
+    'played',
+    1000,
   ),
-  Achievement(
-    'full_range',
-    'compass',
-    'full range',
-    'win at every length, 4 to 8',
-    track: Track.lengths,
-    target: 5,
-    modes: _anyMode,
-  ),
-  Achievement(
+  // streak
+  Achievement.metric(
     'streak_3',
     'square-number-3',
     'three in a row',
     'win 3 games in a row',
-    track: Track.streak,
-    target: 3,
-    modes: _anyMode,
+    Medal.bronze,
+    'streak',
+    3,
   ),
-  Achievement(
+  Achievement.metric(
     'streak_7',
     'square-number-7',
     'seven in a row',
     'win 7 games in a row',
-    track: Track.streak,
-    target: 7,
-    modes: _anyMode,
+    Medal.silver,
+    'streak',
+    7,
   ),
-  Achievement(
+  Achievement.metric(
+    'streak_15',
+    'balloon',
+    'fifteen in a row',
+    'win 15 games in a row',
+    Medal.gold,
+    'streak',
+    15,
+  ),
+  Achievement.metric(
+    'streak_30',
+    'diamonds',
+    'thirty in a row',
+    'win 30 games in a row',
+    Medal.platinum,
+    'streak',
+    30,
+  ),
+  // quick
+  Achievement.metric(
+    'quick_4',
+    'flare',
+    'quick draw',
+    'win in 4 guesses or fewer',
+    Medal.bronze,
+    'fastest',
+    4,
+    smaller: true,
+    again: true,
+  ),
+  Achievement.metric(
+    'quick_3',
+    'compass',
+    'sharpshooter',
+    'win in 3 guesses or fewer',
+    Medal.silver,
+    'fastest',
+    3,
+    smaller: true,
+    again: true,
+  ),
+  Achievement.metric(
+    'quick_2',
+    'bulb',
+    'two shot',
+    'win in 2 guesses',
+    Medal.gold,
+    'fastest',
+    2,
+    smaller: true,
+    again: true,
+  ),
+  Achievement.metric(
+    'one_shot',
+    'bolt',
+    'one shot',
+    'win on the first guess',
+    Medal.platinum,
+    'fastest',
+    1,
+    smaller: true,
+    again: true,
+  ),
+  // last
+  Achievement.metric(
+    'last_1',
+    'lungs',
+    'last breath',
+    'win on your very last try (4+ tries)',
+    Medal.bronze,
+    'lastTry',
+    1,
+    again: true,
+  ),
+  Achievement.metric(
+    'last_10',
+    'bomb',
+    'living dangerously',
+    'win on your very last try 10 times',
+    Medal.silver,
+    'lastTry',
+    10,
+  ),
+  Achievement.metric(
+    'last_30',
+    'clock',
+    'edge of the seat',
+    'win on your very last try 30 times',
+    Medal.gold,
+    'lastTry',
+    30,
+  ),
+  Achievement.metric(
+    'last_100',
+    'cards',
+    'nine lives',
+    'win on your very last try 100 times',
+    Medal.platinum,
+    'lastTry',
+    100,
+  ),
+  // skillavg
+  Achievement.metric(
+    'skillavg_70',
+    'scale',
+    'steady hand',
+    'win with an average skill of 70 or more',
+    Medal.bronze,
+    'bestSkillAvg',
+    70,
+  ),
+  Achievement.metric(
+    'skillavg_80',
+    'microscope',
+    'sharp mind',
+    'win with an average skill of 80 or more',
+    Medal.silver,
+    'bestSkillAvg',
+    80,
+  ),
+  Achievement.metric(
+    'skillavg_90',
+    'diamond',
+    'pure skill',
+    'win with an average skill of 90 or more',
+    Medal.gold,
+    'bestSkillAvg',
+    90,
+  ),
+  Achievement.metric(
+    'skillavg_95',
+    'laurel-wreath',
+    'flawless',
+    'win with an average skill of 95 or more',
+    Medal.platinum,
+    'bestSkillAvg',
+    95,
+  ),
+  // every
+  Achievement.metric(
+    'every_60',
+    'badges',
+    'no slip',
+    'win with every guess above 60 skill',
+    Medal.bronze,
+    'bestEvery',
+    60,
+    strict: true,
+  ),
+  Achievement.metric(
+    'every_75',
+    'award',
+    'clean sheet',
+    'win with every guess above 75 skill',
+    Medal.silver,
+    'bestEvery',
+    75,
+    strict: true,
+  ),
+  Achievement.metric(
+    'every_90',
+    'sparkles',
+    'clean sweep',
+    'win with every guess above 90 skill',
+    Medal.gold,
+    'bestEvery',
+    90,
+    strict: true,
+  ),
+  Achievement.metric(
+    'skill_issue',
+    'mood-crazy-happy',
+    'skill issue',
+    'win 10 games with every guess above 95 skill',
+    Medal.platinum,
+    'every95',
+    10,
+  ),
+  // luck
+  Achievement.metric(
+    'luck_20',
+    'gift',
+    'lucky break',
+    'win with an average luck of +20% or more',
+    Medal.bronze,
+    'bestLuck',
+    20,
+  ),
+  Achievement.metric(
+    'luck_40',
+    'confetti',
+    'fortune’s child',
+    'win with an average luck of +40% or more',
+    Medal.silver,
+    'bestLuck',
+    40,
+  ),
+  Achievement.metric(
+    'luck_60',
+    'butterfly',
+    'charmed',
+    'win with an average luck of +60% or more',
+    Medal.gold,
+    'bestLuck',
+    60,
+  ),
+  Achievement.metric(
+    'luck_80',
+    'clover',
+    'blessed',
+    'win with an average luck of +80% or more',
+    Medal.platinum,
+    'bestLuck',
+    80,
+  ),
+  // risk
+  Achievement.metric(
+    'risk_25',
+    'dice-5',
+    'dabbler',
+    'win with an average risk of 25 or more',
+    Medal.bronze,
+    'bestRisk',
+    25,
+  ),
+  Achievement.metric(
+    'risk_40',
+    'cards',
+    'risk taker',
+    'win with an average risk of 40 or more',
+    Medal.silver,
+    'bestRisk',
+    40,
+  ),
+  Achievement.metric(
+    'risk_55',
+    'boom',
+    'daredevil',
+    'win with an average risk of 55 or more',
+    Medal.gold,
+    'bestRisk',
+    55,
+  ),
+  Achievement.metric(
+    'risk_70',
+    'bomb',
+    'all in',
+    'win with an average risk of 70 or more',
+    Medal.platinum,
+    'bestRisk',
+    70,
+  ),
+  // bits
+  Achievement.metric(
+    'bits_6',
+    'apps',
+    'big bite',
+    'gain 6 bits or more with one guess',
+    Medal.bronze,
+    'bestBits',
+    6,
+  ),
+  Achievement.metric(
+    'bits_8',
+    'world',
+    'wide net',
+    'gain 8 bits or more with one guess',
+    Medal.silver,
+    'bestBits',
+    8,
+  ),
+  Achievement.metric(
+    'bits_10',
+    'trophy',
+    'landslide',
+    'gain 10 bits or more with one guess',
+    Medal.gold,
+    'bestBits',
+    10,
+  ),
+  Achievement.metric(
+    'bits_12',
+    'flag',
+    'jackpot',
+    'gain 12 bits or more with one guess',
+    Medal.platinum,
+    'bestBits',
+    12,
+  ),
+  // length
+  Achievement.metric(
+    'brevity',
+    'square-number-4',
+    'brevity',
+    'win a 4-letter word',
+    Medal.bronze,
+    'won4',
+    1,
+  ),
+  Achievement.metric(
+    'long_haul',
+    'square-number-8',
+    'long haul',
+    'win an 8-letter word',
+    Medal.silver,
+    'won8',
+    1,
+  ),
+  Achievement.metric(
+    'full_range',
+    'compass',
+    'full range',
+    'win at every length, 4 to 8',
+    Medal.gold,
+    'lengths',
+    5,
+  ),
+  // languages
+  Achievement.metric(
     'bilingual',
     'bubble-text',
     'bilingual',
     'win in 2 languages',
-    track: Track.languages,
-    target: 2,
-    modes: _anyMode,
+    Medal.bronze,
+    'langs',
+    2,
   ),
-  Achievement(
+  Achievement.metric(
     'polyglot_3',
     'world',
     'polyglot',
     'win in 3 languages',
-    track: Track.languages,
-    target: 3,
-    modes: _anyMode,
+    Medal.silver,
+    'langs',
+    3,
   ),
-  Achievement(
+  Achievement.metric(
+    'polyglot_6',
+    'world',
+    'six tongues',
+    'win in 6 languages',
+    Medal.gold,
+    'langs',
+    6,
+  ),
+  Achievement.metric(
     'polyglot_9',
-    'trophy',
+    'world',
     'nine tongues',
     'win in 9 languages',
-    track: Track.languages,
-    target: 9,
-    modes: _anyMode,
+    Medal.platinum,
+    'langs',
+    9,
   ),
-  Achievement(
-    'wins_10',
-    'award',
-    'regular',
-    'win 10 games',
-    track: Track.counter,
-    target: 10,
-    qualifies: (r) => r.won,
-    modes: _anyMode,
+  // mastery
+  Achievement.metric(
+    'mastery_1',
+    'feather',
+    'learner',
+    'master a language: win once at every length and difficulty',
+    Medal.bronze,
+    'mastered',
+    1,
   ),
-  Achievement(
-    'wins_50',
-    'shield-check',
-    'veteran',
-    'win 50 games',
-    track: Track.counter,
-    target: 50,
-    qualifies: (r) => r.won,
-    modes: _anyMode,
+  Achievement.metric(
+    'mastery_3',
+    'feather',
+    'scholar',
+    'master 3 languages',
+    Medal.silver,
+    'mastered',
+    3,
   ),
-  Achievement(
-    'wins_100',
-    'crown',
-    'dustwalker',
-    'win 100 games',
-    track: Track.counter,
-    target: 100,
-    qualifies: (r) => r.won,
-    modes: _anyMode,
+  Achievement.metric(
+    'mastery_6',
+    'feather',
+    'master',
+    'master 6 languages',
+    Medal.gold,
+    'mastered',
+    6,
   ),
-  Achievement(
-    'played_25',
-    'hourglass',
-    'persistent',
-    'play 25 games',
-    track: Track.counter,
-    target: 25,
-    modes: _anyMode,
+  Achievement.metric(
+    'mastery_all',
+    'feather',
+    'sage',
+    'master every language',
+    Medal.platinum,
+    'mastered',
+    20,
+  ),
+  // completionist
+  Achievement.metric(
+    'complete_1',
+    'badges',
+    'completionist',
+    'earn every achievement of a language',
+    Medal.bronze,
+    'completed',
+    1,
+  ),
+  Achievement.metric(
+    'complete_3',
+    'badges',
+    'collector',
+    'be a completionist in 3 languages',
+    Medal.silver,
+    'completed',
+    3,
+  ),
+  Achievement.metric(
+    'complete_6',
+    'badges',
+    'archivist',
+    'be a completionist in 6 languages',
+    Medal.gold,
+    'completed',
+    6,
+  ),
+  Achievement.metric(
+    'tower_of_babel',
+    'building-broadcast-tower',
+    'tower of babel',
+    'be a completionist in every language',
+    Medal.platinum,
+    'completed',
+    20,
+  ),
+  // dailies
+  Achievement.metric(
+    'dailies_5',
+    'candle',
+    'daily habit',
+    'solve 5 dailies',
+    Medal.bronze,
+    'dailies',
+    5,
+  ),
+  Achievement.metric(
+    'dailies_25',
+    'campfire',
+    'daily ritual',
+    'solve 25 dailies',
+    Medal.silver,
+    'dailies',
+    25,
+  ),
+  Achievement.metric(
+    'dailies_100',
+    'flame',
+    'daily devotion',
+    'solve 100 dailies',
+    Medal.gold,
+    'dailies',
+    100,
+  ),
+  Achievement.metric(
+    'dailies_365',
+    'sparkles',
+    'a year of dailies',
+    'solve 365 dailies',
+    Medal.platinum,
+    'dailies',
+    365,
+  ),
+  // fire_classic
+  Achievement.metric(
+    'daily_3',
+    'candle',
+    'kindling',
+    'solve the daily 3 days in a row',
+    Medal.bronze,
+    'streakClassic',
+    3,
+  ),
+  Achievement.metric(
+    'daily_14',
+    'flame',
+    'bonfire',
+    'solve the daily 14 days in a row',
+    Medal.silver,
+    'streakClassic',
+    14,
+  ),
+  Achievement.metric(
+    'daily_60',
+    'flare',
+    'forge',
+    'solve the daily 60 days in a row',
+    Medal.gold,
+    'streakClassic',
+    60,
+  ),
+  Achievement.metric(
+    'daily_365',
+    'sparkles',
+    'eternal flame',
+    'solve the daily 365 days in a row',
+    Medal.platinum,
+    'streakClassic',
+    365,
+  ),
+  // fire_quartet
+  Achievement.metric(
+    'dq_3',
+    'candle',
+    'quartet kindling',
+    'solve the quartet daily 3 days in a row',
+    Medal.bronze,
+    'streakQuartet',
+    3,
+    mode: GameMode.quartet,
+  ),
+  Achievement.metric(
+    'dq_10',
+    'campfire',
+    'quartet campfire',
+    'solve the quartet daily 10 days in a row',
+    Medal.silver,
+    'streakQuartet',
+    10,
+    mode: GameMode.quartet,
+  ),
+  Achievement.metric(
+    'dq_30',
+    'temperature-plus',
+    'quartet furnace',
+    'solve the quartet daily 30 days in a row',
+    Medal.gold,
+    'streakQuartet',
+    30,
+    mode: GameMode.quartet,
+  ),
+  Achievement.metric(
+    'dq_100',
+    'butterfly',
+    'quartet phoenix',
+    'solve the quartet daily 100 days in a row',
+    Medal.platinum,
+    'streakQuartet',
+    100,
+    mode: GameMode.quartet,
+  ),
+  // fire_relay
+  Achievement.metric(
+    'dr_3',
+    'candle',
+    'relay kindling',
+    'solve the relay daily 3 days in a row',
+    Medal.bronze,
+    'streakRelay',
+    3,
+    mode: GameMode.relay,
+  ),
+  Achievement.metric(
+    'dr_10',
+    'campfire',
+    'relay campfire',
+    'solve the relay daily 10 days in a row',
+    Medal.silver,
+    'streakRelay',
+    10,
+    mode: GameMode.relay,
+  ),
+  Achievement.metric(
+    'dr_30',
+    'temperature-plus',
+    'relay furnace',
+    'solve the relay daily 30 days in a row',
+    Medal.gold,
+    'streakRelay',
+    30,
+    mode: GameMode.relay,
+  ),
+  Achievement.metric(
+    'dr_100',
+    'butterfly',
+    'relay phoenix',
+    'solve the relay daily 100 days in a row',
+    Medal.platinum,
+    'streakRelay',
+    100,
+    mode: GameMode.relay,
+  ),
+  // double
+  Achievement.metric(
+    'double_1',
+    'flame',
+    'double fire',
+    'solve a daily in 3 guesses, or with every guess at 80 skill or more',
+    Medal.bronze,
+    'doubles',
+    1,
+    again: true,
+  ),
+  Achievement.metric(
+    'double_10',
+    'flare',
+    'twice as hot',
+    'earn 10 double fires',
+    Medal.silver,
+    'doubles',
+    10,
+  ),
+  Achievement.metric(
+    'double_50',
+    'boom',
+    'blazing',
+    'earn 50 double fires',
+    Medal.gold,
+    'doubles',
+    50,
+  ),
+  Achievement.metric(
+    'double_200',
+    'sparkles',
+    'inferno',
+    'earn 200 double fires',
+    Medal.platinum,
+    'doubles',
+    200,
   ),
   // quartet
-  Achievement(
+  Achievement.metric(
     'quartet_win',
     'layout-grid',
     'all four',
     'win a quartet',
-    modes: _quartetOnly,
-    qualifies: (r) => r.won,
+    Medal.bronze,
+    'quartetWins',
+    1,
+    mode: GameMode.quartet,
   ),
-  Achievement(
-    'quartet_spare',
-    'balloon',
-    'room to spare',
-    'win a quartet with 3 or more tries left',
-    modes: _quartetOnly,
-    qualifies: (r) => r.won && r.tries - r.used >= 3,
-  ),
-  Achievement(
+  Achievement.metric(
     'quartet_last',
-    'clock',
+    'lungs',
     'last gasp',
     'win a quartet on your very last try',
-    modes: _quartetOnly,
-    qualifies: (r) => r.won && r.used == r.tries,
+    Medal.bronze,
+    'quartetLast',
+    1,
+    mode: GameMode.quartet,
   ),
-  Achievement(
-    'quartet_sharp',
-    'diamonds',
-    'sharp four',
-    'win a quartet with an average skill above 80',
-    modes: _quartetOnly,
-    qualifies: (r) => r.won && r.avgSkill > 80,
+  Achievement.metric(
+    'quartet_spare',
+    'layout-grid',
+    'room to spare',
+    'win a quartet with 3 or more tries left',
+    Medal.silver,
+    'quartetSpare',
+    3,
+    mode: GameMode.quartet,
   ),
-  Achievement(
+  Achievement.metric(
     'quartet_10',
-    'apps',
+    'layout-grid',
     'quartet regular',
     'win 10 quartets',
-    track: Track.counter,
-    target: 10,
-    modes: _quartetOnly,
-    qualifies: (r) => r.won,
+    Medal.silver,
+    'quartetWins',
+    10,
+    mode: GameMode.quartet,
   ),
-  // relay race
-  Achievement(
-    'relay_win',
-    'flag',
-    'finish line',
-    'win a relay race',
-    modes: _relayOnly,
-    qualifies: (r) => r.won,
+  Achievement.metric(
+    'quartet_50',
+    'layout-grid',
+    'quartet veteran',
+    'win 50 quartets',
+    Medal.gold,
+    'quartetWins',
+    50,
+    mode: GameMode.quartet,
   ),
-  Achievement(
-    'relay_free',
-    'gift',
-    'free ride',
-    'win a relay race with a word solved the moment it opened',
-    modes: _relayOnly,
-    qualifies: (r) => r.won && r.freeRides > 0,
+  Achievement.metric(
+    'quartet_sharp',
+    'microscope',
+    'sharp four',
+    'win a quartet with an average skill above 80',
+    Medal.gold,
+    'quartetSkill',
+    80,
+    strict: true,
+    mode: GameMode.quartet,
   ),
-  Achievement(
-    'relay_last',
-    'speedboat',
-    'photo finish',
-    'win a relay race on your very last try',
-    modes: _relayOnly,
-    qualifies: (r) => r.won && r.used == r.tries,
+  Achievement.metric(
+    'quartet_200',
+    'layout-grid',
+    'quartet legend',
+    'win 200 quartets',
+    Medal.platinum,
+    'quartetWins',
+    200,
+    mode: GameMode.quartet,
   ),
-  Achievement(
-    'relay_10',
-    'bike',
-    'relay regular',
-    'win 10 relay races',
-    track: Track.counter,
-    target: 10,
-    modes: _relayOnly,
-    qualifies: (r) => r.won,
-  ),
-  // the luckiest of all: one guess for every word, in either multi-board mode.
-  // Four guesses is the least a quartet can take; a relay race can take fewer,
-  // when a guess made earlier solves a board the moment it opens.
-  Achievement(
+  Achievement.metric(
     'luckiest',
     'clover',
     'luckiest man alive',
     'win a quartet or a relay race with one guess for each word',
-    modes: {GameMode.quartet, GameMode.relay},
-    qualifies: (r) => r.won && r.used <= r.mode.boards,
+    Medal.platinum,
+    'oneEach',
+    1,
   ),
-  // the daily word: a streak ladder, and the double fire
-  for (final (id, icon, title, days) in const [
-    ('daily_3', 'candle', 'kindling', 3),
-    ('daily_7', 'campfire', 'campfire', 7),
-    ('daily_14', 'flame', 'bonfire', 14),
-    ('daily_30', 'temperature-plus', 'furnace', 30),
-    ('daily_60', 'flare', 'forge', 60),
-    ('daily_100', 'boom', 'inferno', 100),
-    ('daily_200', 'butterfly', 'phoenix', 200),
-    ('daily_365', 'sparkles', 'eternal flame', 365),
-  ])
-    Achievement(
-      id,
-      icon,
-      title,
-      'solve the daily word $days days in a row',
-      track: Track.dailyStreak,
-      target: days,
-      repeat: false,
-    ),
-  Achievement(
-    'double_fire',
-    'confetti',
-    'double fire',
-    'solve the daily in 3 guesses, or with every guess at 80 skill or more',
-    qualifies: (r) => r.daily && r.isDouble,
+  // relay
+  Achievement.metric(
+    'relay_win',
+    'chess-knight',
+    'finish line',
+    'win a relay race',
+    Medal.bronze,
+    'relayWins',
+    1,
+    mode: GameMode.relay,
   ),
-  Achievement(
-    'double_10',
-    'bulb',
-    'twice as hot',
-    'earn 10 double fires',
-    track: Track.counter,
-    target: 10,
-    qualifies: (r) => r.daily && r.isDouble,
+  Achievement.metric(
+    'relay_last',
+    'lungs',
+    'photo finish',
+    'win a relay race on your very last try',
+    Medal.bronze,
+    'relayLast',
+    1,
+    mode: GameMode.relay,
   ),
-  // playstyles: one for being rated each, one for changing, one for all
-  for (final p in playstyles)
-    Achievement(
-      'style_${p.id}',
-      p.icon,
-      p.name,
-      'have the ${p.name} playstyle: ${p.blurb}',
-      repeat: false,
-      qualifies: (r) => r.style == p.id,
-    ),
-  Achievement(
+  Achievement.metric(
+    'relay_free',
+    'chess-knight',
+    'free ride',
+    'win a relay race with a word solved the moment it opened',
+    Medal.silver,
+    'relayFree',
+    1,
+    mode: GameMode.relay,
+  ),
+  Achievement.metric(
+    'relay_10',
+    'chess-knight',
+    'relay regular',
+    'win 10 relay races',
+    Medal.silver,
+    'relayWins',
+    10,
+    mode: GameMode.relay,
+  ),
+  Achievement.metric(
+    'relay_50',
+    'chess-knight',
+    'relay veteran',
+    'win 50 relay races',
+    Medal.gold,
+    'relayWins',
+    50,
+    mode: GameMode.relay,
+  ),
+  Achievement.metric(
+    'relay_200',
+    'chess-knight',
+    'relay legend',
+    'win 200 relay races',
+    Medal.platinum,
+    'relayWins',
+    200,
+    mode: GameMode.relay,
+  ),
+  // styles
+  Achievement.metric(
+    'style_wildcard',
+    'cards',
+    'wildcard',
+    'be rated the wildcard playstyle',
+    Medal.bronze,
+    'style_wildcard',
+    1,
+  ),
+  Achievement.metric(
+    'style_gambler',
+    'dice-5',
+    'gambler',
+    'be rated the gambler playstyle',
+    Medal.bronze,
+    'style_gambler',
+    1,
+  ),
+  Achievement.metric(
+    'style_sweeper',
+    'flag',
+    'sweeper',
+    'be rated the sweeper playstyle',
+    Medal.silver,
+    'style_sweeper',
+    1,
+  ),
+  Achievement.metric(
+    'style_detective',
+    'compass',
+    'detective',
+    'be rated the detective playstyle',
+    Medal.silver,
+    'style_detective',
+    1,
+  ),
+  Achievement.metric(
+    'style_analyst',
+    'microscope',
+    'analyst',
+    'be rated the analyst playstyle',
+    Medal.gold,
+    'style_analyst',
+    1,
+  ),
+  Achievement.metric(
+    'style_maverick',
+    'chess-knight',
+    'maverick',
+    'be rated the maverick playstyle',
+    Medal.gold,
+    'style_maverick',
+    1,
+  ),
+  Achievement.metric(
     'chameleon',
     'replace',
     'chameleon',
     'change your playstyle',
-    repeat: false,
-    qualifies: (r) => r.styleChanged,
+    Medal.bronze,
+    'styleChanges',
+    1,
   ),
-  Achievement(
+  Achievement.metric(
     'many_hats',
-    'chef-hat',
+    'puzzle',
     'many hats',
-    'have been every one of the ${playstyles.length} playstyles',
-    repeat: false,
-    qualifies: (r) => r.stylesHeld >= playstyles.length,
+    'have been every one of the 6 playstyles',
+    Medal.platinum,
+    'stylesWorn',
+    6,
   ),
-  // one achievement for every language: a badge each, kept for good
+];
+
+/// The achievements a player sees (for code where `achievements` is a field).
+List<Achievement> get shownAchievements => achievements;
+
+/// What collects the badges of the languages mastered and completed. They are
+/// kept for the families that count languages, and are not shown.
+const collectors = <Achievement>[
   Achievement(
     'mastery',
     'badges',
     'language mastery',
-    'win once at every length and every difficulty of a language, '
-        'and keep its badge',
+    'win once at every length and every difficulty of a language',
     track: Track.badges,
     modes: _anyMode,
   ),
-  // every other achievement of a language: a badge each, kept for good
   Achievement(
     completionistId,
     'laurel-wreath',
     'completionist',
-    'earn every achievement of one language (not the ones that count languages), '
-        'and keep its badge',
+    'earn every achievement of one language',
     track: Track.badges,
-    modes: _anyMode,
-  ),
-  // completionist, in every language
-  Achievement(
-    towerOfBabelId,
-    'building-broadcast-tower',
-    'tower of babel',
-    'be a completionist in every language',
-    track: Track.granted,
-    repeat: false,
     modes: _anyMode,
   ),
 ];
 
+/// Every achievement there is, and the collectors.
+final allAchievements = <Achievement>[...achievements, ...collectors];
+
 /// The two achievements of completing a language, and all of them.
 const completionistId = 'completionist';
-const towerOfBabelId = 'tower_of_babel';
 
 /// What one achievement has done so far.
 class AchState {
@@ -641,6 +1341,7 @@ class AchState {
     List<String>? dates,
     this.progress = 0,
     Set<String>? seen,
+    this.value = 0,
   }) : dates = dates ?? [],
        seen = seen ?? {};
 
@@ -654,6 +1355,9 @@ class AchState {
   /// The languages or lengths counted so far, for those tracks.
   final Set<String> seen;
 
+  /// The number a metric achievement reads: a count, or a best so far.
+  double value;
+
   String? get first => dates.isEmpty ? null : dates.first;
   String? get latest => dates.isEmpty ? null : dates.last;
 
@@ -662,6 +1366,7 @@ class AchState {
     'dates': dates,
     'progress': progress,
     'seen': seen.toList(),
+    if (value != 0) 'value': value,
   };
 
   static AchState fromJson(Map<String, dynamic> j) => AchState(
@@ -669,25 +1374,130 @@ class AchState {
     dates: [for (final d in j['dates'] ?? []) d as String],
     progress: j['progress'] ?? 0,
     seen: {for (final x in j['seen'] ?? []) x as String},
+    value: (j['value'] ?? 0).toDouble(),
   );
 }
+
+/// How a metric reads a game: the modes it looks at, and what the game does to
+/// the number [AchState.value] (a count, or a best so far). A streak also keeps
+/// its run so far in [AchState.progress].
+class Metric {
+  const Metric(this.modes, this.step);
+  final Set<GameMode> modes;
+  final double Function(AchState st, GameResult r) step;
+}
+
+double _best(double v, double x) => x > v ? x : v;
+
+Metric _count(Set<GameMode> modes, bool Function(GameResult r) when) =>
+    Metric(modes, (st, r) => when(r) ? st.value + 1 : st.value);
+
+Metric _most(Set<GameMode> modes, double? Function(GameResult r) of) =>
+    Metric(modes, (st, r) {
+      final x = of(r);
+      return x == null ? st.value : _best(st.value, x);
+    });
+
+Metric _dailyStreak(GameMode mode) => Metric({
+  mode,
+}, (st, r) => r.daily ? _best(st.value, r.dailyStreak.toDouble()) : st.value);
+
+Metric _style(String id) =>
+    Metric(_anyMode, (st, r) => r.style == id ? 1 : st.value);
+
+/// Every metric an achievement reads. The ones that count languages are not
+/// here: they are given to [advanceAchievements] (see [_globalMetrics]).
+final metrics = <String, Metric>{
+  'wins': _count(_anyMode, (r) => r.won),
+  'played': _count(_anyMode, (r) => true),
+  'streak': Metric(_anyMode, (st, r) {
+    st.progress = r.won ? st.progress + 1 : 0;
+    return _best(st.value, st.progress.toDouble());
+  }),
+  'fastest': Metric(
+    _classicOnly,
+    (st, r) => !r.won || r.used <= 0
+        ? st.value
+        : (st.value == 0 || r.used < st.value ? r.used.toDouble() : st.value),
+  ),
+  'lastTry': _count(
+    _classicOnly,
+    (r) => r.won && r.used == r.tries && r.tries >= 4,
+  ),
+  'bestSkillAvg': _most(
+    _classicOnly,
+    (r) => r.won && r.skills.isNotEmpty ? r.avgSkill : null,
+  ),
+  'bestEvery': _most(
+    _classicOnly,
+    (r) => r.won && r.skills.isNotEmpty ? r.skills.reduce(min) : null,
+  ),
+  'every95': _count(_classicOnly, (r) => r.wonAllAbove(95)),
+  'bestLuck': _most(_classicOnly, (r) => r.won ? r.luck : null),
+  'bestRisk': _most(_classicOnly, (r) => r.won ? r.risk : null),
+  'bestBits': _most(_classicOnly, (r) => r.maxBits > 0 ? r.maxBits : null),
+  'lengths': Metric(_anyMode, (st, r) {
+    if (r.won) st.seen.add('${r.length}');
+    return st.seen.length.toDouble();
+  }),
+  'won4': _count(_anyMode, (r) => r.won && r.length == 4),
+  'won8': _count(_anyMode, (r) => r.won && r.length == 8),
+  'dailies': _count(_anyMode, (r) => r.daily && r.won),
+  'streakClassic': _dailyStreak(GameMode.classic),
+  'streakQuartet': _dailyStreak(GameMode.quartet),
+  'streakRelay': _dailyStreak(GameMode.relay),
+  'doubles': _count(_anyMode, (r) => r.daily && r.isDouble),
+  'quartetWins': _count(_quartetOnly, (r) => r.won),
+  'quartetLast': _count(_quartetOnly, (r) => r.won && r.used == r.tries),
+  'quartetSpare': _most(
+    _quartetOnly,
+    (r) => r.won ? (r.tries - r.used).toDouble() : null,
+  ),
+  'quartetSkill': _most(
+    _quartetOnly,
+    (r) => r.won && r.skills.isNotEmpty ? r.avgSkill : null,
+  ),
+  'oneEach': _count({
+    GameMode.quartet,
+    GameMode.relay,
+  }, (r) => r.won && r.used <= 4),
+  'relayWins': _count(_relayOnly, (r) => r.won),
+  'relayLast': _count(_relayOnly, (r) => r.won && r.used == r.tries),
+  'relayFree': _count(_relayOnly, (r) => r.won && r.freeRides > 0),
+  for (final p in playstyles) 'style_${p.id}': _style(p.id),
+  'styleChanges': _count(_anyMode, (r) => r.styleChanged),
+  'stylesWorn': Metric(
+    _anyMode,
+    (st, r) => _best(st.value, r.stylesHeld.toDouble()),
+  ),
+};
 
 /// Applies one finished game to every achievement's state and returns the
 /// ones it earned. Pure, so it is tested without any storage.
 ///
 /// [mastered] is the codes of the languages whose mastery is complete now; the
-/// badges are collected from it and never taken away.
+/// badges are collected from it and never taken away. [counts] are the numbers
+/// of the metrics that count languages (`langs`, `mastered`, `completed`) and
+/// [languages] how many there are.
 List<Achievement> advanceAchievements(
   Map<String, AchState> states,
   GameResult r,
   String today, {
   Set<String> mastered = const {},
+  Map<String, int> counts = const {},
+  int languages = 0,
 }) {
   final earned = <Achievement>[];
-  for (final a in achievements) {
+  void earn(Achievement a, AchState st) {
+    st.times++;
+    st.dates.add(today);
+    earned.add(a);
+  }
+
+  for (final a in allAchievements) {
     final st = states.putIfAbsent(a.id, AchState.new);
     // earned by the app itself, from everything kept: see AppState.recordGame
-    if (a.track == Track.granted || a.id == completionistId) continue;
+    if (a.id == completionistId) continue;
     if (a.track == Track.badges) {
       final fresh = mastered.difference(st.seen);
       if (fresh.isNotEmpty) {
@@ -701,44 +1511,27 @@ List<Achievement> advanceAchievements(
       }
       continue;
     }
-    // a game played in a mode the achievement is not about leaves it alone:
-    // it neither counts nor breaks a streak
-    if (!a.modes.contains(r.mode)) continue;
-    var got = false;
-    switch (a.track) {
-      case Track.event:
-        got = a.qualifies(r) && (a.repeat || st.times == 0);
-      case Track.counter:
-        if (a.qualifies(r)) st.progress++;
-        got = st.progress >= a.target;
-      case Track.streak:
-        st.progress = r.won ? st.progress + 1 : 0;
-        got = st.progress >= a.target;
-      case Track.languages:
-      case Track.lengths:
-        if (r.won) {
-          st.seen.add(a.track == Track.languages ? r.lang : '${r.length}');
-        }
-        st.progress = st.seen.length;
-        got = st.progress >= a.target;
-      case Track.dailyStreak:
-        // only a daily moves it: a win carries the streak on, a miss ends it
-        if (!r.daily) continue;
-        st.progress = r.dailyStreak;
-        got = r.won && st.progress >= a.target && st.times == 0;
-      case Track.badges:
-      case Track.granted:
-        break; // collected above, or by the app
+    if (a.track != Track.metric) continue;
+    final m = metrics[a.metric];
+    if (m == null) {
+      // a metric that counts languages
+      final v = (counts[a.metric] ?? 0).toDouble();
+      st.value = v;
+      if (st.times == 0 && a.reached(v, languages: languages)) earn(a, st);
+      continue;
     }
-    if (got) {
-      st.times++;
-      st.dates.add(today);
-      if (a.numbered && a.track != Track.dailyStreak) {
-        // numbered achievements start again from 0 once earned
-        st.progress = 0;
-        st.seen.clear();
-      }
-      earned.add(a);
+    // a game played in a mode the metric is not about leaves it alone: it
+    // neither counts nor breaks a streak
+    if (!m.modes.contains(r.mode)) continue;
+    final before = st.value;
+    st.value = m.step(st, r);
+    if (st.times == 0) {
+      if (a.reached(st.value, languages: languages)) earn(a, st);
+    } else if (a.again &&
+        (a.metric == 'fastest'
+            ? r.won && r.used <= a.target
+            : st.value > before)) {
+      earn(a, st);
     }
   }
   return earned;
@@ -893,7 +1686,7 @@ class AppState extends ChangeNotifier {
 
   /// Replaces the achievements: the global ones, and those of [l].
   void setAch(String l, Map<String, AchState> all) {
-    final ids = {for (final a in achievements.where((a) => a.global)) a.id};
+    final ids = {for (final a in allAchievements.where((a) => a.global)) a.id};
     _globalAch
       ..clear()
       ..addAll({
@@ -937,8 +1730,8 @@ class AppState extends ChangeNotifier {
   };
 
   /// Adds the badge of each language newly completed to the completionist, and
-  /// earns the tower of babel once every language there is has one. Returns what
-  /// was earned.
+  /// moves the achievements that count completed languages. Returns what was
+  /// earned.
   List<Achievement> _grantCompletion(String today) {
     final earned = <Achievement>[];
     final done = completedLanguages();
@@ -953,14 +1746,15 @@ class AppState extends ChangeNotifier {
       }
       earned.add(achievementById(completionistId)!);
     }
-    final all = WordBank.loadedLanguages ?? const <Language>[];
-    final tower = _globalAch.putIfAbsent(towerOfBabelId, AchState.new);
-    if (tower.times == 0 &&
-        all.isNotEmpty &&
-        all.every((l) => badges.seen.contains(l.code))) {
-      tower.times++;
-      tower.dates.add(today);
-      earned.add(achievementById(towerOfBabelId)!);
+    final languages = (WordBank.loadedLanguages ?? const <Language>[]).length;
+    for (final a in achievements.where((a) => a.metric == 'completed')) {
+      final st = _globalAch.putIfAbsent(a.id, AchState.new);
+      st.value = badges.seen.length.toDouble();
+      if (st.times == 0 && a.reached(st.value, languages: languages)) {
+        st.times++;
+        st.dates.add(today);
+        earned.add(a);
+      }
     }
     return earned;
   }
@@ -972,7 +1766,8 @@ class AppState extends ChangeNotifier {
   ];
 
   /// How many different achievements have been earned at least once.
-  int get unlockedCount => ach.values.where((s) => s.times > 0).length;
+  int get unlockedCount =>
+      achievements.where((a) => (ach[a.id]?.times ?? 0) > 0).length;
 
   /// Progress on the daily words, keyed `<language>|<date>`. Only the last few
   /// days are kept.
@@ -1456,7 +2251,9 @@ class AppState extends ChangeNotifier {
             (e.value as Map).cast<String, dynamic>(),
           ),
       };
-      final ids = {for (final a in achievements.where((a) => a.global)) a.id};
+      final ids = {
+        for (final a in allAchievements.where((a) => a.global)) a.id,
+      };
       final a = p.getString('ach');
       if (a != null) {
         final all = states(jsonDecode(a));
@@ -1665,8 +2462,14 @@ class AppState extends ChangeNotifier {
       r,
       today,
       mastered: masteredLanguages().map((l) => l.code).toSet(),
+      counts: {
+        'langs': stats.langsWon.length,
+        'mastered': masteredLanguages().length,
+        'completed': completedLanguages().length,
+      },
+      languages: (WordBank.loadedLanguages ?? const <Language>[]).length,
     );
-    final ids = {for (final a in achievements.where((a) => a.global)) a.id};
+    final ids = {for (final a in allAchievements.where((a) => a.global)) a.id};
     for (final e in view.entries) {
       if (ids.contains(e.key)) {
         _globalAch[e.key] = e.value;

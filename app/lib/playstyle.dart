@@ -44,8 +44,7 @@ enum Behaviour {
 
   /// What it is, in a line.
   String get what => switch (this) {
-    gambler =>
-      'you gambled on the tail: usually less than expected, sometimes much more',
+    gambler => 'you gambled on the tail: usually less than expected, sometimes much more',
     maximiser => 'you played one of the best splits',
     eliminator => 'you used fresh letters to clear the board',
     closer => 'you went for the word',

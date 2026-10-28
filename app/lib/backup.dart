@@ -51,12 +51,15 @@ class Backup {
   final Map<String, AchState> achievements;
 
   /// How many different achievements it has earned, in every language.
-  int get earned =>
-      achievements.values.where((s) => s.times > 0).length +
-      (languages?.values ?? const <LanguageKept>[]).fold(
-        0,
-        (n, k) => n + k.achievements.values.where((s) => s.times > 0).length,
-      );
+  int get earned {
+    int count(Map<String, AchState> m) =>
+        shownAchievements.where((a) => (m[a.id]?.times ?? 0) > 0).length;
+    return count(achievements) +
+        (languages?.values ?? const <LanguageKept>[]).fold(
+          0,
+          (n, k) => n + count(k.achievements),
+        );
+  }
 }
 
 /// The backup of what [state] holds now, as the text of the file.
@@ -140,7 +143,7 @@ Backup parseBackup(String text) {
     final all = _achievements(raw['achievements']);
     final history = _history(raw['history']);
     final isGlobal = {
-      for (final a in achievements.where((a) => a.global)) a.id,
+      for (final a in allAchievements.where((a) => a.global)) a.id,
     };
     Map<String, LanguageKept>? languages;
     if (raw['languages'] != null) {
@@ -269,7 +272,7 @@ Stats _stats(Object? raw) {
 Map<String, AchState> _achievements(Object? raw) {
   if (raw == null) return {};
   if (raw is! Map) _bad('achievements');
-  final known = {for (final a in achievements) a.id};
+  final known = {for (final a in allAchievements) a.id};
   final out = <String, AchState>{};
   for (final e in raw.entries) {
     // an achievement this version does not have is left out, not an error

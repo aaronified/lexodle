@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'logic.dart';
+import 'medal.dart';
 import 'words.dart';
+
+export 'medal.dart' show Medal;
 
 /// How strongly secondary text (captions, notes) shows against the page: dim,
 /// but still readable (4.5:1) in both themes.
@@ -69,8 +72,10 @@ Color metricColor(ColorScheme c, String which) => switch (which) {
 List<InlineSpan> measureSpans(ColorScheme c, String text) {
   final spans = <InlineSpan>[];
   var at = 0;
-  for (final m in RegExp(r'\b(skill|luck|risk)\b', caseSensitive: false)
-      .allMatches(text)) {
+  for (final m in RegExp(
+    r'\b(skill|luck|risk)\b',
+    caseSensitive: false,
+  ).allMatches(text)) {
     if (m.start > at) spans.add(TextSpan(text: text.substring(at, m.start)));
     spans.add(
       TextSpan(
@@ -97,9 +102,6 @@ Widget measureText(
   style: style,
   textAlign: textAlign,
 );
-
-/// The four medals of an achievement, easiest first.
-enum Medal { bronze, silver, gold, platinum }
 
 Color medalColor(ColorScheme c, Medal m) {
   final dark = c.brightness == Brightness.dark;

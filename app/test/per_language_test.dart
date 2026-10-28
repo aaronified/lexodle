@@ -112,14 +112,14 @@ void main() {
   test('achievements count in the language they were earned in', () async {
     final s = AppState();
     await s.load();
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 25; i++) {
       s.recordGame(won('en'));
     }
     s.recordGame(won('fr'));
-    // ten wins in English earn "regular"; French has had one
-    expect(s.achOf('en')['wins_10']!.times, 1);
-    expect(s.achOf('fr')['wins_10']!.times, 0);
-    expect(s.achOf('fr')['wins_10']!.progress, 1);
+    // 25 wins in English earn "regular"; French has had one
+    expect(s.achOf('en')['wins_25']!.times, 1);
+    expect(s.achOf('fr')['wins_25']!.times, 0);
+    expect(s.achOf('fr')['wins_25']!.value, 1);
     expect(s.achOf('fr')['first_light']!.times, 1);
     // the ones that span languages are shared, and see both
     expect(s.achOf('en')['bilingual']!.times, 1);
@@ -131,7 +131,7 @@ void main() {
     // and which are shared is a property of the achievement
     expect(achievementById('bilingual')!.global, isTrue);
     expect(achievementById('mastery')!.global, isTrue);
-    expect(achievementById('wins_10')!.global, isFalse);
+    expect(achievementById('wins_25')!.global, isFalse);
   });
 
   test('all of it is saved, and read back, per language', () async {
