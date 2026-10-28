@@ -5,6 +5,7 @@ import 'package:lexodle/daily.dart';
 import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/playstyle_card.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/multi_review.dart';
 import 'package:lexodle/period_chart.dart';
@@ -94,7 +95,28 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('with no games it says so, and says why there is no style', (
+  /// The playstyle card on its own (it is not on the history page).
+  Future<void> showCard(WidgetTester tester, History h) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1900));
+    await appState.load();
+    appState.lang = 'fr';
+    appState.history = h;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ListenableBuilder(
+              listenable: appState,
+              builder: (context, _) => PlaystyleCard('fr'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+  }
+
+  testWidgets('with no games it says so, and the history has no playstyle', (
     tester,
   ) async {
     await load(tester);
@@ -102,6 +124,8 @@ void main() {
     await show(tester, History());
     expect(find.text('no games yet'), findsOneWidget);
     expect(find.textContaining('finish a game'), findsOneWidget);
+    expect(find.byKey(const ValueKey('profile')), findsNothing);
+    await showCard(tester, History());
     expect(
       textOf(tester.widget<Text>(find.byKey(const ValueKey('profile-name')))),
       'not rated yet',
@@ -219,7 +243,7 @@ void main() {
       appState.styleId = 'analyst';
       appState.stylesHeld = {'analyst', 'maverick'};
       appState.styleChanges = 1;
-      await show(tester, h);
+      await showCard(tester, h);
       appState.styleId = 'analyst';
       appState.stylesHeld = {'analyst', 'maverick'};
       appState.styleChanges = 1;
@@ -311,7 +335,16 @@ void main() {
     appState.styleId = null;
     appState.stylesHeld = {};
     await tester.pumpWidget(
-      const MaterialApp(home: HistoryPage(), onGenerateRoute: onGenerateRoute),
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ListenableBuilder(
+              listenable: appState,
+              builder: (context, _) => PlaystyleCard('fr'),
+            ),
+          ),
+        ),
+      ),
     );
     await tester.pump();
     for (final p in playstyles) {
@@ -492,10 +525,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('playstyle-history')));
     await tester.pumpAndSettle();
     expect(find.byType(HistoryPage), findsOneWidget);
-    expect(
-      textOf(tester.widget<Text>(find.byKey(const ValueKey('profile-name')))),
-      'maverick',
-    );
+    expect(find.byKey(const ValueKey('profile-name')), findsNothing);
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.byType(HistoryPage), findsNothing);
@@ -888,34 +918,6 @@ void main() {
       game(h, DateTime(2026, 10, 24));
       await show(tester, h);
       expect(find.byKey(const ValueKey('period-change')), findsNothing);
-    });
-
-    testWidgets('a week that played like a style says which', (tester) async {
-      await load(tester);
-      final h = History();
-      for (var i = 0; i < 12; i++) {
-        game(
-          h,
-          DateTime(2026, 10, 24),
-          rows: [
-            for (var k = 0; k < 4; k++)
-              GuessRow(
-                game: 0,
-                n: k,
-                word: pool[k + 1],
-                skill: 95,
-                risk: 10,
-                before: k < 2 ? 500 : 8,
-                after: k < 2 ? 200 : 3,
-                rank: k < 2 ? 2 : 3,
-                fresh: 1,
-              ),
-          ],
-        );
-      }
-      await show(tester, h);
-      expect(text(tester, 'period-style'), 'played like a analyst');
-      expect(find.byKey(const ValueKey('period-style')), findsOneWidget);
     });
 
     testWidgets('no history: the chart is there, empty, and says so', (

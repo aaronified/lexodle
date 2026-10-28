@@ -67,27 +67,44 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
   }) {
     final n = h.opportunities[b.phase] ?? 0;
     final k = h.counts[b] ?? 0;
-    final color = habit ? c.primary : c.onSurface.withValues(alpha: dimAlpha);
+    final own = behaviourColor(c, b.label);
+    final color = habit ? own : own.withValues(alpha: .6);
+    final share = n == 0 ? 0.0 : h.share(b);
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Row(
+      padding: const EdgeInsets.only(top: 6),
+      child: Column(
         key: ValueKey('habit-${b.label}'),
         children: [
-          TablerIcon(b.icon, size: 18, color: color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              b.label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: habit ? FontWeight.bold : FontWeight.normal,
-                color: habit ? null : color,
+          Row(
+            children: [
+              TablerIcon(b.icon, size: 18, color: color),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  b.label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: habit ? FontWeight.bold : FontWeight.normal,
+                    color: color,
+                  ),
+                ),
               ),
-            ),
+              Text(
+                n == 0 ? '–' : '${(share * 100).round()}%  ($k of $n)',
+                style: TextStyle(fontSize: 12, color: color),
+              ),
+            ],
           ),
-          Text(
-            n == 0 ? '–' : '${(h.share(b) * 100).round()}%  ($k of $n)',
-            style: TextStyle(fontSize: 12, color: color),
+          const SizedBox(height: 3),
+          // the share of the phase's guesses, in the behaviour's colour
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: share,
+              minHeight: 3,
+              color: color,
+              backgroundColor: c.outlineVariant.withValues(alpha: .5),
+            ),
           ),
         ],
       ),
@@ -147,7 +164,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
               size: 44,
               color: p == null
                   ? c.onSurface.withValues(alpha: dimAlpha)
-                  : c.primary,
+                  : behaviourColor(c, p.early.label),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -260,7 +277,11 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TablerIcon(b.icon, size: 16, color: c.primary),
+                    TablerIcon(
+                      b.icon,
+                      size: 16,
+                      color: behaviourColor(c, b.label),
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       b.phase == Phase.early
@@ -461,7 +482,11 @@ class _StyleDot extends StatelessWidget {
           child: Column(
             children: [
               if (held || current)
-                TablerIcon(style.icon, size: 24, color: c.primary)
+                TablerIcon(
+                  style.icon,
+                  size: 24,
+                  color: behaviourColor(c, style.early.label),
+                )
               else
                 SizedBox(
                   height: 24,

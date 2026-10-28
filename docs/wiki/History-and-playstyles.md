@@ -11,16 +11,16 @@ finishing a game rewrites one month, not the whole record. The history is in the
 
 ## The history page
 
-Tap your playstyle on the home screen. A row of flags picks the language (see
-[Languages](Languages)); the page is about that language. It has:
+Tap the history button on the playstyle card (the playstyle button on the home screen opens
+it). A row of flags picks the language (see [Languages](Languages)); the page is about that
+language. It has:
 
-- the playstyle, and what it is read from;
 - an **overall** analysis of every game, however many (games, won, skill, risk, luck, guesses
   to win);
 - **how play changed**: a line each for skill, luck and risk over the last 50 weeks (rolling
   seven-day windows ending today) or the last 50 months, with a gap where nothing was played. Tap
   or drag along it to pick a period and see its games, its numbers, the change on the last period
-  you played, and the playstyle that period alone would have. Luck is drawn about the middle
+  you played. Luck is drawn about the middle
   line, which is a luck of 0; see [Skill, luck and risk](Skill-luck-and-risk);
 - the games, newest first: **the last ten, and "load 10 more" as you need them**. Each opens its
   review, rebuilt from the guesses alone.

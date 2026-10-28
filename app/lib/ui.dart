@@ -67,6 +67,17 @@ Color metricColor(ColorScheme c, String which) => switch (which) {
   _ => riskColor(c),
 };
 
+/// The colour of a playstyle behaviour: a gambler is risk's green, a maximiser
+/// skill's blue, an eliminator bits' violet, a closer luck's yellow, a prober the
+/// accent. A style takes the colour of its early habit.
+Color behaviourColor(ColorScheme c, String label) => switch (label) {
+  'gambler' => riskColor(c),
+  'maximiser' => skillColor(c),
+  'eliminator' => bitsColor(c),
+  'closer' => luckColor(c),
+  _ => c.primary,
+};
+
 /// [text] with the words skill, luck and risk (and only those) in their own
 /// colours, wherever they stand in it. Returns spans to put in a [Text.rich].
 List<InlineSpan> measureSpans(ColorScheme c, String text) {
