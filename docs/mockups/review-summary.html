@@ -204,7 +204,7 @@ function plot(g) {
     if (i === g.landed) {
       const cx = x + w / 2;
       bars += '<rect x="' + x.toFixed(2) + '" y="' + y(v).toFixed(2) + '" width="' + Math.max(w - .4, 1.5).toFixed(2) + '" height="' + Math.max(T + ph - y(v), 1.5).toFixed(2) + '" fill="none" stroke="var(--fg)" stroke-width="2"/>';
-      mark = '<path d="M' + (cx - 5) + ' ' + (T + ph + 12) + ' L' + (cx + 5) + ' ' + (T + ph + 12) + ' L' + cx + ' ' + (T + ph + 4) + ' Z" fill="var(--fg)"/><text x="' + Math.min(Math.max(cx, L + 14), W_ - R - 14) + '" y="' + (T + ph + 24) + '" text-anchor="middle" style="fill:var(--fg)">you</text>';
+      mark = '<path d="M' + (cx - 5) + ' ' + (T + ph + 12) + ' L' + (cx + 5) + ' ' + (T + ph + 12) + ' L' + cx + ' ' + (T + ph + 4) + ' Z" fill="var(--fg)"/><text x="' + Math.min(Math.max(cx, L + 14), W_ - R - 14) + '" y="' + (T + ph + 24) + '" text-anchor="middle" style="fill:var(--fg)">' + g.word.toLowerCase() + '</text>';
     }
     x += w;
   });
@@ -235,7 +235,7 @@ function waterfall(list, upto) {
   for (let t = 0; t <= top; t += 2) s += '<line x1="' + sx(t) + '" x2="' + sx(t) + '" y1="18" y2="' + (H - 20) + '" stroke="var(--outlinev)"/><text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>';
   list.slice(0, rows).forEach((g, i) => {
     const y = i * rowH + 26, h = 14, st = cum, end = cum + g.gain, exp = st + g.H;
-    s += '<text x="0" y="' + (y + 11) + '"' + (i === upto ? ' style="fill:var(--fg);font-weight:700"' : '') + '>' + (i + 1) + ' ' + g.word + '</text>';
+    s += '<text x="0" y="' + (y + 11) + '"' + (i === upto ? ' style="fill:var(--fg);font-weight:700"' : '') + '>' + (i + 1) + ' ' + g.word.toLowerCase() + '</text>';
     if (i < upto) s += '<line x1="' + sx(end) + '" x2="' + sx(end) + '" y1="' + (y + h) + '" y2="' + (y + rowH) + '" stroke="var(--dim)"/>';
     s += '<rect x="' + sx(st) + '" y="' + y + '" width="' + Math.max(sx(Math.min(exp, end)) - sx(st), 0.5) + '" height="' + h + '" fill="var(--skill)"/>';
     if (g.bLuck > 0.005) s += '<rect x="' + sx(exp) + '" y="' + y + '" width="' + (sx(end) - sx(exp)) + '" height="' + h + '" fill="var(--luck)"/>';
