@@ -226,7 +226,9 @@ class _ReviewPageState extends State<ReviewPage> {
                         const SizedBox(height: 4),
                         Caption('the word was ${r.answer}'),
                         const SizedBox(height: 14),
-                        _pills(c, m),
+                        const Caption('the whole game'),
+                        const SizedBox(height: 6),
+                        _pills(c),
                         const SizedBox(height: 16),
                         _board(c),
                         const SizedBox(height: 18),
@@ -317,9 +319,21 @@ class _ReviewPageState extends State<ReviewPage> {
   );
 
   /// The four numbers of the guess, each a pill that explains itself on tap.
-  Widget _pills(ColorScheme c, GuessMetrics m) {
-    final ready = m.ready;
-    final bits = m.gain;
+  Widget _pills(ColorScheme c) {
+    final all = [for (var i = 0; i < r.guesses.length; i++) metric(i)];
+    final ready = all.every((m) => m.ready);
+    double mean(double Function(GuessMetrics) f) =>
+        all.fold<double>(0, (a, m) => a + f(m)) / all.length;
+    final risks = [
+      for (final m in all)
+        if (m.risk != null) m.risk!,
+    ];
+    final skill = mean((m) => m.skill), luck = mean((m) => m.luck);
+    final risk = risks.isEmpty
+        ? null
+        : risks.fold<double>(0, (a, b) => a + b) / risks.length;
+    final bits = all.fold<double>(0, (a, m) => a + m.gain);
+    final expected = all.fold<double>(0, (a, m) => a + m.expectedGain);
     Widget pill(String which, String value, String text) => Expanded(
       child: InkWell(
         key: ValueKey('pill-$which'),
@@ -367,17 +381,17 @@ class _ReviewPageState extends State<ReviewPage> {
     );
     return Row(
       children: [
-        pill('skill', ready ? '${m.skill.round()}' : '…', skillLine(m.skill)),
+        pill('skill', ready ? '${skill.round()}' : '…', skillLine(skill)),
         const SizedBox(width: 8),
-        pill('luck', signedLuck(m.luck), luckLine(m.luck)),
+        pill('luck', signedLuck(luck), luckLine(luck)),
         const SizedBox(width: 8),
         pill(
           'risk',
-          !ready ? '…' : (m.risk == null ? '–' : '${m.risk!.round()}'),
-          riskLine(m.risk),
+          !ready ? '…' : (risk == null ? '–' : '${risk.round()}'),
+          riskLine(risk),
         ),
         const SizedBox(width: 8),
-        pill('bits', bits.toStringAsFixed(2), bitsLine(bits, m.expectedGain)),
+        pill('bits', bits.toStringAsFixed(2), bitsLine(bits, expected)),
       ],
     );
   }
@@ -395,9 +409,9 @@ class _ReviewPageState extends State<ReviewPage> {
   /// The board with the table beside it. Guesses after the current step stay
   /// blank, so stepping through gives nothing away.
   Widget _board(ColorScheme c) {
-    const colW = 52.0;
+    const wordsW = 60.0, skillW = 32.0, riskW = 62.0;
     const gap = 2.0;
-    const padX = 10.0, padY = 7.0;
+    const padX = 8.0, padY = 7.0;
     final head = TextStyle(
       fontSize: 9,
       letterSpacing: .4,
@@ -413,9 +427,11 @@ class _ReviewPageState extends State<ReviewPage> {
     }) => Text(
       t,
       key: key,
+      maxLines: 1,
+      softWrap: false,
       textAlign: TextAlign.right,
       style: TextStyle(
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: strong ? FontWeight.bold : FontWeight.normal,
         color: color != null
             ? (strong ? color : color.withValues(alpha: dimmed ? .5 : .75))
@@ -427,7 +443,7 @@ class _ReviewPageState extends State<ReviewPage> {
 
     return LayoutBuilder(
       builder: (context, box) {
-        final area = box.maxWidth - colW * 3 - 56 - padX * 2;
+        final area = box.maxWidth - wordsW - skillW - riskW - 8 - padX * 2;
         final tile = min(30.0, (area - gap * (r.length - 1)) / r.length);
         return Column(
           children: [
@@ -437,7 +453,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 children: [
                   const Spacer(),
                   SizedBox(
-                    width: colW + 12,
+                    width: wordsW,
                     child: Text(
                       'words',
                       textAlign: TextAlign.right,
@@ -445,7 +461,7 @@ class _ReviewPageState extends State<ReviewPage> {
                     ),
                   ),
                   SizedBox(
-                    width: colW,
+                    width: skillW,
                     child: Text(
                       'skill',
                       key: const ValueKey('head-skill'),
@@ -454,7 +470,7 @@ class _ReviewPageState extends State<ReviewPage> {
                     ),
                   ),
                   SizedBox(
-                    width: colW + 28,
+                    width: riskW,
                     child: Text(
                       'risk',
                       key: const ValueKey('head-risk'),
@@ -499,17 +515,11 @@ class _ReviewPageState extends State<ReviewPage> {
                         ),
                       const Spacer(),
                       if (i <= step)
-                        ..._rowCells(c, i, colW, cell)
+                        ..._rowCells(c, i, wordsW, skillW, riskW, cell)
                       else ...[
-                        SizedBox(
-                          width: colW + 12,
-                          child: cell('–', dimmed: true),
-                        ),
-                        SizedBox(width: colW, child: cell('–', dimmed: true)),
-                        SizedBox(
-                          width: colW + 28,
-                          child: cell('–', dimmed: true),
-                        ),
+                        SizedBox(width: wordsW, child: cell('–', dimmed: true)),
+                        SizedBox(width: skillW, child: cell('–', dimmed: true)),
+                        SizedBox(width: riskW, child: cell('–', dimmed: true)),
                       ],
                     ],
                   ),
@@ -530,7 +540,9 @@ class _ReviewPageState extends State<ReviewPage> {
   List<Widget> _rowCells(
     ColorScheme c,
     int i,
-    double colW,
+    double wordsW,
+    double skillW,
+    double riskW,
     Widget Function(String, {bool strong, bool dimmed, Color? color, Key? key})
     cell,
   ) {
@@ -539,7 +551,7 @@ class _ReviewPageState extends State<ReviewPage> {
     final b = m.ready ? behaviourOf(guessRowOf(i + 1, m)) : null;
     return [
       SizedBox(
-        width: colW + 12,
+        width: wordsW,
         child: cell(
           '${m.before}→${m.after}',
           strong: strong,
@@ -548,7 +560,7 @@ class _ReviewPageState extends State<ReviewPage> {
         ),
       ),
       SizedBox(
-        width: colW,
+        width: skillW,
         child: cell(
           m.ready ? m.skill.round().toString() : '…',
           strong: strong,
@@ -558,50 +570,56 @@ class _ReviewPageState extends State<ReviewPage> {
         ),
       ),
       SizedBox(
-        width: colW + 28,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            _luckChevrons(c, m.luck, strong),
-            const SizedBox(width: 4),
-            cell(
-              !m.ready
-                  ? '…'
-                  : (m.risk == null ? '–' : m.risk!.round().toString()),
-              strong: strong,
-              dimmed: dimmed,
-              color: riskColor(c),
-              key: ValueKey('risk-$i'),
-            ),
-            SizedBox(
-              width: 16,
-              child: b == null
-                  ? null
-                  : GestureDetector(
-                      key: ValueKey('type-$i'),
-                      onTap: () => showHairlineDialog<void>(
-                        context,
-                        title: b.label,
-                        children: [
-                          Text(
-                            b.what,
-                            style: const TextStyle(fontSize: 13, height: 1.5),
+        width: riskW,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerRight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _luckChevrons(c, m.luck, strong),
+              const SizedBox(width: 4),
+              cell(
+                !m.ready
+                    ? '…'
+                    : (m.risk == null ? '–' : m.risk!.round().toString()),
+                strong: strong,
+                dimmed: dimmed,
+                color: riskColor(c),
+                key: ValueKey('risk-$i'),
+              ),
+              SizedBox(
+                width: 16,
+                child: b == null
+                    ? null
+                    : GestureDetector(
+                        key: ValueKey('type-$i'),
+                        onTap: () => showHairlineDialog<void>(
+                          context,
+                          title: b.label,
+                          children: [
+                            Text(
+                              b.what,
+                              style: const TextStyle(fontSize: 13, height: 1.5),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'counted when: ${b.rule}',
+                              style: const TextStyle(fontSize: 12, height: 1.5),
+                            ),
+                          ],
+                        ),
+                        child: TablerIcon(
+                          b.icon,
+                          size: 14,
+                          color: c.onSurface.withValues(
+                            alpha: dimmed ? .4 : .7,
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'counted when: ${b.rule}',
-                            style: const TextStyle(fontSize: 12, height: 1.5),
-                          ),
-                        ],
+                        ),
                       ),
-                      child: TablerIcon(
-                        b.icon,
-                        size: 14,
-                        color: c.onSurface.withValues(alpha: dimmed ? .4 : .7),
-                      ),
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     ];
