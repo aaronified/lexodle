@@ -175,7 +175,7 @@ void main() {
                 find.byKey(const ValueKey('pill-value-luck')),
               ),
             ),
-            '+40',
+            '+3', // the mean over the game: (40 - 30 + 0) / 3
           );
           await tester.pump(const Duration(seconds: 40));
         },

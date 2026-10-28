@@ -137,7 +137,7 @@ void main() {
     testWidgets('the four pills show skill, luck, risk and bits', (
       tester,
     ) async {
-      await open(tester, 0);
+      await open(tester, record.guesses.length - 1);
       for (final k in ['skill', 'luck', 'risk', 'bits']) {
         expect(find.byKey(ValueKey('pill-$k')), findsOneWidget, reason: k);
       }
@@ -147,14 +147,14 @@ void main() {
         )!,
       );
       expect(skill, inInclusiveRange(0, 100));
-      final land = await tester.runAsync(
-        () => analyseGuesses(
-          record.befores[0],
-          bank.guessable(4),
-          answer: answer,
-        ),
-      );
-      expect(skill, record.metrics[0].withLandscape(land!).skill.round());
+      // the pill is the game's: the mean of the skills in the table
+      final rows = [
+        for (var i = 0; i < record.guesses.length; i++)
+          double.parse(
+            textOf(tester.widget<Text>(find.byKey(ValueKey('skill-$i'))))!,
+          ),
+      ];
+      expect(skill, closeTo(rows.reduce((a, b) => a + b) / rows.length, 1));
       await tester.tap(find.byKey(const ValueKey('pill-skill')));
       await tester.pumpAndSettle();
       expect(find.textContaining('expected to gain'), findsOneWidget);

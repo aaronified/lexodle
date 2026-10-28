@@ -388,28 +388,23 @@ void main() {
     });
 
     testWidgets('the numbers in the pills are the table\'s', (tester) async {
-      await open(tester, 0);
-      final m = record.metrics[0];
-      final land = await tester.runAsync(
-        () => analyseGuesses(
-          record.befores[0],
-          bank.guessable(4),
-          answer: record.answer,
-        ),
-      );
-      final skill = m.withLandscape(land!).skill.round();
-      expect(
+      await open(tester, record.guesses.length - 1);
+      final rows = [
+        for (var i = 0; i < record.guesses.length; i++)
+          double.parse(
+            textOf(tester.widget<Text>(find.byKey(ValueKey('skill-$i'))))!,
+          ),
+      ];
+      final skill = int.parse(
         textOf(
           tester.widget<Text>(find.byKey(const ValueKey('pill-value-skill'))),
-        ),
-        '$skill',
+        )!,
       );
+      // the pill is the game's: the mean of the skills in the table
+      expect(skill, closeTo(rows.reduce((a, b) => a + b) / rows.length, 1));
       await tester.tap(find.byKey(const ValueKey('pill-luck')));
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining(luckLine(m.luck).split(':').first),
-        findsOneWidget,
-      );
+      expect(find.textContaining('the clues'), findsWidgets);
     });
 
     testWidgets('links open the wiki: pills, picks', (tester) async {
