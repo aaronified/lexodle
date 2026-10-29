@@ -274,7 +274,6 @@ raar	47863
 vóór	47863
 ware	47863
 wint	47863
-gent	46773
 leeg	46773
 stof	46773
 time	46773
@@ -478,7 +477,6 @@ tong	16218
 wang	16218
 dirk	15848
 gave	15848
-here	15848
 luis	15848
 meen	15848
 vice	15848
@@ -583,7 +581,6 @@ grof	10232
 item	10232
 kook	10232
 leve	10232
-nice	10232
 nova	10232
 trip	10232
 yang	10232
@@ -605,7 +602,6 @@ adel	9772
 cash	9772
 chip	9772
 inkt	9772
-lake	9772
 noot	9772
 rico	9772
 saus	9772
@@ -649,7 +645,6 @@ veen	8709
 borg	8511
 inch	8511
 kist	8511
-otto	8511
 riem	8511
 zong	8511
 ambt	8317
@@ -805,11 +800,9 @@ uien	5370
 volt	5370
 werf	5370
 card	5248
-dale	5248
 doof	5248
 duif	5248
 joel	5248
-kane	5248
 kool	5248
 mans	5248
 méér	5248
@@ -832,7 +825,6 @@ tang	5128
 coca	5011
 duin	5011
 eden	5011
-ende	5011
 snij	5011
 walk	5011
 zond	5011
@@ -847,7 +839,6 @@ vega	4897
 bale	4786
 boeg	4786
 cape	4786
-hein	4786
 milf	4786
 poel	4786
 rauw	4786
@@ -942,7 +933,6 @@ mast	3801
 poep	3801
 slow	3801
 tree	3801
-yuri	3801
 boem	3715
 font	3715
 hooi	3715
@@ -958,7 +948,6 @@ aten	3630
 duet	3630
 hank	3630
 kado	3630
-mont	3630
 nier	3630
 push	3630
 turk	3630
@@ -1051,9 +1040,7 @@ mavo	2884
 maïs	2884
 blom	2818
 boor	2818
-born	2818
 gare	2818
-hale	2818
 heat	2818
 lokt	2818
 moor	2818
@@ -1158,7 +1145,6 @@ perm	2238
 quad	2238
 stek	2238
 waas	2238
-bibi	2187
 flop	2187
 harp	2187
 lhbt	2187
@@ -1204,7 +1190,6 @@ mare	1995
 mimi	1995
 rosé	1995
 zéér	1995
-aron	1949
 bieb	1949
 bono	1949
 gaal	1949
@@ -1287,7 +1272,6 @@ gade	1659
 gist	1659
 hate	1659
 knik	1659
-maja	1659
 remt	1659
 sofa	1659
 stik	1659
@@ -1310,7 +1294,6 @@ woog	1621
 geul	1584
 hasj	1584
 kruk	1584
-lone	1584
 snee	1584
 stug	1584
 tsja	1584
@@ -1323,7 +1306,6 @@ lult	1548
 pelt	1548
 spat	1548
 weeg	1548
-aden	1513
 berm	1513
 cité	1513
 gunt	1513
@@ -1412,7 +1394,6 @@ milt	1318
 silo	1318
 tint	1318
 vlog	1318
-aert	1288
 babs	1288
 bulk	1288
 colt	1288
@@ -1449,7 +1430,6 @@ galg	1202
 huls	1202
 kous	1202
 arbo	1174
-esch	1174
 geer	1174
 hiel	1174
 kuit	1174
@@ -1458,7 +1438,6 @@ rave	1174
 spui	1174
 toga	1174
 wéér	1174
-zaan	1174
 zwam	1174
 bies	1148
 boks	1148
@@ -1470,7 +1449,6 @@ hiep	1148
 joeg	1148
 krop	1148
 limo	1148
-loek	1148
 mets	1148
 sick	1148
 toet	1148
@@ -1525,7 +1503,6 @@ dojo	1000
 ibis	1000
 icon	1000
 mort	1000
-pino	1000
 prei	1000
 roti	1000
 toko	1000
@@ -1616,7 +1593,6 @@ sire	812
 stud	812
 wilg	812
 cops	794
-dees	794
 fret	794
 gilt	794
 holm	794
@@ -1642,7 +1618,6 @@ velo	776
 voed	776
 wink	776
 yogi	776
-zijl	776
 acta	758
 bock	758
 enen	758
@@ -1718,12 +1693,10 @@ joon	660
 lino	660
 lire	660
 luit	660
-oder	660
 veil	660
 allo	645
 brut	645
 cocu	645
-dede	645
 eelt	645
 erts	645
 hurk	645
@@ -1739,12 +1712,10 @@ jonk	630
 leun	630
 peet	630
 sera	630
-soma	630
 beng	616
 crea	616
 gokt	616
 hels	616
-kats	616
 loom	616
 mulo	616
 nous	616
@@ -1797,7 +1768,6 @@ lijd	562
 slop	562
 ween	562
 werp	562
-deva	549
 doeg	549
 dooi	549
 iglo	549
@@ -1874,7 +1844,6 @@ guts	478
 heul	478
 tipi	478
 trog	478
-vere	478
 wege	478
 bede	467
 hors	467
@@ -1886,7 +1855,6 @@ logs	467
 maki	467
 pets	467
 raat	467
-raja	467
 rooi	467
 zoop	467
 faas	457
@@ -2012,7 +1980,6 @@ wrat	354
 zona	354
 alen	346
 alia	346
-asch	346
 grut	346
 gust	346
 locs	346
@@ -2127,7 +2094,6 @@ fiep	269
 goth	269
 lick	269
 louw	269
-lugt	269
 soli	269
 toek	269
 tuut	269
@@ -2190,7 +2156,6 @@ trot	234
 vijl	234
 wart	234
 zuip	234
-eise	229
 faun	229
 fini	229
 hesp	229
@@ -2250,11 +2215,9 @@ oled	199
 paap	199
 vamp	199
 ónze	199
-esma	194
 fust	194
 kina	194
 krek	194
-lene	194
 nekt	194
 prio	194
 rips	194
@@ -2263,7 +2226,6 @@ zwei	194
 aalt	190
 emoe	190
 gels	190
-goei	190
 tapa	190
 hork	186
 koer	186
@@ -2291,7 +2253,6 @@ ambo	177
 budo	177
 daas	177
 goog	177
-hake	177
 hijg	177
 ipso	177
 krot	177
@@ -2342,7 +2303,6 @@ kram	154
 moot	154
 mops	154
 pare	154
-wage	154
 wiek	154
 baad	151
 elco	151
@@ -2399,11 +2359,9 @@ weef	131
 albe	128
 bokt	128
 kola	128
-roke	128
 tabs	128
 timp	128
 tuil	128
-wede	128
 zerk	128
 baäl	125
 blub	125
@@ -2592,7 +2550,6 @@ jolt	63
 jure	63
 reut	63
 weck	63
-yurt	63
 zate	63
 alef	61
 kudo	61
@@ -2653,7 +2610,6 @@ axon	51
 klis	51
 kwee	51
 lota	51
-oudt	51
 glom	50
 gymp	50
 kiep	50
@@ -2666,7 +2622,6 @@ fels	48
 kuru	48
 lant	48
 rins	48
-tams	48
 tijk	48
 adat	47
 dimt	47
@@ -2689,7 +2644,6 @@ moef	45
 muon	45
 poer	45
 vijs	45
-bade	44
 melm	44
 oeds	44
 rije	44
@@ -2751,11 +2705,9 @@ beur	33
 exil	33
 geut	33
 hikt	33
-serf	33
 wief	33
 boud	32
 hokt	32
-leke	32
 ooft	32
 peur	32
 reil	32
@@ -2815,13 +2767,11 @@ feut	25
 fint	25
 geep	25
 gons	25
-olij	25
 pote	25
 prae	25
 pref	25
 taxa	25
 tels	25
-tist	25
 woel	25
 wone	25
 guit	25
@@ -2837,7 +2787,6 @@ lifo	24
 lijs	24
 mant	24
 veem	24
-bool	23
 ript	23
 taar	23
 ulle	23
@@ -2925,7 +2874,6 @@ greb	15
 eken	15
 faxe	15
 koes	15
-vels	15
 hemt	15
 luwt	15
 nege	15
@@ -2939,8 +2887,6 @@ gape	14
 ijkt	14
 zift	14
 thio	13
-fale	13
-zoor	13
 apin	12
 cier	12
 duwe	12
@@ -3389,7 +3335,6 @@ koers	28183
 vecht	28183
 wijst	28183
 bodem	27542
-bosch	27542
 green	27542
 kerst	27542
 plaat	27542
@@ -3775,7 +3720,6 @@ ophef	8511
 pasta	8511
 prooi	8511
 right	8511
-zonne	8511
 asiel	8317
 crash	8317
 daten	8317
@@ -3856,7 +3800,6 @@ money	7079
 naald	7079
 vangt	7079
 worst	7079
-zeist	7079
 anita	6918
 board	6918
 claim	6918
@@ -3866,7 +3809,6 @@ fauna	6918
 godin	6918
 kroeg	6918
 movie	6918
-pasen	6918
 races	6918
 sliep	6918
 soest	6918
@@ -4113,7 +4055,6 @@ daisy	4265
 error	4265
 issue	4265
 major	4265
-mieke	4265
 neven	4265
 pools	4265
 redde	4265
@@ -4287,7 +4228,6 @@ wagon	3235
 échte	3235
 crime	3162
 darts	3162
-douwe	3162
 menig	3162
 piste	3162
 shake	3162
@@ -4306,7 +4246,6 @@ serum	3090
 vanop	3090
 chick	3019
 enter	3019
-etten	3019
 fases	3019
 friet	3019
 kunde	3019
@@ -4393,7 +4332,6 @@ madam	2570
 manga	2570
 ouden	2570
 schap	2570
-seine	2570
 smeek	2570
 aaien	2511
 algen	2511
@@ -4431,7 +4369,6 @@ vreet	2454
 waken	2454
 wekte	2454
 aston	2398
-damme	2398
 dover	2398
 franc	2398
 kever	2398
@@ -4451,7 +4388,6 @@ femme	2344
 gemis	2344
 glimp	2344
 heuse	2344
-hooge	2344
 infra	2344
 komma	2344
 large	2344
@@ -4506,7 +4442,6 @@ wierp	2187
 babes	2137
 beval	2137
 boxer	2137
-kraft	2137
 kramp	2137
 kuste	2137
 leder	2137
@@ -4668,7 +4603,6 @@ zeden	1698
 besta	1659
 corso	1659
 griek	1659
-heils	1659
 knaap	1659
 korst	1659
 krans	1659
@@ -4685,7 +4619,6 @@ zenuw	1659
 animo	1621
 cargo	1621
 funky	1621
-hazel	1621
 pacht	1621
 proxy	1621
 puree	1621
@@ -4705,7 +4638,6 @@ ruimt	1584
 spies	1584
 tyfus	1584
 watje	1584
-welle	1584
 zeges	1584
 zitje	1584
 aders	1548
@@ -4821,7 +4753,6 @@ hazen	1288
 klerk	1288
 rijmt	1288
 snede	1288
-stede	1288
 stikt	1288
 tijds	1288
 trias	1288
@@ -4920,11 +4851,9 @@ hertz	1122
 huist	1122
 junta	1122
 keien	1122
-lasse	1122
 lolly	1122
 oksel	1122
 pronk	1122
-suske	1122
 blikt	1096
 drost	1096
 eters	1096
@@ -4961,7 +4890,6 @@ reply	1047
 botje	1023
 dogma	1023
 fobie	1023
-fokke	1023
 forma	1023
 heelt	1023
 koelt	1023
@@ -5020,23 +4948,19 @@ sheet	977
 waart	977
 wende	977
 zegde	977
-zenne	977
 zoent	977
 belet	954
 blaak	954
 blink	954
 eland	954
 fabel	954
-geens	954
 getij	954
-hanze	954
 heisa	954
 mambo	954
 opgaf	954
 overs	954
 pence	954
 piept	954
-quint	954
 schei	954
 shops	954
 tutti	954
@@ -5070,7 +4994,6 @@ runde	912
 sluwe	912
 trips	912
 verve	912
-zoude	912
 caddy	891
 cools	891
 deler	891
@@ -5114,7 +5037,6 @@ lompe	851
 mailt	851
 mater	851
 onzen	851
-aarts	831
 abuis	831
 bello	831
 beven	831
@@ -5173,10 +5095,8 @@ egaal	776
 kliek	776
 klier	776
 kruin	776
-marke	776
 omarm	776
 orden	776
-pelle	776
 reaal	776
 slash	776
 spijk	776
@@ -5254,8 +5174,6 @@ spade	707
 spijs	707
 staak	707
 tjerk	707
-wolfs	707
-woude	707
 argus	691
 bytes	691
 charm	691
@@ -5267,12 +5185,10 @@ grata	691
 meier	691
 nipte	691
 pesto	691
-poppe	691
 puike	691
 spaak	691
 tahoe	691
 teder	691
-verne	691
 vlaai	691
 walen	691
 wemel	691
@@ -5421,7 +5337,6 @@ sneep	575
 spare	575
 suède	575
 unief	575
-winne	575
 zopas	575
 array	562
 bekaf	562
@@ -5431,7 +5346,6 @@ deren	562
 erker	562
 fixen	562
 flags	562
-foppe	562
 karig	562
 naden	562
 opeet	562
@@ -5475,7 +5389,6 @@ provo	537
 schor	537
 sneak	537
 veler	537
-visch	537
 vouwt	537
 zandt	537
 zwang	537
@@ -5548,11 +5461,9 @@ waxen	489
 weder	489
 wreef	489
 acres	478
-boeke	478
 dekte	478
 dipje	478
 frigo	478
-kleve	478
 mayor	478
 morst	478
 motte	478
@@ -5615,7 +5526,6 @@ racet	446
 salvo	446
 zeide	446
 backs	436
-boere	436
 dealt	436
 grief	436
 honig	436
@@ -5661,7 +5571,6 @@ gelde	416
 inzag	416
 lesbi	416
 logge	416
-reest	416
 showt	416
 stiel	416
 tetra	416
@@ -5825,7 +5734,6 @@ ogend	338
 poëet	338
 serve	338
 zuipt	338
-arent	331
 bergt	331
 conto	331
 deert	331
@@ -5874,11 +5782,9 @@ fouts	309
 gajes	309
 kliko	309
 krent	309
-krone	309
 lipje	309
 peins	309
 pipet	309
-vente	309
 vulva	309
 zoemt	309
 bandy	301
@@ -5894,7 +5800,6 @@ spina	301
 uppie	301
 vagen	301
 bamba	295
-beryl	295
 briek	295
 crank	295
 danke	295
@@ -5921,7 +5826,6 @@ copie	288
 cotta	288
 creep	288
 dotje	288
-elsje	288
 gelag	288
 jetje	288
 liane	288
@@ -6027,7 +5931,6 @@ ippon	257
 jankt	257
 karaf	257
 kwijl	257
-manja	257
 nadir	257
 ruien	257
 slenk	257
@@ -6077,7 +5980,6 @@ users	245
 vroor	245
 wurgt	245
 amuse	239
-bouwe	239
 breit	239
 crêpe	239
 denke	239
@@ -6118,7 +6020,6 @@ juten	229
 leute	229
 mulle	229
 paart	229
-polle	229
 raids	229
 shunt	229
 spins	229
@@ -6134,7 +6035,6 @@ doopt	223
 espen	223
 flier	223
 gaafs	223
-janke	223
 kouwe	223
 macha	223
 omber	223
@@ -6169,9 +6069,7 @@ etend	213
 flens	213
 gyros	213
 kluun	213
-koppe	213
 krank	213
-kroft	213
 lende	213
 onsen	213
 oogde	213
@@ -6204,7 +6102,6 @@ krast	204
 nakie	204
 rasse	204
 baadt	199
-basse	199
 döner	199
 ethos	199
 haart	199
@@ -6299,7 +6196,6 @@ lapte	177
 latei	177
 nozem	177
 vadem	177
-zorge	177
 afgod	173
 bezie	173
 bliep	173
@@ -6358,7 +6254,6 @@ dadel	162
 dobbe	162
 gauss	162
 geode	162
-kwame	162
 lulde	162
 onsje	162
 renne	162
@@ -6413,7 +6308,6 @@ zwerf	151
 artes	147
 bliek	147
 celeb	147
-donge	147
 frist	147
 gromt	147
 houde	147
@@ -6483,12 +6377,10 @@ barse	134
 broes	134
 capes	134
 dramt	134
-elvin	134
 fijns	134
 fucks	134
 galmt	134
 holde	134
-konst	134
 lakje	134
 liaan	134
 nonna	134
@@ -6537,7 +6429,6 @@ fluks	125
 galei	125
 oogen	125
 recap	125
-tinte	125
 bakra	123
 balsa	123
 benam	123
@@ -6565,7 +6456,6 @@ kaats	120
 katte	120
 lijft	120
 lymfe	120
-menge	120
 oprij	120
 ordes	120
 peste	120
@@ -6577,9 +6467,7 @@ uitga	120
 appte	117
 crude	117
 geren	117
-harer	117
 heats	117
-khans	117
 kilte	117
 knaak	117
 kuise	117
@@ -6611,7 +6499,6 @@ gumbo	112
 ijken	112
 kafir	112
 kezen	112
-krake	112
 kwelt	112
 lozer	112
 merke	112
@@ -6628,7 +6515,6 @@ drage	109
 freon	109
 haars	109
 halst	109
-hinke	109
 pampa	109
 pylon	109
 recto	109
@@ -6640,7 +6526,6 @@ diets	107
 heest	107
 kante	107
 konen	107
-rieke	107
 romen	107
 saxen	107
 siste	107
@@ -6659,7 +6544,6 @@ náást	104
 onkel	104
 rinse	104
 rites	104
-woudt	104
 zepen	104
 aasde	102
 akers	102
@@ -6711,7 +6595,6 @@ moeit	95
 poken	95
 sotto	95
 telle	95
-booms	93
 braad	93
 caput	93
 kijke	93
@@ -6730,7 +6613,6 @@ rouwe	93
 vaars	93
 vedel	93
 apsis	91
-boodt	91
 crypt	91
 deint	91
 dikst	91
@@ -6740,7 +6622,6 @@ engen	91
 enneh	91
 flapt	91
 gnoom	91
-hedde	91
 knauw	91
 lache	91
 neuke	91
@@ -6798,7 +6679,6 @@ hoost	83
 karos	83
 kroko	83
 luxer	83
-munte	83
 rakel	83
 reedt	83
 scheg	83
@@ -6824,7 +6704,6 @@ rukje	79
 seint	79
 snood	79
 stare	79
-tippe	79
 trema	79
 wélke	79
 cajon	77
@@ -6858,7 +6737,6 @@ papel	75
 rapte	75
 sepot	75
 sjako	75
-spork	75
 voord	75
 weekt	75
 wrake	75
@@ -6886,7 +6764,6 @@ licet	72
 norit	72
 seder	72
 sitar	72
-stege	72
 veras	72
 agape	70
 bezag	70
@@ -6937,7 +6814,6 @@ wiede	67
 ziede	67
 aloud	66
 dyade	66
-gille	66
 grist	66
 hymen	66
 japen	66
@@ -7009,7 +6885,6 @@ suave	60
 togen	60
 vingt	60
 vlijm	60
-vosse	60
 votum	60
 afhak	58
 bilan	58
@@ -7067,7 +6942,6 @@ vroem	54
 zwijm	54
 afdek	53
 bacil	53
-bonke	53
 béter	53
 cijns	53
 gamay	53
@@ -7097,7 +6971,6 @@ kiene	52
 kwaak	52
 logés	52
 piëta	52
-rasch	52
 rösti	52
 tonus	52
 vides	52
@@ -7247,7 +7120,6 @@ eeren	41
 facta	41
 hihat	41
 lento	41
-musch	41
 opaak	41
 pieds	41
 spiek	41
@@ -7275,8 +7147,6 @@ goors	39
 inzie	39
 kagen	39
 kerft	39
-leune	39
-pieke	39
 potig	39
 ruche	39
 ryden	39
@@ -7299,7 +7169,6 @@ valer	38
 zwerk	38
 afton	38
 azobé	38
-busse	38
 curia	38
 hurkt	38
 kodde	38
@@ -7319,12 +7188,10 @@ glaze	37
 gruwt	37
 kaard	37
 kuist	37
-lilla	37
 necro	37
 nádat	37
 potte	37
 snaak	37
-tille	37
 aftap	36
 amida	36
 beman	36
@@ -7404,7 +7271,6 @@ tapse	33
 trays	33
 weker	33
 apert	32
-bekke	32
 bilde	32
 braai	32
 domst	32
@@ -7416,7 +7282,6 @@ natje	32
 pakke	32
 porde	32
 tabla	32
-wiese	32
 ófwel	32
 borge	31
 daver	31
@@ -7438,7 +7303,6 @@ aardt	30
 dolma	30
 gebot	30
 gooie	30
-kappe	30
 kruim	30
 köfte	30
 lijer	30
@@ -7464,7 +7328,6 @@ nifty	30
 novae	30
 paret	30
 peert	30
-tanke	30
 tijen	30
 wiest	30
 diept	29
@@ -7500,7 +7363,6 @@ paaps	28
 pilav	28
 ronds	28
 taher	28
-temme	28
 vozen	28
 wener	28
 wikke	28
@@ -7512,7 +7374,6 @@ gekut	27
 inbus	27
 kutte	27
 loipe	27
-matze	27
 pikje	27
 plugt	27
 puren	27
@@ -7711,7 +7572,6 @@ caste	19
 davit	19
 fuckt	19
 galon	19
-kemme	19
 kiten	19
 mezze	19
 naken	19
@@ -7724,13 +7584,11 @@ bofte	18
 bokes	18
 deste	18
 fatoe	18
-harke	18
 hosse	18
 ijlde	18
 mankt	18
 mepte	18
 nazit	18
-pajot	18
 porti	18
 riede	18
 sajet	18
@@ -7924,7 +7782,6 @@ deukt	13
 hopte	13
 kabas	13
 oprol	13
-raspe	13
 reilt	13
 besla	13
 bokke	13
@@ -7947,7 +7804,6 @@ gekus	12
 gloor	12
 goldt	12
 haker	12
-hokke	12
 jogde	12
 kiert	12
 knaps	12
@@ -8067,7 +7923,6 @@ vendu	10
 zeste	10
 afmat	10
 afros	10
-balke	10
 basht	10
 behou	10
 beyde	10
@@ -8277,10 +8132,8 @@ winnen	100000
 lokale	97723
 pakken	97723
 regels	97723
-google	95499
 strijd	95499
 bekijk	93325
-engels	93325
 koffie	93325
 moeite	93325
 betere	91201
@@ -8547,7 +8400,6 @@ hierna	30199
 huilen	30199
 lessen	30199
 mobiel	30199
-zwolle	30199
 gelegd	29512
 immers	29512
 ingang	29512
@@ -8917,7 +8769,6 @@ korter	11481
 living	11481
 medium	11481
 staken	11481
-belgen	11220
 doctor	11220
 duivel	11220
 geacht	11220
@@ -9331,7 +9182,6 @@ tattoo	5754
 teller	5754
 verval	5754
 volken	5754
-groote	5623
 huidig	5623
 import	5623
 intact	5623
@@ -9635,7 +9485,6 @@ hacker	3890
 hechte	3890
 hinder	3890
 keuren	3890
-knokke	3890
 langst	3890
 legend	3890
 mazzel	3890
@@ -10153,7 +10002,6 @@ laagje	2187
 landde	2187
 luiken	2187
 mollen	2187
-muiden	2187
 muller	2187
 soleil	2187
 spaart	2187
@@ -10351,7 +10199,6 @@ buikje	1737
 cabrio	1737
 dwalen	1737
 enigen	1737
-gerwen	1737
 hanger	1737
 lakken	1737
 meppen	1737
@@ -10369,7 +10216,6 @@ veters	1737
 vetten	1737
 arcade	1698
 babbel	1698
-bennie	1698
 blijde	1698
 bruins	1698
 dansje	1698
@@ -10406,7 +10252,6 @@ graaft	1659
 hippie	1659
 kopjes	1659
 mattie	1659
-sterre	1659
 stunts	1659
 tovert	1659
 vergif	1659
@@ -10481,7 +10326,6 @@ geramd	1513
 geveld	1513
 goeroe	1513
 kavels	1513
-macron	1513
 mossel	1513
 nobody	1513
 pieper	1513
@@ -10693,7 +10537,6 @@ remote	1258
 roebel	1258
 roemer	1258
 rooien	1258
-sheikh	1258
 survey	1258
 taille	1258
 vrijer	1258
@@ -10710,7 +10553,6 @@ klokje	1230
 kopman	1230
 leuzen	1230
 lijmen	1230
-mensch	1230
 mokken	1230
 pilots	1230
 rokjes	1230
@@ -10744,7 +10586,6 @@ opgang	1202
 oplegt	1202
 prisma	1202
 rijzen	1202
-romein	1202
 schril	1202
 serene	1202
 specht	1202
@@ -10786,7 +10627,6 @@ dalend	1148
 dommel	1148
 fitter	1148
 gaarne	1148
-hunnen	1148
 kundig	1148
 langen	1148
 loopje	1148
@@ -10859,7 +10699,6 @@ bevind	1071
 dennen	1071
 doende	1071
 donkey	1071
-donnie	1071
 inline	1071
 junkie	1071
 kramen	1071
@@ -11428,7 +11267,6 @@ exoten	660
 fetisj	660
 gekort	660
 gifgas	660
-heeten	660
 hessen	660
 idolen	660
 jaeger	660
@@ -11472,7 +11310,6 @@ zoover	645
 aftrad	630
 bergop	630
 coacht	630
-deelen	630
 dwaalt	630
 etende	630
 franke	630
@@ -11537,7 +11374,6 @@ poetst	602
 pulsar	602
 racket	602
 sneden	602
-sphinx	602
 taptoe	602
 tedere	602
 triton	602
@@ -11685,7 +11521,6 @@ tribal	537
 zakten	537
 bazuin	524
 beging	524
-blaauw	524
 bobbel	524
 bolder	524
 bondig	524
@@ -12149,7 +11984,6 @@ boomen	371
 boorde	371
 buitje	371
 cadans	371
-gerven	371
 haakse	371
 ketjap	371
 kiezel	371
@@ -12189,7 +12023,6 @@ sliert	363
 sorbet	363
 stekje	363
 stelle	363
-toonen	363
 veggie	363
 vormer	363
 wimper	363
@@ -12253,7 +12086,6 @@ taksen	346
 toyboy	346
 valies	346
 verdoe	346
-vreden	346
 zadels	346
 ademde	338
 aktief	338
@@ -12474,7 +12306,6 @@ wurmen	295
 ageren	288
 bakkes	288
 brasem	288
-breede	288
 canard	288
 coupés	288
 dumpte	288
@@ -12645,7 +12476,6 @@ fysici	257
 garens	257
 geript	257
 glazig	257
-graauw	257
 heulen	257
 inhaal	257
 kleien	257
@@ -12697,7 +12527,6 @@ omdoen	251
 onesie	251
 panini	251
 pinten	251
-ravens	251
 scherf	251
 spatje	251
 verleg	251
@@ -12760,7 +12589,6 @@ ruitje	239
 sarren	239
 schalm	239
 spriet	239
-staden	239
 stokte	239
 storme	239
 topfit	239
@@ -12852,7 +12680,6 @@ volzin	223
 wijkje	223
 baljuw	218
 beaamt	218
-bijker	218
 binken	218
 boenen	218
 callen	218
@@ -13109,7 +12936,6 @@ tempus	186
 walken	186
 wekten	186
 ancien	181
-berden	181
 blogde	181
 butaan	181
 denier	181
@@ -13539,7 +13365,6 @@ stopen	134
 uitzit	134
 villen	134
 vleien	134
-vrieze	134
 balder	131
 begijn	131
 blafte	131
@@ -13762,7 +13587,6 @@ opvult	114
 porten	114
 signum	114
 taaier	114
-teeken	114
 witvis	114
 angora	112
 blèren	112
@@ -13783,7 +13607,6 @@ hoofse	112
 inpast	112
 jannen	112
 kotste	112
-kouwen	112
 loonde	112
 merbau	112
 molrat	112
@@ -13901,7 +13724,6 @@ madera	102
 paffen	102
 prijze	102
 slagje	102
-spiere	102
 steels	102
 theeën	102
 totems	102
@@ -14238,7 +14060,6 @@ karwij	77
 kidnap	77
 knoest	77
 kutkop	77
-leenen	77
 loosde	77
 mangat	77
 merkje	77
@@ -14573,7 +14394,6 @@ getrek	58
 gymtas	58
 hitten	58
 kauwde	58
-klappe	58
 kutdag	58
 loerde	58
 lokker	58
@@ -14739,7 +14559,6 @@ opvoer	51
 purine	51
 relict	51
 rijten	51
-schore	51
 sifons	51
 smegma	51
 spreng	51
@@ -14869,7 +14688,6 @@ herzag	45
 hijgde	45
 indium	45
 inzakt	45
-kleppe	45
 kokken	45
 kruien	45
 lijkje	45
@@ -14975,7 +14793,6 @@ poeren	42
 quilts	42
 rafels	42
 slapte	42
-stroet	42
 tophit	42
 vapeur	42
 zijvak	42
@@ -15155,7 +14972,6 @@ zwelgt	37
 aanheb	36
 berini	36
 bidder	36
-bogerd	36
 braadt	36
 closes	36
 doeloe	36
@@ -15408,7 +15224,6 @@ vereen	30
 wulven	30
 zetsel	30
 zotter	30
-zuiker	30
 zwiert	30
 almede	29
 anodes	29
@@ -15491,7 +15306,6 @@ flapje	28
 folter	28
 geboot	28
 getuit	28
-huinen	28
 keffen	28
 kloont	28
 klunen	28
@@ -15621,7 +15435,6 @@ droogs	25
 frappe	25
 gegons	25
 gidste	25
-griene	25
 injoeg	25
 inwoon	25
 jamben	25
@@ -15784,7 +15597,6 @@ dioden	22
 fileer	22
 gekwek	22
 groeie	22
-hazels	22
 hemelt	22
 hielde	22
 hoefje	22
@@ -15892,7 +15704,6 @@ oekaze	20
 oorlof	20
 opzoog	20
 plecht	20
-raeven	20
 rallen	20
 realia	20
 rizoom	20
@@ -15955,7 +15766,6 @@ juncto	19
 kaakje	19
 keeren	19
 koffij	19
-koopen	19
 kranke	19
 luidst	19
 natten	19
@@ -16154,7 +15964,6 @@ lazers	17
 lesten	17
 loepen	17
 louwen	17
-lugten	17
 luiert	17
 molaar	17
 morrel	17
@@ -16308,7 +16117,6 @@ torste	15
 verlee	15
 adelen	15
 afkoel	15
-ambers	15
 auctor	15
 beroet	15
 bokkig	15
@@ -16335,7 +16143,6 @@ meesje	15
 mokers	15
 nawerk	15
 niette	15
-plakke	15
 pogend	15
 raskat	15
 reukje	15
@@ -16346,7 +16153,6 @@ schimp	15
 seider	15
 simmen	15
 sitsen	15
-slijpe	15
 sluike	15
 smidje	15
 snoven	15
@@ -16555,7 +16361,6 @@ rijmer	12
 ringel	12
 seibel	12
 smisse	12
-soeten	12
 sonars	12
 spiest	12
 sprayt	12
@@ -16563,7 +16368,6 @@ steler	12
 stelpt	12
 stooft	12
 tintel	12
-toebak	12
 toesta	12
 tuften	12
 typeer	12
@@ -16621,12 +16425,10 @@ aflees	11
 agaves	11
 agoeti	11
 aucuba	11
-bargen	11
 barken	11
 beroer	11
 biases	11
 biesje	11
-brader	11
 codeur	11
 dekaan	11
 duwers	11
@@ -17043,7 +16845,6 @@ verkeer	51286
 voedsel	51286
 twintig	50118
 vechten	50118
-zeeland	50118
 akkoord	48977
 draaien	48977
 gezocht	48977
@@ -18630,7 +18431,6 @@ stembus	2818
 aanname	2754
 behaalt	2754
 collage	2754
-dronten	2754
 duikers	2754
 gorilla	2754
 ijskoud	2754
@@ -19389,7 +19189,6 @@ dansten	1318
 eetzaal	1318
 eropuit	1318
 fanclub	1318
-geertje	1318
 gemaaid	1318
 geveegd	1318
 giraffe	1318
@@ -20047,7 +19846,6 @@ opinies	812
 opvangt	812
 pallets	812
 penseel	812
-quinten	812
 revival	812
 schools	812
 splitst	812
@@ -20223,7 +20021,6 @@ hoogtij	707
 kampong	707
 klimmer	707
 machete	707
-michels	707
 munster	707
 ontpopt	707
 rommelt	707
@@ -20400,7 +20197,6 @@ gebaard	630
 gordels	630
 gunsten	630
 intrekt	630
-juniors	630
 ketters	630
 kwijlen	630
 missers	630
@@ -21436,7 +21232,6 @@ rackets	354
 rekbaar	354
 revolte	354
 roomijs	354
-schoone	354
 stoepen	354
 stofjes	354
 stulpje	354
@@ -21658,7 +21453,6 @@ geldend	316
 gelukte	316
 gewaaid	316
 gondels	316
-grooten	316
 groters	316
 hoelaat	316
 insloeg	316
@@ -21854,7 +21648,6 @@ pressie	288
 preutse	288
 reistas	288
 reliëfs	288
-rijkers	288
 rijwiel	288
 roepend	288
 schepte	288
@@ -23191,7 +22984,6 @@ irreële	144
 jubelen	144
 kalebas	144
 krioelt	144
-leeraar	144
 lifters	144
 ontlokt	144
 opnoemt	144
@@ -23263,7 +23055,6 @@ felgele	138
 gehorig	138
 gekkere	138
 gekneld	138
-germaan	138
 getikte	138
 gevloek	138
 gewaand	138
@@ -23577,7 +23368,6 @@ pachten	120
 pendelt	120
 ploffen	120
 pythons	120
-robinia	120
 spitste	120
 stander	120
 trojans	120
@@ -24743,7 +24533,6 @@ zorgpas	67
 agonist	66
 amoeben	66
 bekoord	66
-bijland	66
 chatbox	66
 citatie	66
 dagreis	66
@@ -25013,7 +24802,6 @@ distaal	57
 doofden	57
 doornat	57
 drumkit	57
-etstoel	57
 gebeure	57
 grossen	57
 jatwerk	57
@@ -25111,7 +24899,6 @@ huivert	54
 kartons	54
 klapjes	54
 latwerk	54
-leering	54
 maanvis	54
 mefisto	54
 megabit	54
@@ -25546,7 +25333,6 @@ streber	45
 tjalken	45
 tritons	45
 verhale	45
-violets	45
 vrijdom	45
 wegkwam	45
 willies	45
@@ -25718,7 +25504,6 @@ schampt	42
 skepsis	42
 sleetje	42
 spuikom	42
-stouten	42
 tempore	42
 tuttige	42
 vocoder	42
@@ -26541,7 +26326,6 @@ meekeek	28
 midrasj	28
 negorij	28
 niesbui	28
-nikkels	28
 patents	28
 pitchte	28
 postten	28
@@ -26969,7 +26753,6 @@ afschaf	23
 althobo	23
 bakolie	23
 bottelt	23
-donnies	23
 excisie	23
 gegrist	23
 gesteun	23
@@ -27060,7 +26843,6 @@ onheuse	23
 oogster	23
 oraties	23
 pikhaak	23
-quartel	23
 raatjes	23
 relmuis	23
 roerder	23
@@ -27768,7 +27550,6 @@ plengen	17
 plurale	17
 pompier	17
 prevelt	17
-reiners	17
 rijnaak	17
 rolfilm	17
 shoguns	17
@@ -28676,7 +28457,6 @@ puibalk	11
 reagere	11
 reisbus	11
 rijlijn	11
-roodmus	11
 scalpen	11
 sibling	11
 skimuts	11
@@ -28732,7 +28512,6 @@ opstuwt	11
 peperig	11
 ransels	11
 seinden	11
-slachte	11
 solider	11
 surfpak	11
 taggers	11
@@ -29565,7 +29344,6 @@ zuurstof	13182
 beloften	12882
 fenomeen	12882
 getraind	12882
-kamerlid	12882
 kondigde	12882
 regeling	12882
 scenario	12882
@@ -30945,7 +30723,6 @@ vertaalt	2344
 verwerpt	2344
 voordele	2344
 wachtten	2344
-waterman	2344
 weerzien	2344
 werkstuk	2344
 aanstaat	2290
@@ -31233,7 +31010,6 @@ waasland	1819
 weekends	1819
 aannames	1778
 accurate	1778
-bastiaan	1778
 eurozone	1778
 hertogin	1778
 hovenier	1778
@@ -33100,7 +32876,6 @@ naderend	524
 opendoet	524
 opliepen	524
 overhead	524
-poolster	524
 recenter	524
 reminder	524
 rondgang	524
@@ -37864,7 +37639,6 @@ zenuwcel	75
 afterpil	74
 ambtseed	74
 apenkooi	74
-appelhof	74
 autoblog	74
 beeldige	74
 besluipt	74
@@ -39160,7 +38934,6 @@ bestreek	47
 bilspier	47
 bladrand	47
 bluesman	47
-bruggers	47
 buscombi	47
 cimbalen	47
 clubloze	47
@@ -40115,7 +39888,6 @@ raapzaad	36
 recyclet	36
 ritzeges	36
 roffelen	36
-schoonen	36
 schuifel	36
 shelters	36
 sjouwers	36
@@ -40154,7 +39926,6 @@ boksende	35
 botdelen	35
 botgroei	35
 burgeren	35
-chatbots	35
 dalletje	35
 debieten	35
 defaults	35
@@ -40495,7 +40266,6 @@ sprokkel	32
 stellers	32
 stemband	32
 strijkje	32
-strooper	32
 sukkelig	32
 sushibar	32
 tichelen	32
@@ -40515,7 +40285,6 @@ aanzwelt	31
 arpeggio	31
 atopisch	31
 beduiden	31
-beenders	31
 bejegent	31
 bekappen	31
 bengelde	31
@@ -42443,7 +42212,6 @@ fixaties	18
 froufrou	18
 funkband	18
 gedongen	18
-geertjes	18
 geilaard	18
 gekroesd	18
 gekunnen	18

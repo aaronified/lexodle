@@ -279,7 +279,6 @@ plus	47863
 adam	46773
 blok	46773
 diet	46773
-hong	46773
 mini	46773
 tali	46773
 zona	46773
@@ -1128,7 +1127,6 @@ fail	1949
 fasa	1949
 judo	1949
 lela	1949
-maba	1949
 ozon	1949
 raib	1949
 rawi	1949
@@ -1255,7 +1253,6 @@ taji	1445
 trim	1445
 abai	1412
 adas	1412
-apus	1412
 arun	1412
 daro	1412
 deru	1412
@@ -1776,7 +1773,6 @@ ramah	56234
 belas	54954
 cuaca	54954
 damai	54954
-depok	54954
 level	54954
 nasib	54954
 novel	54954
@@ -2661,7 +2657,6 @@ duren	6025
 gulat	6025
 jorok	6025
 kurma	6025
-lukas	6025
 miras	6025
 panca	6025
 ramen	6025
@@ -2821,7 +2816,6 @@ fauna	4570
 gubuk	4570
 injak	4570
 iuran	4570
-kadin	4570
 kakao	4570
 kerak	4570
 korps	4570
@@ -2876,7 +2870,6 @@ taqwa	4265
 umrah	4265
 wanda	4265
 adnan	4168
-belom	4168
 cabul	4168
 dodol	4168
 gamer	4168
@@ -3116,7 +3109,6 @@ kebab	2884
 kekar	2884
 kesah	2884
 kutil	2884
-lapan	2884
 lelap	2884
 madya	2884
 magma	2884
@@ -3144,7 +3136,6 @@ golek	2754
 golok	2754
 hajat	2754
 ironi	2754
-kongo	2754
 koplo	2754
 salin	2754
 sesar	2754
@@ -3216,7 +3207,6 @@ palem	2454
 pulas	2454
 tamak	2454
 until	2454
-yonif	2454
 banyu	2398
 becus	2398
 bodhi	2398
@@ -4514,7 +4504,6 @@ cerpen	15848
 doktor	15848
 ekstra	15848
 gading	15848
-gresik	15848
 hijrah	15848
 kulkas	15848
 polsek	15848
@@ -4911,7 +4900,6 @@ rangga	6606
 satpam	6606
 tumpah	6606
 aktual	6456
-diklat	6456
 galang	6456
 granat	6456
 haknya	6456
@@ -5203,7 +5191,6 @@ syirik	3981
 tambun	3981
 tumpul	3981
 umurku	3981
-wapres	3981
 anjlok	3890
 barbar	3890
 biadab	3890
@@ -5251,7 +5238,6 @@ rental	3801
 taring	3801
 tarzan	3801
 uraian	3801
-zionis	3801
 hening	3715
 kincir	3715
 kodrat	3715
@@ -5744,7 +5730,6 @@ hewani	1737
 jeroan	1737
 laktat	1737
 matras	1737
-menkeu	1737
 metana	1737
 nongol	1737
 oksida	1737
@@ -9493,7 +9478,6 @@ lahirnya	14125
 mahkamah	14125
 menabrak	14125
 perlukan	14125
-portugal	14125
 prihatin	14125
 antusias	13803
 cintanya	13803
@@ -10484,7 +10468,6 @@ keguruan	2884
 menaungi	2884
 minumnya	2884
 oriental	2884
-srikandi	2884
 utilitas	2884
 angsuran	2818
 balistik	2818
@@ -10607,7 +10590,6 @@ ceritamu	2454
 dikurung	2454
 ditanyai	2454
 gerakkan	2454
-kemenkes	2454
 ketoprak	2454
 maharaja	2454
 mekanika	2454
@@ -11107,7 +11089,6 @@ berkedok	1348
 dihakimi	1348
 hantaman	1348
 kelupaan	1348
-kemenkeu	1348
 kepengen	1348
 keuletan	1348
 mengacak	1348

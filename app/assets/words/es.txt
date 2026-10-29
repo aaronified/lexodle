@@ -729,9 +729,7 @@ prof	4786
 sonó	4786
 abro	4677
 caño	4677
-chad	4677
 edit	4677
-faso	4677
 jara	4677
 mola	4677
 noto	4677
@@ -949,7 +947,6 @@ robe	2570
 unan	2570
 dote	2511
 grúa	2511
-laos	2511
 maza	2511
 mijo	2511
 puré	2511
@@ -1279,10 +1276,8 @@ crío	1174
 jaca	1174
 picó	1174
 poda	1174
-pola	1174
 posó	1174
 prov	1174
-togo	1174
 dañe	1148
 guíe	1148
 jure	1148
@@ -3679,7 +3674,6 @@ poner	173780
 apoyo	169824
 manos	169824
 mucha	169824
-chile	165958
 deben	165958
 marzo	165958
 serie	165958
@@ -4292,7 +4286,6 @@ trate	16982
 bebés	16595
 ciego	16595
 danza	16595
-elena	16595
 patas	16595
 vives	16595
 amado	16218
@@ -5416,7 +5409,6 @@ abría	2691
 alega	2691
 arder	2691
 batir	2691
-corán	2691
 culpo	2691
 cuzco	2691
 firmo	2691
@@ -5445,7 +5437,6 @@ guiño	2630
 litio	2630
 lujos	2630
 metía	2630
-morón	2630
 opinó	2630
 peñas	2630
 potro	2630
@@ -6133,7 +6124,6 @@ nacía	1258
 nuera	1258
 priva	1258
 remos	1258
-ribas	1258
 rizos	1258
 ronca	1258
 viajé	1258
@@ -7079,7 +7069,6 @@ doblo	489
 funge	489
 guate	489
 maese	489
-mijas	489
 mises	489
 ojiva	489
 oírle	489
@@ -7366,7 +7355,6 @@ kendo	371
 lagar	371
 lauda	371
 luché	371
-mahón	371
 mimar	371
 paleo	371
 pedid	371
@@ -12591,7 +12579,6 @@ barrio	70794
 ciento	70794
 empezó	70794
 llamar	70794
-miguel	70794
 parque	70794
 siente	70794
 triste	70794
@@ -13005,7 +12992,6 @@ llamas	20892
 ordenó	20892
 plazas	20892
 tesoro	20892
-toledo	20892
 acaban	20417
 armado	20417
 decían	20417
@@ -13228,7 +13214,6 @@ sabías	14454
 tejido	14454
 tendré	14454
 abusos	14125
-arturo	14125
 center	14125
 choque	14125
 pistas	14125
@@ -13271,7 +13256,6 @@ electo	13182
 exista	13182
 fieles	13182
 limita	13182
-molina	13182
 subido	13182
 tomada	13182
 típica	13182
@@ -13322,7 +13306,6 @@ músico	12302
 reunió	12302
 ángulo	12302
 arroyo	12022
-burgos	12022
 empate	12022
 engaño	12022
 estáis	12022
@@ -13494,7 +13477,6 @@ tribus	9549
 usarlo	9549
 villas	9549
 actúan	9332
-arabia	9332
 comido	9332
 cómoda	9332
 fueras	9332
@@ -13563,7 +13545,6 @@ dobles	8511
 fuegos	8511
 hábito	8511
 minero	8511
-mónica	8511
 noción	8511
 pascua	8511
 payaso	8511
@@ -14082,7 +14063,6 @@ tierna	4786
 tomara	4786
 tutela	4786
 visite	4786
-adrián	4677
 animar	4677
 apuntó	4677
 cambié	4677
@@ -14412,7 +14392,6 @@ iguala	3467
 indice	3467
 navaja	3467
 parten	3467
-platón	3467
 pronta	3467
 ratito	3467
 rollos	3467
@@ -17217,7 +17196,6 @@ ruegos	537
 solida	537
 tarada	537
 ubique	537
-vallés	537
 vistan	537
 zigzag	537
 acusen	524
@@ -23543,7 +23521,6 @@ papera	35
 pilado	35
 pillán	35
 postro	35
-premiá	35
 rebano	35
 rebeco	35
 redito	35
@@ -28264,7 +28241,6 @@ pilotos	10471
 ponerte	10471
 suponer	10471
 anciano	10232
-bélgica	10232
 concejo	10232
 inicios	10232
 llevada	10232
@@ -28555,7 +28531,6 @@ cocaína	7585
 escobar	7585
 frontal	7585
 haberle	7585
-jamaica	7585
 limpias	7585
 mereces	7585
 milenio	7585
@@ -28714,7 +28689,6 @@ huyendo	6456
 integra	6456
 merecía	6456
 músculo	6456
-pacheco	6456
 parodia	6456
 pascual	6456
 burbuja	6309
@@ -29134,7 +29108,6 @@ arcilla	4466
 atómica	4466
 bárbaro	4466
 capitan	4466
-carmona	4466
 creerlo	4466
 cuestan	4466
 declaro	4466
@@ -29628,7 +29601,6 @@ vicario	3235
 western	3235
 álbumes	3235
 andamos	3162
-andorra	3162
 angular	3162
 callate	3162
 cositas	3162
@@ -30029,7 +30001,6 @@ bengala	2454
 budismo	2454
 buitres	2454
 carecía	2454
-carmelo	2454
 casarme	2454
 chispas	2454
 cortejo	2454
@@ -32424,7 +32395,6 @@ atorado	831
 atraiga	831
 borroso	831
 calizas	831
-celsius	831
 cesaron	831
 coyotes	831
 crearán	831
@@ -32874,7 +32844,6 @@ arábiga	691
 aseveró	691
 atípico	691
 banners	691
-bermuda	691
 cachito	691
 cancelo	691
 canjear	691
@@ -35490,7 +35459,6 @@ fixture	281
 fragoso	281
 guiarme	281
 hernias	281
-manises	281
 mantita	281
 migrado	281
 negrero	281
@@ -35677,7 +35645,6 @@ anginas	263
 arbórea	263
 arenero	263
 avisaré	263
-barbate	263
 barrero	263
 batidas	263
 bazooka	263
@@ -49181,7 +49148,6 @@ distrito	57543
 familiar	57543
 recordar	57543
 soldados	57543
-fernando	56234
 judicial	56234
 lenguaje	56234
 mensajes	56234
@@ -50099,7 +50065,6 @@ hubiesen	8709
 incómodo	8709
 integrar	8709
 inútiles	8709
-malvinas	8709
 maniobra	8709
 otorgado	8709
 pantalón	8709
@@ -51934,7 +51899,6 @@ recordad	2344
 resisten	2344
 revólver	2344
 riéndose	2344
-talavera	2344
 temiendo	2344
 terapias	2344
 violaron	2344
@@ -53769,7 +53733,6 @@ apoyaría	1023
 atrévete	1023
 bochorno	1023
 cabildos	1023
-carballo	1023
 carlista	1023
 chocaron	1023
 claveles	1023

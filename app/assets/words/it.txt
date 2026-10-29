@@ -34,7 +34,6 @@ agli	457088
 vero	446683
 nome	426579
 poco	426579
-roma	426579
 tipo	416869
 dice	407380
 male	380189
@@ -203,7 +202,6 @@ pane	47863
 vada	47863
 veri	47863
 fila	46773
-luca	46773
 vite	46773
 alti	45708
 papà	45708
@@ -357,7 +355,6 @@ ramo	16218
 seri	16218
 urla	16218
 vota	16218
-west	16218
 boom	15848
 dirà	15848
 mali	15848
@@ -382,7 +379,6 @@ game	13803
 gode	13803
 mega	13803
 pelo	13803
-alpi	13489
 apri	13489
 plus	13489
 rara	13489
@@ -551,7 +547,6 @@ mole	7244
 osso	7244
 soft	7244
 tifo	7244
-tina	7244
 topi	7244
 asti	7079
 ceca	7079
@@ -572,7 +567,6 @@ cera	6760
 chip	6760
 elio	6760
 fori	6760
-gaza	6760
 orto	6760
 pose	6760
 soia	6760
@@ -642,7 +636,6 @@ alzi	5248
 bona	5248
 coni	5248
 dame	5248
-este	5248
 maxi	5248
 muti	5248
 rado	5248
@@ -803,7 +796,6 @@ tace	3235
 apra	3162
 boxe	3162
 cela	3162
-enea	3162
 flop	3162
 foce	3162
 leve	3162
@@ -882,7 +874,6 @@ ragù	2511
 lugo	2454
 remi	2454
 rodi	2454
-rota	2454
 vali	2454
 ceco	2398
 elfi	2398
@@ -899,7 +890,6 @@ rode	2344
 telo	2344
 tute	2344
 buoi	2290
-enna	2290
 liti	2290
 pope	2290
 timo	2290
@@ -931,7 +921,6 @@ puma	2137
 veli	2137
 watt	2137
 aloe	2089
-bali	2089
 davo	2089
 gaio	2089
 lune	2089
@@ -976,7 +965,6 @@ disc	1819
 kart	1819
 lupa	1819
 mino	1819
-pina	1819
 rigo	1819
 erge	1778
 fave	1778
@@ -995,13 +983,11 @@ soma	1737
 curi	1698
 gore	1698
 paco	1698
-sami	1698
 sire	1698
 aqua	1659
 foga	1659
 indi	1659
 unto	1659
-zola	1659
 dome	1621
 elfo	1621
 erro	1621
@@ -1063,7 +1049,6 @@ midi	1412
 miri	1412
 poni	1412
 tebe	1412
-abba	1380
 else	1380
 lumi	1380
 mana	1380
@@ -1085,7 +1070,6 @@ senz	1318
 vole	1318
 zeta	1318
 iena	1288
-iseo	1288
 suda	1288
 unni	1288
 item	1258
@@ -1359,7 +1343,6 @@ celi	562
 erra	562
 erre	562
 juke	562
-maro	562
 mene	562
 quai	562
 silo	562
@@ -1369,7 +1352,6 @@ posi	549
 tivù	549
 deca	537
 mima	537
-rufo	537
 urca	537
 veti	537
 ceni	524
@@ -1532,7 +1514,6 @@ pedo	338
 pien	338
 lupe	331
 odor	331
-osio	331
 quer	331
 reda	331
 salo	331
@@ -1541,7 +1522,6 @@ cote	323
 geno	323
 jeri	323
 stil	323
-zita	323
 arsa	316
 bino	316
 cuce	316
@@ -1614,7 +1594,6 @@ armo	257
 domi	257
 fard	257
 ragà	257
-tago	257
 colò	251
 fife	251
 ibla	251
@@ -1722,11 +1701,9 @@ tote	186
 adri	181
 ardo	181
 dian	181
-ello	181
 flan	181
 jato	181
 meco	181
-nuto	181
 orbe	181
 trac	181
 unge	181
@@ -1817,7 +1794,6 @@ sili	141
 sule	141
 teak	141
 zana	141
-adro	138
 alme	138
 boli	138
 codi	138
@@ -1863,7 +1839,6 @@ spio	120
 tuia	120
 alif	117
 bori	117
-camo	117
 gana	117
 whig	117
 ambe	114
@@ -1962,7 +1937,6 @@ tope	85
 gilè	83
 ledo	83
 saie	83
-agna	81
 augh	81
 ciac	81
 fugo	81
@@ -2906,7 +2880,6 @@ cassa	30902
 credi	30902
 ebrei	30902
 email	30902
-lazio	30902
 mappa	30902
 poeta	30902
 resti	30902
@@ -3127,7 +3100,6 @@ pollo	16982
 sorge	16982
 torni	16982
 borse	16595
-diego	16595
 folle	16595
 lento	16595
 pasto	16595
@@ -3202,11 +3174,9 @@ tocco	14454
 animo	14125
 colto	14125
 corda	14125
-lecce	14125
 marmo	14125
 pazza	14125
 romeo	14125
-sofia	14125
 trans	14125
 carro	13803
 dovrò	13803
@@ -3441,7 +3411,6 @@ curve	9120
 dorso	9120
 fauna	9120
 icona	9120
-lucio	9120
 molla	9120
 poker	9120
 saldo	9120
@@ -3542,7 +3511,6 @@ amori	7413
 casco	7413
 cotto	7413
 fieri	7413
-lione	7413
 matti	7413
 palio	7413
 prive	7413
@@ -3706,7 +3674,6 @@ mucca	5754
 mutui	5754
 nutre	5754
 ostia	5754
-pippo	5754
 sagra	5754
 sarda	5754
 scese	5754
@@ -4157,7 +4124,6 @@ cache	2691
 cadrà	2691
 cloni	2691
 fughe	2691
-nanni	2691
 urina	2691
 ambra	2630
 boxer	2630
@@ -4200,7 +4166,6 @@ diane	2511
 ebola	2511
 fieno	2511
 intra	2511
-mimmo	2511
 parer	2511
 parta	2511
 rette	2511
@@ -4253,7 +4218,6 @@ frane	2290
 germi	2290
 giova	2290
 grani	2290
-iddio	2290
 lampi	2290
 lesbo	2290
 magie	2290
@@ -4336,7 +4300,6 @@ stasi	2089
 stesa	2089
 strip	2089
 timer	2089
-vanni	2089
 agata	2041
 aroma	2041
 calvi	2041
@@ -4650,7 +4613,6 @@ ronde	1380
 udire	1380
 viole	1380
 zombi	1380
-acqui	1348
 apnea	1348
 aspro	1348
 bardi	1348
@@ -4726,7 +4688,6 @@ volga	1258
 calco	1230
 causò	1230
 dalia	1230
-edipo	1230
 fante	1230
 fuffa	1230
 grava	1230
@@ -4749,7 +4710,6 @@ duran	1202
 editi	1202
 fuggì	1202
 garza	1202
-golia	1202
 gulag	1202
 ovuli	1202
 ramen	1202
@@ -4869,13 +4829,11 @@ regga	1047
 renna	1047
 sovra	1047
 spago	1047
-verna	1047
 aureo	1023
 brune	1023
 bucce	1023
 celti	1023
 corni	1023
-eolie	1023
 esile	1023
 farro	1023
 gnome	1023
@@ -4937,7 +4895,6 @@ cacio	954
 cenci	954
 donde	954
 fiche	954
-giava	954
 guado	954
 ionio	954
 landa	954
@@ -5165,7 +5122,6 @@ torba	741
 trace	741
 uscii	741
 amami	724
-asolo	724
 babbi	724
 bette	724
 callo	724
@@ -5192,7 +5148,6 @@ malia	707
 patio	707
 petti	707
 premo	707
-ronco	707
 stami	707
 toner	707
 valla	707
@@ -5216,7 +5171,6 @@ bocci	676
 copti	676
 crimi	676
 curde	676
-dafne	676
 eppur	676
 faggi	676
 humus	676
@@ -5441,7 +5395,6 @@ aster	501
 azeri	501
 bamba	501
 bastò	501
-brolo	501
 calva	501
 censo	501
 daino	501
@@ -5458,7 +5411,6 @@ dilla	489
 gorgo	489
 hijab	489
 magli	489
-murge	489
 paleo	489
 pigne	489
 sucre	489
@@ -5640,7 +5592,6 @@ camme	380
 cinte	380
 coevo	380
 colga	380
-itala	380
 lecci	380
 orano	380
 pappe	380
@@ -5650,7 +5601,6 @@ sturm	380
 ugual	380
 zeppe	380
 abitò	371
-aiace	371
 bizze	371
 brina	371
 cappe	371
@@ -5662,7 +5612,6 @@ fosti	371
 fuggo	371
 grama	371
 lanzi	371
-micca	371
 mirai	371
 mufti	371
 opero	371
@@ -5758,7 +5707,6 @@ nunzi	338
 pagar	338
 penis	338
 quivi	338
-resia	338
 satin	338
 sieda	338
 sismi	338
@@ -5879,7 +5827,6 @@ nutra	295
 privé	295
 socci	295
 taira	295
-urali	295
 velma	295
 alita	288
 bezzi	288
@@ -5976,7 +5923,6 @@ gazzo	257
 giuba	257
 ibero	257
 merla	257
-mimma	257
 nesti	257
 proni	257
 pruno	257
@@ -6192,7 +6138,6 @@ tozza	204
 triti	204
 uteri	204
 vizia	204
-zaire	204
 ancia	199
 bitte	199
 cline	199
@@ -6343,7 +6288,6 @@ fusse	169
 ingoi	169
 latti	169
 ligia	169
-macra	169
 pinti	169
 ronca	169
 salpò	169
@@ -6367,7 +6311,6 @@ rosai	165
 salir	165
 sfata	165
 sfizi	165
-solto	165
 tasta	165
 tinca	165
 tolla	165
@@ -6445,7 +6388,6 @@ crear	147
 ebeti	147
 erosi	147
 fuora	147
-graie	147
 guadi	147
 imitò	147
 irato	147
@@ -6579,7 +6521,6 @@ obice	125
 ogiva	125
 patos	125
 porne	125
-renza	125
 riale	125
 sassa	125
 sicli	125
@@ -6599,7 +6540,6 @@ esose	123
 flavi	123
 gaggi	123
 ioide	123
-labro	123
 mentr	123
 missi	123
 pugna	123
@@ -6613,7 +6553,6 @@ amida	120
 beoni	120
 berci	120
 biada	120
-breme	120
 crawl	120
 doble	120
 drudi	120
@@ -6777,7 +6716,6 @@ culmi	102
 dalie	102
 etoli	102
 laide	102
-lelia	102
 lippa	102
 micce	102
 parca	102
@@ -7228,7 +7166,6 @@ biade	60
 brisa	60
 cadei	60
 mauve	60
-perca	60
 recar	60
 scuto	60
 stoma	60
@@ -7429,7 +7366,6 @@ ruggì	47
 scemò	47
 suppa	47
 vessa	47
-apiro	46
 archè	46
 erasi	46
 esone	46
@@ -7509,7 +7445,6 @@ aguri	42
 apron	42
 birbo	42
 cuora	42
-denno	42
 duolo	42
 edere	42
 epodo	42
@@ -7793,7 +7728,6 @@ filze	30
 finno	30
 fogno	30
 ghega	30
-giave	30
 maone	30
 morre	30
 nitra	30
@@ -7915,7 +7849,6 @@ kbyte	25
 latri	25
 lemna	25
 librò	25
-mergo	25
 sagri	25
 selli	25
 silfi	25
@@ -8694,7 +8627,6 @@ dentro	165958
 fronte	165958
 motivo	165958
 sicuro	165958
-napoli	162181
 nessun	162181
 online	162181
 stessi	162181
@@ -8971,7 +8903,6 @@ giunta	44668
 marina	44668
 prendi	44668
 scelte	44668
-africa	43651
 angelo	43651
 chissà	43651
 dovere	43651
@@ -9045,7 +8976,6 @@ chiusa	36307
 indica	36307
 legati	36307
 logica	36307
-matteo	36307
 patria	36307
 ricchi	36307
 svolta	36307
@@ -9199,7 +9129,6 @@ impero	23988
 medica	23988
 nobile	23988
 potevo	23988
-puglia	23988
 ritiro	23988
 scrivo	23988
 spiace	23988
@@ -9390,7 +9319,6 @@ pulita	16595
 tumore	16595
 undici	16595
 amanti	16218
-angela	16218
 aquila	16218
 budget	16218
 compra	16218
@@ -9442,7 +9370,6 @@ spinge	15135
 stanca	15135
 urbana	15135
 adulto	14791
-ancona	14791
 basket	14791
 bestia	14791
 dischi	14791
@@ -9522,7 +9449,6 @@ alcool	13182
 esista	13182
 estera	13182
 giunge	13182
-olanda	13182
 oscuro	13182
 potevi	13182
 sarete	13182
@@ -9545,7 +9471,6 @@ maiale	12589
 nacque	12589
 prenda	12589
 scappa	12589
-silvia	12589
 strato	12589
 tacere	12589
 valuta	12589
@@ -9566,7 +9491,6 @@ emerge	12022
 eterna	12022
 flotta	12022
 limita	12022
-monica	12022
 scorsi	12022
 spiego	12022
 strani	12022
@@ -9602,7 +9526,6 @@ girone	11220
 morali	11220
 ottica	11220
 prassi	11220
-renato	11220
 sapevi	11220
 strati	11220
 tenore	11220
@@ -9784,7 +9707,6 @@ diesel	8709
 finite	8709
 flussi	8709
 odiano	8709
-scozia	8709
 solari	8709
 solida	8709
 sparsi	8709
@@ -9959,10 +9881,8 @@ estivi	6606
 favole	6606
 fluido	6606
 geloso	6606
-matera	6606
 pirati	6606
 ricevi	6606
-sandra	6606
 sponda	6606
 templi	6606
 valeva	6606
@@ -10155,7 +10075,6 @@ curati	5011
 dorato	5011
 drammi	5011
 escort	5011
-flavio	5011
 fritto	5011
 grotte	5011
 loggia	5011
@@ -10236,7 +10155,6 @@ datato	4570
 dubbia	4570
 feccia	4570
 grappa	4570
-ischia	4570
 laggiù	4570
 nemica	4570
 ottavo	4570
@@ -10246,7 +10164,6 @@ rubate	4570
 solide	4570
 stoffa	4570
 tornei	4570
-ulisse	4570
 usanza	4570
 aprite	4466
 balena	4466
@@ -10256,7 +10173,6 @@ eccola	4466
 emerse	4466
 enfasi	4466
 etnico	4466
-faenza	4466
 ghetto	4466
 gialle	4466
 goduto	4466
@@ -10374,7 +10290,6 @@ stereo	3981
 aquino	3890
 capirà	3890
 capiva	3890
-ciccio	3890
 curtis	3890
 dicano	3890
 domino	3890
@@ -10656,7 +10571,6 @@ latine	2884
 levate	2884
 lirico	2884
 negano	2884
-nerone	2884
 paiono	2884
 potuti	2884
 sabina	2884
@@ -10711,7 +10625,6 @@ infila	2754
 libici	2754
 lucano	2754
 madama	2754
-marzio	2754
 monito	2754
 omaggi	2754
 rapiti	2754
@@ -10744,7 +10657,6 @@ trattò	2691
 valico	2691
 votate	2691
 aborti	2630
-andria	2630
 aspira	2630
 atlete	2630
 bilico	2630
@@ -10788,10 +10700,8 @@ dedicò	2570
 elenca	2570
 emersi	2570
 focale	2570
-gubbio	2570
 karate	2570
 letali	2570
-marisa	2570
 notate	2570
 ondate	2570
 pedali	2570
@@ -10832,7 +10742,6 @@ calata	2454
 cecità	2454
 ciccia	2454
 estasi	2454
-flavia	2454
 guanto	2454
 idonee	2454
 mutare	2454
@@ -11067,7 +10976,6 @@ angola	1949
 armena	1949
 bevete	1949
 blanco	1949
-canova	1949
 condor	1949
 consta	1949
 crampi	1949
@@ -11419,7 +11327,6 @@ mortai	1445
 munita	1445
 orbite	1445
 orfana	1445
-otello	1445
 pelosa	1445
 pelosi	1445
 scocca	1445
@@ -11523,7 +11430,6 @@ preghi	1318
 ridato	1318
 riveli	1318
 savana	1318
-scilla	1318
 sonata	1318
 spendo	1318
 spreca	1318
@@ -11597,7 +11503,6 @@ grezzi	1230
 ipnosi	1230
 lavano	1230
 parati	1230
-paride	1230
 piatte	1230
 ricavo	1230
 rinato	1230
@@ -11648,7 +11553,6 @@ arditi	1174
 bevute	1174
 cafone	1174
 casato	1174
-caspio	1174
 celare	1174
 cimeli	1174
 datevi	1174
@@ -11740,7 +11644,6 @@ ossidi	1122
 patire	1122
 reflue	1122
 remore	1122
-rosina	1122
 saturo	1122
 sbando	1122
 sporto	1122
@@ -11855,7 +11758,6 @@ ideare	1023
 lebbra	1023
 malaga	1023
 noterà	1023
-orione	1023
 passai	1023
 pomata	1023
 posata	1023
@@ -12923,10 +12825,8 @@ frulla	446
 geraci	446
 goduti	446
 grange	446
-hubble	446
 jonico	446
 lavabo	446
-maiori	446
 marone	446
 nodulo	446
 ostica	446
@@ -13076,7 +12976,6 @@ penare	407
 puliva	407
 satire	407
 sbuffa	407
-solaro	407
 sorcio	407
 spiava	407
 stuolo	407
@@ -13142,7 +13041,6 @@ junker	389
 lignee	389
 penose	389
 peserà	389
-pineto	389
 pomice	389
 radunò	389
 riduco	389
@@ -13163,7 +13061,6 @@ tripli	389
 trucca	389
 urtano	389
 viuzze	389
-abbado	380
 adorna	380
 amarci	380
 babbeo	380
@@ -13287,7 +13184,6 @@ servir	354
 shaker	354
 sodali	354
 topica	354
-agnone	346
 andiam	346
 asceta	346
 badato	346
@@ -13811,13 +13707,11 @@ rivero	251
 saette	251
 sterne	251
 talare	251
-tamaro	251
 terrai	251
 zefiro	251
 ambiva	245
 asceso	245
 aspiro	245
-avella	245
 binder	245
 bolina	245
 carene	245
@@ -13836,7 +13730,6 @@ nolano	245
 oblate	245
 orette	245
 padane	245
-piagge	245
 recipe	245
 recisi	245
 recito	245
@@ -13977,7 +13870,6 @@ roveri	223
 ruvidi	223
 sanata	223
 sclero	223
-serina	223
 sinché	223
 venose	223
 alzerò	218
@@ -14129,7 +14021,6 @@ laurei	199
 lavino	199
 leverà	199
 levino	199
-linosa	199
 litici	199
 luongo	199
 orioli	199
@@ -14153,7 +14044,6 @@ assalì	194
 barano	194
 bavoso	194
 brezze	194
-ciacci	194
 cubito	194
 dehors	194
 dimena	194
@@ -14231,7 +14121,6 @@ agiato	186
 aversi	186
 bevano	186
 calava	186
-cameri	186
 carpio	186
 doline	186
 dopati	186
@@ -14267,7 +14156,6 @@ trotti	186
 unirle	186
 zigote	186
 adattò	181
-alcina	181
 annoda	181
 brullo	181
 cenate	181
@@ -14280,7 +14168,6 @@ inique	181
 logori	181
 lorica	181
 manghi	181
-merope	181
 modali	181
 ontani	181
 pelago	181
@@ -14302,7 +14189,6 @@ andine	177
 beluga	177
 cacate	177
 cedete	177
-cembra	177
 drizza	177
 encomi	177
 figari	177
@@ -14505,9 +14391,7 @@ morivi	158
 nasini	158
 nomura	158
 oliare	158
-paduli	158
 peones	158
-sciara	158
 sforzò	158
 sonica	158
 sopite	158
@@ -14583,7 +14467,6 @@ sparla	151
 storce	151
 tapino	151
 togati	151
-vaiano	151
 vermut	151
 virate	151
 acuire	147
@@ -14685,7 +14568,6 @@ papaia	141
 peonia	141
 rasare	141
 rivivo	141
-robbio	141
 sbanca	141
 schifi	141
 sciata	141
@@ -14889,7 +14771,6 @@ botole	123
 caponi	123
 cosini	123
 datela	123
-didimo	123
 dorare	123
 dracme	123
 focene	123
@@ -15212,7 +15093,6 @@ banato	100
 beviti	100
 boxeur	100
 bracca	100
-cesate	100
 claque	100
 conidi	100
 coscie	100
@@ -15289,7 +15169,6 @@ bacerà	95
 brulla	95
 cavana	95
 coatte	95
-colere	95
 cumani	95
 driade	95
 eccito	95
@@ -15709,7 +15588,6 @@ cantai	74
 capano	74
 cassar	74
 citerà	74
-crotta	74
 lobulo	74
 mandra	74
 megere	74
@@ -16179,7 +16057,6 @@ lobuli	56
 manciù	56
 moravi	56
 panata	56
-pereto	56
 plasmò	56
 pulcro	56
 rascia	56
@@ -16846,7 +16723,6 @@ laverò	37
 leccia	37
 levane	37
 macini	37
-mesero	37
 nivale	37
 oliera	37
 orlati	37
@@ -16924,7 +16800,6 @@ latori	35
 lavine	35
 limate	35
 limine	35
-marene	35
 merulo	35
 mirerà	35
 nasuto	35
@@ -17040,7 +16915,6 @@ derubò	33
 gerano	33
 girale	33
 nugola	33
-oncino	33
 ormato	33
 panica	33
 patere	33
@@ -17532,7 +17406,6 @@ cornei	25
 corono	25
 cotali	25
 devesi	25
-fraine	25
 frante	25
 idrope	25
 indoli	25
@@ -18314,7 +18187,6 @@ svenga	15
 sverrà	15
 ungara	15
 uniati	15
-adelfo	15
 algide	15
 arcati	15
 arella	15
@@ -18499,7 +18371,6 @@ vimine	14
 vinato	14
 vinose	14
 afasie	13
-alvina	13
 apsidi	13
 broche	13
 caggia	13
@@ -19398,7 +19269,6 @@ offerte	39810
 storici	39810
 animale	38904
 bambina	38904
-brasile	38904
 cercano	38904
 confini	38904
 mattino	38904
@@ -19882,7 +19752,6 @@ fumetto	15135
 inclusa	15135
 lasciar	15135
 lottare	15135
-martino	15135
 mensile	15135
 perduto	15135
 rientro	15135
@@ -20064,7 +19933,6 @@ rinnovo	11748
 seguaci	11748
 vederti	11748
 vivente	11748
-achille	11481
 aumenti	11481
 avviato	11481
 browser	11481
@@ -20268,7 +20136,6 @@ domando	9120
 esordio	9120
 fantasy	9120
 florida	9120
-gennaro	9120
 ironico	9120
 massimi	9120
 meeting	9120
@@ -20564,7 +20431,6 @@ pastori	6760
 presero	6760
 proroga	6760
 rivisto	6760
-roberta	6760
 saltato	6760
 sintomo	6760
 suonato	6760
@@ -20703,7 +20569,6 @@ scaduto	6025
 sfrutta	6025
 sorgere	6025
 succeda	6025
-tiziano	6025
 turista	6025
 uscirne	6025
 abitare	5888
@@ -20920,11 +20785,9 @@ affitti	4897
 agnelli	4897
 allegri	4897
 avergli	4897
-balcani	4897
 bambola	4897
 baracca	4897
 battito	4897
-baviera	4897
 bevanda	4897
 buttati	4897
 cadendo	4897
@@ -21024,7 +20887,6 @@ mancati	4570
 massime	4570
 pallida	4570
 pescare	4570
-platone	4570
 protesi	4570
 risulti	4570
 schermi	4570
@@ -21119,7 +20981,6 @@ antenne	4265
 assegna	4265
 bagnata	4265
 barocco	4265
-bassano	4265
 cartina	4265
 cascate	4265
 causano	4265
@@ -21224,7 +21085,6 @@ fortune	3981
 frenare	3981
 incassi	3981
 lascerò	3981
-lazzaro	3981
 magiche	3981
 mattone	3981
 mentito	3981
@@ -21944,7 +21804,6 @@ stringa	2511
 teschio	2511
 toccati	2511
 vietati	2511
-vittore	2511
 afferra	2454
 aiutate	2454
 avverso	2454
@@ -22016,7 +21875,6 @@ venture	2398
 apparse	2344
 assenso	2344
 bagnati	2344
-canarie	2344
 circola	2344
 conscio	2344
 deviare	2344
@@ -22120,7 +21978,6 @@ scovare	2238
 scrissi	2238
 seguace	2238
 silenzi	2238
-silvana	2238
 spinale	2238
 suzanne	2238
 terminò	2238
@@ -22140,7 +21997,6 @@ lettino	2187
 malizia	2187
 mariani	2187
 morbide	2187
-mugello	2187
 novelle	2187
 ordigno	2187
 pagarlo	2187
@@ -22599,7 +22455,6 @@ montate	1698
 muoviti	1698
 narrata	1698
 nascerà	1698
-navarra	1698
 orrendi	1698
 pagarla	1698
 paolino	1698
@@ -22680,7 +22535,6 @@ voltato	1659
 accenni	1621
 agilità	1621
 artiste	1621
-aurelia	1621
 auspica	1621
 bicocca	1621
 binomio	1621
@@ -22738,7 +22592,6 @@ intoppi	1584
 leggerò	1584
 modesti	1584
 morfina	1584
-navarro	1584
 paolini	1584
 porcata	1584
 prelato	1584
@@ -22892,7 +22745,6 @@ nettare	1479
 nordico	1479
 occulto	1479
 pattini	1479
-pierino	1479
 pontile	1479
 postumo	1479
 pregano	1479
@@ -23278,7 +23130,6 @@ pioveva	1230
 preferì	1230
 quotate	1230
 recanti	1230
-rosalia	1230
 rotante	1230
 saldato	1230
 saliamo	1230
@@ -23395,7 +23246,6 @@ forensi	1148
 imitato	1148
 istituì	1148
 lattuga	1148
-leandro	1148
 locarno	1148
 mediale	1148
 mondana	1148
@@ -23637,7 +23487,6 @@ bellino	1023
 biberon	1023
 brevità	1023
 calzoni	1023
-cerreto	1023
 contese	1023
 contini	1023
 cranica	1023
@@ -24325,7 +24174,6 @@ murarie	758
 museali	758
 procurò	758
 profila	758
-quirino	758
 referti	758
 rincaro	758
 risiamo	758
@@ -24397,7 +24245,6 @@ danzano	724
 direste	724
 diritta	724
 elimini	724
-eraclea	724
 esageri	724
 fervida	724
 festino	724
@@ -24503,7 +24350,6 @@ decretò	691
 diadema	691
 epatico	691
 estinte	691
-fabiana	691
 fasulla	691
 giovato	691
 intrusi	691
@@ -24724,7 +24570,6 @@ bacioni	630
 baltici	630
 bretone	630
 caprone	630
-caronte	630
 cassero	630
 cenando	630
 cesserà	630
@@ -24787,7 +24632,6 @@ cazzuto	616
 ceffone	616
 cessano	616
 colombi	616
-commodo	616
 concimi	616
 condite	616
 cordoni	616
@@ -25272,7 +25116,6 @@ falsato	512
 fluisce	512
 frivola	512
 fulgido	512
-galvani	512
 giacere	512
 immessa	512
 incolte	512
@@ -25318,7 +25161,6 @@ chiglia	501
 commise	501
 concepì	501
 digiuni	501
-dorotea	501
 embolia	501
 erbacea	501
 espelle	501
@@ -25333,7 +25175,6 @@ imparai	501
 imperio	501
 inguine	501
 invierà	501
-luigino	501
 mellito	501
 merdate	501
 mezzano	501
@@ -25614,7 +25455,6 @@ bradipo	446
 calzone	446
 cardano	446
 coaguli	446
-donnino	446
 elevano	446
 esibite	446
 fabrice	446
@@ -25772,7 +25612,6 @@ suicido	426
 tirasse	426
 verbena	426
 adesiva	416
-angiolo	416
 annullo	416
 arretra	416
 assidui	416
@@ -25812,7 +25651,6 @@ legnoso	416
 licheni	416
 lusinga	416
 marcano	416
-minosse	416
 montava	416
 mugnaio	416
 offrirò	416
@@ -26183,7 +26021,6 @@ alterco	354
 aprirne	354
 artrosi	354
 assorto	354
-boiardo	354
 campato	354
 caucciù	354
 chieder	354
@@ -26374,7 +26211,6 @@ ferroso	331
 fulgore	331
 fumaria	331
 funesti	331
-galvano	331
 glicine	331
 gronchi	331
 guiderò	331
@@ -26559,7 +26395,6 @@ vuotare	316
 zebedei	316
 adempie	309
 antigas	309
-arcadio	309
 bauxite	309
 boutade	309
 canneti	309
@@ -27423,7 +27258,6 @@ würstel	234
 addurre	229
 adesive	229
 ansietà	229
-arborio	229
 assalta	229
 assesta	229
 assiali	229
@@ -27453,7 +27287,6 @@ fungine	229
 funivie	229
 furtiva	229
 furtivi	229
-gaetana	229
 ganglio	229
 gravosa	229
 kenioti	229
@@ -27559,7 +27392,6 @@ battete	218
 belgica	218
 bionica	218
 biscuit	218
-calipso	218
 candito	218
 carelli	218
 celarsi	218
@@ -27699,7 +27531,6 @@ debuttò	208
 decadde	208
 dedotte	208
 defunte	208
-doriana	208
 eloquio	208
 espandi	208
 floride	208
@@ -27759,7 +27590,6 @@ bugnato	204
 cagotto	204
 calcata	204
 carponi	204
-cassaro	204
 cefalee	204
 ciocchi	204
 cittadi	204
@@ -27770,7 +27600,6 @@ coprano	204
 cosacco	204
 crearci	204
 cullato	204
-doriano	204
 faldoni	204
 fastosa	204
 fattoni	204
@@ -27960,7 +27789,6 @@ venimmo	194
 accidia	190
 adunate	190
 allieta	190
-angiola	190
 apatica	190
 aprirei	190
 arzillo	190
@@ -28402,7 +28230,6 @@ bassino	165
 bivalvi	165
 bravino	165
 campali	165
-carcare	165
 cavagna	165
 cocuzza	165
 delineò	165
@@ -28588,7 +28415,6 @@ zampata	158
 zoomare	158
 zoppica	158
 acetosa	154
-alcione	154
 amavamo	154
 ammanco	154
 aprissi	154
@@ -28644,7 +28470,6 @@ scolopi	154
 scuserà	154
 seccati	154
 seguivi	154
-sestino	154
 sfigura	154
 spediva	154
 suonerò	154
@@ -28711,7 +28536,6 @@ pentite	151
 pirrone	151
 piviere	151
 pizzuti	151
-primina	151
 puntoni	151
 redasse	151
 rimandò	151
@@ -28871,7 +28695,6 @@ simposi	144
 slancia	144
 sostano	144
 sparami	144
-tantalo	144
 tenenza	144
 terrete	144
 toglier	144
@@ -28973,7 +28796,6 @@ bustino	138
 cananei	138
 candidò	138
 cantami	138
-catello	138
 cozzare	138
 credute	138
 demenze	138
@@ -29114,7 +28936,6 @@ codazzi	131
 cospira	131
 danzava	131
 divinis	131
-doroteo	131
 esporle	131
 filmano	131
 finissi	131
@@ -29895,7 +29716,6 @@ unisono	104
 varcano	104
 visitar	104
 addenta	102
-adelfia	102
 affusti	102
 alaggio	102
 ammorba	102
@@ -29908,7 +29728,6 @@ barbina	102
 barlumi	102
 basetta	102
 beffati	102
-bernesi	102
 bussava	102
 caliamo	102
 carlina	102
@@ -30405,8 +30224,6 @@ inibiti	87
 inumati	87
 listati	87
 lunelli	87
-maurino	87
-mefisto	87
 mentina	87
 mugugno	87
 normata	87
@@ -30585,7 +30402,6 @@ adempia	81
 aiutini	81
 aizzati	81
 alamari	81
-antemio	81
 arlotti	81
 armerie	81
 asteria	81
@@ -30851,7 +30667,6 @@ trebbio	75
 utopici	75
 vaccine	75
 vacuoli	75
-vannino	75
 visiona	75
 adenomi	74
 aggregò	74
@@ -31006,7 +30821,6 @@ alletto	70
 anossia	70
 arrechi	70
 assolva	70
-balbino	70
 ballino	70
 bilotta	70
 biotopi	70
@@ -31093,7 +30907,6 @@ bypassa	69
 calette	69
 campava	69
 captiva	69
-cardeto	69
 carmini	69
 commuta	69
 contadi	69
@@ -31353,7 +31166,6 @@ tramuti	64
 trarrai	64
 turrito	64
 udivano	64
-vignate	64
 visiere	64
 voltava	64
 affittò	63
@@ -31841,7 +31653,6 @@ bazzico	54
 boccolo	54
 boscata	54
 bramosa	54
-cazzano	54
 cembali	54
 cercine	54
 cervati	54
@@ -31903,7 +31714,6 @@ tuffate	54
 usatele	54
 venusta	54
 verdoni	54
-vernate	54
 abbozzò	53
 abiliti	53
 addendo	53
@@ -32757,7 +32567,6 @@ premevo	41
 pulvino	41
 rappata	41
 redente	41
-sarmato	41
 saziata	41
 sedurmi	41
 silfidi	41
@@ -32846,7 +32655,6 @@ vivezza	40
 zittite	40
 zolfara	40
 alzarli	39
-bergolo	39
 brasati	39
 calibra	39
 ceppaia	39
@@ -33556,7 +33364,6 @@ fibrato	32
 fidelia	32
 fonderò	32
 fulgide	32
-gombito	32
 inceppi	32
 indarno	32
 issando	32
@@ -33666,7 +33473,6 @@ testava	31
 traenti	31
 tuderte	31
 udranno	31
-uggiate	31
 urletti	31
 vairone	31
 valacca	31
@@ -33807,7 +33613,6 @@ pungeva	30
 quilico	30
 ragusea	30
 ronzone	30
-rozzone	30
 sacelli	30
 sagrati	30
 sanando	30
@@ -34243,7 +34048,6 @@ iterate	26
 jujutsu	26
 lutezia	26
 massica	26
-melazzo	26
 mieterà	26
 miociti	26
 mischiò	26
@@ -34601,7 +34405,6 @@ bastono	23
 biolche	23
 bubbola	23
 calanco	23
-cansano	23
 cerando	23
 ciacchi	23
 cinghio	23
@@ -34994,7 +34797,6 @@ leziose	20
 lumiera	20
 margone	20
 marnosa	20
-mioglia	20
 nefaria	20
 oberate	20
 optiamo	20
@@ -35345,7 +35147,6 @@ veriste	19
 vezzose	19
 zoomate	19
 addensi	18
-albiolo	18
 apristi	18
 asolana	18
 avocata	18
@@ -35793,7 +35594,6 @@ tracina	16
 trasalì	16
 tungusi	16
 turioni	16
-umberta	16
 usciate	16
 vendili	16
 vernato	16
@@ -35937,7 +35737,6 @@ abuserò	15
 accenta	15
 adriaco	15
 afasici	15
-amaroni	15
 barbula	15
 bicicli	15
 bifolca	15
@@ -38063,7 +37862,6 @@ dialetto	18197
 gioventù	18197
 previsti	18197
 tradotto	18197
-virginia	18197
 acquisti	17782
 battista	17782
 bloccare	17782
@@ -38133,7 +37931,6 @@ richiamo	15848
 rispondo	15848
 rivelato	15848
 violento	15848
-bretagna	15488
 compenso	15488
 dedicati	15488
 fantasma	15488
@@ -38239,7 +38036,6 @@ indagare	13489
 infinita	13489
 medicine	13489
 ottenuti	13489
-piacenza	13489
 prestiti	13489
 primaria	13489
 proviene	13489
@@ -38447,7 +38243,6 @@ rovinato	10715
 shopping	10715
 sinonimo	10715
 adottata	10471
-beatrice	10471
 commessi	10471
 condotti	10471
 creatore	10471
@@ -39303,7 +39098,6 @@ cacciata	4570
 deceduto	4570
 derivate	4570
 dimostri	4570
-esposito	4570
 favorita	4570
 finzione	4570
 igienica	4570
@@ -39493,7 +39287,6 @@ aderisce	3981
 analista	3981
 astratto	3981
 cilindri	3981
-colosseo	3981
 compatto	3981
 compiute	3981
 conformi	3981
@@ -39752,7 +39545,6 @@ rilevati	3388
 ripetono	3388
 rossetti	3388
 salienti	3388
-sassuolo	3388
 superati	3388
 tagliano	3388
 accumulo	3311
@@ -39905,7 +39697,6 @@ accaduti	3019
 aiutiamo	3019
 alterato	3019
 anarchia	3019
-atalanta	3019
 basilico	3019
 briciolo	3019
 carriere	3019
@@ -39975,7 +39766,6 @@ poetessa	2951
 regolato	2951
 riferivo	2951
 rivoglio	2951
-salomone	2951
 scontare	2951
 sessista	2951
 sfondare	2951
@@ -40578,7 +40368,6 @@ arrabbia	2089
 attirano	2089
 attivate	2089
 bancarie	2089
-borgogna	2089
 celibato	2089
 cessioni	2089
 commossa	2089
@@ -40667,7 +40456,6 @@ colletta	1995
 coordina	1995
 corregge	1995
 corrieri	1995
-cremlino	1995
 crollata	1995
 disdetta	1995
 fortezze	1995
@@ -41820,7 +41608,6 @@ svendita	1174
 valevole	1174
 xenofobi	1174
 additivi	1148
-afrodite	1148
 altalena	1148
 baciarti	1148
 balneari	1148
@@ -41941,7 +41728,6 @@ cinetica	1096
 colletti	1096
 commentò	1096
 compatte	1096
-concetta	1096
 condanno	1096
 conterrà	1096
 ellenica	1096
@@ -42883,7 +42669,6 @@ trainato	776
 tronista	776
 trovammo	776
 vegliare	776
-waterloo	776
 affrontò	758
 algerina	758
 ammirata	758
@@ -43665,7 +43450,6 @@ indubbia	575
 ingiusti	575
 ingoiato	575
 libidine	575
-marciana	575
 mollusco	575
 neutrini	575
 numerata	575
@@ -43843,7 +43627,6 @@ aggiorni	537
 androidi	537
 antifona	537
 bavaresi	537
-bertoldo	537
 bevevano	537
 butterei	537
 camonica	537
@@ -43851,7 +43634,6 @@ carovane	537
 congegni	537
 consacrò	537
 corvetta	537
-crispino	537
 cuccagna	537
 deciderò	537
 delegate	537
@@ -43982,7 +43764,6 @@ tirargli	524
 treccine	524
 ugonotti	524
 visitava	524
-alicante	512
 amazzone	512
 antipapa	512
 baffetti	512
@@ -44340,7 +44121,6 @@ avvocata	457
 baccelli	457
 bassotti	457
 bassotto	457
-brembana	457
 commetta	457
 convivio	457
 creeremo	457
@@ -45162,7 +44942,6 @@ lacrosse	346
 lesbismo	346
 luterano	346
 mangione	346
-manitoba	346
 mazzetto	346
 mimetico	346
 miravano	346
@@ -46156,7 +45935,6 @@ tornammo	257
 torrioni	257
 travolse	257
 trucioli	257
-turingia	257
 varesina	257
 vigilato	257
 vincerle	257
@@ -46309,7 +46087,6 @@ ascoltai	239
 augurale	239
 baccanti	239
 bastarde	239
-bernarda	239
 bronzino	239
 brossura	239
 calpesti	239
@@ -47816,7 +47593,6 @@ taglieri	158
 tatuarsi	158
 tozzetti	158
 trainate	158
-trappeto	158
 usignoli	158
 zampetti	158
 acredine	154
@@ -48203,7 +47979,6 @@ aprutino	141
 assolato	141
 attragga	141
 badilate	141
-bagolino	141
 ballista	141
 borselli	141
 bottazzi	141
@@ -48348,7 +48123,6 @@ ieratico	138
 imbucato	138
 ineguali	138
 intimava	138
-laterina	138
 limerick	138
 magnolie	138
 maialina	138
@@ -49863,7 +49637,6 @@ cedolini	91
 ciofeche	91
 colpirne	91
 corneali	91
-cremasca	91
 crepando	91
 datemelo	91
 eleggete	91
@@ -50331,7 +50104,6 @@ effettuo	81
 eidetica	81
 enterico	81
 etnologo	81
-eufrasia	81
 falcioni	81
 firmerei	81
 flaccide	81
@@ -50511,7 +50283,6 @@ disporle	77
 distopie	77
 divisone	77
 eminenze	77
-ercolino	77
 esistevo	77
 euclidee	77
 evitassi	77
@@ -50787,7 +50558,6 @@ carpirne	72
 cedibile	72
 chiudila	72
 citarono	72
-comacina	72
 comporsi	72
 comprala	72
 difender	72
@@ -51508,7 +51278,6 @@ trimetro	61
 uretrite	61
 uticense	61
 vagliano	61
-veggiano	61
 yemenite	61
 abbonate	60
 aggrotta	60
@@ -51899,7 +51668,6 @@ bogliolo	54
 buscando	54
 cantiche	54
 carpelli	54
-cavedine	54
 censuari	54
 colature	54
 coledoco	54
@@ -53085,7 +52853,6 @@ allearti	40
 angolane	40
 annienti	40
 assonale	40
-atalante	40
 auguravo	40
 aurorale	40
 beccucci	40
@@ -53385,7 +53152,6 @@ arguisce	38
 arpagone	38
 attecchì	38
 augustee	38
-baciccia	38
 barbette	38
 battervi	38
 benedirò	38
@@ -54526,7 +54292,6 @@ zoomorfa	30
 abitarlo	29
 accasati	29
 alacrità	29
-albonese	29
 anarchie	29
 assaggiò	29
 associno	29
@@ -55737,7 +55502,6 @@ bardotto	22
 biondine	22
 bloccali	22
 buttammo	22
-cadorine	22
 caroteni	22
 causarla	22
 caverete	22
@@ -56221,7 +55985,6 @@ quercino	20
 reggerle	20
 regolerò	20
 rendeste	20
-rhodense	20
 richiuda	20
 ricucite	20
 riposini	20
@@ -59358,7 +59121,6 @@ placasse	10
 plaudere	10
 porgersi	10
 posseder	10
-prestine	10
 protrusa	10
 ramnosio	10
 razziata	10

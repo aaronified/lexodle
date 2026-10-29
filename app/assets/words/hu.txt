@@ -135,7 +135,6 @@ szex	81283
 apró	79432
 hajó	79432
 jogi	79432
-áron	79432
 évre	79432
 esik	77624
 kint	77624
@@ -292,7 +291,6 @@ várt	32359
 deák	31622
 edző	31622
 erőt	31622
-jenő	31622
 mögé	31622
 tört	31622
 vers	31622
@@ -893,7 +891,6 @@ yard	4265
 ágyú	4265
 árok	4265
 árpa	4265
-bali	4168
 bart	4168
 bőrű	4168
 széf	4168
@@ -1182,7 +1179,6 @@ gőzt	1905
 láva	1905
 rakj	1905
 rúzs	1905
-vili	1905
 vizű	1905
 ásni	1905
 area	1862
@@ -1683,7 +1679,6 @@ drága	89125
 eladó	89125
 nézni	89125
 fogsz	87096
-gyula	87096
 jelen	87096
 kettő	87096
 orvos	87096
@@ -1864,7 +1859,6 @@ bátor	40738
 földi	40738
 kezét	40738
 képen	40738
-tisza	40738
 élünk	40738
 adják	39810
 alakú	39810
@@ -2606,7 +2600,6 @@ végző	10000
 anyák	9772
 aradi	9772
 búcsú	9772
-dehát	9772
 dunai	9772
 eltér	9772
 eurós	9772
@@ -3069,7 +3062,6 @@ járta	5754
 kapun	5754
 ketté	5754
 kezén	5754
-kozma	5754
 károk	5754
 kódex	5754
 magja	5754
@@ -5597,7 +5589,6 @@ vallás	21877
 viseli	21877
 anyaga	21379
 anyját	21379
-asszem	21379
 belüli	21379
 előnye	21379
 fejjel	21379
@@ -5801,7 +5792,6 @@ tények	15488
 zavaró	15488
 bajban	15135
 bruttó	15135
-buddha	15135
 góllal	15135
 hullám	15135
 indián	15135
@@ -6897,7 +6887,6 @@ halnia	5370
 henger	5370
 holtan	5370
 isznak	5370
-jordán	5370
 jutnom	5370
 kegyes	5370
 kocsim	5370
@@ -8981,7 +8970,6 @@ zárlat	1513
 adatik	1479
 advent	1479
 akarni	1479
-andris	1479
 anyagú	1479
 betelt	1479
 bányát	1479

@@ -314,7 +314,6 @@ fett	38904
 kart	38904
 knut	38904
 tape	38904
-anna	38018
 glem	38018
 ment	38018
 rene	38018
@@ -424,7 +423,6 @@ dyrt	24547
 hest	24547
 sunt	24547
 øvre	24547
-adam	23988
 bein	23988
 kniv	23988
 prat	23988
@@ -441,7 +439,6 @@ onde	23442
 seng	23442
 søkt	23442
 øyet	23442
-aker	22908
 bånd	22908
 dikt	22908
 elva	22908
@@ -578,7 +575,6 @@ sinn	15135
 stol	15135
 styr	15135
 fase	14791
-leif	14791
 skap	14791
 jada	14454
 nesa	14454
@@ -598,7 +594,6 @@ fælt	13489
 hevn	13489
 hjul	13489
 homo	13489
-krim	13489
 piss	13489
 rana	13489
 utro	13489
@@ -989,7 +984,6 @@ sund	4677
 torg	4677
 tørk	4677
 eple	4570
-guri	4570
 hils	4570
 mett	4570
 mose	4570
@@ -1013,7 +1007,6 @@ rust	4466
 voks	4466
 bore	4365
 bånn	4365
-cape	4365
 fjes	4365
 geit	4365
 idol	4365
@@ -1040,7 +1033,6 @@ watt	4265
 book	4168
 hule	4168
 hval	4168
-inga	4168
 lokk	4168
 maja	4168
 mina	4168
@@ -1170,7 +1162,6 @@ ruse	3019
 stav	3019
 tara	3019
 ungt	3019
-øyen	3019
 byrå	2951
 hett	2951
 kødd	2951
@@ -1290,7 +1281,6 @@ fjøs	2290
 slam	2290
 vika	2290
 yale	2290
-abba	2238
 dykk	2238
 falk	2238
 feie	2238
@@ -2935,7 +2925,6 @@ avgå	95
 fata	95
 fika	95
 gaus	95
-giss	95
 hyra	95
 høhø	95
 kord	95
@@ -3193,7 +3182,6 @@ serv	57
 tuff	57
 unte	57
 boso	56
-ciss	56
 ekre	56
 gjøs	56
 mlle	56
@@ -4278,7 +4266,6 @@ ferie	48977
 james	48977
 frisk	47863
 greie	47863
-harry	47863
 liste	47863
 maten	47863
 melde	47863
@@ -4561,7 +4548,6 @@ grand	20417
 hende	20417
 papir	20417
 stakk	20417
-texas	20417
 anses	19952
 eiere	19952
 fjern	19952
@@ -5104,7 +5090,6 @@ stien	6918
 østen	6918
 cross	6760
 grant	6760
-kongo	6760
 pisse	6760
 sunde	6760
 trade	6760
@@ -5453,7 +5438,6 @@ panel	3890
 prikk	3890
 sleng	3890
 sløse	3890
-syden	3890
 bitre	3801
 brakk	3801
 druer	3801
@@ -7825,7 +7809,6 @@ rural	257
 samen	257
 tønna	257
 andes	251
-assen	251
 bikke	251
 bytur	251
 crawl	251
@@ -8074,7 +8057,6 @@ filma	208
 folio	208
 glane	208
 grime	208
-heien	208
 heron	208
 higen	208
 hoffa	208
@@ -8094,7 +8076,6 @@ såing	208
 talla	208
 taust	208
 tilga	208
-torpa	208
 trask	208
 tunes	208
 usexy	208
@@ -8236,7 +8217,6 @@ danke	181
 dåder	181
 enøyd	181
 fiska	181
-frøys	181
 gouda	181
 gynge	181
 hånte	181
@@ -8759,7 +8739,6 @@ stirr	117
 tiåra	117
 åskam	117
 balje	114
-baris	114
 boker	114
 bølla	114
 doene	114
@@ -9022,7 +9001,6 @@ theol	95
 tomte	95
 tutte	95
 verpe	95
-asser	93
 avart	93
 avkok	93
 benes	93
@@ -11830,7 +11808,6 @@ stolte	28183
 stykke	28183
 takker	28183
 totale	28183
-morten	27542
 sendes	27542
 studio	27542
 tviler	27542
@@ -12360,7 +12337,6 @@ skryte	10232
 stolen	10232
 varsle	10232
 verket	10232
-carter	10000
 fartøy	10000
 føltes	10000
 føtter	10000

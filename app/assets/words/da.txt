@@ -713,7 +713,6 @@ kvæg	9332
 pude	9332
 sild	9332
 spot	9332
-berg	9120
 enke	9120
 gulv	9120
 køen	9120
@@ -945,7 +944,6 @@ skyd	5370
 stav	5370
 tabu	5370
 vice	5370
-brad	5248
 hour	5248
 list	5248
 maya	5248
@@ -1094,7 +1092,6 @@ væld	3715
 værn	3715
 økse	3715
 coke	3630
-dane	3630
 drej	3630
 lærd	3630
 skrå	3630
@@ -1269,7 +1266,6 @@ rage	2398
 anes	2344
 dørs	2344
 glød	2344
-holt	2344
 jaja	2344
 knas	2344
 krat	2344
@@ -10653,7 +10649,6 @@ lækkede	1348
 løsesum	1348
 manerer	1348
 mottoet	1348
-nutella	1348
 næsebor	1348
 oldemor	1348
 ridende	1348

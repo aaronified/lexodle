@@ -431,7 +431,6 @@ masy	19498
 bije	19054
 cykl	19054
 foto	19054
-just	19054
 mija	19054
 otóż	19054
 real	19054
@@ -497,7 +496,6 @@ taty	15848
 użył	15848
 wart	15848
 zima	15848
-best	15488
 dbać	15488
 dwór	15488
 dług	15488
@@ -849,7 +847,6 @@ fort	6456
 gala	6456
 ideą	6456
 kolo	6456
-male	6456
 metr	6456
 rosa	6456
 serc	6456
@@ -1045,7 +1042,6 @@ puli	4466
 ropa	4466
 staw	4466
 wbić	4466
-copa	4365
 guma	4365
 luka	4365
 mata	4365
@@ -1059,7 +1055,6 @@ duza	4265
 kory	4265
 naga	4265
 nord	4265
-reka	4265
 sodu	4265
 spał	4265
 tusz	4265
@@ -1228,7 +1223,6 @@ tagi	3235
 tomy	3235
 wozy	3235
 węży	3235
-zara	3235
 zgon	3235
 cofa	3162
 czar	3162
@@ -1828,7 +1822,6 @@ krab	1318
 loch	1318
 netu	1318
 obym	1318
-reno	1318
 ryje	1318
 susz	1318
 sław	1318
@@ -2311,7 +2304,6 @@ tubę	724
 wala	724
 waza	724
 zgiń	724
-alek	707
 cary	707
 dema	707
 kiwa	707
@@ -2431,7 +2423,6 @@ amer	616
 cydr	616
 dual	616
 fisz	616
-juda	616
 kiju	616
 lary	616
 mami	616
@@ -2486,7 +2477,6 @@ gapę	575
 gazę	575
 grań	575
 kadm	575
-kopę	575
 kors	575
 kuca	575
 loli	575
@@ -2624,7 +2614,6 @@ gnat	489
 gęba	489
 haft	489
 haru	489
-krak	489
 lino	489
 novy	489
 oazą	489
@@ -2701,7 +2690,6 @@ smuć	457
 suce	457
 walę	457
 wdów	457
-wika	457
 zlej	457
 zwal	457
 śnię	457
@@ -2767,7 +2755,6 @@ ubój	426
 wsio	426
 alem	416
 babi	416
-bula	416
 chów	416
 córa	416
 jago	416
@@ -2940,7 +2927,6 @@ jota	338
 kiły	338
 kocu	338
 kosą	338
-leda	338
 poty	338
 puff	338
 rond	338
@@ -3208,7 +3194,6 @@ golą	251
 hecy	251
 igra	251
 iłów	251
-jano	251
 koto	251
 lepa	251
 mace	251
@@ -3222,7 +3207,6 @@ teka	251
 umór	251
 uniw	251
 wiat	251
-wisz	251
 yugo	251
 zwać	251
 grob	245
@@ -3616,7 +3600,6 @@ bosy	162
 cych	162
 diuk	162
 gren	162
-idzi	162
 ikra	162
 lani	162
 lont	162
@@ -3633,7 +3616,6 @@ bera	158
 cipę	158
 gaye	158
 kąsa	158
-kłys	158
 kłąb	158
 lajt	158
 mórg	158
@@ -3641,7 +3623,6 @@ pufa	158
 simo	158
 tuus	158
 usnę	158
-wery	158
 wsuń	158
 wuju	158
 łyki	158
@@ -3766,7 +3747,6 @@ jaju	134
 joty	134
 kamy	134
 kapa	134
-liwa	134
 mima	134
 odmy	134
 offu	134
@@ -3932,7 +3912,6 @@ ratą	112
 rażą	112
 spaw	112
 syfa	112
-wiko	112
 zbył	112
 śmią	112
 żądz	112
@@ -4060,7 +4039,6 @@ batu	93
 jaby	93
 jogą	93
 kląć	93
-kopą	93
 krze	93
 logu	93
 lolę	93
@@ -4257,7 +4235,6 @@ ręko	77
 skat	77
 tyki	77
 łomu	77
-bulo	75
 bzów	75
 kozo	75
 lidy	75
@@ -4327,7 +4304,6 @@ quam	70
 rapp	70
 roją	70
 wyga	70
-łęka	70
 drąc	69
 huju	69
 jeli	69
@@ -4480,7 +4456,6 @@ burk	58
 capu	58
 dolą	58
 dukt	58
-fela	58
 gnił	58
 monę	58
 orbi	58
@@ -4502,7 +4477,6 @@ jonu	57
 juka	57
 kapu	57
 kufy	57
-liwy	57
 maco	57
 maik	57
 mleć	57
@@ -4520,7 +4494,6 @@ wona	57
 łomy	57
 śliw	57
 żołn	57
-ciba	56
 darz	56
 drob	56
 esko	56
@@ -4633,7 +4606,6 @@ teką	50
 tłuk	50
 urbi	50
 wyże	50
-zolę	50
 żaki	50
 bied	48
 bzie	48
@@ -4750,7 +4722,6 @@ ssąc	43
 stel	43
 stor	43
 tlić	43
-toli	43
 torb	43
 trym	43
 waśń	43
@@ -4784,7 +4755,6 @@ limb	41
 mknę	41
 olea	41
 pirs	41
-psar	41
 siat	41
 tryt	41
 udem	41
@@ -4818,7 +4788,6 @@ mayą	39
 moog	39
 nury	39
 odom	39
-pedy	39
 ramo	39
 syci	39
 tocz	39
@@ -4833,7 +4802,6 @@ mgra	38
 reje	38
 ryte	38
 skul	38
-wero	38
 wieź	38
 wróż	38
 zżyć	38
@@ -4856,7 +4824,6 @@ bazi	37
 bres	37
 desy	37
 gamo	37
-gleń	37
 kipu	37
 krop	37
 orny	37
@@ -4871,7 +4838,6 @@ czan	36
 córo	36
 famy	36
 gaję	36
-goch	36
 ibid	36
 jeux	36
 komo	36
@@ -4926,7 +4892,6 @@ baco	33
 bufo	33
 cucu	33
 czka	33
-drin	33
 hoja	33
 iluż	33
 kisz	33
@@ -4937,7 +4902,6 @@ onej	33
 oślą	33
 rias	33
 torg	33
-tuły	33
 złów	33
 anat	33
 anta	33
@@ -4951,7 +4915,6 @@ kbks	33
 kega	33
 kłap	33
 lnem	33
-luto	33
 melu	33
 ośki	33
 pleć	33
@@ -4970,7 +4933,6 @@ eten	32
 hece	32
 kizi	32
 lwim	32
-moch	32
 nard	32
 peli	32
 pice	32
@@ -5037,7 +4999,6 @@ quem	30
 rdze	30
 tonk	30
 śląc	30
-bryś	29
 gazo	29
 lich	29
 mote	29
@@ -5324,12 +5285,10 @@ lent	21
 mulu	21
 olet	21
 ośko	21
-pyda	21
 siei	21
 szoa	21
 woki	21
 węza	21
-łuba	21
 ślaz	21
 flic	20
 gorą	20
@@ -5366,7 +5325,6 @@ peje	20
 pitą	20
 sagu	20
 silu	20
-spik	20
 turo	20
 wany	20
 weka	20
@@ -5658,7 +5616,6 @@ kufę	14
 meny	14
 morz	14
 pilo	14
-ryna	14
 snif	14
 toje	14
 trem	14
@@ -5745,7 +5702,6 @@ spąg	12
 stoa	12
 sytą	12
 tamo	12
-tyca	12
 ułus	12
 visu	12
 wony	12
@@ -5762,7 +5718,6 @@ ordę	12
 rusy	12
 ugry	12
 witz	12
-zolą	12
 asom	12
 figą	12
 juku	12
@@ -5893,7 +5848,6 @@ arso	10
 bido	10
 bimy	10
 buks	10
-ciuk	10
 deje	10
 dyno	10
 fasa	10
@@ -6315,7 +6269,6 @@ głosy	47863
 karty	47863
 lubią	47863
 miarę	47863
-piotr	47863
 piszę	47863
 późno	47863
 szefa	47863
@@ -6543,7 +6496,6 @@ wroga	26915
 dodam	26302
 gadać	26302
 mleko	26302
-musze	26302
 młode	26302
 stopy	26302
 traci	26302
@@ -6736,7 +6688,6 @@ jutra	18620
 kursy	18620
 kółko	18620
 lasów	18620
-lecha	18620
 liczą	18620
 obawy	18620
 ośmiu	18620
@@ -6938,7 +6889,6 @@ niemu	13489
 nosił	13489
 postu	13489
 right	13489
-wisła	13489
 wolną	13489
 anioł	13182
 bramy	13182
@@ -7189,7 +7139,6 @@ zysku	9549
 dowie	9332
 lewym	9332
 mądre	9332
-nowak	9332
 pojąć	9332
 pusty	9332
 tanio	9332
@@ -7470,7 +7419,6 @@ deser	6760
 grasz	6760
 konga	6760
 ksiąg	6760
-litwa	6760
 mikro	6760
 psuje	6760
 tania	6760
@@ -7848,7 +7796,6 @@ wstał	4786
 zadał	4786
 zarys	4786
 żółta	4786
-aaron	4677
 aktem	4677
 bagno	4677
 bożym	4677
@@ -7877,7 +7824,6 @@ willi	4677
 wolał	4677
 wyjąć	4677
 zajmą	4677
-zofia	4677
 łamać	4677
 żartu	4677
 brały	4570
@@ -8289,7 +8235,6 @@ biedę	3162
 dojdą	3162
 durny	3162
 górną	3162
-jenny	3162
 kable	3162
 kazać	3162
 leśna	3162
@@ -8916,7 +8861,6 @@ uczta	1949
 uranu	1949
 złomu	1949
 żółci	1949
-atari	1905
 baśni	1905
 bębny	1905
 donna	1905
@@ -9353,7 +9297,6 @@ wodór	1412
 babkę	1380
 campo	1380
 catch	1380
-chiba	1380
 comes	1380
 dożyć	1380
 grany	1380
@@ -9476,7 +9419,6 @@ hejka	1288
 jaram	1288
 kaset	1288
 nikon	1288
-petra	1288
 pysku	1288
 płata	1288
 rambo	1288
@@ -9753,7 +9695,6 @@ opory	1096
 oślep	1096
 podda	1096
 psach	1096
-radka	1096
 skany	1096
 synom	1096
 ujrzy	1096
@@ -9902,7 +9843,6 @@ ustęp	1000
 żywcu	1000
 żądza	1000
 barek	977
-becka	977
 brana	977
 czczą	977
 czule	977
@@ -10092,7 +10032,6 @@ szyte	891
 słomy	891
 toreb	891
 uszka	891
-wawer	891
 willę	891
 zabór	891
 łódka	891
@@ -10458,7 +10397,6 @@ kroju	707
 lachy	707
 lasku	707
 liber	707
-lucie	707
 luźną	707
 mafie	707
 majki	707
@@ -10519,7 +10457,6 @@ sadzą	691
 srasz	691
 stówy	691
 suwak	691
-szulc	691
 tosta	691
 trawi	691
 troch	691
@@ -10816,7 +10753,6 @@ smaży	588
 summa	588
 udamy	588
 upływ	588
-wacek	588
 wahaj	588
 żwiru	588
 babką	575
@@ -10940,7 +10876,6 @@ ziela	549
 żelem	549
 żonka	549
 bożka	537
-bruna	537
 bólów	537
 cenił	537
 czczo	537
@@ -11338,7 +11273,6 @@ nutką	446
 nutkę	446
 oprze	446
 pilch	446
-rabce	446
 rutka	446
 samby	446
 spalą	446
@@ -11602,7 +11536,6 @@ fochy	389
 foyer	389
 gąbką	389
 intra	389
-janki	389
 kredę	389
 ksywa	389
 kupmy	389
@@ -11888,7 +11821,6 @@ horda	338
 jopek	338
 kingu	338
 kręte	338
-kuraś	338
 kłosa	338
 lando	338
 lipna	338
@@ -12379,7 +12311,6 @@ butla	263
 cykam	263
 dandy	263
 dukla	263
-dunaj	263
 fiber	263
 gifów	263
 jonem	263
@@ -12588,7 +12519,6 @@ zgina	239
 łupki	239
 łyżew	239
 żmuda	239
-bloch	234
 bonzo	234
 chrum	234
 cielę	234
@@ -12626,7 +12556,6 @@ nucił	234
 obora	234
 osadą	234
 piata	234
-popka	234
 puchy	234
 rataj	234
 rybko	234
@@ -12718,7 +12647,6 @@ denat	223
 forsą	223
 gnębi	223
 grzał	223
-górno	223
 harfa	223
 huron	223
 kacza	223
@@ -12753,7 +12681,6 @@ zetor	223
 żmijo	223
 żyłaś	223
 ameba	218
-bazyl	218
 boksy	218
 bolku	218
 cipek	218
@@ -12803,7 +12730,6 @@ zjadą	218
 ścisz	218
 żaków	218
 żylne	218
-adzie	213
 amiki	213
 asusa	213
 biker	213
@@ -12979,7 +12905,6 @@ nikłą	199
 osina	199
 paszą	199
 prana	199
-renia	199
 rydel	199
 rydla	199
 rżnął	199
@@ -13199,9 +13124,6 @@ dolej	177
 fobią	177
 gloss	177
 gnidą	177
-gorki	177
-gruca	177
-gruza	177
 hamuj	177
 hanem	177
 hrabi	177
@@ -13392,7 +13314,6 @@ zaufa	165
 zebrę	165
 łubin	165
 święć	165
-żarki	165
 żądni	165
 anody	162
 arion	162
@@ -13563,11 +13484,9 @@ szuba	151
 timer	151
 trier	151
 trony	151
-tylki	151
 typer	151
 tłukę	151
 uraża	151
-wacha	151
 waruj	151
 wnuku	151
 wsadu	151
@@ -13611,7 +13530,6 @@ upiła	147
 uszli	147
 uszła	147
 zgnić	147
-łapaj	147
 łezką	147
 łuską	147
 ścieg	147
@@ -13687,7 +13605,6 @@ matni	141
 mchów	141
 migać	141
 mknie	141
-mocha	141
 moczę	141
 musie	141
 mysza	141
@@ -13723,7 +13640,6 @@ bojów	138
 całka	138
 czcił	138
 diner	138
-domie	138
 draki	138
 dwóje	138
 dwóję	138
@@ -13797,7 +13713,6 @@ kimon	134
 kirke	134
 kufle	134
 kurzą	134
-kwiek	134
 landa	134
 obroń	134
 opluć	134
@@ -14033,7 +13948,6 @@ pewex	123
 psuja	123
 psych	123
 radon	123
-rainy	123
 rampą	123
 randa	123
 rombu	123
@@ -14077,7 +13991,6 @@ latku	120
 lorek	120
 lotna	120
 minki	120
-mężyk	120
 nasra	120
 nogom	120
 oleją	120
@@ -14202,7 +14115,6 @@ otocz	114
 pager	114
 papai	114
 parte	114
-pecka	114
 plomb	114
 pstry	114
 rybim	114
@@ -14238,7 +14150,6 @@ karpi	112
 kleić	112
 kojcu	112
 kotuś	112
-kukla	112
 kulas	112
 laudy	112
 liczi	112
@@ -14381,7 +14292,6 @@ grabę	104
 grekę	104
 hartu	104
 italo	104
-kicka	104
 kobrę	104
 kocic	104
 kokot	104
@@ -14504,7 +14414,6 @@ znoju	100
 zwlec	100
 łowną	100
 arcus	97
-batko	97
 bebop	97
 bimba	97
 bonga	97
@@ -14576,7 +14485,6 @@ larze	95
 leman	95
 majkę	95
 mensa	95
-merta	95
 milin	95
 nerdy	95
 nocni	95
@@ -14617,7 +14525,6 @@ zlane	95
 astrę	93
 bośmy	93
 comte	93
-cywka	93
 domin	93
 dreny	93
 ełcki	93
@@ -14626,7 +14533,6 @@ focie	93
 fotką	93
 freon	93
 grudy	93
-jacha	93
 kiper	93
 kipią	93
 klnij	93
@@ -14732,7 +14638,6 @@ hopsa	89
 husar	89
 jacie	89
 jarzę	89
-jeżyc	89
 kafla	89
 kalla	89
 kanwę	89
@@ -14830,7 +14735,6 @@ harda	85
 iłowa	85
 jardy	85
 jazie	85
-kampa	85
 karpa	85
 kijka	85
 kufli	85
@@ -14995,7 +14899,6 @@ jaków	79
 janga	79
 jaśki	79
 jeepy	79
-loska	79
 matiz	79
 mazar	79
 mendą	79
@@ -15136,7 +15039,6 @@ chlał	74
 chrup	74
 dinka	74
 drwił	74
-dyląg	74
 gminu	74
 golfy	74
 hajda	74
@@ -15281,7 +15183,6 @@ zwiać	70
 łącki	70
 łęcki	70
 świtę	70
-żmudź	70
 agorę	69
 autka	69
 bekać	69
@@ -15363,7 +15264,6 @@ kucha	67
 kuchy	67
 kwadr	67
 kępkę	67
-latos	67
 lelum	67
 lunie	67
 lwicy	67
@@ -15562,7 +15462,6 @@ dźgać	61
 dżdżu	61
 fabuł	61
 fałda	61
-garus	61
 hulać	61
 kleję	61
 kminu	61
@@ -15720,13 +15619,11 @@ osiny	57
 palem	57
 palto	57
 pcham	57
-penga	57
 pręga	57
 psinę	57
 pyrka	57
 ratan	57
 rolni	57
-rusak	57
 rynie	57
 sabra	57
 sapał	57
@@ -15770,7 +15667,6 @@ dupne	56
 ethos	56
 furtę	56
 gibki	56
-godka	56
 harfą	56
 hordę	56
 hyzia	56
@@ -15816,11 +15712,9 @@ burce	54
 burym	54
 cacek	54
 gagów	54
-galka	54
 ganki	54
 ghule	54
 gibon	54
-gocha	54
 haska	54
 hubem	54
 hydrą	54
@@ -15942,8 +15836,6 @@ cykor	52
 czipy	52
 dewów	52
 dubli	52
-ducka	52
-dębek	52
 flank	52
 fordy	52
 gasik	52
@@ -15953,11 +15845,9 @@ koków	52
 lirze	52
 mapek	52
 mapką	52
-momot	52
 nikol	52
 odwód	52
 oksza	52
-opara	52
 otula	52
 papla	52
 parsa	52
@@ -15967,7 +15857,6 @@ redut	52
 rylec	52
 rózgę	52
 sitem	52
-siwik	52
 skosu	52
 takąż	52
 tarle	52
@@ -16027,7 +15916,6 @@ popij	51
 prast	51
 pławy	51
 renom	51
-samek	51
 samów	51
 siali	51
 songi	51
@@ -16383,7 +16271,6 @@ darda	43
 darom	43
 eidos	43
 ełcka	43
-gdowa	43
 gońcu	43
 gunia	43
 jaraj	43
@@ -16575,7 +16462,6 @@ halli	39
 ińsku	39
 jeźli	39
 juany	39
-kaleń	39
 kanno	39
 kardy	39
 karem	39
@@ -16621,7 +16507,6 @@ deklu	38
 dysko	38
 elfia	38
 fecie	38
-gatka	38
 gnają	38
 grogu	38
 kiepa	38
@@ -16641,7 +16526,6 @@ nawis	38
 nyssy	38
 oślim	38
 piani	38
-polus	38
 pstra	38
 radży	38
 regle	38
@@ -16684,7 +16568,6 @@ jatek	38
 jazów	38
 kiwał	38
 kucaj	38
-kucza	38
 liryk	38
 mamią	38
 oborą	38
@@ -16694,7 +16577,6 @@ owsem	38
 paker	38
 perka	38
 pieść	38
-pitka	38
 pocił	38
 psora	38
 pstre	38
@@ -16799,7 +16681,6 @@ resku	36
 rogóż	36
 sabry	36
 serwo	36
-siuta	36
 skibą	36
 snuto	36
 sojki	36
@@ -16819,7 +16700,6 @@ belgi	35
 broną	35
 butna	35
 chlap	35
-depta	35
 fartu	35
 gazdy	35
 ghuli	35
@@ -16847,7 +16727,6 @@ poliż	35
 procę	35
 prycz	35
 punty	35
-putek	35
 racic	35
 reksa	35
 sforę	35
@@ -16969,7 +16848,6 @@ rumel	33
 ryków	33
 skuma	33
 stawa	33
-szady	33
 torsy	33
 truję	33
 tęgim	33
@@ -17265,7 +17143,6 @@ kwest	29
 lewem	29
 limfa	29
 makak	29
-mochy	29
 mosin	29
 nabla	29
 narys	29
@@ -17600,7 +17477,6 @@ dętką	25
 fudze	25
 ganem	25
 grudę	25
-gulda	25
 helia	25
 kozom	25
 liona	25
@@ -17620,7 +17496,6 @@ pledu	25
 racie	25
 rycia	25
 rólkę	25
-siudy	25
 stert	25
 tacką	25
 wilec	25
@@ -17689,7 +17564,6 @@ wlany	25
 wpraw	25
 wyłup	25
 zaćmą	25
-zmuda	25
 zwisu	25
 łysoń	25
 łzawy	25
@@ -17719,7 +17593,6 @@ kizia	24
 kramu	24
 kumie	24
 kurko	24
-kuzaj	24
 kąska	24
 latko	24
 laudę	24
@@ -17804,7 +17677,6 @@ rąbał	23
 sardo	23
 senes	23
 smrek	23
-sołek	23
 szlus	23
 szwej	23
 tkają	23
@@ -17819,7 +17691,6 @@ wilię	23
 wtóru	23
 zwale	23
 śruty	23
-żuber	23
 aioli	23
 baców	23
 borny	23
@@ -17895,7 +17766,6 @@ kupne	22
 kęcki	22
 lewka	22
 limby	22
-matla	22
 mknąc	22
 nimby	22
 okapi	22
@@ -18028,7 +17898,6 @@ filce	21
 fiume	21
 halfa	21
 halką	21
-hruby	21
 huków	21
 inlet	21
 jeżak	21
@@ -18343,7 +18212,6 @@ zżyła	19
 łajki	19
 całce	18
 chylą	18
-durze	18
 dżinu	18
 elfkę	18
 ewang	18
@@ -18454,7 +18322,6 @@ zaroi	18
 żerca	18
 żytem	18
 agamy	17
-borak	17
 braty	17
 brodo	17
 bubek	17
@@ -18517,7 +18384,6 @@ barny	17
 batut	17
 bełta	17
 bocek	17
-bojda	17
 bubki	17
 bujdą	17
 certy	17
@@ -18617,7 +18483,6 @@ knagi	16
 kodom	16
 kolcu	16
 kreol	16
-kunic	16
 kępką	16
 lawet	16
 magam	16
@@ -18692,7 +18557,6 @@ smecz	16
 snuły	16
 soman	16
 spoić	16
-stręk	16
 sążeń	16
 sępia	16
 taksą	16
@@ -18715,7 +18579,6 @@ zbyte	16
 zydel	16
 łasko	16
 łukom	16
-łysak	16
 żarły	16
 akito	16
 alija	16
@@ -18860,7 +18723,6 @@ opływ	15
 osowy	15
 panin	15
 pince	15
-putka	15
 retor	15
 rżnąc	15
 simom	15
@@ -19241,7 +19103,6 @@ blina	13
 bucek	13
 dinks	13
 dokup	13
-dybka	13
 dąsać	13
 folgi	13
 fonią	13
@@ -19305,7 +19166,6 @@ darny	12
 dreda	12
 dynks	12
 dzisz	12
-ekier	12
 falsa	12
 fantę	12
 furkę	12
@@ -19481,7 +19341,6 @@ frycu	12
 fugas	12
 fulli	12
 gazal	12
-gotka	12
 groni	12
 guzom	12
 ibisy	12
@@ -19496,7 +19355,6 @@ kołat	12
 kośna	12
 krają	12
 krech	12
-kędry	12
 kłowe	12
 lelki	12
 lubym	12
@@ -19663,7 +19521,6 @@ gabru	11
 gaura	11
 glans	11
 gonem	11
-gręda	11
 gurba	11
 gurtu	11
 habet	11
@@ -19684,7 +19541,6 @@ larga	11
 lewów	11
 ludny	11
 lutry	11
-lutów	11
 makat	11
 manca	11
 moped	11
@@ -19813,7 +19669,6 @@ ikrze	10
 jamkę	10
 kasby	10
 kpiła	10
-lecki	10
 lubka	10
 mulle	10
 muren	10
@@ -20453,7 +20308,6 @@ bronić	36307
 dowody	36307
 gazety	36307
 gotowe	36307
-janusz	36307
 mogłem	36307
 natury	36307
 odbyła	36307
@@ -20596,7 +20450,6 @@ deszcz	27542
 gotowy	27542
 patrzę	27542
 pałacu	27542
-polsko	27542
 polsku	27542
 stawia	27542
 tamtym	27542
@@ -21191,7 +21044,6 @@ ucieka	12882
 uważał	12882
 wodnej	12882
 wyszły	12882
-węgier	12882
 zajęła	12882
 zmusić	12882
 śmiech	12882
@@ -21595,7 +21447,6 @@ wracaj	8912
 zapisy	8912
 zdarzy	8912
 zemsty	8912
-ziobro	8912
 błędem	8709
 chorym	8709
 cięcie	8709
@@ -21842,7 +21693,6 @@ ukryty	7244
 umysły	7244
 wezwał	7244
 wioska	7244
-wojtek	7244
 wydali	7244
 zaufać	7244
 zeznań	7244
@@ -22287,7 +22137,6 @@ trudną	5248
 umówić	5248
 update	5248
 używaj	5248
-wałęsy	5248
 wesoło	5248
 wątków	5248
 włoska	5248
@@ -22350,7 +22199,6 @@ dwojga	5011
 dziwią	5011
 dziwną	5011
 długów	5011
-helena	5011
 hunter	5011
 kabiny	5011
 kostkę	5011
@@ -22765,7 +22613,6 @@ grecka	3890
 gładko	3890
 hrabia	3890
 ironii	3890
-kalisz	3890
 królik	3890
 kumple	3890
 kłamał	3890
@@ -22950,7 +22797,6 @@ queens	3548
 reggae	3548
 reguła	3548
 rogiem	3548
-rybnik	3548
 stawał	3548
 stawką	3548
 string	3548
@@ -23724,7 +23570,6 @@ gmachu	2290
 gwinea	2290
 hamuje	2290
 karton	2290
-kinder	2290
 komina	2290
 kopiuj	2290
 kopnął	2290
@@ -24606,7 +24451,6 @@ rolety	1513
 schron	1513
 siadam	1513
 sokoła	1513
-sparta	1513
 sprayu	1513
 ssaków	1513
 szkoli	1513
@@ -24850,7 +24694,6 @@ udanie	1380
 urazów	1380
 ustnie	1380
 uwieść	1380
-wałęsę	1380
 wstręt	1380
 zalewu	1380
 zarost	1380
@@ -25640,7 +25483,6 @@ tłustą	977
 urazem	977
 uwiera	977
 używek	977
-wałęsą	977
 wieńca	977
 wykrył	977
 wysuwa	977
@@ -25970,7 +25812,6 @@ pytano	851
 rabaty	851
 randze	851
 rzygam	851
-sparty	851
 ssania	851
 stolic	851
 stwory	851
@@ -26205,7 +26046,6 @@ zajrzy	776
 zwijać	776
 łodygi	776
 żeście	776
-aniela	758
 arbuza	758
 balast	758
 bojową	758
@@ -26556,7 +26396,6 @@ bungee	660
 bunkry	660
 buziak	660
 bzdurę	660
-chazan	660
 czipsy	660
 dorósł	660
 fordem	660
@@ -27177,7 +27016,6 @@ chwytu	537
 daninę	537
 detalu	537
 dźwigu	537
-florek	537
 ganiać	537
 gratka	537
 hostel	537
@@ -27245,7 +27083,6 @@ bodźca	524
 brudni	524
 brązie	524
 błysku	524
-chojna	524
 chował	524
 chrzan	524
 ciekły	524
@@ -27281,7 +27118,6 @@ pogram	524
 pędzić	524
 reszka	524
 rzekła	524
-sajgon	524
 scenkę	524
 skałki	524
 skleić	524
@@ -27476,7 +27312,6 @@ odnóża	489
 odłamu	489
 ogiera	489
 owocne	489
-ozimek	489
 perską	489
 pieczy	489
 pobiją	489
@@ -27508,7 +27343,6 @@ wbiłem	489
 wersal	489
 wpiszę	489
 wporzo	489
-wronki	489
 wróżby	489
 wybity	489
 wycisk	489
@@ -27682,7 +27516,6 @@ ochotą	457
 osiach	457
 owczej	457
 ożywia	457
-passat	457
 piwach	457
 płatka	457
 replay	457
@@ -28386,7 +28219,6 @@ cukrze	363
 dinner	363
 docent	363
 dublet	363
-dębiec	363
 ekonom	363
 fortów	363
 gejszy	363
@@ -28690,7 +28522,6 @@ bylina	331
 chroma	331
 dwójek	331
 franko	331
-gabryś	331
 gapiąc	331
 gotyku	331
 herosi	331
@@ -29016,7 +28847,6 @@ mączka	301
 newsem	301
 nikona	301
 orlich	301
-osmana	301
 osoczu	301
 patyka	301
 pałami	301
@@ -29225,7 +29055,6 @@ magnet	281
 makler	281
 marcha	281
 marsza	281
-maryna	281
 metrum	281
 muszlę	281
 mękach	281
@@ -29414,7 +29243,6 @@ wskocz	269
 wycenę	269
 wycisz	269
 wydoić	269
-wyszki	269
 zeszłe	269
 łamało	269
 żabami	269
@@ -29429,7 +29257,6 @@ chlubą	263
 chłamu	263
 cierni	263
 czasom	263
-czubak	263
 danemu	263
 darzyć	263
 dizajn	263
@@ -29472,7 +29299,6 @@ siwych	263
 skarpa	263
 skażeń	263
 spacje	263
-stegna	263
 surowi	263
 szańca	263
 topowy	263
@@ -29759,7 +29585,6 @@ niunia	239
 odkręć	239
 omówię	239
 owalna	239
-pakość	239
 palach	239
 panicz	239
 pastel	239
@@ -29801,7 +29626,6 @@ biorcy	234
 bitową	234
 bizony	234
 bobbym	234
-brocha	234
 celową	234
 dobiła	234
 dolicz	234
@@ -30347,7 +30171,6 @@ wlazły	204
 wmówił	204
 wpajać	204
 wpędza	204
-wronka	204
 wzywaj	204
 zbliżą	204
 zdarte	204
@@ -30375,7 +30198,6 @@ dorwie	199
 drozdy	199
 dupków	199
 dworki	199
-dziuba	199
 enklaw	199
 femina	199
 galena	199
@@ -30809,7 +30631,6 @@ komizm	177
 kopach	177
 kopców	177
 kożuch	177
-krobia	177
 krotna	177
 kurzej	177
 kwanty	177
@@ -30887,7 +30708,6 @@ karety	173
 kiciuś	173
 klacze	173
 komicy	173
-królak	173
 lunche	173
 mdleję	173
 minach	173
@@ -31152,7 +30972,6 @@ nylonu	162
 odłoży	162
 ogiery	162
 osóbki	162
-pamuła	162
 patche	162
 plączą	162
 porcją	162
@@ -31370,9 +31189,7 @@ bujnej	151
 błazny	151
 czopka	151
 dokach	151
-drabik	151
 drapał	151
-dubiel	151
 farszu	151
 fikcje	151
 glinką	151
@@ -31509,7 +31326,6 @@ rykach	147
 sennik	147
 silosu	147
 skąpym	147
-spartą	147
 sploty	147
 strupy	147
 stąpać	147
@@ -31718,7 +31534,6 @@ dziczą	138
 espada	138
 grzędy	138
 jojoba	138
-joniec	138
 kasowe	138
 kijach	138
 kramów	138
@@ -31941,7 +31756,6 @@ rudymi	131
 rześki	131
 sancta	131
 sikhów	131
-smolec	131
 spanko	131
 starem	131
 stonka	131
@@ -32066,7 +31880,6 @@ zbywać	128
 zmyłam	128
 zwalaj	128
 zwinna	128
-ślęzak	128
 śmigus	128
 śrubkę	128
 arkada	125
@@ -32300,7 +32113,6 @@ oliwna	120
 osnuta	120
 ostała	120
 ostępy	120
-pakuła	120
 pchała	120
 pismak	120
 plafon	120
@@ -32442,7 +32254,6 @@ kobyle	114
 kopara	114
 kraksa	114
 krechy	114
-kublik	114
 lejemy	114
 mazaki	114
 mierni	114
@@ -32497,7 +32308,6 @@ buczeć	112
 bytują	112
 bólowi	112
 chcącą	112
-chybie	112
 cofasz	112
 czaruj	112
 debetu	112
@@ -32522,7 +32332,6 @@ kozach	112
 krowom	112
 kutrów	112
 listwą	112
-lubawy	112
 lucida	112
 mignon	112
 mikita	112
@@ -32846,7 +32655,6 @@ armady	102
 asumpt	102
 bazuję	102
 błogie	102
-dzidek	102
 fiacie	102
 fikusa	102
 fiolek	102
@@ -33355,7 +33163,6 @@ potwor	91
 pośpię	91
 prawią	91
 półosi	91
-reczek	91
 rogową	91
 runęło	91
 rybaki	91
@@ -33579,7 +33386,6 @@ złączu	87
 ździra	87
 żeniąc	87
 żyłoby	87
-anielę	85
 banału	85
 bosymi	85
 bródką	85
@@ -33759,7 +33565,6 @@ zoomem	83
 zwojem	83
 łaknie	83
 ślizgi	83
-śmigla	83
 alejką	81
 baboli	81
 bakiem	81
@@ -33783,7 +33588,6 @@ kikuta	81
 kodeka	81
 krasny	81
 ksywce	81
-kunice	81
 kwestę	81
 latkom	81
 lichwę	81
@@ -33857,7 +33661,6 @@ coacha	79
 czarta	79
 daniną	79
 dobrom	79
-gamrat	79
 golfik	79
 grodem	79
 grusze	79
@@ -34234,7 +34037,6 @@ klipsy	72
 kobyla	72
 kohort	72
 kozica	72
-krajny	72
 krasna	72
 kreuję	72
 kuflem	72
@@ -34481,11 +34283,9 @@ badało	67
 banera	67
 banuję	67
 barter	67
-brodów	67
 błagań	67
 celica	67
 chatek	67
-ciosek	67
 ciętym	67
 cumuje	67
 czesał	67
@@ -34528,7 +34328,6 @@ miazgą	67
 moszcz	67
 mrówkę	67
 oberka	67
-obirek	67
 odbitą	67
 odbyta	67
 odpręż	67
@@ -34842,7 +34641,6 @@ papcia	63
 pasące	63
 pchasz	63
 pieńki	63
-poldek	63
 poryty	63
 pościł	63
 pracze	63
@@ -35159,7 +34957,6 @@ zadrży	58
 zaduma	58
 zelżał	58
 łgarzy	58
-śmiglu	58
 żuchwą	58
 żytnią	58
 akcept	57
@@ -35363,7 +35160,6 @@ fornal	54
 freonu	54
 furami	54
 gaście	54
-gmerek	54
 goniły	54
 grandy	54
 groniu	54
@@ -35965,7 +35761,6 @@ czeszę	46
 dawana	46
 dogach	46
 dualny	46
-dulęba	46
 dębach	46
 dżemik	46
 egzema	46
@@ -36250,7 +36045,6 @@ zmówić	44
 łaknąć	44
 łęgiem	44
 astrów	43
-boruch	43
 bratał	43
 błotku	43
 całuny	43
@@ -36921,7 +36715,6 @@ beurre	37
 białką	37
 bierek	37
 bojami	37
-bojana	37
 bulisz	37
 cambio	37
 chlust	37
@@ -36949,7 +36742,6 @@ limbus	37
 liryzm	37
 lisiak	37
 mapuje	37
-maryną	37
 medinę	37
 mutuje	37
 mylono	37
@@ -37607,7 +37399,6 @@ okryci	31
 ornatu	31
 ospale	31
 partes	31
-paruch	31
 piston	31
 plewka	31
 poczęć	31
@@ -37896,7 +37687,6 @@ lizali	29
 liżcie	29
 magali	29
 malagą	29
-malesa	29
 masują	29
 melasą	29
 melnik	29
@@ -38201,8 +37991,6 @@ rufowa	27
 rukiew	27
 rybkom	27
 równię	27
-sierak	27
-sitnik	27
 sitowy	27
 skrócę	27
 skuwać	27
@@ -38240,7 +38028,6 @@ apelów	26
 aportu	26
 apsydą	26
 askari	26
-babica	26
 bidula	26
 bielma	26
 biesów	26
@@ -38522,7 +38309,6 @@ zaległ	25
 zapola	25
 zawiei	25
 zwężać	25
-łabuda	25
 łakoma	25
 łaszcz	25
 łysicy	25
@@ -38612,7 +38398,6 @@ szoków	25
 słabły	25
 tarpon	25
 teista	25
-telega	25
 tojeść	25
 tumska	25
 tłukły	25
@@ -38847,7 +38632,6 @@ czyimi	23
 dawcom	23
 doczep	23
 dołowy	23
-dzidka	23
 dębnik	23
 dłużyć	23
 feniga	23
@@ -38888,7 +38672,6 @@ nurtom	23
 obsuwę	23
 odlicz	23
 odpina	23
-olbryś	23
 omułki	23
 opałko	23
 osrane	23
@@ -38903,12 +38686,10 @@ piekłu	23
 piśnie	23
 poidło	23
 polier	23
-pyszka	23
 rajzer	23
 reszkę	23
 rexton	23
 ruderę	23
-rykała	23
 rzędne	23
 sapała	23
 schnąć	23
@@ -38954,7 +38735,6 @@ zmoczy	23
 życica	23
 żyrant	23
 żywsza	23
-anielą	22
 blizno	22
 bossom	22
 briard	22
@@ -39006,7 +38786,6 @@ persil	22
 piastą	22
 pnącej	22
 pointę	22
-polica	22
 popili	22
 pozami	22
 pukała	22
@@ -39321,7 +39100,6 @@ lianga	21
 ludnej	21
 luzaki	21
 maneżu	21
-mentel	21
 minoga	21
 mostom	21
 mułami	21
@@ -39342,7 +39120,6 @@ piżmem	21
 plecha	21
 pokroi	21
 pominą	21
-posmyk	21
 pukało	21
 pękata	21
 pławna	21
@@ -39423,7 +39200,6 @@ lękasz	20
 metaxa	20
 mikrob	20
 mitozę	20
-młynik	20
 mżawką	20
 nakażą	20
 niziną	20
@@ -39456,7 +39232,6 @@ sołdat	20
 spiryt	20
 sporek	20
 storna	20
-szałek	20
 sługów	20
 timery	20
 tofana	20
@@ -39464,7 +39239,6 @@ torfów	20
 trucku	20
 trupim	20
 trzesz	20
-trześń	20
 tętnie	20
 ucinał	20
 wabiły	20
@@ -39493,7 +39267,6 @@ bryzie	20
 butnie	20
 byczej	20
 cessnę	20
-chołuj	20
 cybuch	20
 cykają	20
 cęgowy	20
@@ -39511,7 +39284,6 @@ kargol	20
 kuczer	20
 lewara	20
 limony	20
-majkut	20
 meriva	20
 miętki	20
 murala	20
@@ -39568,7 +39340,6 @@ bastei	19
 bawoli	19
 belfry	19
 bezana	19
-brózda	19
 burkot	19
 cyrkuł	19
 dogasa	19
@@ -39642,7 +39413,6 @@ starek	19
 surmia	19
 suszka	19
 sycący	19
-syroka	19
 szpona	19
 szuflą	19
 tkliwe	19
@@ -40032,7 +39802,6 @@ dnieje	18
 donieś	18
 drezyn	18
 dymiło	18
-dziewa	18
 dąbska	18
 eforów	18
 fagotu	18
@@ -40182,7 +39951,6 @@ odkład	17
 oracja	17
 oryksy	17
 otrzep	17
-podyma	17
 postna	17
 potażu	17
 połasi	17
@@ -40277,7 +40045,6 @@ konsum	17
 kopało	17
 koprze	17
 koźlej	17
-krychy	17
 lawowy	17
 limona	17
 liniał	17
@@ -40423,7 +40190,6 @@ mydlił	16
 młócić	16
 nabiło	16
 odrzwi	16
-ognica	16
 ogrowi	16
 opadli	16
 opiela	16
@@ -40500,7 +40266,6 @@ giusto	16
 gródki	16
 helowy	16
 hermie	16
-jaskot	16
 kalach	16
 kancik	16
 kapoku	16
@@ -40809,7 +40574,6 @@ etyków	15
 fląder	15
 francy	15
 ględzi	15
-gmyrek	15
 gnatów	15
 hadena	15
 handów	15
@@ -41401,7 +41165,6 @@ kopnej	13
 kozuch	13
 krupie	13
 kudłów	13
-kumora	13
 ladami	13
 lakiem	13
 legatu	13
@@ -41547,7 +41310,6 @@ pijali	13
 poszwę	13
 połowo	13
 prątek	13
-rosada	13
 rzewną	13
 sarnią	13
 skonto	13
@@ -42018,7 +41780,6 @@ blacik	12
 bujacz	12
 bulina	12
 błonką	12
-choroś	12
 colona	12
 cytral	12
 czatem	12
@@ -42126,7 +41887,6 @@ sabela	12
 seksik	12
 sianiu	12
 simach	12
-skalik	12
 spławy	12
 ssałem	12
 stajen	12
@@ -42196,7 +41956,6 @@ kobzie	11
 korbie	11
 kumana	11
 lansie	11
-lesica	11
 ligawa	11
 lotnią	11
 machną	11
@@ -42392,7 +42151,6 @@ niewód	11
 nornik	11
 obiorę	11
 obiłem	11
-odolan	11
 odrośl	11
 odwyki	11
 okryto	11
@@ -42472,7 +42230,6 @@ zagłęb	11
 zasiek	11
 zbywam	11
 zgadną	11
-zielak	11
 znudzę	11
 zważam	11
 zwózki	11
@@ -42665,7 +42422,6 @@ apotem	10
 arhata	10
 azolla	10
 barwic	10
-bestry	10
 biling	10
 bokowi	10
 boleją	10
@@ -42713,7 +42469,6 @@ gwaszy	10
 gębowe	10
 gęsiak	10
 hadisu	10
-hadyna	10
 hamady	10
 impres	10
 indult	10
@@ -42785,7 +42540,6 @@ sariss	10
 skaleń	10
 skonam	10
 skubną	10
-sośnia	10
 spaleń	10
 spawał	10
 speszy	10
@@ -43111,7 +42865,6 @@ wyborów	74131
 wówczas	74131
 środków	74131
 myślisz	72443
-niemiec	72443
 okazało	72443
 zostali	72443
 chętnie	70794
@@ -43522,7 +43275,6 @@ powiesz	26302
 pozycja	26302
 skazany	26302
 trzymaj	26302
-ukraina	26302
 urodził	26302
 wygrała	26302
 wyższej	26302
@@ -44093,7 +43845,6 @@ grafiki	12589
 głupota	12589
 herbata	12589
 istotny	12589
-janusza	12589
 klienci	12589
 kochany	12589
 kolację	12589
@@ -47355,7 +47106,6 @@ dorobić	2089
 doznała	2089
 gniewem	2089
 godnych	2089
-hiszpan	2089
 irański	2089
 kresach	2089
 krwinek	2089
@@ -49120,7 +48870,6 @@ ujrzała	1174
 uleczyć	1174
 umierał	1174
 umocnić	1174
-wałęsie	1174
 wenecka	1174
 wersalu	1174
 wiedźma	1174
@@ -49641,7 +49390,6 @@ sztormu	1000
 terapią	1000
 tkanina	1000
 uliczka	1000
-wielgus	1000
 wjedzie	1000
 wnieśli	1000
 wybitną	1000
@@ -50425,7 +50173,6 @@ dziąsła	776
 forteca	776
 gazetkę	776
 gospody	776
-januszu	776
 kotwicy	776
 krwawią	776
 krwotok	776
@@ -50569,7 +50316,6 @@ zwrocie	758
 adidasy	741
 adiunkt	741
 arkadii	741
-brownie	741
 błońska	741
 celibat	741
 chlebek	741
@@ -50661,7 +50407,6 @@ borykać	724
 brudnym	724
 dachowe	724
 egoistą	724
-górniak	724
 iglaste	724
 jajniki	724
 kasacji	724
@@ -51263,7 +51008,6 @@ hodowle	616
 honorze	616
 husarii	616
 jajnika	616
-janusze	616
 jaworze	616
 kanonie	616
 kasztan	616
@@ -51465,7 +51209,6 @@ karnety	588
 kolcami	588
 kolorki	588
 kowalem	588
-kulesza	588
 latarką	588
 liceach	588
 malarze	588
@@ -51485,7 +51228,6 @@ platyny	588
 podjętą	588
 pogodny	588
 polecać	588
-polesie	588
 ponurym	588
 pozbywa	588
 prefekt	588
@@ -52650,7 +52392,6 @@ poniżyć	446
 ponosił	446
 popłoch	446
 posunie	446
-przemka	446
 przylot	446
 płynnej	446
 rebelię	446
@@ -52943,7 +52684,6 @@ felicia	416
 filolog	416
 gimbusy	416
 gonitwa	416
-grabiec	416
 hybrydę	416
 isfahan	416
 jelonek	416
@@ -53068,7 +52808,6 @@ kasację	407
 klaunem	407
 kobieco	407
 kopiami	407
-korczak	407
 krańców	407
 kreator	407
 kreując	407
@@ -53198,8 +52937,6 @@ odlotem	398
 opalona	398
 paletka	398
 paliłam	398
-partyka	398
-passata	398
 persony	398
 pilnuję	398
 pionków	398
@@ -53680,7 +53417,6 @@ zwrotkę	363
 ćwierci	363
 łaskawe	363
 śmiałaś	363
-świeżak	363
 adresat	354
 bezmiar	354
 branych	354
@@ -54430,7 +54166,6 @@ empatią	301
 emulsji	301
 forsuje	301
 frędzle	301
-garniak	301
 gęstymi	301
 głosowy	301
 imituje	301
@@ -54889,7 +54624,6 @@ gulaszu	275
 gumowej	275
 haczyki	275
 helenka	275
-jedlnia	275
 kamerką	275
 kaskach	275
 kingiem	275
@@ -55370,7 +55104,6 @@ znikała	257
 zrodzić	257
 ławnika	257
 ścięciu	257
-śmigiel	257
 anuluje	251
 azotowe	251
 barwnej	251
@@ -55387,7 +55120,6 @@ cienias	251
 cuchnie	251
 cyrkiel	251
 darujmy	251
-dziubek	251
 dziurką	251
 epokach	251
 fiskusa	251
@@ -56254,7 +55986,6 @@ kostnym	213
 kroczył	213
 kumacie	213
 leniuch	213
-leśnica	213
 machała	213
 majcher	213
 maklera	213
@@ -56792,7 +56523,6 @@ rywalką	194
 samopas	194
 secesja	194
 sierotę	194
-skowron	194
 spakuje	194
 stańcie	194
 studnią	194
@@ -56811,7 +56541,6 @@ wasalem	194
 wieńców	194
 wkładce	194
 wlewamy	194
-wszołek	194
 wymknie	194
 wyparli	194
 wyłowił	194
@@ -57259,7 +56988,6 @@ choinek	177
 chutney	177
 dolnymi	177
 drabiną	177
-drzyzga	177
 dzikiem	177
 efezjan	177
 glonami	177
@@ -57524,7 +57252,6 @@ dziurek	169
 funtach	169
 galopem	169
 garbusa	169
-gestalt	169
 gobelin	169
 gromkie	169
 gęstsza	169
@@ -58144,7 +57871,6 @@ amuletu	151
 angliku	151
 arytmia	151
 bawołów	151
-bednorz	151
 bogacić	151
 bunkrem	151
 buttona	151
@@ -58269,7 +57995,6 @@ cholewy	147
 chuście	147
 cipkami	147
 czerski	147
-czeszka	147
 dołkach	147
 dworsko	147
 dyskont	147
@@ -58297,7 +58022,6 @@ mecenat	147
 medianę	147
 metrażu	147
 mglisty	147
-miastko	147
 mikstur	147
 milcząc	147
 minimal	147
@@ -59040,7 +58764,6 @@ baobabu	128
 bazylię	128
 bitewny	128
 całunem	128
-chrobak	128
 chrzcić	128
 chrzcił	128
 cyjanek	128
@@ -59052,7 +58775,6 @@ dopadną	128
 dymiące	128
 endecja	128
 fanfary	128
-fijałek	128
 fioletu	128
 focusie	128
 fraszek	128
@@ -59405,7 +59127,6 @@ wcinamy	123
 wetknąć	123
 widząca	123
 widłowy	123
-wilczak	123
 wirówki	123
 wstawką	123
 wybijał	123
@@ -59664,7 +59385,6 @@ zaprząc	117
 zarzucę	117
 zbijają	117
 zesrali	117
-zimocha	117
 zjadali	117
 zlecane	117
 złotowa	117
@@ -60038,7 +59758,6 @@ popadły	109
 posłach	109
 promesę	109
 prywata	109
-puchała	109
 puzonie	109
 pytanka	109
 remisję	109
@@ -60098,7 +59817,6 @@ arbuzem	107
 bacówka	107
 bandura	107
 bijecie	107
-bogacki	107
 bojarów	107
 borowca	107
 borowej	107
@@ -60218,7 +59936,6 @@ wymachy	107
 wysięku	107
 wysypać	107
 władała	107
-zagłoba	107
 zakrytą	107
 zalanej	107
 zaspała	107
@@ -60699,7 +60416,6 @@ olejowa	97
 opisało	97
 opornik	97
 orbital	97
-ostrawy	97
 owiewki	97
 paczcie	97
 palanty	97
@@ -60973,7 +60689,6 @@ spiknąć	93
 spowite	93
 stanica	93
 statyki	93
-stawarz	93
 suchoty	93
 teriera	93
 tkactwo	93
@@ -61153,7 +60868,6 @@ etapowe	89
 fasonem	89
 figurce	89
 fluorem	89
-gancarz	89
 gipsowa	89
 golgotę	89
 habemus	89
@@ -62273,12 +61987,10 @@ amylaza	74
 anizeli	74
 aureole	74
 awersji	74
-barczyk	74
 blednąć	74
 bluźnić	74
 borecki	74
 butlach	74
-cebulak	74
 cenzusu	74
 chmurkę	74
 chwilki	74
@@ -62419,7 +62131,6 @@ datować	72
 duetowi	72
 dyniową	72
 dziatek	72
-fijołek	72
 flaszką	72
 gablotę	72
 grzebyk	72
@@ -62509,7 +62220,6 @@ usidlić	72
 usterką	72
 utajone	72
 uzbraja	72
-wardęga	72
 warowna	72
 warowne	72
 ważącym	72
@@ -62821,7 +62531,6 @@ cisnęły	67
 ciążowa	67
 cockpit	67
 czatuje	67
-czernik	67
 dealing	67
 dioksyn	67
 dobowym	67
@@ -63017,7 +62726,6 @@ natężeń	66
 nazwala	66
 obciążą	66
 oferent	66
-okupnik	66
 owadzie	66
 parchów	66
 parowca	66
@@ -63385,7 +63093,6 @@ zwężony	63
 śmigacz	63
 adamowa	61
 amonowy	61
-antonik	61
 aplauzu	61
 armatni	61
 autorko	61
@@ -63695,7 +63402,6 @@ karczek	58
 kingowi	58
 klękamy	58
 kolbami	58
-komorka	58
 kpienie	58
 kupnych	58
 kuponem	58
@@ -64094,7 +63800,6 @@ azotyny	54
 banerze	54
 baronet	54
 basketu	54
-bałdyga	54
 bolcami	54
 brzanka	54
 buszuje	54
@@ -64271,7 +63976,6 @@ kultach	53
 laikatu	53
 laktazy	53
 lebioda	53
-legutki	53
 lekarce	53
 linieje	53
 litanią	53
@@ -64780,7 +64484,6 @@ usterce	50
 vitalis	50
 wałacha	50
 wbiegło	50
-wilkosz	50
 wkurwię	50
 wykroić	50
 wyprano	50
@@ -64885,7 +64588,6 @@ panując	48
 pasemek	48
 paszowe	48
 pedałom	48
-pieczka	48
 piewców	48
 podniet	48
 posesją	48
@@ -65101,7 +64803,6 @@ amarant	46
 atawizm	46
 bajorka	46
 bawiącą	46
-betleja	46
 blagier	46
 burtami	46
 bułkach	46
@@ -65350,7 +65051,6 @@ rakowym	45
 raniące	45
 rostbef	45
 rozkręć	45
-rożnica	45
 ryglami	45
 róźnica	45
 rąbałem	45
@@ -65421,7 +65121,6 @@ dograne	44
 dymaniu	44
 ekstazą	44
 fenigów	44
-furgała	44
 gdyńską	44
 geodetę	44
 godzący	44
@@ -65723,7 +65422,6 @@ chyliło	42
 chłopką	42
 cumować	42
 czekany	42
-czeszką	42
 czułymi	42
 debilką	42
 demolkę	42
@@ -65895,7 +65593,6 @@ kaleczę	41
 kaletka	41
 karasek	41
 kasetka	41
-kałużna	41
 kościej	41
 kramarz	41
 ksenony	41
@@ -66827,7 +66524,6 @@ nowator	36
 nożnego	36
 objawie	36
 obwisła	36
-ociepka	36
 odgórna	36
 odnośne	36
 odzianą	36
@@ -67233,7 +66929,6 @@ corollę	33
 courant	33
 cyferkę	33
 czerech	33
-danielą	33
 dawałeś	33
 dolewaj	33
 drozdów	33
@@ -67327,7 +67022,6 @@ strzygł	33
 szahida	33
 szczeci	33
 szczeny	33
-szczuki	33
 szprycy	33
 słonika	33
 słońsku	33
@@ -67563,8 +67257,6 @@ jamisty	32
 japońce	32
 katuszy	32
 kodowym	32
-koniami	32
-kostyra	32
 krasnym	32
 kręgiel	32
 kursowy	32
@@ -68860,7 +68552,6 @@ biaława	26
 bostona	26
 bukłaki	26
 bułkami	26
-bystroń	26
 celnemu	26
 chmiele	26
 ciążącą	26
@@ -69166,14 +68857,12 @@ zsyłają	25
 łożnicy	25
 łysieją	25
 żegnany	25
-żmudzin	25
 żwawego	25
 życzono	25
 żyłkach	25
 adenina	25
 aloesem	25
 arielem	25
-bałaban	25
 bieługi	25
 bluzgał	25
 brednię	25
@@ -69227,7 +68916,6 @@ kaskami	25
 kibelki	25
 kogutek	25
 konewki	25
-kopanka	25
 kostuch	25
 krajana	25
 kroczka	25
@@ -69243,7 +68931,6 @@ mazanie	25
 medytuj	25
 mielące	25
 mleczak	25
-mrówków	25
 murkach	25
 nabiłem	25
 najmuje	25
@@ -69993,7 +69680,6 @@ bulwach	22
 cechowa	22
 chmurek	22
 chmurne	22
-chrobok	22
 czubami	22
 dokonuj	22
 dolinkę	22
@@ -70533,7 +70219,6 @@ aeracja	20
 antenkę	20
 asasyna	20
 badaczu	20
-bargieł	20
 bodziak	20
 brunchu	20
 bukówka	20
@@ -70904,7 +70589,6 @@ kantyka	19
 karafce	19
 karskie	19
 katarek	19
-kieszek	19
 kliniec	19
 klipsów	19
 kokpity	19
@@ -70971,7 +70655,6 @@ prasada	19
 prasują	19
 pukawki	19
 puzonów	19
-płaneta	19
 radyjko	19
 ropuchą	19
 roszczę	19
@@ -71152,7 +70835,6 @@ stającą	19
 stelaży	19
 strojne	19
 strojom	19
-strózik	19
 supełki	19
 sybirze	19
 szemrać	19
@@ -71168,7 +70850,6 @@ uchylna	19
 uczuleń	19
 umizgów	19
 uprawny	19
-wantuch	19
 wessane	19
 wiarusy	19
 windowy	19
@@ -71489,7 +71170,6 @@ samicom	18
 saperkę	18
 siejąca	18
 skrętce	18
-stronna	18
 sufletu	18
 syfonie	18
 sylwety	18
@@ -71847,7 +71527,6 @@ raczków	17
 rotator	17
 rozlali	17
 sitarze	17
-skotnik	17
 solonym	17
 spalano	17
 spowiły	17
@@ -71956,7 +71635,6 @@ igrania	17
 iskrowy	17
 jamniku	17
 kalifów	17
-kalonka	17
 kalorię	17
 kanasta	17
 kapiący	17
@@ -71977,7 +71655,6 @@ koronce	17
 korwetę	17
 koszulo	17
 kowadeł	17
-koziary	17
 krainom	17
 kroczów	17
 kutnera	17
@@ -72337,7 +72014,6 @@ dziadzi	16
 dłużyce	16
 endywia	16
 feralne	16
-fijałka	16
 flipery	16
 fusilli	16
 garsona	16
@@ -72373,7 +72049,6 @@ ligninę	16
 lodziki	16
 lornety	16
 maiorem	16
-manista	16
 marecka	16
 migotał	16
 moherem	16
@@ -72411,7 +72086,6 @@ popękać	16
 portyki	16
 potrzyj	16
 poważał	16
-powązka	16
 połowię	16
 przywra	16
 puczowi	16
@@ -72432,7 +72106,6 @@ scaliły	16
 sfrunął	16
 sinolog	16
 skierka	16
-skowyra	16
 skulski	16
 skulsku	16
 smerfem	16
@@ -72883,7 +72556,6 @@ lemuria	15
 ligocki	15
 macając	15
 matactw	15
-matejka	15
 medresa	15
 melanży	15
 memuary	15
@@ -72944,6 +72616,88 @@ spiszmy	15
 sterowy	15
 sypiamy	15
 syrenim	15
+szaflik	15
+szarpak	15
+szczota	15
+szronem	15
+sądzący	15
+takimiż	15
+talibem	15
+tamując	15
+tawułka	15
+tokarzy	15
+tomizmu	15
+trakami	15
+tylicki	15
+ubijemy	15
+ubogość	15
+ulewami	15
+umaluje	15
+urzecze	15
+ułański	15
+walecki	15
+wdeptać	15
+wickiem	15
+winylem	15
+witałem	15
+witkami	15
+wklęsło	15
+wozaków	15
+wołoską	15
+wpatruj	15
+wrobili	15
+wybrnie	15
+wykuwał	15
+wysiądę	15
+wysocku	15
+wywrócą	15
+wzlotem	15
+wódkach	15
+zabrnąć	15
+zatrzyj	15
+zażyłem	15
+zbaczam	15
+zbrakło	15
+zbłaźni	15
+zdajcie	15
+zgnębić	15
+zlecano	15
+zrywana	15
+zsyłano	15
+zwierzy	15
+zwodach	15
+złowisz	15
+łanowej	15
+łozinie	15
+śmigłym	15
+śniadka	15
+śremska	15
+ablucje	15
+amabile	15
+bandury	15
+baristę	15
+barteru	15
+barwiąc	15
+blezery	15
+bobrowy	15
+brutali	15
+buldogu	15
+burżuja	15
+chromów	15
+chwytny	15
+chłonąc	15
+cudować	15
+czekowa	15
+czesany	15
+dewocja	15
+dolałam	15
+domysłu	15
+dopadać	15
+dopięta	15
+drążące	15
+duetami	15
+eugenią	15
+fajkowy	15
 wszystko	1047128
 bardziej	660693
 dlaczego	660693
@@ -76155,7 +75909,6 @@ hotelach	3090
 klimatem	3090
 kolejowy	3090
 kolorowy	3090
-kopernik	3090
 lekarstw	3090
 lekarzom	3090
 leżących	3090
@@ -77404,7 +77157,6 @@ facetowi	1905
 filozofa	1905
 frajerów	1905
 głośniki	1905
-januszem	1905
 juniorzy	1905
 kowalska	1905
 krzakach	1905
@@ -79543,7 +79295,6 @@ zbliżyła	1000
 animację	977
 bernarda	977
 biskupie	977
-bordeaux	977
 bukowski	977
 cegiełkę	977
 ciemnymi	977
@@ -81224,7 +80975,6 @@ dzieliło	645
 fachowca	645
 folderze	645
 godzinna	645
-grodziec	645
 grzybach	645
 hotelowe	645
 indukcji	645
@@ -81805,7 +81555,6 @@ rozmówcę	575
 roślinie	575
 rękawami	575
 siekierę	575
-siennica	575
 sięgnęli	575
 suszarka	575
 suszarkę	575
@@ -87234,7 +86983,6 @@ wysyłało	218
 wyśmieją	218
 wąsikiem	218
 zaborach	218
-zaduszki	218
 zakładom	218
 zamarzła	218
 zamieści	218
@@ -89607,7 +89355,6 @@ stoczyły	154
 szachami	154
 szczęści	154
 szerzący	154
-szewczak	154
 szkicach	154
 słoiczku	154
 taczkach	154
@@ -90994,7 +90741,6 @@ gonienie	125
 greckimi	125
 groszowe	125
 grzędzie	125
-głębocki	125
 hereford	125
 ideowego	125
 jezdnego	125
@@ -91135,7 +90881,6 @@ ateistka	123
 bagietki	123
 bankiety	123
 białasem	123
-borowiak	123
 botoksem	123
 cwaniacy	123
 cymbałów	123
@@ -92269,7 +92014,6 @@ uwięziła	107
 uśmierca	107
 wapienna	107
 wdzięków	107
-wielgosz	107
 wiktorów	107
 więzione	107
 wrzodowa	107
@@ -93095,7 +92839,6 @@ powiadał	95
 połamana	95
 pragnęło	95
 pszenicą	95
-pysznica	95
 radziłaś	95
 rakietki	95
 ramowego	95
@@ -93375,7 +93118,6 @@ jeżeliby	91
 kapłanie	91
 kasujemy	91
 kinkiety	91
-kobylarz	91
 komuszki	91
 konturem	91
 konwalii	91
@@ -93556,7 +93298,6 @@ karmiłaś	89
 kartkowy	89
 kasetowy	89
 klasówka	89
-klepacka	89
 kodowych	89
 komturem	89
 krwiaków	89
@@ -93760,7 +93501,6 @@ odpływów	87
 odtworzy	87
 ogrzaniu	87
 okradany	87
-olszanka	87
 olszówki	87
 omijałam	87
 ostrzale	87
@@ -94241,7 +93981,6 @@ bezludne	81
 bonusowa	81
 borowego	81
 broniłby	81
-błotnica	81
 celiakia	81
 celowali	81
 chwalono	81
@@ -97194,7 +96933,6 @@ demencje	56
 dorwiesz	56
 dostojni	56
 doszukuj	56
-drzymała	56
 dysforia	56
 dzikuska	56
 farmację	56
@@ -99334,7 +99072,6 @@ kartingu	43
 kokardka	43
 kometami	43
 kompasie	43
-komsomoł	43
 kościami	43
 kroczyła	43
 kundelka	43
@@ -99548,7 +99285,6 @@ katabasy	42
 kenijską	42
 klasówce	42
 klikacie	42
-kobylina	42
 kokietka	42
 koniczek	42
 kopiejki	42
@@ -99898,7 +99634,6 @@ złudnego	41
 ateńskim	40
 bezpiece	40
 bezzębne	40
-blicharz	40
 borsuków	40
 braminów	40
 browarki	40
@@ -100114,7 +99849,6 @@ burgerze	39
 bzdurnej	39
 centymów	39
 chowałam	39
-cichosza	39
 cielisty	39
 clematis	39
 cygarach	39
@@ -100329,7 +100063,6 @@ budowami	38
 błyskowy	38
 cegłówką	38
 chadzają	38
-chruszcz	38
 chwytacz	38
 ckliwych	38
 cnotliwą	38
@@ -101657,7 +101390,6 @@ skalnica	33
 skatował	33
 skeczach	33
 skrętami	33
-sowiniec	33
 spajania	33
 srogości	33
 stingera	33
@@ -101871,7 +101603,6 @@ próżniak	33
 ptysiowy	33
 regencję	33
 rewiduje	33
-roentgen	33
 rogatych	33
 rozmytym	33
 rumunami	33
@@ -102194,7 +101925,6 @@ jachtową	31
 jagnięcą	31
 jałowców	31
 kanonady	31
-kielczyk	31
 konfesją	31
 korkowym	31
 kosiarza	31
@@ -102944,3 +102674,27 @@ puchacze	29
 pędzlami	29
 regentki	29
 repasażu	29
+rojewski	29
+rozdwaja	29
+rozmazie	29
+roztarte	29
+rozwożąc	29
+rymowana	29
+rządkach	29
+salutuje	29
+saperami	29
+sierocie	29
+sięgacie	29
+skautowe	29
+sklejane	29
+skrojone	29
+skunksów	29
+soborowi	29
+sonarowe	29
+sonarowy	29
+sopocian	29
+sparring	29
+spinnery	29
+splotami	29
+spotkani	29
+sterowcu	29

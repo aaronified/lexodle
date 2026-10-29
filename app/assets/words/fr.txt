@@ -240,7 +240,6 @@ pain	43651
 perd	43651
 gare	42657
 info	42657
-nice	42657
 post	42657
 élus	42657
 pape	41686
@@ -583,7 +582,6 @@ dues	7244
 prés	7244
 user	7244
 édit	7244
-arte	7079
 aval	7079
 boom	7079
 cuit	7079
@@ -691,7 +689,6 @@ alla	5128
 daté	5128
 ring	5128
 rosa	5128
-smic	5128
 coke	5011
 déni	5011
 flot	5011
@@ -1033,7 +1030,6 @@ jojo	1778
 pier	1778
 tune	1778
 zizi	1778
-élie	1778
 colo	1737
 elfe	1737
 kiné	1737
@@ -1193,7 +1189,6 @@ mûrs	1230
 silo	1230
 trie	1230
 voue	1230
-hess	1202
 paon	1202
 sise	1202
 univ	1202
@@ -1260,7 +1255,6 @@ sali	1047
 usée	1047
 crut	1023
 daim	1023
-dina	1023
 gram	1023
 gâte	1023
 ibis	1023
@@ -1340,7 +1334,6 @@ mélo	831
 pues	831
 rapt	831
 tics	831
-amal	812
 aéro	812
 dopé	812
 drac	812
@@ -1523,7 +1516,6 @@ imbu	524
 vola	524
 yéti	524
 erré	512
-gabe	512
 houx	512
 meuh	512
 mino	512
@@ -1693,7 +1685,6 @@ doua	338
 grrr	338
 tapi	338
 toma	338
-égée	338
 bine	331
 fiba	331
 képi	331
@@ -1721,7 +1712,6 @@ osti	309
 sila	309
 stem	309
 tric	309
-zina	309
 âtre	309
 diot	301
 dodu	301
@@ -2120,7 +2110,6 @@ oryx	104
 pagi	104
 quet	104
 sipo	104
-sofi	104
 zain	104
 élut	104
 baht	102
@@ -2133,7 +2122,6 @@ mils	102
 raki	102
 seta	102
 séga	102
-véda	102
 zgeg	102
 adja	100
 cals	100
@@ -3050,7 +3038,6 @@ bilan	40738
 décès	40738
 lancé	40738
 seine	40738
-alain	39810
 balle	39810
 barre	39810
 forêt	39810
@@ -3324,7 +3311,6 @@ amène	17782
 bains	17782
 bible	17782
 comté	17782
-congo	17782
 jules	17782
 mères	17782
 norme	17782
@@ -3484,7 +3470,6 @@ bâton	12589
 bêtes	12589
 deuil	12589
 fusil	12589
-laura	12589
 média	12589
 pacte	12589
 pizza	12589
@@ -3764,7 +3749,6 @@ engin	6918
 fonte	6918
 opère	6918
 payée	6918
-satan	6918
 savon	6918
 stone	6918
 trêve	6918
@@ -4053,7 +4037,6 @@ tango	4265
 baisé	4168
 bossé	4168
 butin	4168
-karen	4168
 loupe	4168
 méfie	4168
 pivot	4168
@@ -4275,7 +4258,6 @@ bobos	2951
 chuté	2951
 clerc	2951
 curie	2951
-douai	2951
 fable	2951
 gangs	2951
 gâché	2951
@@ -4315,7 +4297,6 @@ watts	2818
 agite	2754
 cidre	2754
 envol	2754
-graal	2754
 logos	2754
 paume	2754
 polar	2754
@@ -4451,7 +4432,6 @@ cogne	2290
 croît	2290
 folio	2290
 homos	2290
-irène	2290
 kebab	2290
 laïcs	2290
 levés	2290
@@ -4569,7 +4549,6 @@ boxer	1905
 foret	1905
 hante	1905
 hijab	1905
-jacky	1905
 lunes	1905
 mages	1905
 plant	1905
@@ -4582,7 +4561,6 @@ tract	1905
 vouée	1905
 antre	1862
 bocal	1862
-brand	1862
 bulls	1862
 crocs	1862
 cuves	1862
@@ -4890,7 +4868,6 @@ haras	1288
 hisse	1288
 lient	1288
 monta	1288
-ostie	1288
 priés	1288
 prune	1288
 périr	1288
@@ -5025,14 +5002,12 @@ tissé	1122
 toast	1122
 touts	1122
 vidée	1122
-zaïre	1122
 épice	1122
 actus	1096
 avent	1096
 avise	1096
 baffe	1096
 blasé	1096
-brême	1096
 bénir	1096
 bûche	1096
 campe	1096
@@ -5480,7 +5455,6 @@ preux	676
 pâtir	676
 rieur	676
 rosés	676
-silas	676
 yuans	676
 abats	660
 bayle	660
@@ -5785,7 +5759,6 @@ sunna	478
 testa	478
 étuis	478
 actée	467
-bizet	467
 dopés	467
 foies	467
 groom	467
@@ -6173,7 +6146,6 @@ aérés	301
 badin	301
 berné	301
 cocus	301
-craon	301
 crédo	301
 félon	301
 guida	301
@@ -6750,7 +6722,6 @@ squaw	173
 tuais	173
 tuber	173
 ténia	173
-védas	173
 érode	173
 accus	169
 basez	169
@@ -6939,7 +6910,6 @@ sexto	141
 usera	141
 waouw	141
 wicca	141
-élias	141
 bachi	138
 banne	138
 bikes	138
@@ -9628,7 +9598,6 @@ vidéos	57543
 beauté	56234
 danger	56234
 député	56234
-google	56234
 mourir	56234
 objets	56234
 places	56234
@@ -9966,7 +9935,6 @@ bassin	22908
 casser	22908
 destin	22908
 engage	22908
-monaco	22908
 stress	22908
 visant	22908
 élevée	22908
@@ -10056,7 +10024,6 @@ chaude	19054
 perdue	19054
 rentré	19054
 restes	19054
-alsace	18620
 bandes	18620
 bouffe	18620
 camion	18620
@@ -10164,7 +10131,6 @@ figaro	15488
 futurs	15488
 gestes	15488
 grandi	15488
-louise	15488
 lourde	15488
 placée	15488
 promet	15488
@@ -10673,7 +10639,6 @@ plumes	7413
 reçues	7413
 stages	7413
 stocks	7413
-sylvie	7413
 venues	7413
 élites	7413
 animée	7244
@@ -10934,7 +10899,6 @@ sprint	5495
 sécher	5495
 vilain	5495
 votent	5495
-élysée	5495
 abouti	5370
 armure	5370
 censés	5370
@@ -11032,7 +10996,6 @@ graine	4897
 merlin	4897
 nourri	4897
 reliés	4897
-switch	4897
 agneau	4786
 artère	4786
 aurore	4786
@@ -11062,7 +11025,6 @@ coupés	4677
 creusé	4677
 dressé	4677
 défait	4677
-fabien	4677
 imiter	4677
 lâches	4677
 montés	4677
@@ -11233,7 +11195,6 @@ visées	3981
 vivres	3981
 évitez	3981
 arcade	3890
-carole	3890
 citant	3890
 coloré	3890
 dégoût	3890
@@ -11317,7 +11278,6 @@ violée	3630
 visait	3630
 voulue	3630
 appuis	3548
-balzac	3548
 brunes	3548
 cerner	3548
 foutue	3548
@@ -11598,7 +11558,6 @@ soumet	2754
 subies	2754
 synode	2754
 usager	2754
-valois	2754
 vielle	2754
 afflux	2691
 archer	2691
@@ -11793,7 +11752,6 @@ pannes	2344
 perdit	2344
 piètre	2344
 postés	2344
-random	2344
 rejets	2344
 sachet	2344
 saturé	2344
@@ -11965,7 +11923,6 @@ verrou	2089
 viking	2089
 éduqué	2089
 érudit	2089
-ariège	2041
 arrêta	2041
 assoir	2041
 ayants	2041
@@ -12031,7 +11988,6 @@ vigile	1995
 étoilé	1995
 aimera	1949
 athées	1949
-bohême	1949
 ciblés	1949
 clones	1949
 craché	1949
@@ -12370,7 +12326,6 @@ poisse	1513
 revêtu	1513
 sonder	1513
 tapant	1513
-yvette	1513
 émergé	1513
 abîmer	1479
 amadou	1479
@@ -12385,7 +12340,6 @@ fauché	1479
 guidés	1479
 lactée	1479
 mardis	1479
-maryse	1479
 méfiez	1479
 obèses	1479
 odorat	1479
@@ -12455,7 +12409,6 @@ avides	1380
 bavure	1380
 borgne	1380
 cafard	1380
-cahors	1380
 charmé	1380
 chéris	1380
 coince	1380
@@ -12538,7 +12491,6 @@ amante	1288
 amputé	1288
 aviron	1288
 berner	1288
-berthe	1288
 bovine	1288
 cachot	1288
 coyote	1288
@@ -13131,7 +13083,6 @@ croche	870
 dattes	870
 denier	870
 digère	870
-dinant	870
 diurne	870
 durcit	870
 désuet	870
@@ -13715,7 +13666,6 @@ sapeur	602
 scrute	602
 sentes	602
 tasser	602
-titien	602
 vergne	602
 visser	602
 vêtues	602
@@ -14388,7 +14338,6 @@ végane	407
 abimer	398
 abroge	398
 abuses	398
-astrée	398
 badine	398
 brulée	398
 béante	398
@@ -15463,7 +15412,6 @@ tuyère	218
 téflon	218
 usagée	218
 érigea	218
-abymes	213
 agencé	213
 aïeule	213
 bogues	213
@@ -15624,7 +15572,6 @@ usitée	199
 abatte	194
 amines	194
 amoral	194
-bayart	194
 bigots	194
 bluffe	194
 canins	194
@@ -16704,7 +16651,6 @@ verdet	109
 alleux	107
 arquée	107
 bandée	107
-barsac	107
 bitmap	107
 caleta	107
 canope	107
@@ -17237,7 +17183,6 @@ défens	81
 démêlé	81
 dévora	81
 fendit	81
-florie	81
 fripée	81
 férias	81
 grincé	81
@@ -17741,7 +17686,6 @@ sacrez	61
 scruta	61
 simoun	61
 soulez	61
-sélène	61
 taries	61
 trotté	61
 tutsie	61
@@ -21303,7 +21247,6 @@ moderne	54954
 quitter	54954
 risques	54954
 soldats	54954
-twitter	54954
 échange	54954
 bizarre	53703
 contenu	53703
@@ -21350,7 +21293,6 @@ urgence	46773
 complet	45708
 concert	45708
 inscrit	45708
-laurent	45708
 spécial	45708
 troupes	45708
 vieille	45708
@@ -22175,14 +22117,12 @@ empêché	9332
 franche	9332
 gentils	9332
 imprimé	9332
-lambert	9332
 moutons	9332
 notions	9332
 portion	9332
 prudent	9332
 souhait	9332
 statuts	9332
-vatican	9332
 vedette	9332
 animale	9120
 autobus	9120
@@ -22864,7 +22804,6 @@ minerai	4677
 rideaux	4677
 sanguin	4677
 situent	4677
-staline	4677
 suivies	4677
 tronche	4677
 verrais	4677
@@ -22997,7 +22936,6 @@ zombies	4168
 élimine	4168
 agirait	4073
 ampoule	4073
-bavière	4073
 bouddha	4073
 combine	4073
 crucial	4073
@@ -23291,7 +23229,6 @@ rafales	3311
 revente	3311
 soprano	3311
 tenants	3311
-wallace	3311
 épuisée	3311
 baisses	3235
 battait	3235
@@ -23535,13 +23472,11 @@ vendait	2818
 vétéran	2818
 absorbé	2754
 allonge	2754
-antonin	2754
 attirée	2754
 blondes	2754
 boulots	2754
 cabines	2754
 cassent	2754
-cayenne	2754
 centime	2754
 contour	2754
 coupant	2754
@@ -23658,7 +23593,6 @@ effrayé	2570
 enculés	2570
 escrocs	2570
 fasciné	2570
-gaspard	2570
 gaucher	2570
 glucose	2570
 hausses	2570
@@ -23989,7 +23923,6 @@ vilains	2137
 violons	2137
 vitraux	2137
 élevant	2137
-élysées	2137
 appuyez	2089
 baronne	2089
 brosser	2089
@@ -24187,7 +24120,6 @@ induire	1862
 inscris	1862
 jackpot	1862
 martini	1862
-morgane	1862
 motrice	1862
 nageurs	1862
 néglige	1862
@@ -24442,7 +24374,6 @@ tempéré	1584
 thermes	1584
 tournez	1584
 trappes	1584
-utrecht	1584
 vibrant	1584
 vocable	1584
 égorger	1584
@@ -25105,7 +25036,6 @@ forcené	1096
 garages	1096
 hippies	1096
 intacts	1096
-joconde	1096
 karting	1096
 mendier	1096
 modeler	1096
@@ -26331,7 +26261,6 @@ débutée	616
 empiler	616
 estimes	616
 filante	616
-flavien	616
 frivole	616
 fumiers	616
 girafes	616
@@ -26756,7 +26685,6 @@ frisbee	512
 grabuge	512
 grossis	512
 génoise	512
-hermite	512
 hideuse	512
 inertes	512
 lichens	512
@@ -27323,7 +27251,6 @@ mirador	407
 moquais	407
 mourras	407
 méthyle	407
-némésis	407
 obliges	407
 otaries	407
 parthes	407
@@ -27671,7 +27598,6 @@ tritium	363
 vulgate	363
 édifiés	363
 éloigna	363
-émilien	363
 épîtres	363
 évoquez	363
 abrutie	354
@@ -30687,7 +30613,6 @@ débutez	109
 embûche	109
 exhumée	109
 facétie	109
-fortran	109
 foulage	109
 fugueur	109
 gineste	109
@@ -32958,7 +32883,6 @@ louvoie	50
 mijotée	50
 mélilot	50
 nymphée	50
-néréide	50
 pacifie	50
 phrasés	50
 punctum	50
@@ -37571,7 +37495,6 @@ seigneur	74131
 étranger	72443
 pression	70794
 religion	70794
-belgique	69183
 souhaite	69183
 habitude	67608
 sciences	67608
@@ -38027,7 +37950,6 @@ internes	15848
 location	15848
 moyennes	15848
 passages	15848
-pyrénées	15848
 rivières	15848
 centaine	15488
 esclaves	15488
@@ -38449,7 +38371,6 @@ vulgaire	8511
 annoncée	8317
 appuyant	8317
 athlètes	8317
-auvergne	8317
 banquier	8317
 coiffure	8317
 colloque	8317
@@ -38967,7 +38888,6 @@ troupeau	5128
 écoutant	5128
 évangile	5128
 évoluent	5128
-alphonse	5011
 anatomie	5011
 antiques	5011
 apprenez	5011
@@ -39143,7 +39063,6 @@ baptisée	4365
 bretonne	4365
 bénévole	4365
 caravane	4365
-chartres	4365
 comparée	4365
 dirigent	4365
 disciple	4365
@@ -39524,7 +39443,6 @@ vétérans	3311
 adultère	3235
 arrêtées	3235
 calvados	3235
-dauphiné	3235
 embrassé	3235
 huissier	3235
 invitent	3235
@@ -39994,7 +39912,6 @@ esquisse	2344
 expulsés	2344
 ficelles	2344
 flambeau	2344
-illinois	2344
 imminent	2344
 incliner	2344
 juvénile	2344
@@ -40046,7 +39963,6 @@ assemblé	2238
 bavarois	2238
 boussole	2238
 caprices	2238
-castille	2238
 coaching	2238
 combinés	2238
 contenté	2238
@@ -40275,7 +40191,6 @@ encaisse	1949
 encaissé	1949
 estampes	1949
 expresse	1949
-fabienne	1949
 fournira	1949
 graffiti	1949
 habitats	1949
@@ -40859,7 +40774,6 @@ aspirent	1412
 assigner	1412
 atterrit	1412
 attraits	1412
-beaufort	1412
 branchée	1412
 bruyants	1412
 clitoris	1412
@@ -41170,7 +41084,6 @@ fortifié	1202
 greniers	1202
 gélatine	1202
 impulsif	1202
-legendre	1202
 libyenne	1202
 libèrent	1202
 libérant	1202
@@ -42214,7 +42127,6 @@ aimeront	758
 albatros	758
 allumées	758
 attirera	758
-baléares	758
 berlines	758
 bouffent	758
 brouette	758
@@ -43656,7 +43568,6 @@ vétustes	436
 webradio	436
 énervait	436
 épaissit	436
-érythrée	436
 évoquera	436
 abordera	426
 acclamer	426
@@ -44584,7 +44495,6 @@ voyantes	316
 épeautre	316
 étalages	316
 ajustant	309
-anastase	309
 apaisent	309
 apparais	309
 appliqua	309
@@ -45401,7 +45311,6 @@ biaisées	234
 bohémien	234
 bouchant	234
 briseurs	234
-bérézina	234
 cacherai	234
 calibrée	234
 chaldéen	234
@@ -45781,7 +45690,6 @@ escarres	208
 essayeur	208
 exagérez	208
 galopant	208
-ganymède	208
 ghanéens	208
 glousser	208
 gondoles	208
@@ -48345,7 +48253,6 @@ moufette	95
 nullités	95
 numérise	95
 nécroses	95
-néréides	95
 palustre	95
 passeuse	95
 patinent	95
@@ -48604,7 +48511,6 @@ laveries	89
 ligérien	89
 loukoums	89
 mariales	89
-marsanne	89
 mascaron	89
 maçonnée	89
 modeleur	89

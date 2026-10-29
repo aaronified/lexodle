@@ -253,11 +253,11 @@ void main() {
         bank.answerWeights(4),
         4,
         10,
-        Random(3),
+        Random(8),
       );
       await tester.pumpWidget(
         MaterialApp(
-          home: MultiGamePage(bank: bank, random: Random(3)),
+          home: MultiGamePage(bank: bank, random: Random(8)),
         ),
       );
       await tester.pump();

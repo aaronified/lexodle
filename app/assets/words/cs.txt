@@ -150,7 +150,6 @@ nově	144543
 rady	144543
 vody	144543
 víte	144543
-teda	141253
 muže	138038
 brzy	134896
 vede	134896
@@ -180,7 +179,6 @@ trhu	114815
 webu	112201
 děje	109647
 obou	109647
-brně	107151
 moci	107151
 soud	107151
 téma	107151
@@ -438,7 +436,6 @@ nese	36307
 plná	36307
 síti	36307
 tito	36307
-čína	36307
 blog	35481
 jedu	35481
 kafe	35481
@@ -829,7 +826,6 @@ sraz	12022
 vize	12022
 zóně	12022
 živá	12022
-back	11748
 chod	11748
 drah	11748
 dívá	11748
@@ -939,7 +935,6 @@ rýže	9772
 teta	9772
 umíš	9772
 užil	9772
-žďár	9772
 děla	9549
 kovy	9549
 móda	9549
@@ -1079,7 +1074,6 @@ viru	7762
 vizi	7762
 zvyk	7762
 člun	7762
-alan	7585
 amen	7585
 břeh	7585
 chov	7585
@@ -1130,7 +1124,6 @@ zlom	7079
 židy	7079
 kult	6918
 lily	6918
-mega	6918
 mzdu	6918
 ozve	6918
 pero	6918
@@ -1273,7 +1266,6 @@ skal	5370
 čong	5370
 arch	5248
 daty	5248
-done	5248
 lžou	5248
 nahý	5248
 oděv	5248
@@ -1429,7 +1421,6 @@ vita	4073
 vozí	4073
 čítá	4073
 žití	4073
-cape	3981
 daru	3981
 gauč	3981
 hitů	3981
@@ -1535,7 +1526,6 @@ uzlů	3548
 auty	3467
 bída	3467
 býti	3467
-dona	3467
 drby	3467
 dámu	3467
 fúze	3467
@@ -1638,7 +1628,6 @@ varu	3090
 zášť	3090
 úhlů	3090
 čajů	3090
-dane	3019
 esej	3019
 hadi	3019
 hruď	3019
@@ -1660,7 +1649,6 @@ záře	3019
 cílí	2951
 depa	2951
 gaye	2951
-gray	2951
 mísí	2951
 pach	2951
 páky	2951
@@ -1771,7 +1759,6 @@ buly	2454
 gayů	2454
 hnát	2454
 míčů	2454
-pech	2454
 páka	2454
 sudy	2454
 sumy	2454
@@ -1918,7 +1905,6 @@ gram	1995
 hodu	1995
 hrst	1995
 olše	1995
-pres	1995
 pěny	1995
 rtuť	1995
 snáz	1995
@@ -1933,7 +1919,6 @@ víko	1995
 šváb	1995
 anál	1949
 brzd	1949
-dany	1949
 hnůj	1949
 háku	1949
 jupí	1949
@@ -2091,7 +2076,6 @@ pout	1584
 pumy	1584
 póry	1584
 sekt	1584
-sono	1584
 zrno	1584
 šípů	1584
 žláz	1584
@@ -2136,7 +2120,6 @@ vrtů	1513
 blba	1479
 bídy	1479
 depo	1479
-donu	1479
 díře	1479
 košů	1479
 krám	1479
@@ -2235,7 +2218,6 @@ jaka	1288
 káže	1288
 lvem	1288
 láva	1288
-mata	1288
 octa	1288
 opat	1288
 psím	1288
@@ -2272,7 +2254,6 @@ ušít	1258
 busu	1230
 běhy	1230
 celí	1230
-danu	1230
 fary	1230
 hutě	1230
 kára	1230
@@ -2302,7 +2283,6 @@ míli	1202
 nitě	1202
 plna	1202
 rest	1202
-roba	1202
 skel	1202
 trap	1202
 zubr	1202
@@ -2377,7 +2357,6 @@ dřít	1096
 hubě	1096
 husu	1096
 kopl	1096
-leje	1096
 lůza	1096
 minu	1096
 múza	1096
@@ -2543,7 +2522,6 @@ běla	891
 dutý	891
 dřez	891
 hádá	891
-kama	891
 mošt	891
 němé	891
 orná	891
@@ -2838,7 +2816,6 @@ mlád	645
 omak	645
 opci	645
 pást	645
-robo	645
 skus	645
 steh	645
 vlní	645
@@ -2908,7 +2885,6 @@ lemu	588
 loch	588
 lžic	588
 metě	588
-mára	588
 poct	588
 saje	588
 saní	588
@@ -2977,7 +2953,6 @@ nach	549
 noří	549
 nulo	549
 něhu	549
-rous	549
 skup	549
 soví	549
 sudá	549
@@ -3191,7 +3166,6 @@ kuli	446
 kúra	446
 logy	446
 mory	446
-míka	446
 ozón	446
 rode	446
 rotu	446
@@ -3226,7 +3200,6 @@ skic	436
 tmel	436
 čápů	436
 šumí	436
-buda	426
 dare	426
 edém	426
 hafo	426
@@ -3283,7 +3256,6 @@ ohon	407
 osma	407
 piko	407
 pulz	407
-robe	407
 sine	407
 sobí	407
 sémě	407
@@ -3401,7 +3373,6 @@ ozon	363
 pinů	363
 tupí	363
 volt	363
-věře	363
 zela	363
 čilé	363
 šatu	363
@@ -3484,7 +3455,6 @@ cajk	331
 dřík	331
 kalu	331
 kose	331
-kura	331
 kutě	331
 kyne	331
 kápo	331
@@ -3500,7 +3470,6 @@ vrbu	331
 zbav	331
 změň	331
 zvol	331
-šmak	331
 amer	323
 báně	323
 lepe	323
@@ -3542,7 +3511,6 @@ sutě	316
 tagu	316
 tagů	316
 taká	316
-tkáč	316
 uhne	316
 ušlo	316
 vsak	316
@@ -3607,7 +3575,6 @@ visu	295
 výra	295
 cist	288
 džín	288
-falc	288
 fóry	288
 gatě	288
 hnul	288
@@ -3648,7 +3615,6 @@ lyži	281
 mime	281
 nivu	281
 osli	281
-pala	281
 tisu	281
 ulil	281
 číši	281
@@ -3682,7 +3648,6 @@ zliv	275
 copu	269
 esko	269
 fára	269
-haka	269
 hyen	269
 jukl	269
 jíti	269
@@ -3782,7 +3747,6 @@ trim	245
 tuři	245
 témž	245
 upil	245
-vele	245
 vide	245
 vryl	245
 éčko	245
@@ -3892,7 +3856,6 @@ nati	218
 oměj	218
 otře	218
 pand	218
-plas	218
 plže	218
 pátí	218
 půlí	218
@@ -3986,9 +3949,7 @@ ctěn	199
 díte	199
 děvy	199
 háků	199
-hůry	199
 jere	199
-kava	199
 kóta	199
 luno	199
 mině	199
@@ -4113,7 +4074,6 @@ cval	173
 drbe	173
 hecu	173
 kmet	173
-kony	173
 lizy	173
 louč	173
 orba	173
@@ -4165,7 +4125,6 @@ bulu	165
 bájo	165
 bójí	165
 dupe	165
-herc	165
 koka	165
 laní	165
 lysý	165
@@ -4283,7 +4242,6 @@ hrab	147
 katů	147
 koku	147
 liny	147
-mada	147
 modů	147
 opiu	147
 raku	147
@@ -4370,7 +4328,6 @@ kitu	134
 koga	134
 kosů	134
 krmi	134
-kudu	134
 kusá	134
 loto	134
 luxů	134
@@ -4450,7 +4407,6 @@ kuta	125
 mnul	125
 okus	125
 pato	125
-roby	125
 sete	125
 sůva	125
 tipl	125
@@ -4530,7 +4486,6 @@ byls	114
 duly	114
 faxů	114
 gatí	114
-haku	114
 kapa	114
 kiny	114
 málu	114
@@ -4548,7 +4503,6 @@ fučí	112
 fůze	112
 komp	112
 kopá	112
-kvaš	112
 legu	112
 leví	112
 lyře	112
@@ -4593,7 +4547,6 @@ káče	107
 metá	107
 mázl	107
 pamp	107
-robu	107
 salv	107
 tlam	107
 tury	107
@@ -4659,7 +4612,6 @@ báti	100
 bíly	100
 darí	100
 filc	100
-hrma	100
 jíní	100
 kápl	100
 mour	100
@@ -4707,7 +4659,6 @@ vdám	95
 vlha	95
 vrut	95
 zobu	95
-bron	93
 culí	93
 elek	93
 juře	93
@@ -4796,10 +4747,8 @@ vrýt	85
 šatě	85
 šodó	85
 byra	83
-capu	83
 chuj	83
 cvič	83
-dony	83
 drén	83
 dáví	83
 hrán	83
@@ -4969,7 +4918,6 @@ zeba	69
 úhoz	69
 šiji	69
 auro	67
-bera	67
 blít	67
 byst	67
 cedí	67
@@ -5008,7 +4956,6 @@ dupy	64
 ekol	64
 guar	64
 hoři	64
-huda	64
 hyjé	64
 jích	64
 jívy	64
@@ -5026,11 +4973,9 @@ témě	64
 číču	64
 blaž	63
 brku	63
-duse	63
 fámě	63
 geol	63
 jetý	63
-loze	63
 naze	63
 octy	63
 pakl	63
@@ -5101,7 +5046,6 @@ fant	57
 fleš	57
 léči	57
 osem	57
-svak	57
 touš	57
 štok	57
 ťukl	57
@@ -5130,11 +5074,9 @@ leči	54
 luza	54
 pudí	54
 sils	54
-vejr	54
 véna	54
 zéta	54
 šmik	54
-šíša	54
 žáry	54
 aval	53
 cidr	53
@@ -5185,7 +5127,6 @@ luzy	51
 malp	51
 nótě	51
 osám	51
-peka	51
 plác	51
 raby	51
 rusé	51
@@ -5237,7 +5178,6 @@ baso	48
 cáru	48
 glób	48
 jery	48
-korb	48
 kutu	48
 lyze	48
 míze	48
@@ -5256,7 +5196,6 @@ zním	48
 acht	47
 bečí	47
 bito	47
-běle	47
 fágy	47
 huli	47
 jetí	47
@@ -5268,14 +5207,12 @@ ožeň	47
 prcá	47
 prdů	47
 pýru	47
-svat	47
 tyje	47
 vdáš	47
 vilo	47
 úmor	47
 řveš	47
 řízy	47
-šeps	47
 chud	46
 drob	46
 dubě	46
@@ -5288,19 +5225,16 @@ hávy	46
 ismů	46
 leků	46
 leča	46
-máro	46
 okry	46
 osmo	46
 tonů	46
 vání	46
 zlil	46
 šéfu	46
-debř	45
 erka	45
 esům	45
 fezy	45
 inku	45
-kavu	45
 kmán	45
 komě	45
 kyvu	45
@@ -5340,7 +5274,6 @@ tise	44
 tuti	44
 tógy	44
 uhlů	44
-šmuk	44
 erbe	43
 jole	43
 kopě	43
@@ -5364,7 +5297,6 @@ vrbo	43
 vrká	43
 čitě	43
 cite	42
-důra	42
 fixů	42
 fuze	42
 fáru	42
@@ -5426,9 +5358,6 @@ ujmi	40
 útoč	40
 řípy	40
 armu	39
-dono	39
-doně	39
-hase	39
 hřej	39
 jolo	39
 kasr	39
@@ -5454,14 +5383,12 @@ hnil	38
 hrbů	38
 hrnu	38
 koce	38
-máru	38
 shyb	38
 siný	38
 sobu	38
 sňat	38
 tógu	38
 uraz	38
-vanů	38
 víky	38
 vřou	38
 ústi	38
@@ -5568,7 +5495,6 @@ zhyň	34
 anod	33
 busů	33
 bóra	33
-daře	33
 dmou	33
 emka	33
 lasy	33
@@ -5643,7 +5569,6 @@ hodě	30
 honě	30
 iren	30
 ismu	30
-kavo	30
 kove	30
 lény	30
 muří	30
@@ -5659,7 +5584,6 @@ webe	30
 blůz	30
 bědy	30
 epik	30
-hoša	30
 jati	30
 kážu	30
 lovi	30
@@ -5694,7 +5618,6 @@ ulov	29
 utop	29
 vády	29
 čita	29
-šíšu	29
 elfe	28
 kalk	28
 kýčů	28
@@ -5779,7 +5702,6 @@ mačů	26
 myly	26
 pučů	26
 uhas	26
-ujec	26
 ukul	26
 visy	26
 érem	26
@@ -5792,7 +5714,6 @@ dogo	25
 etyl	25
 hynu	25
 míca	25
-ondy	25
 osev	25
 patř	25
 pluj	25
@@ -5800,7 +5721,6 @@ repu	25
 rovy	25
 sirý	25
 svez	25
-sány	25
 tyly	25
 tála	25
 vhoď	25
@@ -5833,7 +5753,6 @@ leku	24
 pípl	24
 skut	24
 sniž	24
-toul	24
 váté	24
 výru	24
 zoby	24
@@ -5844,7 +5763,6 @@ leču	23
 lýčí	23
 mapo	23
 obře	23
-otka	23
 oživ	23
 seků	23
 seny	23
@@ -5855,9 +5773,7 @@ tlít	23
 téry	23
 ubýt	23
 šito	23
-boře	23
 breč	23
-dača	23
 dešť	23
 ekon	23
 fágů	23
@@ -5877,7 +5793,6 @@ cere	22
 dlím	22
 hudu	22
 kulo	22
-niče	22
 ozim	22
 plká	22
 plén	22
@@ -5906,7 +5821,6 @@ esky	21
 fret	21
 ginů	21
 isme	21
-kány	21
 náně	21
 očař	21
 přán	21
@@ -5943,8 +5857,6 @@ aftů	20
 bebé	20
 bitá	20
 dbáš	20
-jora	20
-kavy	20
 kýtě	20
 piků	20
 ryti	20
@@ -6006,14 +5918,12 @@ clil	18
 dutí	18
 dědi	18
 kvoč	18
-kána	18
 umel	18
 zimo	18
 zpil	18
 íček	18
 úběr	18
 žoku	18
-danů	18
 erek	18
 hryz	18
 klet	18
@@ -6103,7 +6013,6 @@ ušeň	15
 čila	15
 byru	15
 cepů	15
-donů	15
 mixe	15
 mším	15
 plej	15
@@ -6156,9 +6065,7 @@ vpít	14
 čárů	14
 ctné	14
 dout	14
-fraj	14
 kréd	14
-leza	14
 léně	14
 můří	14
 opit	14
@@ -7342,7 +7249,6 @@ vyjít	19054
 řadou	19054
 audio	18620
 bloku	18620
-budem	18620
 derby	18620
 dívku	18620
 fakta	18620
@@ -8044,7 +7950,6 @@ sazba	9120
 slabá	9120
 sněmu	9120
 tajná	9120
-tesla	9120
 uspěl	9120
 velcí	9120
 vraha	9120
@@ -8216,7 +8121,6 @@ mrtví	7943
 mýdlo	7943
 ostrý	7943
 parky	7943
-place	7943
 potaz	7943
 prstu	7943
 ptali	7943
@@ -9252,7 +9156,6 @@ kobra	3801
 krámy	3801
 lhaní	3801
 lžíci	3801
-mlíko	3801
 mířil	3801
 nabyl	3801
 oltář	3801
@@ -9622,7 +9525,6 @@ krutá	2951
 lůžku	2951
 mumie	2951
 opřel	2951
-pilař	2951
 pilně	2951
 pitím	2951
 pokec	2951
@@ -9824,7 +9726,6 @@ zpoza	2630
 šašek	2630
 akcím	2570
 balon	2570
-bečva	2570
 braun	2570
 draho	2570
 facka	2570
@@ -9854,7 +9755,6 @@ vrtat	2570
 věrná	2570
 yardů	2570
 útesy	2570
-bláha	2511
 bohům	2511
 bunkr	2511
 bříza	2511
@@ -9937,7 +9837,6 @@ upadá	2454
 vejci	2454
 vidno	2454
 věnce	2454
-weber	2454
 zvyků	2454
 závěť	2454
 úchyl	2454
@@ -10525,7 +10424,6 @@ sálem	1698
 sázce	1698
 sázek	1698
 sítím	1698
-tesly	1698
 tygří	1698
 týkal	1698
 uhlík	1698
@@ -10732,7 +10630,6 @@ zářit	1548
 živlů	1548
 braní	1513
 busem	1513
-danem	1513
 dusit	1513
 dávce	1513
 dřevě	1513
@@ -11151,7 +11048,6 @@ zvěst	1230
 špion	1230
 biblí	1202
 boule	1202
-boček	1202
 budím	1202
 dogma	1202
 draku	1202
@@ -11159,7 +11055,6 @@ fasád	1202
 figur	1202
 hnusí	1202
 hocha	1202
-hošek	1202
 kmenu	1202
 kukly	1202
 laiky	1202
@@ -11221,7 +11116,6 @@ topné	1174
 uzlin	1174
 učíte	1174
 vlkem	1174
-volta	1174
 vítal	1174
 zajal	1174
 zavěs	1174
@@ -11346,7 +11240,6 @@ koním	1096
 křída	1096
 lukem	1096
 micka	1096
-mimoň	1096
 mleté	1096
 nejím	1096
 nejíš	1096
@@ -11522,7 +11415,6 @@ hnízd	1000
 jasna	1000
 lumen	1000
 metan	1000
-mlíka	1000
 mučit	1000
 mávat	1000
 najme	1000
@@ -11589,7 +11481,6 @@ ožije	977
 pachy	977
 patek	977
 pařez	977
-plasy	977
 pálka	977
 ropou	977
 spáry	977
@@ -12137,7 +12028,6 @@ fuzzy	758
 grunt	758
 helmě	758
 honíš	758
-klasa	758
 koráb	758
 krabí	758
 kufrů	758
@@ -12196,7 +12086,6 @@ chopí	741
 dandy	741
 dekád	741
 deltě	741
-donem	741
 dusím	741
 dásní	741
 hukot	741
@@ -12616,7 +12505,6 @@ proso	630
 pudla	630
 pěvců	630
 rajón	630
-recht	630
 růžky	630
 silák	630
 skici	630
@@ -12810,7 +12698,6 @@ eposu	575
 glóby	575
 hodem	575
 hojit	575
-holec	575
 holko	575
 kobky	575
 krojů	575
@@ -12955,7 +12842,6 @@ učiva	549
 vafle	549
 vymkl	549
 vzetí	549
-víšek	549
 zdáli	549
 zvala	549
 zvali	549
@@ -13535,7 +13421,6 @@ lampě	436
 lezců	436
 lokál	436
 možní	436
-mudra	436
 načte	436
 norou	436
 nákyp	436
@@ -13548,7 +13433,6 @@ pasiv	436
 pluhy	436
 poupě	436
 pórek	436
-robem	436
 rolky	436
 rázný	436
 sepse	436
@@ -13595,12 +13479,10 @@ mrdka	426
 ohání	426
 okoun	426
 opije	426
-palau	426
 peřin	426
 pudem	426
 pádné	426
 pěšák	426
-rataj	426
 rybek	426
 salvu	426
 telat	426
@@ -13633,7 +13515,6 @@ hůlek	416
 jitra	416
 jásot	416
 kolek	416
-krise	416
 krovů	416
 kvasu	416
 kůlně	416
@@ -13675,7 +13556,6 @@ tutti	416
 upřel	416
 utřel	416
 videi	416
-zimák	416
 zídka	416
 čepec	416
 číhal	416
@@ -13710,7 +13590,6 @@ mouce	407
 mumii	407
 mícha	407
 mýdel	407
-nouza	407
 nouzí	407
 nožík	407
 nácek	407
@@ -13746,7 +13625,6 @@ zával	407
 žákyň	407
 atolu	398
 broky	398
-buček	398
 ceněn	398
 daruj	398
 dbáme	398
@@ -13954,7 +13832,6 @@ vhodí	371
 vjela	371
 vyhnu	371
 vílou	371
-výtoň	371
 vědra	371
 vředu	371
 zpěvů	371
@@ -14197,7 +14074,6 @@ servo	338
 sigmě	338
 slohy	338
 sépie	338
-teslu	338
 tipec	338
 trefě	338
 tyčce	338
@@ -14481,7 +14357,6 @@ sjely	301
 spáče	301
 sudka	301
 svolí	301
-tesle	301
 tlupě	301
 tuhém	301
 umyli	301
@@ -14519,7 +14394,6 @@ hudeb	295
 hájem	295
 ikoně	295
 kolmý	295
-kořán	295
 kryly	295
 kukle	295
 kvasí	295
@@ -14748,7 +14622,6 @@ došlé	269
 dítek	269
 fízla	269
 hnisu	269
-holas	269
 kačku	269
 klasu	269
 kmity	269
@@ -14786,7 +14659,6 @@ solit	269
 tuřín	269
 ubozí	269
 udali	269
-venek	269
 veslo	269
 vžila	269
 zjevu	269
@@ -14812,7 +14684,6 @@ dutým	263
 dvoří	263
 festa	263
 flóře	263
-glanc	263
 hasne	263
 hitům	263
 hnije	263
@@ -14891,7 +14762,6 @@ hořec	257
 hyzdí	257
 keřík	257
 kombo	257
-masák	257
 mýlce	257
 nitek	257
 ofinu	257
@@ -15023,7 +14893,6 @@ nymfa	245
 násep	245
 obuté	245
 octla	245
-pačes	245
 pažba	245
 pažbě	245
 pekly	245
@@ -15270,7 +15139,6 @@ legát	223
 lejna	223
 levní	223
 loupí	223
-línek	223
 miste	223
 misím	223
 mlžit	223
@@ -15564,7 +15432,6 @@ baget	199
 blbnu	199
 blůzy	199
 bojar	199
-brůna	199
 bulky	199
 báglu	199
 býček	199
@@ -15779,7 +15646,6 @@ dumal	186
 dílku	186
 fialu	186
 fláká	186
-hajan	186
 hlesl	186
 hnojí	186
 humna	186
@@ -15838,7 +15704,6 @@ zubra	186
 čirok	186
 čtivý	186
 ševců	186
-šoufl	186
 šutrů	186
 žasli	186
 žitím	186
@@ -16040,7 +15905,6 @@ hybné	169
 idyly	169
 jakýs	169
 kalba	169
-kilák	169
 kurvu	169
 lapat	169
 lapák	169
@@ -16156,7 +16020,6 @@ amora	162
 babím	162
 balem	162
 bokům	162
-calta	162
 chůvě	162
 datla	162
 dědil	162
@@ -16232,9 +16095,7 @@ eposy	158
 fenol	158
 fotíš	158
 fízly	158
-galla	158
 geist	158
-haken	158
 hnidy	158
 hrány	158
 jásal	158
@@ -16264,7 +16125,6 @@ oněmi	158
 pařát	158
 pepři	158
 pohnu	158
-prose	158
 rytím	158
 slídí	158
 smývá	158
@@ -16310,7 +16170,6 @@ humry	154
 joule	154
 kazem	154
 kejdy	154
-kleti	154
 kárat	154
 károu	154
 křiví	154
@@ -16488,7 +16347,6 @@ spamy	147
 tkaná	147
 tlapu	147
 trklo	147
-tucha	147
 vanad	147
 vezlo	147
 vilce	147
@@ -16503,7 +16361,6 @@ zrálo	147
 čtena	147
 čuník	147
 řepný	147
-šanta	147
 štíry	147
 šípků	147
 akáty	144
@@ -16530,7 +16387,6 @@ jímek	144
 kadeř	144
 knoty	144
 korce	144
-kosíř	144
 kovům	144
 krill	144
 kukel	144
@@ -16611,7 +16467,6 @@ hluky	141
 hovad	141
 hrdlu	141
 jíšku	141
-kmoch	141
 kážou	141
 lipky	141
 lordy	141
@@ -16644,7 +16499,6 @@ rtíky	141
 rundy	141
 senné	141
 setba	141
-sivák	141
 skaly	141
 sobem	141
 solem	141
@@ -16714,7 +16568,6 @@ retuš	138
 rolly	138
 rouby	138
 sešlé	138
-sitár	138
 smálo	138
 snědé	138
 sorty	138
@@ -16741,7 +16594,6 @@ zvete	138
 šejků	138
 špehy	138
 žáčků	138
-banát	134
 baňku	134
 budič	134
 býčka	134
@@ -16753,7 +16605,6 @@ gazel	134
 gekon	134
 hnití	134
 hněvá	134
-hřiba	134
 jarku	134
 ječný	134
 jurty	134
@@ -16997,7 +16848,6 @@ bodrý	123
 brnká	123
 bárce	123
 drásá	123
-elize	123
 fando	123
 futro	123
 hejla	123
@@ -17086,11 +16936,9 @@ diska	120
 dědky	120
 ebene	120
 hrdly	120
-hálka	120
 jarky	120
 kanic	120
 kazím	120
-koura	120
 kozly	120
 koštu	120
 kulak	120
@@ -17230,7 +17078,6 @@ běsní	114
 cedry	114
 cvoka	114
 cílil	114
-dedek	114
 divan	114
 dobil	114
 dotud	114
@@ -17267,7 +17114,6 @@ rýpal	114
 salvo	114
 seřve	114
 snily	114
-stela	114
 suďte	114
 tkvěl	114
 trucu	114
@@ -17445,7 +17291,6 @@ běžek	107
 daňci	107
 drhla	107
 dělen	107
-frgál	107
 gibon	107
 hlenů	107
 husar	107
@@ -17559,7 +17404,6 @@ zdích	104
 žhavě	104
 žlebů	104
 almou	102
-amada	102
 atoly	102
 ašský	102
 bardy	102
@@ -17582,11 +17426,9 @@ irsky	102
 jíchy	102
 klopí	102
 komun	102
-kozub	102
 krčky	102
 linul	102
 manou	102
-mečíř	102
 mlčíš	102
 myomy	102
 měkka	102
@@ -17713,7 +17555,6 @@ džiny	97
 estét	97
 etudu	97
 fázím	97
-gajdy	97
 hyenu	97
 ideám	97
 jedům	97
@@ -17812,7 +17653,6 @@ sádku	95
 sžili	95
 tahům	95
 tanči	95
-taran	95
 tonem	95
 torem	95
 tržil	95
@@ -18031,7 +17871,6 @@ zebou	89
 žemli	89
 živce	89
 aspik	87
-backa	87
 balsa	87
 blbém	87
 blůze	87
@@ -18101,7 +17940,6 @@ túrou	87
 vaflí	87
 vléct	87
 výživ	87
-čihař	87
 šička	87
 šukám	87
 šířím	87
@@ -18109,7 +17947,6 @@ výživ	87
 anžto	85
 bajce	85
 cudný	85
-dekan	85
 epiky	85
 falší	85
 foukl	85
@@ -18291,7 +18128,6 @@ uzlům	81
 uznej	81
 učňák	81
 učňům	81
-vanem	81
 vatru	81
 vezír	81
 vlítl	81
@@ -18310,7 +18146,6 @@ braši	79
 burce	79
 bídní	79
 cizák	79
-debře	79
 dolin	79
 dupne	79
 dštít	79
@@ -18392,7 +18227,6 @@ osiny	77
 pakůň	77
 pampy	77
 porve	77
-poule	77
 pozér	77
 pyžam	77
 písmy	77
@@ -18474,7 +18308,6 @@ rozet	75
 rydlo	75
 sledy	75
 slože	75
-smědé	75
 snově	75
 solil	75
 sopel	75
@@ -18543,7 +18376,6 @@ pajzl	74
 palte	74
 panin	74
 pevno	74
-pinda	74
 plisé	74
 prcal	74
 prstí	74
@@ -18701,7 +18533,6 @@ utočí	70
 vlhne	70
 vlnku	70
 vojen	70
-voráč	70
 vyset	70
 vážen	70
 úžehu	70
@@ -18987,7 +18818,6 @@ amfor	63
 amura	63
 avary	63
 blbin	63
-bálka	63
 choří	63
 diodě	63
 drali	63
@@ -19115,7 +18945,6 @@ cedrů	60
 dmutí	60
 držce	60
 dubům	60
-hadra	60
 hucul	60
 hučka	60
 kilům	60
@@ -19261,7 +19090,6 @@ pepku	57
 pohni	57
 pompy	57
 robit	57
-smědá	57
 srala	57
 upíjí	57
 vartě	57
@@ -19336,7 +19164,6 @@ zásun	56
 zíráš	56
 šerem	56
 blátu	54
-brhel	54
 butyl	54
 býčků	54
 cejni	54
@@ -19379,7 +19206,6 @@ ohony	54
 ošidí	54
 pitek	54
 pivku	54
-polej	54
 prsti	54
 páťák	54
 pérko	54
@@ -19520,7 +19346,6 @@ ničíš	52
 odděl	52
 odvát	52
 ornát	52
-plíva	52
 podlí	52
 poety	52
 riskl	52
@@ -20020,7 +19845,6 @@ vábil	44
 vědmě	44
 vřesů	44
 zažeň	44
-zloch	44
 zrale	44
 údech	44
 útlým	44
@@ -20158,7 +19982,6 @@ bengo	41
 brčál	41
 bělky	41
 cetku	41
-cigoš	41
 cimry	41
 ctěno	41
 cvakl	41
@@ -20182,7 +20005,6 @@ lazur	41
 lebeď	41
 lákám	41
 morda	41
-márou	41
 mílař	41
 mírám	41
 neraď	41
@@ -20227,7 +20049,6 @@ dumky	40
 dílci	40
 hexan	40
 hindy	40
-hnáta	40
 hoďme	40
 hulím	40
 hýkat	40
@@ -20424,7 +20245,6 @@ ližin	38
 loďař	38
 lucká	38
 lídru	38
-línka	38
 mačem	38
 nekaž	38
 niobu	38
@@ -20487,7 +20307,6 @@ poruč	37
 pránu	37
 páčce	37
 rafie	37
-rosta	37
 rybin	37
 sedej	37
 sekyr	37
@@ -20948,7 +20767,6 @@ nosáč	30
 názve	30
 odulá	30
 ohnut	30
-prýgl	30
 pádně	30
 sezve	30
 sněhů	30
@@ -21051,7 +20869,6 @@ zívne	30
 žatva	30
 babám	29
 brusů	29
-bukva	29
 dojil	29
 drénu	29
 dupnu	29
@@ -21372,7 +21189,6 @@ dryád	26
 drábů	26
 dunám	26
 esech	26
-falář	26
 fičím	26
 flexí	26
 haněn	26
@@ -21392,7 +21208,6 @@ lícím	26
 mukou	26
 neční	26
 notám	26
-outlý	26
 pasům	26
 patiu	26
 porub	26
@@ -21607,16 +21422,13 @@ daněn	23
 decil	23
 fláku	23
 fušce	23
-hemzy	23
 hobra	23
-hruda	23
 indol	23
 kasat	23
 koiné	23
 koktu	23
 ladní	23
 lučin	23
-matla	23
 mitro	23
 načnu	23
 nesme	23
@@ -21814,7 +21626,6 @@ ohneš	22
 opilo	22
 paleb	22
 paříš	22
-pindu	22
 piraň	22
 plove	22
 puncu	22
@@ -21878,7 +21689,6 @@ sálal	21
 sžijí	21
 teren	21
 těžte	21
-uhřík	21
 vdána	21
 vilný	21
 vlhnu	21
@@ -21892,12 +21702,10 @@ ašská	21
 berná	21
 betou	21
 blblo	21
-buzík	21
 bydle	21
 bázím	21
 dělte	21
 frita	21
-fukač	21
 gazík	21
 gradů	21
 halon	21
@@ -22035,7 +21843,6 @@ normo	20
 oblém	20
 ometá	20
 pufrů	20
-robův	20
 sbore	20
 sivko	20
 srand	20
@@ -22509,7 +22316,6 @@ serži	16
 slizů	16
 spavý	16
 spění	16
-stuhl	16
 tavbu	16
 taxou	16
 tirád	16
@@ -22541,7 +22347,6 @@ biret	16
 blatě	16
 blikl	16
 bosáž	16
-brůny	16
 cápka	16
 dršku	16
 gnose	16
@@ -22701,7 +22506,6 @@ válko	15
 zesil	15
 zlije	15
 zřeli	15
-česlo	15
 řekls	15
 šluky	15
 šotků	15
@@ -22809,12 +22613,10 @@ zmákl	15
 ševel	15
 žrací	15
 žábra	15
-backy	14
 bušte	14
 běhnu	14
 bělmu	14
 dbalé	14
-donou	14
 dřínů	14
 holíš	14
 houní	14
@@ -22988,7 +22790,6 @@ spěji	13
 srním	13
 stupů	13
 sypná	13
-sítař	13
 tadyk	13
 termů	13
 tečen	13
@@ -23082,7 +22883,6 @@ kutno	13
 kučer	13
 kůrám	13
 líhly	13
-močka	13
 mýlek	13
 nehaj	13
 nelad	13
@@ -23254,7 +23054,6 @@ nazná	12
 omylo	12
 opylí	12
 pedem	12
-plase	12
 pomst	12
 pozdí	12
 praný	12
@@ -23265,7 +23064,6 @@ sirot	12
 smyté	12
 snach	12
 suško	12
-svora	12
 tetro	12
 tmáře	12
 toryi	12
@@ -23576,7 +23374,6 @@ ztupí	10
 béčky	10
 běžka	10
 civěj	10
-debři	10
 dnový	10
 elito	10
 filky	10
@@ -25242,7 +25039,6 @@ zákazu	11748
 čekáme	11748
 čtvrtá	11748
 řídící	11748
-štěpán	11748
 blanka	11481
 chodbě	11481
 hlásit	11481
@@ -25759,7 +25555,6 @@ uvidíš	8128
 zahrad	8128
 účelům	8128
 bohyně	7943
-brabec	7943
 celému	7943
 desáté	7943
 deváté	7943
@@ -26106,7 +25901,6 @@ double	6606
 fasády	6606
 hazard	6606
 hladké	6606
-kadlec	6606
 klidné	6606
 krajem	6606
 kučera	6606
@@ -26498,7 +26292,6 @@ hořící	5370
 hrabat	5370
 hraček	5370
 hrozby	5370
-hřeben	5370
 kabelů	5370
 křičel	5370
 letáky	5370
@@ -26592,7 +26385,6 @@ hranou	5128
 jiřina	5128
 kocour	5128
 lákají	5128
-mrázek	5128
 oblohu	5128
 okruhy	5128
 oporou	5128
@@ -26950,7 +26742,6 @@ rodném	4365
 rostly	4365
 slavní	4365
 snědla	4365
-soukup	4365
 straší	4365
 svetry	4365
 svítit	4365
@@ -28153,7 +27944,6 @@ závidí	2630
 čtyřky	2630
 řadový	2630
 bazény	2570
-buddha	2570
 cílené	2570
 doručí	2570
 démoni	2570
@@ -29018,7 +28808,6 @@ nácvik	1862
 návrší	1862
 odklon	1862
 ohrada	1862
-orlové	1862
 parcel	1862
 person	1862
 plnila	1862
@@ -29122,7 +28911,6 @@ lokaci	1778
 marino	1778
 milník	1778
 množit	1778
-nedvěd	1778
 nemálo	1778
 nenese	1778
 neplač	1778
@@ -29837,7 +29625,6 @@ výmysl	1412
 čistič	1412
 škodám	1412
 šlachy	1412
-štěrba	1412
 atletů	1380
 brouky	1380
 cikány	1380
@@ -31652,7 +31439,6 @@ záplav	831
 špínou	831
 bagety	812
 bambus	812
-bouček	812
 bujnou	812
 chatou	812
 cítily	812
@@ -31845,7 +31631,6 @@ apatie	776
 aranže	776
 boxeři	776
 budila	776
-coufal	776
 dlužno	776
 dodaly	776
 doliny	776
@@ -31946,7 +31731,6 @@ dietou	758
 dodána	758
 děloha	758
 eticky	758
-houdek	758
 hřebce	758
 jedněm	758
 kimono	758
@@ -33641,7 +33425,6 @@ ukažme	512
 upadly	512
 uragán	512
 vestou	512
-večeřa	512
 vinila	512
 vodáci	512
 vrších	512
@@ -34246,7 +34029,6 @@ otřásá	446
 pekáče	446
 plnilo	446
 plnost	446
-plíhal	446
 pracuj	446
 praním	446
 pravák	446
@@ -34278,7 +34060,6 @@ vdanou	446
 vhledu	446
 vhodil	446
 vlídná	446
-vokoun	446
 vznese	446
 váleli	446
 výhonů	446
@@ -34945,7 +34726,6 @@ zúžený	389
 balicí	380
 barety	380
 barový	380
-bečvář	380
 bicími	380
 bondem	380
 bruska	380
@@ -35029,7 +34809,6 @@ skryla	380
 skryli	380
 slupek	380
 slídil	380
-smažák	380
 smogem	380
 sopkou	380
 splyne	380
@@ -35733,7 +35512,6 @@ těstem	331
 těšení	331
 upírat	331
 utlumí	331
-vařeka	331
 vdovce	331
 velebí	331
 velela	331
@@ -35969,7 +35747,6 @@ zářným	316
 antonu	309
 atlasy	309
 bradla	309
-brodek	309
 brusné	309
 brázdu	309
 budíka	309
@@ -36183,7 +35960,6 @@ tupého	301
 tyranů	301
 tělesu	301
 třásně	301
-upírka	301
 vařily	301
 virózy	301
 vlažná	301
@@ -36216,7 +35992,6 @@ zmohla	301
 bachař	295
 bouchl	295
 cvičte	295
-danovi	295
 denárů	295
 depeši	295
 dojelo	295
@@ -36735,7 +36510,6 @@ kulová	269
 kuponu	269
 křečci	269
 křečky	269
-labuda	269
 ladila	269
 lavině	269
 lijáky	269
@@ -37021,7 +36795,6 @@ skokům	257
 sladko	257
 smírem	257
 snovou	257
-strejc	257
 stálic	257
 sudové	257
 tavící	257
@@ -37332,7 +37105,6 @@ dovrší	239
 doženu	239
 fajfku	239
 fňukat	239
-grupáč	239
 hoblík	239
 hochům	239
 hojným	239
@@ -37733,7 +37505,6 @@ klerik	223
 konexí	223
 kordon	223
 koukli	223
-kunice	223
 kázali	223
 křovák	223
 lítalo	223
@@ -37900,7 +37671,6 @@ tavicí	218
 tažená	218
 topíte	218
 trapní	218
-troják	218
 tundry	218
 tundře	218
 třeští	218
@@ -38025,7 +37795,6 @@ pístní	213
 přejte	213
 rapuje	213
 rosení	213
-roubal	213
 rušným	213
 rámusu	213
 sabatu	213
@@ -38793,7 +38562,6 @@ snítky	186
 sojový	186
 splutí	186
 stvrdí	186
-svatoň	186
 svrhlo	186
 svrhly	186
 sycené	186
@@ -38869,7 +38637,6 @@ brouku	181
 býváte	181
 břitvu	181
 cenila	181
-cholin	181
 chtěné	181
 dobral	181
 dominu	181
@@ -39079,7 +38846,6 @@ rušeno	177
 sbalte	177
 sběrna	177
 seběhl	177
-servus	177
 shnilý	177
 skoupá	177
 skórem	177
@@ -39349,7 +39115,6 @@ sloním	169
 sonetů	169
 sporýš	169
 strýců	169
-stýblo	169
 sudých	169
 tiráži	169
 torzem	169
@@ -39393,7 +39158,6 @@ zářili	169
 špačky	169
 štolba	169
 štíhle	169
-štípek	169
 štěpky	169
 šukají	169
 šípová	169
@@ -39796,7 +39560,6 @@ džínsy	154
 farská	154
 fízlům	154
 glosář	154
-haluza	154
 hiphop	154
 honová	154
 horalé	154
@@ -40309,7 +40072,6 @@ sokovi	144
 spisku	144
 strast	144
 tancům	144
-teslou	144
 tlapka	144
 triádu	144
 těžíme	144
@@ -40822,7 +40584,6 @@ relaps	131
 remaky	131
 risknu	131
 rohatá	131
-rokyta	131
 ryzích	131
 rýpání	131
 salone	131
@@ -41613,7 +41374,6 @@ kládou	114
 koníků	114
 koráli	114
 krovem	114
-kuběna	114
 kulise	114
 kundou	114
 kvásku	114
@@ -42063,7 +41823,6 @@ peláší	107
 plácáš	107
 plástů	107
 poctít	107
-poleje	107
 pospat	107
 pracku	107
 pánovy	107
@@ -42312,7 +42071,6 @@ fontem	102
 galoše	102
 genový	102
 gurmet	102
-hajany	102
 hanobí	102
 haraší	102
 hoblin	102
@@ -42938,7 +42696,6 @@ rádcům	93
 sdělen	93
 sedíce	93
 sešili	93
-slouka	93
 splavů	93
 splníš	93
 sršela	93
@@ -43562,7 +43319,6 @@ gazelu	83
 grunty	83
 haleny	83
 hasila	83
-hnátek	83
 kaloni	83
 keňští	83
 klacka	83
@@ -43657,7 +43413,6 @@ velmož	83
 vizitu	83
 vlčáky	83
 vlčími	83
-vořech	83
 vsázel	83
 vylíže	83
 vyžral	83
@@ -43999,7 +43754,6 @@ husita	77
 ječeli	77
 kahanu	77
 karasi	77
-knecht	77
 koníku	77
 kosové	77
 krokev	77
@@ -44189,7 +43943,6 @@ optala	75
 osahal	75
 otočně	75
 pastis	75
-pleška	75
 plocho	75
 pobití	75
 podruh	75
@@ -44204,7 +43957,6 @@ pukrle	75
 punker	75
 pážata	75
 přilož	75
-robovi	75
 roháči	75
 rosena	75
 rouhal	75
@@ -45384,14 +45136,12 @@ bourec	61
 brejlí	61
 bromem	61
 bryndě	61
-budník	61
 buginu	61
 cestář	61
 cvikům	61
 dekora	61
 divily	61
 dobitý	61
-donovi	61
 dopiju	61
 edenem	61
 estrád	61
@@ -45572,7 +45322,6 @@ klidno	60
 klovat	60
 kohezi	60
 korvet	60
-krupař	60
 kvantu	60
 kárách	60
 křivit	60
@@ -45867,7 +45616,6 @@ gluten	57
 grimas	57
 hambáč	57
 helixu	57
-hladná	57
 horuje	57
 hradím	57
 hrábla	57
@@ -45977,7 +45725,6 @@ zúžíme	57
 altový	56
 amonné	56
 auťáky	56
-bařina	56
 bikera	56
 brusem	56
 bryčce	56
@@ -46256,7 +46003,6 @@ zajásá	54
 zarývá	54
 zaženu	54
 zdržen	54
-zelina	54
 zmáhat	54
 změklo	54
 závinu	54
@@ -46532,7 +46278,6 @@ vyrost	52
 zadělá	52
 zlejší	52
 zvlhly	52
-záhora	52
 úlevám	52
 účtuji	52
 čilost	52
@@ -46934,7 +46679,6 @@ pestík	48
 pinkat	48
 plečky	48
 poseká	48
-profes	48
 putuji	48
 puzzlů	48
 pádíme	48
@@ -47896,7 +47640,6 @@ dolije	41
 dozněl	41
 dozory	41
 drezín	41
-dryják	41
 drzému	41
 duhoví	41
 esíčka	41
@@ -48436,7 +48179,6 @@ vykají	38
 vyrván	38
 vytrhá	38
 vzniky	38
-víškem	38
 výkupů	38
 vývěrů	38
 zadáví	38
@@ -48749,7 +48491,6 @@ břitvě	36
 cheche	36
 cukrům	36
 cílily	36
-danové	36
 dojila	36
 dopity	36
 dresům	36
@@ -49425,7 +49166,6 @@ nepárá	33
 neředí	33
 nořili	33
 obloží	33
-obrové	33
 obruči	33
 oddáte	33
 odhrnu	33
@@ -49471,7 +49211,6 @@ sudový	33
 sudými	33
 surimi	33
 suťový	33
-svatka	33
 sytého	33
 tavilo	33
 teismu	33
@@ -50448,7 +50187,6 @@ aymara	27
 barven	27
 brekot	27
 brokem	27
-brumle	27
 bzučel	27
 cezení	27
 cizoty	27
@@ -51955,7 +51693,6 @@ nepití	21
 netýrá	21
 nožíků	21
 obývám	21
-odolen	21
 odňaly	21
 ohlídl	21
 orosil	21
@@ -52107,7 +51844,6 @@ raziím	20
 redutu	20
 rejsky	20
 remízů	20
-robova	20
 sejdeš	20
 sektář	20
 sešívá	20
@@ -52164,7 +51900,6 @@ anolis	20
 arkýřů	20
 atolem	20
 babkám	20
-backem	20
 brnkni	20
 byreta	20
 bělové	20
@@ -52325,7 +52060,6 @@ fixami	19
 fičíme	19
 gízské	19
 hamaku	19
-hladný	19
 hleznu	19
 hnaném	19
 hnojte	19
@@ -53644,7 +53378,6 @@ kalicí	15
 kozlův	15
 kukské	15
 kušnit	15
-línkem	15
 lízaní	15
 marním	15
 marách	15
@@ -53687,7 +53420,6 @@ steklá	15
 supího	15
 syžety	15
 tahově	15
-tejral	15
 tiárou	15
 trpěno	15
 tvrzen	15
@@ -53701,6 +53433,71 @@ vanový	15
 vsázce	15
 výtoků	15
 zadiny	15
+zřením	15
+úplatě	15
+žalude	15
+žitých	15
+alkoun	15
+bafání	15
+bajkám	15
+banyán	15
+brepto	15
+básníš	15
+břízek	15
+chudli	15
+chunta	15
+chňape	15
+dokaři	15
+donací	15
+drnkat	15
+dírkám	15
+děsech	15
+fachat	15
+fazóny	15
+finesa	15
+fordky	15
+freonu	15
+frťany	15
+fórové	15
+gryfem	15
+houstl	15
+hrbila	15
+hrázce	15
+indiem	15
+ježuru	15
+kališť	15
+kanula	15
+kesonů	15
+kodéři	15
+kozáku	15
+krachl	15
+kriple	15
+kriply	15
+kyprým	15
+kýlové	15
+leckam	15
+leckým	15
+loďáku	15
+metálu	15
+mocemi	15
+mstilo	15
+nadutá	15
+nasáta	15
+našitá	15
+neději	15
+nesrší	15
+neřvat	15
+objelo	15
+obroku	15
+odkrví	15
+odsátý	15
+olůvko	15
+omílám	15
+opepři	15
+oslími	15
+ořecha	15
+ořežte	15
+oživme	15
 protože	1148153
 všechny	758577
 všechno	691830
@@ -55944,7 +55741,6 @@ přenáší	6918
 převést	6918
 reklamě	6918
 seznamy	6918
-siemens	6918
 souboje	6918
 spatřil	6918
 strážce	6918
@@ -56152,7 +55948,6 @@ důrazně	6165
 hrubého	6165
 jevišti	6165
 koníček	6165
-kopecký	6165
 maminku	6165
 mluvíte	6165
 mužstvu	6165
@@ -56673,7 +56468,6 @@ naštval	4897
 nápadem	4897
 opačným	4897
 ovládla	4897
-ovčáček	4897
 penaltu	4897
 postavě	4897
 postačí	4897
@@ -60069,7 +59863,6 @@ dánském	1621
 editoru	1621
 explozí	1621
 farmářů	1621
-holeček	1621
 houbami	1621
 hracích	1621
 hradech	1621
@@ -61668,7 +61461,6 @@ pomstil	1122
 poprali	1122
 popírat	1122
 posedlí	1122
-prachař	1122
 prasklo	1122
 procesí	1122
 profile	1122
@@ -63481,7 +63273,6 @@ imunitě	776
 inzulin	776
 jistotě	776
 klidové	776
-kopecká	776
 kořenem	776
 letovou	776
 loňským	776
@@ -63848,7 +63639,6 @@ zatopit	741
 zatížen	741
 zbavený	741
 zděných	741
-zemánek	741
 zrušíme	741
 zádušní	741
 zálivku	741
@@ -64612,7 +64402,6 @@ velikán	645
 vitríny	645
 vládcům	645
 volavka	645
-vomáčka	645
 voskové	645
 vousatý	645
 vyplout	645
@@ -65211,7 +65000,6 @@ hraběcí	575
 hřídelí	575
 ideálům	575
 igelitu	575
-javůrek	575
 kateder	575
 krachem	575
 kráterů	575
@@ -65900,7 +65688,6 @@ usuzuji	524
 utlumit	524
 učiněný	524
 varován	524
-vejvoda	524
 vejčité	524
 višňové	524
 vkladní	524
@@ -65992,7 +65779,6 @@ lumpové	512
 mediích	512
 memoáry	512
 mikrobů	512
-mlejnek	512
 modlíme	512
 mělčině	512
 naskytl	512
@@ -66033,7 +65819,6 @@ selským	512
 slyšely	512
 slýchat	512
 souvětí	512
-sovinec	512
 stahuju	512
 stavěna	512
 stolkem	512
@@ -66186,7 +65971,6 @@ usuzuje	501
 utonutí	501
 vavříny	501
 vodítek	501
-votruba	501
 vydobýt	501
 vyplyne	501
 vypsali	501
@@ -68614,7 +68398,6 @@ zničíte	354
 zrozené	354
 zřejmou	354
 úchylky	354
-černice	354
 ďáblovi	354
 šlapalo	354
 šlechtí	354
@@ -69898,7 +69681,6 @@ kondicí	295
 konečků	295
 kopírka	295
 krasové	295
-kudrnáč	295
 kulhání	295
 kučerou	295
 kvapila	295
@@ -70365,7 +70147,6 @@ rodička	281
 růžičku	281
 sasanky	281
 satirou	281
-saúdský	281
 sekretu	281
 shledat	281
 shodném	281
@@ -70578,7 +70359,6 @@ sadista	275
 sebrání	275
 sehraná	275
 septiku	275
-slavice	275
 sládkem	275
 slýchal	275
 sněhově	275
@@ -70847,7 +70627,6 @@ zřícené	269
 šunkový	269
 absintu	263
 alergen	263
-babinec	263
 blábolů	263
 bočnici	263
 brzdnou	263
@@ -74009,7 +73788,6 @@ líbezný	181
 lůžkový	181
 macechy	181
 maceška	181
-majzlík	181
 maršově	181
 masérem	181
 mazlavé	181
@@ -74834,7 +74612,6 @@ konzolu	165
 kopačka	165
 kozácké	165
 kvótách	165
-kňourek	165
 lakovny	165
 lehátky	165
 letitým	165
@@ -76887,7 +76664,6 @@ závanem	134
 šňůrami	134
 žežulka	134
 bakelit	131
-baruška	131
 bavorák	131
 blogový	131
 bodláku	131
@@ -77263,7 +77039,6 @@ vdovské	128
 vekslák	128
 veleben	128
 verbuje	128
-vincour	128
 vlasaté	128
 vnášení	128
 vodných	128
@@ -77610,7 +77385,6 @@ opíjení	123
 osladil	123
 ověřilo	123
 ořezání	123
-pinkava	123
 plynném	123
 podtóny	123
 pokleku	123
@@ -77844,7 +77618,6 @@ roličky	120
 rozmarů	120
 rýžovém	120
 sanctum	120
-satrapa	120
 schopně	120
 sedliny	120
 seslali	120
@@ -79742,12 +79515,10 @@ aerogel	97
 agitací	97
 akcentů	97
 asociál	97
-austrie	97
 autogen	97
 badyánu	97
 benziny	97
 bernské	97
-bečváře	97
 blbneme	97
 blikala	97
 blikalo	97
@@ -82952,7 +82723,6 @@ slatinu	72
 snímaly	72
 spojaři	72
 sraženo	72
-struček	72
 stélkou	72
 střapců	72
 střípku	72
@@ -83031,7 +82801,6 @@ zívnutí	72
 čeládka	72
 červíka	72
 čichová	72
-čochtan	72
 šachmat	72
 žabičky	72
 ženitba	72
@@ -83523,7 +83292,6 @@ zřejmém	69
 ananasů	67
 argonem	67
 aureole	67
-bloudek	67
 blánami	67
 bourané	67
 bouráme	67
@@ -83701,6 +83469,35 @@ tragika	67
 uchopen	67
 ukojili	67
 ukotvil	67
+unášený	67
+upírání	67
+utužují	67
+uvaděče	67
+uvalená	67
+uvazuje	67
+uzených	67
+uzoučké	67
+valníků	67
+vděčíte	67
+velkost	67
+viděným	67
+vlnovec	67
+vodivou	67
+vyleští	67
+vylétli	67
+vylíhlá	67
+vymetla	67
+vymáčkl	67
+vyměníš	67
+vyplázl	67
+vytřeme	67
+vyvaruj	67
+vázanku	67
+yardové	67
+zakleje	67
+zalehne	67
+zanikal	67
+zaschlý	67
 poslední	489778
 nejlepší	380189
 největší	288403
@@ -85851,7 +85648,6 @@ předního	5248
 přerušil	5248
 schránka	5248
 schránku	5248
-sedláček	5248
 světovým	5248
 toaletní	5248
 táborech	5248
@@ -86823,7 +86619,6 @@ asociací	3388
 blokovat	3388
 chutnalo	3388
 graffiti	3388
-hospodin	3388
 kamennou	3388
 kliknutí	3388
 mocnosti	3388
@@ -87169,7 +86964,6 @@ vibrační	3019
 vysílací	3019
 vznikala	3019
 výpovědí	3019
-řezníček	3019
 šedesáti	3019
 analýzou	2951
 bláznivá	2951
@@ -87789,7 +87583,6 @@ vybereme	2454
 vylodění	2454
 vymazání	2454
 vyvrátit	2454
-vyšehrad	2454
 válečným	2454
 věčnosti	2454
 zabíjeli	2454
@@ -87800,7 +87593,6 @@ záznamem	2454
 úžasného	2454
 čemkoliv	2454
 anatomie	2398
-angličan	2398
 atomovou	2398
 bláznivé	2398
 bronzová	2398
@@ -91253,7 +91045,6 @@ cukrovou	1000
 decentně	1000
 doktrína	1000
 granátem	1000
-holanďan	1000
 hostovat	1000
 hromadit	1000
 kamenité	1000
@@ -93755,7 +93546,6 @@ univerza	660
 uříznout	660
 vinylové	660
 vládkyně	660
-vorlíček	660
 vyjíždět	660
 vysílány	660
 vyznáním	660
@@ -94076,7 +93866,6 @@ získaným	630
 alpského	616
 amoniaku	616
 apelovat	616
-brabenec	616
 browning	616
 bruslaři	616
 chybičky	616
@@ -94530,7 +94319,6 @@ zřízenou	588
 čistírnu	588
 čtveřicí	588
 šimpanze	588
-španělka	588
 alegorie	575
 anorexii	575
 astmatem	575
@@ -96881,7 +96669,6 @@ příponou	426
 příčinám	426
 recitace	426
 regionům	426
-roubíček	426
 rušivých	426
 sazebník	426
 shledáno	426
@@ -97857,7 +97644,6 @@ zoufalém	380
 agresora	371
 aspirace	371
 bezdětní	371
-bukovina	371
 cestovné	371
 chladiči	371
 citacemi	371
@@ -98804,7 +98590,6 @@ smokingu	338
 smržovka	338
 směnárna	338
 snadných	338
-sokolová	338
 souběžný	338
 spáchalo	338
 stočného	338
@@ -103294,7 +103079,6 @@ kurvička	208
 kvocient	208
 listoval	208
 lobbingu	208
-marjánka	208
 marmelád	208
 marockém	208
 masakrům	208
@@ -103631,7 +103415,6 @@ přisedla	204
 přítokem	204
 rankingu	204
 rozdávám	204
-rozsíval	204
 roztančí	204
 rutinním	204
 ryšavého	204
@@ -104316,7 +104099,6 @@ hodináři	190
 houštiny	190
 hořčičné	190
 hrbolatá	190
-hrádeček	190
 imobilní	190
 invertní	190
 iráckými	190
@@ -104552,7 +104334,6 @@ jahodách	186
 jamboree	186
 jehličím	186
 jehněčím	186
-ječmínek	186
 kabátech	186
 kachních	186
 kameníci	186
@@ -105194,7 +104975,6 @@ sprostým	177
 srbskými	177
 stařecká	177
 stimulem	177
-stoklasa	177
 stolečky	177
 strhával	177
 stropním	177
@@ -106886,7 +106666,6 @@ atestací	151
 baronkou	151
 bačkůrky	151
 baťovský	151
-belzebub	151
 beranovi	151
 beránčím	151
 bezduchý	151
@@ -108060,7 +107839,6 @@ inhalací	138
 invalidu	138
 jesetera	138
 kabarety	138
-kalandra	138
 kapotáže	138
 kariérně	138
 kbelíkem	138
@@ -109523,7 +109301,6 @@ knedlíku	123
 kokrhání	123
 koloniím	123
 koláčích	123
-kovošrot	123
 krachují	123
 krajinek	123
 krajkami	123
@@ -113701,3 +113478,23 @@ normativ	89
 nozdrami	89
 nádeníky	89
 objížděk	89
+obytnému	89
+obývaným	89
+obědváte	89
+oddychne	89
+odnaučil	89
+odolávám	89
+odpojilo	89
+odraženi	89
+odvěkých	89
+odřeninu	89
+ohřátého	89
+okultním	89
+opomněli	89
+otcovými	89
+oznamuju	89
+ošlehaný	89
+palisádu	89
+pascalem	89
+pasových	89
+pastýřům	89

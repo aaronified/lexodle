@@ -267,7 +267,6 @@ juga	37153
 salt	37153
 siga	36307
 vies	36307
-este	35481
 gols	35481
 onze	35481
 paga	35481
@@ -1072,7 +1071,6 @@ gosa	1621
 tiet	1621
 ares	1584
 baga	1584
-midi	1584
 mula	1584
 neda	1584
 cuit	1548
@@ -1679,7 +1677,6 @@ tama	346
 tití	346
 tocà	346
 cals	338
-dari	338
 erma	338
 mute	338
 sole	338
@@ -1853,7 +1850,6 @@ jorn	199
 lift	199
 lisi	199
 moga	199
-pava	199
 rapa	199
 rema	199
 voga	199
@@ -2425,7 +2421,6 @@ rote	43
 vien	43
 xala	43
 adar	42
-audí	42
 goda	42
 moms	42
 nyas	42
@@ -3233,7 +3228,6 @@ regne	85113
 parís	83176
 quant	83176
 culpa	81283
-nadal	81283
 quasi	81283
 règim	81283
 sopar	81283
@@ -4399,7 +4393,6 @@ banya	3801
 busco	3801
 cries	3801
 esser	3801
-fines	3801
 kurda	3801
 madur	3801
 marcs	3801
@@ -4795,7 +4788,6 @@ empès	2089
 goigs	2089
 multi	2089
 ponte	2089
-prous	2089
 samba	2089
 sexta	2089
 sòria	2089
@@ -5110,7 +5102,6 @@ terri	1318
 toves	1318
 usava	1318
 corró	1288
-danés	1288
 faces	1288
 fòbia	1288
 horda	1288
@@ -5740,7 +5731,6 @@ puntí	588
 píxel	588
 raids	588
 roïns	588
-salma	588
 tirin	588
 trena	588
 untar	588
@@ -6681,7 +6671,6 @@ ovina	162
 porós	162
 quads	162
 resos	162
-taira	162
 tardo	162
 termo	162
 tovar	162
@@ -6933,7 +6922,6 @@ venós	123
 vetos	123
 agave	120
 aviva	120
-bimbo	120
 bloca	120
 borra	120
 cercà	120
@@ -7277,7 +7265,6 @@ blast	81
 borna	81
 busts	81
 cromo	81
-espés	81
 expos	81
 fossi	81
 frisa	81
@@ -11150,7 +11137,6 @@ fibres	5248
 guaita	5248
 honors	5248
 monges	5248
-musica	5248
 neixen	5248
 nevada	5248
 office	5248
@@ -11386,7 +11372,6 @@ roures	4073
 ètnica	4073
 adonen	3981
 arenal	3981
-cortés	3981
 figues	3981
 fotent	3981
 fóssim	3981
@@ -12890,7 +12875,6 @@ galons	933
 impune	933
 llacet	933
 mesquí	933
-nadals	933
 oblido	933
 oferix	933
 peluts	933
@@ -16675,7 +16659,6 @@ gluons	51
 isòmer	51
 lluite	51
 macers	51
-maltés	51
 mogols	51
 ovàric	51
 pelosa	51
@@ -16699,7 +16682,6 @@ dioica	50
 enredo	50
 escora	50
 exigiu	50
-facund	50
 fastig	50
 fitxem	50
 fullat	50
@@ -18061,7 +18043,6 @@ candia	23
 capets	23
 capsec	23
 caribs	23
-ciprés	23
 clíper	23
 colori	23
 delmer	23
@@ -21475,7 +21456,6 @@ seguici	3890
 servint	3890
 tarannà	3890
 altaveu	3801
-anglada	3801
 calents	3801
 clínics	3801
 concili	3801
@@ -22853,7 +22833,6 @@ espolla	1230
 estella	1230
 federat	1230
 gavines	1230
-genovés	1230
 inacció	1230
 lectius	1230
 llegiré	1230
@@ -27629,7 +27608,6 @@ mallada	75
 micòleg	75
 miríada	75
 molesto	75
-natzaré	75
 negrets	75
 persone	75
 pescada	75
@@ -28410,7 +28388,6 @@ reservà	54
 revisés	54
 rodaran	54
 saberes	54
-saludes	54
 sospiti	54
 tancaré	54
 venjarà	54
@@ -34873,7 +34850,6 @@ leucèmia	3090
 mecànics	3090
 milloren	3090
 petjades	3090
-quaresma	3090
 rarament	3090
 reduïdes	3090
 sacsejar	3090
@@ -38694,7 +38670,6 @@ implorar	281
 inundant	281
 lliurava	281
 militava	281
-navarrés	281
 patentar	281
 pecadora	281
 planeres	281
@@ -41281,7 +41256,6 @@ impugnat	79
 irrompen	79
 legitimi	79
 misògins	79
-musiques	79
 obliqües	79
 ofimàtic	79
 paritari	79
@@ -46792,7 +46766,6 @@ resessin	13
 respiris	13
 revoltós	13
 rifenyes	13
-saladina	13
 sancionà	13
 secretat	13
 semolina	13

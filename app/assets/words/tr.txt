@@ -563,7 +563,6 @@ anal	18620
 ayar	18620
 etik	18620
 mail	18620
-sami	18620
 ulan	18620
 ulus	18620
 yönü	18620
@@ -661,7 +660,6 @@ salt	14125
 çete	14125
 gaza	13803
 inek	13803
-kaan	13803
 kaos	13803
 küme	13803
 life	13803
@@ -1269,7 +1267,6 @@ saki	3235
 ödüm	3235
 ıran	3235
 şule	3235
-aral	3162
 azdı	3162
 boss	3162
 eşik	3162
@@ -1327,7 +1324,6 @@ paso	2884
 sevi	2884
 ödem	2884
 abuk	2818
-araf	2818
 atım	2818
 bone	2818
 cebe	2818
@@ -3878,7 +3874,6 @@ yatın	6606
 çayın	6606
 akıcı	6456
 amcam	6456
-bafra	6456
 bucak	6456
 bölme	6456
 dalda	6456
@@ -4319,7 +4314,6 @@ sevap	4466
 suçum	4466
 tıpta	4466
 ömrüm	4466
-abaza	4365
 alaca	4365
 boşta	4365
 buruk	4365
@@ -4513,7 +4507,6 @@ kavim	3715
 manda	3715
 mantı	3715
 motel	3715
-müren	3715
 orucu	3715
 selen	3715
 sokun	3715
@@ -5841,7 +5834,6 @@ cicim	1288
 cıktı	1288
 darla	1288
 düşes	1288
-frenk	1288
 gramı	1288
 götüm	1288
 göçtü	1288
@@ -7398,7 +7390,6 @@ mağara	14125
 oturdu	14125
 patron	14125
 rüzgâr	14125
-server	14125
 sokağı	14125
 soldan	14125
 suçlar	14125
@@ -14340,7 +14331,6 @@ yapardı	6918
 yaşatan	6918
 çalındı	6918
 öngören	6918
-özgüven	6918
 şeftali	6918
 şenliği	6918
 baharat	6760
@@ -17375,7 +17365,6 @@ epeydir	2041
 etseler	2041
 fikirli	2041
 filonun	2041
-firdevs	2041
 fırıncı	2041
 gezdiği	2041
 giyerim	2041
@@ -20886,7 +20875,6 @@ taşıyıcı	13489
 çıkmadan	13489
 almasına	13182
 aranıyor	13182
-avrupalı	13182
 aylardır	13182
 bakımdan	13182
 eğitimli	13182

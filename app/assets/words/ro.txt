@@ -201,7 +201,6 @@ semn	75857
 vadă	72443
 case	70794
 http	70794
-jack	70794
 scos	70794
 sînt	70794
 vrem	70794
@@ -509,7 +508,6 @@ fani	14125
 geam	14125
 golf	14125
 high	14125
-mall	14125
 card	13803
 gard	13803
 inel	13803
@@ -625,7 +623,6 @@ lama	10000
 reia	10000
 sume	10000
 abuz	9772
-ciuc	9772
 file	9772
 iris	9772
 lega	9772
@@ -899,7 +896,6 @@ basm	4677
 cape	4677
 daco	4677
 epic	4677
-fiat	4677
 jude	4677
 seră	4677
 soul	4677
@@ -1040,7 +1036,6 @@ peri	3388
 plug	3388
 tipa	3388
 tisa	3388
-trip	3388
 vaca	3388
 evit	3311
 maxi	3311
@@ -1405,7 +1400,6 @@ stup	1698
 tușă	1698
 zulu	1698
 șefu	1698
-aida	1659
 căra	1659
 edem	1659
 nanu	1659
@@ -1438,7 +1432,6 @@ cant	1548
 comp	1548
 lăzi	1548
 negi	1548
-oman	1548
 pion	1548
 poll	1548
 sama	1548
@@ -1480,7 +1473,6 @@ putu	1412
 țipe	1412
 alor	1380
 bala	1380
-berg	1380
 bute	1380
 cast	1380
 cela	1380
@@ -1662,7 +1654,6 @@ barn	1023
 bând	1023
 cane	1023
 flag	1023
-lala	1023
 lupo	1023
 mora	1023
 rage	1023
@@ -1854,7 +1845,6 @@ simți	87096
 modul	85113
 sânge	85113
 decis	83176
-henry	83176
 lunii	83176
 sport	83176
 surse	83176
@@ -2031,7 +2021,6 @@ fosta	38904
 motor	38904
 plece	38904
 purta	38904
-sorin	38904
 dracu	38018
 găsim	38018
 lapte	38018
@@ -2367,7 +2356,6 @@ prinț	17378
 scrii	17378
 verii	17378
 zicea	17378
-caraș	16982
 doina	16982
 dragi	16982
 evreu	16982
@@ -2974,7 +2962,6 @@ urâtă	6309
 acuza	6165
 balon	6165
 bloca	6165
-derby	6165
 index	6165
 micii	6165
 milan	6165
@@ -3124,7 +3111,6 @@ suflă	5128
 ucise	5128
 urmăm	5128
 urâte	5128
-vince	5128
 vulpe	5128
 anexă	5011
 apuci	5011
@@ -3174,7 +3160,6 @@ brută	4786
 dungi	4786
 etice	4786
 foaia	4786
-gabor	4786
 gluma	4786
 monte	4786
 nativ	4786
@@ -3245,7 +3230,6 @@ sirop	4466
 urcăm	4466
 vocii	4466
 vânat	4466
-țepeș	4466
 alert	4365
 aurie	4365
 calma	4365
@@ -3526,7 +3510,6 @@ subit	3311
 treaz	3311
 zărit	3311
 înșel	3311
-alvin	3235
 asumi	3235
 basic	3235
 brate	3235
@@ -3634,7 +3617,6 @@ vecie	2951
 șocul	2951
 auzea	2884
 axată	2884
-bacon	2884
 butoi	2884
 elevă	2884
 fiara	2884
@@ -3839,7 +3821,6 @@ anina	2344
 boltă	2344
 durut	2344
 folie	2344
-lăpuș	2344
 marga	2344
 ocoli	2344
 orare	2344
@@ -4014,7 +3995,6 @@ caras	1949
 coace	1949
 căței	1949
 enter	1949
-haiti	1949
 imite	1949
 lacom	1949
 mumia	1949
@@ -4102,7 +4082,6 @@ leone	1819
 lucid	1819
 lăsam	1819
 midia	1819
-mirel	1819
 motel	1819
 pivot	1819
 recea	1819
@@ -4343,7 +4322,6 @@ inert	1445
 latră	1445
 menta	1445
 nipon	1445
-noble	1445
 obosi	1445
 pașca	1445
 piară	1445
@@ -4416,7 +4394,6 @@ cretă	1348
 dario	1348
 diete	1348
 eleva	1348
-kappa	1348
 luxos	1348
 moscu	1348
 olari	1348
@@ -4628,13 +4605,11 @@ paiul	1122
 pavat	1122
 repar	1122
 samba	1122
-sucre	1122
 teaca	1122
 trier	1122
 tăind	1122
 amino	1096
 amvon	1096
-beliș	1096
 budai	1096
 cidru	1096
 clona	1096
@@ -4931,7 +4906,6 @@ planul	74131
 spunea	74131
 țările	74131
 așadar	72443
-bogdan	72443
 cameră	72443
 căreia	72443
 gândit	72443
@@ -5230,7 +5204,6 @@ promis	30199
 puteam	30199
 scăpat	30199
 soției	30199
-viorel	30199
 actele	29512
 ființă	29512
 făceau	29512
@@ -5648,7 +5621,6 @@ zgomot	14791
 zâmbet	14791
 țigări	14791
 alertă	14454
-anghel	14454
 antena	14454
 aprins	14454
 bogați	14454
@@ -6045,7 +6017,6 @@ peștii	9120
 romana	9120
 rutină	9120
 rămasă	9120
-saturn	9120
 scumpe	9120
 severă	9120
 veșnic	9120
@@ -6284,7 +6255,6 @@ celula	6918
 cenușă	6918
 cetăți	6918
 comori	6918
-crișan	6918
 decurs	6918
 depăși	6918
 editat	6918
@@ -6614,7 +6584,6 @@ terase	5370
 venele	5370
 carton	5248
 dorită	5248
-drăgan	5248
 farmec	5248
 gurile	5248
 hotărî	5248
@@ -6844,7 +6813,6 @@ colegă	4365
 comice	4365
 coreei	4365
 căutau	4365
-dakota	4365
 divers	4365
 donate	4365
 dorian	4365
@@ -7017,7 +6985,6 @@ umflat	3801
 urăște	3801
 vierme	3801
 vioara	3801
-voinea	3801
 încape	3801
 avarii	3715
 calmul	3715
@@ -7577,7 +7544,6 @@ apelez	2511
 babele	2511
 bizare	2511
 clișeu	2511
-covaci	2511
 cutiei	2511
 cătușe	2511
 exilat	2511
@@ -7987,7 +7953,6 @@ egoism	1949
 fierte	1949
 greșim	1949
 hormon	1949
-marcia	1949
 masuri	1949
 micuțe	1949
 muntos	1949
@@ -8753,7 +8718,6 @@ mirese	1288
 mânere	1288
 negură	1288
 notare	1288
-pâraie	1288
 realul	1288
 regiei	1288
 rivala	1288
@@ -9216,7 +9180,6 @@ mândre	1023
 offset	1023
 ograda	1023
 optând	1023
-partoș	1023
 pasare	1023
 ponton	1023
 pânzei	1023
@@ -10337,7 +10300,6 @@ mențină	12022
 montane	12022
 națiuni	12022
 nevoiți	12022
-phoenix	12022
 planete	12022
 rezumat	12022
 scriere	12022
@@ -11085,7 +11047,6 @@ estetic	6165
 gradina	6165
 inamice	6165
 indiana	6165
-ioachim	6165
 ipoteză	6165
 muntean	6165
 plătite	6165
@@ -11266,7 +11227,6 @@ cuțitul	5370
 ecranul	5370
 extrage	5370
 florale	5370
-gherman	5370
 grafica	5370
 gustare	5370
 indiciu	5370
@@ -11893,7 +11853,6 @@ proceda	3548
 reactor	3548
 referea	3548
 sclavie	3548
-siemens	3548
 veacuri	3548
 viclean	3548
 zgomote	3548
@@ -12839,7 +12798,6 @@ bucurau	2137
 carusel	2137
 cerința	2137
 chineza	2137
-chiriță	2137
 coautor	2137
 cultiva	2137
 cântate	2137
@@ -13745,7 +13703,6 @@ marcaje	1445
 minorul	1445
 ospătar	1445
 oxidare	1445
-palanca	1445
 psalmii	1445
 schismă	1445
 seismic	1445
@@ -13915,7 +13872,6 @@ scoruri	1348
 stocuri	1348
 strigăm	1348
 sârbesc	1348
-săliște	1348
 teiului	1348
 trezeam	1348
 trăirea	1348
@@ -17549,7 +17505,6 @@ zgomotos	2884
 anomalie	2818
 armoniei	2818
 asistată	2818
-caraiman	2818
 confundă	2818
 dezbătut	2818
 diaconul	2818
@@ -18304,7 +18259,6 @@ alcoolic	1949
 aliniază	1949
 apelului	1949
 blesteme	1949
-cișmigiu	1949
 comarnic	1949
 cărturar	1949
 demolată	1949

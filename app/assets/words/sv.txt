@@ -268,7 +268,6 @@ känd	48977
 kört	48977
 laga	48977
 leka	48977
-love	48977
 sten	48977
 vadå	48977
 ätit	48977
@@ -388,7 +387,6 @@ boka	27542
 döma	27542
 hehe	27542
 jack	27542
-nice	27542
 show	27542
 skär	27542
 sång	27542
@@ -492,7 +490,6 @@ sven	20417
 tysk	20417
 arga	19952
 bett	19952
-bill	19952
 fars	19952
 mörk	19952
 stat	19952
@@ -640,7 +637,6 @@ känn	12302
 lila	12302
 läsk	12302
 najs	12302
-svea	12302
 tals	12302
 anar	12022
 inge	12022
@@ -672,7 +668,6 @@ mans	11220
 moln	11220
 råka	11220
 rökt	11220
-vasa	11220
 avgå	10964
 bita	10964
 blad	10964
@@ -854,10 +849,8 @@ boss	6760
 diet	6760
 doft	6760
 expo	6760
-holm	6760
 knät	6760
 kust	6760
-måns	6760
 pjäs	6760
 rast	6760
 ruta	6760
@@ -869,7 +862,6 @@ vett	6760
 anse	6606
 enas	6606
 hart	6606
-krim	6606
 sega	6606
 säpo	6606
 torn	6606
@@ -938,8 +930,6 @@ ryck	5623
 böja	5495
 ding	5495
 inta	5495
-lana	5495
-lego	5495
 lira	5495
 ljug	5495
 lock	5495
@@ -1023,7 +1013,6 @@ tvål	4677
 tåla	4677
 valp	4677
 veva	4677
-abba	4570
 body	4570
 byrå	4570
 dolt	4570
@@ -1243,7 +1232,6 @@ båge	2951
 däri	2951
 fasa	2951
 flat	2951
-flen	2951
 frös	2951
 hage	2951
 imam	2951
@@ -1456,7 +1444,6 @@ shia	1819
 sjal	1819
 vyer	1819
 älta	1819
-aina	1778
 dunk	1778
 dygd	1778
 hägg	1778
@@ -1652,7 +1639,6 @@ sota	1230
 axla	1202
 böta	1202
 chai	1202
-ferm	1202
 jorå	1202
 kusk	1202
 kuta	1202
@@ -1697,7 +1683,6 @@ zink	1122
 ånyo	1122
 borr	1096
 hyss	1096
-keys	1096
 lamt	1096
 mjöd	1096
 måst	1096
@@ -1706,7 +1691,6 @@ pull	1096
 rave	1096
 rodd	1096
 styv	1096
-tora	1096
 buds	1071
 färs	1071
 nerv	1071
@@ -1754,7 +1738,6 @@ buda	977
 bulk	977
 dant	977
 eken	977
-fiji	977
 fisa	977
 jota	977
 kupa	977
@@ -1814,7 +1797,6 @@ avec	851
 bädd	851
 fräs	851
 gatt	851
-hana	851
 mink	851
 otal	851
 outa	851
@@ -1839,7 +1821,6 @@ dårå	812
 ergo	812
 gale	812
 gard	812
-göte	812
 imma	812
 kåre	812
 lönn	812
@@ -1997,7 +1978,6 @@ veka	616
 åtar	616
 biet	602
 bila	602
-evas	602
 kras	602
 läte	602
 myst	602
@@ -2032,7 +2012,6 @@ yogi	562
 yrka	562
 balk	549
 byxa	549
-dior	549
 fejs	549
 gall	549
 gäsp	549
@@ -2078,7 +2057,6 @@ törn	512
 vävs	512
 åsyn	512
 åtog	512
-bure	501
 enes	501
 fink	501
 gino	501
@@ -2261,7 +2239,6 @@ krus	338
 kuka	338
 muff	338
 rack	338
-togo	338
 bikt	331
 pynt	331
 trut	331
@@ -2316,7 +2293,6 @@ tyna	301
 vane	301
 ärvs	301
 blef	295
-mons	295
 vigd	295
 ödem	295
 blot	288
@@ -2584,14 +2560,12 @@ veke	151
 veum	151
 dien	147
 dram	147
-eket	147
 nyst	147
 rake	147
 snöt	147
 träs	147
 tuss	147
 vamp	147
-beas	144
 braj	144
 hete	144
 huve	144
@@ -2627,7 +2601,6 @@ mola	131
 ouzo	131
 sikh	131
 tjoa	131
-töre	131
 kosa	128
 mete	128
 pika	128
@@ -2740,7 +2713,6 @@ kivi	100
 mims	100
 sege	100
 vepa	100
-ärla	100
 apar	97
 bads	97
 drip	97
@@ -3181,7 +3153,6 @@ fyrk	28
 huta	28
 knog	28
 kurr	28
-lifs	28
 stia	28
 sågo	28
 tyng	28
@@ -3736,7 +3707,6 @@ hänga	57543
 talat	57543
 bodde	56234
 hallå	56234
-paris	56234
 prova	56234
 punkt	56234
 ryska	56234
@@ -3909,7 +3879,6 @@ andel	32359
 butik	32359
 flyga	32359
 forum	32359
-henry	32359
 legat	32359
 polen	32359
 typen	32359
@@ -4482,7 +4451,6 @@ teman	9332
 turen	9332
 täckt	9332
 vågen	9332
-ystad	9332
 bredd	9120
 entré	9120
 given	9120
@@ -4675,7 +4643,6 @@ stöta	7079
 svans	7079
 sålda	7079
 vinet	7079
-allan	6918
 bakar	6918
 bestå	6918
 crazy	6918
@@ -4899,7 +4866,6 @@ prima	5128
 retur	5128
 setts	5128
 sunda	5128
-tesla	5128
 uttal	5128
 viner	5128
 zoner	5128
@@ -5044,7 +5010,6 @@ segla	4265
 senap	4265
 skede	4265
 svält	4265
-tweet	4265
 vifta	4265
 begås	4168
 dömde	4168
@@ -5094,7 +5059,6 @@ kanel	3981
 klura	3981
 lasta	3981
 latte	3981
-mille	3981
 skrot	3981
 tigga	3981
 tuben	3981
@@ -5278,7 +5242,6 @@ motta	3235
 piska	3235
 rymde	3235
 sedda	3235
-signe	3235
 ultra	3235
 borra	3162
 bädda	3162
@@ -5591,7 +5554,6 @@ fikat	2187
 frias	2187
 fyren	2187
 gläds	2187
-götet	2187
 halal	2187
 härma	2187
 hönan	2187
@@ -5877,7 +5839,6 @@ asken	1621
 dyrka	1621
 elnät	1621
 felen	1621
-fenix	1621
 fniss	1621
 fucka	1621
 indie	1621
@@ -5973,7 +5934,6 @@ vagga	1513
 vanns	1513
 vetja	1513
 viral	1513
-weber	1513
 ömhet	1513
 analt	1479
 avund	1479
@@ -5981,7 +5941,6 @@ burar	1479
 chick	1479
 dager	1479
 dylik	1479
-gucci	1479
 joina	1479
 kvarg	1479
 lappa	1479
@@ -6055,7 +6014,6 @@ genen	1380
 kokas	1380
 lobby	1380
 lovad	1380
-loves	1380
 läror	1380
 mossa	1380
 orgel	1380
@@ -6074,7 +6032,6 @@ fiket	1348
 films	1348
 hålan	1348
 jippi	1348
-lisas	1348
 opium	1348
 orgie	1348
 pixel	1348
@@ -6505,7 +6462,6 @@ ammar	870
 barna	870
 bowla	870
 fanor	870
-grape	870
 hades	870
 hurså	870
 linas	870
@@ -6795,7 +6751,6 @@ länen	676
 mixat	676
 myren	676
 ottan	676
-palms	676
 prior	676
 regga	676
 revyn	676
@@ -6816,7 +6771,6 @@ eggen	660
 fudge	660
 gagna	660
 gänga	660
-halls	660
 häver	660
 kicks	660
 kilar	660
@@ -7015,7 +6969,6 @@ tråka	562
 uppta	562
 vikar	562
 zumba	562
-bolin	549
 bonne	549
 bänka	549
 bögen	549
@@ -7235,7 +7188,6 @@ halsa	457
 höggs	457
 karva	457
 lords	457
-norin	457
 sauna	457
 smide	457
 sniff	457
@@ -7248,7 +7200,6 @@ vrids	457
 välla	457
 vålds	457
 ådror	457
-östen	457
 avbön	446
 avgav	446
 dränk	446
@@ -8065,7 +8016,6 @@ nalla	208
 nätta	208
 padel	208
 porös	208
-qvist	208
 sanka	208
 seans	208
 slöar	208
@@ -8454,7 +8404,6 @@ adept	141
 ambra	141
 baben	141
 blyet	141
-bunge	141
 bytar	141
 dille	141
 dopat	141
@@ -8535,7 +8484,6 @@ ockra	131
 plock	131
 reses	131
 ruins	131
-sirpa	131
 skaru	131
 smeds	131
 sunds	131
@@ -8560,7 +8508,6 @@ locks	128
 läkta	128
 masar	128
 mikra	128
-noret	128
 nötta	128
 pigge	128
 pille	128
@@ -8569,7 +8516,6 @@ sinka	128
 thais	128
 tjuva	128
 torus	128
-vigge	128
 vitan	128
 ylade	128
 agnar	125
@@ -8785,7 +8731,6 @@ donar	104
 edert	104
 filat	104
 grans	104
-götes	104
 horar	104
 keton	104
 koral	104
@@ -9039,7 +8984,6 @@ ofria	85
 oxens	85
 punda	85
 rupie	85
-rätan	85
 sitar	85
 såsar	85
 valka	85
@@ -9363,7 +9307,6 @@ tegen	64
 absid	63
 bilds	63
 böjen	63
-diors	63
 fiffi	63
 flärp	63
 fotos	63
@@ -9562,7 +9505,6 @@ katod	53
 keffa	53
 kopps	53
 krävd	53
-kubbe	53
 käras	53
 nötts	53
 ohörd	53
@@ -9646,7 +9588,6 @@ slink	50
 sobra	50
 spårs	50
 stass	50
-toras	50
 ungmö	50
 urbra	50
 votum	50
@@ -9778,7 +9719,6 @@ breds	43
 fjong	43
 grevé	43
 gösen	43
-härke	43
 ivrar	43
 kefir	43
 kylts	43
@@ -10031,7 +9971,6 @@ kravs	35
 outad	35
 pensé	35
 rovet	35
-selja	35
 sexti	35
 skälm	35
 sopig	35
@@ -10626,7 +10565,6 @@ gatas	19
 islom	19
 kelim	19
 knota	19
-lunne	19
 lyxåk	19
 lända	19
 masta	19
@@ -10748,7 +10686,6 @@ tempi	17
 tinor	17
 tipin	17
 togor	17
-töres	17
 utbad	17
 zippa	17
 agilt	16
@@ -10888,7 +10825,6 @@ pöser	14
 qväll	14
 ässen	14
 acnes	14
-ainas	14
 ampla	14
 bukig	14
 bärig	14
@@ -10925,7 +10861,6 @@ siska	14
 syras	14
 tajga	14
 tempa	14
-togos	14
 tujor	14
 tupps	14
 töade	14
@@ -11043,7 +10978,6 @@ bygds	12
 degat	12
 dängt	12
 ekern	12
-ekets	12
 farad	12
 faras	12
 farts	12
@@ -12561,7 +12495,6 @@ arslet	7585
 bemöta	7585
 beslöt	7585
 borgen	7585
-casino	7585
 dagbok	7585
 fastna	7585
 frisyr	7585
@@ -12629,7 +12562,6 @@ avsedd	7079
 dansen	7079
 fågeln	7079
 graven	7079
-hawaii	7079
 hoppat	7079
 höstas	7079
 judisk	7079
@@ -12930,7 +12862,6 @@ tillät	5370
 varade	5370
 varvet	5370
 belysa	5248
-donken	5248
 etiska	5248
 freden	5248
 frisör	5248
@@ -12963,7 +12894,6 @@ blinka	5128
 bruten	5128
 extern	5128
 finnar	5128
-förens	5128
 hiphop	5128
 modigt	5128
 novell	5128
@@ -13183,7 +13113,6 @@ grejor	4168
 jackor	4168
 kredit	4168
 listat	4168
-madame	4168
 marsch	4168
 poppis	4168
 räddad	4168
@@ -13336,10 +13265,8 @@ ramlat	3715
 renare	3715
 ryktas	3715
 tjockt	3715
-angels	3630
 arvode	3630
 avbryt	3630
-fabian	3630
 fyrtio	3630
 grövre	3630
 hattar	3630
@@ -13576,7 +13503,6 @@ ubåten	3090
 anslöt	3019
 avvisa	3019
 bageri	3019
-barbie	3019
 boskap	3019
 brasan	3019
 bricka	3019
@@ -14816,7 +14742,6 @@ hypnos	1258
 kennel	1258
 kepsar	1258
 kropps	1258
-malaga	1258
 markis	1258
 muller	1258
 nyfödd	1258
@@ -17340,7 +17265,6 @@ bråken	288
 dissad	288
 dosera	288
 däckat	288
-fedora	288
 hjässa	288
 huggas	288
 husens	288
@@ -17754,7 +17678,6 @@ krypin	229
 käglor	229
 mejsel	229
 milans	229
-milles	229
 narren	229
 olydig	229
 ovanan	229
@@ -18242,7 +18165,6 @@ vårlök	177
 ägares	177
 amnesi	173
 boomen	173
-brunne	173
 bussig	173
 farsor	173
 farsot	173
@@ -18806,7 +18728,6 @@ vaktat	131
 vedbod	131
 vispen	131
 vitbok	131
-vreten	131
 vräkas	131
 vädras	131
 zoolog	131
@@ -20589,7 +20510,6 @@ värjer	60
 andrar	58
 artrik	58
 axlade	58
-bolins	58
 bordar	58
 borret	58
 bytomt	58
@@ -20640,7 +20560,6 @@ tunnar	58
 vagare	58
 vallat	58
 vekare	58
-väring	58
 ärorik	58
 åtgång	58
 anhåll	57
@@ -20965,7 +20884,6 @@ tyngas	51
 vimmel	51
 vissel	51
 väsens	51
-vången	51
 äntrat	51
 acetyl	50
 anoden	50
@@ -22099,7 +22017,6 @@ motköp	32
 murvel	32
 nobbas	32
 nodens	32
-norins	32
 oboist	32
 ormrot	32
 osyrat	32
@@ -22727,7 +22644,6 @@ tunnat	25
 vinges	25
 vräkts	25
 välten	25
-östens	25
 amplar	24
 anilin	24
 avkyls	24
@@ -24229,7 +24145,6 @@ mitran	13
 myllra	13
 måsens	13
 nabors	13
-norets	13
 närköp	13
 nödmat	13
 onytta	13
@@ -26107,7 +26022,6 @@ yoghurt	5888
 översta	5888
 avbrott	5754
 bebisen	5754
-bitcoin	5754
 blandas	5754
 domarna	5754
 dyraste	5754
@@ -28977,7 +28891,6 @@ linbana	776
 medhåll	776
 misstog	776
 moments	776
-mosebok	776
 nappade	776
 ortodox	776
 piroger	776
@@ -40616,7 +40529,6 @@ bärsjal	17
 celltyp	17
 cineast	17
 djupsjö	17
-donkens	17
 drömbok	17
 durspel	17
 dväljas	17
@@ -41221,7 +41133,6 @@ vildand	15
 viltmål	15
 vindhem	15
 vresros	15
-vretens	15
 ångbåts	15
 årsring	15
 anspänd	15
@@ -43823,7 +43734,6 @@ krävande	6309
 känsligt	6309
 nationen	6309
 nazismen	6309
-nintendo	6309
 skicklig	6309
 svenskan	6309
 alltihop	6165
@@ -44720,7 +44630,6 @@ betoning	2454
 beundran	2454
 biskopen	2454
 bortgång	2454
-dramaten	2454
 ensidigt	2454
 framkant	2454
 fullmåne	2454
@@ -44895,7 +44804,6 @@ avbruten	2137
 bedömdes	2137
 belgiska	2137
 bensinen	2137
-bergsjön	2137
 beröring	2137
 fattades	2137
 frälsare	2137
@@ -46354,7 +46262,6 @@ ockupera	891
 prydligt	891
 regimens	891
 repriser	891
-rivieran	891
 senatens	891
 slavarna	891
 spakarna	891
@@ -48149,7 +48056,6 @@ golfboll	389
 gorillan	389
 grymmare	389
 hologram	389
-kaspiska	389
 kebabsås	389
 klaveret	389
 korsande	389
@@ -56761,7 +56667,6 @@ kvallopp	39
 känslige	39
 ljusbord	39
 lottorna	39
-lyckorna	39
 maxtaket	39
 minglade	39
 misstros	39
@@ -61517,7 +61422,6 @@ högmosse	17
 höstfärg	17
 inskriva	17
 januaris	17
-jesusord	17
 julparty	17
 järndörr	17
 jäsmedel	17

@@ -204,9 +204,9 @@ void main() {
     testWidgets('quartet: nine tries at normal, solve all four', (
       tester,
     ) async {
-      await open(tester, GameMode.quartet, 3);
+      await open(tester, GameMode.quartet, 7);
       expect(find.text('0 of 4 solved · 9 tries left'), findsOneWidget);
-      final a = answers(3);
+      final a = answers(7);
       expect(a.toSet().length, 4);
 
       await type(tester, a[0]);
