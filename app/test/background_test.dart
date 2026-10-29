@@ -86,7 +86,7 @@ void main() {
     prefetchDefinitions = true;
     final answer = chooseWord(
       bank.answers(4),
-      bank.answerWeights(4),
+      bank.drawWeights(4, appState.draw),
       Random(7),
     );
     await tester.pumpWidget(
@@ -116,7 +116,7 @@ void main() {
     }
     final answers = chooseTargets(
       bank.answers(4),
-      bank.answerWeights(4),
+      bank.drawWeights(4, appState.draw),
       4,
       10,
       Random(3),
@@ -131,7 +131,11 @@ void main() {
     await load(tester);
     analyseWhilePlaying = true;
     final pool = bank.answers(4);
-    final answer = chooseWord(pool, bank.answerWeights(4), Random(7));
+    final answer = chooseWord(
+      pool,
+      bank.drawWeights(4, appState.draw),
+      Random(7),
+    );
     final guesses = pool.where((w) => w != answer).take(3).toList();
     await tester.pumpWidget(
       MaterialApp(
@@ -151,6 +155,7 @@ void main() {
     await tester.pumpAndSettle();
     // one frame in, no "working it out": the first step's picks are there
     expect(find.text('working it out…'), findsNothing);
+    await tester.scrollUntilVisible(find.text('best skill'), 300);
     expect(find.text('best skill'), findsOneWidget);
     await tester.pump(const Duration(seconds: 30)); // let anything left finish
   });
@@ -186,7 +191,7 @@ void main() {
       final all = bank.guessable(4);
       final answer = chooseWord(
         bank.answers(4),
-        bank.answerWeights(4),
+        bank.drawWeights(4, appState.draw),
         Random(7),
       );
       return (all, answer);
@@ -208,7 +213,7 @@ void main() {
       expect(find.textContaining('skill …'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 40));
-      final law = bank.weightMap(4);
+      final law = bank.law(4, appState.draw);
       final land = await tester.runAsync(
         () => analyseGuesses(all, all, weights: law),
       );
@@ -265,7 +270,7 @@ void main() {
       final before = appState.stats.played;
       final answers = chooseTargets(
         bank.answers(4),
-        bank.answerWeights(4),
+        bank.drawWeights(4, appState.draw),
         4,
         10,
         Random(3),

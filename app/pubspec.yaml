@@ -28,6 +28,7 @@ flutter:
   assets:
     - assets/words/
     - assets/icons/
+    - assets/sounds/
     - assets/flags/
     - assets/donate/
     - assets/fonts/OFL.txt

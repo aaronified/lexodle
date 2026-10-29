@@ -88,7 +88,7 @@ String backupToText(AppState state, {DateTime? now}) {
             'log': state.dailyLogOf(l),
             'best': state.dailyBestOf(l),
             // the daily quartet and relay race have a log and a streak of their own
-            for (final m in GameMode.values.where((m) => m.multi))
+            for (final m in GameMode.values.where((m) => m != GameMode.classic))
               m.name: {
                 'log': state.dailyLogOf(l, m),
                 'best': state.dailyBestOf(l, m),
@@ -248,6 +248,10 @@ Map<String, Object> _settings(Object? raw) {
     if (frequency is! bool) _bad('useFrequency');
     out['useFrequency'] = frequency;
   }
+  final draw = integer('draw', 0, Draw.values.length - 1);
+  if (draw != null) out['draw'] = draw;
+  final hearts = integer('hearts', 1, 10);
+  if (hearts != null) out['hearts'] = hearts;
   final helper = integer('helper', 0, Helper.values.length - 1);
   if (helper != null) out['helper'] = helper;
   final mode = integer('mode', 0, GameMode.values.length - 1);
@@ -356,7 +360,7 @@ History? _history(Object? raw) {
 Map<String, (Map<String, int>, int)> _dailyModes(Object? raw) {
   if (raw is! Map) return const {};
   return {
-    for (final m in GameMode.values.where((m) => m.multi))
+    for (final m in GameMode.values.where((m) => m != GameMode.classic))
       if (raw[m.name] != null) m.name: _daily(raw[m.name])!,
   };
 }

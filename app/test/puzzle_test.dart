@@ -127,7 +127,8 @@ void main() {
         ),
       );
       expect(find.byType(GamePage), findsOneWidget);
-      expect(find.textContaining('practice'), findsOneWidget);
+      // the title is the flag, the mode's icon and the length and tries
+      expect(find.textContaining('5 · 6 tries'), findsOneWidget);
       // the colours and the tries left, no skill or luck while playing
       expect(find.text('6 tries left'), findsOneWidget);
       for (final ch in answer.split('')) {
@@ -203,7 +204,10 @@ void main() {
         ),
       );
       expect(find.byType(GamePage), findsOneWidget);
-      expect(find.textContaining('english'), findsOneWidget);
+      expect(
+        tester.widget<GamePage>(find.byType(GamePage)).bank.language.code,
+        'en',
+      );
     });
 
     testWidgets('a link whose word is not in the list goes home', (

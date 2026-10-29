@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'analysis_worker.dart';
 import 'background.dart';
 import 'daily.dart';
+import 'game_header.dart';
+import 'hearts.dart';
 import 'modes.dart';
 import 'puzzle.dart';
 import 'share_puzzle.dart';
@@ -15,8 +17,10 @@ import 'history.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'review.dart';
+import 'review_text.dart';
 import 'routes.dart';
 import 'main.dart';
+import 'sounds.dart';
 import 'store.dart';
 import 'ui.dart';
 import 'wiktionary.dart';
@@ -31,8 +35,12 @@ class GamePage extends StatefulWidget {
     this.daily,
     this.practice = false,
     this.replay = const [],
+    this.mode = GameMode.classic,
   });
   final WordBank bank;
+
+  /// Classic, or lockdown: one word either way.
+  final GameMode mode;
 
   /// Where the answer is drawn from; tests pass a seeded one.
   final Random? random;
@@ -52,7 +60,8 @@ class GamePage extends StatefulWidget {
   State<GamePage> createState() => _GamePageState();
 }
 
-class _GamePageState extends State<GamePage> {
+class _GamePageState extends State<GamePage>
+    with SingleTickerProviderStateMixin {
   late final Random _rng = widget.random ?? Random();
   final _focus = FocusNode();
 
@@ -60,13 +69,42 @@ class _GamePageState extends State<GamePage> {
   late final int length;
   late final int tries;
 
-  /// Whether the answer is drawn by how common each word is. Never for a daily:
-  /// its word is picked from the whole list, every word equally likely.
-  late final bool freq = _daily == null && appState.useFrequency;
+  GameMode get mode => widget.mode;
+  bool get lockdown => mode == GameMode.lockdown;
+
+  /// The hearts of a lockdown game, and how many are left: a daily has its own
+  /// number, any other game the one chosen in the game modes.
+  late final int heartsTotal = !lockdown
+      ? 0
+      : (_daily != null && _daily.date.isNotEmpty
+            ? dailyHearts
+            : appState.hearts);
+  late int hearts = heartsTotal;
+
+  /// The shake of the board when a heart breaks: 0 at rest, then 1 to 0.
+  late final AnimationController _rumble = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
+
+  /// Whether the daily is drawn by the curve from the whole list (from
+  /// [dailyCurveFrom]) rather than the old way: the most common [dailyAnswers]
+  /// words, each equally likely. A puzzle a link carries has no date.
+  late final bool _curveDaily =
+      _daily != null && _daily.date.isNotEmpty && dailyUsesCurve(_daily.date);
+
+  /// How the answer is drawn, and so the chances its scores are worked out
+  /// under: the setting, the curve for a daily, and equal chances for the old
+  /// daily and for a puzzle from a link.
+  late final Draw draw = _daily == null
+      ? appState.draw
+      : _curveDaily
+      ? Draw.sigmoid
+      : Draw.equal;
 
   /// How many words the answer was drawn from: every word of the length, or for
-  /// a daily the most common [dailyAnswers] of them.
-  late final int pool = _daily == null
+  /// an old daily the most common [dailyAnswers] of them.
+  late final int pool = _daily == null || _curveDaily
       ? widget.bank.answers(length).length
       : min(dailyAnswers, widget.bank.answers(length).length);
   late final List<String> _pool;
@@ -99,7 +137,7 @@ class _GamePageState extends State<GamePage> {
   void initState() {
     super.initState();
     length = _daily?.length ?? appState.length;
-    tries = _daily?.tries ?? appState.tries;
+    tries = _daily?.tries ?? (lockdown ? lockdownTries : appState.tries);
     _pool = widget.bank.answers(length);
     _letters = widget.bank.letters(length);
     _reset();
@@ -122,18 +160,29 @@ class _GamePageState extends State<GamePage> {
   void _resume() {
     final d = _daily;
     if (d == null || widget.practice) return;
-    final saved = appState.dailyFor(widget.bank.language.code, d.date);
+    final saved = appState.dailyFor(widget.bank.language.code, d.date, mode);
     if (saved == null) return;
     for (final g in saved.guesses) {
       // a damaged save stops the replay rather than breaking the game
       if (over || g.length != length || !widget.bank.valid.contains(g)) break;
       _apply(g, restoring: true);
     }
+    // the hearts lost to words that are not in the list are not in the guesses
+    final left = saved.hearts;
+    if (lockdown && left != null && left >= 0 && left <= heartsTotal) {
+      hearts = left;
+    }
+    // a lockdown daily can be over with tries to spare: no hearts left
+    if (!over && saved.over) {
+      over = true;
+      won = saved.won ?? false;
+    }
   }
 
   @override
   void dispose() {
     _jobs.close();
+    _rumble.dispose();
     _focus.dispose();
     super.dispose();
   }
@@ -141,17 +190,13 @@ class _GamePageState extends State<GamePage> {
   void _reset() {
     answer =
         _daily?.answer ??
-        chooseWord(
-          _pool,
-          widget.bank.answerWeights(length, frequency: freq),
-          _rng,
-        );
+        chooseWord(_pool, widget.bank.drawWeights(length, draw), _rng);
     // Every word the game accepts counts as possible, so a real word that fits
     // every clue is never ruled out behind the player's back. A daily is the
     // exception: only its 3,000 words can be the answer, and the scores
     // (against the chance of each possible answer) are of those.
     eligible = List.of(
-      _daily == null || _daily.date.isEmpty
+      _daily == null || _daily.date.isEmpty || _curveDaily
           ? widget.bank.guessable(length)
           : widget.bank.answers(length).take(dailyAnswers),
     );
@@ -167,6 +212,7 @@ class _GamePageState extends State<GamePage> {
     input.clear();
     message = '';
     over = won = false;
+    hearts = heartsTotal;
     unlocked = [];
     // score the opening while the first guess is being chosen
     if (analyseWhilePlaying) {
@@ -221,11 +267,48 @@ class _GamePageState extends State<GamePage> {
       return;
     }
     if (!widget.bank.valid.contains(word)) {
+      // in lockdown a word that is not in the list costs a heart
+      if (lockdown) {
+        setState(_loseHeart);
+        return;
+      }
       Haptics.fire(Haptic.reject);
       setState(() => message = 'not in the word list');
       return;
     }
     setState(() => _apply(word));
+  }
+
+  /// A word that is not in the list: it costs a heart, which breaks with a
+  /// rumble and a crack. With no hearts left the game is lost.
+  void _loseHeart() {
+    if (hearts <= 0) return;
+    hearts--;
+    message = 'not in the word list';
+    Haptics.fire(Haptic.heartBreak);
+    Sounds.crack();
+    if (!MediaQuery.disableAnimationsOf(context)) _rumble.forward(from: 0);
+    if (hearts == 0) {
+      over = true;
+      won = false;
+      message = '';
+      _finish();
+    }
+    _saveDaily();
+  }
+
+  /// Keeps a daily's progress, with the hearts it has left.
+  void _saveDaily() {
+    final d = _daily;
+    if (d == null || widget.practice) return;
+    appState.saveDaily(
+      widget.bank.language.code,
+      d.date,
+      guesses,
+      won: over ? won : null,
+      mode: mode,
+      hearts: lockdown ? hearts : null,
+    );
   }
 
   /// Plays [word], which has been checked. [restoring] replays a saved daily
@@ -286,6 +369,13 @@ class _GamePageState extends State<GamePage> {
     }
     final solved = word == answer;
     input.next();
+    // in lockdown a letter in the right place is locked for the rest of the game
+    if (lockdown && !solved) {
+      input.lockFixed([
+        for (var i = 0; i < length; i++)
+          if (m[i] == Mark.correct) (i, word[i]),
+      ]);
+    }
     message = '';
     if (solved || guesses.length >= tries) {
       over = true;
@@ -295,15 +385,7 @@ class _GamePageState extends State<GamePage> {
         _finish();
       }
     }
-    final d = _daily;
-    if (d != null && !restoring && !widget.practice) {
-      appState.saveDaily(
-        widget.bank.language.code,
-        d.date,
-        guesses,
-        won: over ? won : null,
-      );
-    }
+    if (!restoring) _saveDaily();
   }
 
   /// The finished game counts towards the statistics and achievements. Skill
@@ -321,6 +403,7 @@ class _GamePageState extends State<GamePage> {
         bool styleChanged = false,
         int stylesHeld = 0,
       }) => GameResult(
+        mode: mode,
         lang: widget.bank.language.code,
         length: length,
         tries: tries,
@@ -343,25 +426,33 @@ class _GamePageState extends State<GamePage> {
       // from the last 100 games with this one in them, and the day goes in the
       // log, so the streak and the style it leaves are known to the
       // achievements; skill is final here, so the double fire can be judged
-      appState.recordHistory(
-        lang: widget.bank.language.code,
-        mode: GameMode.classic,
-        length: length,
-        tries: tries,
-        pool: pool,
-        answers: [answer],
-        won: won,
-        guesses: [
-          for (var i = 0; i < metrics.length; i++) guessRowOf(i, metrics[i]),
-        ],
-        daily: d?.date ?? '',
-        freq: freq,
-      );
+      // (a lockdown game lost to bad words before any guess has nothing to review)
+      if (guesses.isNotEmpty) {
+        appState.recordHistory(
+          lang: widget.bank.language.code,
+          mode: mode,
+          length: length,
+          tries: tries,
+          pool: pool,
+          answers: [answer],
+          won: won,
+          guesses: [
+            for (var i = 0; i < metrics.length; i++) guessRowOf(i, metrics[i]),
+          ],
+          daily: d?.date ?? '',
+          draw: draw,
+        );
+      }
       final code = widget.bank.language.code;
       final rated = appState.updateStyle(lang: code);
       final streak = d == null
           ? 0
-          : appState.recordDaily(d.date, played.dailyTier, lang: code);
+          : appState.recordDaily(
+              d.date,
+              played.dailyTier,
+              lang: code,
+              mode: mode,
+            );
       unlocked = appState.recordGame(
         result(
           streak: streak,
@@ -421,7 +512,7 @@ class _GamePageState extends State<GamePage> {
               SharePuzzleButton(
                 (withGuesses) => Puzzle.hashed(
                   widget.bank.language.code,
-                  GameMode.classic,
+                  mode,
                   length: length,
                   tries: tries,
                   answers: [answer],
@@ -429,24 +520,16 @@ class _GamePageState extends State<GamePage> {
                 ),
               ),
           ],
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FlagBadge(widget.bank.language.flag, size: 16),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  _daily == null
-                      ? '${widget.bank.language.name.toLowerCase()} · '
-                            '$length · $tries tries'
-                      : '${widget.bank.language.name.toLowerCase()} · '
-                            '${widget.practice ? 'practice' : 'daily'}'
-                            '${_daily.date.isEmpty ? '' : ' · ${_daily.date}'}',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-                ),
-              ),
-            ],
+          centerTitle: true,
+          title: gameTitle(
+            context,
+            language: widget.bank.language,
+            mode: mode,
+            text: gameTitleText(
+              date: _daily?.date ?? '',
+              length: length,
+              tries: tries,
+            ),
           ),
         ),
         body: SafeArea(
@@ -455,10 +538,23 @@ class _GamePageState extends State<GamePage> {
               constraints: const BoxConstraints(maxWidth: 480),
               child: Column(
                 children: [
-                  Expanded(child: _grid()),
+                  Expanded(child: _shake(_grid())),
                   ConstrainedBox(
                     constraints: const BoxConstraints(minHeight: 56),
-                    child: Center(child: _status(c)),
+                    child: Center(
+                      child: _shake(
+                        lockdown
+                            ? Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  HeartsRow(total: heartsTotal, left: hearts),
+                                  const SizedBox(height: 6),
+                                  _status(c),
+                                ],
+                              )
+                            : _status(c),
+                      ),
+                    ),
                   ),
                   if (over) _overPanel(c) else _keyboard(c),
                   const SizedBox(height: 12),
@@ -470,6 +566,21 @@ class _GamePageState extends State<GamePage> {
       ),
     );
   }
+
+  /// [child] shaken while a heart breaks: it jolts from side to side and
+  /// settles, with the strength dying away.
+  Widget _shake(Widget child) => AnimatedBuilder(
+    animation: _rumble,
+    child: child,
+    builder: (context, child) {
+      final t = _rumble.value;
+      final k = t == 0 || t == 1 ? 0.0 : (1 - t);
+      return Transform.translate(
+        offset: Offset(sin(t * 38) * 4 * k, cos(t * 31) * 2 * k),
+        child: child,
+      );
+    },
+  );
 
   Widget _grid() {
     final c = Theme.of(context).colorScheme;
@@ -599,7 +710,10 @@ class _GamePageState extends State<GamePage> {
     if (over) return const SizedBox();
     // the daily never shows the helper: only the tries left
     final h = _daily != null ? Helper.off : appState.helper;
-    final left = '${tries - guesses.length} tries left';
+    final triesLeft = '${tries - guesses.length} tries left';
+    final left = lockdown
+        ? '$hearts ${hearts == 1 ? 'heart' : 'hearts'} · $triesLeft'
+        : triesLeft;
     if (guesses.isEmpty) return Caption(left);
     final m = metrics.last;
     final parts = <(String, String?)>[
@@ -633,10 +747,12 @@ class _GamePageState extends State<GamePage> {
 
   /// The law the answer was drawn by, as weights; null when every possible
   /// word was as likely as the next (frequency off, and every daily).
-  Map<String, int>? get _law => freq ? widget.bank.weightMap(length) : null;
+  Map<String, int>? get _law => widget.bank.law(length, draw);
 
   GameRecord _record() => GameRecord(
     bank: widget.bank,
+    kind: drawKindOf(draw, daily: _daily?.date ?? ''),
+    daily: _daily != null && _daily.date.isNotEmpty,
     length: length,
     poolSize: pool,
     answer: answer,

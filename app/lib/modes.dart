@@ -8,7 +8,8 @@ import 'multi_analysis.dart';
 enum GameMode {
   classic('classic', 'one word', 1, 0),
   quartet('quartet', 'four words at once', 4, 3),
-  relay('relay race', 'four words, one after the other', 4, 4);
+  relay('relay race', 'four words, one after the other', 4, 4),
+  lockdown('lockdown', 'greens lock · bad words cost hearts', 1, 0);
 
   const GameMode(this.label, this.sub, this.boards, this.extraTries);
   final String label;
@@ -23,6 +24,33 @@ enum GameMode {
   bool get multi => boards > 1;
 }
 
+/// How the answer of an ordinary game is drawn: by a sigmoid curve on how
+/// common each word is (the default), with every word of the length equally
+/// likely, or by how common each word is.
+enum Draw {
+  sigmoid('sigmoid curve', 'common words about equally likely'),
+  equal('every word', 'rare words as likely as common ones'),
+  frequency('by frequency', 'common words come up more often');
+
+  const Draw(this.label, this.sub);
+  final String label;
+  final String sub;
+
+  /// How a game record keeps it: 0 equal and 1 frequency, as the two values of
+  /// the flag it replaced, and 2 the sigmoid curve.
+  int get code => switch (this) {
+    Draw.equal => 0,
+    Draw.frequency => 1,
+    Draw.sigmoid => 2,
+  };
+
+  static Draw fromCode(int code) => switch (code) {
+    0 => Draw.equal,
+    2 => Draw.sigmoid,
+    _ => Draw.frequency,
+  };
+}
+
 /// The largest chance of target words sharing a letter the slider offers.
 const maxShare = 30;
 
@@ -30,6 +58,24 @@ int triesFor(GameMode mode, int base) => base + mode.extraTries;
 
 /// Whether two words have a letter in common.
 bool sharesLetter(String a, String b) => a.split('').any(b.contains);
+
+/// The tries of a lockdown game: its difficulty is the hearts, not the tries.
+const lockdownTries = 6;
+
+/// The hearts a lockdown game can have, easiest first, and what each is called.
+const lockdownHearts = <(String name, int hearts)>[
+  ('easy', 10),
+  ('normal', 7),
+  ('hard', 5),
+  ('brutal', 3),
+  ('sudden death', 1),
+];
+
+/// The hearts of a daily lockdown.
+const dailyHearts = 5;
+
+/// The last hearts that throb: a game with this many or fewer left.
+const throbHearts = 3;
 
 /// Picks [count] different answers from [words] (weighted by [weights]).
 ///

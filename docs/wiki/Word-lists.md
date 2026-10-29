@@ -46,8 +46,9 @@ word lists are shipped.
 ## The pool
 
 The difficulty grid has no word pool: the answer can be any word of the chosen length, drawn by
-frequency when the game modes checkbox is on, evenly when it is off. The daily draws evenly from
-the 3,000 most common words. Languages differ in size (English has about 12,000 words of five letters, Indonesian about 2,500); the game modes menu shows the real count.
+the way the *word draw* swiper in the game modes says: on a sigmoid curve of how common each word is
+(the default), with every word of the length equally likely, or by how common each word is. The daily
+always draws on the curve (see [Daily word](Daily-word)). Languages differ in size (English has about 12,000 words of five letters, Indonesian about 2,500); the game modes menu shows the real count.
 
 ## Credits and licences
 

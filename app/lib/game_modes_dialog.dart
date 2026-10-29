@@ -124,7 +124,8 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           'the daily of ${mode.label} always uses fixed '
                           'settings: five letters, '
                           '${mode.multi ? 'the words share no letter, ' : ''}'
-                          '${dailyTriesOf(mode)} tries.',
+                          '${dailyTriesOf(mode)} tries'
+                          '${mode == GameMode.lockdown ? ', $dailyHearts hearts' : ''}.',
                           key: const ValueKey('daily-note'),
                           style: TextStyle(
                             fontSize: 11,
@@ -179,41 +180,67 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           const SizedBox(height: 24),
                           const Caption('difficulty'),
                           const SizedBox(height: 10),
-                          DifficultyMatrix(
-                            tries: appState.tries,
-                            length: length,
-                            lengths: lang.lengths,
-                            available: lang.counts[length],
-                            onChanged: (t, n) =>
-                                appState.setup(tries: t, length: n),
-                          ),
-                        ],
-                        const SizedBox(height: 12),
-                        // how the word is drawn: by how common each word is, or with
-                        // every word of the length equally likely
-                        CheckboxListTile(
-                          key: const ValueKey('frequency-checkbox'),
-                          contentPadding: EdgeInsets.zero,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          dense: true,
-                          title: const Text(
-                            'draw words by how common they are',
-                          ),
-                          subtitle: Text(
-                            appState.useFrequency
-                                ? 'common words come up more often. the daily never '
-                                      'does this: its word is any word of the length.'
-                                : 'every word of the length is as likely as any '
-                                      'other, rare ones too. the daily always does '
-                                      'this.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: c.onSurface.withValues(alpha: dimAlpha),
+                          // lockdown is judged by its hearts, with its tries fixed
+                          if (mode == GameMode.lockdown)
+                            DifficultyMatrix(
+                              key: const ValueKey('hearts-matrix'),
+                              tries: appState.hearts,
+                              levels: [
+                                for (final (name, n) in lockdownHearts)
+                                  (name, n),
+                              ],
+                              unit: ('heart', 'hearts'),
+                              extra: '$lockdownTries tries, ',
+                              length: length,
+                              lengths: lang.lengths,
+                              available: lang.counts[length],
+                              onChanged: (h, n) =>
+                                  appState.setup(hearts: h, length: n),
+                            )
+                          else
+                            DifficultyMatrix(
+                              tries: appState.tries,
+                              length: length,
+                              lengths: lang.lengths,
+                              available: lang.counts[length],
+                              onChanged: (t, n) =>
+                                  appState.setup(tries: t, length: n),
                             ),
+                        ],
+                        const SizedBox(height: 24),
+                        const Caption('word draw'),
+                        const SizedBox(height: 10),
+                        // how the answer is drawn, in a swipe: the sigmoid curve,
+                        // every word equally, or by how common each word is
+                        StepperChoice<Draw>(
+                          key: const ValueKey('draw-stepper'),
+                          semanticLabel: 'word draw',
+                          items: [
+                            for (final d in Draw.values) (d, d.label, d.sub),
+                          ],
+                          selected: appState.draw,
+                          onChanged: (d) => appState.setup(draw: d),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          switch (appState.draw) {
+                            Draw.sigmoid =>
+                              'the commonest words are about equally likely, then '
+                                  'fewer and fewer, and almost none past the 3,500th. '
+                                  'the daily always draws this way.',
+                            Draw.equal =>
+                              'every word of the length is as likely as any other, '
+                                  'rare ones too. the daily always draws by the '
+                                  'curve.',
+                            Draw.frequency =>
+                              'common words come up far more often. the daily '
+                                  'always draws by the curve.',
+                          },
+                          key: const ValueKey('draw-note'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
                           ),
-                          value: appState.useFrequency,
-                          onChanged: (v) =>
-                              appState.setup(useFrequency: v ?? true),
                         ),
                         const SizedBox(height: 24),
                         const Caption('helper'),

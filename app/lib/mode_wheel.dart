@@ -10,11 +10,12 @@ const modeSwipeDistance = 50.0;
 const modeSwipeSpeed = 700.0;
 
 /// The name of the Tabler filled icon of each game mode: one piece, four
-/// tiles, a knight.
+/// tiles, a knight, a lock.
 String modeIconName(GameMode m) => switch (m) {
   GameMode.classic => 'puzzle',
   GameMode.quartet => 'layout-grid',
   GameMode.relay => 'chess-knight',
+  GameMode.lockdown => 'lock',
 };
 
 /// The mode under the modes' own line: "four words at once · +3 tries".
@@ -53,27 +54,86 @@ class ModeSwitch extends StatefulWidget {
   State<ModeSwitch> createState() => _ModeSwitchState();
 }
 
-class _ModeSwitchState extends State<ModeSwitch> {
-  double _drag = 0;
+class _ModeSwitchState extends State<ModeSwitch>
+    with SingleTickerProviderStateMixin {
+  /// How far the mode on show is dragged, in pixels: the next mode comes in
+  /// from the side the finger is going, as wide as the button, and the pair
+  /// follows the finger.
+  double _dx = 0;
+  double _width = 1;
+  double _from = 0, _to = 0;
+  bool _busy = false;
   bool _moved = false;
+  late final AnimationController _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 220),
+  );
 
-  void _change(int by) => widget.onChanged(ModeSwitch.step(widget.mode, by));
+  @override
+  void initState() {
+    super.initState();
+    _anim.addListener(() {
+      final t = Curves.easeOutCubic.transform(_anim.value);
+      setState(() => _dx = _from + (_to - _from) * t);
+    });
+  }
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
+
+  /// Slides to the mode [by] along the loop (+1 next, -1 previous), then
+  /// reports it.
+  void _step(int by) {
+    if (_busy) return;
+    _busy = true;
+    _from = _dx;
+    _to = by > 0 ? -_width : _width;
+    _anim.forward(from: 0).then((_) {
+      if (!mounted) return;
+      setState(() {
+        _dx = 0;
+        _busy = false;
+      });
+      widget.onChanged(ModeSwitch.step(widget.mode, by));
+    });
+  }
+
+  /// Slides back to the mode on show.
+  void _settle() {
+    if (_busy || _dx == 0) return;
+    _busy = true;
+    _from = _dx;
+    _to = 0;
+    _anim.forward(from: 0).then((_) {
+      if (!mounted) return;
+      setState(() {
+        _dx = 0;
+        _busy = false;
+      });
+    });
+  }
 
   void _update(DragUpdateDetails d) {
+    if (_busy) return;
     setState(() {
-      _drag += d.delta.dx;
-      if (_drag.abs() > 6) _moved = true;
+      _dx = (_dx + d.delta.dx).clamp(-_width, _width);
+      if (_dx.abs() > 6) _moved = true;
     });
   }
 
   void _end(DragEndDetails d) {
+    if (_busy) return;
     final v = d.primaryVelocity ?? 0;
-    final dx = _drag;
-    setState(() => _drag = 0);
-    if (dx.abs() >= modeSwipeDistance || v.abs() >= modeSwipeSpeed) {
+    final far = _dx.abs() >= modeSwipeDistance;
+    if (far || v.abs() >= modeSwipeSpeed) {
       // dragged left brings the next mode, right the previous
-      final dir = dx.abs() >= modeSwipeDistance ? dx.sign : v.sign;
-      _change(dir < 0 ? 1 : -1);
+      final dir = far ? _dx.sign : v.sign;
+      _step(dir < 0 ? 1 : -1);
+    } else {
+      _settle();
     }
   }
 
@@ -84,7 +144,7 @@ class _ModeSwitchState extends State<ModeSwitch> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TablerIcon(modeIconName(m), size: 24, color: c.primary),
+          TablerIcon(modeIconName(m), size: chooserIconSize, color: c.primary),
           const SizedBox(width: 12),
           Column(
             mainAxisSize: MainAxisSize.min,
@@ -93,12 +153,16 @@ class _ModeSwitchState extends State<ModeSwitch> {
               Text(
                 m.label,
                 key: ValueKey('mode-name-${m.name}'),
-                style: const TextStyle(letterSpacing: 1.2, height: 1.1),
+                style: const TextStyle(
+                  fontSize: chooserLabelSize,
+                  fontWeight: FontWeight.bold,
+                  height: 1.1,
+                ),
               ),
               Text(
                 modeSub(m),
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: chooserSubSize,
                   height: 1.1,
                   color: c.onSurface.withValues(alpha: dimAlpha),
                 ),
@@ -109,6 +173,30 @@ class _ModeSwitchState extends State<ModeSwitch> {
       ),
     ),
   );
+
+  /// The mode on show and, while it is dragged, the one coming in beside it.
+  Widget _faces(ColorScheme c) {
+    final dir = _dx < 0 ? 1 : -1;
+    final p = (_dx.abs() / _width).clamp(0.0, 1.0);
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Transform.translate(
+          offset: Offset(_dx, 0),
+          child: Opacity(opacity: 1 - p, child: _face(c, widget.mode)),
+        ),
+        if (_dx != 0)
+          Transform.translate(
+            offset: Offset(_dx + (dir > 0 ? _width : -_width), 0),
+            child: Opacity(
+              key: const ValueKey('mode-incoming'),
+              opacity: p,
+              child: _face(c, ModeSwitch.step(widget.mode, dir)),
+            ),
+          ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +210,7 @@ class _ModeSwitchState extends State<ModeSwitch> {
         tooltip: label,
         padding: EdgeInsets.zero,
         icon: Icon(icon, color: chevron),
-        onPressed: () => _change(by),
+        onPressed: () => _step(by),
       ),
     );
     return GestureDetector(
@@ -130,7 +218,7 @@ class _ModeSwitchState extends State<ModeSwitch> {
       behavior: HitTestBehavior.translucent,
       onHorizontalDragUpdate: _update,
       onHorizontalDragEnd: _end,
-      onHorizontalDragCancel: () => setState(() => _drag = 0),
+      onHorizontalDragCancel: _settle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -157,9 +245,17 @@ class _ModeSwitchState extends State<ModeSwitch> {
                       widget.onOpen();
                     },
                     child: ClipRect(
-                      child: Transform.translate(
-                        offset: Offset(_drag.clamp(-90.0, 90.0) * .6, 0),
-                        child: _face(c, widget.mode),
+                      child: LayoutBuilder(
+                        builder: (context, box) {
+                          _width = box.maxWidth.isFinite
+                              ? box.maxWidth.clamp(1.0, 1e5)
+                              : 1;
+                          return SizedBox(
+                            width: double.infinity,
+                            height: widget.height,
+                            child: _faces(c),
+                          );
+                        },
                       ),
                     ),
                   ),

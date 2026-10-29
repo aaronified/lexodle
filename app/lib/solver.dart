@@ -73,7 +73,7 @@ class _SolverPageState extends State<SolverPage> {
       left,
       candidates,
       max(tries - history.length, 1),
-      weights: appState.useFrequency ? widget.bank.weightMap(length) : null,
+      weights: widget.bank.law(length, appState.draw),
     );
     if (!mounted || run != _run) return; // a newer guess superseded this one
     setState(() {

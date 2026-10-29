@@ -16,33 +16,60 @@ void main() {
   });
 
   group('the daily quartet and relay race words', () {
-    test(
-      'four five-letter words that share no letter, from the common 3,000',
-      () {
-        final common = bank.answers(dailyLength).take(dailyAnswers).toSet();
-        for (final mode in [GameMode.quartet, GameMode.relay]) {
-          for (var day = 0; day < 30; day++) {
-            final date = dailyShift('2026-11-01', day);
-            final d = DailyMulti.of(bank, mode, date)!;
-            expect(d.answers.length, 4, reason: '$mode $date');
-            expect(d.answers.toSet().length, 4);
-            for (final w in d.answers) {
-              expect(w.length, dailyLength);
-              expect(common, contains(w));
-            }
-            for (var i = 0; i < 4; i++) {
-              for (var j = i + 1; j < 4; j++) {
-                expect(
-                  sharesLetter(d.answers[i], d.answers[j]),
-                  isFalse,
-                  reason: '${d.answers} $date',
-                );
-              }
+    test('from the curve date the words come from the whole list, mostly the '
+        'commonest', () {
+      expect(dailyUsesCurve('2026-10-29'), isFalse);
+      expect(dailyUsesCurve(dailyCurveFrom), isTrue);
+      final all = bank.answers(dailyLength);
+      var ranks = <int>[];
+      for (final mode in [GameMode.quartet, GameMode.relay]) {
+        for (var day = 0; day < 60; day++) {
+          final date = dailyShift(dailyCurveFrom, day);
+          final d = DailyMulti.of(bank, mode, date)!;
+          for (final w in d.answers) {
+            expect(w.length, dailyLength);
+            ranks.add(all.indexOf(w));
+          }
+          for (var i = 0; i < 4; i++) {
+            for (var j = i + 1; j < 4; j++) {
+              expect(sharesLetter(d.answers[i], d.answers[j]), isFalse);
             }
           }
         }
-      },
-    );
+      }
+      // the curve is at half at 3,000 and almost nothing past 3,500
+      ranks = ranks.where((r) => r >= 0).toList();
+      expect(
+        ranks.where((r) => r < 3500).length,
+        greaterThan(ranks.length * .95),
+      );
+    });
+
+    test('four five-letter words that share no letter, from the common 3,000 '
+        'before the curve date', () {
+      final common = bank.answers(dailyLength).take(dailyAnswers).toSet();
+      for (final mode in [GameMode.quartet, GameMode.relay]) {
+        for (var day = 0; day < 30; day++) {
+          final date = dailyShift('2026-10-01', day);
+          final d = DailyMulti.of(bank, mode, date)!;
+          expect(d.answers.length, 4, reason: '$mode $date');
+          expect(d.answers.toSet().length, 4);
+          for (final w in d.answers) {
+            expect(w.length, dailyLength);
+            expect(common, contains(w));
+          }
+          for (var i = 0; i < 4; i++) {
+            for (var j = i + 1; j < 4; j++) {
+              expect(
+                sharesLetter(d.answers[i], d.answers[j]),
+                isFalse,
+                reason: '${d.answers} $date',
+              );
+            }
+          }
+        }
+      }
+    });
 
     test('the same for everyone, and each mode and day has its own', () {
       final a = DailyMulti.of(bank, GameMode.quartet, '2026-11-01')!;

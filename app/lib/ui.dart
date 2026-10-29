@@ -7,6 +7,15 @@ import 'words.dart';
 
 export 'medal.dart' show Medal;
 
+/// The sizes of the one-line choosers (the steppers and the mode button): the
+/// label, the line under it, and the icons, so they read alike wherever they are.
+const chooserLabelSize = 16.0;
+const chooserSubSize = 11.0;
+const chooserIconSize = 24.0;
+
+/// The mode icon in the title of a game screen.
+const headerIconSize = 20.0;
+
 /// How strongly secondary text (captions, notes) shows against the page: dim,
 /// but still readable (4.5:1) in both themes.
 const dimAlpha = .66;
@@ -54,6 +63,11 @@ Color luckColor(ColorScheme c) => c.brightness == Brightness.dark
 Color riskColor(ColorScheme c) => c.brightness == Brightness.dark
     ? const Color(0xFF5CB85C)
     : const Color(0xFF2E7D32);
+
+/// The red of a heart, brighter on the dark and black pages, deeper on the light.
+Color heartColor(ColorScheme c) => c.brightness == Brightness.dark
+    ? const Color(0xFFFF7A66)
+    : const Color(0xFFC0392B);
 
 Color bitsColor(ColorScheme c) => c.brightness == Brightness.dark
     ? const Color(0xFFA98BFF)

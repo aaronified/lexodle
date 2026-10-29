@@ -30,6 +30,9 @@ enum Haptic {
 
   /// A game lost: the phone's long vibration.
   lose,
+
+  /// A heart broken in lockdown: a rumble, three knocks one on the other.
+  heartBreak,
 }
 
 /// Touch feedback through the phone's vibration motor. It is there on Android
@@ -68,6 +71,17 @@ class Haptics {
         });
       case Haptic.lose:
         unawaited(HapticFeedback.vibrate());
+      case Haptic.heartBreak:
+        unawaited(HapticFeedback.heavyImpact());
+        _later(const Duration(milliseconds: 70), () {
+          unawaited(HapticFeedback.heavyImpact());
+        });
+        _later(const Duration(milliseconds: 140), () {
+          unawaited(HapticFeedback.mediumImpact());
+        });
+        _later(const Duration(milliseconds: 230), () {
+          unawaited(HapticFeedback.heavyImpact());
+        });
     }
   }
 

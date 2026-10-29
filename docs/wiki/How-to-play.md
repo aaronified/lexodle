@@ -35,7 +35,10 @@ submitted, so it never reaches the scoring.
 
 ## Modes
 
-**Classic** is one word. In a **quartet** four words are hidden and every guess is played on all
+**Classic** is one word. **Lockdown** is one word too, with six tries: a letter in the right place
+locks and stays locked for the rest of the game, and a word that is not in the list costs a heart (10,
+7, 5, 3 or 1 hearts, as you choose; the daily has 5). The hearts break with a rumble and a crack, and
+the last three throb. At no hearts the game is lost. In a **quartet** four words are hidden and every guess is played on all
 four boards at once (the keyboard splits each key in four, one part per board); a **relay race**
 plays the four boards one after the other, each starting with every earlier guess already
 applied. Quartet and relay race get extra tries (3 and 4), and the *shared letters* setting says

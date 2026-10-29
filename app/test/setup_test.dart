@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/difficulty.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
@@ -115,21 +116,26 @@ void main() {
 
   group('settings', () {
     test(
-      'drawing words by frequency is on by default, saved, and reloaded',
+      'the word draw is the curve by default, saved, and reloaded',
       () async {
         SharedPreferences.setMockInitialValues({});
         final a = AppState();
         await a.load();
-        expect(a.useFrequency, isTrue);
-        a.setup(useFrequency: false, tries: 4);
+        expect(a.draw, Draw.sigmoid);
+        a.setup(draw: Draw.equal, tries: 4, hearts: 3);
         final b = AppState();
         await b.load();
-        expect((b.useFrequency, b.tries), (false, 4));
+        expect((b.draw, b.tries, b.hearts), (Draw.equal, 4, 3));
 
+        // the old on / off switch keeps what the player chose
         SharedPreferences.setMockInitialValues({'useFrequency': true});
         final c = AppState();
         await c.load();
-        expect(c.useFrequency, isTrue);
+        expect(c.draw, Draw.frequency);
+        SharedPreferences.setMockInitialValues({'useFrequency': false});
+        final d = AppState();
+        await d.load();
+        expect(d.draw, Draw.equal);
       },
     );
 
@@ -137,7 +143,7 @@ void main() {
       SharedPreferences.setMockInitialValues({'pool': 1234});
       final a = AppState();
       await a.load();
-      expect(a.useFrequency, isTrue);
+      expect(a.draw, Draw.sigmoid);
       expect(a.tries, 6);
     });
   });

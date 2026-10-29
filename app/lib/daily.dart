@@ -24,6 +24,17 @@ const dailyTries = 6;
 /// but never the answer.
 const dailyAnswers = 3000;
 
+/// The first date a daily is drawn by the sigmoid curve of [WordBank.curveWeights]
+/// from the whole list, every word of it a valid guess: the commonest words
+/// about equally likely, fewer and fewer past the 3,000th, and none to speak of
+/// by the 3,500th. Earlier dates keep the draw they had, so that a daily played
+/// before it replays against the same word.
+const dailyCurveFrom = '2026-10-30';
+
+/// Whether the daily of [date] is drawn by the curve.
+bool dailyUsesCurve(String date) =>
+    date.length == 10 && date.compareTo(dailyCurveFrom) >= 0;
+
 /// The clock the daily reads: the server's time when it could be had, else the
 /// device's. Tests replace it.
 DateTime Function() dailyClock = TrustedClock.now;
@@ -139,6 +150,65 @@ int dailyIndex(String lang, String date, int n) {
   return picks[day];
 }
 
+/// The running totals of [weights]: entry i is the sum of the first i + 1.
+List<int> _totals(List<int> weights) {
+  var t = 0;
+  return [for (final w in weights) t += w];
+}
+
+/// The word a hash picks when each word has its weight: the first whose running
+/// total is above the hash taken modulo the whole. Whole numbers only, so every
+/// device picks the same.
+int _byWeight(List<int> totals, int hash) {
+  final r = hash % totals.last;
+  var lo = 0, hi = totals.length - 1;
+  while (lo < hi) {
+    final mid = (lo + hi) >> 1;
+    if (totals[mid] > r) {
+      hi = mid;
+    } else {
+      lo = mid + 1;
+    }
+  }
+  return lo;
+}
+
+final _curveTotals = <String, List<int>>{};
+final _curvePicks = <String, List<int>>{};
+
+List<int> _totalsOf(String key, List<int> weights) =>
+    _curveTotals.putIfAbsent('$key|${weights.length}', () => _totals(weights));
+
+/// Which word the curve daily of [key] (the language, and the mode when it is
+/// not classic) on [date] is, among words with [weights]. Like [dailyIndex],
+/// a word that was a daily in the last [dailyNoRepeat] days is drawn again; the
+/// days are replayed from [dailyCurveFrom].
+int dailyCurveIndex(String key, String date, List<int> weights) {
+  final d = DateTime.tryParse(date);
+  final a = DateTime.utc(2026, 10, 30);
+  final day = d == null
+      ? 0
+      : DateTime.utc(d.year, d.month, d.day).difference(a).inDays;
+  final totals = _totalsOf(key, weights);
+  int pick(String ds, int k) =>
+      _byWeight(totals, dailyHash('lexodle-daily-curve|$key|$ds|$k'));
+  if (day < 0 || day > 36500) return pick(date, 0);
+  final picks = _curvePicks.putIfAbsent('$key|${weights.length}', () => []);
+  final window = min(dailyNoRepeat, weights.length - 1);
+  while (picks.length <= day) {
+    final ds = dailyShift(dailyCurveFrom, picks.length);
+    final from = picks.length - window;
+    var k = 0;
+    int p;
+    do {
+      p = pick(ds, k);
+      k++;
+    } while (picks.indexOf(p, from < 0 ? 0 : from) >= 0);
+    picks.add(p);
+  }
+  return picks[day];
+}
+
 /// Today's (or [date]'s) daily: the date and its answer.
 class Daily {
   const Daily(
@@ -157,12 +227,26 @@ class Daily {
 
   /// The daily of [bank]'s language on [date] (default today), or null when the
   /// language has no words of the daily's length.
-  static Daily? of(WordBank bank, [String? date]) {
+  static Daily? of(
+    WordBank bank, [
+    String? date,
+    GameMode mode = GameMode.classic,
+  ]) {
     final d = date ?? dailyDate();
     final all = bank.answers(dailyLength);
+    if (all.isEmpty) return null;
+    final code = bank.language.code;
+    final key = mode == GameMode.classic ? code : '$code|${mode.name}';
+    if (dailyUsesCurve(d)) {
+      final w = bank.curveWeights(dailyLength);
+      return Daily(
+        d,
+        all[dailyCurveIndex(key, d, w)],
+        tries: mode == GameMode.lockdown ? lockdownTries : dailyTries,
+      );
+    }
     final pool = all.length > dailyAnswers ? all.sublist(0, dailyAnswers) : all;
-    if (pool.isEmpty) return null;
-    return Daily(d, pool[dailyIndex(bank.language.code, d, pool.length)]);
+    return Daily(d, pool[dailyIndex(code, d, pool.length)]);
   }
 }
 
@@ -197,12 +281,20 @@ class DailyMulti {
   static DailyMulti? of(WordBank bank, GameMode mode, [String? date]) {
     final d = date ?? dailyDate();
     final all = bank.answers(dailyLength);
-    final pool = all.length > dailyAnswers ? all.sublist(0, dailyAnswers) : all;
+    final curve = dailyUsesCurve(d);
+    final pool = curve || all.length <= dailyAnswers
+        ? all
+        : all.sublist(0, dailyAnswers);
     if (pool.length < mode.boards) return null;
     final code = bank.language.code;
-    String word(int k, int j, int t) =>
-        pool[dailyHash('lexodle-daily|$code|$d|${mode.name}|$k|$j|$t') %
-            pool.length];
+    final totals = curve
+        ? _totalsOf(code, bank.curveWeights(dailyLength))
+        : null;
+    String word(int k, int j, int t) {
+      final h = dailyHash('lexodle-daily|$code|$d|${mode.name}|$k|$j|$t');
+      return pool[totals == null ? h % pool.length : _byWeight(totals, h)];
+    }
+
     for (var k = 0; k < 2000; k++) {
       final chosen = <String>[];
       for (var j = 0; j < mode.boards; j++) {

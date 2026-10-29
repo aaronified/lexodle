@@ -427,7 +427,12 @@ const _counted = {
 const _globalMetrics = {'langs', 'mastered', 'completed'};
 
 const _classicOnly = {GameMode.classic};
-const _anyMode = {GameMode.classic, GameMode.quartet, GameMode.relay};
+const _anyMode = {
+  GameMode.classic,
+  GameMode.quartet,
+  GameMode.relay,
+  GameMode.lockdown,
+};
 const _quartetOnly = {GameMode.quartet};
 const _relayOnly = {GameMode.relay};
 
@@ -1104,8 +1109,12 @@ List<Achievement> advanceAchievements(
 /// leaving and coming back resumes it, and cannot reroll it) and, once it is
 /// over, whether it was won.
 class DailyEntry {
-  const DailyEntry(this.guesses, [this.won]);
+  const DailyEntry(this.guesses, [this.won, this.hearts]);
   final List<String> guesses;
+
+  /// The hearts a lockdown daily has left, so that closing the page does not
+  /// give them back; null for the other modes.
+  final int? hearts;
 
   /// Null while the daily is still being played.
   final bool? won;
@@ -1115,11 +1124,14 @@ class DailyEntry {
   Map<String, dynamic> toJson() => {
     'g': guesses,
     if (won != null) 'w': won! ? 1 : 0,
+    if (hearts != null) 'h': hearts,
   };
 
-  static DailyEntry fromJson(Map<String, dynamic> j) => DailyEntry([
-    for (final g in j['g'] ?? []) g as String,
-  ], j['w'] == null ? null : j['w'] == 1);
+  static DailyEntry fromJson(Map<String, dynamic> j) => DailyEntry(
+    [for (final g in j['g'] ?? []) g as String],
+    j['w'] == null ? null : j['w'] == 1,
+    j['h'] is int ? j['h'] as int : null,
+  );
 }
 
 /// Settings, stats and achievements, kept in shared_preferences
@@ -1153,9 +1165,9 @@ class AppState extends ChangeNotifier {
   /// Quartet and relay race: the chance, in percent, that answers share a letter.
   int share = 10;
 
-  /// Whether the answer is drawn by how common each word is (on) or with every
-  /// word of the length equally likely (off). A daily is always off.
-  bool useFrequency = true;
+  /// How the answer of an ordinary game is drawn: see [Draw]. A daily has its
+  /// own rule (the sigmoid curve, from [dailyCurveFrom]).
+  Draw draw = Draw.sigmoid;
   bool seenHowTo = false;
 
   /// Whether an update also saves its backup in the Downloads folder (it always
@@ -1179,6 +1191,20 @@ class AppState extends ChangeNotifier {
       _w('lastRunVersion', _prefs?.setString('lastRunVersion', v));
     } catch (_) {}
   }
+
+  /// Whether sounds play (the crack of a heart in lockdown). On until turned off.
+  bool sound = true;
+
+  void setSound(bool on) {
+    sound = on;
+    try {
+      _w('sound', _prefs?.setBool('sound', on));
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  /// The hearts of an ordinary lockdown game: one of [lockdownHearts].
+  int hearts = 5;
 
   /// Whether presses give a short vibration (on a phone). On until turned off.
   bool haptics = true;
@@ -1356,8 +1382,13 @@ class AppState extends ChangeNotifier {
     List<String> guesses, {
     bool? won,
     GameMode mode = GameMode.classic,
+    int? hearts,
   }) {
-    daily[_dailyEntryKey(lang, date, mode)] = DailyEntry(List.of(guesses), won);
+    daily[_dailyEntryKey(lang, date, mode)] = DailyEntry(
+      List.of(guesses),
+      won,
+      hearts,
+    );
     final oldest = dailyShift(date, -7);
     daily.removeWhere(
       (k, _) => k.substring(k.indexOf('|') + 1).compareTo(oldest) < 0,
@@ -1510,7 +1541,7 @@ class AppState extends ChangeNotifier {
     required bool won,
     required List<GuessRow> guesses,
     String daily = '',
-    bool freq = true,
+    Draw draw = Draw.frequency,
     DateTime? now,
   }) {
     appLog.i(
@@ -1529,7 +1560,7 @@ class AppState extends ChangeNotifier {
       won: won,
       guesses: guesses,
       daily: daily,
-      freq: freq,
+      draw: draw,
     );
     saveHistory();
     notifyListeners();
@@ -1689,7 +1720,13 @@ class AppState extends ChangeNotifier {
         lang = p.getString('lang') ?? lang;
         length = p.getInt('length') ?? length;
         tries = p.getInt('tries') ?? tries;
-        useFrequency = p.getBool('useFrequency') ?? true;
+        final d = p.getInt('draw');
+        if (d != null && d >= 0 && d < Draw.values.length) {
+          draw = Draw.values[d];
+        } else if (p.getBool('useFrequency') case final f?) {
+          // the old on / off switch: on was by frequency, off every word
+          draw = f ? Draw.frequency : Draw.equal;
+        }
         final h = p.getInt('helper');
         if (h != null && h >= 0 && h < Helper.values.length) {
           helper = Helper.values[h];
@@ -1705,6 +1742,9 @@ class AppState extends ChangeNotifier {
         if (ti != null && ti >= 0 && ti <= maxThemeIndex) _setThemeIndex(ti);
         seenHowTo = p.getBool('seenHowTo') ?? false;
         haptics = p.getBool('haptics') ?? true;
+        sound = p.getBool('sound') ?? true;
+        final hs = p.getInt('hearts');
+        if (hs != null && lockdownHearts.any((h) => h.$2 == hs)) hearts = hs;
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
         lastRunVersion = p.getString('lastRunVersion');
         autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
@@ -2009,7 +2049,8 @@ class AppState extends ChangeNotifier {
     'lang': lang,
     'length': length,
     'tries': tries,
-    'useFrequency': useFrequency,
+    'draw': draw.index,
+    'hearts': hearts,
     'helper': helper.index,
     'mode': mode.index,
     'share': share,
@@ -2068,7 +2109,14 @@ class AppState extends ChangeNotifier {
     lang = settings['lang'] as String? ?? lang;
     length = settings['length'] as int? ?? length;
     tries = settings['tries'] as int? ?? tries;
-    useFrequency = settings['useFrequency'] as bool? ?? useFrequency;
+    final hs = settings['hearts'] as int?;
+    if (hs != null && lockdownHearts.any((h) => h.$2 == hs)) hearts = hs;
+    final d = settings['draw'] as int?;
+    if (d != null && d >= 0 && d < Draw.values.length) {
+      draw = Draw.values[d];
+    } else if (settings['useFrequency'] case final bool f) {
+      draw = f ? Draw.frequency : Draw.equal;
+    }
     final h = settings['helper'] as int?;
     if (h != null) helper = Helper.values[h];
     final m = settings['mode'] as int?;
@@ -2084,7 +2132,8 @@ class AppState extends ChangeNotifier {
         _w('lang', p.setString('lang', lang));
         _w('length', p.setInt('length', length));
         _w('tries', p.setInt('tries', tries));
-        _w('useFrequency', p.setBool('useFrequency', useFrequency));
+        _w('draw', p.setInt('draw', draw.index));
+        _w('hearts', p.setInt('hearts', hearts));
         _w('helper', p.setInt('helper', helper.index));
         _w('mode', p.setInt('mode', mode.index));
         _w('share', p.setInt('share', share));
@@ -2112,7 +2161,8 @@ class AppState extends ChangeNotifier {
     String? lang,
     int? length,
     int? tries,
-    bool? useFrequency,
+    Draw? draw,
+    int? hearts,
     Helper? helper,
     GameMode? mode,
     int? share,
@@ -2122,7 +2172,10 @@ class AppState extends ChangeNotifier {
     this.lang = lang ?? this.lang;
     this.length = length ?? this.length;
     this.tries = tries ?? this.tries;
-    this.useFrequency = useFrequency ?? this.useFrequency;
+    this.draw = draw ?? this.draw;
+    if (hearts != null && lockdownHearts.any((h) => h.$2 == hearts)) {
+      this.hearts = hearts;
+    }
     this.helper = helper ?? this.helper;
     this.mode = mode ?? this.mode;
     this.themeMode = themeMode ?? this.themeMode;
@@ -2135,7 +2188,8 @@ class AppState extends ChangeNotifier {
       _w('lang', _prefs?.setString('lang', this.lang));
       _w('length', _prefs?.setInt('length', this.length));
       _w('tries', _prefs?.setInt('tries', this.tries));
-      _w('useFrequency', _prefs?.setBool('useFrequency', this.useFrequency));
+      _w('draw', _prefs?.setInt('draw', this.draw.index));
+      _w('hearts', _prefs?.setInt('hearts', this.hearts));
       _w('helper', _prefs?.setInt('helper', this.helper.index));
       _w('mode', _prefs?.setInt('mode', this.mode.index));
       _w('share', _prefs?.setInt('share', this.share));

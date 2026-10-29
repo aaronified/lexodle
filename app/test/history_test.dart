@@ -280,7 +280,7 @@ void main() {
         addGame(h, at: 5);
         final j = jsonDecode(jsonEncode(h.toJson())) as Map<String, dynamic>;
         ((j['games'] as List).first as List).removeLast();
-        expect(History.fromJson(j).games.single.freq, isTrue);
+        expect(History.fromJson(j).games.single.draw, Draw.frequency);
       },
     );
 
@@ -906,7 +906,7 @@ void main() {
       ))!;
       final answer = chooseWord(
         bank.answers(4),
-        bank.answerWeights(4),
+        bank.drawWeights(4, appState.draw),
         Random(7),
       );
       final guesses = bank

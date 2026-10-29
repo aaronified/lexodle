@@ -455,7 +455,7 @@ void main() {
 
       await open();
       expect(find.text('6 tries left'), findsOneWidget);
-      expect(find.textContaining('daily · 2026-10-24'), findsOneWidget);
+      expect(find.textContaining('2026-10-24'), findsOneWidget);
 
       // a wrong word first, then the answer
       final wrong = bank

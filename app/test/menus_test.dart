@@ -201,7 +201,7 @@ void main() {
           y(find.text('mode')),
           y(find.text('shared letters')),
           y(find.text('difficulty')),
-          y(find.byKey(const ValueKey('frequency-checkbox'))),
+          y(find.byKey(const ValueKey('draw-stepper'))),
           y(find.text('helper')),
           y(find.byKey(const ValueKey('settings-play'))),
           y(find.text('open the solver')),
@@ -209,10 +209,7 @@ void main() {
         ];
         expect([...order]..sort(), order, reason: 'top to bottom');
         expect(find.byType(DifficultyMatrix), findsOneWidget);
-        expect(
-          find.byKey(const ValueKey('frequency-checkbox')),
-          findsOneWidget,
-        );
+        expect(find.byKey(const ValueKey('draw-stepper')), findsOneWidget);
       },
     );
 
@@ -241,19 +238,51 @@ void main() {
       },
     );
 
-    testWidgets(
-      'the frequency checkbox turns drawing by frequency off and on',
-      (tester) async {
-        await open(tester);
-        expect(appState.useFrequency, isTrue);
-        await tester.tap(find.byKey(const ValueKey('frequency-checkbox')));
-        await tester.pumpAndSettle();
-        expect(appState.useFrequency, isFalse);
-        await tester.tap(find.byKey(const ValueKey('frequency-checkbox')));
-        await tester.pumpAndSettle();
-        expect(appState.useFrequency, isTrue);
-      },
-    );
+    testWidgets('the word draw swiper goes through its three draws', (
+      tester,
+    ) async {
+      await open(tester);
+      final stepper = find.byKey(const ValueKey('draw-stepper'));
+      await tester.ensureVisible(stepper);
+      Finder chevron(String tip) =>
+          find.descendant(of: stepper, matching: find.byTooltip(tip));
+      expect(appState.draw, Draw.sigmoid);
+      expect(find.byKey(const ValueKey('frequency-checkbox')), findsNothing);
+      await tester.tap(chevron('next'));
+      await tester.pumpAndSettle();
+      expect(appState.draw, Draw.equal);
+      await tester.tap(chevron('next'));
+      await tester.pumpAndSettle();
+      expect(appState.draw, Draw.frequency);
+      await tester.tap(chevron('previous'));
+      await tester.pumpAndSettle();
+      expect(appState.draw, Draw.equal);
+    });
+
+    testWidgets('a drag on the swiper follows the finger', (tester) async {
+      await open(tester);
+      final stepper = find.byKey(const ValueKey('draw-stepper'));
+      await tester.ensureVisible(stepper);
+      final viewport = find.descendant(
+        of: stepper,
+        matching: find.byKey(const ValueKey('step-viewport')),
+      );
+      final g = await tester.startGesture(tester.getCenter(viewport));
+      await g.moveBy(const Offset(-30, 0));
+      await tester.pump();
+      await g.moveBy(const Offset(-30, 0));
+      await tester.pump();
+      // the next draw is already coming in beside the one on show
+      expect(
+        find.descendant(
+          of: stepper,
+          matching: find.byKey(const ValueKey('step-incoming')),
+        ),
+        findsOneWidget,
+      );
+      await g.up();
+      await tester.pumpAndSettle();
+    });
   });
 
   group('settings', () {

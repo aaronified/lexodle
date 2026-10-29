@@ -24,6 +24,10 @@ class GuessInput {
   final int length;
   final List<String> _slots;
   final Set<int> _locked = {};
+
+  /// Letters locked by the game (lockdown, a letter in the right place): they
+  /// cannot be unlocked.
+  final Set<int> _fixed = {};
   int _cursor = 0;
   int _lastTap = -1;
   DateTime _lastTapAt = DateTime.fromMillisecondsSinceEpoch(0);
@@ -42,6 +46,9 @@ class GuessInput {
   bool isLetter(int i) => _slots[i].isNotEmpty && _slots[i] != blank;
 
   bool isLocked(int i) => _locked.contains(i);
+
+  /// Whether the lock on slot [i] is the game's: it cannot be taken off.
+  bool isFixed(int i) => _fixed.contains(i);
 
   bool get hasLocked => _locked.isNotEmpty;
 
@@ -107,6 +114,7 @@ class GuessInput {
   /// cannot be locked. Returns whether the slot is locked now.
   bool toggleLock(int i) {
     if (i < 0 || i >= length) return false;
+    if (_fixed.contains(i)) return true;
     if (_locked.remove(i)) return false;
     if (!isLetter(i)) return false;
     _locked.add(i);
@@ -127,8 +135,21 @@ class GuessInput {
   void clear() {
     _slots.fillRange(0, length, '');
     _locked.clear();
+    _fixed.clear();
     _cursor = 0;
     _lastTap = -1;
+  }
+
+  /// Puts each of [letters] (slot, letter) in its place and locks it for good,
+  /// then selects the first slot that is open.
+  void lockFixed(Iterable<(int, String)> letters) {
+    for (final (i, ch) in letters) {
+      if (i < 0 || i >= length) continue;
+      _slots[i] = ch;
+      _locked.add(i);
+      _fixed.add(i);
+    }
+    _cursor = _nextOpen(-1);
   }
 
   /// Empties the row for the next guess, keeping the locked letters.
@@ -143,6 +164,7 @@ class GuessInput {
   /// Puts a whole word in, as the solver's "use this" does.
   void setWord(String word) {
     _locked.clear();
+    _fixed.clear();
     for (var i = 0; i < length; i++) {
       _slots[i] = i < word.length ? word[i] : '';
     }

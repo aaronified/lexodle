@@ -6,6 +6,7 @@ import 'modes.dart';
 import 'multi_analysis.dart';
 import 'multi_review.dart';
 import 'review.dart';
+import 'review_text.dart';
 import 'words.dart';
 
 /// Rebuilding a finished game from the history, which keeps only its facts: the
@@ -14,21 +15,50 @@ import 'words.dart';
 /// same way a game works it out as it is played, so a game from last month is
 /// reviewed with today's maths.
 
+/// The words that could have been the answer of [g], and the chances they had,
+/// as the scores of the game are worked out under them: a daily from
+/// [dailyCurveFrom] is drawn by the curve from the whole list, an earlier one
+/// was one of its 3,000 words each equally likely, and any other game by the
+/// way it was drawn. [key] names the law, for what is kept per law.
+({List<String> eligible, Map<String, int>? law, String key}) lawOfGame(
+  WordBank bank,
+  GameRow g,
+) {
+  if (g.daily.isNotEmpty) {
+    return dailyUsesCurve(g.daily)
+        ? (
+            eligible: List.of(bank.guessable(g.length)),
+            law: bank.law(g.length, Draw.sigmoid),
+            key: 's',
+          )
+        : (
+            eligible: List.of(bank.answers(g.length).take(dailyAnswers)),
+            law: null,
+            key: 'd',
+          );
+  }
+  return (
+    eligible: List.of(bank.guessable(g.length)),
+    law: bank.law(g.length, g.draw),
+    key: switch (g.draw) {
+      Draw.sigmoid => 's',
+      Draw.equal => 'u',
+      Draw.frequency => 'f',
+    },
+  );
+}
+
 /// The record a [ReviewPage] shows for the classic game [g] and its guess rows.
 /// The scores in it are provisional until the review has analysed each step,
 /// which it does itself when no analysis is given.
 GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
   final answer = g.answers.first;
-  // a daily's answer was one of its 3,000 words, so only those were possible
-  var eligible = List.of(
-    g.daily.isEmpty
-        ? bank.guessable(g.length)
-        : bank.answers(g.length).take(dailyAnswers),
-  );
+  final drawn = lawOfGame(bank, g);
+  var eligible = drawn.eligible;
   // a word list that has since changed may not hold the answer any more: it is
   // still the answer, so it is among the possible words
   if (!eligible.contains(answer)) eligible.insert(0, answer);
-  final law = g.byFrequency ? bank.weightMap(g.length) : null;
+  final law = drawn.law;
   final guesses = <String>[];
   final marks = <List<Mark>>[];
   final metrics = <GuessMetrics>[];
@@ -70,6 +100,8 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     won: g.won,
     tries: g.tries,
     weights: law,
+    kind: drawKindOf(g.draw, daily: g.daily),
+    daily: g.daily.isNotEmpty,
   );
 }
 
@@ -81,7 +113,7 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
     g.tries,
     words: bank.guessable(g.length),
     provisional: true,
-    weights: g.freq ? bank.weightMap(g.length) : null,
+    weights: lawOfGame(bank, g).law,
   );
   for (final r in rows) {
     game.guess(r.word);
@@ -96,6 +128,8 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
     steps: game.steps,
     won: game.won,
     weights: game.weights,
+    kind: drawKindOf(g.draw, daily: g.daily),
+    daily: g.daily.isNotEmpty,
   );
 }
 
@@ -119,12 +153,7 @@ Future<List<GuessRow>> rescoreClassic(
   for (var i = 0; i < rec.guesses.length; i++) {
     // the opening position is the same for every game under one law
     final key = i == 0
-        ? '${bank.language.code}:${g.length}:'
-              '${g.byFrequency
-                  ? 'f'
-                  : g.daily.isEmpty
-                  ? 'u'
-                  : 'd'}'
+        ? '${bank.language.code}:${g.length}:${lawOfGame(bank, g).key}'
         : null;
     var land = key == null ? null : opening?[key];
     land ??= await analyseOffThread(

@@ -135,6 +135,9 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       await tester.pumpAndSettle();
       expect(appState.helper, Helper.skill, reason: '$m: nor a key');
+      // (the key may have moved the mode stepper on, which has the focus)
+      appState.setup(mode: m);
+      await tester.pumpAndSettle();
       expect(
         find.text(
           'the helper shows in classic mode only. whatever you '
@@ -188,7 +191,7 @@ void main() {
 
     List<String> answers(int seed) => chooseTargets(
       bank.answers(4),
-      bank.answerWeights(4),
+      bank.drawWeights(4, appState.draw),
       4,
       10,
       Random(seed),

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'background.dart';
 import 'daily.dart';
+import 'game_header.dart';
 import 'guess_input.dart';
 import 'haptics.dart';
 import 'history.dart';
@@ -15,6 +16,7 @@ import 'modes.dart';
 import 'multi_analysis.dart';
 import 'multi_review.dart';
 import 'puzzle.dart';
+import 'review_text.dart';
 import 'routes.dart';
 import 'share_puzzle.dart';
 import 'store.dart';
@@ -67,13 +69,24 @@ class _MultiGamePageState extends State<MultiGamePage> {
   late final int length;
   late final int tries;
 
-  /// Whether the answers are drawn by how common each word is. Never for a
-  /// daily: its words are equally likely, among the most common.
-  late final bool freq = _daily == null && appState.useFrequency;
+  /// Whether the daily is drawn by the curve from the whole list (from
+  /// [dailyCurveFrom]) rather than the old way: the most common [dailyAnswers]
+  /// words, each equally likely. A puzzle a link carries has no date.
+  late final bool _curveDaily =
+      _daily != null && _daily.date.isNotEmpty && dailyUsesCurve(_daily.date);
+
+  /// How the answers are drawn, and so the chances their scores are worked out
+  /// under: the setting, the curve for a daily, and equal chances for the old
+  /// daily and for a puzzle from a link.
+  late final Draw draw = _daily == null
+      ? appState.draw
+      : _curveDaily
+      ? Draw.sigmoid
+      : Draw.equal;
 
   /// How many words the answers were drawn from: every word of the length, and
-  /// for a daily the most common [dailyAnswers] of them.
-  late final int pool = _daily == null
+  /// for an old daily the most common [dailyAnswers] of them.
+  late final int pool = _daily == null || _curveDaily
       ? widget.bank.answers(length).length
       : min(dailyAnswers, widget.bank.answers(length).length);
   late final List<String> _pool;
@@ -151,14 +164,14 @@ class _MultiGamePageState extends State<MultiGamePage> {
       _daily?.answers ??
           chooseTargets(
             _pool,
-            widget.bank.answerWeights(length, frequency: freq),
+            widget.bank.drawWeights(length, draw),
             mode.boards,
             appState.share,
             _rng,
           ),
       tries,
       words: widget.bank.guessable(length),
-      possible: _daily == null
+      possible: _daily == null || _curveDaily
           ? null
           : widget.bank.answers(length).take(dailyAnswers).toList(),
       provisional: analyseWhilePlaying,
@@ -297,7 +310,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         length: length,
         tries: tries,
         pool: pool,
-        freq: freq,
+        draw: draw,
         answers: [for (final b in game.boards) b.answer],
         won: game.won,
         guesses: [
@@ -350,7 +363,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   }
 
   /// The law the answers were drawn by, as weights; null for equal chances.
-  Map<String, int>? get _law => freq ? widget.bank.weightMap(length) : null;
+  Map<String, int>? get _law => widget.bank.law(length, draw);
 
   MultiRecord _record() => MultiRecord(
     bank: widget.bank,
@@ -363,6 +376,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
     won: game.won,
     weights: _law,
     analysis: List.of(_analysis),
+    kind: drawKindOf(draw, daily: _daily?.date ?? ''),
+    daily: _daily != null && _daily.date.isNotEmpty,
   );
 
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
@@ -410,26 +425,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
                 ),
               ),
           ],
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FlagBadge(widget.bank.language.flag, size: 16),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  _daily == null
-                      ? '${mode.label} · '
-                            '${widget.bank.language.name.toLowerCase()}'
-                            ' · $length · $tries tries'
-                      : '${mode.label} · '
-                            '${widget.bank.language.name.toLowerCase()}'
-                            ' · ${widget.practice ? 'practice' : 'daily'}'
-                            '${_daily.date.isEmpty ? '' : ' · ${_daily.date}'}',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-                ),
-              ),
-            ],
+          centerTitle: true,
+          title: gameTitle(
+            context,
+            language: widget.bank.language,
+            mode: mode,
+            text: gameTitleText(
+              date: _daily?.date ?? '',
+              length: length,
+              tries: tries,
+            ),
           ),
         ),
         body: SafeArea(

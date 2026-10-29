@@ -72,7 +72,7 @@ class _LearnPageState extends State<LearnPage> {
   void _reset() {
     answer = chooseWord(
       _pool,
-      widget.bank.answerWeights(length, frequency: appState.useFrequency),
+      widget.bank.drawWeights(length, appState.draw),
       _rng,
     );
     // every word the game accepts could be the answer as far as a clue goes
@@ -136,7 +136,7 @@ class _LearnPageState extends State<LearnPage> {
     String word,
     List<String> after,
   ) async {
-    final law = appState.useFrequency ? widget.bank.weightMap(length) : null;
+    final law = widget.bank.law(length, appState.draw);
     final land = await analyseOffThread(
       before,
       widget.bank.guessable(length),

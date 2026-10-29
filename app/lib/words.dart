@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:math' show exp, max;
 
 import 'package:flutter/services.dart';
+
+import 'modes.dart' show Draw;
 
 class Language {
   const Language(
@@ -63,6 +66,46 @@ class WordBank {
         ? w.sublist(0, n)
         : [...w, ...List.filled(n - w.length, 1)];
   }
+
+  final _curves = <int, List<int>>{};
+  final _curveMaps = <int, Map<String, int>>{};
+
+  /// Where the sigmoid curve is at half: the 3,000th word, whatever the size
+  /// of the list (a short list most likely means an incomplete one). It falls
+  /// from about full to about nothing over 1,000 words around that: [curveWidth]
+  /// is the logistic scale, so the 2,500th word is at 98% and the 3,500th at 2%.
+  static const curveOrigin = 3000.0;
+  static const curveWidth = 125.0;
+
+  /// The chance of each word of [answers], as a whole number up to 1,000, by a
+  /// sigmoid curve on its rank by frequency: the commonest words almost equally
+  /// likely, half at the origin ([curveOrigin]) and almost none
+  /// 500 words past it. Whole numbers, so that every device draws the same word.
+  List<int> curveWeights(int length) => _curves[length] ??= () {
+    final n = answers(length).length;
+    return [
+      for (var i = 0; i < n; i++)
+        max(1, (1000 / (1 + exp((i + 1 - curveOrigin) / curveWidth))).round()),
+    ];
+  }();
+
+  /// How likely each word of [answers] is to be drawn under [draw].
+  List<int> drawWeights(int length, Draw draw) => switch (draw) {
+    Draw.sigmoid => curveWeights(length),
+    Draw.equal => List.filled(answers(length).length, 1),
+    Draw.frequency => answerWeights(length),
+  };
+
+  /// [drawWeights] by word, as the scores weigh the words still possible; null
+  /// when every word is as likely as the next.
+  Map<String, int>? law(int length, Draw draw) => switch (draw) {
+    Draw.equal => null,
+    Draw.frequency => weightMap(length),
+    Draw.sigmoid => _curveMaps[length] ??= {
+      for (var i = 0; i < answers(length).length; i++)
+        answers(length)[i]: curveWeights(length)[i],
+    },
+  };
 
   /// Letters seen in the words of [length], for the on-screen keyboard.
   Set<String> letters(int length) => {

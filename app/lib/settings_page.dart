@@ -6,6 +6,7 @@ import 'auto_backup.dart';
 import 'backup.dart';
 import 'donate.dart';
 import 'haptics.dart';
+import 'sounds.dart';
 import 'log_section.dart';
 import 'main.dart';
 import 'routes.dart';
@@ -77,6 +78,24 @@ class SettingsPage extends StatelessWidget {
                         appState.setHaptics(on);
                         // so the player feels what was just turned on
                         if (on) Haptics.fire(Haptic.submit);
+                      },
+                    ),
+                    SwitchListTile(
+                      key: const ValueKey('sound-switch'),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: const Text('sound'),
+                      subtitle: Text(
+                        'the crack of a heart in lockdown.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: c.onSurface.withValues(alpha: dimAlpha),
+                        ),
+                      ),
+                      value: appState.sound,
+                      onChanged: (on) {
+                        appState.setSound(on);
+                        if (on) Sounds.crack();
                       },
                     ),
                     const SizedBox(height: 24),

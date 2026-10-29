@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:lexodle/analysis_worker.dart';
 import 'package:lexodle/background.dart';
+import 'package:lexodle/sounds.dart';
 import 'package:lexodle/wiktionary.dart';
 
 /// Runs before every test file. The game screens look their answers up and
@@ -13,5 +14,6 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   prefetchDefinitions = false;
   analyseWhilePlaying = false;
   analyseOffMainThread = false;
+  Sounds.enabled = false;
   await testMain();
 }

@@ -200,7 +200,7 @@ void main() {
     // wrong; the game draws its answer from the same seed the same way.
     final answer = chooseWord(
       bank.answers(4),
-      bank.answerWeights(4),
+      bank.drawWeights(4, appState.draw),
       Random(7),
     );
     final guesses = bank.answers(4).where((w) => w != answer).take(3).toList();
@@ -231,6 +231,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('your first guess'), findsOneWidget);
     expect(find.byKey(const ValueKey('pill-skill')), findsOneWidget);
+    // (the page is long now, with a sum for each of skill, risk, luck and bits)
+    await tester.scrollUntilVisible(find.text('best skill'), 300);
     expect(find.text('best skill'), findsOneWidget);
 
     // ...where the helper has gone back over the step: picks and a reading

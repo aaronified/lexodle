@@ -69,7 +69,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         BankGate(
           builder: (bank) => appState.mode.multi
               ? MultiGamePage(bank: bank)
-              : GamePage(bank: bank),
+              : GamePage(bank: bank, mode: appState.mode),
         ),
       );
     case Routes.daily:
@@ -85,10 +85,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
                   ? const HomePage()
                   : MultiGamePage(bank: bank, daily: m);
             }
-            final d = Daily.of(bank);
+            final d = Daily.of(bank, null, mode);
             return d == null
                 ? const HomePage()
-                : GamePage(bank: bank, daily: d);
+                : GamePage(bank: bank, daily: d, mode: mode);
           },
         ),
       );
@@ -306,6 +306,7 @@ class _PuzzleGateState extends State<PuzzleGate> {
         }
         return GamePage(
           bank: bank,
+          mode: p.mode,
           practice: true,
           replay: p.guesses,
           daily: Daily('', answers.first, length: p.length, tries: p.tries),

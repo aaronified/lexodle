@@ -175,8 +175,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
   int _run = 0;
 
   /// The law the answers are drawn by, as weights; null for equal chances.
-  Map<String, int>? get _law =>
-      appState.useFrequency ? widget.bank.weightMap(length) : null;
+  Map<String, int>? get _law => widget.bank.law(length, appState.draw);
 
   @override
   void initState() {

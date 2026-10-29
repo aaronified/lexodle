@@ -30,10 +30,17 @@ class GameRecord {
     this.tries = 0,
     this.weights,
     this.analysis,
+    this.kind,
+    this.daily = false,
   });
 
   final WordBank bank;
   final int length;
+
+  /// How the answer was drawn, and whether it was a daily: for the sentences on
+  /// the chances in the skill and luck sections. Null when not known.
+  final DrawKind? kind;
+  final bool daily;
 
   /// The answer pool this game was played with.
   final int poolSize;
@@ -82,6 +89,20 @@ class ReviewPage extends StatefulWidget {
 class _ReviewPageState extends State<ReviewPage> {
   GameRecord get r => widget.record;
   late int step = widget.initialStep.clamp(0, r.guesses.length - 1);
+  final _scroll = ScrollController();
+
+  /// Goes to guess [i], and back to the top of the page, as a new page.
+  void _go(int i) {
+    setState(() => step = i);
+    if (_scroll.hasClients) _scroll.jumpTo(0);
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
   final picks = <int, List<Recommendation>>{};
 
   /// How every guess scored, per step.
@@ -182,9 +203,9 @@ class _ReviewPageState extends State<ReviewPage> {
       onKeyEvent: (_, e) {
         if (e is KeyUpEvent) return KeyEventResult.ignored;
         if (e.logicalKey == LogicalKeyboardKey.arrowRight && step < n - 1) {
-          setState(() => step++);
+          _go(step + 1);
         } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft && step > 0) {
-          setState(() => step--);
+          _go(step - 1);
         } else {
           return KeyEventResult.ignored;
         }
@@ -205,6 +226,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 children: [
                   Expanded(
                     child: ListView(
+                      controller: _scroll,
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 16),
                       children: [
                         _progress(c, n),
@@ -241,9 +263,7 @@ class _ReviewPageState extends State<ReviewPage> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: step == 0
-                                ? null
-                                : () => setState(() => step--),
+                            onPressed: step == 0 ? null : () => _go(step - 1),
                             child: const Text('back'),
                           ),
                         ),
@@ -252,7 +272,7 @@ class _ReviewPageState extends State<ReviewPage> {
                           child: FilledButton(
                             onPressed: last
                                 ? () => Navigator.pop(context)
-                                : () => setState(() => step++),
+                                : () => _go(step + 1),
                             child: Text(last ? 'done' : 'next'),
                           ),
                         ),
@@ -275,7 +295,7 @@ class _ReviewPageState extends State<ReviewPage> {
         if (i > 0) const SizedBox(width: 4),
         Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => step = i),
+            onTap: () => _go(i),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Container(
@@ -449,7 +469,7 @@ class _ReviewPageState extends State<ReviewPage> {
               InkWell(
                 key: ValueKey('row-$i'),
                 borderRadius: BorderRadius.circular(6),
-                onTap: () => setState(() => step = i),
+                onTap: () => _go(i),
                 child: Container(
                   decoration: BoxDecoration(
                     color: i == step
@@ -639,6 +659,14 @@ class _ReviewPageState extends State<ReviewPage> {
         Padding(padding: const EdgeInsets.only(bottom: 18), child: w);
     final land = landscapes[step];
     final before = r.befores[step];
+    // the chances the word was drawn by, which skill and luck are worked out
+    // under, said once in each section
+    final skillNote = r.kind == null
+        ? null
+        : skillDrawLine(r.kind!, daily: r.daily);
+    final luckNote = r.kind == null
+        ? null
+        : luckDrawLine(r.kind!, daily: r.daily);
     if (before.length <= 1) {
       return [
         gap(
@@ -648,6 +676,7 @@ class _ReviewPageState extends State<ReviewPage> {
             tip: blockTips['skill']!,
             rows: const [],
             result: ('skill: one word left, the only play', '100'),
+            note: skillNote,
           ),
         ),
         gap(
@@ -666,6 +695,7 @@ class _ReviewPageState extends State<ReviewPage> {
             tip: blockTips['luck']!,
             rows: const [],
             result: ('luck: one outcome', '0%'),
+            note: luckNote,
           ),
         ),
       ];
@@ -682,6 +712,7 @@ class _ReviewPageState extends State<ReviewPage> {
               'skill = chance ÷ best chance × 100',
               '${m.skill.round()}',
             ),
+            note: skillNote,
           ),
         ),
         gap(
@@ -691,6 +722,7 @@ class _ReviewPageState extends State<ReviewPage> {
             tip: blockTips['luck']!,
             rows: const [],
             result: ('luck = outcome − chance of it', luckText(m.luck)),
+            note: luckNote,
           ),
         ),
       ];
@@ -741,6 +773,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 : 'skill = H ÷ H* × 100',
             ready ? f1(m.skill) : '…',
           ),
+          note: skillNote,
         ),
       ),
       gap(
@@ -773,6 +806,7 @@ class _ReviewPageState extends State<ReviewPage> {
             ('chance of gaining more than ${f2(m.gain)} bits', pc(moreG)),
           ],
           result: ('luck = less − more', luckText(m.luck)),
+          note: luckNote,
         ),
       ),
     ];
