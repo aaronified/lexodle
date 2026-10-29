@@ -714,6 +714,9 @@ Future<Landscape> analyseGuesses(
       : null;
   final scored = <(String, SplitStats)>[];
   if (key != null && key == _openingKeyHeld) {
+    // answered from the last game, but still on a later turn of the event loop
+    // like every other analysis, so the screen shows its dots first
+    await Future<void>.delayed(Duration.zero);
     scored.addAll(_openingHeld!);
   } else {
     final context = SplitContext(eligible, weights);
