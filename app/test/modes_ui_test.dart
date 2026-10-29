@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/keyboard.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/multi_game.dart';
@@ -193,9 +194,27 @@ void main() {
       Random(seed),
     );
 
+    // a letter with no key on a desktop keyboard (é, ß, ñ...) is tapped on the
+    // screen's own keyboard, as a player would
+    Future<void> typeKey(WidgetTester tester, String ch) async {
+      if (RegExp(r'^[a-z]$').hasMatch(ch)) {
+        await tester.sendKeyEvent(_key(ch), character: ch);
+        return;
+      }
+      await tester.tap(
+        find
+            .descendant(
+              of: find.byType(LetterKeyboard),
+              matching: find.text(ch),
+            )
+            .first,
+      );
+      await tester.pump();
+    }
+
     Future<void> type(WidgetTester tester, String w) async {
       for (final ch in w.split('')) {
-        await tester.sendKeyEvent(_key(ch), character: ch);
+        await typeKey(tester, ch);
       }
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pump();
@@ -204,9 +223,9 @@ void main() {
     testWidgets('quartet: nine tries at normal, solve all four', (
       tester,
     ) async {
-      await open(tester, GameMode.quartet, 7);
+      await open(tester, GameMode.quartet, 3);
       expect(find.text('0 of 4 solved · 9 tries left'), findsOneWidget);
-      final a = answers(7);
+      final a = answers(3);
       expect(a.toSet().length, 4);
 
       await type(tester, a[0]);

@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:lexodle/background.dart';
 import 'package:lexodle/game.dart';
+import 'package:lexodle/keyboard.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
@@ -55,10 +56,24 @@ void main() {
 
   Future<void> type(WidgetTester tester, String w) async {
     for (final ch in w.split('')) {
-      await tester.sendKeyEvent(
-        LogicalKeyboardKey(ch.codeUnitAt(0)),
-        character: ch,
-      );
+      if (RegExp(r'^[a-z]$').hasMatch(ch)) {
+        await tester.sendKeyEvent(
+          LogicalKeyboardKey(ch.codeUnitAt(0)),
+          character: ch,
+        );
+      } else {
+        // a letter with no key on a desktop keyboard (é, ß, ñ...) is tapped on
+        // the screen's own keyboard, as a player would
+        await tester.tap(
+          find
+              .descendant(
+                of: find.byType(LetterKeyboard),
+                matching: find.text(ch),
+              )
+              .first,
+        );
+        await tester.pump();
+      }
     }
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pump();
@@ -253,11 +268,11 @@ void main() {
         bank.answerWeights(4),
         4,
         10,
-        Random(8),
+        Random(3),
       );
       await tester.pumpWidget(
         MaterialApp(
-          home: MultiGamePage(bank: bank, random: Random(8)),
+          home: MultiGamePage(bank: bank, random: Random(3)),
         ),
       );
       await tester.pump();
