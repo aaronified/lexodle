@@ -1,3 +1,4 @@
+import 'analysis_worker.dart';
 import 'daily.dart';
 import 'history.dart';
 import 'logic.dart';
@@ -126,7 +127,7 @@ Future<List<GuessRow>> rescoreClassic(
                   : 'd'}'
         : null;
     var land = key == null ? null : opening?[key];
-    land ??= await analyseGuesses(
+    land ??= await analyseOffThread(
       rec.befores[i],
       guessable,
       weights: rec.weights,

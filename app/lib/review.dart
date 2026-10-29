@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'analysis_worker.dart';
 import 'history.dart';
 import 'logic.dart';
 import 'playstyle.dart';
@@ -154,7 +155,7 @@ class _ReviewPageState extends State<ReviewPage> {
           : null;
       final land =
           await (ready ??
-              analyseGuesses(
+              analyseOffThread(
                 r.befores[i],
                 guessable,
                 weights: r.weights,

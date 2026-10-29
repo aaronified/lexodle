@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'analysis_worker.dart';
 import 'background.dart';
 import 'daily.dart';
 import 'modes.dart';
@@ -167,6 +168,10 @@ class _GamePageState extends State<GamePage> {
     message = '';
     over = won = false;
     unlocked = [];
+    // score the opening while the first guess is being chosen
+    if (analyseWhilePlaying) {
+      warmOpening(eligible, widget.bank.guessable(length), weights: _law);
+    }
     // look the answer up now, so the end screen has it
     if (prefetchDefinitions) {
       final lang = widget.bank.language;
@@ -262,7 +267,7 @@ class _GamePageState extends State<GamePage> {
     final epoch = _epoch;
     if (analyseWhilePlaying) {
       final job = _jobs.add(
-        () => analyseGuesses(
+        () => analyseOffThread(
           before,
           widget.bank.guessable(length),
           weights: _law,

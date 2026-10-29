@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'analysis_worker.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
@@ -136,7 +137,7 @@ class _LearnPageState extends State<LearnPage> {
     List<String> after,
   ) async {
     final law = appState.useFrequency ? widget.bank.weightMap(length) : null;
-    final land = await analyseGuesses(
+    final land = await analyseOffThread(
       before,
       widget.bank.guessable(length),
       k: 3,
