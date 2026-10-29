@@ -277,7 +277,19 @@ class SplitStats {
     required this.total,
     required this.masses,
     this.landedMass,
+    this.codes = const [],
   });
+
+  /// The pattern of each group, in the order of [masses] (see [patternCode]).
+  final List<int> codes;
+
+  /// The mass of the group [answer] falls in when [guess] is played, or null
+  /// when the patterns were not kept.
+  double? landedOf(String guess, String answer) {
+    if (codes.isEmpty) return landedMass;
+    final at = codes.indexOf(patternCode(answer, guess));
+    return at < 0 ? null : masses[at];
+  }
 
   /// E, the expected pool: n * sum(q^2).
   final double e;
@@ -320,66 +332,142 @@ double finestGain(List<String> eligible, Map<String, int>? weights) {
   return h;
 }
 
+/// The words guesses are scored against, prepared once: their letters as bytes
+/// and the weight of each. Scoring a guess then does no map lookups and no
+/// string reads, which is most of the time of analysing every word the game
+/// accepts against a large list. Same numbers as scoring each pair with
+/// [patternCode].
+class SplitContext {
+  SplitContext(List<String> eligible, Map<String, int>? weights)
+    : n = eligible.length,
+      len = eligible.isEmpty ? 0 : eligible.first.length,
+      _alpha = {} {
+    _t = Uint8List(n * len);
+    _x = Float64List(n);
+    var total = 0.0;
+    for (var e = 0; e < n; e++) {
+      final w = eligible[e];
+      for (var j = 0; j < len; j++) {
+        _t[e * len + j] = _alpha.putIfAbsent(
+          w.codeUnitAt(j),
+          () => _alpha.length,
+        );
+      }
+      final x = weights == null ? 1.0 : max(weights[w] ?? 1, 1).toDouble();
+      _x[e] = x;
+      total += x;
+    }
+    this.total = total;
+    _left = Int16List(_alpha.length + 1);
+  }
+
+  final int n;
+  final int len;
+  late final double total;
+  final Map<int, int> _alpha;
+  late final Uint8List _t;
+  late final Float64List _x;
+  late final Int16List _left;
+
+  /// The stats of [guess] against the words. With an [answer], also the mass
+  /// of the group it is in.
+  SplitStats stats(String guess, {String? answer}) {
+    final none = _alpha.length; // a letter no word has
+    final g = Uint8List(len);
+    for (var j = 0; j < len; j++) {
+      g[j] = _alpha[guess.codeUnitAt(j)] ?? none;
+    }
+    const correct = 0, present = 1, absent = 2;
+    assert(Mark.correct.index == correct && Mark.present.index == present);
+    assert(Mark.absent.index == absent);
+    final t = _t, left = _left, x = _x;
+    final counts = _counts, touched = _touched, mass = _mass;
+    var seen = 0;
+    for (var e = 0; e < n; e++) {
+      final o = e * len;
+      for (var j = 0; j < len; j++) {
+        if (t[o + j] != g[j]) left[t[o + j]]++;
+      }
+      var k = 0;
+      for (var i = 0; i < len; i++) {
+        int digit;
+        if (t[o + i] == g[i]) {
+          digit = correct;
+        } else if (left[g[i]] > 0) {
+          left[g[i]]--;
+          digit = present;
+        } else {
+          digit = absent;
+        }
+        k = k * 3 + digit;
+      }
+      for (var j = 0; j < len; j++) {
+        left[t[o + j]] = 0;
+      }
+      if (counts[k]++ == 0) touched[seen++] = k;
+      mass[k] += x[e];
+    }
+    return _finish(seen, guess, answer);
+  }
+
+  SplitStats _finish(int seen, String guess, String? answer) {
+    final masses = Float64List(seen);
+    final codes = Int32List(seen);
+    var sumSq = 0.0, largest = 0;
+    for (var i = 0; i < seen; i++) {
+      final k = _touched[i];
+      codes[i] = k;
+      masses[i] = _mass[k];
+      sumSq += _mass[k] * _mass[k];
+      if (_counts[k] > largest) largest = _counts[k];
+    }
+    double? landedMass;
+    if (answer != null) {
+      final a = patternCode(answer, guess);
+      landedMass = _mass[a];
+    }
+    for (var i = 0; i < seen; i++) {
+      _counts[_touched[i]] = 0;
+      _mass[_touched[i]] = 0;
+    }
+    var h = 0.0;
+    for (final m in masses) {
+      final q = m / total;
+      h -= q * log(q) / ln2;
+    }
+    var less = 0.0, more = 0.0;
+    for (final m in masses) {
+      final gain = log(total / m) / ln2;
+      if (gain < h - 1e-9) {
+        less += m;
+      } else if (gain > h + 1e-9) {
+        more += m;
+      }
+    }
+    return SplitStats(
+      e: n == 0 ? 0 : n * sumSq / (total * total),
+      h: h,
+      d: total <= 0 ? 0 : (less - more) / total * 100,
+      groups: seen,
+      largest: largest,
+      total: total,
+      masses: masses,
+      landedMass: landedMass,
+      codes: codes,
+    );
+  }
+}
+
 /// The stats of [guess] against [eligible] under [weights] (null: every word as
 /// likely as the next). With an [answer], also the mass of the group it is in.
+/// To score many guesses against the same words, make one [SplitContext].
 SplitStats splitStats(
   List<String> eligible,
   String guess,
   Map<String, int>? weights, {
   String? answer,
-}) {
-  final n = eligible.length;
-  var seen = 0;
-  var total = 0.0;
-  for (final w in eligible) {
-    final k = patternCode(w, guess);
-    final x = weights == null ? 1.0 : max(weights[w] ?? 1, 1).toDouble();
-    total += x;
-    if (_counts[k]++ == 0) _touched[seen++] = k;
-    _mass[k] += x;
-  }
-  final masses = <double>[];
-  var sumSq = 0.0, largest = 0;
-  for (var i = 0; i < seen; i++) {
-    final k = _touched[i];
-    masses.add(_mass[k]);
-    sumSq += _mass[k] * _mass[k];
-    if (_counts[k] > largest) largest = _counts[k];
-  }
-  double? landedMass;
-  if (answer != null) {
-    final a = patternCode(answer, guess);
-    landedMass = _mass[a];
-  }
-  for (var i = 0; i < seen; i++) {
-    _counts[_touched[i]] = 0;
-    _mass[_touched[i]] = 0;
-  }
-  var h = 0.0;
-  for (final m in masses) {
-    final q = m / total;
-    h -= q * log(q) / ln2;
-  }
-  var less = 0.0, more = 0.0;
-  for (final m in masses) {
-    final gain = log(total / m) / ln2;
-    if (gain < h - 1e-9) {
-      less += m;
-    } else if (gain > h + 1e-9) {
-      more += m;
-    }
-  }
-  return SplitStats(
-    e: n == 0 ? 0 : n * sumSq / (total * total),
-    h: h,
-    d: total <= 0 ? 0 : (less - more) / total * 100,
-    groups: seen,
-    largest: largest,
-    total: total,
-    masses: masses,
-    landedMass: landedMass,
-  );
-}
+  SplitContext? context,
+}) => (context ?? SplitContext(eligible, weights)).stats(guess, answer: answer);
 
 /// Scores a guess made when [eligibleBefore] words were possible, leaving
 /// [after]. Skill is measured against [best] (H*, the largest expected gain any
@@ -619,10 +707,24 @@ Future<Landscape> analyseGuesses(
   final words = n <= 2
       ? eligible.take(max(k, 2)).toList()
       : candidates.toList();
+  // the opening of a game scores every word against every word and is the same
+  // for every game on that list, so the last one is kept
+  final key = words.length * eligible.length >= _openingCells
+      ? _openingKey(eligible, words, weights)
+      : null;
   final scored = <(String, SplitStats)>[];
-  for (final w in words) {
-    scored.add((w, splitStats(eligible, w, weights, answer: answer)));
-    if (scored.length % 40 == 0) await Future<void>.delayed(Duration.zero);
+  if (key != null && key == _openingKeyHeld) {
+    scored.addAll(_openingHeld!);
+  } else {
+    final context = SplitContext(eligible, weights);
+    for (final w in words) {
+      scored.add((w, context.stats(w)));
+      if (scored.length % 40 == 0) await Future<void>.delayed(Duration.zero);
+    }
+    if (key != null) {
+      _openingKeyHeld = key;
+      _openingHeld = List.of(scored);
+    }
   }
   if (scored.isEmpty) return const Landscape([], []);
   // largest gain first; among equals a possible answer first; sort is stable,
@@ -655,7 +757,8 @@ Future<Landscape> analyseGuesses(
   if (answer != null) {
     final luck = <(String, double)>[
       for (final (w, s) in scored)
-        if (s.landedMass != null) (w, s.luckOf(s.landedMass!).roundToDouble()),
+        if (s.landedOf(w, answer) != null)
+          (w, s.luckOf(s.landedOf(w, answer)!).roundToDouble()),
     ];
     final self = luck.where((e) => e.$1 == answer).toList();
     final others = luck.where((e) => e.$1 != answer).toList()
@@ -672,6 +775,34 @@ Future<Landscape> analyseGuesses(
     riskiest: riskiest,
     luckiest: luckiest,
   );
+}
+
+/// Scoring this many (word, guess) pairs or more is kept for the next game.
+const _openingCells = 4000000;
+String? _openingKeyHeld;
+List<(String, SplitStats)>? _openingHeld;
+
+/// A key for an analysis: the words, the guesses and the weights, hashed.
+String _openingKey(
+  List<String> eligible,
+  List<String> guesses,
+  Map<String, int>? weights,
+) {
+  var h = 0x811c9dc5;
+  void mix(int v) => h = ((h ^ v) * 0x01000193) & 0x3fffffff;
+  for (final w in eligible) {
+    for (var i = 0; i < w.length; i++) {
+      mix(w.codeUnitAt(i));
+    }
+    mix(weights == null ? 1 : (weights[w] ?? 1));
+  }
+  mix(7);
+  for (final w in guesses) {
+    for (var i = 0; i < w.length; i++) {
+      mix(w.codeUnitAt(i));
+    }
+  }
+  return '${eligible.length}/${guesses.length}/${weights == null}/$h';
 }
 
 /// E, the expected pool, of [guess] against [eligible]: N * sum(q^2) with the
