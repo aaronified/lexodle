@@ -188,12 +188,20 @@ void main() {
       );
       expect(find.textContaining('last try:'), findsOneWidget);
       // the plot of the possible words is on the last step...
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('freq-plot')),
+        300,
+      );
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
       // the earlier steps keep the ranked picks (words that split best)
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
       await tester.pump();
       expect(find.byKey(const ValueKey('pick-each')), findsNothing);
       // ...and on every step
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('freq-plot')),
+        300,
+      );
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
     },
   );

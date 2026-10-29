@@ -681,7 +681,6 @@ class _ReviewPageState extends State<ReviewPage> {
               'skill = chance ÷ best chance × 100',
               '${m.skill.round()}',
             ),
-            note: lastTryLine,
           ),
         ),
         gap(
