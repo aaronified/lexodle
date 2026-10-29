@@ -34,6 +34,56 @@ void main() {
     expect(find.text('3 tries left'), findsOneWidget);
   });
 
+  testWidgets('a double tap locks a letter, which stays for the next guess', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    appState.setup(lang: 'fr', length: 4, tries: 3);
+    final bank = (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
+      ),
+    ))!;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GamePage(bank: bank, random: Random(7)),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    await tester.pump();
+    // a word that is not the answer, so the game goes on
+    final word = bank
+        .guessable(4)
+        .firstWhere((w) => w.runes.every((r) => r < 128));
+    for (final ch in word.split('')) {
+      await tester.sendKeyEvent(_key(ch), character: ch);
+    }
+    const locked = ValueKey('locked');
+    expect(find.byKey(locked), findsNothing);
+    final tile = find.byKey(const ValueKey('tile-0-1'));
+    await tester.tap(tile);
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(tile);
+    await tester.pump();
+    expect(find.byKey(locked), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    // the next row opens with the letter still locked in the same place
+    expect(find.byKey(locked), findsOneWidget);
+    final next = find.byKey(const ValueKey('tile-1-1'));
+    expect(
+      find.descendant(of: next, matching: find.text(word[1])),
+      findsOneWidget,
+    );
+    await tester.tap(next);
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(next);
+    await tester.pump();
+    expect(find.byKey(locked), findsNothing);
+  });
+
   testWidgets('a blank can be typed but not submitted', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();

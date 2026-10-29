@@ -190,7 +190,7 @@ class _GamePageState extends State<GamePage> {
 
   void _select(int i) {
     if (over) return;
-    setState(() => input.select(i));
+    setState(() => input.tap(i));
   }
 
   void _move(int by) {
@@ -280,7 +280,7 @@ class _GamePageState extends State<GamePage> {
       _analysis.add(null);
     }
     final solved = word == answer;
-    input.clear();
+    input.next();
     message = '';
     if (solved || guesses.length >= tries) {
       over = true;
@@ -500,6 +500,8 @@ class _GamePageState extends State<GamePage> {
                                 r == guesses.length &&
                                 !over &&
                                 i == input.cursor,
+                            key: ValueKey('tile-$r-$i'),
+                            locked: r == guesses.length && input.isLocked(i),
                             onTap: r == guesses.length && !over
                                 ? () => _select(i)
                                 : null,
@@ -523,9 +525,11 @@ class _GamePageState extends State<GamePage> {
     Mark? m, {
     required bool active,
     bool cursor = false,
+    bool locked = false,
+    Key? key,
     VoidCallback? onTap,
   }) {
-    Color? fill;
+    Color? fill = locked ? c.primary.withValues(alpha: .12) : null;
     Color fg = c.onSurface;
     Color border = active
         ? c.onSurface.withValues(alpha: .5)
@@ -544,6 +548,7 @@ class _GamePageState extends State<GamePage> {
     }
     final isBlank = ch == GuessInput.blank;
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: Container(
         width: size,
@@ -554,13 +559,29 @@ class _GamePageState extends State<GamePage> {
           border: Border.all(color: border, width: borderWidth),
           borderRadius: BorderRadius.circular(3),
         ),
-        child: Text(
-          isBlank ? '_' : ch,
-          style: TextStyle(
-            fontSize: size * .5,
-            fontWeight: FontWeight.bold,
-            color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
-          ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Text(
+              isBlank ? '_' : ch,
+              style: TextStyle(
+                fontSize: size * .5,
+                fontWeight: FontWeight.bold,
+                color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
+              ),
+            ),
+            if (locked)
+              Positioned(
+                top: 3,
+                right: 3,
+                child: Icon(
+                  Icons.lock,
+                  key: const ValueKey('locked'),
+                  size: size * .22,
+                  color: c.primary,
+                ),
+              ),
+          ],
         ),
       ),
     );

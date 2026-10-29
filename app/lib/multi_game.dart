@@ -191,7 +191,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   void _select(int i) {
     if (game.over) return;
-    setState(() => input.select(i));
+    setState(() => input.tap(i));
   }
 
   void _move(int by) {
@@ -227,7 +227,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// guess: it is not saved or recorded again.
   void _apply(String word, {bool restoring = false}) {
     game.guess(word);
-    input.clear();
+    input.next();
     message = '';
     // analyse this guess in the background, at once: the best real split on
     // each board (for the skill) and the picks of the review
@@ -545,6 +545,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
                       active: live && r == game.guesses.length,
                       cursor:
                           live && r == game.guesses.length && k == input.cursor,
+                      locked:
+                          live && r == game.guesses.length && input.isLocked(k),
                       onTap: live && r == game.guesses.length
                           ? () => _select(k)
                           : null,
@@ -565,9 +567,10 @@ class _MultiGamePageState extends State<MultiGamePage> {
     Mark? m, {
     required bool active,
     bool cursor = false,
+    bool locked = false,
     VoidCallback? onTap,
   }) {
-    Color? fill;
+    Color? fill = locked ? c.primary.withValues(alpha: .12) : null;
     Color fg = c.onSurface;
     Color border = active
         ? c.onSurface.withValues(alpha: .5)
@@ -591,13 +594,29 @@ class _MultiGamePageState extends State<MultiGamePage> {
           border: Border.all(color: border, width: cursor ? 2 : 1),
           borderRadius: BorderRadius.circular(3),
         ),
-        child: Text(
-          isBlank ? '_' : ch,
-          style: TextStyle(
-            fontSize: size * .5,
-            fontWeight: FontWeight.bold,
-            color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
-          ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Text(
+              isBlank ? '_' : ch,
+              style: TextStyle(
+                fontSize: size * .5,
+                fontWeight: FontWeight.bold,
+                color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
+              ),
+            ),
+            if (locked)
+              Positioned(
+                top: 3,
+                right: 3,
+                child: Icon(
+                  Icons.lock,
+                  key: const ValueKey('locked'),
+                  size: size * .22,
+                  color: c.primary,
+                ),
+              ),
+          ],
         ),
       ),
     );
