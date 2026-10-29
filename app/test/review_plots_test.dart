@@ -134,6 +134,20 @@ void main() {
       expect(find.byKey(const ValueKey('gain-plot')), findsOneWidget);
     });
 
+    testWidgets('the step shows the skill, risk, luck and bits sums', (
+      tester,
+    ) async {
+      await open(tester, 0);
+      for (final t in [
+        'expected gain, H = Σ chance × bits',
+        'chance of less than expected',
+        'luck = less − more',
+        'this guess: skill + luck',
+      ]) {
+        expect(find.textContaining(t), findsOneWidget, reason: t);
+      }
+    });
+
     testWidgets('the four pills show skill, luck, risk and bits', (
       tester,
     ) async {
@@ -157,17 +171,19 @@ void main() {
       expect(skill, closeTo(rows.reduce((a, b) => a + b) / rows.length, 1));
       await tester.tap(find.byKey(const ValueKey('pill-skill')));
       await tester.pumpAndSettle();
-      expect(find.textContaining('expected to gain'), findsOneWidget);
+      expect(find.textContaining('H = Σ', findRichText: true), findsOneWidget);
+      expect(
+        find.textContaining('skill = 1.75', findRichText: true),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('the table shows words before and after, skill and risk', (
-      tester,
-    ) async {
+    testWidgets('the table shows words left, skill and risk', (tester) async {
       await open(tester, 0);
       final m = record.metrics[0];
       expect(
         textOf(tester.widget<Text>(find.byKey(const ValueKey('words-0')))),
-        '${m.before}→${m.after}',
+        '${m.after}',
       );
       expect(find.byKey(const ValueKey('head-skill')), findsOneWidget);
       expect(find.byKey(const ValueKey('head-risk')), findsOneWidget);

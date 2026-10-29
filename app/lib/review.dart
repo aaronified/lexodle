@@ -3,7 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'history.dart';
 import 'logic.dart';
+import 'playstyle.dart';
+import 'review_maths.dart';
 import 'review_plots.dart';
 import 'review_text.dart';
 import 'ui.dart';
@@ -119,15 +122,6 @@ class _ReviewPageState extends State<ReviewPage> {
     return [for (final x in fits) weightOf(x) / total];
   }
 
-  /// Whether the guess at [i] fits every clue given before it.
-  bool _fitsClues(int i) {
-    final g = r.guesses[i];
-    for (var j = 0; j < i; j++) {
-      if (filterEligible([g], r.guesses[j], r.marks[j]).isEmpty) return false;
-    }
-    return true;
-  }
-
   /// The bits it takes to find the answer from the start.
   double get _needed {
     final first = r.befores.first;
@@ -231,27 +225,12 @@ class _ReviewPageState extends State<ReviewPage> {
                         _board(c),
                         const SizedBox(height: 18),
                         ..._quality(c, m),
+                        ..._maths(c, m, top),
+                        _bits(c, m),
+                        const SizedBox(height: 18),
                         _picks(c, m, top),
                         const SizedBox(height: 18),
-                        _bits(c),
-                        const SizedBox(height: 18),
                         _frequency(c),
-                        const SizedBox(height: 18),
-                        Text(
-                          top == null
-                              ? 'Working out the alternatives…'
-                              : stepComment(
-                                  m: m,
-                                  picks: top,
-                                  after: r.afterOf(step),
-                                  solved: r.guesses[step] == r.answer,
-                                  finalTry: _isFinalTry(step),
-                                  guessFits: _fitsClues(step),
-                                  guessIsPossible: m.possible,
-                                  equalChances: r.weights == null,
-                                ),
-                          style: const TextStyle(fontSize: 14, height: 1.5),
-                        ),
                       ],
                     ),
                   ),
@@ -331,22 +310,11 @@ class _ReviewPageState extends State<ReviewPage> {
         ? null
         : risks.fold<double>(0, (a, b) => a + b) / risks.length;
     final bits = all.fold<double>(0, (a, m) => a + m.gain);
-    final expected = all.fold<double>(0, (a, m) => a + m.expectedGain);
-    Widget pill(String which, String value, String text) => Expanded(
+    Widget pill(String which, String value) => Expanded(
       child: InkWell(
         key: ValueKey('pill-$which'),
         borderRadius: BorderRadius.circular(8),
-        onTap: () => showHairlineDialog<void>(
-          context,
-          title: which,
-          children: [
-            Text.rich(
-              TextSpan(children: measureSpans(c, text)),
-              style: const TextStyle(fontSize: 13, height: 1.5),
-            ),
-            reviewLink(WikiPage.skillLuckRisk, label: 'how $which works'),
-          ],
-        ),
+        onTap: () => showMeasureHelp(context, which),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
@@ -379,17 +347,13 @@ class _ReviewPageState extends State<ReviewPage> {
     );
     return Row(
       children: [
-        pill('skill', ready ? '${skill.round()}' : '…', skillLine(skill)),
+        pill('skill', ready ? '${skill.round()}' : '…'),
         const SizedBox(width: 8),
-        pill('luck', signedLuck(luck), luckLine(luck)),
+        pill('luck', signedLuck(luck)),
         const SizedBox(width: 8),
-        pill(
-          'risk',
-          !ready ? '…' : (risk == null ? '–' : '${risk.round()}'),
-          riskLine(risk),
-        ),
+        pill('risk', !ready ? '…' : (risk == null ? '–' : '${risk.round()}')),
         const SizedBox(width: 8),
-        pill('bits', bits.toStringAsFixed(2), bitsLine(bits, expected)),
+        pill('bits', bits.toStringAsFixed(2)),
       ],
     );
   }
@@ -407,7 +371,7 @@ class _ReviewPageState extends State<ReviewPage> {
   /// The board with the table beside it. Guesses after the current step stay
   /// blank, so stepping through gives nothing away.
   Widget _board(ColorScheme c) {
-    const wordsW = 60.0, skillW = 32.0, riskW = 46.0;
+    const wordsW = 36.0, skillW = 32.0, riskW = 62.0;
     const gap = 2.0;
     const padX = 8.0, padY = 7.0;
     final head = TextStyle(
@@ -453,7 +417,7 @@ class _ReviewPageState extends State<ReviewPage> {
                   SizedBox(
                     width: wordsW,
                     child: Text(
-                      'words',
+                      'left',
                       textAlign: TextAlign.right,
                       style: head,
                     ),
@@ -546,11 +510,12 @@ class _ReviewPageState extends State<ReviewPage> {
   ) {
     final m = metric(i);
     final strong = i == step, dimmed = i < step;
+    final b = m.ready ? behaviourOf(guessRowOf(i + 1, m)) : null;
     return [
       SizedBox(
         width: wordsW,
         child: cell(
-          '${m.before}→${m.after}',
+          '${m.after}',
           strong: strong,
           dimmed: dimmed,
           key: ValueKey('words-$i'),
@@ -584,6 +549,36 @@ class _ReviewPageState extends State<ReviewPage> {
                 dimmed: dimmed,
                 color: riskColor(c),
                 key: ValueKey('risk-$i'),
+              ),
+              SizedBox(
+                width: 16,
+                child: b == null
+                    ? null
+                    : GestureDetector(
+                        key: ValueKey('type-$i'),
+                        onTap: () => showHairlineDialog<void>(
+                          context,
+                          title: b.label,
+                          children: [
+                            Text(
+                              b.what,
+                              style: const TextStyle(fontSize: 13, height: 1.5),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'counted when: ${b.rule}',
+                              style: const TextStyle(fontSize: 12, height: 1.5),
+                            ),
+                          ],
+                        ),
+                        child: TablerIcon(
+                          b.icon,
+                          size: 14,
+                          color: c.onSurface.withValues(
+                            alpha: dimmed ? .4 : .7,
+                          ),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -629,8 +624,162 @@ class _ReviewPageState extends State<ReviewPage> {
 
   final _outcomes = <int, ({List<Outcome> outcomes, int landed})>{};
 
+  /// The skill, risk and luck of the guess worked out from the numbers on the
+  /// plot, line by line.
+  List<Widget> _maths(
+    ColorScheme c,
+    GuessMetrics m,
+    List<Recommendation>? top,
+  ) {
+    String f1(double v) => v.toStringAsFixed(1);
+    String f2(double v) => v.toStringAsFixed(2);
+    String pc(double v) => '${f1(v)}%';
+    Widget gap(Widget w) =>
+        Padding(padding: const EdgeInsets.only(bottom: 18), child: w);
+    final land = landscapes[step];
+    final before = r.befores[step];
+    if (before.length <= 1) {
+      return [
+        gap(
+          MeasureBlock(
+            title: 'skill',
+            which: 'skill',
+            tip: blockTips['skill']!,
+            rows: const [],
+            result: ('skill: one word left, the only play', '100'),
+          ),
+        ),
+        gap(
+          MeasureBlock(
+            title: 'risk',
+            which: 'risk',
+            tip: blockTips['risk']!,
+            rows: const [],
+            result: ('risk: one outcome, no gamble', '–'),
+          ),
+        ),
+        gap(
+          MeasureBlock(
+            title: 'luck',
+            which: 'luck',
+            tip: blockTips['luck']!,
+            rows: const [],
+            result: ('luck: one outcome', '0%'),
+          ),
+        ),
+      ];
+    }
+    if (_isFinalTry(step)) {
+      return [
+        gap(
+          MeasureBlock(
+            title: 'skill',
+            which: 'skill',
+            tip: blockTips['skill']!,
+            rows: [('chance this guess is the answer', pc(m.winChance * 100))],
+            result: (
+              'skill = chance ÷ best chance × 100',
+              '${m.skill.round()}',
+            ),
+            note: lastTryLine,
+          ),
+        ),
+        gap(
+          MeasureBlock(
+            title: 'luck',
+            which: 'luck',
+            tip: blockTips['luck']!,
+            rows: const [],
+            result: ('luck = outcome − chance of it', luckText(m.luck)),
+          ),
+        ),
+      ];
+    }
+    final o = _outcomes
+        .putIfAbsent(
+          step,
+          () => outcomesOf(before, m.guess, r.answer, r.weights),
+        )
+        .outcomes;
+    double share(bool Function(double gain) test) =>
+        o.fold<double>(0, (a, x) => a + (test(x.gain) ? x.chance : 0)) * 100;
+    final h = m.expectedGain;
+    final lessH = share((g) => g < h - 1e-9),
+        moreH = share((g) => g > h + 1e-9);
+    final lessG = share((g) => g < m.gain - 1e-9);
+    final moreG = share((g) => g > m.gain + 1e-9);
+    final d = max(0.0, m.rawRisk);
+    final bestWord = top == null || top.isEmpty ? '' : ' (${top.first.word})';
+    final riskWord = land == null || land.riskiest.isEmpty
+        ? ''
+        : ' (${land.riskiest.first.word})';
+    final side = m.rawRisk > 10
+        ? 'Usually less than expected, with a small chance of much more.'
+        : m.rawRisk < -10
+        ? 'Usually more than expected, with a small chance of much less: no '
+              'gamble, so risk is 0.'
+        : 'Less and more than expected are about equally likely, so there is '
+              'little gamble.';
+    final ready = land != null && m.ready;
+    final noRisk = m.risk == null;
+    return [
+      gap(
+        MeasureBlock(
+          title: 'skill',
+          which: 'skill',
+          tip: blockTips['skill']!,
+          rows: [
+            ('expected gain, H = Σ chance × bits', '${f2(h)} bits'),
+            (
+              'best guess, H*$bestWord',
+              ready ? '${f2(land.bestGain)} bits' : '…',
+            ),
+          ],
+          result: (
+            ready
+                ? 'skill = ${f2(h)} ÷ ${f2(land.bestGain)} × 100'
+                : 'skill = H ÷ H* × 100',
+            ready ? f1(m.skill) : '…',
+          ),
+        ),
+      ),
+      gap(
+        MeasureBlock(
+          title: 'risk',
+          which: 'risk',
+          tip: blockTips['risk']!,
+          rows: [
+            ('chance of less than expected', pc(lessH)),
+            ('chance of more than expected', pc(moreH)),
+            ('less − more, at least 0', pc(d)),
+            ('riskiest guess, D*$riskWord', ready ? pc(land.bestRisk) : '…'),
+          ],
+          result: noRisk
+              ? ('risk: nothing to gamble on', '–')
+              : (
+                  'risk = ${f1(d)} ÷ ${f1(land?.bestRisk ?? 0)} × 100',
+                  f1(m.risk!),
+                ),
+          note: noRisk ? null : side,
+        ),
+      ),
+      gap(
+        MeasureBlock(
+          title: 'luck',
+          which: 'luck',
+          tip: blockTips['luck']!,
+          rows: [
+            ('chance of gaining less than ${f2(m.gain)} bits', pc(lessG)),
+            ('chance of gaining more than ${f2(m.gain)} bits', pc(moreG)),
+          ],
+          result: ('luck = less − more', luckText(m.luck)),
+        ),
+      ),
+    ];
+  }
+
   /// The bits gained guess by guess, up to the one on show.
-  Widget _bits(ColorScheme c) {
+  Widget _bits(ColorScheme c, GuessMetrics m) {
     final steps = [
       for (var i = 0; i < r.guesses.length; i++)
         WaterfallStep(
@@ -640,14 +789,27 @@ class _ReviewPageState extends State<ReviewPage> {
           landscapes[i]?.bestGain,
         ),
     ];
+    final far = [for (var i = 0; i <= step; i++) metric(i).gain]
+        .fold<double>(0, (a, b) => a + b);
+    final lucky = m.gain - m.expectedGain;
+    String f2(double v) => v.toStringAsFixed(2);
+    String sg(double v) => v < 0 ? '−${f2(-v)}' : '+${f2(v)}';
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            const Caption('bits'),
-            const SizedBox(width: 6),
-            InfoDot(bitsHelp, title: 'bits'),
+        MeasureBlock(
+          title: 'bits gained',
+          which: 'bits',
+          tip: blockTips['bits']!,
+          rows: [
+            (
+              'this guess: skill + luck',
+              '${f2(m.expectedGain)} ${sg(lucky)} = ${f2(m.gain)} bits',
+            ),
+            (
+              'so far, of ${f2(_needed)} needed',
+              '${f2(far)} (${(far / _needed * 100).round()}%)',
+            ),
           ],
         ),
         const SizedBox(height: 6),

@@ -186,7 +186,7 @@ void main() {
         closeTo(-100 / fitting.length, 1e-9),
         reason: 'a wrong pick among n words: minus the 1 in n chance',
       );
-      expect(find.textContaining('Last try: '), findsOneWidget);
+      expect(find.textContaining('last try:'), findsOneWidget);
       // the plot of the possible words is on the last step...
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
       // the earlier steps keep the ranked picks (words that split best)
