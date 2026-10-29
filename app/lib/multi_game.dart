@@ -570,7 +570,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     bool locked = false,
     VoidCallback? onTap,
   }) {
-    Color? fill = locked ? c.primary.withValues(alpha: .12) : null;
+    Color? fill;
     Color fg = c.onSurface;
     Color border = active
         ? c.onSurface.withValues(alpha: .5)
@@ -579,7 +579,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       (fill, fg) = markColors(c, m);
       border = markBorder(c, m);
     } else if (ch.isNotEmpty) {
-      border = c.onSurface;
+      border = locked ? c.primary : c.onSurface;
     }
     if (cursor) border = c.primary;
     final isBlank = ch == GuessInput.blank;

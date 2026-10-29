@@ -529,7 +529,7 @@ class _GamePageState extends State<GamePage> {
     Key? key,
     VoidCallback? onTap,
   }) {
-    Color? fill = locked ? c.primary.withValues(alpha: .12) : null;
+    Color? fill;
     Color fg = c.onSurface;
     Color border = active
         ? c.onSurface.withValues(alpha: .5)
@@ -540,7 +540,7 @@ class _GamePageState extends State<GamePage> {
       border = markBorder(c, m);
       borderWidth = markBorderWidth(m);
     } else if (ch.isNotEmpty) {
-      border = c.onSurface;
+      border = locked ? c.primary : c.onSurface;
     }
     if (cursor) {
       border = c.primary;
