@@ -1,9 +1,15 @@
 """Builds assets/geography/places.tsv, the place names of the themed wordle.
 
 Input: a folder with the GeoNames dump files (https://download.geonames.org/export/dump/):
-allCountries.txt, alternateNamesV2.txt, countryInfo.txt. Run:
+allCountries.txt, alternateNamesV2.txt, countryInfo.txt, and a file of English
+Wikipedia page views (views_en.tsv: views, a tab, the page title with
+underscores; from the hourly files of dumps.wikimedia.org/other/pageviews,
+added up). Run:
 
     python tools/build_geography.py <geonames folder>
+
+The last column of a place is its page views: the themed wordle ranks the
+places of a length by it, so a draw can favour the best known.
 
 A place is kept when it is a country, a first-level region, a city of at least
 15,000 people (or a capital), or a named water or land feature. Its name is the English one (the preferred English name of
@@ -19,6 +25,7 @@ import collections
 import re
 import sys
 import unicodedata
+import urllib.parse
 from pathlib import Path
 
 LENGTHS = range(4, 9)
@@ -83,6 +90,12 @@ def main(folder):
         f = line.rstrip('\n').split('\t')
         if len(f) > 4:
             countries[f[0]] = f[4]
+    views = {}
+    views_file = folder / 'views_en.tsv'
+    if views_file.exists():
+        for line in open(views_file, encoding='utf8'):
+            n, _, title = line.rstrip('\n').partition('\t')
+            views[title] = int(n)
     rows = []
     for line in open(folder / 'allCountries.txt', encoding='utf8'):
         f = line.split('\t')
@@ -119,9 +132,10 @@ def main(folder):
                  or (kind == 'region' and gid in wiki)
                  or code in SEAS
                  or (physical and langs.get(gid, 0) >= KNOWN_LANGS))
-        rank = (known, langs.get(gid, 0), pop)
+        seen = views.get(urllib.parse.unquote(wiki.get(gid, '')), 0)
+        rank = (known, seen, langs.get(gid, 0), pop)
         row = (key, shown, kind, countries.get(cc, ''), 'k' if known else 'a',
-               wiki.get(gid, ''))
+               wiki.get(gid, ''), str(seen))
         if key not in best or rank > best[key][0]:
             best[key] = (rank, row)
     out = Path(__file__).resolve().parent.parent / 'assets' / 'geography'
