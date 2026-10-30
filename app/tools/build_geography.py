@@ -52,6 +52,49 @@ PHYSICAL = set(KINDS)
 SEAS = {'SEA', 'OCN'}
 
 
+# words that are only the kind of feature: "Indus River" is also indus,
+# "Lake Victoria" victoria, "Gulf of Mexico" mexico
+LEAD = ('the', 'lake', 'lac', 'lago', 'mount', 'mt', 'river', 'rio', 'gulf of',
+        'bay of', 'sea of', 'strait of', 'cape', 'isle of', 'island of',
+        'mountains of', 'port')
+TRAIL = ('river', 'lake', 'mountain', 'mountains', 'range', 'sea', 'bay', 'gulf',
+         'strait', 'island', 'islands', 'peninsula', 'desert', 'ocean',
+         'plateau', 'valley', 'falls', 'glacier', 'canal', 'reservoir',
+         'volcano', 'peak', 'channel', 'sound', 'point')
+
+# of places that share a name, the larger kind of place is the likelier one:
+# the Sahara is the desert, not a river of Madagascar
+PRIORITY = {
+    'country': 10, 'capital': 9, 'ocean': 8, 'sea': 8, 'desert': 8,
+    'mountains': 8, 'mountain range': 8, 'peninsula': 7, 'gulf': 7,
+    'island': 7, 'islands': 7, 'lake': 6, 'region': 6, 'river': 6, 'city': 5,
+}
+
+# a feature GeoNames does not link to Wikipedia is kept when its page is read
+# this many times in the day sampled (views_all.tsv)
+POPULAR = 24
+
+
+def aliases(shown):
+    """The names a place is also known by with its kind left out."""
+    low = re.sub(r'\s+', ' ', shown.lower().replace('-', ' ')).strip()
+    out = set()
+    for lead in LEAD:
+        if low.startswith(lead + ' '):
+            out.add(low[len(lead) + 1:])
+    for trail in TRAIL:
+        if low.endswith(' ' + trail):
+            out.add(low[:-len(trail) - 1])
+    return {letters(a) for a in out if a}
+
+
+def titles(shown, kind):
+    """The Wikipedia pages a feature of this kind and name could have."""
+    t = shown.replace(' ', '_')
+    return [t, f'{t}_River', f'Lake_{t}', f'Mount_{t}', f'{t}_Island',
+            f'{t}_(river)'] if kind in ('river', 'lake', 'mountain', 'island') else [t]
+
+
 def letters(name):
     name = unicodedata.normalize('NFKD', name)
     name = ''.join(c for c in name if not unicodedata.combining(c))
@@ -91,11 +134,11 @@ def main(folder):
         if len(f) > 4:
             countries[f[0]] = f[4]
     views = {}
-    views_file = folder / 'views_en.tsv'
-    if views_file.exists():
-        for line in open(views_file, encoding='utf8'):
-            n, _, title = line.rstrip('\n').partition('\t')
-            views[title] = int(n)
+    for name in ('views_en.tsv', 'views_all.tsv'):
+        if (folder / name).exists():
+            for line in open(folder / name, encoding='utf8'):
+                n, _, title = line.rstrip('\n').partition('\t')
+                views[title] = max(views.get(title, 0), int(n))
     rows = []
     for line in open(folder / 'allCountries.txt', encoding='utf8'):
         f = line.split('\t')
@@ -118,26 +161,41 @@ def main(folder):
     best = {}
     for gid, name, ascii_, kind, code, pop, cc in rows:
         physical = code in PHYSICAL
-        if physical and gid not in wiki and langs.get(gid, 0) < OBSCURE_LANGS:
-            continue
         if kind == 'country' and gid in en:
             shown = en[gid]
         else:
             shown = en.get(gid) or ascii_ or name
-        key = letters(shown)
-        if len(key) not in LENGTHS:
+        popular = max((views.get(t, 0) for t in titles(shown, kind)), default=0)
+        if (physical and gid not in wiki and langs.get(gid, 0) < OBSCURE_LANGS
+                and popular < POPULAR):
+            continue
+        keys = {letters(shown), *aliases(shown)}
+        # GeoNames' own name of a feature is often the one people use where its
+        # preferred English one is odd (the Sahara is "Great Desert" there)
+        own = set(keys)
+        if physical and name.isascii():
+            keys |= {letters(name), *aliases(name)}
+        keys = {k for k in keys if len(k) in LENGTHS}
+        if not keys:
             continue
         known = (kind in ('country', 'capital')
                  or (kind == 'city' and pop >= KNOWN_CITY)
                  or (kind == 'region' and gid in wiki)
                  or code in SEAS
                  or (physical and langs.get(gid, 0) >= KNOWN_LANGS))
-        seen = views.get(urllib.parse.unquote(wiki.get(gid, '')), 0)
-        rank = (known, seen, langs.get(gid, 0), pop)
-        row = (key, shown, kind, countries.get(cc, ''), 'k' if known else 'a',
-               wiki.get(gid, ''), str(seen))
-        if key not in best or rank > best[key][0]:
-            best[key] = (rank, row)
+        known = known or popular >= 5 * POPULAR
+        linked = views.get(urllib.parse.unquote(wiki.get(gid, '')), 0)
+        seen = max(linked, popular)
+        # of several places of one name the best is the one whose own Wikipedia
+        # page is read most: a feature that only shares the name (a creek called
+        # Nile) has no page of its own
+        rank = (PRIORITY.get(kind, 2), known, linked, langs.get(gid, 0), popular,
+                pop)
+        for key in keys:
+            row = (key, shown if key in own else name, kind, countries.get(cc, ''),
+                   'k' if known else 'a', wiki.get(gid, ''), str(seen))
+            if key not in best or rank > best[key][0]:
+                best[key] = (rank, row)
     out = Path(__file__).resolve().parent.parent / 'assets' / 'geography'
     out.mkdir(parents=True, exist_ok=True)
     with open(out / 'places.tsv', 'w', encoding='utf8') as w:
