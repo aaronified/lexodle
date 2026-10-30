@@ -60,7 +60,9 @@ and every guess has a small *i* that says what the place is and links to its Wik
 *answers* switch chooses between well known places (drawn on a curve by how much their Wikipedia page
 is read) and all places. Mythology, history and mathematics are planned. **Blind** tells only how
 many letters are right and in place (green) and how many are right elsewhere (yellow), never which;
-it has 10 tries by default (14, 10, 8 or 6) and works in every language. **Make your own** (a button
+it has 10 tries by default (14, 10, 8 or 6) and works in every language. The two counts are as big as
+the tiles, and a tap on a letter of a guess you have made pencils a colour on it (green, yellow, grey,
+then none) to keep track of what you have worked out; nothing scores by those notes. **Make your own** (a button
 in the game modes screen) lets you type a word, choose the language and the tries, and gives a link
 that anyone can open to play your word as practice; nothing is saved or counted. The word is only
 lightly disguised in the link (four digits a letter), not secret. The app opens these links itself

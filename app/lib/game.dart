@@ -126,6 +126,11 @@ class _GamePageState extends State<GamePage>
   late List<String> eligible;
   final guesses = <String>[];
   final marks = <List<Mark>>[];
+
+  /// The colours a player of a blind game has pencilled on the letters of the
+  /// guesses so far, by tapping them: green, yellow, grey, or none. They are
+  /// notes: nothing scores by them.
+  final notes = <List<Mark?>>[];
   final metrics = <GuessMetrics>[];
 
   /// The words still possible before each guess, for the post-game analysis.
@@ -224,6 +229,7 @@ class _GamePageState extends State<GamePage>
     _analysis.clear();
     guesses.clear();
     marks.clear();
+    notes.clear();
     keyMarks.clear();
     metrics.clear();
     befores.clear();
@@ -351,6 +357,7 @@ class _GamePageState extends State<GamePage>
     final m = evaluate(answer, word, blind: blind);
     guesses.add(word);
     marks.add(m);
+    if (blind) notes.add(List.filled(length, null));
     for (var i = 0; i < length; i++) {
       final k = word[i];
       final old = keyMarks[k];
@@ -631,16 +638,15 @@ class _GamePageState extends State<GamePage>
     return LayoutBuilder(
       builder: (context, box) {
         const gap = 6.0;
-        // the counts of a blind game stand to the right of the tiles
-        const countsWidth = 70.0;
+        // the counts of a blind game are two more tiles, to the right of the
+        // row, 8 and 6 from it and from each other
         // the info dot of a themed row, with as much room on the left so the
         // tiles stay in the middle
         const dotSlot = 26.0;
         final tile = blind
             ? min(
-                50.0,
-                (box.maxWidth - 32 - 24 - countsWidth - gap * (length - 1)) /
-                    length,
+                56.0,
+                (box.maxWidth - 32 - gap * (length - 1) - 14) / (length + 2),
               )
             : min(
                 56.0,
@@ -660,6 +666,7 @@ class _GamePageState extends State<GamePage>
                     padding: const EdgeInsets.only(bottom: gap),
                     child: _withTrailing(
                       r,
+                      tile,
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -671,7 +678,9 @@ class _GamePageState extends State<GamePage>
                               r < guesses.length
                                   ? guesses[r][i]
                                   : (r == guesses.length ? input.slot(i) : ''),
-                              r < marks.length && !blind ? marks[r][i] : null,
+                              r < marks.length
+                                  ? (blind ? notes[r][i] : marks[r][i])
+                                  : null,
                               active: r == guesses.length && !over,
                               cursor:
                                   r == guesses.length &&
@@ -681,6 +690,11 @@ class _GamePageState extends State<GamePage>
                               locked: r == guesses.length && input.isLocked(i),
                               onTap: r == guesses.length && !over
                                   ? () => _select(i)
+                                  : blind && r < notes.length && !over
+                                  ? () => setState(
+                                      () =>
+                                          notes[r][i] = _nextNote(notes[r][i]),
+                                    )
                                   : null,
                             ),
                           ],
@@ -699,7 +713,16 @@ class _GamePageState extends State<GamePage>
   /// A blind row's two counts (right and in place, right elsewhere), kept
   /// beside the tiles; the row is only as wide as the tiles in themed, whose
   /// info dot hangs off its right edge.
-  Widget _withTrailing(int r, Widget row) {
+  /// The colour after [m] in the cycle a tap goes through: none, green,
+  /// yellow, grey, and round to none.
+  static Mark? _nextNote(Mark? m) => switch (m) {
+    null => Mark.correct,
+    Mark.correct => Mark.present,
+    Mark.present => Mark.absent,
+    Mark.absent => null,
+  };
+
+  Widget _withTrailing(int r, double tile, Widget row) {
     final c = Theme.of(context).colorScheme;
     if (blind) {
       final done = r < marks.length;
@@ -710,8 +733,8 @@ class _GamePageState extends State<GamePage>
       }
       Widget count(int n, Color fill, Color fg, String kind) => Container(
         key: ValueKey('count-$r-$kind'),
-        constraints: const BoxConstraints(minWidth: 26),
-        height: 26,
+        width: tile,
+        height: tile,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: fill,
@@ -720,7 +743,7 @@ class _GamePageState extends State<GamePage>
         child: Text(
           '$n',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: tile * .5,
             fontWeight: FontWeight.bold,
             color: fg,
           ),
