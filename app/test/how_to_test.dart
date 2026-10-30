@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/how_to.dart';
+import 'package:lexodle/ui.dart' show MarkTile;
 import 'package:lexodle/logo.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
@@ -119,14 +121,52 @@ void main() {
     expect(find.text('start playing'), findsNothing);
   });
 
-  testWidgets('it explains blanks and the cursor with tiles', (tester) async {
+  testWidgets('one live example covers blanks, the cursor and locks', (
+    tester,
+  ) async {
     await tester.pumpWidget(const MaterialApp(home: HowToPage()));
     await tester.pump();
-    expect(find.text('blanks and the cursor'), findsOneWidget);
+    expect(find.text('blanks, the cursor and locks'), findsOneWidget);
     expect(find.textContaining('press space (or _)'), findsOneWidget);
-    expect(find.textContaining('tap any tile'), findsOneWidget);
-    // the first row has a blank in it, shown as an underscore, and the cursor
+    expect(find.byKey(const ValueKey('try-lock-note')), findsOneWidget);
+    // the row has a blank in it, shown as an underscore, and the cursor on it
     expect(find.text('_'), findsOneWidget);
+    String status() =>
+        tester.widget<Text>(find.byKey(const ValueKey('try-status'))).data!;
+    expect(status(), 'cursor on tile 2');
+    // a tap moves the cursor
+    await tester.tap(find.byKey(const ValueKey('try-3')));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(status(), 'cursor on tile 4');
+    // a double tap locks the letter, and again unlocks it
+    await tester.tap(find.byKey(const ValueKey('try-0')));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.byKey(const ValueKey('try-0')));
+    await tester.pump();
+    expect(status(), 'cursor on tile 1 · locked: 1');
+    expect(find.byKey(const ValueKey('locked')), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.byKey(const ValueKey('try-0')));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.byKey(const ValueKey('try-0')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('locked')), findsNothing);
+    // shift locks the letter under the cursor, and typing skips a locked one
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('locked')), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey(0x7a), character: 'z');
+    await tester.pump();
+    expect(
+      tester.widget<MarkTile>(find.byKey(const ValueKey('try-0'))).ch,
+      'a',
+    );
+    // start again
+    await tester.tap(find.byKey(const ValueKey('try-reset')));
+    await tester.pump();
+    expect(status(), 'cursor on tile 2');
+    expect(find.byKey(const ValueKey('locked')), findsNothing);
   });
 
   testWidgets('the maths is one line, then one line each, then a link', (

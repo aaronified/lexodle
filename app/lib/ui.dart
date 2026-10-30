@@ -284,11 +284,15 @@ class MarkTile extends StatelessWidget {
     required this.size,
     this.onTap,
     this.cursor = false,
+    this.locked = false,
   });
   final String ch;
   final Mark? mark;
   final double size;
   final VoidCallback? onTap;
+
+  /// Whether the letter is locked: a thin accent border and a lock in the corner.
+  final bool locked;
 
   /// Whether this is the slot the next typed letter goes into.
   final bool cursor;
@@ -305,6 +309,7 @@ class MarkTile extends StatelessWidget {
       border = markBorder(c, mark!);
       borderWidth = markBorderWidth(mark!);
     }
+    if (locked && mark == null) border = c.primary;
     if (cursor) {
       border = c.primary;
       borderWidth = 2;
@@ -323,12 +328,30 @@ class MarkTile extends StatelessWidget {
           border: Border.all(color: border, width: borderWidth),
           borderRadius: BorderRadius.circular(3),
         ),
-        child: Text(
-          isBlank ? '_' : ch,
-          style: TextStyle(
-            fontSize: size * .5,
-            fontWeight: FontWeight.bold,
-            color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
+        child: SizedBox.expand(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                isBlank ? '_' : ch,
+                style: TextStyle(
+                  fontSize: size * .5,
+                  fontWeight: FontWeight.bold,
+                  color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
+                ),
+              ),
+              if (locked)
+                Positioned(
+                  top: 3,
+                  right: 3,
+                  child: TablerIcon(
+                    'lock',
+                    key: const ValueKey('locked'),
+                    size: size * .22,
+                    color: c.primary,
+                  ),
+                ),
+            ],
           ),
         ),
       ),
