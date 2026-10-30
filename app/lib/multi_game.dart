@@ -202,6 +202,14 @@ class _MultiGamePageState extends State<MultiGamePage> {
     });
   }
 
+  final _shift = ShiftTap();
+
+  /// Shift locks the letter under the cursor, or unlocks it.
+  void _toggleLockAtCursor() {
+    if (game.over) return;
+    setState(() => input.toggleLock(input.cursor));
+  }
+
   void _select(int i) {
     if (game.over) return;
     setState(() => input.tap(i));
@@ -240,7 +248,12 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// guess: it is not saved or recorded again.
   void _apply(String word, {bool restoring = false}) {
     game.guess(word);
-    input.next();
+    // nothing is kept once the game is over: no letter stays locked
+    if (game.over) {
+      input.clear();
+    } else {
+      input.next();
+    }
     message = '';
     // analyse this guess in the background, at once: the best real split on
     // each board (for the skill) and the picks of the review
@@ -381,6 +394,10 @@ class _MultiGamePageState extends State<MultiGamePage> {
   );
 
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
+    if (_shift.tapped(e)) {
+      _toggleLockAtCursor();
+      return KeyEventResult.handled;
+    }
     if (e is KeyUpEvent) return KeyEventResult.ignored;
     if (HardwareKeyboard.instance.isControlPressed ||
         HardwareKeyboard.instance.isMetaPressed) {

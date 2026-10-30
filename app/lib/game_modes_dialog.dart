@@ -26,6 +26,10 @@ class _GameModesDialogState extends State<GameModesDialog> {
   // the list is cached once read, so it is usually there at once
   List<Language>? _langs = WordBank.loadedLanguages;
 
+  /// The theme being looked at, and the mythology. Only geography can be played.
+  String _theme = 'geography';
+  String _myth = 'greek';
+
   @override
   void initState() {
     super.initState();
@@ -159,50 +163,40 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           ),
                         ),
                         if (mode == GameMode.themed) ..._themedChoices(c),
-                        const SizedBox(height: 16),
-                        // right under the mode it belongs to. always there, so the
-                        // popup keeps one shape; one word has nothing to share, so
-                        // in classic it is greyed and fixed
-                        Row(
-                          children: [
-                            const Expanded(child: Caption('shared letters')),
-                            Text(
-                              '${appState.share}%',
-                              key: const ValueKey('share-value'),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: mode.multi
-                                    ? c.primary
-                                    : c.onSurface.withValues(alpha: dimAlpha),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Slider(
-                          key: const ValueKey('share-slider'),
-                          value: appState.share.toDouble(),
-                          min: 0,
-                          max: maxShare.toDouble(),
-                          divisions: maxShare,
-                          label: '${appState.share}%',
-                          onChanged: mode.multi
-                              ? (v) => appState.setup(share: v.round())
-                              : null,
-                        ),
-                        Text(
-                          !mode.multi
-                              ? 'one word has nothing to share. this applies to '
-                                    'quartet and relay race.'
-                              : appState.share == 0
-                              ? 'the words never share a letter, as far as the '
-                                    'language allows.'
-                              : 'the chance that the words share a letter. '
-                                    'lower makes them more different.',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: c.onSurface.withValues(alpha: dimAlpha),
+                        // only the modes with several words have words that can
+                        // share letters
+                        if (mode.multi) ...[
+                          const SizedBox(height: 16),
+                          const Caption('shared letters'),
+                          const SizedBox(height: 10),
+                          StepperChoice<int>(
+                            key: const ValueKey('share-stepper'),
+                            semanticLabel: 'shared letters',
+                            items: [
+                              for (var p = 0; p <= maxShare; p += 5)
+                                (
+                                  p,
+                                  '$p%',
+                                  p == 0 ? 'the words never share a letter' : 'the chance that the words share a letter',
+                                ),
+                            ],
+                            selected: (appState.share / 5).round() * 5,
+                            onChanged: (p) => appState.setup(share: p),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Text(
+                            appState.share == 0
+                                ? 'the words never share a letter, as far as the '
+                                      'language allows.'
+                                : 'the chance that the words share a letter. '
+                                      'lower makes them more different.',
+                            key: const ValueKey('share-note'),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: c.onSurface.withValues(alpha: dimAlpha),
+                            ),
+                          ),
+                        ],
                         if (lang != null) ...[
                           const SizedBox(height: 24),
                           const Caption('difficulty'),
@@ -260,43 +254,71 @@ class _GameModesDialogState extends State<GameModesDialog> {
                                   appState.setup(tries: t, length: n),
                             ),
                         ],
-                        if (mode != GameMode.themed) ...[
-                          const SizedBox(height: 24),
-                          const Caption('word draw'),
-                          const SizedBox(height: 10),
-                          // how the answer is drawn, in a swipe: the sigmoid curve,
-                          // every word equally, or by how common each word is
-                          StepperChoice<Draw>(
-                            key: const ValueKey('draw-stepper'),
-                            semanticLabel: 'word draw',
-                            items: [
-                              for (final d in Draw.values) (d, d.label, d.sub),
-                            ],
-                            selected: appState.draw,
-                            onChanged: (d) => appState.setup(draw: d),
+                        const SizedBox(height: 24),
+                        const Caption('word draw'),
+                        const SizedBox(height: 10),
+                        // how the answer is drawn, in a swipe: the sigmoid curve,
+                        // every word equally, or by how common each word is. In
+                        // themed it is the same swiper with the places' values
+                        StepperChoice<Draw>(
+                          key: ValueKey(
+                            mode == GameMode.themed
+                                ? 'draw-stepper-themed'
+                                : 'draw-stepper',
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            switch (appState.draw) {
-                              Draw.sigmoid =>
-                                'the commonest words are about equally likely, then '
-                                    'fewer and fewer, and almost none past the 3,500th. '
-                                    'the daily always draws this way.',
-                              Draw.equal =>
-                                'every word of the length is as likely as any other, '
-                                    'rare ones too. the daily always draws by the '
-                                    'curve.',
-                              Draw.frequency =>
-                                'common words come up far more often. the daily '
-                                    'always draws by the curve.',
-                            },
-                            key: const ValueKey('draw-note'),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: c.onSurface.withValues(alpha: dimAlpha),
-                            ),
+                          semanticLabel: 'word draw',
+                          items: mode == GameMode.themed
+                              ? const [
+                                  (
+                                    Draw.sigmoid,
+                                    'well known',
+                                    'the best known places about equally likely',
+                                  ),
+                                  (
+                                    Draw.equal,
+                                    'all places',
+                                    'every place equally likely',
+                                  ),
+                                ]
+                              : [
+                                  for (final d in Draw.values)
+                                    (d, d.label, d.sub),
+                                ],
+                          selected:
+                              mode == GameMode.themed &&
+                                  appState.draw == Draw.frequency
+                              ? Draw.sigmoid
+                              : appState.draw,
+                          onChanged: (d) => appState.setup(draw: d),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          mode == GameMode.themed
+                              ? (appState.draw == Draw.equal
+                                    ? 'any place of the database can be the answer, '
+                                          'small cities and minor rivers too.'
+                                    : 'the answer is a place most people know. any '
+                                          'place of the database is still a valid '
+                                          'guess.')
+                              : switch (appState.draw) {
+                                  Draw.sigmoid =>
+                                    'the commonest words are about equally likely, then '
+                                        'fewer and fewer, and almost none past the 3,500th. '
+                                        'the daily always draws this way.',
+                                  Draw.equal =>
+                                    'every word of the length is as likely as any other, '
+                                        'rare ones too. the daily always draws by the '
+                                        'curve.',
+                                  Draw.frequency =>
+                                    'common words come up far more often. the daily '
+                                        'always draws by the curve.',
+                                },
+                          key: const ValueKey('draw-note'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
                           ),
-                        ],
+                        ),
                         const SizedBox(height: 24),
                         const Caption('helper'),
                         const SizedBox(height: 10),
@@ -348,10 +370,14 @@ class _GameModesDialogState extends State<GameModesDialog> {
                             Expanded(
                               child: FilledButton(
                                 key: const ValueKey('settings-play'),
-                                onPressed: () => Navigator.pushReplacementNamed(
-                                  context,
-                                  Routes.play,
-                                ),
+                                onPressed:
+                                    mode == GameMode.themed &&
+                                        _theme != 'geography'
+                                    ? null
+                                    : () => Navigator.pushReplacementNamed(
+                                        context,
+                                        Routes.play,
+                                      ),
                                 child: const Text('play'),
                               ),
                             ),
@@ -418,42 +444,9 @@ class _GameModesDialogState extends State<GameModesDialog> {
   static bool _noHelper(GameMode m) =>
       m.multi || m == GameMode.blind || m == GameMode.themed;
 
-  /// The theme, who the answer can be, and the mythologies still to come.
+  /// The theme (and, for mythology, which one): swipers like the mode's. The
+  /// themes still to come can be looked at, and cannot be played yet.
   List<Widget> _themedChoices(ColorScheme c) {
-    Widget chip(
-      String label, {
-      required bool on,
-      VoidCallback? onTap,
-      String? tip,
-      Key? key,
-    }) {
-      final w = InkWell(
-        key: key,
-        borderRadius: BorderRadius.circular(3),
-        onTap: onTap,
-        child: Container(
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: on ? c.primary.withValues(alpha: .15) : null,
-            border: Border.all(color: on ? c.primary : c.outlineVariant),
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Text(label, style: const TextStyle(fontSize: 13)),
-        ),
-      );
-      if (tip == null) return w;
-      return Opacity(
-        opacity: .38,
-        child: Tooltip(
-          message: tip,
-          triggerMode: TooltipTriggerMode.tap,
-          child: w,
-        ),
-      );
-    }
-
     final note = TextStyle(
       fontSize: 11,
       color: c.onSurface.withValues(alpha: dimAlpha),
@@ -462,70 +455,51 @@ class _GameModesDialogState extends State<GameModesDialog> {
       const SizedBox(height: 14),
       const Caption('theme'),
       const SizedBox(height: 10),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          chip('geography', on: true, key: const ValueKey('theme-geography')),
+      StepperChoice<String>(
+        key: const ValueKey('theme-stepper'),
+        semanticLabel: 'theme',
+        items: [
+          (
+            'geography',
+            'geography',
+            'place names across the world, in english',
+          ),
           for (final t in const ['mathematics', 'history', 'mythology'])
-            chip(t, on: false, tip: 'upcoming feature'),
+            (t, t, 'upcoming feature'),
         ],
+        selected: _theme,
+        onChanged: (t) => setState(() => _theme = t),
       ),
       const SizedBox(height: 8),
       Text(
-        'place names across the world, in english: countries, cities, '
-        'rivers, mountains, lakes, bays. every guess has an info dot that '
-        'tells about the word.',
+        _theme == 'geography'
+            ? 'countries, cities, rivers, mountains, lakes, bays. every guess has '
+                  'an info dot that tells about the word.'
+            : 'upcoming feature: this theme cannot be played yet.',
+        key: const ValueKey('theme-note'),
         style: note,
       ),
-      const SizedBox(height: 10),
-      const Caption('answers'),
-      const SizedBox(height: 8),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          chip(
-            'well known',
-            on: appState.draw != Draw.equal,
-            key: const ValueKey('answers-known'),
-            onTap: () => appState.setup(draw: Draw.sigmoid),
-          ),
-          chip(
-            'all places',
-            on: appState.draw == Draw.equal,
-            key: const ValueKey('answers-all'),
-            onTap: () => appState.setup(draw: Draw.equal),
-          ),
-        ],
-      ),
-      const SizedBox(height: 8),
-      Text(
-        appState.draw == Draw.equal
-            ? 'any place of the database can be the answer, small cities and '
-                  'minor rivers too.'
-            : 'the answer is a place most people know. any place of the '
-                  'database is still a valid guess.',
-        key: const ValueKey('answers-note'),
-        style: note,
-      ),
-      const SizedBox(height: 10),
-      const Caption('mythology'),
-      const SizedBox(height: 8),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final t in const [
-            'greek',
-            'egyptian',
-            'chinese',
-            'japanese',
-            'indian',
-          ])
-            chip(t, on: false, tip: 'upcoming feature'),
-        ],
-      ),
+      if (_theme == 'mythology') ...[
+        const SizedBox(height: 14),
+        const Caption('mythology'),
+        const SizedBox(height: 10),
+        StepperChoice<String>(
+          key: const ValueKey('mythology-stepper'),
+          semanticLabel: 'mythology',
+          items: [
+            for (final t in const [
+              'greek',
+              'egyptian',
+              'chinese',
+              'japanese',
+              'indian',
+            ])
+              (t, t, 'upcoming feature'),
+          ],
+          selected: _myth,
+          onChanged: (t) => setState(() => _myth = t),
+        ),
+      ],
     ];
   }
 }

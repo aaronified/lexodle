@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/guess_input.dart';
 
@@ -243,6 +244,35 @@ void main() {
       }
       expect(g.complete, isTrue);
       expect(g.word, 'cxyze');
+    });
+  });
+
+  group('a tap of shift', () {
+    KeyEvent down(LogicalKeyboardKey k) => KeyDownEvent(
+      physicalKey: PhysicalKeyboardKey.shiftLeft,
+      logicalKey: k,
+      timeStamp: Duration.zero,
+    );
+    KeyEvent up(LogicalKeyboardKey k) => KeyUpEvent(
+      physicalKey: PhysicalKeyboardKey.shiftLeft,
+      logicalKey: k,
+      timeStamp: Duration.zero,
+    );
+
+    test('shift down and up on its own is a tap', () {
+      final t = ShiftTap();
+      expect(t.tapped(down(LogicalKeyboardKey.shiftLeft)), isFalse);
+      expect(t.tapped(up(LogicalKeyboardKey.shiftLeft)), isTrue);
+    });
+
+    test('shift held to type a capital is not a tap', () {
+      final t = ShiftTap();
+      t.tapped(down(LogicalKeyboardKey.shiftLeft));
+      t.tapped(down(LogicalKeyboardKey.keyA));
+      expect(t.tapped(up(LogicalKeyboardKey.shiftLeft)), isFalse);
+      // and the next tap is clean again
+      t.tapped(down(LogicalKeyboardKey.shiftLeft));
+      expect(t.tapped(up(LogicalKeyboardKey.shiftLeft)), isTrue);
     });
   });
 }

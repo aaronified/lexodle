@@ -262,6 +262,14 @@ class _GamePageState extends State<GamePage>
     });
   }
 
+  final _shift = ShiftTap();
+
+  /// Shift locks the letter under the cursor, or unlocks it.
+  void _toggleLockAtCursor() {
+    if (over) return;
+    setState(() => input.toggleLock(input.cursor));
+  }
+
   void _select(int i) {
     if (over) return;
     setState(() => input.tap(i));
@@ -317,6 +325,7 @@ class _GamePageState extends State<GamePage>
       over = true;
       won = false;
       message = '';
+      input.clear();
       _finish();
     }
     _saveDaily();
@@ -407,6 +416,8 @@ class _GamePageState extends State<GamePage>
     if (solved || guesses.length >= tries) {
       over = true;
       won = solved;
+      // nothing is kept once the game is over: no letter stays locked
+      input.clear();
       if (!restoring) {
         Haptics.fire(solved ? Haptic.win : Haptic.lose);
         _finish();
@@ -505,6 +516,10 @@ class _GamePageState extends State<GamePage>
   }
 
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
+    if (_shift.tapped(e)) {
+      _toggleLockAtCursor();
+      return KeyEventResult.handled;
+    }
     if (e is KeyUpEvent) return KeyEventResult.ignored;
     if (HardwareKeyboard.instance.isControlPressed ||
         HardwareKeyboard.instance.isMetaPressed) {

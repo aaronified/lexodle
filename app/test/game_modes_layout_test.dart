@@ -73,7 +73,7 @@ void main() {
 
       final mode = top(find.text('mode'));
       final shared = top(find.text('shared letters'));
-      final slider = top(find.byKey(const ValueKey('share-slider')));
+      final slider = top(find.byKey(const ValueKey('share-stepper')));
       final difficulty = top(find.text('difficulty'));
       final frequency = top(find.byKey(const ValueKey('draw-stepper')));
       final helper = top(find.text('helper'));
@@ -102,16 +102,48 @@ void main() {
     },
   );
 
-  testWidgets('game modes: in classic the shared-letters slider is greyed', (
+  testWidgets('game modes: in classic there is no shared-letters setting', (
     tester,
   ) async {
     await open(tester, GameMode.classic);
-    final slider = find.byKey(const ValueKey('share-slider'));
-    // it keeps its place under the mode, but one word has nothing to share
-    expect(
-      tester.getTopLeft(find.text('shared letters')).dy,
-      lessThan(tester.getTopLeft(find.text('difficulty')).dy),
+    expect(find.text('shared letters'), findsNothing);
+    expect(find.byKey(const ValueKey('share-stepper')), findsNothing);
+  });
+
+  testWidgets('game modes: themed has swipers for the theme and the draw', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await appState.load();
+    appState.setup(lang: 'en', length: 5, mode: GameMode.themed);
+    await tester.pumpWidget(const LexodleApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('game modes'));
+    await tester.pumpAndSettle();
+    // the word draw swiper takes the places' values; no answers chips
+    expect(find.byKey(const ValueKey('draw-stepper-themed')), findsOneWidget);
+    expect(find.text('well known'), findsWidgets);
+    expect(find.text('answers'), findsNothing);
+    expect(find.text('shared letters'), findsNothing);
+    // the theme is a swiper; the mythologies appear only for mythology
+    expect(find.byKey(const ValueKey('theme-stepper')), findsOneWidget);
+    expect(find.byKey(const ValueKey('mythology-stepper')), findsNothing);
+    final next = find.descendant(
+      of: find.byKey(const ValueKey('theme-stepper')),
+      matching: find.byTooltip('next'),
     );
-    expect(tester.widget<Slider>(slider).onChanged, isNull);
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+    }
+    expect(find.byKey(const ValueKey('mythology-stepper')), findsOneWidget);
+    expect(find.text('upcoming feature'), findsWidgets);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('settings-play')))
+          .onPressed,
+      isNull,
+    );
   });
 }
