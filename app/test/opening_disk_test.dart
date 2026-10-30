@@ -90,10 +90,14 @@ void main() {
     expect(same.partial, isFalse);
     expect(same.gains, one.gains);
     expect(same.bestRisk, one.bestRisk);
-    expect(same.top.map((r) => (r.word, r.expected)),
-        one.top.map((r) => (r.word, r.expected)));
-    expect(same.luckiest.map((p) => (p.word, p.luck)),
-        one.luckiest.map((p) => (p.word, p.luck)));
+    expect(
+      same.top.map((r) => (r.word, r.expected)),
+      one.top.map((r) => (r.word, r.expected)),
+    );
+    expect(
+      same.luckiest.map((p) => (p.word, p.luck)),
+      one.luckiest.map((p) => (p.word, p.luck)),
+    );
   });
 
   test('a few threads, never all the cores', () {

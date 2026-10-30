@@ -445,9 +445,8 @@ class SplitContext {
     }
     double? landedMass;
     if (answer != null) {
-      landedMass = _mass[
-        blind ? blindCode(answer, guess) : patternCode(answer, guess)
-      ];
+      landedMass =
+          _mass[blind ? blindCode(answer, guess) : patternCode(answer, guess)];
     }
     for (var i = 0; i < seen; i++) {
       _counts[_touched[i]] = 0;
@@ -797,10 +796,7 @@ Future<Landscape> analyseGuesses(
     final context = SplitContext(eligible, weights, blind: blind);
     final exact = <int>{};
     final order = List.generate(words.length, (i) => i);
-    for (final by in [
-      (int i) => scored[i].$2.h,
-      (int i) => scored[i].$2.d,
-    ]) {
+    for (final by in [(int i) => scored[i].$2.h, (int i) => scored[i].$2.d]) {
       order.sort((x, y) => by(y).compareTo(by(x)));
       exact.addAll(order.take(max(k, 8)));
     }
@@ -832,7 +828,7 @@ Future<Landscape> analyseGuesses(
       ));
       if (!rows[o + 6].isNaN) luckBy[words[i]] = rows[o + 6];
     }
-    if (key != null) disk?.write(key, _encodeOpening(scored));
+    disk?.write(key, _encodeOpening(scored));
   } else {
     final context = SplitContext(eligible, weights, blind: blind);
     for (final w in words) {
@@ -873,7 +869,7 @@ Future<Landscape> analyseGuesses(
             RiskPick(w, s.d, n <= 1 ? 100.0 : skillOf(s.h, best)),
         ];
   var luckiest = <LuckPick>[];
-  if (answer != null) {
+  if (answer != null && !fromDisk) {
     final luck = <(String, double)>[
       for (final (w, s) in scored)
         if (luckBy[w] != null)
@@ -906,14 +902,13 @@ const _chunkRow = 7;
 /// Scores [words] against [eligible] on the thread it is called on, as
 /// [scoreChunk] does; this is the signature of the callers that may spread the
 /// words over several threads (see opening_parallel.dart).
-typedef ChunkScorer =
-    Future<Float64List> Function(
-      List<String> eligible,
-      Map<String, int>? weights,
-      bool blind,
-      List<String> words,
-      String? answer,
-    );
+typedef ChunkScorer = Future<Float64List> Function(
+  List<String> eligible,
+  Map<String, int>? weights,
+  bool blind,
+  List<String> words,
+  String? answer,
+);
 
 /// The numbers of each of [words] (see [_chunkRow]), in order. Pure, so it can
 /// run on any thread, and gives what scoring one word at a time gives.
@@ -973,7 +968,9 @@ Uint8List _encodeOpening(List<(String, SplitStats)> scored) {
   if (r.getUint32(0) != _openingMagic || r.getUint32(4) != n) return null;
   return (
     h: [for (var i = 0; i < n; i++) r.getUint16(8 + i * 4) * 16 / 65535],
-    d: [for (var i = 0; i < n; i++) r.getUint16(10 + i * 4) * 200 / 65535 - 100],
+    d: [
+      for (var i = 0; i < n; i++) r.getUint16(10 + i * 4) * 200 / 65535 - 100,
+    ],
   );
 }
 

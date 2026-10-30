@@ -775,17 +775,25 @@ void main() {
     const words = ['crane', 'crate', 'slate', 'brine'];
     test('keeps only words with the shown letters in place', () {
       expect(
-        lockedGuesses(words, ['crone'], [
-          [c, c, a, c, c],
-        ]),
+        lockedGuesses(
+          words,
+          ['crone'],
+          [
+            [c, c, a, c, c],
+          ],
+        ),
         ['crane'],
       );
     });
     test('without greens every candidate stays', () {
       expect(
-        lockedGuesses(words, ['xxxxx'], [
-          [a, a, a, a, a],
-        ]),
+        lockedGuesses(
+          words,
+          ['xxxxx'],
+          [
+            [a, a, a, a, a],
+          ],
+        ),
         words,
       );
     });
@@ -798,10 +806,7 @@ void main() {
       for (final w in words) {
         final mass = stats.landedOf('crone', w)!;
         final real = words
-            .where(
-              (x) =>
-                  blindCode(x, 'crone') == blindCode(w, 'crone'),
-            )
+            .where((x) => blindCode(x, 'crone') == blindCode(w, 'crone'))
             .length;
         expect(mass, real.toDouble());
       }

@@ -47,7 +47,11 @@ void main() {
   test('warming an opening does not disturb the next analysis', () async {
     final w = words(2100, 4);
     warmOpening(w, w);
-    final land = await analyseOffThread(w, w, answer: w[5]);
+    var land = await analyseOffThread(w, w, answer: w[5]);
+    // an opening kept on the disk has no luckiest guesses: they are asked for
+    if (land.partial) {
+      land = await analyseOffThread(w, w, answer: w[5], useDisk: false);
+    }
     expect(land.luckiest.first.word, w[5]);
     expect(land.gains.length, w.length);
   });

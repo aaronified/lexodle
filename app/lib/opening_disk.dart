@@ -16,8 +16,9 @@ class DiskOpenings implements OpeningDisk {
   final Directory dir;
   final int cap;
 
-  File _file(String key) =>
-      File('${dir.path}/${key.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_')}.bin');
+  File _file(String key) => File(
+    '${dir.path}/${key.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_')}.bin',
+  );
 
   @override
   Uint8List? read(String key) {

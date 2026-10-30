@@ -35,7 +35,10 @@ Future<Float64List> scoreOnThreads(
             eligible,
             weights,
             blind,
-            words.sublist(from, from + size > words.length ? words.length : from + size),
+            words.sublist(
+              from,
+              from + size > words.length ? words.length : from + size,
+            ),
             answer,
           ),
         ),
