@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:lexodle/analysis_worker.dart';
 import 'package:lexodle/background.dart';
+import 'package:lexodle/changelog.dart';
 import 'package:lexodle/sounds.dart';
 import 'package:lexodle/wiktionary.dart';
 
@@ -14,6 +15,7 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   prefetchDefinitions = false;
   analyseWhilePlaying = false;
   analyseOffMainThread = false;
+  showWhatsNew = false;
   Sounds.enabled = false;
   await testMain();
 }
