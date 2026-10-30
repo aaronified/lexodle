@@ -62,6 +62,14 @@ TRAIL = ('river', 'lake', 'mountain', 'mountains', 'range', 'sea', 'bay', 'gulf'
          'plateau', 'valley', 'falls', 'glacier', 'canal', 'reservoir',
          'volcano', 'peak', 'channel', 'sound', 'point')
 
+# of places that share a name, the larger kind of place is the likelier one:
+# the Sahara is the desert, not a river of Madagascar
+PRIORITY = {
+    'country': 10, 'capital': 9, 'ocean': 8, 'sea': 8, 'desert': 8,
+    'mountains': 8, 'mountain range': 8, 'peninsula': 7, 'gulf': 7,
+    'island': 7, 'islands': 7, 'lake': 6, 'region': 6, 'river': 6, 'city': 5,
+}
+
 # a feature GeoNames does not link to Wikipedia is kept when its page is read
 # this many times in the day sampled (views_all.tsv)
 POPULAR = 24
@@ -162,6 +170,11 @@ def main(folder):
                 and popular < POPULAR):
             continue
         keys = {letters(shown), *aliases(shown)}
+        # GeoNames' own name of a feature is often the one people use where its
+        # preferred English one is odd (the Sahara is "Great Desert" there)
+        own = set(keys)
+        if physical and name.isascii():
+            keys |= {letters(name), *aliases(name)}
         keys = {k for k in keys if len(k) in LENGTHS}
         if not keys:
             continue
@@ -171,10 +184,15 @@ def main(folder):
                  or code in SEAS
                  or (physical and langs.get(gid, 0) >= KNOWN_LANGS))
         known = known or popular >= 5 * POPULAR
-        seen = max(views.get(urllib.parse.unquote(wiki.get(gid, '')), 0), popular)
-        rank = (known, seen, langs.get(gid, 0), pop)
+        linked = views.get(urllib.parse.unquote(wiki.get(gid, '')), 0)
+        seen = max(linked, popular)
+        # of several places of one name the best is the one whose own Wikipedia
+        # page is read most: a feature that only shares the name (a creek called
+        # Nile) has no page of its own
+        rank = (PRIORITY.get(kind, 2), known, linked, langs.get(gid, 0), popular,
+                pop)
         for key in keys:
-            row = (key, shown, kind, countries.get(cc, ''),
+            row = (key, shown if key in own else name, kind, countries.get(cc, ''),
                    'k' if known else 'a', wiki.get(gid, ''), str(seen))
             if key not in best or rank > best[key][0]:
                 best[key] = (rank, row)

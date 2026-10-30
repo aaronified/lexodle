@@ -124,9 +124,21 @@ void main() {
       }
     });
 
+    test('a place is known by its short form and its long one', () {
+      // "Indus River", "Lake Erie" and "Mount Etna" are guessed as the short
+      // names too, and the long form is kept where it fits the length
+      for (final w in ['indus', 'nile', 'danube', 'everest', 'erie', 'etna']) {
+        expect(places.valid, contains(w), reason: w);
+      }
+      expect(places.valid, contains('lakeerie'));
+      expect(Geography.placeOf('indus')?.kind, 'river');
+      expect(Geography.placeOf('indus')?.name, 'Indus River');
+      expect(Geography.placeOf('sahara')?.kind, 'desert');
+    });
+
     test('places are the only valid words', () {
       expect(places.valid, contains('spain'));
-      expect(places.valid, isNot(contains('house')));
+      expect(places.valid, isNot(contains('trick')));
       final spain = Geography.placeOf('spain')!;
       expect(spain.kind, 'country');
       expect(spain.link.toString(), contains('wikipedia.org'));
@@ -293,7 +305,7 @@ void main() {
         return Geography.load(en);
       }))!;
       await open(tester, GameMode.themed, places, 'spain', 6);
-      await guess(tester, 'house');
+      await guess(tester, 'trick');
       expect(find.text('not a place name'), findsOneWidget);
       expect(find.byKey(const ValueKey('place-dot-0')), findsNothing);
       for (var i = 0; i < 5; i++) {
