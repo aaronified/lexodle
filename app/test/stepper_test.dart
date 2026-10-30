@@ -67,21 +67,29 @@ void main() {
     expect(find.text('off'), findsNothing); // one at a time
   });
 
-  testWidgets('the chevrons step, and dim at the ends', (tester) async {
+  testWidgets('the chevrons step, and loop round at the ends', (tester) async {
     final log = <int>[];
     await tester.pumpWidget(_Host(log: log, start: 1));
-    expect(_chevron(tester, 'prev').onPressed, isNull); // first: nothing before
+    // a loop: both chevrons always work, from the first or the last value
+    expect(_chevron(tester, 'prev').onPressed, isNotNull);
+    expect(_chevron(tester, 'next').onPressed, isNotNull);
     await tester.tap(find.byIcon(Icons.chevron_right));
     await tester.pumpAndSettle();
     expect(find.text('skill only'), findsOneWidget);
     expect(log, [2]);
     await tester.tap(find.byIcon(Icons.chevron_right));
-    await tester.tap(find.byIcon(Icons.chevron_right), warnIfMissed: false);
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.chevron_right));
     await tester.pumpAndSettle();
     expect(find.text('full help'), findsOneWidget);
-    expect(_chevron(tester, 'next').onPressed, isNull); // last: nothing after
+    // next from the last is the first
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pumpAndSettle();
+    expect(find.text('off'), findsOneWidget);
+    // and previous from the first is the last
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await tester.pumpAndSettle();
+    expect(find.text('full help'), findsOneWidget);
     await tester.tap(find.byIcon(Icons.chevron_left));
     await tester.pumpAndSettle();
     expect(find.text('skill + luck'), findsOneWidget);
@@ -153,25 +161,24 @@ void main() {
     expect(log, [3, 2]);
   });
 
-  testWidgets('dragging past an end pulls against a band and does not step', (
+  testWidgets('dragging past an end brings in the other end and steps there', (
     tester,
   ) async {
     final log = <int>[];
     await tester.pumpWidget(_Host(log: log, start: 4)); // the last one
     final g = await tester.startGesture(tester.getCenter(_viewport));
-    await g.moveBy(const Offset(-120, 0));
+    // the first movement only gets past the touch slop
+    await g.moveBy(const Offset(-40, 0));
+    await g.moveBy(const Offset(-80, 0));
     await tester.pump();
-    // nothing to bring in, and the pull is resisted
-    expect(find.byKey(const ValueKey('step-incoming')), findsNothing);
-    final moved =
-        (tester.getCenter(find.text('full help')).dx -
-                tester.getCenter(_viewport).dx)
-            .abs();
-    expect(moved, lessThan(60));
+    // the first value comes in beside the last, following the finger
+    expect(find.byKey(const ValueKey('step-incoming')), findsOneWidget);
+    expect(find.text('off'), findsOneWidget);
+    await g.moveBy(const Offset(-120, 0));
     await g.up();
     await tester.pumpAndSettle();
-    expect(log, isEmpty);
-    expect(find.text('full help'), findsOneWidget);
+    expect(log, [1]);
+    expect(find.text('off'), findsOneWidget);
   });
 
   testWidgets('sideways scrolling steps; plain vertical scrolling does not', (

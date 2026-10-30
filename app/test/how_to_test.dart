@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/how_to.dart';
 import 'package:lexodle/logic.dart' show Mark;
@@ -164,17 +163,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('try-0')));
     await tester.pump();
     expect(find.byKey(const ValueKey('locked')), findsNothing);
-    // shift locks the letter under the cursor, and typing skips a locked one
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    // a locked letter is where the cursor can still go: it is a tap away
+    await tester.tap(find.byKey(const ValueKey('try-0')));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.byKey(const ValueKey('try-0')));
     await tester.pump();
     expect(find.byKey(const ValueKey('locked')), findsOneWidget);
-    await tester.sendKeyEvent(LogicalKeyboardKey(0x7a), character: 'z');
-    await tester.pump();
-    expect(
-      tester.widget<MarkTile>(find.byKey(const ValueKey('try-0'))).ch,
-      'a',
-    );
     // start again
     await tester.tap(find.byKey(const ValueKey('try-reset')));
     await tester.pump();

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'guess_input.dart';
 import 'logic.dart';
@@ -198,10 +197,9 @@ class HowToPage extends StatelessWidget {
 }
 
 /// One live example for the blanks, the cursor and the locks: a row of tiles
-/// that works as the game's does, so a player can try it right there. Tap a
-/// tile to move the cursor, double tap it to lock its letter (or unlock it);
-/// with a keyboard, type, space or `_` for a blank, backspace, the arrow keys,
-/// and shift to lock.
+/// that works as the game's does, so a player can try it right there, with
+/// touch alone (a phone has no keyboard): tap a tile to move the cursor, double
+/// tap it to lock its letter, or to unlock it.
 class HowToTry extends StatefulWidget {
   const HowToTry({super.key});
 
@@ -213,8 +211,6 @@ class _HowToTryState extends State<HowToTry> {
   static final _letters = {
     for (final c in 'abcdefghijklmnopqrstuvwxyz'.split('')) c,
   };
-  final _focus = FocusNode();
-  final _shift = ShiftTap();
   late GuessInput _input = _start();
 
   /// `a ode` with the cursor on the blank, and nothing locked.
@@ -228,37 +224,6 @@ class _HowToTryState extends State<HowToTry> {
   }
 
   @override
-  void dispose() {
-    _focus.dispose();
-    super.dispose();
-  }
-
-  KeyEventResult _onKey(FocusNode _, KeyEvent e) {
-    if (_shift.tapped(e)) {
-      setState(() => _input.toggleLock(_input.cursor));
-      return KeyEventResult.handled;
-    }
-    if (e is KeyUpEvent ||
-        HardwareKeyboard.instance.isControlPressed ||
-        HardwareKeyboard.instance.isMetaPressed) {
-      return KeyEventResult.ignored;
-    }
-    final k = e.logicalKey;
-    if (k == LogicalKeyboardKey.backspace) {
-      setState(_input.back);
-    } else if (k == LogicalKeyboardKey.arrowLeft) {
-      setState(() => _input.move(-1));
-    } else if (k == LogicalKeyboardKey.arrowRight) {
-      setState(() => _input.move(1));
-    } else if (e.character != null && e.character!.isNotEmpty) {
-      setState(() => _input.type(e.character!.toLowerCase(), _letters));
-    } else {
-      return KeyEventResult.ignored;
-    }
-    return KeyEventResult.handled;
-  }
-
-  @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final locked = [
@@ -266,79 +231,71 @@ class _HowToTryState extends State<HowToTry> {
         if (_input.isLocked(i)) i,
     ];
     final at = _input.cursor;
-    return Focus(
-      focusNode: _focus,
-      onKeyEvent: _onKey,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              key: const ValueKey('try-row'),
-              children: [
-                for (var i = 0; i < 5; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: MarkTile(
-                      _input.slot(i),
-                      key: ValueKey('try-$i'),
-                      size: 44,
-                      cursor: i == at,
-                      locked: _input.isLocked(i),
-                      onTap: () {
-                        _focus.requestFocus();
-                        setState(() => _input.tap(i));
-                      },
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'not sure of a letter? press space (or _) to leave a blank. a '
-              'blank cannot be submitted.',
-              style: TextStyle(height: 1.4),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'the outlined tile is the cursor: the next letter goes there. '
-              'tap any tile to move it.',
-              style: TextStyle(height: 1.4),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'double tap a tile to lock its letter, again to unlock (shift on '
-              'a keyboard). a locked letter stays for the next guess. try it '
-              'here.',
-              key: ValueKey('try-lock-note'),
-              style: TextStyle(height: 1.4),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    at >= 5
-                        ? 'cursor: after the last tile'
-                        : 'cursor on tile ${at + 1}'
-                              '${locked.isEmpty ? '' : ' · locked: ${locked.map((i) => i + 1).join(', ')}'}',
-                    key: const ValueKey('try-status'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: c.onSurface.withValues(alpha: .65),
-                    ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            key: const ValueKey('try-row'),
+            children: [
+              for (var i = 0; i < 5; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: MarkTile(
+                    _input.slot(i),
+                    key: ValueKey('try-$i'),
+                    size: 44,
+                    cursor: i == at,
+                    locked: _input.isLocked(i),
+                    onTap: () => setState(() => _input.tap(i)),
                   ),
                 ),
-                TextButton(
-                  key: const ValueKey('try-reset'),
-                  onPressed: () => setState(() => _input = _start()),
-                  child: const Text('start again'),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'not sure of a letter? press space (or _) to leave a blank. a '
+            'blank cannot be submitted.',
+            style: TextStyle(height: 1.4),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'the outlined tile is the cursor: the next letter goes there. '
+            'tap any tile to move it.',
+            style: TextStyle(height: 1.4),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'double tap a tile to lock its letter, again to unlock. a locked '
+            'letter stays for the next guess. try it here.',
+            key: ValueKey('try-lock-note'),
+            style: TextStyle(height: 1.4),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  at >= 5
+                      ? 'cursor: after the last tile'
+                      : 'cursor on tile ${at + 1}'
+                            '${locked.isEmpty ? '' : ' · locked: ${locked.map((i) => i + 1).join(', ')}'}',
+                  key: const ValueKey('try-status'),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: c.onSurface.withValues(alpha: .65),
+                  ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              TextButton(
+                key: const ValueKey('try-reset'),
+                onPressed: () => setState(() => _input = _start()),
+                child: const Text('start again'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
