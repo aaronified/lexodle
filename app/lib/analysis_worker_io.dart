@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'logic.dart';
+import 'opening_disk.dart';
 
 /// One worker isolate for the whole app, started on first use. Its memory is
 /// its own, so the opening it keeps for the next game never weighs on the
@@ -62,16 +63,18 @@ class _Worker {
     Map<String, int>? weights,
     String? answer,
     bool blind,
+    bool useDisk,
   ) {
     final id = _next++;
     final c = Completer<Landscape>();
     _waiting[id] = c;
-    _to.send([id, eligible, candidates, k, weights, answer, blind]);
+    _to.send([id, eligible, candidates, k, weights, answer, blind, useDisk]);
     return c.future;
   }
 }
 
 void _main(SendPort host) {
+  final disk = DiskOpenings();
   final inbox = ReceivePort();
   host.send(inbox.sendPort);
   inbox.listen((Object? m) async {
@@ -85,6 +88,7 @@ void _main(SendPort host) {
         weights: (a[4] as Map?)?.cast<String, int>(),
         answer: a[5] as String?,
         blind: a[6] as bool,
+        disk: a[7] as bool ? disk : null,
       );
       host.send([id, land]);
     } catch (e) {
@@ -101,6 +105,7 @@ Future<Landscape> analyse(
   Map<String, int>? weights,
   String? answer,
   bool blind,
+  bool useDisk,
 ) async {
   final _Worker worker;
   try {
@@ -113,7 +118,8 @@ Future<Landscape> analyse(
       weights: weights,
       answer: answer,
       blind: blind,
+      disk: useDisk ? DiskOpenings() : null,
     );
   }
-  return worker.run(eligible, candidates, k, weights, answer, blind);
+  return worker.run(eligible, candidates, k, weights, answer, blind, useDisk);
 }

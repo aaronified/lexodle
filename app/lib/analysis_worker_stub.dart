@@ -8,6 +8,7 @@ Future<Landscape> analyse(
   Map<String, int>? weights,
   String? answer,
   bool blind,
+  bool useDisk,
 ) => analyseGuesses(
   eligible,
   candidates,

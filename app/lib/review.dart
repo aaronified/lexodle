@@ -190,21 +190,23 @@ class _ReviewPageState extends State<ReviewPage> {
       final ready = r.analysis != null && i < r.analysis!.length
           ? r.analysis![i]
           : null;
-      final land =
-          await (ready ??
-              analyseOffThread(
-                r.befores[i],
-                r.lockdown
-                    ? lockedGuesses(
-                        guessable,
-                        r.guesses.take(i).toList(),
-                        r.marks.take(i).toList(),
-                      )
-                    : guessable,
-                weights: r.weights,
-                answer: r.answer,
-                blind: r.blind,
-              ));
+      Future<Landscape> work({bool useDisk = true}) => analyseOffThread(
+        r.befores[i],
+        r.lockdown
+            ? lockedGuesses(
+                guessable,
+                r.guesses.take(i).toList(),
+                r.marks.take(i).toList(),
+              )
+            : guessable,
+        weights: r.weights,
+        answer: r.answer,
+        blind: r.blind,
+        useDisk: useDisk,
+      );
+      var land = await (ready ?? work());
+      // an opening kept on the disk has no luckiest guesses: work them out
+      if (land.partial) land = await work(useDisk: false);
       if (!mounted) return;
       setState(() {
         if (!finalTry) picks[i] = land.top;

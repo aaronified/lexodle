@@ -685,7 +685,12 @@ class Landscape {
     this.bestRisk = 0,
     this.riskiest = const [],
     this.luckiest = const [],
+    this.partial = false,
   });
+
+  /// Whether the opening came from the disk, which keeps no group sizes: the
+  /// luckiest guesses are then left out, and worked out again when wanted.
+  final bool partial;
 
   /// The best picks, best first.
   final List<Recommendation> top;
@@ -740,6 +745,7 @@ Future<Landscape> analyseGuesses(
   Map<String, int>? weights,
   String? answer,
   bool blind = false,
+  OpeningDisk? disk,
 }) async {
   final n = eligible.length;
   if (n == 0) return const Landscape([], []);
@@ -763,7 +769,43 @@ Future<Landscape> analyseGuesses(
       ? _openingKey(eligible, words, weights, blind)
       : null;
   final scored = <(String, SplitStats)>[];
-  if (key != null && key == _openingKeyHeld) {
+  var fromDisk = false;
+  final saved = key == null || key == _openingKeyHeld || disk == null
+      ? null
+      : _decodeOpening(disk.read(key), words.length);
+  if (saved != null) {
+    // kept on the disk by an earlier run: the gain and risk of every guess, to
+    // a hair; the picks themselves are scored again, exactly
+    await Future<void>.delayed(Duration.zero);
+    fromDisk = true;
+    for (var i = 0; i < words.length; i++) {
+      scored.add((
+        words[i],
+        SplitStats(
+          e: 0,
+          h: saved.h[i],
+          d: saved.d[i],
+          groups: 0,
+          largest: 0,
+          total: 0,
+          masses: const [],
+        ),
+      ));
+    }
+    final context = SplitContext(eligible, weights, blind: blind);
+    final exact = <int>{};
+    final order = List.generate(words.length, (i) => i);
+    for (final by in [
+      (int i) => scored[i].$2.h,
+      (int i) => scored[i].$2.d,
+    ]) {
+      order.sort((x, y) => by(y).compareTo(by(x)));
+      exact.addAll(order.take(max(k, 8)));
+    }
+    for (final i in exact) {
+      scored[i] = (words[i], context.stats(words[i]));
+    }
+  } else if (key != null && key == _openingKeyHeld) {
     // answered from the last game, but still on a later turn of the event loop
     // like every other analysis, so the screen shows its dots first
     await Future<void>.delayed(Duration.zero);
@@ -777,6 +819,7 @@ Future<Landscape> analyseGuesses(
     if (key != null) {
       _openingKeyHeld = key;
       _openingHeld = List.of(scored);
+      disk?.write(key, _encodeOpening(scored));
     }
   }
   if (scored.isEmpty) return const Landscape([], []);
@@ -827,6 +870,43 @@ Future<Landscape> analyseGuesses(
     bestRisk: bestRisk,
     riskiest: riskiest,
     luckiest: luckiest,
+    partial: fromDisk && answer != null,
+  );
+}
+
+/// Where the opening analyses are kept between runs of the app (see
+/// [analyseGuesses]); none on the web.
+abstract class OpeningDisk {
+  Uint8List? read(String key);
+  void write(String key, Uint8List bytes);
+}
+
+const _openingMagic = 0x314f584c; // 'LXO1'
+
+/// The gain (0 to 16 bits) and risk (-100 to 100) of each guess as two 16-bit
+/// numbers, rounded down, so a kept value is never above the real one.
+Uint8List _encodeOpening(List<(String, SplitStats)> scored) {
+  final out = ByteData(8 + scored.length * 4)
+    ..setUint32(0, _openingMagic)
+    ..setUint32(4, scored.length);
+  for (var i = 0; i < scored.length; i++) {
+    final s = scored[i].$2;
+    out.setUint16(8 + i * 4, (s.h / 16 * 65535).floor().clamp(0, 65535));
+    out.setUint16(
+      10 + i * 4,
+      ((s.d + 100) / 200 * 65535).floor().clamp(0, 65535),
+    );
+  }
+  return out.buffer.asUint8List();
+}
+
+({List<double> h, List<double> d})? _decodeOpening(Uint8List? bytes, int n) {
+  if (bytes == null || bytes.length != 8 + n * 4) return null;
+  final r = ByteData.sublistView(bytes);
+  if (r.getUint32(0) != _openingMagic || r.getUint32(4) != n) return null;
+  return (
+    h: [for (var i = 0; i < n; i++) r.getUint16(8 + i * 4) * 16 / 65535],
+    d: [for (var i = 0; i < n; i++) r.getUint16(10 + i * 4) * 200 / 65535 - 100],
   );
 }
 
