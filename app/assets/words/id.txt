@@ -126,6 +126,7 @@ lucu	177827
 tiap	177827
 agen	173780
 bayi	173780
+game	173780
 kira	173780
 emas	169824
 agak	165958
@@ -157,6 +158,7 @@ dana	120226
 halo	120226
 kalo	120226
 misi	120226
+udah	120226
 aksi	117489
 arti	117489
 unik	117489
@@ -291,6 +293,7 @@ buta	43651
 ekor	43651
 trik	43651
 baja	42657
+guys	42657
 sesi	42657
 adat	41686
 agus	41686
@@ -320,6 +323,7 @@ menu	36307
 akar	35481
 aset	35481
 madu	35481
+ngga	35481
 bapa	34673
 ibnu	34673
 jati	34673
@@ -339,6 +343,7 @@ bela	31622
 paus	31622
 ajak	30902
 cuci	30902
+pake	30902
 segi	30902
 apel	30199
 asap	30199
@@ -353,6 +358,7 @@ kubu	28840
 long	28840
 rugi	28840
 sepi	28840
+meng	28183
 over	28183
 aduh	27542
 mula	27542
@@ -378,6 +384,7 @@ inci	23442
 kamp	23442
 kian	23442
 lega	23442
+oppa	23442
 raga	23442
 alan	22908
 atur	22908
@@ -388,6 +395,7 @@ helm	22387
 awet	21877
 cucu	21877
 euro	21877
+jang	21877
 ring	21877
 sate	21877
 siti	21877
@@ -467,6 +475,7 @@ ulah	15135
 alas	14791
 aura	14791
 drum	14791
+form	14791
 gini	14791
 klip	14791
 muak	14791
@@ -509,6 +518,7 @@ kuta	12882
 orde	12882
 pati	12882
 puji	12882
+sabu	12882
 tara	12882
 tega	12882
 seng	12589
@@ -582,10 +592,12 @@ step	10000
 teka	10000
 trio	10000
 trip	10000
+cumi	9772
 hina	9772
 ojek	9772
 tuna	9772
 urat	9772
+cuba	9549
 erik	9549
 flat	9549
 kane	9549
@@ -636,8 +648,10 @@ kung	8128
 ling	8128
 mina	8128
 semu	8128
+viva	8128
 abis	7943
 aduk	7943
+eden	7943
 hana	7943
 lobi	7943
 sita	7943
@@ -667,6 +681,7 @@ pari	7079
 sila	7079
 toto	7079
 abdi	6918
+aqua	6760
 aziz	6760
 hara	6760
 pare	6760
@@ -687,6 +702,7 @@ oven	6456
 uber	6456
 alfa	6309
 apik	6309
+koko	6309
 maki	6309
 once	6309
 rame	6309
@@ -706,6 +722,7 @@ putu	6025
 tiup	6025
 alif	5888
 dahi	5888
+deng	5888
 esai	5888
 flek	5888
 lada	5888
@@ -726,6 +743,7 @@ abal	5623
 arak	5623
 dadu	5623
 gesa	5623
+joni	5623
 kato	5623
 lena	5623
 maag	5623
@@ -758,6 +776,7 @@ akur	5128
 busa	5128
 ceko	5128
 dasi	5128
+grid	5128
 lego	5128
 mami	5128
 rena	5128
@@ -774,6 +793,7 @@ poni	5011
 pure	5011
 reda	5011
 fuad	4897
+hook	4897
 kebo	4897
 kuli	4897
 liku	4897
@@ -796,6 +816,7 @@ yard	4786
 zina	4786
 adit	4677
 amar	4677
+hape	4677
 jeli	4677
 lava	4677
 mate	4677
@@ -803,12 +824,14 @@ saka	4677
 sudi	4677
 tika	4677
 aren	4570
+asem	4570
 bros	4570
 dang	4570
 elok	4570
 gema	4570
 raut	4570
 bobo	4466
+fals	4466
 kurs	4466
 lesu	4466
 nyak	4466
@@ -818,6 +841,7 @@ syok	4466
 titi	4466
 adek	4365
 cepu	4365
+deli	4365
 ente	4365
 knot	4365
 laci	4365
@@ -825,6 +849,7 @@ papi	4365
 puja	4365
 bius	4265
 muri	4265
+nato	4265
 suit	4265
 tele	4265
 arca	4168
@@ -837,6 +862,8 @@ tian	4168
 adab	4073
 anus	4073
 diah	4073
+giok	4073
+late	4073
 memo	4073
 syah	4073
 teng	4073
@@ -846,18 +873,22 @@ babu	3981
 guci	3981
 huni	3981
 romo	3981
+shio	3981
 akad	3890
 baya	3890
 blur	3890
 selo	3890
+voor	3890
 anal	3801
 baut	3801
+gale	3801
 kalu	3801
 kram	3801
 mumi	3801
 oval	3801
 rian	3801
 sena	3801
+alba	3715
 duda	3715
 gusi	3715
 rafi	3715
@@ -885,6 +916,7 @@ itik	3467
 kans	3467
 mbok	3467
 nang	3467
+pede	3467
 raka	3467
 rano	3467
 saga	3467
@@ -903,6 +935,7 @@ bari	3311
 bora	3311
 ilir	3311
 neon	3311
+ortu	3311
 ruam	3311
 toga	3311
 tung	3311
@@ -944,11 +977,13 @@ amen	2884
 lian	2884
 lila	2884
 mala	2884
+nari	2884
 rong	2884
 sulu	2884
 usap	2884
 wiki	2884
 baal	2818
+bodo	2818
 boro	2818
 dupa	2818
 emir	2818
@@ -956,6 +991,8 @@ kait	2818
 kuas	2818
 ordo	2818
 sawo	2818
+amik	2754
+inka	2754
 siar	2754
 wana	2754
 amis	2691
@@ -969,8 +1006,10 @@ sake	2691
 alay	2630
 bolu	2630
 bowo	2630
+danu	2630
 keke	2630
 plug	2630
+poli	2630
 rana	2630
 rona	2630
 suda	2630
@@ -988,6 +1027,7 @@ boko	2511
 gain	2511
 loki	2511
 mong	2511
+nego	2511
 puti	2511
 rise	2511
 acap	2454
@@ -1004,13 +1044,16 @@ sawi	2454
 suro	2454
 tuah	2454
 baki	2398
+mita	2398
 rima	2398
 setu	2398
 aron	2344
 flop	2344
+gaes	2344
 isra	2344
 loyo	2344
 mori	2344
+napa	2344
 puak	2344
 rami	2344
 yuda	2344
@@ -1024,6 +1067,7 @@ azam	2238
 daku	2238
 kepo	2238
 maru	2238
+ranu	2238
 trem	2238
 tubi	2238
 usil	2238
@@ -1045,6 +1089,7 @@ etos	2137
 graf	2137
 joki	2137
 kano	2137
+kare	2137
 loka	2137
 riuh	2137
 sera	2137
@@ -1079,6 +1124,7 @@ anta	1949
 buli	1949
 dame	1949
 fail	1949
+fasa	1949
 judo	1949
 lela	1949
 ozon	1949
@@ -1107,7 +1153,9 @@ koja	1819
 pali	1819
 tera	1819
 akil	1778
+bira	1778
 caca	1778
+dato	1778
 foya	1778
 lars	1778
 pale	1778
@@ -1116,6 +1164,7 @@ waru	1778
 zein	1778
 alga	1737
 bada	1737
+bejo	1737
 beni	1737
 elus	1737
 ikal	1737
@@ -1129,17 +1178,21 @@ seti	1737
 urea	1737
 alto	1698
 bini	1698
+dasa	1698
 gail	1698
 kawi	1698
 mosi	1698
 pike	1698
 pulp	1698
+rafa	1698
 sayu	1698
 sein	1698
 sori	1698
+stem	1698
 wani	1698
 buni	1659
 cece	1659
+dipo	1659
 reli	1659
 reog	1659
 soba	1659
@@ -1174,6 +1227,7 @@ moge	1548
 opor	1548
 pasi	1548
 tual	1548
+velg	1548
 abon	1513
 busi	1513
 caci	1513
@@ -1185,6 +1239,7 @@ bebi	1479
 dojo	1479
 gani	1479
 gore	1479
+hima	1479
 laka	1479
 leak	1479
 lira	1479
@@ -1204,11 +1259,13 @@ deru	1412
 dias	1412
 hail	1412
 iota	1412
+maui	1412
 opal	1412
 oper	1412
 saut	1412
 sema	1412
 bubu	1380
+dori	1380
 empu	1380
 hayo	1380
 ampe	1348
@@ -1244,6 +1301,7 @@ kasa	1258
 mete	1258
 nawa	1258
 onta	1258
+amer	1230
 anom	1230
 edar	1230
 kino	1230
@@ -1251,11 +1309,14 @@ lani	1230
 nira	1230
 ruah	1230
 sano	1230
+taco	1230
 trah	1230
 grip	1202
+grub	1202
 odol	1202
 opus	1202
 seba	1202
+soya	1202
 dapa	1174
 pera	1174
 ulan	1174
@@ -1263,6 +1324,7 @@ boru	1148
 daki	1148
 dzat	1148
 jeje	1148
+koen	1148
 loak	1148
 sasi	1148
 twit	1148
@@ -1276,8 +1338,10 @@ erti	1096
 goda	1096
 kaba	1096
 mace	1096
+maho	1096
 mole	1096
 panu	1096
+paok	1096
 pela	1096
 sado	1096
 sedu	1096
@@ -1285,14 +1349,18 @@ siur	1096
 toge	1096
 arik	1071
 asad	1071
+biri	1071
 datu	1071
 dito	1071
 keok	1071
 klop	1071
 laik	1071
 soko	1071
+void	1071
 abul	1047
 aral	1047
+beji	1047
+klab	1047
 kopo	1047
 koyo	1047
 naim	1047
@@ -1308,6 +1376,7 @@ foil	1023
 grad	1023
 jail	1023
 koil	1023
+lien	1023
 orak	1023
 pika	1023
 rida	1023
@@ -1447,6 +1516,7 @@ merah	234422
 pusat	234422
 timur	234422
 usaha	234422
+nggak	229086
 ulang	229086
 macam	223872
 hitam	218776
@@ -1662,6 +1732,7 @@ modal	69183
 pasir	69183
 saran	69183
 setia	69183
+karna	67608
 hakim	66069
 jumat	66069
 medis	66069
@@ -1740,6 +1811,7 @@ halus	46773
 tiada	46773
 basah	45708
 forum	45708
+honda	45708
 kotor	45708
 natal	45708
 patut	45708
@@ -1770,10 +1842,12 @@ topik	42657
 abadi	41686
 ganda	41686
 logam	41686
+pasca	41686
 riset	41686
 bahas	40738
 batik	40738
 buruh	40738
+frank	40738
 koran	40738
 lemak	40738
 lirik	40738
@@ -1868,6 +1942,7 @@ kacau	30199
 motif	30199
 panik	30199
 arena	29512
+bener	29512
 beres	29512
 emang	29512
 gelas	29512
@@ -1911,6 +1986,7 @@ cacat	26302
 hemat	26302
 larut	26302
 resep	26302
+sarah	26302
 tempo	26302
 bambu	25703
 hijab	25703
@@ -1920,6 +1996,7 @@ tunai	25703
 balai	25118
 demam	25118
 sains	25118
+temen	25118
 asyik	24547
 busuk	24547
 human	24547
@@ -1968,6 +2045,7 @@ sopir	22387
 start	22387
 horor	21877
 iklim	21877
+kanak	21877
 latin	21877
 lilin	21877
 panel	21877
@@ -2091,6 +2169,7 @@ salib	16218
 semak	16218
 solid	16218
 tegak	16218
+trims	16218
 deras	15848
 ganja	15848
 mabuk	15848
@@ -2136,6 +2215,7 @@ saldo	14454
 samar	14454
 sikat	14454
 absen	14125
+dapet	14125
 didik	14125
 kabut	14125
 lapis	14125
@@ -2163,6 +2243,7 @@ lukis	13489
 modus	13489
 patuh	13489
 tomat	13489
+break	13182
 fiksi	13182
 ganas	13182
 kawah	13182
@@ -2196,6 +2277,7 @@ kumis	12589
 laris	12589
 minim	12589
 ormas	12589
+panda	12589
 sejam	12589
 sidik	12589
 solar	12589
@@ -2229,6 +2311,7 @@ irama	11748
 iseng	11748
 katak	11748
 kubah	11748
+lumba	11748
 manga	11748
 niaga	11748
 pemda	11748
@@ -2290,6 +2373,7 @@ mekar	10471
 opera	10471
 prodi	10471
 ratna	10471
+salad	10471
 sedan	10471
 silat	10471
 tuaku	10471
@@ -2310,6 +2394,7 @@ negri	10000
 nyali	10000
 pasif	10000
 salim	10000
+sound	10000
 aksen	9772
 cilik	9772
 dekan	9772
@@ -2349,9 +2434,11 @@ purba	9332
 qatar	9332
 rubah	9332
 skuad	9332
+sushi	9332
 amino	9120
 antik	9120
 biner	9120
+bravo	9120
 catat	9120
 donat	9120
 hilir	9120
@@ -2421,6 +2508,7 @@ emisi	8128
 gurih	8128
 kanal	8128
 keris	8128
+mikir	8128
 peluk	8128
 penyu	8128
 rambu	8128
@@ -2500,6 +2588,7 @@ kenya	6918
 kubus	6918
 licik	6918
 luput	6918
+nyari	6918
 parit	6918
 perum	6918
 rebus	6918
@@ -2521,6 +2610,7 @@ pawai	6760
 pelat	6760
 remeh	6760
 risau	6760
+slank	6760
 wisma	6760
 wulan	6760
 amber	6606
@@ -2556,6 +2646,7 @@ robek	6309
 sahur	6309
 adzan	6165
 anang	6165
+inget	6165
 jamal	6165
 serbu	6165
 tesis	6165
@@ -2567,6 +2658,7 @@ gulat	6025
 jorok	6025
 kurma	6025
 miras	6025
+panca	6025
 ramen	6025
 rusuk	6025
 siput	6025
@@ -2583,6 +2675,7 @@ najis	5888
 pelit	5888
 popok	5888
 rapih	5888
+rasis	5888
 roboh	5888
 sajak	5888
 sekar	5888
@@ -2613,6 +2706,7 @@ pamit	5623
 rewel	5623
 tenar	5623
 dusta	5495
+engga	5495
 galon	5495
 gojek	5495
 karim	5495
@@ -2650,6 +2744,7 @@ cakar	5128
 damar	5128
 flora	5128
 garda	5128
+jadul	5128
 kades	5128
 ledak	5128
 masif	5128
@@ -2658,6 +2753,7 @@ pedih	5128
 posko	5128
 serah	5128
 sinis	5128
+split	5128
 teduh	5128
 altar	5011
 aulia	5011
@@ -2667,6 +2763,7 @@ dirut	5011
 jahit	5011
 jepit	5011
 kompi	5011
+males	5011
 musti	5011
 pegal	5011
 razia	5011
@@ -2710,6 +2807,7 @@ nanda	4677
 nihil	4677
 pedal	4677
 sirup	4677
+widya	4677
 andil	4570
 candu	4570
 cikal	4570
@@ -2749,6 +2847,7 @@ belut	4365
 cacar	4365
 kusut	4365
 laras	4365
+lemot	4365
 nipis	4365
 rimba	4365
 tesla	4365
@@ -2773,11 +2872,13 @@ wanda	4265
 adnan	4168
 cabul	4168
 dodol	4168
+gamer	4168
 jumbo	4168
 kakap	4168
 kidal	4168
 koboi	4168
 kusam	4168
+mimin	4168
 rujak	4168
 silih	4168
 spons	4168
@@ -2816,6 +2917,7 @@ geger	3890
 gugus	3890
 kalem	3890
 keong	3890
+kosan	3890
 omzet	3890
 opium	3890
 rawit	3890
@@ -2825,6 +2927,7 @@ titip	3890
 gotik	3801
 hayat	3801
 johar	3801
+menko	3801
 motel	3801
 paras	3801
 reset	3801
@@ -2904,6 +3007,7 @@ mamak	3467
 mutan	3467
 praja	3467
 retro	3467
+sprei	3467
 urang	3467
 waduh	3467
 benak	3388
@@ -2926,6 +3030,7 @@ resin	3311
 sepuh	3311
 tulip	3311
 abjad	3235
+anggi	3235
 bisik	3235
 darma	3235
 gamat	3235
@@ -2934,6 +3039,8 @@ layer	3235
 lobak	3235
 lukai	3235
 luluh	3235
+malem	3235
+ngaji	3235
 nikel	3235
 notes	3235
 orasi	3235
@@ -2949,6 +3056,7 @@ apung	3162
 ashar	3162
 batur	3162
 demon	3162
+hyang	3162
 keluh	3162
 ketut	3162
 klise	3162
@@ -3038,6 +3146,7 @@ emoji	2691
 hanif	2691
 kobra	2691
 siram	2691
+along	2630
 arung	2630
 awang	2630
 bruto	2630
@@ -3058,6 +3167,7 @@ tuang	2630
 wajan	2630
 walet	2630
 waria	2630
+afgan	2570
 bulir	2570
 grogi	2570
 idiom	2570
@@ -3065,6 +3175,7 @@ infus	2570
 iring	2570
 jerat	2570
 jilat	2570
+kanit	2570
 kirab	2570
 makar	2570
 puyuh	2570
@@ -3088,6 +3199,7 @@ jajak	2454
 jebol	2454
 jeram	2454
 kanda	2454
+ketum	2454
 kusir	2454
 maung	2454
 onani	2454
@@ -3141,6 +3253,7 @@ kabul	2290
 lahap	2290
 legit	2290
 lihai	2290
+luwak	2290
 matai	2290
 pipih	2290
 rahib	2290
@@ -3169,6 +3282,7 @@ becek	2187
 buram	2187
 debar	2187
 dungu	2187
+gokil	2187
 hapal	2187
 kapuk	2187
 ketel	2187
@@ -3176,6 +3290,7 @@ kuyup	2187
 lusin	2187
 mapel	2187
 netra	2187
+otaku	2187
 pakem	2187
 peras	2187
 polio	2187
@@ -3185,9 +3300,11 @@ remas	2187
 salep	2187
 semau	2187
 silet	2187
+slalu	2187
 teler	2187
 ujang	2187
 wagon	2187
+bates	2137
 batok	2137
 diadu	2137
 inang	2137
@@ -3199,6 +3316,7 @@ lakon	2137
 lotre	2137
 ludes	2137
 nekad	2137
+pande	2137
 punca	2137
 samba	2137
 seluk	2137
@@ -3213,6 +3331,7 @@ sabah	2089
 sekop	2089
 sigma	2089
 silap	2089
+struk	2089
 sukun	2089
 angus	2041
 basuh	2041
@@ -3225,6 +3344,7 @@ hafiz	2041
 jalal	2041
 jemur	2041
 kemal	2041
+lanud	2041
 lobus	2041
 matik	2041
 pakde	2041
@@ -3243,6 +3363,7 @@ jalar	1995
 kikir	1995
 mamat	1995
 medik	1995
+nebak	1995
 nilam	1995
 pakis	1995
 ronda	1995
@@ -3250,12 +3371,15 @@ sabat	1995
 semur	1995
 baret	1949
 begal	1949
+bento	1949
 biota	1949
 desak	1949
 doamu	1949
 hadap	1949
+kadis	1949
 pagan	1949
 pakta	1949
+radja	1949
 safar	1949
 sanga	1949
 vegan	1949
@@ -3283,6 +3407,7 @@ gerik	1862
 kalbu	1862
 kukus	1862
 petai	1862
+pileg	1862
 premi	1862
 pusar	1862
 sebal	1862
@@ -3309,10 +3434,12 @@ latif	1778
 linen	1778
 malin	1778
 pahat	1778
+remot	1778
 salwa	1778
 tahir	1778
 talas	1778
 tetek	1778
+toner	1778
 aduan	1737
 bakul	1737
 berai	1737
@@ -3327,6 +3454,7 @@ lulur	1737
 milis	1737
 muram	1737
 sebar	1737
+serem	1737
 takwa	1737
 teruk	1737
 tumis	1737
@@ -3377,6 +3505,7 @@ mirai	1621
 momok	1621
 nyang	1621
 renda	1621
+rouge	1621
 rubin	1621
 rujuk	1621
 rusuh	1621
@@ -3390,6 +3519,7 @@ guruh	1584
 kadir	1584
 katil	1584
 ngilu	1584
+pekon	1584
 sadap	1584
 tempa	1584
 akmal	1548
@@ -3421,6 +3551,7 @@ masya	1513
 milad	1513
 minda	1513
 oncom	1513
+patra	1513
 pokja	1513
 prosa	1513
 rotor	1513
@@ -3466,6 +3597,7 @@ wushu	1445
 beken	1412
 cubit	1412
 falah	1412
+filem	1412
 impas	1412
 ingus	1412
 kalap	1412
@@ -3477,6 +3609,7 @@ rubik	1412
 rubuh	1412
 sling	1412
 tonik	1412
+aloha	1380
 animo	1380
 aster	1380
 baran	1380
@@ -3510,6 +3643,7 @@ tegur	1348
 windu	1348
 andik	1318
 babon	1318
+bagel	1318
 borok	1318
 dawet	1318
 folat	1318
@@ -3526,6 +3660,7 @@ semir	1318
 supel	1318
 tulen	1318
 zahir	1318
+aiptu	1288
 airku	1288
 gaung	1288
 kejap	1288
@@ -3539,6 +3674,7 @@ prada	1288
 sendu	1288
 sepoi	1288
 tarot	1288
+faqih	1258
 gapai	1258
 getol	1258
 jabir	1258
@@ -3571,6 +3707,7 @@ talak	1230
 tebas	1230
 troli	1230
 wafer	1230
+bomba	1202
 buyar	1202
 dieja	1202
 jabal	1202
@@ -3597,11 +3734,15 @@ kecut	1174
 mambo	1174
 mercu	1174
 pacet	1174
+parno	1174
+pedes	1174
 sakai	1174
 unyil	1174
 akang	1148
+antum	1148
 askar	1148
 edema	1148
+jutek	1148
 karsa	1148
 lumen	1148
 nadim	1148
@@ -3622,6 +3763,7 @@ gawai	1122
 grasi	1122
 imbal	1122
 jadah	1122
+jenar	1122
 jubir	1122
 kokas	1122
 koyak	1122
@@ -3635,6 +3777,7 @@ reses	1122
 ruwet	1122
 tanin	1122
 tiran	1122
+toket	1122
 wajik	1122
 bacot	1096
 dawai	1096
@@ -3642,6 +3785,7 @@ hoaks	1096
 oleng	1096
 resik	1096
 salih	1096
+shabu	1096
 sinka	1096
 zuhur	1096
 apron	1071
@@ -3680,16 +3824,19 @@ tuduh	1047
 zenit	1047
 bayak	1023
 bilas	1023
+bumil	1023
 cadar	1023
 delik	1023
 demen	1023
 duane	1023
 kalut	1023
 kribo	1023
+namai	1023
 padma	1023
 poles	1023
 rondo	1023
 samin	1023
+sange	1023
 tajir	1023
 untai	1023
 dengan	9772372
@@ -3733,9 +3880,12 @@ terima	602559
 antara	588843
 apakah	562341
 sayang	562341
+dimana	549540
+disini	549540
 kepala	501187
 selain	467735
 sistem	467735
+apapun	446683
 bilang	436515
 tangan	436515
 tengah	436515
@@ -3895,6 +4045,7 @@ tulang	95499
 kosong	93325
 puncak	93325
 padamu	91201
+diatas	89125
 pabrik	89125
 cerdas	87096
 berisi	85113
@@ -3969,6 +4120,7 @@ batang	58884
 miskin	58884
 sesama	57543
 terjun	57543
+gimana	56234
 kacang	56234
 coklat	54954
 dampak	54954
@@ -4005,6 +4157,7 @@ teknis	47863
 timnas	47863
 dicari	46773
 markas	46773
+nonton	46773
 yahudi	46773
 berkas	45708
 dibaca	45708
@@ -4099,6 +4252,7 @@ letnan	34673
 semula	34673
 tuanya	34673
 unggul	34673
+dugaan	33884
 garuda	33884
 langka	33884
 lemari	33884
@@ -4153,6 +4307,7 @@ ungkap	28840
 ekspor	28183
 kajian	28183
 kritis	28183
+pengen	28183
 sultan	28183
 timbul	28183
 bagimu	27542
@@ -4184,6 +4339,7 @@ logika	25703
 musisi	25703
 telpon	25703
 darimu	25118
+dollar	25118
 futsal	25118
 hormat	25118
 kontes	25118
@@ -4332,8 +4488,10 @@ editor	16595
 gelang	16595
 kemeja	16595
 lempar	16595
+lewati	16595
 magnet	16595
 paspor	16595
+pemkab	16595
 tegang	16595
 utusan	16595
 wacana	16595
@@ -4375,6 +4533,7 @@ buahan	14791
 dukung	14791
 hektar	14791
 karbon	14791
+keatas	14791
 melayu	14791
 pistol	14791
 putera	14791
@@ -4434,6 +4593,7 @@ lorong	12882
 namaku	12882
 sakura	12882
 sekjen	12882
+silver	12882
 tafsir	12882
 asumsi	12589
 berapi	12589
@@ -4478,6 +4638,7 @@ elegan	11481
 jamaah	11481
 kangen	11481
 kondom	11481
+ngerti	11481
 nurani	11481
 pinang	11481
 preman	11481
@@ -4542,6 +4703,7 @@ ajukan	10000
 analis	10000
 angkut	10000
 antena	10000
+asupan	10000
 buatku	10000
 ganjil	10000
 inikah	10000
@@ -4580,13 +4742,16 @@ lembur	9332
 mungil	9332
 sentra	9332
 silang	9332
+ayolah	9120
 diesel	9120
 kurasa	9120
 mangsa	9120
 pastor	9120
+segitu	9120
 sesuka	9120
 slogan	9120
 tuanku	9120
+baikan	8912
 dipuji	8912
 disapa	8912
 ijazah	8912
@@ -4631,6 +4796,7 @@ taufik	8317
 ulangi	8317
 wortel	8317
 zodiak	8317
+bridge	8128
 cerdik	8128
 daring	8128
 import	8128
@@ -4668,6 +4834,7 @@ hayati	7585
 invasi	7585
 marina	7585
 pelari	7585
+pilgub	7585
 pimpin	7585
 podium	7585
 sersan	7585
@@ -4693,6 +4860,7 @@ telaga	7244
 amplop	7079
 belang	7079
 celaka	7079
+estate	7079
 karate	7079
 maunya	7079
 mentor	7079
@@ -4712,6 +4880,7 @@ badung	6760
 bahari	6760
 baling	6760
 beribu	6760
+denger	6760
 gadang	6760
 jemaah	6760
 kaidah	6760
@@ -4797,6 +4966,7 @@ gilang	5754
 hariku	5754
 hunian	5754
 kurung	5754
+minang	5754
 mistis	5754
 pepaya	5754
 safari	5754
@@ -4887,6 +5057,7 @@ kandas	4786
 kenari	4786
 olehmu	4786
 pempek	4786
+ponpes	4786
 relief	4786
 sakral	4786
 sisimu	4786
@@ -4897,6 +5068,7 @@ violet	4786
 angker	4677
 cemara	4677
 delima	4677
+djarum	4677
 kafein	4677
 kalium	4677
 kantuk	4677
@@ -4917,10 +5089,13 @@ mampus	4570
 markus	4570
 mimbar	4570
 sekuel	4570
+sempet	4570
 sensei	4570
 sutera	4570
 takjub	4570
 bitung	4466
+bukaan	4466
+cucian	4466
 gambut	4466
 granit	4466
 guling	4466
@@ -4931,11 +5106,13 @@ siasat	4466
 spiral	4466
 tambak	4466
 tender	4466
+tutupi	4466
 arogan	4365
 bentar	4365
 berair	4365
 binasa	4365
 dajjal	4365
+dateng	4365
 dzikir	4365
 helium	4365
 ironis	4365
@@ -4981,8 +5158,10 @@ lalang	4168
 lobang	4168
 nabati	4168
 neraca	4168
+sereal	4168
 sewaan	4168
 vendor	4168
+yogurt	4168
 doanya	4073
 hanyut	4073
 kanvas	4073
@@ -4997,6 +5176,7 @@ reptil	4073
 sirkus	4073
 syahid	4073
 takluk	4073
+warkop	4073
 agresi	3981
 cambuk	3981
 embrio	3981
@@ -5017,6 +5197,7 @@ biadab	3890
 bunker	3890
 devisa	3890
 endang	3890
+gadjah	3890
 garang	3890
 hikmat	3890
 ilmuan	3890
@@ -5028,6 +5209,7 @@ meniup	3890
 parang	3890
 peluit	3890
 pigmen	3890
+punyai	3890
 rasyid	3890
 retail	3890
 sistim	3890
@@ -5133,6 +5315,7 @@ tengku	3311
 vulgar	3311
 cawang	3235
 cicipi	3235
+dikaji	3235
 linear	3235
 meniti	3235
 ngawur	3235
@@ -5252,6 +5435,7 @@ dibina	2630
 geleng	2630
 giring	2630
 kenyal	2630
+kepsek	2630
 kokain	2630
 mandul	2630
 nabawi	2630
@@ -5259,6 +5443,7 @@ perasa	2630
 proton	2630
 reggae	2630
 riasan	2630
+shogun	2630
 teller	2630
 yakuza	2630
 barumu	2570
@@ -5269,6 +5454,7 @@ kapita	2570
 kecoak	2570
 kontur	2570
 merana	2570
+monggo	2570
 neuron	2570
 peraga	2570
 takbir	2570
@@ -5292,6 +5478,7 @@ making	2511
 mantab	2511
 petaka	2511
 segara	2511
+singel	2511
 tancap	2511
 absurd	2454
 hinaan	2454
@@ -5322,6 +5509,7 @@ baliho	2344
 birahi	2344
 diasuh	2344
 emirat	2344
+gapeka	2344
 jasper	2344
 kalong	2344
 kanwil	2344
@@ -5360,6 +5548,7 @@ suntuk	2290
 aliyah	2238
 dapati	2238
 dicium	2238
+ghetto	2238
 jariku	2238
 karcis	2238
 keladi	2238
@@ -5378,6 +5567,7 @@ botani	2187
 camkan	2187
 curian	2187
 danrem	2187
+dishub	2187
 ditiup	2187
 diundi	2187
 elpiji	2187
@@ -5397,6 +5587,8 @@ yasmin	2187
 corong	2137
 dandan	2137
 fluida	2137
+kernel	2137
+komika	2137
 linier	2137
 resesi	2137
 rumpun	2137
@@ -5419,6 +5611,7 @@ gundah	2041
 ibadat	2041
 kaprah	2041
 nampan	2041
+nempel	2041
 pening	2041
 rekrut	2041
 seenak	2041
@@ -5429,10 +5622,12 @@ fesyen	1995
 kornea	1995
 kronik	1995
 lumpia	1995
+nemuin	1995
 ocehan	1995
 remang	1995
 sampan	1995
 sepeti	1995
+siomay	1995
 sisiku	1995
 suling	1995
 tinjau	1995
@@ -5458,6 +5653,7 @@ genset	1905
 gestur	1905
 intrik	1905
 jamban	1905
+katana	1905
 kloset	1905
 libido	1905
 lontar	1905
@@ -5476,6 +5672,7 @@ embung	1862
 gayung	1862
 guruku	1862
 kedung	1862
+ngakak	1862
 otopsi	1862
 pipimu	1862
 relaks	1862
@@ -5486,6 +5683,7 @@ vanila	1862
 bakpia	1819
 bersua	1819
 cerutu	1819
+dikata	1819
 kendor	1819
 khitan	1819
 makcik	1819
@@ -5507,6 +5705,7 @@ gembel	1778
 joging	1778
 karton	1778
 kejati	1778
+merona	1778
 montir	1778
 notasi	1778
 rejang	1778
@@ -5520,6 +5719,7 @@ ungkit	1778
 valuta	1778
 bahama	1737
 cincau	1737
+cuitan	1737
 diejek	1737
 dihias	1737
 dirham	1737
@@ -5533,6 +5733,7 @@ matras	1737
 metana	1737
 nongol	1737
 oksida	1737
+pilbup	1737
 rintik	1737
 sekala	1737
 semena	1737
@@ -5550,6 +5751,7 @@ aditif	1659
 balada	1659
 belong	1659
 dibela	1659
+diliat	1659
 gepeng	1659
 giling	1659
 hostel	1659
@@ -5592,6 +5794,7 @@ nasyid	1584
 prisma	1584
 rahsia	1584
 sulfat	1584
+wkwkwk	1584
 zamzam	1584
 adukan	1548
 albino	1548
@@ -5616,6 +5819,7 @@ anarki	1513
 ayunda	1513
 bripka	1513
 ciamik	1513
+disdik	1513
 gorden	1513
 halang	1513
 kencur	1513
@@ -5649,6 +5853,7 @@ sinode	1479
 tatang	1479
 astral	1445
 atasku	1445
+biarin	1445
 brewok	1445
 dianya	1445
 gaptek	1445
@@ -5658,6 +5863,7 @@ gimbal	1445
 glodok	1445
 hangar	1445
 harkat	1445
+mapala	1445
 morfin	1445
 pengap	1445
 tumpuk	1445
@@ -5703,6 +5909,7 @@ bidara	1348
 biduan	1348
 cekcok	1348
 diiris	1348
+dinkes	1348
 kalang	1348
 kasihi	1348
 kuakui	1348
@@ -5717,6 +5924,7 @@ umurmu	1348
 amukan	1318
 bagong	1318
 bengal	1318
+eureka	1318
 gegana	1318
 imanmu	1318
 itikad	1318
@@ -5725,15 +5933,20 @@ legowo	1318
 mandau	1318
 manset	1318
 mozaik	1318
+nembak	1318
 rasial	1318
 retret	1318
 sehati	1318
 seutas	1318
 sirene	1318
 abrasi	1288
+anjali	1288
 arakan	1288
 atensi	1288
+bansos	1288
 baskom	1288
+benahi	1288
+buzzer	1288
 darwis	1288
 daulah	1288
 doeloe	1288
@@ -5782,6 +5995,7 @@ khatam	1230
 kumala	1230
 masala	1230
 melobi	1230
+nyerah	1230
 pailit	1230
 peniti	1230
 plafon	1230
@@ -5810,6 +6024,7 @@ sekota	1202
 tajwid	1202
 tester	1202
 dental	1174
+fahami	1174
 hadang	1174
 hubung	1174
 lakban	1174
@@ -5818,11 +6033,13 @@ nestor	1174
 penyet	1174
 periuk	1174
 pulsar	1174
+slayer	1174
 teolog	1174
 tomang	1174
 vanili	1174
 abunya	1148
 amblas	1148
+aswaja	1148
 atsiri	1148
 blower	1148
 bonjol	1148
@@ -5861,6 +6078,7 @@ anyang	1096
 bantah	1096
 bentol	1096
 cicero	1096
+dalami	1096
 disket	1096
 faktur	1096
 fandom	1096
@@ -5892,9 +6110,11 @@ elukan	1047
 isotop	1047
 kampak	1047
 katrol	1047
+kauman	1047
 klausa	1047
 menaik	1047
 mezbah	1047
+nastar	1047
 pakcik	1047
 parkit	1047
 rektum	1047
@@ -5914,6 +6134,7 @@ bonang	1023
 fakfak	1023
 geiger	1023
 komuni	1023
+kripto	1023
 manula	1023
 melata	1023
 meramu	1023
@@ -6139,8 +6360,10 @@ pejabat	74131
 setahun	74131
 angkasa	72443
 koleksi	72443
+ngomong	72443
 dokumen	70794
 kontrak	70794
+sarapan	70794
 baiknya	69183
 hukuman	69183
 jurusan	69183
@@ -6169,6 +6392,7 @@ padanya	61659
 pegawai	61659
 pelajar	61659
 raksasa	61659
+seputar	60255
 terkena	60255
 aslinya	58884
 berhati	58884
@@ -6181,6 +6405,7 @@ berumur	57543
 jabatan	57543
 kalimat	57543
 lampung	57543
+lupakan	57543
 mengisi	57543
 belanja	56234
 makanya	56234
@@ -6211,6 +6436,7 @@ tunggal	52480
 beserta	51286
 gerbang	51286
 manfaat	51286
+merubah	51286
 beragam	50118
 dinilai	50118
 hiburan	50118
@@ -6389,6 +6615,7 @@ temanmu	28840
 barusan	28183
 bukunya	28183
 cemburu	28183
+makasih	28183
 organik	28183
 praktik	28183
 premier	28183
@@ -6427,6 +6654,7 @@ animasi	25118
 kandung	25118
 koneksi	25118
 meledak	25118
+pecinta	25118
 perihal	25118
 seharga	25118
 terkini	25118
@@ -6458,6 +6686,7 @@ formula	23442
 kencang	23442
 memukul	23442
 pembaca	23442
+posting	23442
 terduga	23442
 barisan	22908
 menunda	22908
@@ -6521,6 +6750,7 @@ bayaran	19498
 berdaya	19498
 dibakar	19498
 jenjang	19498
+kerjaan	19498
 menduga	19498
 penalti	19498
 relawan	19498
@@ -6616,6 +6846,7 @@ peranan	16595
 tembaga	16595
 tertipu	16595
 andalan	16218
+diklaim	16218
 farmasi	16218
 garansi	16218
 manager	16218
@@ -6672,12 +6903,14 @@ sinilah	14791
 tsunami	14791
 berlian	14454
 dataran	14454
+dikasih	14454
 diputar	14454
 ganteng	14454
 genggam	14454
 gerhana	14454
 kedelai	14454
 lingkup	14454
+ngapain	14454
 pecahan	14454
 privasi	14454
 dermaga	14125
@@ -6722,6 +6955,7 @@ sirkuit	13182
 subsidi	13182
 telapak	13182
 terusan	13182
+amankan	12882
 bengkel	12882
 berdiam	12882
 cetakan	12882
@@ -6771,6 +7005,7 @@ tawanan	12022
 tubuhku	12022
 argumen	11748
 dicabut	11748
+dilepas	11748
 jauhkan	11748
 kantung	11748
 parasit	11748
@@ -6830,6 +7065,8 @@ baginda	10232
 bertema	10232
 cangkir	10232
 deretan	10232
+kebawah	10232
+matikan	10232
 perokok	10232
 sebelas	10232
 bawahan	10000
@@ -6890,6 +7127,7 @@ penanda	9120
 penentu	9120
 penyair	9120
 reaktor	9120
+rumahan	9120
 siluman	9120
 akuntan	8912
 barulah	8912
@@ -6944,6 +7182,7 @@ samudra	8317
 sehabis	8317
 sekarat	8317
 spontan	8317
+station	8317
 trailer	8317
 tubuhmu	8317
 harfiah	8128
@@ -6962,6 +7201,7 @@ meletus	7943
 menguap	7943
 pemakan	7943
 pemasok	7943
+sebagus	7943
 teramat	7943
 berjaga	7762
 bermata	7762
@@ -7015,6 +7255,7 @@ terumbu	7413
 transit	7413
 wajahku	7413
 berkuda	7244
+butiran	7244
 maulana	7244
 melirik	7244
 memasok	7244
@@ -7036,8 +7277,10 @@ bingkai	6918
 desktop	6918
 diatasi	6918
 dihiasi	6918
+diulang	6918
 duniawi	6918
 fanatik	6918
+fikiran	6918
 imigran	6918
 irigasi	6918
 jarinya	6918
@@ -7048,6 +7291,7 @@ mentari	6918
 moneter	6918
 pemakai	6918
 pengisi	6918
+printer	6918
 regular	6918
 sikapmu	6918
 berhala	6760
@@ -7068,6 +7312,8 @@ gitaris	6606
 glukosa	6606
 kotanya	6606
 mending	6606
+ngantuk	6606
+pebalap	6606
 realita	6606
 telefon	6606
 trotoar	6606
@@ -7088,6 +7334,7 @@ suaramu	6456
 torpedo	6456
 traktir	6456
 berbaur	6309
+dipikir	6309
 ditukar	6309
 jasmani	6309
 keriput	6309
@@ -7223,6 +7470,7 @@ mulutku	5248
 narator	5248
 pinggul	5248
 rendang	5248
+sepekan	5248
 silikon	5248
 tekstil	5248
 tipikal	5248
@@ -7302,6 +7550,8 @@ risalah	4786
 swadaya	4786
 tamunya	4786
 teguran	4786
+terekam	4786
+tjahaja	4786
 tuannya	4786
 tugasku	4786
 bahtera	4677
@@ -7362,6 +7612,7 @@ peminat	4365
 pencuci	4365
 presisi	4365
 akarnya	4265
+anugrah	4265
 buletin	4265
 cempaka	4265
 dididik	4265
@@ -7429,6 +7680,7 @@ gergaji	3981
 kembung	3981
 kicauan	3981
 kulitmu	3981
+orderan	3981
 perpres	3981
 setoran	3981
 susunya	3981
@@ -7455,6 +7707,7 @@ perajin	3890
 sentosa	3890
 tanggap	3890
 teratai	3890
+terluar	3890
 bahunya	3801
 belilah	3801
 galanya	3801
@@ -7472,11 +7725,14 @@ seindah	3801
 steroid	3801
 tarikan	3801
 terurai	3801
+dicerna	3715
+disebar	3715
 feminin	3715
 jalanku	3715
 kecilmu	3715
 ketupat	3715
 kuatkan	3715
+ngeliat	3715
 pusaran	3715
 refleks	3715
 sinergi	3715
@@ -7503,6 +7759,7 @@ berduri	3548
 berkaki	3548
 bolivia	3548
 brankas	3548
+candaan	3548
 dikunci	3548
 durhaka	3548
 jeritan	3548
@@ -7594,6 +7851,7 @@ kulitku	3235
 leluasa	3235
 melahap	3235
 montana	3235
+namakan	3235
 pemeluk	3235
 perabot	3235
 peretas	3235
@@ -7620,6 +7878,7 @@ suaraku	3162
 terapan	3162
 absolut	3090
 akhiran	3090
+barokah	3090
 berbisa	3090
 bijinya	3090
 dijajah	3090
@@ -7636,6 +7895,7 @@ peramal	3090
 persada	3090
 royalti	3090
 serambi	3090
+tertata	3090
 tumpeng	3090
 alumnus	3019
 bernada	3019
@@ -7696,6 +7956,7 @@ autisme	2818
 bidikan	2818
 cegukan	2818
 cincang	2818
+dicoret	2818
 disegel	2818
 estafet	2818
 gemuruh	2818
@@ -7724,6 +7985,7 @@ paprika	2754
 pelapis	2754
 sandang	2754
 tasawuf	2754
+terukur	2754
 testing	2754
 timbang	2754
 belokan	2691
@@ -7770,6 +8032,7 @@ dibalut	2570
 dijahit	2570
 dipeluk	2570
 makelar	2570
+mikirin	2570
 motorik	2570
 nirwana	2570
 pertapa	2570
@@ -7824,6 +8087,7 @@ bendung	2398
 brigade	2398
 ditawar	2398
 gerimis	2398
+janjian	2398
 jebolan	2398
 kamarmu	2398
 katalis	2398
@@ -7855,6 +8119,7 @@ blender	2290
 cengkeh	2290
 dikecam	2290
 gletser	2290
+healing	2290
 mengena	2290
 persona	2290
 raharja	2290
@@ -7889,6 +8154,7 @@ buritan	2187
 dijerat	2187
 ekspres	2187
 periang	2187
+puaskan	2187
 reserse	2187
 sebutir	2187
 serbuan	2187
@@ -7897,6 +8163,7 @@ belukar	2137
 berulah	2137
 blokade	2137
 bulatan	2137
+colokan	2137
 glamour	2137
 hambamu	2137
 kanguru	2137
@@ -7957,6 +8224,7 @@ sikapku	2041
 songket	2041
 ventura	2041
 ajalnya	1995
+artikan	1995
 bacanya	1995
 balutan	1995
 berhias	1995
@@ -7996,6 +8264,7 @@ mencaci	1949
 menerka	1949
 mentang	1949
 meredup	1949
+nyobain	1949
 pemusik	1949
 pertiga	1949
 petikan	1949
@@ -8012,6 +8281,7 @@ kecupan	1905
 kolagen	1905
 kukunya	1905
 lonjong	1905
+manggil	1905
 meratap	1905
 moncong	1905
 pamflet	1905
@@ -8067,6 +8337,7 @@ oleskan	1778
 pranata	1778
 sableng	1778
 secarik	1778
+sedarah	1778
 sepaham	1778
 terkira	1778
 tersipu	1778
@@ -8178,7 +8449,9 @@ pindang	1548
 ratapan	1548
 sebilah	1548
 seronok	1548
+tujukan	1548
 abdomen	1513
+advisor	1513
 agraris	1513
 berbual	1513
 berbusa	1513
@@ -8187,6 +8460,7 @@ berpadu	1513
 burukmu	1513
 desimal	1513
 diemban	1513
+disekap	1513
 faktual	1513
 figuran	1513
 kasihku	1513
@@ -8205,6 +8479,7 @@ bimbing	1479
 curigai	1479
 dialiri	1479
 dijebak	1479
+hasutan	1479
 izinnya	1479
 jualnya	1479
 kelakar	1479
@@ -8219,6 +8494,7 @@ merogoh	1479
 monolog	1479
 mubazir	1479
 polanya	1479
+rilisan	1479
 rosario	1479
 spartan	1479
 tengkuk	1479
@@ -8327,6 +8603,7 @@ tataran	1318
 wangsit	1318
 agamamu	1288
 akherat	1288
+babinsa	1288
 belawan	1288
 berasap	1288
 berlima	1288
@@ -8342,10 +8619,12 @@ kundang	1288
 lengser	1288
 manismu	1288
 melorot	1288
+memfoto	1288
 menilik	1288
 perusuh	1288
 prangko	1288
 sediaan	1288
+sukakan	1288
 suksesi	1288
 tamatan	1288
 tawakal	1288
@@ -8353,11 +8632,13 @@ tribune	1288
 abangku	1258
 berkait	1258
 bujukan	1258
+diracun	1258
 drakula	1258
 feromon	1258
 ketimun	1258
 komuter	1258
 kuatlah	1258
+lalapan	1258
 lidahmu	1258
 penanya	1258
 putriku	1258
@@ -8376,6 +8657,7 @@ jambang	1230
 kabilah	1230
 kemelut	1230
 mangkir	1230
+matsuri	1230
 mayones	1230
 merekah	1230
 mursyid	1230
@@ -8394,6 +8676,7 @@ belaian	1202
 beroleh	1202
 bunting	1202
 dihalau	1202
+diorder	1202
 etalase	1202
 ikutlah	1202
 janjiku	1202
@@ -8416,6 +8699,7 @@ wirawan	1202
 bakaran	1174
 bapakku	1174
 batinku	1174
+bertato	1174
 bertuan	1174
 dendeng	1174
 erangan	1174
@@ -8443,6 +8727,7 @@ melarat	1148
 melepuh	1148
 melongo	1148
 presdir	1148
+ratakan	1148
 rematik	1148
 sampean	1148
 smoking	1148
@@ -8469,11 +8754,13 @@ semanis	1122
 setakat	1122
 tepinya	1122
 upahnya	1122
+webinar	1122
 adaptor	1096
 amandel	1096
 arabika	1096
 bapakmu	1096
 belarus	1096
+berizin	1096
 bikinan	1096
 debutan	1096
 dijarah	1096
@@ -8487,6 +8774,7 @@ nirmala	1096
 obsesif	1096
 panelis	1096
 pesilat	1096
+pinguin	1096
 ponakan	1096
 puntung	1096
 salamku	1096
@@ -8496,6 +8784,7 @@ darahmu	1071
 dibasmi	1071
 geraham	1071
 hujatan	1071
+kejepit	1071
 kepepet	1071
 klorida	1071
 menyela	1071
@@ -8503,6 +8792,7 @@ oksidan	1071
 paragon	1071
 pemahat	1071
 perutmu	1071
+pesohor	1071
 priyayi	1071
 sejagat	1071
 suryani	1071
@@ -8583,6 +8873,7 @@ menunggu	295120
 berharap	288403
 terdapat	281838
 nasional	269153
+silahkan	269153
 kekuatan	257039
 mencapai	251188
 berhenti	239883
@@ -8790,6 +9081,7 @@ tumbuhan	46773
 bertahun	45708
 komentar	45708
 operator	45708
+orangtua	45708
 profesor	45708
 wajahnya	45708
 membuang	44668
@@ -8825,6 +9117,7 @@ romantis	39810
 tercatat	39810
 utamanya	39810
 asuransi	38904
+berfikir	38904
 berjanji	38904
 diangkat	38904
 hitungan	38904
@@ -8932,6 +9225,7 @@ bermakna	28840
 dikelola	28840
 dipimpin	28840
 kabarnya	28840
+kapanpun	28840
 keliling	28840
 menembus	28840
 menyusun	28840
@@ -9071,6 +9365,7 @@ berbunyi	18620
 diabetes	18620
 keluaran	18620
 keraguan	18620
+lewatkan	18620
 lindungi	18620
 menginap	18620
 menonjol	18620
@@ -9092,6 +9387,7 @@ diajukan	17782
 dikuasai	17782
 dipegang	17782
 eksekusi	17782
+kalahkan	17782
 lembaran	17782
 serentak	17782
 terburuk	17782
@@ -9136,6 +9432,7 @@ pembuluh	15848
 realitas	15848
 sentuhan	15848
 beratnya	15488
+bernafas	15488
 berturut	15488
 diakhiri	15488
 karyanya	15488
@@ -9175,6 +9472,7 @@ tumpukan	14454
 variabel	14454
 belitung	14125
 beranjak	14125
+darimana	14125
 desainer	14125
 lahirnya	14125
 mahkamah	14125
@@ -9195,6 +9493,7 @@ perutnya	13803
 saksikan	13803
 sengketa	13803
 bawahnya	13489
+berbahan	13489
 bertukar	13489
 dekatnya	13489
 denganku	13489
@@ -9259,6 +9558,7 @@ psikolog	12022
 salahkan	12022
 sinopsis	12022
 almarhum	11748
+berisiko	11748
 bersedih	11748
 budidaya	11748
 imigrasi	11748
@@ -9282,6 +9582,7 @@ kapolres	11481
 mencolok	11481
 terdepan	11481
 terhenti	11481
+aktifkan	11220
 bibirnya	11220
 biologis	11220
 dijalani	11220
@@ -9346,9 +9647,11 @@ lawannya	10000
 obligasi	10000
 penjajah	10000
 sembunyi	10000
+batubara	9772
 berambut	9772
 bergetar	9772
 disadari	9772
+kritikan	9772
 maknanya	9772
 mengutuk	9772
 pakailah	9772
@@ -9389,6 +9692,7 @@ mengidap	8912
 panorama	8912
 pengaman	8912
 pengasuh	8912
+terjawab	8912
 tersusun	8912
 alangkah	8709
 darahnya	8709
@@ -9417,6 +9721,7 @@ bulannya	8317
 diadopsi	8317
 diproses	8317
 ditakuti	8317
+hasilkan	8317
 kepalaku	8317
 kesatria	8317
 letakkan	8317
@@ -9443,6 +9748,7 @@ didasari	7943
 federasi	7943
 kanannya	7943
 khayalan	7943
+lagipula	7943
 makannya	7943
 martabat	7943
 meditasi	7943
@@ -9485,6 +9791,7 @@ akuisisi	7413
 asteroid	7413
 bapaknya	7413
 bodohnya	7413
+dikritik	7413
 kolektor	7413
 lehernya	7413
 mengolah	7413
@@ -9518,8 +9825,10 @@ nantikan	7079
 praktisi	7079
 tangisan	7079
 bantalan	6918
+berbayar	6918
 berkemah	6918
 genetika	6918
+hadirkan	6918
 janjikan	6918
 khalayak	6918
 kolektif	6918
@@ -9536,6 +9845,7 @@ familiar	6760
 insomnia	6760
 janjinya	6760
 kelakuan	6760
+kesiapan	6760
 mendidih	6760
 menepati	6760
 menguras	6760
@@ -9548,6 +9858,7 @@ cawapres	6606
 hospital	6606
 jenisnya	6606
 menculik	6606
+menelpon	6606
 menjerit	6606
 neneknya	6606
 pemetaan	6606
@@ -9587,6 +9898,7 @@ diwarnai	6165
 karnaval	6165
 kompromi	6165
 kosakata	6165
+mangrove	6165
 pecahkan	6165
 pemangku	6165
 penolong	6165
@@ -9595,12 +9907,15 @@ suspensi	6165
 telegram	6165
 teleskop	6165
 tempatmu	6165
+tuliskan	6165
 forensik	6025
+gratisan	6025
 historis	6025
 jelasnya	6025
 kakeknya	6025
 kapalnya	6025
 kawannya	6025
+keliatan	6025
 kognitif	6025
 penambah	6025
 pencinta	6025
@@ -9626,6 +9941,7 @@ tidurlah	5888
 aparatur	5754
 berlabuh	5754
 berwajah	5754
+hiduplah	5754
 jangkrik	5754
 jatuhkan	5754
 kekinian	5754
@@ -9644,6 +9960,7 @@ ketapang	5623
 khilafah	5623
 kopassus	5623
 merampas	5623
+parkiran	5623
 sebatang	5623
 selembar	5623
 superior	5623
@@ -9674,16 +9991,20 @@ ambillah	5370
 andalkan	5370
 berbadan	5370
 berdebar	5370
+beritahu	5370
 berpuasa	5370
 bersusah	5370
 bertubuh	5370
+biasakan	5370
 cukuplah	5370
 diangkut	5370
+dipindah	5370
 gorengan	5370
 hartanya	5370
 inspeksi	5370
 kapolsek	5370
 keanehan	5370
+melambat	5370
 mendunia	5370
 mengemis	5370
 menjahit	5370
@@ -9696,6 +10017,7 @@ berbakti	5248
 bercakap	5248
 dibantai	5248
 dikepung	5248
+keseruan	5248
 melunasi	5248
 platinum	5248
 renungan	5248
@@ -9869,6 +10191,7 @@ menjebak	4073
 menyamai	4073
 plankton	4073
 sepulang	4073
+souvenir	4073
 terkubur	4073
 terpakai	4073
 utamakan	4073
@@ -9884,6 +10207,7 @@ mikrofon	3981
 pajangan	3981
 pelbagai	3981
 penamaan	3981
+percepat	3981
 portabel	3981
 sindikat	3981
 spektrum	3981
@@ -9909,6 +10233,7 @@ berlutut	3801
 bersayap	3801
 diplomat	3801
 domisili	3801
+fikirkan	3801
 hipnotis	3801
 lampunya	3801
 lemparan	3801
@@ -9975,6 +10300,7 @@ terseret	3548
 angklung	3467
 berempat	3467
 berhemat	3467
+berpasir	3467
 berpesta	3467
 bertaraf	3467
 dikagumi	3467
@@ -10111,11 +10437,13 @@ seruling	3019
 spesimen	3019
 studinya	3019
 tegaskan	3019
+bahagian	2951
 bergaris	2951
 bernomor	2951
 berserah	2951
 berutang	2951
 cemberut	2951
+dengerin	2951
 dibaptis	2951
 elevator	2951
 keaslian	2951
@@ -10134,6 +10462,7 @@ teoritis	2951
 bantaran	2884
 bermotif	2884
 birokrat	2884
+ditindak	2884
 ingatkah	2884
 keguruan	2884
 menaungi	2884
@@ -10173,6 +10502,7 @@ tentulah	2754
 balikkan	2691
 defensif	2691
 dipantau	2691
+hidrolik	2691
 importir	2691
 imunitas	2691
 informan	2691
@@ -10198,6 +10528,7 @@ bergurau	2630
 bersalin	2630
 bertutur	2630
 bumerang	2630
+disuntik	2630
 kusimpan	2630
 membelai	2630
 mendiami	2630
@@ -10233,6 +10564,7 @@ rintisan	2570
 semboyan	2570
 sesukamu	2570
 simetris	2570
+sistemik	2570
 wastafel	2570
 bengawan	2511
 berdusta	2511
@@ -10244,6 +10576,7 @@ falsafah	2511
 hentinya	2511
 ikutilah	2511
 kebutaan	2511
+masuklah	2511
 menjerat	2511
 momongan	2511
 pencakar	2511
@@ -10283,6 +10616,7 @@ santapan	2398
 sewenang	2398
 timbunan	2398
 tumbukan	2398
+berendam	2344
 bergulat	2344
 botolnya	2344
 distorsi	2344
@@ -10317,10 +10651,12 @@ pantauan	2290
 penengah	2290
 pengolah	2290
 perantau	2290
+pertamax	2290
 rusaknya	2290
 senyummu	2290
 sudutnya	2290
 terdidik	2290
+utarakan	2290
 alaminya	2238
 bergumam	2238
 bermodal	2238
@@ -10366,6 +10702,7 @@ terpejam	2187
 berganda	2137
 berpijak	2137
 diulangi	2137
+intisari	2137
 layangan	2137
 melambai	2137
 melucuti	2137
@@ -10379,6 +10716,7 @@ notabene	2137
 pantatku	2137
 sabarlah	2137
 sakramen	2137
+sepintar	2137
 sintetik	2137
 tafsiran	2137
 tamparan	2137
@@ -10417,6 +10755,7 @@ paranoid	2041
 pembayar	2041
 pengerat	2041
 penggawa	2041
+rektorat	2041
 selangit	2041
 sundulan	2041
 terbawah	2041
@@ -10459,6 +10798,7 @@ diaspora	1905
 dihantam	1905
 emailnya	1905
 inkubasi	1905
+kejurnas	1905
 mengaduk	1905
 menggema	1905
 menyayat	1905
@@ -10467,6 +10807,7 @@ mitigasi	1905
 normatif	1905
 pengecer	1905
 perangai	1905
+perbesar	1905
 takhayul	1905
 tektonik	1905
 tutupnya	1905
@@ -10476,6 +10817,7 @@ belulang	1862
 berangan	1862
 berkabut	1862
 dilelang	1862
+disayang	1862
 gadungan	1862
 kehausan	1862
 menggebu	1862
@@ -10502,6 +10844,7 @@ ortodoks	1819
 penggoda	1819
 prakarsa	1819
 sibuknya	1819
+simbolik	1819
 tentakel	1819
 tercakup	1819
 terkapar	1819
@@ -10527,6 +10870,7 @@ standart	1778
 temporal	1778
 audiensi	1737
 bercorak	1737
+cekungan	1737
 disikapi	1737
 galangan	1737
 genosida	1737
@@ -10545,6 +10889,7 @@ merumput	1737
 mutilasi	1737
 peminjam	1737
 serendah	1737
+turunlah	1737
 aklamasi	1698
 bergosip	1698
 berkutik	1698
@@ -10583,6 +10928,7 @@ rentenir	1659
 sambilan	1659
 bendanya	1621
 bolehkan	1621
+dirasuki	1621
 disergap	1621
 gadisnya	1621
 harafiah	1621
@@ -10591,6 +10937,8 @@ kelucuan	1621
 klitoris	1621
 meladeni	1621
 menawari	1621
+panwaslu	1621
+penampil	1621
 pengibar	1621
 pentolan	1621
 penyedot	1621
@@ -10604,6 +10952,7 @@ serempak	1621
 alasanmu	1584
 antologi	1584
 bebannya	1584
+berdegup	1584
 berkumis	1584
 didiknya	1584
 difitnah	1584
@@ -10627,6 +10976,7 @@ tertelan	1584
 akrabnya	1548
 beginian	1548
 beraspal	1548
+blusukan	1548
 buanglah	1548
 celengan	1548
 dikasihi	1548
@@ -10687,8 +11037,10 @@ perkamen	1479
 rakernas	1479
 rangsang	1479
 robotika	1479
+sampeyan	1479
 bayarkan	1445
 cacingan	1445
+cintakan	1445
 diracuni	1445
 direstui	1445
 disokong	1445
@@ -10737,6 +11089,7 @@ berkedok	1348
 dihakimi	1348
 hantaman	1348
 kelupaan	1348
+kepengen	1348
 keuletan	1348
 mengacak	1348
 menumbuk	1348
@@ -10774,6 +11127,7 @@ mencinta	1288
 mengkudu	1288
 meringis	1288
 penuhnya	1288
+pesepeda	1288
 sedianya	1288
 sensorik	1288
 sokongan	1288
@@ -10786,15 +11140,19 @@ abadikan	1258
 arogansi	1258
 bahasamu	1258
 berkerut	1258
+bordeaux	1258
 dibebani	1258
 disentri	1258
 dongkrak	1258
 jelaslah	1258
 kepincut	1258
 kubangan	1258
+linimasa	1258
 pencabut	1258
 polaroid	1258
 proaktif	1258
+sayonara	1258
+wajibkan	1258
 anterior	1230
 bertabur	1230
 disengat	1230
@@ -10897,6 +11255,7 @@ menambal	1122
 menjamah	1122
 menyalak	1122
 merembet	1122
+outbound	1122
 panahnya	1122
 paruhnya	1122
 penghias	1122
@@ -10911,6 +11270,7 @@ gandrung	1096
 kejarlah	1096
 kerawang	1096
 kerelaan	1096
+lantamal	1096
 memindah	1096
 menjelek	1096
 monogami	1096
@@ -10937,6 +11297,7 @@ mengocok	1071
 mengucur	1071
 menikung	1071
 ombaknya	1071
+penjawab	1071
 seumpama	1071
 tahlilan	1071
 temporer	1071
@@ -10968,6 +11329,7 @@ bergolak	1023
 bermulut	1023
 bernyali	1023
 biasalah	1023
+blackout	1023
 bundanya	1023
 cendawan	1023
 curahkan	1023

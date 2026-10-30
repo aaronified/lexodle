@@ -11,6 +11,10 @@
 /// When every slot is a letter the cursor parks past the end and typing does
 /// nothing until a tile is selected, as a full row always did. Backspace clears
 /// the selected slot, or, from an empty one, the slot before it.
+///
+/// A letter can be locked (a double tap on its tile, again to unlock). A locked
+/// letter is not typed over and backspace passes it by; [next] clears the row
+/// for the following guess but leaves the locked letters in place.
 class GuessInput {
   GuessInput(this.length) : _slots = List.filled(length, '');
 
@@ -19,7 +23,17 @@ class GuessInput {
 
   final int length;
   final List<String> _slots;
+  final Set<int> _locked = {};
+
+  /// Letters locked by the game (lockdown, a letter in the right place): they
+  /// cannot be unlocked.
+  final Set<int> _fixed = {};
   int _cursor = 0;
+  int _lastTap = -1;
+  DateTime _lastTapAt = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// Two taps on one tile closer than this are a double tap.
+  static const doubleTap = Duration(milliseconds: 350);
 
   /// The selected slot, or [length] when the row is full and nothing is.
   int get cursor => _cursor;
@@ -30,6 +44,13 @@ class GuessInput {
   String slot(int i) => _slots[i];
 
   bool isLetter(int i) => _slots[i].isNotEmpty && _slots[i] != blank;
+
+  bool isLocked(int i) => _locked.contains(i);
+
+  /// Whether the lock on slot [i] is the game's: it cannot be taken off.
+  bool isFixed(int i) => _fixed.contains(i);
+
+  bool get hasLocked => _locked.isNotEmpty;
 
   bool get hasBlank => _slots.contains(blank);
 
@@ -44,7 +65,11 @@ class GuessInput {
   int type(String ch, Set<String> letters) {
     final c = ch == '_' ? blank : ch;
     if (_cursor >= length || (c != blank && !letters.contains(c))) return -1;
-    final at = _cursor;
+    var at = _cursor;
+    if (isLocked(at)) {
+      at = _nextUnlocked(at);
+      if (at < 0) return -1;
+    }
     _slots[at] = c;
     _cursor = _nextOpen(at);
     return at;
@@ -54,7 +79,10 @@ class GuessInput {
   /// the slot cleared, or -1 when there was nothing to clear.
   int back() {
     var at = _cursor;
-    if (at >= length || _slots[at].isEmpty) at--;
+    if (at >= length || _slots[at].isEmpty || isLocked(at)) at--;
+    while (at >= 0 && isLocked(at)) {
+      at--;
+    }
     if (at < 0) return -1;
     _slots[at] = '';
     _cursor = at;
@@ -64,6 +92,33 @@ class GuessInput {
   /// Selects slot [i] (a tap on its tile).
   void select(int i) {
     if (i >= 0 && i < length) _cursor = i;
+  }
+
+  /// A tap on tile [i]: selects it, and a second tap on it within [doubleTap]
+  /// locks its letter, or unlocks it. Returns whether that was a double tap.
+  bool tap(int i, {DateTime? at}) {
+    final now = at ?? DateTime.now();
+    final again = i == _lastTap && now.difference(_lastTapAt) <= doubleTap;
+    select(i);
+    if (again) {
+      toggleLock(i);
+      _lastTap = -1;
+    } else {
+      _lastTap = i;
+      _lastTapAt = now;
+    }
+    return again;
+  }
+
+  /// Locks the letter in slot [i], or unlocks it. A slot with no letter in it
+  /// cannot be locked. Returns whether the slot is locked now.
+  bool toggleLock(int i) {
+    if (i < 0 || i >= length) return false;
+    if (_fixed.contains(i)) return true;
+    if (_locked.remove(i)) return false;
+    if (!isLetter(i)) return false;
+    _locked.add(i);
+    return true;
   }
 
   /// Moves the cursor [by] slots (the arrow keys): -1 left, 1 right. It stops
@@ -76,13 +131,40 @@ class GuessInput {
     _cursor = (_cursor + by).clamp(0, length - 1);
   }
 
+  /// Empties the row and unlocks everything (a new game).
   void clear() {
     _slots.fillRange(0, length, '');
+    _locked.clear();
+    _fixed.clear();
     _cursor = 0;
+    _lastTap = -1;
+  }
+
+  /// Puts each of [letters] (slot, letter) in its place and locks it for good,
+  /// then selects the first slot that is open.
+  void lockFixed(Iterable<(int, String)> letters) {
+    for (final (i, ch) in letters) {
+      if (i < 0 || i >= length) continue;
+      _slots[i] = ch;
+      _locked.add(i);
+      _fixed.add(i);
+    }
+    _cursor = _nextOpen(-1);
+  }
+
+  /// Empties the row for the next guess, keeping the locked letters.
+  void next() {
+    for (var i = 0; i < length; i++) {
+      if (!isLocked(i)) _slots[i] = '';
+    }
+    _cursor = _nextOpen(-1);
+    _lastTap = -1;
   }
 
   /// Puts a whole word in, as the solver's "use this" does.
   void setWord(String word) {
+    _locked.clear();
+    _fixed.clear();
     for (var i = 0; i < length; i++) {
       _slots[i] = i < word.length ? word[i] : '';
     }
@@ -99,5 +181,14 @@ class GuessInput {
       if (!isLetter(i)) return i;
     }
     return length;
+  }
+
+  /// The first unlocked slot after [from], wrapping round, else -1.
+  int _nextUnlocked(int from) {
+    for (var k = 1; k <= length; k++) {
+      final i = (from + k) % length;
+      if (!isLocked(i)) return i;
+    }
+    return -1;
   }
 }

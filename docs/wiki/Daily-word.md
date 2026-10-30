@@ -1,15 +1,25 @@
 # Daily word
 
 Everyone gets the same word on the same date, in every language: the date and the language are
-hashed to pick one of the 3,000 most common words of the language, every one equally likely and no
-other word ever, with no server involved. A word is not picked again within 90 days: each day's
-pick is redrawn if it was a daily in the last 90 days, replayed from a fixed start date (2026-10-26),
-so it depends only on the date and not on when the app was last opened. A daily is always five
-letters and six tries, whatever the settings say.
+hashed to pick a word, with no server involved. **From 2026-10-30** the whole word list is in play and
+each word has a chance on a sigmoid curve of how common it is: the 2,500 commonest words are almost
+equally likely, the next 500 fall from 100% to 50% of that, the 500 after fall from 50% to 0%, and
+the rest have almost none. The curve is at half at the 3,000th word and is the same in every
+language, however short its list (a short list most likely means an incomplete one):
+`chance = 1000 / (1 + exp((rank - 3000) / 125))`, in whole numbers so that every device draws the same
+word. Before that date the pick was one of the 3,000 commonest words, each equally likely, and those
+days keep that draw. Every word of the list is a valid guess in a daily, whatever the date.
+
+A word is not picked again within 90 days: each day's pick is redrawn if it was a daily in the last
+90 days, replayed from a fixed start date (2026-10-26, and 2026-10-30 for the curve), so it depends
+only on the date and not on when the app was last opened. A daily is always five letters and six
+tries, whatever the settings say. Its skill and luck are worked out under the same chances the word
+was drawn by, and the review says so.
 
 **Each mode has its own daily.** The quartet and the relay race have a daily of their own: four
-five-letter words that share no letter, drawn from the 3,000 most common by the date, the language
-and the mode, the same for everyone, with 9 tries (quartet) and 10 (relay). The mode in view on the
+five-letter words that share no letter, drawn on the same curve by the date, the language and the
+mode, the same for everyone, with 9 tries (quartet) and 10 (relay). The **lockdown** daily is a
+single word with 6 tries and 5 hearts. The mode in view on the
 home page, which you change with its chevrons or by swiping, decides which daily the daily button
 plays. Each mode has its own streak, calendar and best. It is saved as you go, so closing the page
 cannot reroll it, and it is played once a day.

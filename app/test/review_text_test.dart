@@ -404,7 +404,11 @@ void main() {
       expect(skill, closeTo(rows.reduce((a, b) => a + b) / rows.length, 1));
       await tester.tap(find.byKey(const ValueKey('pill-luck')));
       await tester.pumpAndSettle();
-      expect(find.textContaining('the clues'), findsWidgets);
+      expect(
+        find.textContaining('luck = 100', findRichText: true),
+        findsOneWidget,
+      );
+      expect(find.textContaining('+75%', findRichText: true), findsWidgets);
     });
 
     testWidgets('links open the wiki: pills, picks', (tester) async {

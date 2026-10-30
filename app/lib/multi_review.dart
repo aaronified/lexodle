@@ -22,7 +22,13 @@ class MultiRecord {
     required this.won,
     this.weights,
     this.analysis,
+    this.kind,
+    this.daily = false,
   });
+
+  /// How the answers were drawn, and whether it was a daily.
+  final DrawKind? kind;
+  final bool daily;
 
   final WordBank bank;
   final GameMode mode;
@@ -251,6 +257,10 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
   List<String> get _explanation => [
     'words left: the words still possible on that board, before and after.',
     ...tableHelp,
+    if (r.kind != null) ...[
+      skillDrawLine(r.kind!, daily: r.daily),
+      luckDrawLine(r.kind!, daily: r.daily),
+    ],
     if (r.mode == GameMode.quartet)
       'all: the average over the boards, bigger boards counting more.'
     else

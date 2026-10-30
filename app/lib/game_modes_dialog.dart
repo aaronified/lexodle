@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'daily.dart';
 import 'difficulty.dart';
+import 'geography.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'routes.dart';
@@ -32,6 +33,14 @@ class _GameModesDialogState extends State<GameModesDialog> {
       WordBank.languages().then((l) {
         if (mounted) setState(() => _langs = l);
       });
+    }
+    // the places are counted once read, for the difficulty's summary
+    if (Geography.counts.isEmpty) {
+      WordBank.languages()
+          .then((l) => Geography.load(l.firstWhere((x) => x.code == 'en')))
+          .then((_) {
+            if (mounted) setState(() {});
+          }, onError: (_) {});
     }
   }
 
@@ -108,29 +117,48 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           semanticLabel: 'mode',
                           items: [
                             for (final m in GameMode.values)
-                              (
-                                m,
-                                m.label,
-                                m.extraTries == 0
-                                    ? m.sub
-                                    : '${m.sub} · +${m.extraTries} tries',
-                              ),
+                              if (m != GameMode.themed || appState.lang == 'en')
+                                (
+                                  m,
+                                  m.label,
+                                  m.extraTries == 0
+                                      ? m.sub
+                                      : '${m.sub} · +${m.extraTries} tries',
+                                ),
                           ],
                           selected: mode,
                           onChanged: (m) => appState.setup(mode: m),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'the daily of ${mode.label} always uses fixed '
-                          'settings: five letters, '
-                          '${mode.multi ? 'the words share no letter, ' : ''}'
-                          '${dailyTriesOf(mode)} tries.',
+                          !mode.hasDaily
+                              ? 'no daily in this mode. ${switch (mode) {
+                                  GameMode.themed => 'themed wordles accept only the words of the theme, in english: no ordinary words.',
+                                  _ => 'a guess tells only how many letters are right (green) and elsewhere (yellow).',
+                                }}'
+                              : 'the daily of ${mode.label} always uses fixed '
+                                    'settings: five letters, '
+                                    '${mode.multi ? 'the words share no letter, ' : ''}'
+                                    '${dailyTriesOf(mode)} tries'
+                                    '${mode == GameMode.lockdown ? ', $dailyHearts hearts' : ''}.',
                           key: const ValueKey('daily-note'),
                           style: TextStyle(
                             fontSize: 11,
                             color: c.onSurface.withValues(alpha: dimAlpha),
                           ),
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          appState.lang == 'en'
+                              ? 'swipe for more modes: themed and blind are here, not on the home screen.'
+                              : 'swipe for more modes: blind is here, not on the home screen.',
+                          key: const ValueKey('more-modes-note'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
+                          ),
+                        ),
+                        if (mode == GameMode.themed) ..._themedChoices(c),
                         const SizedBox(height: 16),
                         // right under the mode it belongs to. always there, so the
                         // popup keeps one shape; one word has nothing to share, so
@@ -179,42 +207,96 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           const SizedBox(height: 24),
                           const Caption('difficulty'),
                           const SizedBox(height: 10),
-                          DifficultyMatrix(
-                            tries: appState.tries,
-                            length: length,
-                            lengths: lang.lengths,
-                            available: lang.counts[length],
-                            onChanged: (t, n) =>
-                                appState.setup(tries: t, length: n),
-                          ),
+                          // lockdown is judged by its hearts, with its tries fixed
+                          if (mode == GameMode.blind)
+                            DifficultyMatrix(
+                              key: const ValueKey('blind-matrix'),
+                              tries: appState.blindTries,
+                              levels: blindTriesLevels,
+                              length: length,
+                              lengths: lang.lengths,
+                              available: lang.counts[length],
+                              onChanged: (t, n) =>
+                                  appState.setup(blindTries: t, length: n),
+                            )
+                          else if (mode == GameMode.lockdown)
+                            DifficultyMatrix(
+                              key: const ValueKey('hearts-matrix'),
+                              tries: appState.hearts,
+                              levels: [
+                                for (final (name, n) in lockdownHearts)
+                                  (name, n),
+                              ],
+                              unit: ('heart', 'hearts'),
+                              extra: '$lockdownTries tries, ',
+                              length: length,
+                              lengths: lang.lengths,
+                              available: lang.counts[length],
+                              onChanged: (h, n) =>
+                                  appState.setup(hearts: h, length: n),
+                            )
+                          else
+                            DifficultyMatrix(
+                              tries: appState.tries,
+                              length: length,
+                              lengths: mode == GameMode.themed
+                                  ? [
+                                      for (final n in lang.lengths)
+                                        if (Geography.counts.isEmpty ||
+                                            Geography.counts.containsKey(n))
+                                          n,
+                                    ]
+                                  : lang.lengths,
+                              noun: mode == GameMode.themed
+                                  ? 'place names'
+                                  : 'words',
+                              nounOne: mode == GameMode.themed
+                                  ? 'place name'
+                                  : 'word',
+                              available: mode == GameMode.themed
+                                  ? Geography.counts[length]
+                                  : lang.counts[length],
+                              onChanged: (t, n) =>
+                                  appState.setup(tries: t, length: n),
+                            ),
                         ],
-                        const SizedBox(height: 12),
-                        // how the word is drawn: by how common each word is, or with
-                        // every word of the length equally likely
-                        CheckboxListTile(
-                          key: const ValueKey('frequency-checkbox'),
-                          contentPadding: EdgeInsets.zero,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          dense: true,
-                          title: const Text(
-                            'draw words by how common they are',
+                        if (mode != GameMode.themed) ...[
+                          const SizedBox(height: 24),
+                          const Caption('word draw'),
+                          const SizedBox(height: 10),
+                          // how the answer is drawn, in a swipe: the sigmoid curve,
+                          // every word equally, or by how common each word is
+                          StepperChoice<Draw>(
+                            key: const ValueKey('draw-stepper'),
+                            semanticLabel: 'word draw',
+                            items: [
+                              for (final d in Draw.values) (d, d.label, d.sub),
+                            ],
+                            selected: appState.draw,
+                            onChanged: (d) => appState.setup(draw: d),
                           ),
-                          subtitle: Text(
-                            appState.useFrequency
-                                ? 'common words come up more often. the daily never '
-                                      'does this: its word is any word of the length.'
-                                : 'every word of the length is as likely as any '
-                                      'other, rare ones too. the daily always does '
-                                      'this.',
+                          const SizedBox(height: 10),
+                          Text(
+                            switch (appState.draw) {
+                              Draw.sigmoid =>
+                                'the commonest words are about equally likely, then '
+                                    'fewer and fewer, and almost none past the 3,500th. '
+                                    'the daily always draws this way.',
+                              Draw.equal =>
+                                'every word of the length is as likely as any other, '
+                                    'rare ones too. the daily always draws by the '
+                                    'curve.',
+                              Draw.frequency =>
+                                'common words come up far more often. the daily '
+                                    'always draws by the curve.',
+                            },
+                            key: const ValueKey('draw-note'),
                             style: TextStyle(
                               fontSize: 11,
                               color: c.onSurface.withValues(alpha: dimAlpha),
                             ),
                           ),
-                          value: appState.useFrequency,
-                          onChanged: (v) =>
-                              appState.setup(useFrequency: v ?? true),
-                        ),
+                        ],
                         const SizedBox(height: 24),
                         const Caption('helper'),
                         const SizedBox(height: 10),
@@ -222,11 +304,11 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         // it is greyed: dimmed, and out of reach of touch and keys
                         Opacity(
                           key: const ValueKey('helper-fade'),
-                          opacity: mode.multi ? .38 : 1,
+                          opacity: _noHelper(mode) ? .38 : 1,
                           child: AbsorbPointer(
-                            absorbing: mode.multi,
+                            absorbing: _noHelper(mode),
                             child: ExcludeFocus(
-                              excluding: mode.multi,
+                              excluding: _noHelper(mode),
                               child: StepperChoice<Helper>(
                                 semanticLabel: 'helper',
                                 items: [
@@ -241,7 +323,13 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          mode.multi
+                          mode == GameMode.blind
+                              ? 'the helper has nothing to show in blind. everything '
+                                    'is revealed when the game ends.'
+                              : mode == GameMode.themed
+                              ? 'the helper shows in classic and lockdown only. '
+                                    'everything is revealed when the game ends.'
+                              : mode.multi
                               ? 'the helper shows in classic mode only. whatever you '
                                     'choose, everything is revealed when the game ends.'
                               : 'whatever you choose, everything is revealed when '
@@ -270,10 +358,12 @@ class _GameModesDialogState extends State<GameModesDialog> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: () => Navigator.pushReplacementNamed(
-                                  context,
-                                  Routes.solver,
-                                ),
+                                onPressed: _themedOrBlind(mode)
+                                    ? null
+                                    : () => Navigator.pushReplacementNamed(
+                                        context,
+                                        Routes.solver,
+                                      ),
                                 child: const Text('open the solver'),
                               ),
                             ),
@@ -284,11 +374,30 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           width: double.infinity,
                           child: OutlinedButton(
                             key: const ValueKey('settings-learn'),
+                            onPressed: _themedOrBlind(mode)
+                                ? null
+                                : () => Navigator.pushReplacementNamed(
+                                    context,
+                                    Routes.learn,
+                                  ),
+                            child: const Text('learn: find the best guess'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            key: const ValueKey('settings-diy'),
+                            icon: TablerIcon(
+                              'gift',
+                              size: 18,
+                              color: c.primary,
+                            ),
                             onPressed: () => Navigator.pushReplacementNamed(
                               context,
-                              Routes.learn,
+                              Routes.diy,
                             ),
-                            child: const Text('learn: find the best guess'),
+                            label: const Text('diy: make a wordle of your own'),
                           ),
                         ),
                       ],
@@ -301,5 +410,122 @@ class _GameModesDialogState extends State<GameModesDialog> {
         ),
       ),
     );
+  }
+
+  static bool _themedOrBlind(GameMode m) =>
+      m == GameMode.blind || m == GameMode.themed;
+
+  static bool _noHelper(GameMode m) =>
+      m.multi || m == GameMode.blind || m == GameMode.themed;
+
+  /// The theme, who the answer can be, and the mythologies still to come.
+  List<Widget> _themedChoices(ColorScheme c) {
+    Widget chip(
+      String label, {
+      required bool on,
+      VoidCallback? onTap,
+      String? tip,
+      Key? key,
+    }) {
+      final w = InkWell(
+        key: key,
+        borderRadius: BorderRadius.circular(3),
+        onTap: onTap,
+        child: Container(
+          height: 36,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: on ? c.primary.withValues(alpha: .15) : null,
+            border: Border.all(color: on ? c.primary : c.outlineVariant),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Text(label, style: const TextStyle(fontSize: 13)),
+        ),
+      );
+      if (tip == null) return w;
+      return Opacity(
+        opacity: .38,
+        child: Tooltip(
+          message: tip,
+          triggerMode: TooltipTriggerMode.tap,
+          child: w,
+        ),
+      );
+    }
+
+    final note = TextStyle(
+      fontSize: 11,
+      color: c.onSurface.withValues(alpha: dimAlpha),
+    );
+    return [
+      const SizedBox(height: 14),
+      const Caption('theme'),
+      const SizedBox(height: 10),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          chip('geography', on: true, key: const ValueKey('theme-geography')),
+          for (final t in const ['mathematics', 'history', 'mythology'])
+            chip(t, on: false, tip: 'upcoming feature'),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Text(
+        'place names across the world, in english: countries, cities, '
+        'rivers, mountains, lakes, bays. every guess has an info dot that '
+        'tells about the word.',
+        style: note,
+      ),
+      const SizedBox(height: 10),
+      const Caption('answers'),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          chip(
+            'well known',
+            on: appState.draw != Draw.equal,
+            key: const ValueKey('answers-known'),
+            onTap: () => appState.setup(draw: Draw.sigmoid),
+          ),
+          chip(
+            'all places',
+            on: appState.draw == Draw.equal,
+            key: const ValueKey('answers-all'),
+            onTap: () => appState.setup(draw: Draw.equal),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Text(
+        appState.draw == Draw.equal
+            ? 'any place of the database can be the answer, small cities and '
+                  'minor rivers too.'
+            : 'the answer is a place most people know. any place of the '
+                  'database is still a valid guess.',
+        key: const ValueKey('answers-note'),
+        style: note,
+      ),
+      const SizedBox(height: 10),
+      const Caption('mythology'),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final t in const [
+            'greek',
+            'egyptian',
+            'chinese',
+            'japanese',
+            'indian',
+          ])
+            chip(t, on: false, tip: 'upcoming feature'),
+        ],
+      ),
+    ];
   }
 }

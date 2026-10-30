@@ -28,7 +28,7 @@ class GameRow {
     required this.won,
     this.daily = '',
     this.version = metricsVersion,
-    this.freq = true,
+    this.draw = Draw.frequency,
   });
 
   /// Its key in the guesses table; counts up, and is never reused.
@@ -44,13 +44,11 @@ class GameRow {
   /// How many words of that length the answer was drawn from.
   final int pool;
 
-  /// Whether the answer was drawn by how common each word is (true) or with
-  /// every word equally likely (false). The scores are worked out under it.
-  final bool freq;
-
-  /// Whether the scores are worked out under the frequency law. A daily never
-  /// is, whatever an old row (written before the flag existed) says.
-  bool get byFrequency => freq && daily.isEmpty;
+  /// How the answer was drawn, and so the chances the scores are worked out
+  /// under. A row written before this was kept says by frequency, as it was
+  /// the default then. A daily has its own rule, whatever this says: see
+  /// [dailyUsesCurve].
+  final Draw draw;
 
   /// The word or words to find: one in classic, four in quartet and relay race.
   final List<String> answers;
@@ -84,7 +82,7 @@ class GameRow {
     won: won,
     daily: daily,
     version: v,
-    freq: freq,
+    draw: draw,
   );
 
   /// The row as saved: a list, in this order, which is a good deal smaller than
@@ -101,7 +99,7 @@ class GameRow {
     won ? 1 : 0,
     daily,
     version,
-    freq ? 1 : 0,
+    draw.code,
   ];
 
   /// Reads a row as [toRow] wrote it, or the map of named fields an earlier
@@ -128,7 +126,7 @@ class GameRow {
           : throw const FormatException('won'),
       'daily': raw[9],
       'v': raw[10],
-      if (raw.length == 12) 'freq': raw[11] == 1,
+      if (raw.length == 12) 'draw': raw[11],
     });
   }
 
@@ -144,7 +142,7 @@ class GameRow {
     'won': won,
     if (daily.isNotEmpty) 'daily': daily,
     'v': version,
-    if (!freq) 'freq': false,
+    'draw': draw.code,
   };
 
   static GameRow fromJson(Map<String, dynamic> j) {
@@ -181,7 +179,11 @@ class GameRow {
       won: won,
       daily: daily,
       version: _int(j['v'] ?? 0, 0, 1000),
-      freq: j['freq'] is bool ? j['freq'] as bool : true,
+      draw: j['draw'] is int
+          ? Draw.fromCode(j['draw'] as int)
+          : j['freq'] == false
+          ? Draw.equal
+          : Draw.frequency,
     );
   }
 }
@@ -444,7 +446,7 @@ class History {
     required bool won,
     required List<GuessRow> guesses,
     String daily = '',
-    bool freq = true,
+    Draw draw = Draw.frequency,
   }) {
     final row = GameRow(
       id: _next++,
@@ -457,7 +459,7 @@ class History {
       answers: List.of(answers),
       won: won,
       daily: daily,
-      freq: freq,
+      draw: draw,
     );
     games.add(row);
     dirtyMonths.add(row.month);

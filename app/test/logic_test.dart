@@ -693,4 +693,81 @@ void main() {
     ];
     expect(picks.where((w) => w == 'a').length, greaterThan(450));
   });
+
+  group('SplitContext', () {
+    // the same scoring pair by pair with patternCode, which it replaces in loops
+    SplitStats reference(
+      List<String> eligible,
+      String guess,
+      Map<String, int>? weights,
+    ) {
+      final mass = <int, double>{};
+      var total = 0.0;
+      for (final w in eligible) {
+        final x = weights == null ? 1.0 : (weights[w] ?? 1).toDouble();
+        total += x;
+        mass[patternCode(w, guess)] = (mass[patternCode(w, guess)] ?? 0) + x;
+      }
+      var h = 0.0;
+      for (final m in mass.values) {
+        h -= m / total * log(m / total) / ln2;
+      }
+      return SplitStats(
+        e: 0,
+        h: h,
+        d: 0,
+        groups: mass.length,
+        largest: 0,
+        total: total,
+        masses: mass.values.toList(),
+      );
+    }
+
+    test(
+      'agrees with patternCode on repeated letters, with and without weights',
+      () {
+        final rng = Random(3);
+        String word() =>
+            String.fromCharCodes(List.generate(5, (_) => 97 + rng.nextInt(6)));
+        final words = {for (var i = 0; i < 400; i++) word()}.toList();
+        final weights = {for (final w in words) w: 1 + rng.nextInt(1000)};
+        for (final law in [null, weights]) {
+          final ctx = SplitContext(words, law);
+          for (var i = 0; i < 60; i++) {
+            // a guess may use a letter no word has, and repeat letters
+            final g = i % 7 == 0 ? 'zzaab' : word();
+            final a = ctx.stats(g), b = reference(words, g, law);
+            expect(a.groups, b.groups, reason: g);
+            expect(a.h, closeTo(b.h, 1e-9), reason: g);
+            expect(a.total, closeTo(b.total, 1e-9));
+            final answer = words[rng.nextInt(words.length)];
+            expect(
+              a.landedOf(g, answer),
+              closeTo(
+                words
+                    .where((w) => patternCode(w, g) == patternCode(answer, g))
+                    .fold<double>(0, (t, w) => t + (law == null ? 1 : law[w]!)),
+                1e-9,
+              ),
+            );
+          }
+        }
+      },
+    );
+
+    test('the opening of a big list is kept for the next game', () async {
+      final rng = Random(5);
+      final words = {
+        for (var i = 0; i < 2100; i++)
+          String.fromCharCodes(List.generate(5, (_) => 97 + rng.nextInt(26))),
+      }.toList();
+      final first = await analyseGuesses(words, words, answer: words[3]);
+      final again = await analyseGuesses(words, words, answer: words[40]);
+      expect(again.bestGain, first.bestGain);
+      expect(again.top.first.word, first.top.first.word);
+      expect(again.gains, first.gains);
+      // only the answer-dependent part differs
+      expect(again.luckiest.first.word, words[40]);
+    });
+  });
 }

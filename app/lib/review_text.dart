@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'daily.dart';
+import 'modes.dart';
 import 'wiki_links.dart';
 
 /// The short explanations of the review screens, shared by the single-game and
@@ -75,3 +77,85 @@ const tableHelp = [
 const lastTryLine =
     'last try: only a word that fits can win; skill is its chance against '
     'the best.';
+
+/// How the answer of a game was drawn, which is also the chances the scores
+/// weigh the possible words by: the curve (a daily from [dailyCurveFrom], or the
+/// setting), the old daily (the 3,000 commonest words, each as likely), every
+/// word equally, or by frequency.
+enum DrawKind {
+  curve,
+  oldDaily,
+  equal,
+  frequency,
+
+  /// The themed wordle: the best known places on a curve, or every place.
+  placesCurve,
+  placesEqual,
+
+  /// A made wordle: a word a friend chose, not drawn.
+  chosen,
+}
+
+/// The [DrawKind] of a game drawn under [draw]; a daily ([daily] is its date)
+/// has its own rule.
+DrawKind drawKindOf(
+  Draw draw, {
+  String daily = '',
+  GameMode? mode,
+  bool chosen = false,
+}) => chosen
+    ? DrawKind.chosen
+    : mode == GameMode.themed
+    ? (draw == Draw.equal ? DrawKind.placesEqual : DrawKind.placesCurve)
+    : daily.isNotEmpty
+    ? (dailyUsesCurve(daily) ? DrawKind.curve : DrawKind.oldDaily)
+    : switch (draw) {
+        Draw.sigmoid => DrawKind.curve,
+        Draw.equal => DrawKind.equal,
+        Draw.frequency => DrawKind.frequency,
+      };
+
+String _thousands(int n) => n.toString().replaceAllMapped(
+  RegExp(r'(\d)(?=(\d{3})+$)'),
+  (m) => '${m[1]},',
+);
+
+/// The chances in a few words.
+String drawPhrase(DrawKind kind) {
+  switch (kind) {
+    case DrawKind.curve:
+      return 'the commonest 2,500 words about equally likely, then fewer and '
+          'fewer, and almost none past the 3,500th';
+    case DrawKind.oldDaily:
+      return 'the ${_thousands(dailyAnswers)} commonest words, each equally '
+          'likely';
+    case DrawKind.equal:
+      return 'every word of the length equally likely';
+    case DrawKind.frequency:
+      return 'each word by how common it is';
+    case DrawKind.placesCurve:
+      return 'the best known 1,200 places about equally likely, then fewer '
+          'and fewer, and almost none past the 2,000th';
+    case DrawKind.placesEqual:
+      return 'every place of the length equally likely';
+    case DrawKind.chosen:
+      return 'a word a friend chose, as likely as any word of the list';
+  }
+}
+
+/// The sentence for the skill section: the chances it is worked out under.
+String skillDrawLine(DrawKind kind, {bool daily = false}) =>
+    'skill counts each word still possible by its chance of being '
+    '${daily ? "the daily's word" : 'the answer'}: ${drawPhrase(kind)}.';
+
+/// The sentence for the luck section: the same chances.
+String luckDrawLine(DrawKind kind, {bool daily = false}) =>
+    'luck is measured against the same chances'
+    '${daily ? ' as the daily was drawn by' : ' as the answer was drawn by'}: '
+    '${drawPhrase(kind)}.';
+
+/// For the skill section of a blind game: what its outcomes are.
+const blindLine =
+    'a blind guess shows only how many letters are right and in place, and '
+    'how many are right elsewhere: its outcomes are those count pairs, at '
+    'most 20 for five letters, not the tile patterns.';

@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:lexodle/background.dart';
 import 'package:lexodle/game.dart';
+import 'package:lexodle/keyboard.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
@@ -55,10 +56,24 @@ void main() {
 
   Future<void> type(WidgetTester tester, String w) async {
     for (final ch in w.split('')) {
-      await tester.sendKeyEvent(
-        LogicalKeyboardKey(ch.codeUnitAt(0)),
-        character: ch,
-      );
+      if (RegExp(r'^[a-z]$').hasMatch(ch)) {
+        await tester.sendKeyEvent(
+          LogicalKeyboardKey(ch.codeUnitAt(0)),
+          character: ch,
+        );
+      } else {
+        // a letter with no key on a desktop keyboard (é, ß, ñ...) is tapped on
+        // the screen's own keyboard, as a player would
+        await tester.tap(
+          find
+              .descendant(
+                of: find.byType(LetterKeyboard),
+                matching: find.text(ch),
+              )
+              .first,
+        );
+        await tester.pump();
+      }
     }
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pump();
@@ -71,7 +86,7 @@ void main() {
     prefetchDefinitions = true;
     final answer = chooseWord(
       bank.answers(4),
-      bank.answerWeights(4),
+      bank.drawWeights(4, appState.draw),
       Random(7),
     );
     await tester.pumpWidget(
@@ -101,7 +116,7 @@ void main() {
     }
     final answers = chooseTargets(
       bank.answers(4),
-      bank.answerWeights(4),
+      bank.drawWeights(4, appState.draw),
       4,
       10,
       Random(3),
@@ -116,7 +131,11 @@ void main() {
     await load(tester);
     analyseWhilePlaying = true;
     final pool = bank.answers(4);
-    final answer = chooseWord(pool, bank.answerWeights(4), Random(7));
+    final answer = chooseWord(
+      pool,
+      bank.drawWeights(4, appState.draw),
+      Random(7),
+    );
     final guesses = pool.where((w) => w != answer).take(3).toList();
     await tester.pumpWidget(
       MaterialApp(
@@ -136,6 +155,7 @@ void main() {
     await tester.pumpAndSettle();
     // one frame in, no "working it out": the first step's picks are there
     expect(find.text('working it out…'), findsNothing);
+    await tester.scrollUntilVisible(find.text('best skill'), 300);
     expect(find.text('best skill'), findsOneWidget);
     await tester.pump(const Duration(seconds: 30)); // let anything left finish
   });
@@ -171,7 +191,7 @@ void main() {
       final all = bank.guessable(4);
       final answer = chooseWord(
         bank.answers(4),
-        bank.answerWeights(4),
+        bank.drawWeights(4, appState.draw),
         Random(7),
       );
       return (all, answer);
@@ -193,7 +213,7 @@ void main() {
       expect(find.textContaining('skill …'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 40));
-      final law = bank.weightMap(4);
+      final law = bank.law(4, appState.draw);
       final land = await tester.runAsync(
         () => analyseGuesses(all, all, weights: law),
       );
@@ -250,7 +270,7 @@ void main() {
       final before = appState.stats.played;
       final answers = chooseTargets(
         bank.answers(4),
-        bank.answerWeights(4),
+        bank.drawWeights(4, appState.draw),
         4,
         10,
         Random(3),

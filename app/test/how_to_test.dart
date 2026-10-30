@@ -84,10 +84,11 @@ void main() {
     expect(appState.lang, 'en');
     expect(appState.length, 5);
     expect(appState.tries, 6);
-    expect(appState.useFrequency, isTrue);
+    expect(appState.draw, Draw.sigmoid);
     expect(appState.mode, GameMode.classic);
     expect(find.text('6 tries left'), findsOneWidget);
-    expect(find.textContaining('english · 5 · 6 tries'), findsOneWidget);
+    expect(find.byKey(const ValueKey('game-title')), findsOneWidget);
+    expect(find.textContaining('5 · 6 tries'), findsOneWidget);
     expect(find.text(_rule), findsNothing, reason: 'the page is replaced');
 
     // back from the game is the menu, not the how-to page again

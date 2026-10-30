@@ -75,7 +75,7 @@ void main() {
       final shared = top(find.text('shared letters'));
       final slider = top(find.byKey(const ValueKey('share-slider')));
       final difficulty = top(find.text('difficulty'));
-      final frequency = top(find.byKey(const ValueKey('frequency-checkbox')));
+      final frequency = top(find.byKey(const ValueKey('draw-stepper')));
       final helper = top(find.text('helper'));
       final play = top(find.byKey(const ValueKey('settings-play')));
       final learn = top(find.byKey(const ValueKey('settings-learn')));
@@ -97,8 +97,8 @@ void main() {
       );
       expect(
         shared - modeChoice.dy,
-        lessThan(100),
-      ); // the daily note sits between
+        lessThan(140),
+      ); // the daily note and the more-modes line sit between
     },
   );
 

@@ -72,6 +72,7 @@ luat	309029
 bune	301995
 tine	301995
 află	295120
+daca	295120
 spun	295120
 urmă	295120
 duce	281838
@@ -201,10 +202,12 @@ vadă	72443
 case	70794
 http	70794
 scos	70794
+sînt	70794
 vrem	70794
 aduc	69183
 corp	69183
 idee	69183
+live	69183
 oare	69183
 sala	69183
 scop	69183
@@ -227,6 +230,7 @@ cont	60255
 sute	58884
 uite	58884
 voie	58884
+inca	57543
 juca	56234
 lege	56234
 plac	56234
@@ -297,6 +301,7 @@ uită	38904
 ducă	38018
 țină	38018
 legi	37153
+cînd	36307
 idei	36307
 note	36307
 rele	36307
@@ -442,6 +447,7 @@ fiii	18197
 cerc	17782
 chip	17782
 etaj	17782
+pînă	17782
 suna	17782
 săli	17782
 taxi	17782
@@ -501,6 +507,7 @@ eroi	14125
 fani	14125
 geam	14125
 golf	14125
+high	14125
 card	13803
 gard	13803
 inel	13803
@@ -578,6 +585,7 @@ doru	11220
 dure	11220
 fixe	11220
 flux	11220
+hall	11220
 mame	11220
 puii	11220
 umor	11220
@@ -620,6 +628,7 @@ iris	9772
 lega	9772
 roți	9772
 azil	9549
+cash	9549
 ceri	9549
 doză	9549
 fuga	9549
@@ -647,6 +656,7 @@ romi	9120
 bara	8912
 dusă	8912
 eseu	8912
+look	8912
 nora	8912
 ocna	8912
 poem	8912
@@ -729,6 +739,7 @@ vite	7413
 țărm	7413
 astă	7244
 aura	7244
+body	7244
 lovi	7244
 neam	7244
 plat	7244
@@ -819,6 +830,7 @@ raid	5623
 rață	5623
 scap	5623
 soți	5623
+tati	5623
 vita	5623
 anal	5495
 mase	5495
@@ -844,6 +856,7 @@ cioc	5128
 dame	5128
 fișa	5128
 gaza	5128
+list	5128
 oală	5128
 opun	5128
 pata	5128
@@ -857,6 +870,7 @@ dona	5011
 pată	5011
 rană	5011
 rufe	5011
+shop	5011
 teză	5011
 borș	4897
 cuie	4897
@@ -884,6 +898,7 @@ daco	4677
 epic	4677
 jude	4677
 seră	4677
+soul	4677
 tavă	4677
 vito	4677
 dare	4570
@@ -956,6 +971,7 @@ aviz	3890
 bebe	3890
 chit	3890
 find	3890
+lori	3890
 milo	3890
 pasa	3890
 reda	3890
@@ -994,7 +1010,9 @@ seif	3630
 uzul	3630
 afiș	3548
 cafe	3548
+fuck	3548
 muți	3548
+slim	3548
 zace	3548
 acer	3467
 alge	3467
@@ -1037,6 +1055,7 @@ lamă	3235
 miră	3235
 pari	3235
 sulf	3235
+viva	3235
 țipă	3235
 bețe	3162
 bule	3162
@@ -1056,6 +1075,7 @@ bari	3090
 bone	3090
 clic	3090
 dama	3090
+gaga	3090
 gena	3090
 lila	3090
 nana	3090
@@ -1113,6 +1133,7 @@ curg	2754
 dane	2754
 lina	2754
 liza	2754
+punk	2754
 saga	2754
 cure	2691
 gong	2691
@@ -1193,6 +1214,7 @@ spot	2398
 tabu	2398
 ziuă	2398
 șold	2398
+aman	2344
 biet	2344
 fisc	2344
 ivit	2344
@@ -1211,6 +1233,7 @@ brat	2290
 duma	2290
 elen	2290
 gate	2290
+hair	2290
 jenă	2290
 left	2290
 mata	2290
@@ -1232,6 +1255,7 @@ bota	2187
 calc	2187
 coma	2187
 crom	2187
+curt	2187
 exod	2187
 geta	2187
 lăsă	2187
@@ -1243,6 +1267,7 @@ vioi	2187
 vize	2187
 azur	2137
 cata	2137
+gran	2137
 hala	2137
 ioni	2137
 laic	2137
@@ -1292,6 +1317,7 @@ silă	1995
 suie	1995
 tipă	1995
 urla	1995
+zeta	1995
 abil	1949
 alia	1949
 arzi	1949
@@ -1372,6 +1398,7 @@ nete	1698
 rade	1698
 stup	1698
 tușă	1698
+zulu	1698
 șefu	1698
 căra	1659
 edem	1659
@@ -1406,6 +1433,7 @@ comp	1548
 lăzi	1548
 negi	1548
 pion	1548
+poll	1548
 sama	1548
 vela	1548
 țipa	1548
@@ -1428,6 +1456,7 @@ orga	1479
 popă	1479
 seva	1479
 bliț	1445
+ciao	1445
 dubă	1445
 elfi	1445
 hală	1445
@@ -1497,6 +1526,7 @@ cute	1258
 dada	1258
 ghem	1258
 horă	1258
+luce	1258
 pici	1258
 rime	1258
 root	1258
@@ -1519,11 +1549,13 @@ nișe	1230
 rugă	1230
 râpa	1230
 săpa	1230
+ting	1230
 trac	1230
 urâm	1230
 boxă	1202
 băii	1202
 gută	1202
+hate	1202
 kile	1202
 kiwi	1202
 move	1202
@@ -1576,6 +1608,7 @@ vaza	1122
 alto	1096
 dedu	1096
 hanu	1096
+item	1096
 juni	1096
 ovar	1096
 pios	1096
@@ -1585,6 +1618,7 @@ sort	1096
 taft	1096
 tona	1096
 tory	1096
+tutu	1096
 zări	1096
 agil	1071
 aloe	1071
@@ -2187,6 +2221,7 @@ unire	23442
 canal	22908
 caute	22908
 cheia	22908
+house	22908
 luând	22908
 miros	22908
 placă	22908
@@ -2300,6 +2335,7 @@ dorea	17782
 firme	17782
 joaca	17782
 luată	17782
+marte	17782
 nopți	17782
 salut	17782
 scapă	17782
@@ -2344,6 +2380,7 @@ cifre	16595
 comis	16595
 cânte	16595
 fermă	16595
+green	16595
 masca	16595
 naște	16595
 negri	16595
@@ -2519,6 +2556,7 @@ greci	11748
 gătit	11748
 lipsi	11748
 ouăle	11748
+party	11748
 parul	11748
 prind	11748
 retur	11748
@@ -2681,6 +2719,7 @@ jucăm	9120
 maică	9120
 micro	9120
 polul	9120
+story	9120
 trăia	9120
 vastă	9120
 acută	8912
@@ -2925,6 +2964,7 @@ balon	6165
 bloca	6165
 index	6165
 micii	6165
+milan	6165
 opusă	6165
 roată	6165
 sosul	6165
@@ -3095,6 +3135,7 @@ vroia	5011
 aromă	4897
 audit	4897
 baroc	4897
+board	4897
 brazi	4897
 creăm	4897
 cules	4897
@@ -3162,6 +3203,7 @@ lampa	4570
 livra	4570
 moșul	4570
 onest	4570
+penny	4570
 prize	4570
 priză	4570
 pânza	4570
@@ -3600,6 +3642,7 @@ uzină	2884
 viței	2884
 țelul	2884
 aluat	2818
+balan	2818
 bunic	2818
 colon	2818
 curry	2818
@@ -3646,6 +3689,7 @@ băgăm	2691
 cotul	2691
 datat	2691
 demne	2691
+dolce	2691
 eseul	2691
 exist	2691
 felii	2691
@@ -3685,6 +3729,7 @@ agora	2570
 apeși	2570
 augur	2570
 certe	2570
+ciucă	2570
 cornu	2570
 cărat	2570
 dauna	2570
@@ -3714,6 +3759,7 @@ elene	2511
 farsă	2511
 frânt	2511
 harap	2511
+joint	2511
 jugul	2511
 lăuda	2511
 manta	2511
@@ -3844,8 +3890,10 @@ păgân	2187
 ramos	2187
 scuti	2187
 slavi	2187
+soros	2187
 spusă	2187
 stofă	2187
+sushi	2187
 vrăji	2187
 țiglă	2187
 abțin	2137
@@ -3854,10 +3902,12 @@ aurit	2137
 braga	2137
 calci	2137
 cheii	2137
+chili	2137
 dragu	2137
 faună	2137
 fibra	2137
 fontă	2137
+geacă	2137
 haide	2137
 ireal	2137
 liana	2137
@@ -3904,6 +3954,7 @@ ponor	2041
 raliu	2041
 riște	2041
 scoși	2041
+sînge	2041
 terțe	2041
 ulița	2041
 viraj	2041
@@ -4017,6 +4068,7 @@ tocat	1862
 trace	1862
 trăda	1862
 tusea	1862
+twist	1862
 vodcă	1862
 areal	1819
 bănuț	1819
@@ -4101,6 +4153,7 @@ lovim	1698
 miner	1698
 murea	1698
 olive	1698
+order	1698
 pilon	1698
 pozat	1698
 pătat	1698
@@ -4114,6 +4167,7 @@ aicea	1659
 arțar	1659
 bețiv	1659
 bivol	1659
+dronă	1659
 facil	1659
 falco	1659
 farse	1659
@@ -4136,6 +4190,7 @@ umbli	1659
 umfla	1659
 vidul	1659
 țuică	1659
+aslan	1621
 ceafa	1621
 chemi	1621
 cinei	1621
@@ -4183,6 +4238,7 @@ zonal	1584
 acidă	1548
 anima	1548
 apese	1548
+chips	1548
 colaj	1548
 coran	1548
 drago	1548
@@ -4228,6 +4284,7 @@ pluta	1513
 rampe	1513
 roții	1513
 scală	1513
+swing	1513
 tarif	1513
 tempo	1513
 turco	1513
@@ -4288,6 +4345,7 @@ funie	1412
 geții	1412
 grâne	1412
 gulag	1412
+largo	1412
 moloz	1412
 notes	1412
 papal	1412
@@ -4356,6 +4414,7 @@ antet	1318
 apari	1318
 brebu	1318
 cehii	1318
+clown	1318
 farsa	1318
 gatul	1318
 gonit	1318
@@ -4391,6 +4450,7 @@ slugă	1288
 sufle	1288
 sărim	1288
 teanc	1288
+vicol	1288
 vântu	1288
 învie	1288
 agrar	1258
@@ -4400,6 +4460,7 @@ cuget	1258
 fluor	1258
 fălci	1258
 halal	1258
+langă	1258
 larve	1258
 lucie	1258
 luncă	1258
@@ -4420,9 +4481,11 @@ cobai	1230
 cătun	1230
 doboș	1230
 enunț	1230
+jihad	1230
 modem	1230
 omite	1230
 pleșa	1230
+satin	1230
 secat	1230
 taxei	1230
 tenul	1230
@@ -4531,6 +4594,7 @@ cuvin	1122
 fobie	1122
 fonda	1122
 hitul	1122
+hogea	1122
 iezer	1122
 juste	1122
 lanul	1122
@@ -4556,6 +4620,7 @@ ducat	1096
 dăuna	1096
 grund	1096
 harem	1096
+jolly	1096
 lamei	1096
 marge	1096
 monta	1096
@@ -4616,6 +4681,7 @@ ningă	1047
 picaj	1047
 păzea	1047
 păzim	1047
+remix	1047
 scurg	1047
 sobră	1047
 spere	1047
@@ -4637,6 +4703,7 @@ harpă	1023
 iudei	1023
 lauri	1023
 marja	1023
+paler	1023
 razie	1023
 robul	1023
 sluga	1023
@@ -5411,6 +5478,7 @@ petrec	18620
 piardă	18620
 pozele	18620
 regale	18620
+single	18620
 suferi	18620
 suprem	18620
 urbană	18620
@@ -5775,6 +5843,7 @@ geneva	10964
 ghidul	10964
 icoana	10964
 lanțul	10964
+living	10964
 lățime	10964
 mâncăm	10964
 privim	10964
@@ -5905,6 +5974,7 @@ seturi	9549
 stejar	9549
 stinge	9549
 stâncă	9549
+sîntem	9549
 albume	9332
 asumat	9332
 doarme	9332
@@ -6022,6 +6092,7 @@ modest	8317
 neagra	8317
 onești	8317
 pictat	8317
+rating	8317
 reunit	8317
 rănită	8317
 slujit	8317
@@ -6697,6 +6768,7 @@ muzeal	4570
 naviga	4570
 odihna	4570
 pactul	4570
+pastra	4570
 saltea	4570
 stânca	4570
 venise	4570
@@ -6744,6 +6816,7 @@ căutau	4365
 divers	4365
 donate	4365
 dorian	4365
+empire	4365
 enorme	4365
 femelă	4365
 gheata	4365
@@ -7258,6 +7331,7 @@ ionică	2951
 mascat	2951
 movilă	2951
 nimica	2951
+parâng	2951
 plafon	2951
 pledat	2951
 pustii	2951
@@ -7289,6 +7363,7 @@ dublei	2884
 etalon	2884
 florei	2884
 fluide	2884
+führer	2884
 găseam	2884
 găsind	2884
 miting	2884
@@ -7404,6 +7479,7 @@ crampe	2630
 cupola	2630
 delfin	2630
 desena	2630
+drăgoi	2630
 egalat	2630
 etnici	2630
 fecale	2630
@@ -7418,6 +7494,7 @@ reales	2630
 reușea	2630
 salcâm	2630
 schița	2630
+stokes	2630
 temeri	2630
 triplă	2630
 înșală	2630
@@ -7448,6 +7525,7 @@ mâncam	2570
 nuvela	2570
 probei	2570
 raftul	2570
+ranger	2570
 respir	2570
 rigidă	2570
 risipă	2570
@@ -7855,6 +7933,7 @@ scuipă	1995
 servea	1995
 slalom	1995
 speech	1995
+statie	1995
 sărute	1995
 tabela	1995
 vedeai	1995
@@ -7916,6 +7995,7 @@ mangan	1905
 muchie	1905
 mănușă	1905
 mătură	1905
+nainte	1905
 pantof	1905
 pariat	1905
 percep	1905
@@ -8009,6 +8089,7 @@ saluta	1819
 salute	1819
 spălăm	1819
 sumbră	1819
+tumoră	1819
 veseli	1819
 vâneze	1819
 înoată	1819
@@ -8103,6 +8184,7 @@ calotă	1698
 colind	1698
 debuta	1698
 decade	1698
+desire	1698
 enigmă	1698
 escală	1698
 fabian	1698
@@ -8180,6 +8262,7 @@ adidas	1621
 aluzii	1621
 atâtor	1621
 autism	1621
+balcic	1621
 balsam	1621
 barele	1621
 bieții	1621
@@ -8509,6 +8592,7 @@ măslin	1380
 plinul	1380
 poantă	1380
 polară	1380
+postal	1380
 pătate	1380
 refere	1380
 regres	1380
@@ -8604,6 +8688,7 @@ pneuri	1318
 posada	1318
 pătată	1318
 radare	1318
+rapper	1318
 revers	1318
 sacoșă	1318
 scuter	1318
@@ -8769,6 +8854,7 @@ suspin	1202
 unchii	1202
 uzului	1202
 agreat	1174
+aikido	1174
 apleca	1174
 argila	1174
 atenua	1174
@@ -8852,6 +8938,7 @@ ofensă	1148
 pontic	1148
 prădat	1148
 remote	1148
+rocker	1148
 rulați	1148
 râmnic	1148
 răsară	1148
@@ -8886,10 +8973,12 @@ debara	1122
 feudal	1122
 fidele	1122
 fizici	1122
+fututa	1122
 gresia	1122
 gările	1122
 iedera	1122
 iubito	1122
+mantra	1122
 mirosi	1122
 măgari	1122
 măsuța	1122
@@ -8901,6 +8990,7 @@ prolog	1122
 punții	1122
 puțina	1122
 recită	1122
+reggae	1122
 seamăn	1122
 sfidat	1122
 slujim	1122
@@ -8971,6 +9061,7 @@ contre	1071
 corset	1071
 cununi	1071
 cursiv	1071
+cutter	1071
 călduț	1071
 cătina	1071
 donezi	1071
@@ -9051,6 +9142,7 @@ rivală	1047
 răsfăț	1047
 rătăci	1047
 satură	1047
+scolar	1047
 scuipa	1047
 săsesc	1047
 tablei	1047
@@ -9098,6 +9190,7 @@ spargi	1023
 stemei	1023
 stinsă	1023
 tigaia	1023
+tăiței	1023
 vipera	1023
 zecime	1023
 zidire	1023
@@ -10636,6 +10729,7 @@ ficatul	7943
 galbene	7943
 gilbert	7943
 grădini	7943
+hercule	7943
 identic	7943
 lanseze	7943
 materii	7943
@@ -10944,6 +11038,7 @@ celebri	6165
 citează	6165
 compuși	6165
 corabia	6165
+country	6165
 defecte	6165
 desktop	6165
 diplome	6165
@@ -11749,6 +11844,7 @@ monahal	3548
 murdară	3548
 mustață	3548
 penibil	3548
+playboy	3548
 plecase	3548
 pornită	3548
 prezice	3548
@@ -12271,6 +12367,7 @@ serviți	2630
 siriene	2630
 sporite	2630
 suedeze	2630
+sînteți	2630
 toplița	2630
 trunchi	2630
 undelor	2630
@@ -12294,6 +12391,7 @@ furturi	2570
 implici	2570
 intacte	2570
 intrigă	2570
+leasing	2570
 leopard	2570
 literal	2570
 logodnă	2570
@@ -12326,6 +12424,7 @@ adulter	2511
 adunând	2511
 agresat	2511
 baltică	2511
+bitcoin	2511
 bunului	2511
 cantina	2511
 cartelă	2511
@@ -12599,6 +12698,7 @@ mamelor	2238
 miliția	2238
 minelor	2238
 mucoasa	2238
+mustang	2238
 narcisa	2238
 numirii	2238
 onoruri	2238
@@ -12654,6 +12754,7 @@ evitați	2187
 fasolea	2187
 glorios	2187
 heroină	2187
+karaoke	2187
 liniară	2187
 lipsuri	2187
 locuind	2187
@@ -12916,6 +13017,7 @@ scăzând	1949
 semafor	1949
 sinteze	1949
 solitar	1949
+speaker	1949
 spătaru	1949
 textura	1949
 tulbură	1949
@@ -13073,6 +13175,7 @@ uscător	1819
 viabilă	1819
 vitrină	1819
 vizorul	1819
+admiral	1778
 alergii	1778
 arhivei	1778
 armeană	1778
@@ -13150,6 +13253,7 @@ arderii	1737
 aromâni	1737
 atârnat	1737
 auditul	1737
+bowling	1737
 captivi	1737
 cenaclu	1737
 clanuri	1737
@@ -13206,6 +13310,7 @@ adezivă	1698
 aditivi	1698
 atingea	1698
 auditiv	1698
+banking	1698
 bonusul	1698
 buzelor	1698
 captare	1698
@@ -13426,6 +13531,7 @@ eternul	1548
 evocare	1548
 existăm	1548
 exportă	1548
+feeling	1548
 firului	1548
 frâiele	1548
 gălbuie	1548
@@ -13468,6 +13574,7 @@ ambiții	1513
 avocado	1513
 avortul	1513
 blocând	1513
+blogger	1513
 calmeze	1513
 citatul	1513
 creându	1513
@@ -13644,6 +13751,7 @@ orgoliu	1412
 perlele	1412
 peronul	1412
 picante	1412
+prepari	1412
 procura	1412
 pustnic	1412
 reapare	1412
@@ -13851,6 +13959,7 @@ geților	1288
 gravate	1288
 găgăuză	1288
 hibridă	1288
+jackpot	1288
 jenantă	1288
 jertfit	1288
 jignesc	1288
@@ -14393,6 +14502,7 @@ paternă	1071
 plăcuță	1071
 poienii	1071
 pripite	1071
+priviti	1071
 proteic	1071
 pulberi	1071
 pustiit	1071
@@ -14464,6 +14574,7 @@ strâmte	1047
 sudarea	1047
 sâmburi	1047
 taților	1047
+topless	1047
 uscatul	1047
 îndrume	1047
 adaptor	1023
@@ -16602,6 +16713,7 @@ reduceri	4570
 repetată	4570
 singular	4570
 tezaurul	4570
+training	4570
 trezirea	4570
 trădarea	4570
 vizitate	4570
@@ -16746,6 +16858,7 @@ mâinilor	4168
 ocupării	4168
 pandurii	4168
 serverul	4168
+shopping	4168
 temporal	4168
 tuneluri	4168
 vorbitor	4168
@@ -17641,6 +17754,7 @@ depășiți	2454
 dragilor	2454
 duritate	2454
 eleganță	2454
+espresso	2454
 exagerez	2454
 farfuria	2454
 farurile	2454
@@ -17838,6 +17952,7 @@ asasinul	2238
 browning	2238
 buretele	2238
 canonică	2238
+catering	2238
 colierul	2238
 concesii	2238
 contestă	2238
@@ -18670,6 +18785,7 @@ demontat	1584
 devotați	1584
 dezlegat	1584
 dirijate	1584
+discount	1584
 eligibil	1584
 emițător	1584
 enunțate	1584
@@ -19189,6 +19305,7 @@ anexează	1288
 aparențe	1288
 autoriza	1288
 cantonul	1288
+chipsuri	1288
 clasicii	1288
 clipului	1288
 coerență	1288
@@ -19665,6 +19782,7 @@ schimbau	1122
 semestre	1122
 sfidarea	1122
 spălatul	1122
+tritonic	1122
 triumfal	1122
 turcescu	1122
 umărului	1122

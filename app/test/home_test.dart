@@ -21,7 +21,7 @@ void main() {
       length: 5,
       tries: 6,
       mode: GameMode.classic,
-      useFrequency: true,
+      draw: Draw.sigmoid,
     );
     appState.ach.clear();
   });
@@ -35,44 +35,44 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('frequency row', () {
+  group('word draw row', () {
     Finder label() => find.byKey(const ValueKey('frequency-label'));
 
     testWidgets('says which it is, just above the mode button', (tester) async {
       await home(tester);
-      expect(tester.widget<Text>(label()).data, 'common words likelier');
-      appState.setup(useFrequency: false);
+      expect(tester.widget<Text>(label()).data, 'word draw · sigmoid curve');
+      appState.setup(draw: Draw.equal);
       await tester.pump();
-      expect(tester.widget<Text>(label()).data, 'all words equally likely');
+      expect(tester.widget<Text>(label()).data, 'word draw · every word');
       final row = tester.getRect(find.byKey(const ValueKey('frequency-row')));
       final mode = tester.getRect(find.byKey(const ValueKey('mode-button')));
       expect(row.bottom, lessThanOrEqualTo(mode.top));
       expect(mode.top - row.bottom, lessThan(16));
     });
 
-    testWidgets('the switch toggles it and a toast says more', (tester) async {
+    testWidgets('a tap goes on to the next draw and a toast says more', (
+      tester,
+    ) async {
       await home(tester);
-      final sw = find.byKey(const ValueKey('frequency-switch'));
-      expect(tester.widget<Switch>(sw).value, isTrue);
-      await tester.tap(sw);
+      await tester.tap(find.byKey(const ValueKey('frequency-row')));
       await tester.pump();
-      expect(appState.useFrequency, isFalse);
+      expect(appState.draw, Draw.equal);
       expect(
         find.textContaining('every word of the length is equally likely'),
         findsOneWidget,
       );
-      // the row is tappable too, and only one toast shows at a time
+      // only one toast shows at a time
       await tester.tap(find.byKey(const ValueKey('frequency-row')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
-      expect(appState.useFrequency, isTrue);
+      expect(appState.draw, Draw.frequency);
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(
-        find.textContaining('answers are drawn by how common'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('every word of the length'), findsNothing);
-      // it goes away by itself
+      await tester.tap(find.byKey(const ValueKey('frequency-row')));
+      await tester.pump();
+      expect(appState.draw, Draw.sigmoid);
+      await tester.pump(const Duration(milliseconds: 600));
+      // the toast goes away by itself
+      await tester.pump(const Duration(seconds: 4));
       await tester.pump(const Duration(seconds: 4));
       await tester.pumpAndSettle();
       expect(find.byType(SnackBar), findsNothing);
@@ -117,17 +117,20 @@ void main() {
     testWidgets('the chevrons turn the loop both ways', (tester) async {
       await home(tester);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(appState.mode, GameMode.quartet);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(appState.mode, GameMode.relay);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
-      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.lockdown);
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pumpAndSettle();
       expect(appState.mode, GameMode.classic);
       await tester.tap(find.byKey(const ValueKey('mode-prev')));
-      await tester.pump();
-      expect(appState.mode, GameMode.relay);
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.lockdown);
     });
 
     testWidgets('a swipe over the area changes the mode, not the page', (

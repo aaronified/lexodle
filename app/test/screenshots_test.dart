@@ -25,6 +25,7 @@ import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/multi_game.dart';
+import 'package:lexodle/playstyle_card.dart';
 import 'package:lexodle/replay.dart';
 import 'package:lexodle/review.dart';
 import 'package:lexodle/routes.dart';
@@ -296,6 +297,68 @@ void main() {
     await shot(t, key, 'quartet');
   }, skip: skip != null);
 
+  testWidgets('a lockdown game', (t) async {
+    final bank = await prepare(t, mode: GameMode.lockdown);
+    appState.setup(hearts: 5);
+    final key = GlobalKey();
+    await t.pumpWidget(
+      framed(
+        key,
+        GamePage(bank: bank, random: Random(11), mode: GameMode.lockdown),
+      ),
+    );
+    await t.pump();
+    final words = plain(bank.answers(5));
+    final answer = chooseWord(
+      bank.answers(5),
+      bank.drawWeights(5, appState.draw),
+      Random(11),
+    );
+    Set<int> greens(String w) => {
+      for (var i = 0; i < 5; i++)
+        if (evaluate(answer, w)[i] == Mark.correct) i,
+    };
+    final locked = <int>{};
+    // a guess types only the open slots: the greens are locked in already
+    Future<void> guess(String w) async {
+      await type(
+        t,
+        [
+          for (var i = 0; i < 5; i++)
+            if (!locked.contains(i)) w[i],
+        ].join(),
+      );
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+      locked.addAll(greens(w));
+    }
+
+    String next(int atLeast) => words.firstWhere(
+      (w) =>
+          w != answer &&
+          locked.every((i) => w[i] == answer[i]) &&
+          greens(w).length >= atLeast &&
+          greens(w).length < 5 &&
+          evaluate(answer, w).contains(Mark.present),
+    );
+    await guess(next(1));
+    await guess(next(locked.length + 1));
+    // two words that are not in the list: two hearts break
+    for (var k = 0; k < 2; k++) {
+      await type(t, 'q' * (5 - locked.length));
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      // (an animation starts on the frame after it is asked for)
+      await t.pump();
+      await t.pump(const Duration(seconds: 2));
+      for (var i = locked.length; i < 5; i++) {
+        await t.sendKeyEvent(LogicalKeyboardKey.backspace);
+      }
+      await t.pump();
+    }
+    await t.pump(const Duration(milliseconds: 300));
+    await shot(t, key, 'lockdown');
+  }, skip: skip != null);
+
   testWidgets('the review of a game', (t) async {
     final bank = await prepare(t);
     final key = GlobalKey();
@@ -310,6 +373,7 @@ void main() {
       pool: 3000,
       answers: [answer],
       won: true,
+      draw: Draw.sigmoid, // how a game is drawn by default
     );
     final rows = [
       for (final (i, w) in [first, second, answer].indexed)
@@ -333,14 +397,9 @@ void main() {
     await t.pumpWidget(framed(key, const HistoryPage()));
     await t.pumpAndSettle();
     await shot(t, key, 'history');
-    // the playstyle on its own, and the chart with the overall numbers
+    // the chart with the overall numbers, and the playstyle on its own (it has
+    // a page of its own now, no longer a card of the history)
     Rect card(String k) => t.getRect(find.byKey(ValueKey(k)));
-    await shot(
-      t,
-      key,
-      'features/playstyle',
-      crop: Rect.fromLTRB(0, 0, 412, card('profile').bottom + 14),
-    );
     await shot(
       t,
       key,
@@ -350,6 +409,30 @@ void main() {
         card('overall').top - 12,
         412,
         card('trend').bottom + 14,
+      ),
+    );
+    final style = GlobalKey();
+    await t.pumpWidget(
+      framed(
+        style,
+        Scaffold(
+          body: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [PlaystyleCard(lang)],
+          ),
+        ),
+      ),
+    );
+    await t.pump();
+    await shot(
+      t,
+      style,
+      'features/playstyle',
+      crop: Rect.fromLTRB(
+        0,
+        0,
+        412,
+        t.getRect(find.byKey(const ValueKey('profile'))).bottom + 24,
       ),
     );
   }, skip: skip != null);
@@ -426,11 +509,19 @@ void main() {
   testWidgets('the achievements, with their flags', (t) async {
     await prepare(t);
     appState.setAch(lang, {
-      'wins': AchState(times: 1, dates: ['2026-09-02']),
-      'quick': AchState(times: 2, dates: ['2026-09-20', '2026-10-11']),
-      'last_breath': AchState(times: 1, dates: ['2026-10-03']),
+      'wins': AchState(times: 1, dates: ['2026-09-02'], value: 12),
+      'quick': AchState(
+        times: 3,
+        dates: ['2026-09-20', '2026-10-11', '2026-10-18'],
+        value: 2,
+      ),
+      'last_try': AchState(times: 1, dates: ['2026-10-03'], value: 1),
       'dailies': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
-      'streak_3': AchState(times: 3, dates: ['2026-10-01']),
+      'played': AchState(
+        times: 2,
+        dates: ['2026-09-10', '2026-10-01'],
+        value: 113,
+      ),
       'daily_streak': AchState(times: 1, dates: ['2026-10-05'], progress: 6),
       'languages': AchState(times: 1, dates: ['2026-10-02']),
     });
@@ -449,7 +540,7 @@ void main() {
         0,
         0,
         412,
-        t.getRect(find.byKey(const ValueKey('badges-last_breath'))).bottom + 22,
+        t.getRect(find.byKey(const ValueKey('quick-row'))).bottom + 10,
       ),
     );
   }, skip: skip != null);

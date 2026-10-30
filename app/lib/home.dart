@@ -8,6 +8,7 @@ import 'logo.dart';
 import 'style_chip.dart';
 import 'main.dart';
 import 'mode_wheel.dart';
+import 'modes.dart' show Draw;
 import 'routes.dart';
 import 'store.dart' show Achievement, achievements;
 import 'ui.dart';
@@ -109,8 +110,7 @@ class _HomePageState extends State<HomePage> {
       onTap: () async {
         final code = await showDialog<String>(
           context: context,
-          builder: (context) =>
-              _LanguagePopup(langs: langs, current: lang.code),
+          builder: (context) => LanguagePopup(langs: langs, current: lang.code),
         );
         if (code == null || code == lang.code) return;
         final next = langs.firstWhere((l) => l.code == code);
@@ -145,26 +145,32 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// The word frequency, on or off, just above the play row: what it is in a
-  /// few words, with a switch. The longer sentence is a toast.
+  /// How the answer is drawn, just above the play row: what it is in a few
+  /// words. A tap goes on to the next of the three; the longer sentence is a
+  /// toast.
   Widget _frequencyRow(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final on = appState.useFrequency;
-    void toggle(bool v) {
-      appState.setup(useFrequency: v);
+    final draw = appState.draw;
+    void next() {
+      final d = Draw.values[(draw.index + 1) % Draw.values.length];
+      appState.setup(draw: d);
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
-            content: Text(
-              v
-                  ? 'answers are drawn by how common each word is. the daily '
-                        'always uses equal chances.'
-                  : 'every word of the length is equally likely. the daily '
-                        'always does.',
-            ),
+            content: Text(switch (d) {
+              Draw.sigmoid =>
+                'the commonest words are about equally likely, then fewer '
+                    'and fewer. the daily always draws this way.',
+              Draw.equal =>
+                'every word of the length is equally likely. the daily '
+                    'draws by the curve.',
+              Draw.frequency =>
+                'common words come up more often. the daily draws by the '
+                    'curve.',
+            }),
           ),
         );
     }
@@ -172,24 +178,38 @@ class _HomePageState extends State<HomePage> {
     return InkWell(
       key: const ValueKey('frequency-row'),
       borderRadius: BorderRadius.circular(4),
-      onTap: () => toggle(!on),
+      onTap: next,
       child: Padding(
         padding: const EdgeInsets.only(left: 4),
         child: Row(
           children: [
             Expanded(
               child: Text(
-                on ? 'common words likelier' : 'all words equally likely',
+                'word draw · ${draw.label}',
                 key: const ValueKey('frequency-label'),
                 style: TextStyle(fontSize: 13, color: c.onSurfaceVariant),
               ),
             ),
-            Switch(
-              key: const ValueKey('frequency-switch'),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              value: on,
-              onChanged: toggle,
+            // where it is among the three, as on the steppers
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Row(
+                key: const ValueKey('frequency-dots'),
+                children: [
+                  for (final d in Draw.values)
+                    Container(
+                      width: 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: d == draw ? c.primary : c.outlineVariant,
+                      ),
+                    ),
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
           ],
         ),
       ),
@@ -222,29 +242,31 @@ class _HomePageState extends State<HomePage> {
               child: const Text('play'),
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton(
-              key: const ValueKey('daily-button'),
-              style: OutlinedButton.styleFrom(
-                fixedSize: const Size.fromHeight(_buttonHeight),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+          if (appState.mode.hasDaily) ...[
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton(
+                key: const ValueKey('daily-button'),
+                style: OutlinedButton.styleFrom(
+                  fixedSize: const Size.fromHeight(_buttonHeight),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                onPressed: () async {
+                  // the daily goes by the server's time: ask again if it has not
+                  // been for a while
+                  if (!TrustedClock.isFresh()) {
+                    await TrustedClock.sync(
+                      timeout: const Duration(milliseconds: 1500),
+                    );
+                  }
+                  if (!context.mounted) return;
+                  Navigator.pushNamed(context, Routes.daily);
+                },
+                child: fit(_dailyChild(lang.code)),
               ),
-              onPressed: () async {
-                // the daily goes by the server's time: ask again if it has not
-                // been for a while
-                if (!TrustedClock.isFresh()) {
-                  await TrustedClock.sync(
-                    timeout: const Duration(milliseconds: 1500),
-                  );
-                }
-                if (!context.mounted) return;
-                Navigator.pushNamed(context, Routes.daily);
-              },
-              child: fit(_dailyChild(lang.code)),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -496,8 +518,8 @@ class _HomePageState extends State<HomePage> {
 
 /// Every language in two columns. Tapping one closes it with that language's
 /// code; back, or a tap outside, closes it with nothing.
-class _LanguagePopup extends StatelessWidget {
-  const _LanguagePopup({required this.langs, required this.current});
+class LanguagePopup extends StatelessWidget {
+  const LanguagePopup({super.key, required this.langs, required this.current});
   final List<Language> langs;
   final String current;
 

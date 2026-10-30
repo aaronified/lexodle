@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/history.dart';
 import 'package:lexodle/logic.dart';
+import 'package:lexodle/daily.dart';
 import 'package:lexodle/modes.dart';
+import 'package:lexodle/review_text.dart';
 import 'package:lexodle/multi_analysis.dart';
 import 'package:lexodle/replay.dart';
 import 'package:lexodle/words.dart';
@@ -412,7 +414,7 @@ void main() {
   });
 
   group('an old daily row', () {
-    test('is scored with equal chances, whatever its flag says', () {
+    test('a daily before the curve is scored with equal chances', () {
       final h = History();
       final row = h.add(
         at: 1000,
@@ -424,13 +426,34 @@ void main() {
         answers: [pool[3]],
         won: false,
         daily: '2026-10-20',
-        freq: true, // what a row from before the flag reads as
+        draw: Draw.frequency, // what a row from before the flag reads as
         guesses: [GuessRow(game: 0, n: 0, word: pool[5], skill: 0, luck: 0)],
       );
-      expect(row.byFrequency, isFalse);
       final r = replayClassic(bank, row, h.guessesOf(row.id));
       expect(r.weights, isNull);
       expect(r.befores.first.length, min(3000, bank.answers(4).length));
+    });
+
+    test('a daily from the curve date is scored under the curve', () {
+      final h = History();
+      final row = h.add(
+        at: 1000,
+        lang: 'fr',
+        mode: GameMode.classic,
+        length: 4,
+        tries: 6,
+        pool: bank.answers(4).length,
+        answers: [pool[3]],
+        won: false,
+        daily: dailyCurveFrom,
+        draw: Draw.sigmoid,
+        guesses: [GuessRow(game: 0, n: 0, word: pool[5], skill: 0, luck: 0)],
+      );
+      final r = replayClassic(bank, row, h.guessesOf(row.id));
+      expect(r.weights, same(bank.law(4, Draw.sigmoid)));
+      expect(r.befores.first.length, bank.guessable(4).length);
+      expect(r.kind, DrawKind.curve);
+      expect(r.daily, isTrue);
     });
   });
 }

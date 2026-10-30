@@ -5,6 +5,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'ui.dart';
+
 /// A one-at-a-time slider, `‹ skill only ›`, with a label and a subtitle.
 ///
 /// It changes by the chevrons, by the arrow keys, by horizontal scrolling (a
@@ -176,7 +178,10 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: chooserLabelSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           if (sub != null)
             Text(
@@ -185,8 +190,8 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
-                color: c.onSurface.withValues(alpha: .65),
+                fontSize: chooserSubSize,
+                color: c.onSurface.withValues(alpha: dimAlpha),
               ),
             ),
         ],
@@ -204,7 +209,7 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
     Widget chevron(int d, IconData icon, String tip) => IconButton(
       tooltip: tip,
       onPressed: _can(d) ? () => _step(d) : null,
-      icon: Icon(icon),
+      icon: Icon(icon, size: chooserIconSize),
     );
 
     return Semantics(

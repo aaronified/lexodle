@@ -308,6 +308,7 @@ stof	40738
 avis	39810
 bære	39810
 fart	39810
+idag	39810
 kage	39810
 real	39810
 rene	39810
@@ -593,6 +594,7 @@ rørt	13803
 akut	13489
 case	13489
 homo	13489
+igår	13489
 lign	13489
 ride	13489
 shop	13489
@@ -729,6 +731,7 @@ novo	8912
 punk	8912
 beat	8709
 gate	8709
+hand	8709
 iver	8709
 jeps	8709
 jøde	8709
@@ -876,6 +879,7 @@ klud	6165
 nydt	6165
 nævn	6165
 nørd	6165
+self	6165
 taxi	6165
 trip	6165
 tåge	6165
@@ -1095,6 +1099,7 @@ troy	3630
 usle	3630
 font	3548
 gåde	3548
+herr	3548
 jets	3548
 jump	3548
 koma	3548
@@ -1187,6 +1192,7 @@ stub	2884
 udad	2884
 bagi	2818
 druk	2818
+epic	2818
 gråd	2818
 hæld	2818
 lens	2818
@@ -1260,6 +1266,7 @@ rage	2398
 anes	2344
 dørs	2344
 glød	2344
+jaja	2344
 knas	2344
 krat	2344
 ladt	2344
@@ -1495,6 +1502,7 @@ mask	1288
 plug	1288
 svig	1288
 urne	1288
+cute	1258
 fiks	1258
 flyv	1258
 kile	1258
@@ -2794,6 +2802,7 @@ paven	6606
 urban	6606
 vinen	6606
 amber	6456
+anime	6456
 blond	6456
 civil	6456
 munke	6456
@@ -3933,6 +3942,7 @@ måner	1348
 onani	1348
 snøre	1348
 tigge	1348
+tight	1348
 turne	1348
 utopi	1348
 valle	1348
@@ -6156,6 +6166,7 @@ udbrød	3548
 udskud	3548
 våbnet	3548
 østers	3548
+anyway	3467
 citron	3467
 dynamo	3467
 dømmes	3467
@@ -6846,6 +6857,7 @@ flænge	1819
 frigør	1819
 fundne	1819
 guider	1819
+hovede	1819
 humane	1819
 hvalsø	1819
 iklædt	1819
@@ -7216,6 +7228,7 @@ grimes	1348
 grinte	1348
 høstes	1348
 jammer	1348
+jydske	1348
 kindle	1348
 kloner	1348
 larmen	1348
@@ -7415,6 +7428,7 @@ emalje	1174
 foldes	1174
 friere	1174
 ganges	1174
+hetero	1174
 hvilet	1174
 jarlen	1174
 kimono	1174
@@ -8365,6 +8379,7 @@ ekstern	12022
 forrest	12022
 frygten	12022
 grafisk	12022
+imorgen	12022
 journal	12022
 klipper	12022
 kreativ	12022
@@ -12975,6 +12990,7 @@ sangeren	2344
 skabning	2344
 snehvide	2344
 stempler	2344
+straight	2344
 topmødet	2344
 udrustet	2344
 ventiler	2344
@@ -13423,6 +13439,7 @@ papegøje	1659
 prinsens	1659
 ringeste	1659
 rumænere	1659
+sclerose	1659
 skyllede	1659
 statiske	1659
 teleskop	1659

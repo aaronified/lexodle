@@ -16,7 +16,8 @@ AppState sample() {
     ..lang = 'fr'
     ..length = 6
     ..tries = 4
-    ..useFrequency = false
+    ..draw = Draw.equal
+    ..hearts = 3
     ..helper = Helper.skill
     ..mode = GameMode.relay
     ..share = 25
@@ -76,7 +77,9 @@ void main() {
           'lang',
           'length',
           'tries',
-          'useFrequency',
+          'draw',
+          'hearts',
+          'blindTries',
           'helper',
           'mode',
           'share',
@@ -230,10 +233,16 @@ void main() {
         ('tries', 'six'),
         ('useFrequency', 1),
         ('useFrequency', 'yes'),
+        ('draw', 3),
+        ('draw', 'sigmoid'),
+        ('hearts', 0),
+        ('hearts', 11),
         ('helper', 4),
         ('helper', -1),
         ('helper', 'full'),
-        ('mode', 3),
+        ('mode', 6),
+        ('blindTries', 0),
+        ('blindTries', 21),
         ('mode', -1),
         ('mode', true),
         ('share', 31),

@@ -1,6 +1,6 @@
 # Achievements
 
-97 achievements, saved in your browser (nothing is sent anywhere). Every one has a medal:
+117 achievements, saved in your browser (nothing is sent anywhere). Every one has a medal:
 **bronze**, **silver**, **gold** or **platinum**, and a family of them climbs in difficulty, from
 the easy version to the platinum one.
 
@@ -14,6 +14,7 @@ the easy version to the platinum one.
 | mastery, completionist | master 1/3/6/all languages; complete 1/3/6/all |
 | dailies | 5/25/100/365 solved; streaks of 3/14/60/365; double fires 1/10/50/200 |
 | quartet, relay race | wins, last-try wins, spare tries, free rides, daily streaks of their own |
+| lockdown | wins 1/10/50/200; **clean sheet** (win with every heart, 3 or more hearts) 1/5/20/50; **last heart** (win with one heart left, 3 or more hearts) 1/5/15/40; **sudden death** (win with a single heart) 1/5/15/40; daily streaks 3/10/30/100 |
 | playstyles | one for each style, **chameleon** (change style), **many hats** (all six) |
 
 Every level is counted: once the top level of a counting achievement (wins, games, languages, dailies and the like) is earned, it starts again from 0 and each round is counted, the medal staying; the best-of ones (fastest win, skill, luck, risk, bits) count each game that does what a level asks, and a streak counts each run that gets to a level. The number shows as ×N. Each is earned once a language's number reaches its target (a best-of number, such as the best

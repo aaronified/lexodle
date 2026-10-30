@@ -186,14 +186,22 @@ void main() {
         closeTo(-100 / fitting.length, 1e-9),
         reason: 'a wrong pick among n words: minus the 1 in n chance',
       );
-      expect(find.textContaining('Last try: '), findsOneWidget);
+      expect(find.textContaining('last try:'), findsOneWidget);
       // the plot of the possible words is on the last step...
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('freq-plot')),
+        300,
+      );
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
       // the earlier steps keep the ranked picks (words that split best)
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
       await tester.pump();
       expect(find.byKey(const ValueKey('pick-each')), findsNothing);
       // ...and on every step
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('freq-plot')),
+        300,
+      );
       expect(find.byKey(const ValueKey('freq-plot')), findsOneWidget);
     },
   );
@@ -263,12 +271,22 @@ void main() {
           .map((t) => t.data ?? '')
           .skip(4) // the four letters of the guess
           .toList();
+      // words left, skill, risk; the type is an icon, or a dot when the guess
+      // was counted as none
       expect(
         texts,
-        hasLength(3),
-        reason: 'words before and after, skill, risk',
+        hasLength(4),
+        reason: 'words left, skill, risk, and the dot of a guess with no type',
       );
       expect(int.tryParse(texts[2]), isNotNull, reason: 'risk: ${texts[2]}');
+      expect(find.byKey(const ValueKey('head-type')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: row,
+          matching: find.byKey(const ValueKey('type-0')),
+        ),
+        findsOneWidget,
+      );
     },
   );
 }

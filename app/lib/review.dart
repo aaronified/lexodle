@@ -1,14 +1,24 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'analysis_worker.dart';
+import 'behaviour_popup.dart';
+import 'history.dart';
 import 'logic.dart';
+import 'playstyle.dart';
+import 'review_maths.dart';
 import 'review_plots.dart';
 import 'review_text.dart';
 import 'ui.dart';
 import 'wiki_links.dart';
 import 'words.dart';
+
+/// The icon of a guess type in the review table: smaller than the row, so it
+/// never makes the row taller.
+const typeIconSize = 16.0;
 
 /// Everything the review needs about one finished game.
 class GameRecord {
@@ -26,10 +36,22 @@ class GameRecord {
     this.tries = 0,
     this.weights,
     this.analysis,
+    this.kind,
+    this.daily = false,
+    this.blind = false,
   });
+
+  /// Whether the game was blind: its guesses told only how many letters were
+  /// right, so the words left and the scores go by those counts.
+  final bool blind;
 
   final WordBank bank;
   final int length;
+
+  /// How the answer was drawn, and whether it was a daily: for the sentences on
+  /// the chances in the skill and luck sections. Null when not known.
+  final DrawKind? kind;
+  final bool daily;
 
   /// The answer pool this game was played with.
   final int poolSize;
@@ -78,6 +100,20 @@ class ReviewPage extends StatefulWidget {
 class _ReviewPageState extends State<ReviewPage> {
   GameRecord get r => widget.record;
   late int step = widget.initialStep.clamp(0, r.guesses.length - 1);
+  final _scroll = ScrollController();
+
+  /// Goes to guess [i], and back to the top of the page, as a new page.
+  void _go(int i) {
+    setState(() => step = i);
+    if (_scroll.hasClients) _scroll.jumpTo(0);
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
   final picks = <int, List<Recommendation>>{};
 
   /// How every guess scored, per step.
@@ -119,15 +155,6 @@ class _ReviewPageState extends State<ReviewPage> {
     return [for (final x in fits) weightOf(x) / total];
   }
 
-  /// Whether the guess at [i] fits every clue given before it.
-  bool _fitsClues(int i) {
-    final g = r.guesses[i];
-    for (var j = 0; j < i; j++) {
-      if (filterEligible([g], r.guesses[j], r.marks[j]).isEmpty) return false;
-    }
-    return true;
-  }
-
   /// The bits it takes to find the answer from the start.
   double get _needed {
     final first = r.befores.first;
@@ -160,11 +187,12 @@ class _ReviewPageState extends State<ReviewPage> {
           : null;
       final land =
           await (ready ??
-              analyseGuesses(
+              analyseOffThread(
                 r.befores[i],
                 guessable,
                 weights: r.weights,
                 answer: r.answer,
+                blind: r.blind,
               ));
       if (!mounted) return;
       setState(() {
@@ -187,9 +215,9 @@ class _ReviewPageState extends State<ReviewPage> {
       onKeyEvent: (_, e) {
         if (e is KeyUpEvent) return KeyEventResult.ignored;
         if (e.logicalKey == LogicalKeyboardKey.arrowRight && step < n - 1) {
-          setState(() => step++);
+          _go(step + 1);
         } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft && step > 0) {
-          setState(() => step--);
+          _go(step - 1);
         } else {
           return KeyEventResult.ignored;
         }
@@ -210,6 +238,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 children: [
                   Expanded(
                     child: ListView(
+                      controller: _scroll,
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 16),
                       children: [
                         _progress(c, n),
@@ -231,27 +260,12 @@ class _ReviewPageState extends State<ReviewPage> {
                         _board(c),
                         const SizedBox(height: 18),
                         ..._quality(c, m),
+                        ..._maths(c, m, top),
+                        _bits(c, m),
+                        const SizedBox(height: 18),
                         _picks(c, m, top),
                         const SizedBox(height: 18),
-                        _bits(c),
-                        const SizedBox(height: 18),
                         _frequency(c),
-                        const SizedBox(height: 18),
-                        Text(
-                          top == null
-                              ? 'Working out the alternatives…'
-                              : stepComment(
-                                  m: m,
-                                  picks: top,
-                                  after: r.afterOf(step),
-                                  solved: r.guesses[step] == r.answer,
-                                  finalTry: _isFinalTry(step),
-                                  guessFits: _fitsClues(step),
-                                  guessIsPossible: m.possible,
-                                  equalChances: r.weights == null,
-                                ),
-                          style: const TextStyle(fontSize: 14, height: 1.5),
-                        ),
                       ],
                     ),
                   ),
@@ -261,9 +275,7 @@ class _ReviewPageState extends State<ReviewPage> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: step == 0
-                                ? null
-                                : () => setState(() => step--),
+                            onPressed: step == 0 ? null : () => _go(step - 1),
                             child: const Text('back'),
                           ),
                         ),
@@ -272,7 +284,7 @@ class _ReviewPageState extends State<ReviewPage> {
                           child: FilledButton(
                             onPressed: last
                                 ? () => Navigator.pop(context)
-                                : () => setState(() => step++),
+                                : () => _go(step + 1),
                             child: Text(last ? 'done' : 'next'),
                           ),
                         ),
@@ -295,7 +307,7 @@ class _ReviewPageState extends State<ReviewPage> {
         if (i > 0) const SizedBox(width: 4),
         Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => step = i),
+            onTap: () => _go(i),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Container(
@@ -331,22 +343,11 @@ class _ReviewPageState extends State<ReviewPage> {
         ? null
         : risks.fold<double>(0, (a, b) => a + b) / risks.length;
     final bits = all.fold<double>(0, (a, m) => a + m.gain);
-    final expected = all.fold<double>(0, (a, m) => a + m.expectedGain);
-    Widget pill(String which, String value, String text) => Expanded(
+    Widget pill(String which, String value) => Expanded(
       child: InkWell(
         key: ValueKey('pill-$which'),
         borderRadius: BorderRadius.circular(8),
-        onTap: () => showHairlineDialog<void>(
-          context,
-          title: which,
-          children: [
-            Text.rich(
-              TextSpan(children: measureSpans(c, text)),
-              style: const TextStyle(fontSize: 13, height: 1.5),
-            ),
-            reviewLink(WikiPage.skillLuckRisk, label: 'how $which works'),
-          ],
-        ),
+        onTap: () => showMeasureHelp(context, which),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
@@ -379,17 +380,13 @@ class _ReviewPageState extends State<ReviewPage> {
     );
     return Row(
       children: [
-        pill('skill', ready ? '${skill.round()}' : '…', skillLine(skill)),
+        pill('skill', ready ? '${skill.round()}' : '…'),
         const SizedBox(width: 8),
-        pill('luck', signedLuck(luck), luckLine(luck)),
+        pill('luck', signedLuck(luck)),
         const SizedBox(width: 8),
-        pill(
-          'risk',
-          !ready ? '…' : (risk == null ? '–' : '${risk.round()}'),
-          riskLine(risk),
-        ),
+        pill('risk', !ready ? '…' : (risk == null ? '–' : '${risk.round()}')),
         const SizedBox(width: 8),
-        pill('bits', bits.toStringAsFixed(2), bitsLine(bits, expected)),
+        pill('bits', bits.toStringAsFixed(2)),
       ],
     );
   }
@@ -407,7 +404,7 @@ class _ReviewPageState extends State<ReviewPage> {
   /// The board with the table beside it. Guesses after the current step stay
   /// blank, so stepping through gives nothing away.
   Widget _board(ColorScheme c) {
-    const wordsW = 60.0, skillW = 32.0, riskW = 46.0;
+    const wordsW = 36.0, skillW = 32.0, riskW = 46.0, typeW = 30.0;
     const gap = 2.0;
     const padX = 8.0, padY = 7.0;
     final head = TextStyle(
@@ -441,7 +438,8 @@ class _ReviewPageState extends State<ReviewPage> {
 
     return LayoutBuilder(
       builder: (context, box) {
-        final area = box.maxWidth - wordsW - skillW - riskW - 8 - padX * 2;
+        final area =
+            box.maxWidth - wordsW - skillW - riskW - typeW - 8 - padX * 2;
         final tile = min(30.0, (area - gap * (r.length - 1)) / r.length);
         return Column(
           children: [
@@ -453,7 +451,7 @@ class _ReviewPageState extends State<ReviewPage> {
                   SizedBox(
                     width: wordsW,
                     child: Text(
-                      'words',
+                      'left',
                       textAlign: TextAlign.right,
                       style: head,
                     ),
@@ -476,6 +474,15 @@ class _ReviewPageState extends State<ReviewPage> {
                       style: head.copyWith(color: riskColor(c)),
                     ),
                   ),
+                  SizedBox(
+                    width: typeW,
+                    child: Text(
+                      'type',
+                      key: const ValueKey('head-type'),
+                      textAlign: TextAlign.right,
+                      style: head,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -484,7 +491,7 @@ class _ReviewPageState extends State<ReviewPage> {
               InkWell(
                 key: ValueKey('row-$i'),
                 borderRadius: BorderRadius.circular(6),
-                onTap: () => setState(() => step = i),
+                onTap: () => _go(i),
                 child: Container(
                   decoration: BoxDecoration(
                     color: i == step
@@ -513,11 +520,12 @@ class _ReviewPageState extends State<ReviewPage> {
                         ),
                       const Spacer(),
                       if (i <= step)
-                        ..._rowCells(c, i, wordsW, skillW, riskW, cell)
+                        ..._rowCells(c, i, wordsW, skillW, riskW, typeW, cell)
                       else ...[
                         SizedBox(width: wordsW, child: cell('–', dimmed: true)),
                         SizedBox(width: skillW, child: cell('–', dimmed: true)),
                         SizedBox(width: riskW, child: cell('–', dimmed: true)),
+                        SizedBox(width: typeW, child: cell('–', dimmed: true)),
                       ],
                     ],
                   ),
@@ -541,16 +549,18 @@ class _ReviewPageState extends State<ReviewPage> {
     double wordsW,
     double skillW,
     double riskW,
+    double typeW,
     Widget Function(String, {bool strong, bool dimmed, Color? color, Key? key})
     cell,
   ) {
     final m = metric(i);
     final strong = i == step, dimmed = i < step;
+    final b = m.ready ? behaviourOf(guessRowOf(i + 1, m)) : null;
     return [
       SizedBox(
         width: wordsW,
         child: cell(
-          '${m.before}→${m.after}',
+          '${m.after}',
           strong: strong,
           dimmed: dimmed,
           key: ValueKey('words-$i'),
@@ -588,6 +598,32 @@ class _ReviewPageState extends State<ReviewPage> {
             ],
           ),
         ),
+      ),
+      // the type of the guess, its own column: tap it for what it is. The tap
+      // is the icon and no more, so the row is no taller than a row without one
+      SizedBox(
+        width: typeW,
+        child: !m.ready
+            ? cell('…', dimmed: true)
+            : Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  key: ValueKey('type-$i'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () =>
+                      showBehaviourPopup(context, guessRowOf(i + 1, m)),
+                  child: b == null
+                      ? cell('·', strong: false, dimmed: true)
+                      : TablerIcon(
+                          b.icon,
+                          size: typeIconSize,
+                          color: behaviourColor(
+                            c,
+                            b.label,
+                          ).withValues(alpha: dimmed ? .5 : 1),
+                        ),
+                ),
+              ),
       ),
     ];
   }
@@ -629,8 +665,177 @@ class _ReviewPageState extends State<ReviewPage> {
 
   final _outcomes = <int, ({List<Outcome> outcomes, int landed})>{};
 
+  /// The skill, risk and luck of the guess worked out from the numbers on the
+  /// plot, line by line.
+  List<Widget> _maths(
+    ColorScheme c,
+    GuessMetrics m,
+    List<Recommendation>? top,
+  ) {
+    String f1(double v) => v.toStringAsFixed(1);
+    String f2(double v) => v.toStringAsFixed(2);
+    String pc(double v) => '${f1(v)}%';
+    Widget gap(Widget w) =>
+        Padding(padding: const EdgeInsets.only(bottom: 18), child: w);
+    final land = landscapes[step];
+    final before = r.befores[step];
+    // the chances the word was drawn by, which skill and luck are worked out
+    // under, said once in each section
+    final skillNote = r.kind == null
+        ? null
+        : r.blind
+        ? '${skillDrawLine(r.kind!, daily: r.daily)} $blindLine'
+        : skillDrawLine(r.kind!, daily: r.daily);
+    final luckNote = r.kind == null
+        ? null
+        : luckDrawLine(r.kind!, daily: r.daily);
+    if (before.length <= 1) {
+      return [
+        gap(
+          MeasureBlock(
+            title: 'skill',
+            which: 'skill',
+            tip: blockTips['skill']!,
+            rows: const [],
+            result: ('skill: one word left, the only play', '100'),
+            note: skillNote,
+          ),
+        ),
+        gap(
+          MeasureBlock(
+            title: 'risk',
+            which: 'risk',
+            tip: blockTips['risk']!,
+            rows: const [],
+            result: ('risk: one outcome, no gamble', '–'),
+          ),
+        ),
+        gap(
+          MeasureBlock(
+            title: 'luck',
+            which: 'luck',
+            tip: blockTips['luck']!,
+            rows: const [],
+            result: ('luck: one outcome', '0%'),
+            note: luckNote,
+          ),
+        ),
+      ];
+    }
+    if (_isFinalTry(step)) {
+      return [
+        gap(
+          MeasureBlock(
+            title: 'skill',
+            which: 'skill',
+            tip: blockTips['skill']!,
+            rows: [('chance this guess is the answer', pc(m.winChance * 100))],
+            result: (
+              'skill = chance ÷ best chance × 100',
+              '${m.skill.round()}',
+            ),
+            note: skillNote,
+          ),
+        ),
+        gap(
+          MeasureBlock(
+            title: 'luck',
+            which: 'luck',
+            tip: blockTips['luck']!,
+            rows: const [],
+            result: ('luck = outcome − chance of it', luckText(m.luck)),
+            note: luckNote,
+          ),
+        ),
+      ];
+    }
+    final o = _outcomes
+        .putIfAbsent(
+          step,
+          () => outcomesOf(before, m.guess, r.answer, r.weights),
+        )
+        .outcomes;
+    double share(bool Function(double gain) test) =>
+        o.fold<double>(0, (a, x) => a + (test(x.gain) ? x.chance : 0)) * 100;
+    final h = m.expectedGain;
+    final lessH = share((g) => g < h - 1e-9),
+        moreH = share((g) => g > h + 1e-9);
+    final lessG = share((g) => g < m.gain - 1e-9);
+    final moreG = share((g) => g > m.gain + 1e-9);
+    final d = max(0.0, m.rawRisk);
+    final bestWord = top == null || top.isEmpty ? '' : ' (${top.first.word})';
+    final riskWord = land == null || land.riskiest.isEmpty
+        ? ''
+        : ' (${land.riskiest.first.word})';
+    final side = m.rawRisk > 10
+        ? 'Usually less than expected, with a small chance of much more.'
+        : m.rawRisk < -10
+        ? 'Usually more than expected, with a small chance of much less: no '
+              'gamble, so risk is 0.'
+        : 'Less and more than expected are about equally likely, so there is '
+              'little gamble.';
+    final ready = land != null && m.ready;
+    final noRisk = m.risk == null;
+    return [
+      gap(
+        MeasureBlock(
+          title: 'skill',
+          which: 'skill',
+          tip: blockTips['skill']!,
+          rows: [
+            ('expected gain, H = Σ chance × bits', '${f2(h)} bits'),
+            (
+              'best guess, H*$bestWord',
+              ready ? '${f2(land.bestGain)} bits' : '…',
+            ),
+          ],
+          result: (
+            ready
+                ? 'skill = ${f2(h)} ÷ ${f2(land.bestGain)} × 100'
+                : 'skill = H ÷ H* × 100',
+            ready ? f1(m.skill) : '…',
+          ),
+          note: skillNote,
+        ),
+      ),
+      gap(
+        MeasureBlock(
+          title: 'risk',
+          which: 'risk',
+          tip: blockTips['risk']!,
+          rows: [
+            ('chance of less than expected', pc(lessH)),
+            ('chance of more than expected', pc(moreH)),
+            ('less − more, at least 0', pc(d)),
+            ('riskiest guess, D*$riskWord', ready ? pc(land.bestRisk) : '…'),
+          ],
+          result: noRisk
+              ? ('risk: nothing to gamble on', '–')
+              : (
+                  'risk = ${f1(d)} ÷ ${f1(land?.bestRisk ?? 0)} × 100',
+                  f1(m.risk!),
+                ),
+          note: noRisk ? null : side,
+        ),
+      ),
+      gap(
+        MeasureBlock(
+          title: 'luck',
+          which: 'luck',
+          tip: blockTips['luck']!,
+          rows: [
+            ('chance of gaining less than ${f2(m.gain)} bits', pc(lessG)),
+            ('chance of gaining more than ${f2(m.gain)} bits', pc(moreG)),
+          ],
+          result: ('luck = less − more', luckText(m.luck)),
+          note: luckNote,
+        ),
+      ),
+    ];
+  }
+
   /// The bits gained guess by guess, up to the one on show.
-  Widget _bits(ColorScheme c) {
+  Widget _bits(ColorScheme c, GuessMetrics m) {
     final steps = [
       for (var i = 0; i < r.guesses.length; i++)
         WaterfallStep(
@@ -640,14 +845,27 @@ class _ReviewPageState extends State<ReviewPage> {
           landscapes[i]?.bestGain,
         ),
     ];
+    final far = [for (var i = 0; i <= step; i++) metric(i).gain]
+        .fold<double>(0, (a, b) => a + b);
+    final lucky = m.gain - m.expectedGain;
+    String f2(double v) => v.toStringAsFixed(2);
+    String sg(double v) => v < 0 ? '−${f2(-v)}' : '+${f2(v)}';
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            const Caption('bits'),
-            const SizedBox(width: 6),
-            InfoDot(bitsHelp, title: 'bits'),
+        MeasureBlock(
+          title: 'bits gained',
+          which: 'bits',
+          tip: blockTips['bits']!,
+          rows: [
+            (
+              'this guess: skill + luck',
+              '${f2(m.expectedGain)} ${sg(lucky)} = ${f2(m.gain)} bits',
+            ),
+            (
+              'so far, of ${f2(_needed)} needed',
+              '${f2(far)} (${(far / _needed * 100).round()}%)',
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -681,22 +899,11 @@ class _ReviewPageState extends State<ReviewPage> {
       children: [
         Caption('the ${words.length} possible words, by how common'),
         const SizedBox(height: 8),
-        SizedBox(
-          height: 72,
-          width: double.infinity,
-          child: CustomPaint(
-            key: const ValueKey('freq-plot'),
-            painter: _FrequencyPainter(
-              series,
-              bars: words.length <= 60,
-              guessAt: guessAt,
-              answerAt: answerAt,
-              base: c.onSurface.withValues(alpha: .3),
-              guess: c.primary,
-              answer: c.secondary,
-              axis: c.outlineVariant,
-            ),
-          ),
+        _FrequencyPlot(
+          words: words,
+          series: series,
+          guessAt: guessAt,
+          answerAt: answerAt,
         ),
         const SizedBox(height: 4),
         Row(
@@ -879,11 +1086,16 @@ class _FrequencyPainter extends CustomPainter {
     required this.guess,
     required this.answer,
     required this.axis,
+    required this.hoverColor,
+    this.hover = -1,
   });
   final List<double> series;
   final bool bars;
   final int guessAt, answerAt;
-  final Color base, guess, answer, axis;
+  final Color base, guess, answer, axis, hoverColor;
+
+  /// The word the pointer is on, or -1.
+  final int hover;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -910,7 +1122,7 @@ class _FrequencyPainter extends CustomPainter {
         final x = slot * i + (slot - w) / 2;
         canvas.drawRect(
           Rect.fromLTWH(x, size.height - h(series[i]), w, h(series[i])),
-          Paint()..color = colorOf(i),
+          Paint()..color = i == hover ? hoverColor : colorOf(i),
         );
       }
       return;
@@ -926,20 +1138,20 @@ class _FrequencyPainter extends CustomPainter {
       ..lineTo(size.width, size.height)
       ..close();
     canvas.drawPath(path, Paint()..color = base);
-    for (final i in [guessAt, answerAt]) {
+    for (final i in [guessAt, answerAt, hover]) {
       if (i < 0) continue;
       final x = n == 1 ? 0.0 : i / (n - 1) * size.width;
       canvas.drawLine(
         Offset(x, size.height - h(series[i])),
         Offset(x, size.height),
         Paint()
-          ..color = colorOf(i)
+          ..color = i == hover ? hoverColor : colorOf(i)
           ..strokeWidth = 2,
       );
       canvas.drawCircle(
         Offset(x, size.height - h(series[i])),
         3,
-        Paint()..color = colorOf(i),
+        Paint()..color = i == hover ? hoverColor : colorOf(i),
       );
     }
   }
@@ -949,5 +1161,168 @@ class _FrequencyPainter extends CustomPainter {
       old.series != series ||
       old.guessAt != guessAt ||
       old.answerAt != answerAt ||
+      old.hover != hover ||
+      old.hoverColor != hoverColor ||
       old.bars != bars;
+}
+
+/// The plot of the words still possible, by how common, that tells the word
+/// under the pointer: hover with a mouse, or touch and drag along it. The word
+/// is lit in the plot and named in a tooltip above it.
+class _FrequencyPlot extends StatefulWidget {
+  const _FrequencyPlot({
+    required this.words,
+    required this.series,
+    required this.guessAt,
+    required this.answerAt,
+  });
+
+  /// The words, most common first, and the height of each in the plot.
+  final List<String> words;
+  final List<double> series;
+  final int guessAt, answerAt;
+
+  @override
+  State<_FrequencyPlot> createState() => _FrequencyPlotState();
+}
+
+class _FrequencyPlotState extends State<_FrequencyPlot> {
+  int _hover = -1;
+  Timer? _fade;
+
+  @override
+  void didUpdateWidget(_FrequencyPlot old) {
+    super.didUpdateWidget(old);
+    if (old.words != widget.words) _hover = -1;
+  }
+
+  @override
+  void dispose() {
+    _fade?.cancel();
+    super.dispose();
+  }
+
+  bool get _bars => widget.words.length <= 60;
+
+  /// The word at [dx] in a plot [width] wide, as the painter lays them out.
+  int _at(double dx, double width) {
+    final n = widget.words.length;
+    if (n == 0 || width <= 0) return -1;
+    if (_bars) return (dx / (width / n)).floor().clamp(0, n - 1);
+    return n == 1 ? 0 : (dx / width * (n - 1)).round().clamp(0, n - 1);
+  }
+
+  void _point(Offset local, double width) {
+    _fade?.cancel();
+    final i = _at(local.dx, width);
+    if (i != _hover) setState(() => _hover = i);
+  }
+
+  /// A mouse leaves at once; a finger lifted leaves the word named a moment.
+  void _leave({bool soon = false}) {
+    _fade?.cancel();
+    if (soon) {
+      _fade = Timer(const Duration(milliseconds: 1400), () {
+        if (mounted) setState(() => _hover = -1);
+      });
+    } else if (_hover != -1) {
+      setState(() => _hover = -1);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final n = widget.words.length;
+    return SizedBox(
+      height: 72,
+      width: double.infinity,
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final width = box.maxWidth;
+          // where the lit word stands, to put the tooltip over it
+          double xOf(int i) => _bars
+              ? (i + .5) * width / n
+              : (n == 1 ? 0.0 : i / (n - 1) * width);
+          final i = _hover;
+          return MouseRegion(
+            onHover: (e) => _point(e.localPosition, width),
+            onExit: (_) => _leave(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (d) => _point(d.localPosition, width),
+              onTapUp: (_) => _leave(soon: true),
+              onTapCancel: () => _leave(soon: true),
+              onHorizontalDragStart: (d) => _point(d.localPosition, width),
+              onHorizontalDragUpdate: (d) => _point(d.localPosition, width),
+              onHorizontalDragEnd: (_) => _leave(soon: true),
+              onHorizontalDragCancel: () => _leave(soon: true),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      key: const ValueKey('freq-plot'),
+                      painter: _FrequencyPainter(
+                        widget.series,
+                        bars: _bars,
+                        guessAt: widget.guessAt,
+                        answerAt: widget.answerAt,
+                        hover: i,
+                        base: c.onSurface.withValues(alpha: .3),
+                        guess: c.primary,
+                        answer: c.secondary,
+                        axis: c.outlineVariant,
+                        hoverColor: c.onSurface,
+                      ),
+                    ),
+                  ),
+                  if (i >= 0 && i < n)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: -30,
+                      child: IgnorePointer(
+                        // over the word, held inside the plot at either end
+                        child: Align(
+                          alignment: Alignment(
+                            (xOf(i) / width * 2 - 1).clamp(-1.0, 1.0),
+                            0,
+                          ),
+                          child: Container(
+                            key: const ValueKey('freq-tooltip'),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: c.surface,
+                              border: Border.all(color: c.outline),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              i == widget.answerAt
+                                  ? '${widget.words[i]} · the answer'
+                                  : i == widget.guessAt
+                                  ? '${widget.words[i]} · your guess'
+                                  : widget.words[i],
+                              maxLines: 1,
+                              softWrap: false,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

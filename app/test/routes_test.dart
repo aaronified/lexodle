@@ -173,4 +173,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(names.stack, ['/', Routes.play]);
   });
+
+  test('a link opened by the Android app is its fragment', () {
+    const link = 'https://aaronified.github.io/lexodle/#/puzzle?l=en&n=5';
+    expect(routeOf(link), '/puzzle?l=en&n=5');
+    expect(routeOf('/puzzle?l=en'), '/puzzle?l=en');
+    expect(routeOf('https://aaronified.github.io/lexodle/'), '/');
+    expect(routeOf(null), '/');
+  });
 }

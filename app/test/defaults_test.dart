@@ -3,17 +3,19 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/difficulty.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('a new player starts at 6 tries and draws words by frequency', () {
+  test('a new player starts at 6 tries and draws words by the curve', () {
     final s = AppState();
     expect(s.tries, 6);
     expect(triesLevels.firstWhere((l) => l.$2 == s.tries).$1, 'normal');
-    expect(s.useFrequency, isTrue);
+    expect(s.draw, Draw.sigmoid);
+    expect(s.hearts, 5);
   });
 
   testWidgets(
@@ -26,17 +28,18 @@ void main() {
       await tester.pumpAndSettle();
 
       // the difficulty is chosen on the game modes screen, not on home
-      expect(find.byKey(const ValueKey('frequency-checkbox')), findsNothing);
+      expect(find.byKey(const ValueKey('draw-stepper')), findsNothing);
       await tester.tap(find.byTooltip('game modes'));
       await tester.pumpAndSettle();
       expect(find.byType(DifficultyMatrix), findsOneWidget);
-      final box = tester.widget<CheckboxListTile>(
-        find.byKey(const ValueKey('frequency-checkbox')),
-      );
+      await tester.ensureVisible(find.byKey(const ValueKey('draw-stepper')));
       expect(
-        box.value,
-        isTrue,
-        reason: 'words are drawn by frequency by default',
+        find.descendant(
+          of: find.byKey(const ValueKey('draw-stepper')),
+          matching: find.text('sigmoid curve'),
+        ),
+        findsOneWidget,
+        reason: 'words are drawn by the curve by default',
       );
       await tester.tapAt(const Offset(5, 5)); // the scrim closes it
       await tester.pumpAndSettle();

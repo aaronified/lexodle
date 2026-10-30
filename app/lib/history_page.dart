@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'analysis.dart';
 import 'daily.dart';
+import 'geography.dart';
 import 'history.dart';
 import 'logic.dart';
 import 'language_picker.dart';
@@ -94,9 +95,11 @@ class _HistoryPageState extends State<HistoryPage> {
       _error = '';
     });
     try {
-      final bank = await WordBank.load(lang);
+      final bank = g.mode == GameMode.themed
+          ? await Geography.load(lang)
+          : await WordBank.load(lang);
       final rows = appState.history.guessesOf(g.id);
-      final record = g.isClassic
+      final record = !g.mode.multi
           ? replayClassic(bank, g, rows)
           : replayMulti(bank, g, rows);
       if (!mounted) return;

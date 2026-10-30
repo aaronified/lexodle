@@ -168,4 +168,81 @@ void main() {
     expect(g.complete, isTrue);
     expect(g.cursor, 5);
   });
+
+  group('locking a letter', () {
+    final t0 = DateTime(2026);
+    DateTime after(int ms) => t0.add(Duration(milliseconds: ms));
+
+    test('a double tap locks the letter, another unlocks it', () {
+      final g = typed('crane');
+      expect(g.tap(1, at: t0), isFalse);
+      expect(g.isLocked(1), isFalse);
+      expect(g.tap(1, at: after(200)), isTrue);
+      expect(g.isLocked(1), isTrue);
+      g.tap(1, at: after(2000));
+      g.tap(1, at: after(2200));
+      expect(g.isLocked(1), isFalse);
+    });
+
+    test('two taps too far apart, or on two tiles, lock nothing', () {
+      final g = typed('crane');
+      g.tap(1, at: t0);
+      g.tap(1, at: after(900));
+      g.tap(2, at: after(1000));
+      expect(g.hasLocked, isFalse);
+    });
+
+    test('an empty slot cannot be locked', () {
+      final g = typed('cr');
+      g.tap(3, at: t0);
+      g.tap(3, at: after(100));
+      expect(g.hasLocked, isFalse);
+    });
+
+    test('typing skips a locked letter and never overwrites it', () {
+      final g = typed('crane')..toggleLock(0);
+      g.next();
+      expect(g.slots, ['c', '', '', '', '']);
+      expect(g.cursor, 1);
+      for (final ch in 'xyzw'.split('')) {
+        g.type(ch, letters);
+      }
+      expect(g.word, 'cxyzw');
+      g.select(0);
+      g.clear();
+      expect(g.hasLocked, isFalse);
+    });
+
+    test('typing on a locked tile goes to the next free one', () {
+      final g = typed('crane')..toggleLock(2);
+      g.select(2);
+      expect(g.type('x', letters), 3);
+      expect(g.word, 'crax e'.replaceAll(' ', ''));
+    });
+
+    test('backspace passes over locked letters and keeps them', () {
+      final g = typed('crane')..toggleLock(1);
+      g.back(); // clears e
+      g.back(); // clears n
+      g.back(); // clears a
+      expect(g.back(), 0); // skips the locked r, clears c
+      expect(g.slots, ['', 'r', '', '', '']);
+      expect(g.back(), -1);
+      expect(g.isLocked(1), isTrue);
+    });
+
+    test('next keeps every locked letter for the next guess', () {
+      final g = typed('crane')
+        ..toggleLock(0)
+        ..toggleLock(4);
+      g.next();
+      expect(g.slots, ['c', '', '', '', 'e']);
+      expect(g.cursor, 1);
+      for (final ch in 'xyz'.split('')) {
+        g.type(ch, letters);
+      }
+      expect(g.complete, isTrue);
+      expect(g.word, 'cxyze');
+    });
+  });
 }

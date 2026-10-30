@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/keyboard.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/multi_game.dart';
@@ -134,6 +135,9 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       await tester.pumpAndSettle();
       expect(appState.helper, Helper.skill, reason: '$m: nor a key');
+      // (the key may have moved the mode stepper on, which has the focus)
+      appState.setup(mode: m);
+      await tester.pumpAndSettle();
       expect(
         find.text(
           'the helper shows in classic mode only. whatever you '
@@ -187,15 +191,33 @@ void main() {
 
     List<String> answers(int seed) => chooseTargets(
       bank.answers(4),
-      bank.answerWeights(4),
+      bank.drawWeights(4, appState.draw),
       4,
       10,
       Random(seed),
     );
 
+    // a letter with no key on a desktop keyboard (é, ß, ñ...) is tapped on the
+    // screen's own keyboard, as a player would
+    Future<void> typeKey(WidgetTester tester, String ch) async {
+      if (RegExp(r'^[a-z]$').hasMatch(ch)) {
+        await tester.sendKeyEvent(_key(ch), character: ch);
+        return;
+      }
+      await tester.tap(
+        find
+            .descendant(
+              of: find.byType(LetterKeyboard),
+              matching: find.text(ch),
+            )
+            .first,
+      );
+      await tester.pump();
+    }
+
     Future<void> type(WidgetTester tester, String w) async {
       for (final ch in w.split('')) {
-        await tester.sendKeyEvent(_key(ch), character: ch);
+        await typeKey(tester, ch);
       }
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pump();

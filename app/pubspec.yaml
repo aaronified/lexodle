@@ -27,7 +27,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/words/
+    - assets/geography/
     - assets/icons/
+    - assets/sounds/
     - assets/flags/
     - assets/donate/
     - assets/fonts/OFL.txt

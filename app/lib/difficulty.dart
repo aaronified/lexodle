@@ -30,9 +30,26 @@ class DifficultyMatrix extends StatelessWidget {
     required this.lengths,
     required this.available,
     required this.onChanged,
+    this.levels = triesLevels,
+    this.unit = ('try', 'tries'),
+    this.extra = '',
+    this.noun = 'words',
+    this.nounOne = 'word',
   });
 
+  /// The chosen level: the tries, or in lockdown the hearts.
   final int tries;
+
+  /// The levels across, easiest first, and what they count (singular, plural).
+  final List<(String name, int value)> levels;
+  final (String, String) unit;
+
+  /// Added to the summary, after the level: what else is fixed ("6 tries").
+  final String extra;
+
+  /// What the length has: words, or place names.
+  final String noun;
+  final String nounOne;
   final int length;
 
   /// The word lengths the language has.
@@ -47,9 +64,11 @@ class DifficultyMatrix extends StatelessWidget {
     final c = Theme.of(context).colorScheme;
     // longest first: the easiest row is at the top, the colour follows
     final rows = [...lengths]..sort((a, b) => b.compareTo(a));
-    final selCol = triesLevels.indexWhere((l) => l.$2 == tries).clamp(0, 3);
+    final cols = levels.length;
+    String counted(int n) => '$n ${n == 1 ? unit.$1 : unit.$2}';
+    final selCol = levels.indexWhere((l) => l.$2 == tries).clamp(0, cols - 1);
     final selRow = rows.indexOf(length).clamp(0, rows.length - 1);
-    final span = (rows.length - 1 + 3).clamp(1, 100);
+    final span = (rows.length - 1 + cols - 1).clamp(1, 100);
     final selected = difficultyColor(c, (selCol + selRow) / span);
     final head = TextStyle(
       fontSize: 10,
@@ -64,18 +83,19 @@ class DifficultyMatrix extends StatelessWidget {
         Row(
           children: [
             const SizedBox(width: _labelWidth),
-            for (final (name, n) in triesLevels)
+            for (final (name, n) in levels)
               Expanded(
                 child: Column(
                   children: [
                     Text(
-                      '$n tries',
+                      counted(n),
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(name, style: head),
+                    Text(name, style: head, textAlign: TextAlign.center),
                   ],
                 ),
               ),
@@ -98,13 +118,13 @@ class DifficultyMatrix extends StatelessWidget {
                   ),
                 ),
               ),
-              for (var col = 0; col < 4; col++)
+              for (var col = 0; col < cols; col++)
                 Expanded(
                   child: _Cell(
                     color: difficultyColor(c, (r + col) / span),
                     selected: r == selRow && col == selCol,
-                    label: '${triesLevels[col].$2} tries, ${rows[r]} letters',
-                    onTap: () => onChanged(triesLevels[col].$2, rows[r]),
+                    label: '${counted(levels[col].$2)}, ${rows[r]} letters',
+                    onTap: () => onChanged(levels[col].$2, rows[r]),
                   ),
                 ),
             ],
@@ -123,8 +143,8 @@ class DifficultyMatrix extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '${triesLevels[selCol].$1} · $length letters: $tries tries, '
-                '${available == null ? 'every word of this length' : '${_thousands(available!)} words of this length'}',
+                '${levels[selCol].$1} · $length letters: ${counted(tries)}, '
+                '$extra${available == null ? 'every $nounOne of this length' : '${_thousands(available!)} $noun of this length'}',
                 key: const ValueKey('difficulty-summary'),
                 style: TextStyle(
                   fontSize: 12,

@@ -33,7 +33,7 @@ void main() {
       expect(bank.valid, contains('bread'), reason: 'a real word');
 
       // a seed whose answer is break
-      final weights = bank.answerWeights(5);
+      final weights = bank.drawWeights(5, appState.draw);
       final seed = [for (var s = 0; s < 20000; s++) s]
           .firstWhere((s) => chooseWord(pool, weights, Random(s)) == 'break');
 

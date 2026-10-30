@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart';
 import 'daily.dart';
+import 'diy.dart';
 import 'game.dart';
 import 'history_page.dart';
 import 'learn.dart';
@@ -19,6 +20,8 @@ import 'puzzle.dart';
 import 'settings_page.dart';
 import 'solver.dart';
 import 'ui.dart';
+import 'geography.dart';
+import 'modes.dart';
 import 'words.dart';
 
 /// Every screen has an address, so the browser's refresh and back buttons work
@@ -44,6 +47,7 @@ class Routes {
   static const howTo = '/how-to';
   static const settings = '/settings';
   static const gameModes = '/game-modes';
+  static const diy = '/diy';
   static const playstyle = '/playstyle';
   static const about = '/about';
 }
@@ -57,8 +61,20 @@ const aboutText =
     'Definitions: Wiktionary (CC BY-SA 4.0). Font: JetBrains Mono (OFL). '
     'Icons: Tabler Icons (MIT). Every licence is listed below.';
 
+/// The route inside an address. A link opened by the Android app arrives as
+/// the whole address, `https://…/lexodle/#/puzzle?l=en…`, and the route is
+/// its fragment; a plain route (`/puzzle?l=en…`) is its own.
+String routeOf(String? raw) {
+  final uri = Uri.tryParse(raw ?? '/');
+  if (uri == null) return '/';
+  if (uri.fragment.startsWith('/')) return uri.fragment;
+  return uri.hasScheme ? '/' : raw ?? '/';
+}
+
 Route<dynamic> onGenerateRoute(RouteSettings settings) {
-  final name = Uri.tryParse(settings.name ?? '/')?.path ?? '/';
+  final full = routeOf(settings.name);
+  settings = RouteSettings(name: full, arguments: settings.arguments);
+  final name = Uri.tryParse(full)?.path ?? '/';
   // the settings keep the name they were opened with
   final s = RouteSettings(name: name, arguments: settings.arguments);
   Route<dynamic> page(Widget w) =>
@@ -67,9 +83,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case Routes.play:
       return page(
         BankGate(
+          places: appState.mode == GameMode.themed,
           builder: (bank) => appState.mode.multi
               ? MultiGamePage(bank: bank)
-              : GamePage(bank: bank),
+              : GamePage(bank: bank, mode: appState.mode),
         ),
       );
     case Routes.daily:
@@ -85,13 +102,17 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
                   ? const HomePage()
                   : MultiGamePage(bank: bank, daily: m);
             }
-            final d = Daily.of(bank);
+            final d = Daily.of(bank, null, mode);
             return d == null
                 ? const HomePage()
-                : GamePage(bank: bank, daily: d);
+                : GamePage(bank: bank, daily: d, mode: mode);
           },
         ),
       );
+    case Routes.diy:
+      // a made wordle opened by a link, or the screen that makes one
+      final diy = DiyPuzzle.parse(Uri.tryParse(settings.name ?? '') ?? Uri());
+      return page(diy == null ? const DiyPage() : DiyGate(puzzle: diy));
     case Routes.puzzle:
       // a daily puzzle named by a link: played as practice
       final puzzle = Puzzle.parse(Uri.tryParse(settings.name ?? '') ?? Uri());
@@ -142,7 +163,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
 
 /// The routes to start with for an address: its parents first, so back works.
 /// A review is built only from a finished game, so by address it is just home.
-List<Route<dynamic>> onGenerateInitialRoutes(String initial) {
+List<Route<dynamic>> onGenerateInitialRoutes(String initialAddress) {
+  final initial = routeOf(initialAddress);
   final path = Uri.tryParse(initial)?.path ?? '/';
   if (path == Routes.review) {
     return [onGenerateRoute(const RouteSettings(name: Routes.home))];
@@ -165,6 +187,7 @@ List<Route<dynamic>> onGenerateInitialRoutes(String initial) {
 }
 
 const _known = {
+  Routes.diy,
   Routes.play,
   Routes.daily,
   Routes.puzzle,
@@ -208,8 +231,11 @@ Route<void> _dialog(RouteSettings settings, Widget dialog) =>
 /// needs it, waiting first for the saved settings, since a page opened by
 /// address (a refresh) starts before they are read.
 class BankGate extends StatefulWidget {
-  const BankGate({super.key, required this.builder});
+  const BankGate({super.key, required this.builder, this.places = false});
   final Widget Function(WordBank bank) builder;
+
+  /// Whether the words are the place names of the themed wordle, in English.
+  final bool places;
 
   @override
   State<BankGate> createState() => _BankGateState();
@@ -220,6 +246,9 @@ class _BankGateState extends State<BankGate> {
 
   Future<WordBank> _load() async {
     final langs = await WordBank.languages();
+    if (widget.places) {
+      return Geography.load(langs.firstWhere((l) => l.code == 'en'));
+    }
     final lang = langs.firstWhere(
       (l) => l.code == appState.lang,
       orElse: () => langs.first,
@@ -268,7 +297,11 @@ class _PuzzleGateState extends State<PuzzleGate> {
   Future<WordBank?> _load() async {
     final langs = await WordBank.languages();
     final found = langs.where((l) => l.code == widget.puzzle.lang);
-    return found.isEmpty ? null : WordBank.load(found.first);
+    if (found.isEmpty) return null;
+    // a themed puzzle's word is a place, not a word of the list
+    return widget.puzzle.mode == GameMode.themed
+        ? Geography.load(found.first)
+        : WordBank.load(found.first);
   }
 
   Widget _waiting(String text) => Scaffold(
@@ -306,6 +339,7 @@ class _PuzzleGateState extends State<PuzzleGate> {
         }
         return GamePage(
           bank: bank,
+          mode: p.mode,
           practice: true,
           replay: p.guesses,
           daily: Daily('', answers.first, length: p.length, tries: p.tries),

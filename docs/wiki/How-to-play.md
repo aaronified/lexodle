@@ -35,12 +35,28 @@ submitted, so it never reaches the scoring.
 
 ## Modes
 
-**Classic** is one word. In a **quartet** four words are hidden and every guess is played on all
+**Classic** is one word. **Lockdown** is one word too, with six tries: a letter in the right place
+locks and stays locked for the rest of the game, and a word that is not in the list costs a heart (10,
+7, 5, 3 or 1 hearts, as you choose; the daily has 5). The hearts break with a rumble and a crack, and
+the last three throb. At no hearts the game is lost. In a **quartet** four words are hidden and every guess is played on all
 four boards at once (the keyboard splits each key in four, one part per board); a **relay race**
 plays the four boards one after the other, each starting with every earlier guess already
 applied. Quartet and relay race get extra tries (3 and 4), and the *shared letters* setting says
 how often their words may share a letter. The helper shows in classic only, so it is greyed out
 for the others, and shared letters is greyed out in classic.
+
+Three more modes live in the game modes screen (the home swipe keeps the four above). **Themed** is
+a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
+lakes, bays and the like, with spaces left out (`riodejaneiro`). Only place names are valid guesses,
+and every guess has a small *i* that says what the place is and links to its Wikipedia page. The
+*answers* switch chooses between well known places (drawn on a curve by how much their Wikipedia page
+is read) and all places. Mythology, history and mathematics are planned. **Blind** tells only how
+many letters are right and in place (green) and how many are right elsewhere (yellow), never which;
+it has 10 tries by default (14, 10, 8 or 6) and works in every language. **Make your own** (a button
+in the game modes screen) lets you type a word, choose the language and the tries, and gives a link
+that anyone can open to play your word as practice; nothing is saved or counted. The word is only
+lightly disguised in the link (four digits a letter), not secret. The app opens these links itself
+on Android. None of the three has a daily.
 
 ## The helper and the review
 
