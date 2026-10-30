@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.4.3
+
 - lockdown skill counts only the guesses you were allowed
   Skill in lockdown is measured against the best word that keeps the locked
   greens in place, not the best word in the whole list, in play, in the review
