@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 /// The row a guess is typed into: [length] slots, a cursor, and blanks.
 ///
 /// A blank is a pencil mark, not a letter: `a_ode` records that the second
@@ -190,5 +192,31 @@ class GuessInput {
       if (!isLocked(i)) return i;
     }
     return -1;
+  }
+}
+
+/// Tells a tap of the shift key from shift held to type a capital: it is a tap
+/// when no other key went down between shift going down and coming up. A tap
+/// locks or unlocks the letter under the cursor.
+class ShiftTap {
+  bool _clean = false;
+
+  static bool isShift(KeyEvent e) =>
+      e.logicalKey == LogicalKeyboardKey.shiftLeft ||
+      e.logicalKey == LogicalKeyboardKey.shiftRight;
+
+  /// Whether [e] completes a tap of shift.
+  bool tapped(KeyEvent e) {
+    if (isShift(e)) {
+      if (e is KeyDownEvent) _clean = true;
+      if (e is KeyUpEvent) {
+        final tap = _clean;
+        _clean = false;
+        return tap;
+      }
+    } else if (e is KeyDownEvent) {
+      _clean = false;
+    }
+    return false;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/diy.dart';
@@ -165,6 +166,16 @@ void main() {
       await tester.pump();
     }
 
+    Future<void> guess0(WidgetTester tester, String w) async {
+      for (final ch in w.split('')) {
+        await tester.sendKeyEvent(
+          LogicalKeyboardKey(ch.codeUnitAt(0)),
+          character: ch,
+        );
+        await tester.pump();
+      }
+    }
+
     Future<void> guess(WidgetTester tester, String w) async {
       for (final ch in w.split('')) {
         await tester.sendKeyEvent(
@@ -207,6 +218,68 @@ void main() {
             )
             .data,
         '0',
+      );
+    });
+
+    testWidgets('shift locks and unlocks the letter under the cursor', (
+      tester,
+    ) async {
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+        ),
+      ))!;
+      await open(tester, GameMode.classic, bank, 'prism', 6);
+      Finder lockOn(int i) => find.descendant(
+        of: find.byKey(ValueKey('tile-0-$i')),
+        matching: find.byType(SvgPicture),
+      );
+      await guess0(tester, 'c');
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.pump();
+      expect(lockOn(0), findsNothing);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pump();
+      expect(lockOn(0), findsOneWidget);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pump();
+      expect(lockOn(0), findsNothing);
+    });
+
+    testWidgets('no letter stays locked once the game is over', (tester) async {
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+        ),
+      ))!;
+      await open(tester, GameMode.classic, bank, 'prism', 6);
+      Finder lockOn(int r, int i) => find.descendant(
+        of: find.byKey(ValueKey('tile-$r-$i')),
+        matching: find.byType(SvgPicture),
+      );
+      // lock the r of the first guess, then win with the second
+      await guess0(tester, 'grade');
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      for (var i = 0; i < 3; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      }
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+      expect(lockOn(1, 1), findsOneWidget, reason: 'locked for the next guess');
+      await guess(tester, 'prism');
+      for (var i = 0; i < 5; i++) {
+        expect(lockOn(2, i), findsNothing);
+      }
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('tile-2-1')),
+          matching: find.text('r'),
+        ),
+        findsNothing,
       );
     });
 

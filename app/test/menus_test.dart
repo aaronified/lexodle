@@ -193,13 +193,12 @@ void main() {
     }
 
     testWidgets(
-      'holds mode, shared letters, difficulty, frequency, helper and the buttons, in order',
+      'holds mode, difficulty, frequency, helper and the buttons, in order',
       (tester) async {
         await open(tester);
         double y(Finder f) => tester.getTopLeft(f).dy;
         final order = [
           y(find.text('mode')),
-          y(find.text('shared letters')),
           y(find.text('difficulty')),
           y(find.byKey(const ValueKey('draw-stepper'))),
           y(find.text('helper')),

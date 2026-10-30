@@ -38,44 +38,22 @@ void main() {
     expect(find.text('helper'), findsOneWidget);
     expect(find.text('open the solver'), findsOneWidget);
     expect(find.byKey(const ValueKey('settings-play')), findsOneWidget);
-    // one word has nothing to share: the slider is there, greyed and fixed
-    expect(find.text('shared letters'), findsOneWidget);
-    expect(
-      tester
-          .widget<Slider>(find.byKey(const ValueKey('share-slider')))
-          .onChanged,
-      isNull,
-    );
-    await tester.drag(
-      find.byKey(const ValueKey('share-slider')),
-      const Offset(600, 0),
-    );
-    await tester.pumpAndSettle();
-    expect(appState.share, 10, reason: 'a greyed slider does not move');
+    // one word has nothing to share: there is no shared-letters setting
+    expect(find.text('shared letters'), findsNothing);
+    expect(find.byKey(const ValueKey('share-stepper')), findsNothing);
 
-    // quartet brings the shared-letters slider, 0 to 30
+    // quartet brings the shared-letters swiper, 0 to 30 in steps of 5
     appState.setup(mode: GameMode.quartet);
     await tester.pumpAndSettle();
     expect(find.text('shared letters'), findsOneWidget);
     expect(find.text('10%'), findsOneWidget);
-    final slider = tester.widget<Slider>(
-      find.byKey(const ValueKey('share-slider')),
-    );
-    expect(slider.min, 0);
-    expect(slider.max, 30);
-    await tester.drag(
-      find.byKey(const ValueKey('share-slider')),
-      const Offset(600, 0),
-    );
+    await tester.tap(find.byTooltip('next').at(1));
     await tester.pumpAndSettle();
-    expect(appState.share, 30);
-    expect(find.text('30%'), findsOneWidget);
-    await tester.drag(
-      find.byKey(const ValueKey('share-slider')),
-      const Offset(-900, 0),
-    );
+    expect(appState.share, 15);
+    expect(find.text('15%'), findsOneWidget);
+    appState.setup(share: 0);
     await tester.pumpAndSettle();
-    expect(appState.share, 0);
+    expect(find.text('0%'), findsOneWidget);
 
     // closing leaves the choice on the play button
     await tester.tap(find.byIcon(Icons.close));

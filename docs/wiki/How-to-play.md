@@ -33,6 +33,13 @@ like `a_ode`. Tap a tile, or use the left and right arrow keys, to move the curs
 the selected tile and moves on to the next one that is not a letter. A blank can be typed but not
 submitted, so it never reaches the scoring.
 
+## Locking a letter
+
+Double tap a tile to lock its letter, and double tap it again to unlock it. On a keyboard, select a
+tile (click it, or use the arrow keys) and tap the shift key: it locks the letter, and tapping shift
+again unlocks it. Shift held to type a capital does nothing. The next guess starts with the locked
+letters in place, and a locked letter is skipped when you type or press backspace.
+
 ## Modes
 
 **Classic** is one word. **Lockdown** is one word too, with six tries: a letter in the right place
@@ -43,7 +50,7 @@ four boards at once (the keyboard splits each key in four, one part per board); 
 plays the four boards one after the other, each starting with every earlier guess already
 applied. Quartet and relay race get extra tries (3 and 4), and the *shared letters* setting says
 how often their words may share a letter. The helper shows in classic only, so it is greyed out
-for the others, and shared letters is greyed out in classic.
+for the others. The *shared letters* swiper appears only for quartet and relay race.
 
 Three more modes live in the game modes screen (the home swipe keeps the four above). **Themed** is
 a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
