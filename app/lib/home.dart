@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
+import 'changelog.dart';
 import 'clock.dart';
 import 'daily.dart';
 import 'daily_streak.dart';
@@ -12,6 +13,7 @@ import 'modes.dart' show Draw;
 import 'routes.dart';
 import 'store.dart' show Achievement, achievements;
 import 'ui.dart';
+import 'update_check.dart' show appVersion;
 import 'words.dart';
 
 /// The height of the play button, the buttons beside it and the menu buttons.
@@ -38,14 +40,33 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WordBank.languages().then((l) => setState(() => _langs = l));
+    appState.addListener(_maybeShowChanges);
     appState.addListener(_maybeShowHowTo);
+    _maybeShowChanges();
     _maybeShowHowTo();
   }
 
   @override
   void dispose() {
+    appState.removeListener(_maybeShowChanges);
     appState.removeListener(_maybeShowHowTo);
     super.dispose();
+  }
+
+  bool _changesChecked = false;
+
+  /// First start of a new version, for someone who has played before: lists
+  /// what changed in it, once.
+  Future<void> _maybeShowChanges() async {
+    if (_changesChecked || !appState.loaded || !appState.canRemember) return;
+    _changesChecked = true;
+    final returning = appState.seenHowTo;
+    if (appState.changelogSeen == appVersion) return;
+    appState.noteChangelogSeen(appVersion);
+    if (!returning) return;
+    final lines = await loadChangelog();
+    if (lines.isEmpty || !mounted) return;
+    showChangelog(context, lines);
   }
 
   /// First visit: open how to play once, and remember that it was shown.

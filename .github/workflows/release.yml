@@ -109,6 +109,14 @@ jobs:
           grep -q "^version: ${v}+" pubspec.yaml
           grep -q "^const appVersion = '${v}';" lib/update_check.dart
 
+      # The summaries of the Unreleased section of CHANGELOG.md, one per line, go
+      # into the file the app ships with, to be shown after an update.
+      - name: Write the app's changelog
+        working-directory: .
+        run: |
+          awk '/^## /{on=($2=="Unreleased");next} on && /^- /{sub(/^- /,"");print}' CHANGELOG.md > app/assets/changelog.txt
+          cat app/assets/changelog.txt
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -256,8 +264,13 @@ jobs:
             echo
             echo "## Changes${prev:+ since $prev}"
             echo
+            notes=$(awk '/^## /{on=($2=="Unreleased");next} on' CHANGELOG.md | sed '/./,$!d')
+            if [ -n "$notes" ]; then
+              printf '%s\n' "$notes"
+            else
             git log --no-merges --invert-grep --grep='^Version [0-9]' --pretty=format:'- **%s** (%h)%n%w(0,4,4)%b' "$range" \
               | sed '/^ *Co-Authored-By:/Id' | sed '/^ *$/d'
+            fi
             echo
             echo
             if [ -n "$prev" ]; then
@@ -296,6 +309,10 @@ jobs:
             fi
             sed -i -E "s/^version:.*/version: ${v}+1/" app/pubspec.yaml
             sed -i -E "s/^const appVersion = '[^']*';/const appVersion = '${v}';/" app/lib/update_check.dart
+            if grep -q '^## Unreleased' CHANGELOG.md; then
+              sed -i "0,/^## Unreleased/s//## Unreleased\n\n## ${v}/" CHANGELOG.md
+              git add CHANGELOG.md
+            fi
             git add app/pubspec.yaml app/lib/update_check.dart
             git commit -q -m "Version ${v}" -m "Set by the release workflow from the tag ${TAG}."
             if git push -q origin main; then exit 0; fi
