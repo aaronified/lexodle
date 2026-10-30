@@ -97,8 +97,8 @@ void main() {
       );
       expect(
         shared - modeChoice.dy,
-        lessThan(100),
-      ); // the daily note sits between
+        lessThan(140),
+      ); // the daily note and the more-modes line sit between
     },
   );
 

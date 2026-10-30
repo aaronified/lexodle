@@ -32,17 +32,17 @@ void main() {
       ]);
       // greens first, then yellows, then absents
       final m = evaluate('plate', 'pleat', blind: true);
-      expect(m.map((x) => x.index).toList(), [0, 0, 0, 1, 1]);
+      expect(m.map((x) => x.index).toList(), [0, 0, 1, 1, 1]);
     });
 
     test('the words left are those with the same two counts', () {
-      const words = ['plate', 'pleat', 'place', 'spate', 'stale', 'later'];
+      const words = ['plate', 'peace', 'place', 'spate', 'stale', 'later'];
       final marks = evaluate('plate', 'place', blind: true);
       final left = filterEligible(words, 'place', marks, blind: true);
-      expect(left, containsAll(['plate', 'pleat']));
-      // the colour version tells plate from pleat; the counts cannot
+      expect(left, containsAll(['plate', 'peace']));
+      // the colour version tells plate from peace; the counts cannot
       final colour = filterEligible(words, 'place', evaluate('plate', 'place'));
-      expect(colour, isNot(contains('pleat')));
+      expect(colour, isNot(contains('peace')));
     });
 
     test('a guess splits the words into at most the count pairs', () {

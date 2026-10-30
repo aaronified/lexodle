@@ -613,13 +613,23 @@ class _GamePageState extends State<GamePage>
         const gap = 6.0;
         // the counts of a blind game stand to the right of the tiles
         const countsWidth = 70.0;
+        // the info dot of a themed row, with as much room on the left so the
+        // tiles stay in the middle
+        const dotSlot = 26.0;
         final tile = blind
             ? min(
                 50.0,
                 (box.maxWidth - 32 - 24 - countsWidth - gap * (length - 1)) /
                     length,
               )
-            : min(56.0, (box.maxWidth - 32 - gap * (length - 1)) / length);
+            : min(
+                56.0,
+                (box.maxWidth -
+                        32 -
+                        (themed ? 2 * dotSlot : 0) -
+                        gap * (length - 1)) /
+                    length,
+              );
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
           child: Center(
@@ -678,7 +688,7 @@ class _GamePageState extends State<GamePage>
         green = marks[r].where((m) => m == Mark.correct).length;
         yellow = marks[r].where((m) => m == Mark.present).length;
       }
-      Widget count(int n, Color fill, String kind) => Container(
+      Widget count(int n, Color fill, Color fg, String kind) => Container(
         key: ValueKey('count-$r-$kind'),
         constraints: const BoxConstraints(minWidth: 26),
         height: 26,
@@ -689,10 +699,10 @@ class _GamePageState extends State<GamePage>
         ),
         child: Text(
           '$n',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1D1D11),
+            color: fg,
           ),
         ),
       );
@@ -705,37 +715,43 @@ class _GamePageState extends State<GamePage>
             opacity: done ? 1 : 0,
             child: Row(
               children: [
-                count(green, markColors(c, Mark.correct).$1, 'g'),
+                count(
+                  green,
+                  markColors(c, Mark.correct).$1,
+                  markColors(c, Mark.correct).$2,
+                  'g',
+                ),
                 const SizedBox(width: 6),
-                count(yellow, markColors(c, Mark.present).$1, 'y'),
+                count(
+                  yellow,
+                  markColors(c, Mark.present).$1,
+                  markColors(c, Mark.present).$2,
+                  'y',
+                ),
               ],
             ),
           ),
         ],
       );
     }
-    if (themed && r < guesses.length) {
-      final place = Geography.placeOf(guesses[r]);
-      if (place != null) {
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            row,
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: FractionalTranslation(
-                  translation: const Offset(1, 0),
-                  child: Padding(
+    if (themed) {
+      final place = r < guesses.length ? Geography.placeOf(guesses[r]) : null;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(width: 26),
+          row,
+          SizedBox(
+            width: 26,
+            child: place == null
+                ? null
+                : Padding(
                     padding: const EdgeInsets.only(left: 6),
                     child: PlaceDot(place, key: ValueKey('place-dot-$r')),
                   ),
-                ),
-              ),
-            ),
-          ],
-        );
-      }
+          ),
+        ],
+      );
     }
     return row;
   }

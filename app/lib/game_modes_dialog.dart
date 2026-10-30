@@ -250,6 +250,9 @@ class _GameModesDialogState extends State<GameModesDialog> {
                               noun: mode == GameMode.themed
                                   ? 'place names'
                                   : 'words',
+                              nounOne: mode == GameMode.themed
+                                  ? 'place name'
+                                  : 'word',
                               available: mode == GameMode.themed
                                   ? Geography.counts[length]
                                   : lang.counts[length],
