@@ -284,16 +284,22 @@ class SplitStats {
     required this.masses,
     this.landedMass,
     this.codes = const [],
+    this.blind = false,
   });
 
   /// The pattern of each group, in the order of [masses] (see [patternCode]).
   final List<int> codes;
 
+  /// Whether the groups are counts (a blind game), not tile patterns.
+  final bool blind;
+
   /// The mass of the group [answer] falls in when [guess] is played, or null
   /// when the patterns were not kept.
   double? landedOf(String guess, String answer) {
     if (codes.isEmpty) return landedMass;
-    final at = codes.indexOf(patternCode(answer, guess));
+    final at = codes.indexOf(
+      blind ? blindCode(answer, guess) : patternCode(answer, guess),
+    );
     return at < 0 ? null : masses[at];
   }
 
@@ -439,14 +445,9 @@ class SplitContext {
     }
     double? landedMass;
     if (answer != null) {
-      var a = patternCode(answer, guess);
-      if (blind) {
-        final m = evaluate(answer, guess);
-        a =
-            m.where((x) => x == Mark.correct).length * (len + 1) +
-            m.where((x) => x == Mark.present).length;
-      }
-      landedMass = _mass[a];
+      landedMass = _mass[
+        blind ? blindCode(answer, guess) : patternCode(answer, guess)
+      ];
     }
     for (var i = 0; i < seen; i++) {
       _counts[_touched[i]] = 0;
@@ -476,6 +477,7 @@ class SplitContext {
       masses: masses,
       landedMass: landedMass,
       codes: codes,
+      blind: blind,
     );
   }
 }
@@ -1114,6 +1116,15 @@ int _sumSquares(List<String> eligible, String guess) {
     _counts[_touched[i]] = 0;
   }
   return sum;
+}
+
+/// The counts a blind guess shows, as the group they make in [SplitContext]:
+/// the letters right and in place times (length + 1), plus the letters right
+/// elsewhere.
+int blindCode(String target, String guess) {
+  final m = evaluate(target, guess);
+  return m.where((x) => x == Mark.correct).length * (guess.length + 1) +
+      m.where((x) => x == Mark.present).length;
 }
 
 /// The feedback of [guess] against [target] packed into one int (base 3 per
