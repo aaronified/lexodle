@@ -294,6 +294,35 @@ void main() {
       expect(tip, findsNothing);
     });
 
+    testWidgets('the type column leaves the rows as tall as without it', (
+      tester,
+    ) async {
+      for (final width in [412.0, 320.0]) {
+        await tester.binding.setSurfaceSize(Size(width, 3000));
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildTheme(Brightness.dark),
+            home: ReviewPage(record: record, initialStep: 0),
+          ),
+        );
+        await tester.pump(const Duration(seconds: 40));
+        // row 0 has its numbers and a type; row 1 is blank (dashes): the same
+        final first = tester
+            .getSize(find.byKey(const ValueKey('row-0')))
+            .height;
+        final blank = tester
+            .getSize(find.byKey(const ValueKey('row-1')))
+            .height;
+        expect(first, blank, reason: 'at $width wide');
+        expect(find.byKey(const ValueKey('type-0')), findsOneWidget);
+        // the target is the icon, not the row
+        expect(
+          tester.getSize(find.byKey(const ValueKey('type-0'))).height,
+          lessThanOrEqualTo(typeIconSize + 1),
+        );
+      }
+    });
+
     testWidgets('clicking a row of the board goes to that guess', (
       tester,
     ) async {

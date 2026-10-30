@@ -16,6 +16,10 @@ import 'ui.dart';
 import 'wiki_links.dart';
 import 'words.dart';
 
+/// The icon of a guess type in the review table: smaller than the row, so it
+/// never makes the row taller.
+const typeIconSize = 16.0;
+
 /// Everything the review needs about one finished game.
 class GameRecord {
   const GameRecord({
@@ -589,34 +593,29 @@ class _ReviewPageState extends State<ReviewPage> {
           ),
         ),
       ),
-      // the type of the guess, its own column: tap it for what it is
+      // the type of the guess, its own column: tap it for what it is. The tap
+      // is the icon and no more, so the row is no taller than a row without one
       SizedBox(
         width: typeW,
         child: !m.ready
             ? cell('…', dimmed: true)
-            : GestureDetector(
-                key: ValueKey('type-$i'),
-                behavior: HitTestBehavior.opaque,
-                onTap: () => showBehaviourPopup(context, guessRowOf(i + 1, m)),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: SizedBox(
-                    height: 24,
-                    width: typeW,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: b == null
-                          ? cell('·', strong: false, dimmed: true)
-                          : TablerIcon(
-                              b.icon,
-                              size: chooserIconSize - 8,
-                              color: behaviourColor(
-                                c,
-                                b.label,
-                              ).withValues(alpha: dimmed ? .5 : 1),
-                            ),
-                    ),
-                  ),
+            : Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  key: ValueKey('type-$i'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () =>
+                      showBehaviourPopup(context, guessRowOf(i + 1, m)),
+                  child: b == null
+                      ? cell('·', strong: false, dimmed: true)
+                      : TablerIcon(
+                          b.icon,
+                          size: typeIconSize,
+                          color: behaviourColor(
+                            c,
+                            b.label,
+                          ).withValues(alpha: dimmed ? .5 : 1),
+                        ),
                 ),
               ),
       ),
