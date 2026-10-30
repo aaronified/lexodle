@@ -65,3 +65,12 @@ with `:unread` added, so saving what was read does not overwrite the only copy. 
 in the app for this; each start prints one line to the device log (`lexodle: start v… found N keys,
 M games, P played, R rows skipped`), readable with `adb logcat -s flutter`. Backups are still taken
 whole or not at all.
+
+## Sharing a past game
+
+Each game of the list that is not a daily has a small link button: it copies a puzzle link for that
+game, either the puzzle alone (the word hashed, so the link does not give it away) or the puzzle with
+the guesses that were made, in plain, which opens already played. Whoever opens it plays it as
+practice: nothing is saved or counted. A daily is not shared, as anyone can open the app and play it.
+To open a game's review, tap the left of its row.
+
