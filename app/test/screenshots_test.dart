@@ -17,6 +17,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/background.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/achievements_page.dart';
+import 'package:lexodle/geography.dart';
+import 'package:lexodle/game_modes_dialog.dart';
+import 'package:lexodle/how_to.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
@@ -543,5 +546,99 @@ void main() {
         t.getRect(find.byKey(const ValueKey('quick-row'))).bottom + 10,
       ),
     );
+  }, skip: skip != null);
+
+  testWidgets('a blind game, with two guesses pencilled', (t) async {
+    final bank = await prepare(t, mode: GameMode.blind);
+    appState.setup(blindTries: 10);
+    final key = GlobalKey();
+    await t.pumpWidget(
+      framed(
+        key,
+        GamePage(
+          bank: bank,
+          mode: GameMode.blind,
+          practice: true,
+          daily: Daily('', 'prism', length: 5, tries: 10),
+        ),
+      ),
+    );
+    await t.pump();
+    for (final w in ['crane', 'tipsy', 'brims']) {
+      await type(t, w);
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+    }
+    // pencil what the counts say about the second guess: t and y are out,
+    // i is in place, p is elsewhere, s is elsewhere
+    Future<void> pencil(int row, int i, int taps) async {
+      for (var k = 0; k < taps; k++) {
+        await t.tap(find.byKey(ValueKey('tile-$row-$i')));
+        await t.pump();
+      }
+    }
+
+    await pencil(1, 0, 3); // t: grey
+    await pencil(1, 1, 1); // i: green
+    await pencil(1, 2, 2); // p: yellow
+    await pencil(1, 3, 2); // s: yellow
+    await pencil(1, 4, 3); // y: grey
+    await type(t, 'pr');
+    await t.pump();
+    await shot(t, key, 'blind');
+  }, skip: skip != null);
+
+  testWidgets('a themed game: places, with info dots', (t) async {
+    await prepare(t, mode: GameMode.themed);
+    final places = (await t.runAsync(() async {
+      final en = (await WordBank.languages()).firstWhere((l) => l.code == 'en');
+      return Geography.load(en);
+    }))!;
+    final key = GlobalKey();
+    await t.pumpWidget(
+      framed(
+        key,
+        GamePage(
+          bank: places,
+          mode: GameMode.themed,
+          practice: true,
+          daily: Daily('', 'egypt', length: 5, tries: 6),
+        ),
+      ),
+    );
+    await t.pump();
+    for (final w in ['spain', 'italy', 'nepal']) {
+      await type(t, w);
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+    }
+    await type(t, 'trick');
+    await t.sendKeyEvent(LogicalKeyboardKey.enter);
+    await t.pump();
+    await shot(t, key, 'themed');
+  }, skip: skip != null);
+
+  testWidgets('the game modes, themed', (t) async {
+    await prepare(t, mode: GameMode.themed);
+    t.view.physicalSize = const Size(412, 1500) * 2;
+    final key = GlobalKey();
+    await t.pumpWidget(framed(key, const Scaffold(body: GameModesDialog())));
+    await t.pump(const Duration(seconds: 1));
+    await shot(t, key, 'modes');
+  }, skip: skip != null);
+
+  testWidgets('how to play, with the live row', (t) async {
+    await prepare(t);
+    t.view.physicalSize = const Size(412, 1300) * 2;
+    final key = GlobalKey();
+    await t.pumpWidget(framed(key, const HowToPage()));
+    await t.pump();
+    // lock the letter at the second tile of the row, as a player would
+    for (var k = 0; k < 2; k++) {
+      await t.tap(find.byKey(const ValueKey('try-0')));
+      await t.pump(const Duration(milliseconds: 50));
+    }
+    await t.pump(const Duration(milliseconds: 600));
+    await shot(t, key, 'howto');
   }, skip: skip != null);
 }

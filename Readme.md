@@ -85,6 +85,25 @@
 <table>
   <tr>
     <td width="60%">
+      <h3>🌍 Themed, 🔍 blind and 🎁 make your own</h3>
+      <b>Themed</b> uses place names, in English only: countries, cities, rivers, mountains, lakes and
+      bays, long and short (<code>indus</code> and Indus River), with an info dot on every guess and a link to
+      Wikipedia. <b>Blind</b> shows only how many letters are right and in place, and how many are
+      right elsewhere, in every language; tap a letter of a guess to pencil a colour on it.
+      <b>Make your own</b> turns any word into a link that others play as practice.
+      <a href="https://github.com/aaronified/lexodle/wiki/How-to-play">The rules</a>.
+    </td>
+    <td width="40%"><img src="docs/screenshots/themed.png" width="100%" alt="A themed game: places, each guess with an info dot"></td>
+  </tr>
+  <tr>
+    <td width="60%"><img src="docs/screenshots/blind.png" width="100%" alt="A blind game: the counts as big as the tiles, and colours pencilled on a guess"></td>
+    <td width="40%"><img src="docs/screenshots/modes.png" width="100%" alt="The game modes: the mode, the theme and the word draw as swipers"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="60%">
       <h3>🎯 Every guess is scored</h3>
       <b>Skill</b> says how many bits the guess was expected to gain, <b>luck</b> how the answer fell,
       and <b>risk</b> how far you leaned on a rare big gain. The review steps
