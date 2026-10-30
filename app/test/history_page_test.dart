@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/analysis.dart';
 import 'package:lexodle/daily.dart';
@@ -358,6 +359,62 @@ void main() {
     }
   });
 
+  testWidgets('a past game can be shared, hashed or with its guesses', (
+    tester,
+  ) async {
+    await load(tester);
+    final copied = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied.add((call.arguments as Map)['text'] as String);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    final h = History();
+    final answer = pool[10];
+    final g = addGame(
+      h,
+      at: ms(24),
+      guesses: [pool[1], pool[2], answer],
+      won: true,
+    );
+    final daily = addGame(
+      h,
+      at: ms(23),
+      guesses: [pool[3], pool[10]],
+      won: true,
+      daily: '2026-10-23',
+    );
+    await show(tester, h);
+    // the daily is not shared: anyone can open the app and play it
+    expect(find.byKey(ValueKey('share-${daily.id}')), findsNothing);
+
+    await tester.tap(find.byKey(ValueKey('share-${g.id}')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('the puzzle (the word is hashed)'));
+    await tester.pumpAndSettle();
+    expect(copied.single, contains('#/puzzle?l=fr&m=classic&n=4&t=6&w='));
+    expect(copied.single, isNot(contains(answer)), reason: 'only hashed');
+    expect(copied.single, isNot(contains('&g=')));
+
+    await tester.tap(find.byKey(ValueKey('share-${g.id}')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('the puzzle and my guesses'));
+    await tester.pumpAndSettle();
+    expect(copied.last, contains('&g=${pool[1]}.${pool[2]}.$answer'));
+    // a tap on the button does not open the game
+    expect(find.byType(ReviewPage), findsNothing);
+  });
+
   testWidgets('a game opens its review, rebuilt from its guesses', (
     tester,
   ) async {
@@ -366,7 +423,11 @@ void main() {
     final a = pool[10];
     final g = addGame(h, at: ms(24), guesses: [pool[1], pool[2], a], won: true);
     await show(tester, h);
-    await tester.tap(find.byKey(ValueKey('game-${g.id}')));
+    // the left of the row opens the game: the share button is in the middle
+    await tester.tapAt(
+      tester.getTopLeft(find.byKey(ValueKey('game-${g.id}'))) +
+          const Offset(80, 20),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(ReviewPage), findsOneWidget);
     final page = tester.widget<ReviewPage>(find.byType(ReviewPage));
@@ -395,7 +456,11 @@ void main() {
       answers: answers,
     );
     await show(tester, h);
-    await tester.tap(find.byKey(ValueKey('game-${g.id}')));
+    // the left of the row opens the game: the share button is in the middle
+    await tester.tapAt(
+      tester.getTopLeft(find.byKey(ValueKey('game-${g.id}'))) +
+          const Offset(80, 20),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(MultiReviewPage), findsOneWidget);
     final page = tester.widget<MultiReviewPage>(find.byType(MultiReviewPage));

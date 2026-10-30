@@ -433,6 +433,10 @@ const _counted = {
   'lockdownFlawless',
   'lockdownLastHeart',
   'lockdownSudden',
+  'blindWins',
+  'blindQuick',
+  'blindLast',
+  'blindBrutal',
   'streakLockdown',
   'stylesWorn',
 };
@@ -444,10 +448,12 @@ const _anyMode = {
   GameMode.quartet,
   GameMode.relay,
   GameMode.lockdown,
+  GameMode.blind,
 };
 const _quartetOnly = {GameMode.quartet};
 const _relayOnly = {GameMode.relay};
 const _lockdownOnly = {GameMode.lockdown};
+const _blindOnly = {GameMode.blind};
 
 /// The achievement with [id], or null for one this version does not have.
 Achievement? achievementById(String id) {
@@ -781,6 +787,60 @@ final achievements = <Achievement>[
     mode: GameMode.lockdown,
   ),
   Achievement.leveled(
+    'blind_wins',
+    'zoom-question',
+    'blind faith',
+    (n) => n == 1 ? 'win a blind game' : 'win $n blind games',
+    'blindWins',
+    _lv(
+      [1, 10, 50, 200],
+      ['by counting', 'blind faith', 'sightless sage', 'oracle'],
+    ),
+    mode: GameMode.blind,
+  ),
+  Achievement.leveled(
+    'blind_quick',
+    'bulb',
+    'quick study',
+    (n) => n == 1
+        ? 'win a blind game in 5 guesses or fewer'
+        : 'win a blind game in 5 guesses or fewer $n times',
+    'blindQuick',
+    _lv(
+      [1, 5, 20, 50],
+      ['quick study', 'sharp ear', 'second sight', 'clairvoyant'],
+    ),
+    mode: GameMode.blind,
+  ),
+  Achievement.leveled(
+    'blind_last',
+    'hourglass',
+    'blind last try',
+    (n) => n == 1
+        ? 'win a blind game on your last try'
+        : 'win a blind game on your last try $n times',
+    'blindLast',
+    _lv(
+      [1, 5, 15, 40],
+      ['last gasp', 'in the dark', 'by a hair', 'against the dark'],
+    ),
+    mode: GameMode.blind,
+  ),
+  Achievement.leveled(
+    'blind_brutal',
+    'microscope',
+    'blind and brutal',
+    (n) => n == 1
+        ? 'win a blind game with 6 tries'
+        : 'win a blind game with 6 tries $n times',
+    'blindBrutal',
+    _lv(
+      [1, 5, 15, 40],
+      ['six and blind', 'no margin', 'hairline', 'unblinking'],
+    ),
+    mode: GameMode.blind,
+  ),
+  Achievement.leveled(
     'chameleon',
     'replace',
     'chameleon',
@@ -1087,6 +1147,10 @@ final metrics = <String, Metric>{
     (r) => r.won && r.hearts >= 3 && r.heartsLeft == 1,
   ),
   'lockdownSudden': _count(_lockdownOnly, (r) => r.won && r.hearts == 1),
+  'blindWins': _count(_blindOnly, (r) => r.won),
+  'blindQuick': _count(_blindOnly, (r) => r.won && r.used <= 5),
+  'blindLast': _count(_blindOnly, (r) => r.won && r.used == r.tries),
+  'blindBrutal': _count(_blindOnly, (r) => r.won && r.tries <= 6),
   'streakLockdown': _dailyStreak(GameMode.lockdown),
   for (final p in playstyles) 'style_${p.id}': _style(p.id),
   'styleChanges': _count(_anyMode, (r) => r.styleChanged),
