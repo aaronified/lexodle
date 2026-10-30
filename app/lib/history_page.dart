@@ -668,26 +668,6 @@ class _GameTile extends StatelessWidget {
                 ],
               ),
             ),
-            // a past game can be shared as a puzzle, hashed or with its guesses;
-            // the daily is not shared, as anyone can open the app and play it
-            if (!game.isDaily)
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: SharePuzzleButton(
-                  key: ValueKey('share-${game.id}'),
-                  compact: true,
-                  (withGuesses) => Puzzle.hashed(
-                    game.lang,
-                    game.mode,
-                    length: game.length,
-                    tries: game.tries,
-                    answers: game.answers,
-                    guesses: withGuesses
-                        ? [for (final r in rows) r.word]
-                        : const [],
-                  ),
-                ),
-              ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -704,6 +684,26 @@ class _GameTile extends StatelessWidget {
                 metricLine(context, 'skill $skill', 'skill', style: dim),
               ],
             ),
+            // a past game can be shared as a puzzle, hashed or with its guesses;
+            // the daily is not shared, as anyone can open the app and play it
+            if (!game.isDaily)
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: SharePuzzleButton(
+                  key: ValueKey('share-${game.id}'),
+                  compact: true,
+                  (withGuesses) => Puzzle.hashed(
+                    game.lang,
+                    game.mode,
+                    length: game.length,
+                    tries: game.tries,
+                    answers: game.answers,
+                    guesses: withGuesses
+                        ? [for (final r in rows) r.word]
+                        : const [],
+                  ),
+                ),
+              ),
           ],
         ),
       ),

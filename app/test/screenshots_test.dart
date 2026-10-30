@@ -424,6 +424,20 @@ void main() {
     await t.pumpWidget(framed(key, const HistoryPage()));
     await t.pumpAndSettle();
     await shot(t, key, 'history');
+    // the games of the list, each with its link button
+    final tiles = find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key as ValueKey<String>).value.startsWith('game-'),
+    );
+    final first = t.getRect(tiles.first);
+    final fourth = t.getRect(tiles.at(3));
+    await shot(
+      t,
+      key,
+      'features/share-history',
+      crop: Rect.fromLTRB(0, first.top - 6, 412, fourth.bottom + 6),
+    );
     // the chart with the overall numbers, and the playstyle on its own (it has
     // a page of its own now, no longer a card of the history)
     Rect card(String k) => t.getRect(find.byKey(ValueKey(k)));
@@ -698,6 +712,28 @@ void main() {
       key,
       'features/languages',
       crop: Rect.fromLTRB(0, box.top - 6, 412, box.bottom + 6),
+    );
+  }, skip: skip != null);
+
+  testWidgets('sharing a game: the link button and its menu', (t) async {
+    final bank = await prepare(t);
+    final key = GlobalKey();
+    t.view.physicalSize = const Size(412, 700) * 2;
+    await t.pumpWidget(framed(key, GamePage(bank: bank, random: Random(5))));
+    await t.pump();
+    final words = plain(bank.answers(5));
+    for (final w in [words[8], words[120]]) {
+      await type(t, w);
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+    }
+    await t.tap(find.byKey(const ValueKey('share-puzzle')));
+    await t.pumpAndSettle();
+    await shot(
+      t,
+      key,
+      'features/share',
+      crop: const Rect.fromLTRB(0, 0, 412, 330),
     );
   }, skip: skip != null);
 }

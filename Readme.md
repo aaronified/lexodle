@@ -111,6 +111,20 @@
 
 <table>
   <tr>
+    <td width="40%">
+      <h3>🔗 Share a puzzle</h3>
+      Send any game as a link: the puzzle alone, with its word hashed so the link does not give it away,
+      or with your guesses, which opens already played. The link button is in every game and beside every
+      past game in the history. Whoever opens a link plays it as practice, and the Android app opens
+      these links itself.
+    </td>
+    <td width="30%"><img src="docs/screenshots/features/share.png" width="100%" alt="The link button of a game, with its two choices"></td>
+    <td width="30%"><img src="docs/screenshots/features/share-history.png" width="100%" alt="The history: a link button beside each past game"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
     <td width="40%"><img src="docs/screenshots/features/languages.png" width="100%" alt="The list of the 17 languages, each with its flag"></td>
     <td width="60%">
       <h3>🌐 Seventeen languages</h3>

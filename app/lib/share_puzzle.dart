@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'puzzle.dart';
+import 'ui.dart';
 
 /// The app bar button of a puzzle: a menu of two links to copy. One is the
 /// puzzle (its words, hashed, so the link does not give them away); the other is
@@ -20,7 +21,13 @@ class SharePuzzleButton extends StatelessWidget {
     final button = PopupMenuButton<bool>(
       key: const ValueKey('share-puzzle'),
       tooltip: 'share this puzzle',
-      icon: Icon(Icons.link, size: compact ? 18 : null),
+      icon: TablerIcon(
+        'link',
+        size: compact ? 20 : 24,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+      // the menu opens under the button, which stays in sight
+      position: PopupMenuPosition.under,
       padding: compact ? EdgeInsets.zero : const EdgeInsets.all(8),
       onSelected: (withGuesses) async {
         final messenger = ScaffoldMessenger.of(context);
