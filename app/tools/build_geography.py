@@ -6,8 +6,7 @@ allCountries.txt, alternateNamesV2.txt, countryInfo.txt. Run:
     python tools/build_geography.py <geonames folder>
 
 A place is kept when it is a country, a first-level region, a city of at least
-50,000 people (or a capital), or a water or land feature with an English
-Wikipedia page. Its name is the English one (the preferred English name of
+15,000 people (or a capital), or a named water or land feature. Its name is the English one (the preferred English name of
 GeoNames, else its ASCII name), reduced to letters a-z with spaces and accents
 removed, so "Rio de Janeiro" is riodejaneiro. Names of 4 to 8 letters stay.
 
@@ -23,9 +22,11 @@ import unicodedata
 from pathlib import Path
 
 LENGTHS = range(4, 9)
-CITY_MIN = 50_000
+CITY_MIN = 15_000
 KNOWN_CITY = 500_000
 KNOWN_LANGS = 6
+# a feature without an English Wikipedia page needs names in this many languages
+OBSCURE_LANGS = 2
 
 # GeoNames feature code -> what the info dot calls it
 KINDS = {
@@ -89,7 +90,7 @@ def main(folder):
         kind = None
         if code.startswith('PCL') or code == 'TERR':
             kind = 'country'
-        elif code == 'ADM1':
+        elif code in ('ADM1', 'ADM2') and (code == 'ADM1' or pop >= 50_000):
             kind = 'region'
         elif code == 'PPLC':
             kind = 'capital'
@@ -104,7 +105,7 @@ def main(folder):
     best = {}
     for gid, name, ascii_, kind, code, pop, cc in rows:
         physical = code in PHYSICAL
-        if physical and gid not in wiki:
+        if physical and gid not in wiki and langs.get(gid, 0) < OBSCURE_LANGS:
             continue
         if kind == 'country' and gid in en:
             shown = en[gid]
