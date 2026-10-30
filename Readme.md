@@ -52,13 +52,13 @@
       the device date cannot be wound forward.
       <a href="https://github.com/aaronified/lexodle/wiki/Daily-word">How it works</a>.
     </td>
-    <td width="40%"><img src="docs/screenshots/game.png" width="100%" alt="A daily in play, with a blank pencilled into the third tile"></td>
+    <td width="40%"><img src="docs/screenshots/features/game.png" width="100%" alt="A daily in play, with a blank pencilled into the third tile"></td>
   </tr>
 </table>
 
 <table>
   <tr>
-    <td width="40%"><img src="docs/screenshots/quartet.png" width="100%" alt="A quartet: four boards sharing every guess"></td>
+    <td width="40%"><img src="docs/screenshots/features/quartet.png" width="100%" alt="A quartet: four boards sharing every guess"></td>
     <td width="60%">
       <h3>🔢 Four words at once</h3>
       A quartet plays one guess on four boards, each key split in four. A relay race plays the
@@ -125,7 +125,7 @@
 <table>
   <tr>
     <td width="60%">
-      <h3>🎯 Every guess is scored</h3>
+      <h3>🎯 Every guess is analysed</h3>
       <b>Skill</b> says how many bits the guess was expected to gain, <b>luck</b> how the answer fell,
       and <b>risk</b> how far you leaned on a rare big gain. The review steps
       through your game against the best picks at each point.
