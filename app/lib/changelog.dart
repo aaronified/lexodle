@@ -3,6 +3,11 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'update_check.dart' show appVersion;
 
+/// Whether the first start of a new version shows what changed. The tests turn
+/// it off (see test/flutter_test_config.dart): the release workflow fills the
+/// list before it runs them, and a dialog would cover every home screen.
+bool showWhatsNew = true;
+
 /// The summaries of what changed in this version, one per line. The release
 /// workflow writes them into assets/changelog.txt from CHANGELOG.md; the file
 /// is empty in the repository.

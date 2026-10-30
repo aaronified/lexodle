@@ -63,7 +63,7 @@ class _HomePageState extends State<HomePage> {
     final returning = appState.seenHowTo;
     if (appState.changelogSeen == appVersion) return;
     appState.noteChangelogSeen(appVersion);
-    if (!returning) return;
+    if (!returning || !showWhatsNew) return;
     final lines = await loadChangelog();
     if (lines.isEmpty || !mounted) return;
     showChangelog(context, lines);
