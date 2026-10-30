@@ -17,7 +17,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/background.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/achievements_page.dart';
+import 'package:lexodle/geography.dart';
+import 'package:lexodle/game_modes_dialog.dart';
+import 'package:lexodle/how_to.dart';
 import 'package:lexodle/game.dart';
+import 'package:lexodle/keyboard.dart';
+import 'package:lexodle/home.dart' show LanguagePopup;
 import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
 import 'package:lexodle/learn.dart';
@@ -88,17 +93,24 @@ void main() {
     dailyClock = DateTime.now;
   });
 
-  Future<WordBank> english(WidgetTester t) async => (await t.runAsync(
-    () async => WordBank.load(
-      (await WordBank.languages()).firstWhere((l) => l.code == lang),
-    ),
-  ))!;
+  Future<WordBank> english(WidgetTester t, [String code = lang]) async =>
+      (await t.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == code),
+        ),
+      ))!;
+
+  /// The screen down to the keyboard, which is left out of the pictures that
+  /// are not about it: the top of the keyboard is where the picture ends.
+  Rect aboveKeyboard(WidgetTester t) =>
+      Rect.fromLTRB(0, 0, 412, t.getRect(find.byType(LetterKeyboard)).top);
 
   /// A phone-sized window, and the app's state as the screenshots want it: a
   /// player a few weeks in, with a streak, a playstyle and some games.
   Future<WordBank> prepare(
     WidgetTester t, {
     GameMode mode = GameMode.classic,
+    String language = lang,
   }) async {
     t.view.physicalSize = phone * 2;
     t.view.devicePixelRatio = 2;
@@ -106,7 +118,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await appState.load();
     appState.setup(
-      lang: lang,
+      lang: language,
       length: 5,
       tries: 6,
       mode: mode,
@@ -114,7 +126,7 @@ void main() {
       themeMode: ThemeMode.dark,
     );
     dailyClock = () => today;
-    final bank = await english(t);
+    final bank = await english(t, language);
 
     // a week of dailies, with a streak running into it
     appState.dailyLog = {
@@ -152,7 +164,7 @@ void main() {
       ];
       h.add(
         at: day.toUtc().millisecondsSinceEpoch,
-        lang: lang,
+        lang: language,
         mode: GameMode.classic,
         length: 5,
         tries: 6,
@@ -252,12 +264,24 @@ void main() {
     }
   }
 
-  testWidgets('home', (t) async {
-    await prepare(t);
+  testWidgets('home, in blind mode and in Hungarian', (t) async {
+    await prepare(t, mode: GameMode.blind, language: 'hu');
     final key = GlobalKey();
     await t.pumpWidget(RepaintBoundary(key: key, child: const LexodleApp()));
     await t.pumpAndSettle();
     await shot(t, key, 'home');
+    // the feature picture: the mode swiper and play, as the home shows them
+    await shot(
+      t,
+      key,
+      'features/blind',
+      crop: Rect.fromLTRB(
+        0,
+        t.getRect(find.byKey(const ValueKey('mode-button'))).top - 60,
+        412,
+        t.getRect(find.byKey(const ValueKey('play-button'))).bottom + 12,
+      ),
+    );
   }, skip: skip != null);
 
   testWidgets('a daily in play, with a blank pencilled in', (t) async {
@@ -282,7 +306,7 @@ void main() {
   }, skip: skip != null);
 
   testWidgets('a quartet', (t) async {
-    final bank = await prepare(t, mode: GameMode.quartet);
+    final bank = await prepare(t, mode: GameMode.quartet, language: 'fr');
     final key = GlobalKey();
     await t.pumpWidget(
       framed(key, MultiGamePage(bank: bank, random: Random(11))),
@@ -298,7 +322,7 @@ void main() {
   }, skip: skip != null);
 
   testWidgets('a lockdown game', (t) async {
-    final bank = await prepare(t, mode: GameMode.lockdown);
+    final bank = await prepare(t, mode: GameMode.lockdown, language: 'de');
     appState.setup(hearts: 5);
     final key = GlobalKey();
     await t.pumpWidget(
@@ -356,7 +380,7 @@ void main() {
       await t.pump();
     }
     await t.pump(const Duration(milliseconds: 300));
-    await shot(t, key, 'lockdown');
+    await shot(t, key, 'lockdown', crop: aboveKeyboard(t));
   }, skip: skip != null);
 
   testWidgets('the review of a game', (t) async {
@@ -463,7 +487,7 @@ void main() {
       await t.pump();
     }
     await t.pump(const Duration(seconds: 20));
-    await shot(t, key, 'learn');
+    await shot(t, key, 'learn', crop: aboveKeyboard(t));
     await shot(
       t,
       key,
@@ -492,7 +516,7 @@ void main() {
     }
     await t.tap(find.text('add guess'));
     await t.pump(const Duration(seconds: 20));
-    await shot(t, key, 'solver');
+    await shot(t, key, 'solver', crop: aboveKeyboard(t));
     await shot(
       t,
       key,
@@ -542,6 +566,135 @@ void main() {
         412,
         t.getRect(find.byKey(const ValueKey('quick-row'))).bottom + 10,
       ),
+    );
+  }, skip: skip != null);
+
+  testWidgets('a blind game, in Indonesian, with a guess pencilled', (t) async {
+    final bank = await prepare(t, mode: GameMode.blind, language: 'id');
+    appState.setup(blindTries: 10);
+    final words = plain(bank.answers(5));
+    final answer = words[40];
+    final guesses = [words[5], words[90], words[230]];
+    final key = GlobalKey();
+    await t.pumpWidget(
+      framed(
+        key,
+        GamePage(
+          bank: bank,
+          mode: GameMode.blind,
+          practice: true,
+          daily: Daily('', answer, length: 5, tries: 10),
+        ),
+      ),
+    );
+    await t.pump();
+    for (final w in guesses) {
+      await type(t, w);
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+    }
+    // pencil the second guess as its counts allow: a tap is green, two are
+    // yellow, three are grey
+    final marks = evaluate(answer, guesses[1]);
+    for (var i = 0; i < 5; i++) {
+      final taps = switch (marks[i]) {
+        Mark.correct => 1,
+        Mark.present => 2,
+        Mark.absent => 3,
+      };
+      for (var k = 0; k < taps; k++) {
+        await t.tap(find.byKey(ValueKey('tile-1-$i')));
+        await t.pump();
+      }
+    }
+    await type(t, words[300].substring(0, 2));
+    await t.pump();
+    await shot(t, key, 'blind', crop: aboveKeyboard(t));
+  }, skip: skip != null);
+
+  testWidgets('a themed game: places, with info dots', (t) async {
+    await prepare(t, mode: GameMode.themed);
+    final places = (await t.runAsync(() async {
+      final en = (await WordBank.languages()).firstWhere((l) => l.code == 'en');
+      return Geography.load(en);
+    }))!;
+    final key = GlobalKey();
+    await t.pumpWidget(
+      framed(
+        key,
+        GamePage(
+          bank: places,
+          mode: GameMode.themed,
+          practice: true,
+          daily: Daily('', 'egypt', length: 5, tries: 6),
+        ),
+      ),
+    );
+    await t.pump();
+    for (final w in ['spain', 'italy', 'nepal']) {
+      await type(t, w);
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+    }
+    await type(t, 'trick');
+    await t.sendKeyEvent(LogicalKeyboardKey.enter);
+    await t.pump();
+    await shot(t, key, 'themed', crop: aboveKeyboard(t));
+  }, skip: skip != null);
+
+  testWidgets('the game modes, themed', (t) async {
+    await prepare(t, mode: GameMode.themed);
+    t.view.physicalSize = const Size(412, 1500) * 2;
+    final key = GlobalKey();
+    await t.pumpWidget(framed(key, const Scaffold(body: GameModesDialog())));
+    await t.pump(const Duration(seconds: 1));
+    await shot(t, key, 'modes');
+  }, skip: skip != null);
+
+  testWidgets('how to play, with the live row', (t) async {
+    await prepare(t);
+    t.view.physicalSize = const Size(412, 1300) * 2;
+    final key = GlobalKey();
+    await t.pumpWidget(framed(key, const HowToPage()));
+    await t.pump();
+    // lock the letter at the second tile of the row, as a player would
+    for (var k = 0; k < 2; k++) {
+      await t.tap(find.byKey(const ValueKey('try-0')));
+      await t.pump(const Duration(milliseconds: 50));
+    }
+    await t.pump(const Duration(milliseconds: 600));
+    await shot(t, key, 'howto');
+  }, skip: skip != null);
+
+  testWidgets('the language list', (t) async {
+    await prepare(t);
+    final langs = (await t.runAsync(WordBank.languages))!;
+    final key = GlobalKey();
+    await t.pumpWidget(
+      framed(
+        key,
+        Scaffold(
+          body: Align(
+            alignment: Alignment.topCenter,
+            child: LanguagePopup(langs: langs, current: 'hu'),
+          ),
+        ),
+      ),
+    );
+    await t.pump(const Duration(seconds: 1));
+    final box = t.getRect(
+      find
+          .descendant(
+            of: find.byType(LanguagePopup),
+            matching: find.byType(Material),
+          )
+          .first,
+    );
+    await shot(
+      t,
+      key,
+      'features/languages',
+      crop: Rect.fromLTRB(0, box.top - 6, 412, box.bottom + 6),
     );
   }, skip: skip != null);
 }
