@@ -106,6 +106,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     kind: drawKindOf(g.draw, daily: g.daily, mode: g.mode),
     daily: g.daily.isNotEmpty,
     blind: blind,
+    lockdown: g.mode == GameMode.lockdown,
   );
 }
 
@@ -163,7 +164,13 @@ Future<List<GuessRow>> rescoreClassic(
     var land = key == null ? null : opening?[key];
     land ??= await analyseOffThread(
       rec.befores[i],
-      guessable,
+      rec.lockdown
+          ? lockedGuesses(
+              guessable,
+              rec.guesses.take(i).toList(),
+              rec.marks.take(i).toList(),
+            )
+          : guessable,
       weights: rec.weights,
       blind: rec.blind,
     );

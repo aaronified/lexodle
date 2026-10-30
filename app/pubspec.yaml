@@ -33,6 +33,7 @@ flutter:
     - assets/flags/
     - assets/donate/
     - assets/fonts/OFL.txt
+    - assets/changelog.txt
   fonts:
     - family: JetBrainsMono
       fonts:

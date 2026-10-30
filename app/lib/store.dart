@@ -1351,6 +1351,16 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// The version whose changes the player has been shown (see changelog.dart).
+  String? changelogSeen;
+
+  void noteChangelogSeen(String v) {
+    changelogSeen = v;
+    try {
+      _w('changelogSeen', _prefs?.setString('changelogSeen', v));
+    } catch (_) {}
+  }
+
   /// Whether sounds play (the crack of a heart in lockdown). On until turned off.
   bool sound = true;
 
@@ -1912,6 +1922,7 @@ class AppState extends ChangeNotifier {
           blindTries = bt;
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
         lastRunVersion = p.getString('lastRunVersion');
+        changelogSeen = p.getString('changelogSeen');
         autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
         final last = p.getInt('lastUpdateCheck');
         if (last != null) {

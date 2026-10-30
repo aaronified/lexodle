@@ -770,4 +770,46 @@ void main() {
       expect(again.luckiest.first.word, words[40]);
     });
   });
+
+  group('lockedGuesses', () {
+    const words = ['crane', 'crate', 'slate', 'brine'];
+    test('keeps only words with the shown letters in place', () {
+      expect(
+        lockedGuesses(
+          words,
+          ['crone'],
+          [
+            [c, c, a, c, c],
+          ],
+        ),
+        ['crane'],
+      );
+    });
+    test('without greens every candidate stays', () {
+      expect(
+        lockedGuesses(
+          words,
+          ['xxxxx'],
+          [
+            [a, a, a, a, a],
+          ],
+        ),
+        words,
+      );
+    });
+  });
+
+  group('blind groups', () {
+    test('the group landed in is found by counts, not by tile pattern', () {
+      const words = ['crane', 'crate', 'slate', 'brine', 'trace'];
+      final stats = splitStats(words, 'crone', null, blind: true);
+      for (final w in words) {
+        final mass = stats.landedOf('crone', w)!;
+        final real = words
+            .where((x) => blindCode(x, 'crone') == blindCode(w, 'crone'))
+            .length;
+        expect(mass, real.toDouble());
+      }
+    });
+  });
 }

@@ -284,16 +284,22 @@ class SplitStats {
     required this.masses,
     this.landedMass,
     this.codes = const [],
+    this.blind = false,
   });
 
   /// The pattern of each group, in the order of [masses] (see [patternCode]).
   final List<int> codes;
 
+  /// Whether the groups are counts (a blind game), not tile patterns.
+  final bool blind;
+
   /// The mass of the group [answer] falls in when [guess] is played, or null
   /// when the patterns were not kept.
   double? landedOf(String guess, String answer) {
     if (codes.isEmpty) return landedMass;
-    final at = codes.indexOf(patternCode(answer, guess));
+    final at = codes.indexOf(
+      blind ? blindCode(answer, guess) : patternCode(answer, guess),
+    );
     return at < 0 ? null : masses[at];
   }
 
@@ -439,14 +445,8 @@ class SplitContext {
     }
     double? landedMass;
     if (answer != null) {
-      var a = patternCode(answer, guess);
-      if (blind) {
-        final m = evaluate(answer, guess);
-        a =
-            m.where((x) => x == Mark.correct).length * (len + 1) +
-            m.where((x) => x == Mark.present).length;
-      }
-      landedMass = _mass[a];
+      landedMass =
+          _mass[blind ? blindCode(answer, guess) : patternCode(answer, guess)];
     }
     for (var i = 0; i < seen; i++) {
       _counts[_touched[i]] = 0;
@@ -476,6 +476,7 @@ class SplitContext {
       masses: masses,
       landedMass: landedMass,
       codes: codes,
+      blind: blind,
     );
   }
 }
@@ -604,6 +605,26 @@ int knownGreens(Iterable<List<Mark>> earlier) {
   return green.length;
 }
 
+/// The [candidates] a lockdown player could have guessed after [earlier] guesses
+/// with their [marks]: the words that keep every letter shown in its place.
+List<String> lockedGuesses(
+  Iterable<String> candidates,
+  List<String> earlier,
+  List<List<Mark>> marks,
+) {
+  final locked = <int, String>{};
+  for (var g = 0; g < earlier.length; g++) {
+    for (var i = 0; i < marks[g].length; i++) {
+      if (marks[g][i] == Mark.correct) locked[i] = earlier[g][i];
+    }
+  }
+  if (locked.isEmpty) return candidates.toList();
+  return [
+    for (final w in candidates)
+      if (locked.entries.every((e) => w[e.key] == e.value)) w,
+  ];
+}
+
 class Recommendation {
   const Recommendation(
     this.word,
@@ -663,7 +684,12 @@ class Landscape {
     this.bestRisk = 0,
     this.riskiest = const [],
     this.luckiest = const [],
+    this.partial = false,
   });
+
+  /// Whether the opening came from the disk, which keeps no group sizes: the
+  /// luckiest guesses are then left out, and worked out again when wanted.
+  final bool partial;
 
   /// The best picks, best first.
   final List<Recommendation> top;
@@ -718,6 +744,8 @@ Future<Landscape> analyseGuesses(
   Map<String, int>? weights,
   String? answer,
   bool blind = false,
+  OpeningDisk? disk,
+  ChunkScorer? scorer,
 }) async {
   final n = eligible.length;
   if (n == 0) return const Landscape([], []);
@@ -741,11 +769,66 @@ Future<Landscape> analyseGuesses(
       ? _openingKey(eligible, words, weights, blind)
       : null;
   final scored = <(String, SplitStats)>[];
-  if (key != null && key == _openingKeyHeld) {
+  var fromDisk = false;
+  final luckBy = <String, double>{};
+  final saved = key == null || key == _openingKeyHeld || disk == null
+      ? null
+      : _decodeOpening(disk.read(key), words.length);
+  if (saved != null) {
+    // kept on the disk by an earlier run: the gain and risk of every guess, to
+    // a hair; the picks themselves are scored again, exactly
+    await Future<void>.delayed(Duration.zero);
+    fromDisk = true;
+    for (var i = 0; i < words.length; i++) {
+      scored.add((
+        words[i],
+        SplitStats(
+          e: 0,
+          h: saved.h[i],
+          d: saved.d[i],
+          groups: 0,
+          largest: 0,
+          total: 0,
+          masses: const [],
+        ),
+      ));
+    }
+    final context = SplitContext(eligible, weights, blind: blind);
+    final exact = <int>{};
+    final order = List.generate(words.length, (i) => i);
+    for (final by in [(int i) => scored[i].$2.h, (int i) => scored[i].$2.d]) {
+      order.sort((x, y) => by(y).compareTo(by(x)));
+      exact.addAll(order.take(max(k, 8)));
+    }
+    for (final i in exact) {
+      scored[i] = (words[i], context.stats(words[i]));
+    }
+  } else if (key != null && key == _openingKeyHeld) {
     // answered from the last game, but still on a later turn of the event loop
     // like every other analysis, so the screen shows its dots first
     await Future<void>.delayed(Duration.zero);
     scored.addAll(_openingHeld!);
+  } else if (key != null && scorer != null) {
+    // the words are scored on a few threads at once; only the numbers come
+    // back, so there are no group sizes to keep for the next game
+    final rows = await scorer(eligible, weights, blind, words, answer);
+    for (var i = 0; i < words.length; i++) {
+      final o = i * _chunkRow;
+      scored.add((
+        words[i],
+        SplitStats(
+          e: rows[o],
+          h: rows[o + 1],
+          d: rows[o + 2],
+          groups: rows[o + 3].toInt(),
+          largest: rows[o + 4].toInt(),
+          total: rows[o + 5],
+          masses: const [],
+        ),
+      ));
+      if (!rows[o + 6].isNaN) luckBy[words[i]] = rows[o + 6];
+    }
+    disk?.write(key, _encodeOpening(scored));
   } else {
     final context = SplitContext(eligible, weights, blind: blind);
     for (final w in words) {
@@ -755,6 +838,7 @@ Future<Landscape> analyseGuesses(
     if (key != null) {
       _openingKeyHeld = key;
       _openingHeld = List.of(scored);
+      disk?.write(key, _encodeOpening(scored));
     }
   }
   if (scored.isEmpty) return const Landscape([], []);
@@ -785,10 +869,12 @@ Future<Landscape> analyseGuesses(
             RiskPick(w, s.d, n <= 1 ? 100.0 : skillOf(s.h, best)),
         ];
   var luckiest = <LuckPick>[];
-  if (answer != null) {
+  if (answer != null && !fromDisk) {
     final luck = <(String, double)>[
       for (final (w, s) in scored)
-        if (s.landedOf(w, answer) != null)
+        if (luckBy[w] != null)
+          (w, luckBy[w]!)
+        else if (s.landedOf(w, answer) != null)
           (w, s.luckOf(s.landedOf(w, answer)!).roundToDouble()),
     ];
     final self = luck.where((e) => e.$1 == answer).toList();
@@ -805,6 +891,86 @@ Future<Landscape> analyseGuesses(
     bestRisk: bestRisk,
     riskiest: riskiest,
     luckiest: luckiest,
+    partial: fromDisk && answer != null,
+  );
+}
+
+/// Numbers per word in a scored chunk: E, H, D, groups, largest, total, and
+/// the luck for the answer (NaN when there is none).
+const _chunkRow = 7;
+
+/// Scores [words] against [eligible] on the thread it is called on, as
+/// [scoreChunk] does; this is the signature of the callers that may spread the
+/// words over several threads (see opening_parallel.dart).
+typedef ChunkScorer = Future<Float64List> Function(
+  List<String> eligible,
+  Map<String, int>? weights,
+  bool blind,
+  List<String> words,
+  String? answer,
+);
+
+/// The numbers of each of [words] (see [_chunkRow]), in order. Pure, so it can
+/// run on any thread, and gives what scoring one word at a time gives.
+Float64List scoreChunk(
+  List<String> eligible,
+  Map<String, int>? weights,
+  bool blind,
+  List<String> words,
+  String? answer,
+) {
+  final context = SplitContext(eligible, weights, blind: blind);
+  final out = Float64List(words.length * _chunkRow);
+  for (var i = 0; i < words.length; i++) {
+    final s = context.stats(words[i]);
+    final landed = answer == null ? null : s.landedOf(words[i], answer);
+    final o = i * _chunkRow;
+    out[o] = s.e;
+    out[o + 1] = s.h;
+    out[o + 2] = s.d;
+    out[o + 3] = s.groups.toDouble();
+    out[o + 4] = s.largest.toDouble();
+    out[o + 5] = s.total;
+    out[o + 6] = landed == null ? double.nan : s.luckOf(landed).roundToDouble();
+  }
+  return out;
+}
+
+/// Where the opening analyses are kept between runs of the app (see
+/// [analyseGuesses]); none on the web.
+abstract class OpeningDisk {
+  Uint8List? read(String key);
+  void write(String key, Uint8List bytes);
+}
+
+const _openingMagic = 0x314f584c; // 'LXO1'
+
+/// The gain (0 to 16 bits) and risk (-100 to 100) of each guess as two 16-bit
+/// numbers, rounded down, so a kept value is never above the real one.
+Uint8List _encodeOpening(List<(String, SplitStats)> scored) {
+  final out = ByteData(8 + scored.length * 4)
+    ..setUint32(0, _openingMagic)
+    ..setUint32(4, scored.length);
+  for (var i = 0; i < scored.length; i++) {
+    final s = scored[i].$2;
+    out.setUint16(8 + i * 4, (s.h / 16 * 65535).floor().clamp(0, 65535));
+    out.setUint16(
+      10 + i * 4,
+      ((s.d + 100) / 200 * 65535).floor().clamp(0, 65535),
+    );
+  }
+  return out.buffer.asUint8List();
+}
+
+({List<double> h, List<double> d})? _decodeOpening(Uint8List? bytes, int n) {
+  if (bytes == null || bytes.length != 8 + n * 4) return null;
+  final r = ByteData.sublistView(bytes);
+  if (r.getUint32(0) != _openingMagic || r.getUint32(4) != n) return null;
+  return (
+    h: [for (var i = 0; i < n; i++) r.getUint16(8 + i * 4) * 16 / 65535],
+    d: [
+      for (var i = 0; i < n; i++) r.getUint16(10 + i * 4) * 200 / 65535 - 100,
+    ],
   );
 }
 
@@ -1094,6 +1260,15 @@ int _sumSquares(List<String> eligible, String guess) {
     _counts[_touched[i]] = 0;
   }
   return sum;
+}
+
+/// The counts a blind guess shows, as the group they make in [SplitContext]:
+/// the letters right and in place times (length + 1), plus the letters right
+/// elsewhere.
+int blindCode(String target, String guess) {
+  final m = evaluate(target, guess);
+  return m.where((x) => x == Mark.correct).length * (guess.length + 1) +
+      m.where((x) => x == Mark.present).length;
 }
 
 /// The feedback of [guess] against [target] packed into one int (base 3 per

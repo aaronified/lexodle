@@ -21,8 +21,17 @@ Future<Landscape> analyseOffThread(
   Map<String, int>? weights,
   String? answer,
   bool blind = false,
+  bool useDisk = true,
 }) => analyseOffMainThread
-    ? platform.analyse(eligible, candidates.toList(), k, weights, answer, blind)
+    ? platform.analyse(
+        eligible,
+        candidates.toList(),
+        k,
+        weights,
+        answer,
+        blind,
+        useDisk,
+      )
     : analyseGuesses(
         eligible,
         candidates,

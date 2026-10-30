@@ -134,8 +134,8 @@ String drawPhrase(DrawKind kind) {
     case DrawKind.frequency:
       return 'each word by how common it is';
     case DrawKind.placesCurve:
-      return 'the best known 1,200 places about equally likely, then fewer '
-          'and fewer, and almost none past the 2,000th';
+      return 'the best known 600 places about equally likely, then fewer '
+          'and fewer, and almost none past the 1,000th';
     case DrawKind.placesEqual:
       return 'every place of the length equally likely';
     case DrawKind.chosen:

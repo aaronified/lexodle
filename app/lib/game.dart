@@ -394,7 +394,14 @@ class _GamePageState extends State<GamePage>
       final job = _jobs.add(
         () => analyseOffThread(
           before,
-          widget.bank.guessable(length),
+          // in lockdown skill is measured against the guesses that were allowed
+          lockdown
+              ? lockedGuesses(
+                  widget.bank.guessable(length),
+                  guesses.take(index).toList(),
+                  marks.take(index).toList(),
+                )
+              : widget.bank.guessable(length),
           weights: _law,
           answer: answer,
           blind: blind,
@@ -927,6 +934,7 @@ class _GamePageState extends State<GamePage>
     ),
     daily: _daily != null && _daily.date.isNotEmpty,
     blind: blind,
+    lockdown: lockdown,
     length: length,
     poolSize: pool,
     answer: answer,
