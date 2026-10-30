@@ -297,7 +297,11 @@ class _PuzzleGateState extends State<PuzzleGate> {
   Future<WordBank?> _load() async {
     final langs = await WordBank.languages();
     final found = langs.where((l) => l.code == widget.puzzle.lang);
-    return found.isEmpty ? null : WordBank.load(found.first);
+    if (found.isEmpty) return null;
+    // a themed puzzle's word is a place, not a word of the list
+    return widget.puzzle.mode == GameMode.themed
+        ? Geography.load(found.first)
+        : WordBank.load(found.first);
   }
 
   Widget _waiting(String text) => Scaffold(

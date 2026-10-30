@@ -55,6 +55,8 @@ always draws on the curve (see [Daily word](Daily-word)). Languages differ in si
 - Word data: [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0), filtered with Hunspell
   dictionaries from [wooorm/dictionaries](https://github.com/wooorm/dictionaries) and
   [LibreOffice](https://github.com/LibreOffice/dictionaries)
+- Place names of the themed wordle: [GeoNames](https://www.geonames.org/) (CC BY 4.0), ranked by the
+  English Wikipedia page views of a day (CC0); `tools/build_geography.py` builds `assets/geography/places.tsv`
 - Definitions, IPA, audio, synonyms and antonyms: [Wiktionary](https://en.wiktionary.org), CC BY-SA 4.0
 - Font: JetBrains Mono (SIL OFL 1.1)
 - Achievement and playstyle icons: [Tabler Icons](https://tabler.io/icons) filled set (MIT)

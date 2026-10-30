@@ -683,6 +683,8 @@ class _ReviewPageState extends State<ReviewPage> {
     // under, said once in each section
     final skillNote = r.kind == null
         ? null
+        : r.blind
+        ? '${skillDrawLine(r.kind!, daily: r.daily)} $blindLine'
         : skillDrawLine(r.kind!, daily: r.daily);
     final luckNote = r.kind == null
         ? null

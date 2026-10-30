@@ -22,6 +22,9 @@ void registerLicences() {
       'Word lists (adapted from wordfreq, CC BY-SA 4.0)',
     ], await text('assets/words/LICENSE.md'));
     yield LicenseEntryWithLineBreaks([
+      'Place names (GeoNames, CC BY 4.0)',
+    ], await text('assets/geography/NOTICE.md'));
+    yield LicenseEntryWithLineBreaks([
       'Spelling dictionaries used to filter the word lists',
     ], await text('assets/words/SOURCES.md'));
   });

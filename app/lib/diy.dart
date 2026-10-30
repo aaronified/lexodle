@@ -385,6 +385,7 @@ class _DiyGateState extends State<DiyGate> {
         return GamePage(
           bank: bank,
           practice: true,
+          chosen: true,
           daily: Daily('', p.word, length: p.word.length, tries: p.tries),
         );
       },

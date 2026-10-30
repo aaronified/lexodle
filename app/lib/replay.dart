@@ -103,7 +103,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     won: g.won,
     tries: g.tries,
     weights: law,
-    kind: drawKindOf(g.draw, daily: g.daily),
+    kind: drawKindOf(g.draw, daily: g.daily, mode: g.mode),
     daily: g.daily.isNotEmpty,
     blind: blind,
   );

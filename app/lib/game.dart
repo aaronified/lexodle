@@ -38,7 +38,12 @@ class GamePage extends StatefulWidget {
     this.practice = false,
     this.replay = const [],
     this.mode = GameMode.classic,
+    this.chosen = false,
   });
+
+  /// Whether the word was chosen by a friend (a made wordle), not drawn.
+  final bool chosen;
+
   final WordBank bank;
 
   /// Classic, or lockdown: one word either way.
@@ -876,8 +881,14 @@ class _GamePageState extends State<GamePage>
 
   GameRecord _record() => GameRecord(
     bank: widget.bank,
-    kind: drawKindOf(draw, daily: _daily?.date ?? ''),
+    kind: drawKindOf(
+      draw,
+      daily: _daily?.date ?? '',
+      mode: mode,
+      chosen: widget.chosen,
+    ),
     daily: _daily != null && _daily.date.isNotEmpty,
+    blind: blind,
     length: length,
     poolSize: pool,
     answer: answer,
