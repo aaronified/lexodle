@@ -604,6 +604,26 @@ int knownGreens(Iterable<List<Mark>> earlier) {
   return green.length;
 }
 
+/// The [candidates] a lockdown player could have guessed after [earlier] guesses
+/// with their [marks]: the words that keep every letter shown in its place.
+List<String> lockedGuesses(
+  Iterable<String> candidates,
+  List<String> earlier,
+  List<List<Mark>> marks,
+) {
+  final locked = <int, String>{};
+  for (var g = 0; g < earlier.length; g++) {
+    for (var i = 0; i < marks[g].length; i++) {
+      if (marks[g][i] == Mark.correct) locked[i] = earlier[g][i];
+    }
+  }
+  if (locked.isEmpty) return candidates.toList();
+  return [
+    for (final w in candidates)
+      if (locked.entries.every((e) => w[e.key] == e.value)) w,
+  ];
+}
+
 class Recommendation {
   const Recommendation(
     this.word,

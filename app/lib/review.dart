@@ -39,7 +39,12 @@ class GameRecord {
     this.kind,
     this.daily = false,
     this.blind = false,
+    this.lockdown = false,
   });
+
+  /// Whether the game was lockdown: only guesses that keep the greens were
+  /// allowed, so skill is measured against those.
+  final bool lockdown;
 
   /// Whether the game was blind: its guesses told only how many letters were
   /// right, so the words left and the scores go by those counts.
@@ -189,7 +194,13 @@ class _ReviewPageState extends State<ReviewPage> {
           await (ready ??
               analyseOffThread(
                 r.befores[i],
-                guessable,
+                r.lockdown
+                    ? lockedGuesses(
+                        guessable,
+                        r.guesses.take(i).toList(),
+                        r.marks.take(i).toList(),
+                      )
+                    : guessable,
                 weights: r.weights,
                 answer: r.answer,
                 blind: r.blind,

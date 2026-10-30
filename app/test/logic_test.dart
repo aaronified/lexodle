@@ -770,4 +770,24 @@ void main() {
       expect(again.luckiest.first.word, words[40]);
     });
   });
+
+  group('lockedGuesses', () {
+    const words = ['crane', 'crate', 'slate', 'brine'];
+    test('keeps only words with the shown letters in place', () {
+      expect(
+        lockedGuesses(words, ['crone'], [
+          [c, c, a, c, c],
+        ]),
+        ['crane'],
+      );
+    });
+    test('without greens every candidate stays', () {
+      expect(
+        lockedGuesses(words, ['xxxxx'], [
+          [a, a, a, a, a],
+        ]),
+        words,
+      );
+    });
+  });
 }
