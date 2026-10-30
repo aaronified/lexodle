@@ -15,12 +15,15 @@ enum GameMode {
 
   const GameMode(this.label, this.sub, this.boards, this.extraTries);
 
-  /// The modes of the home screen's swipe. The others are in the swiper of
-  /// the game modes screen only.
-  static const loop = [classic, quartet, relay, lockdown];
+  /// The modes of a swipe, in order, for the language [lang]: every mode, and
+  /// themed only in English.
+  static List<GameMode> loopFor(String lang) => [
+    for (final m in values)
+      if (m != themed || lang == 'en') m,
+  ];
 
-  /// Whether the mode has a daily.
-  bool get hasDaily => index < loop.length;
+  /// Whether the mode has a daily: the first four have, themed and blind do not.
+  bool get hasDaily => index <= lockdown.index;
   final String label;
   final String sub;
 
