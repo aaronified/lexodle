@@ -36,60 +36,49 @@ class HowToPage extends StatelessWidget {
       color: c.onSurface.withValues(alpha: .65),
     );
 
-    /// A row of tiles: a letter, ' ' for a blank; [mark] colours the tile at
-    /// [markAt], and [cursorAt] outlines the slot the next letter goes into.
-    Widget tiles(
-      String word, {
-      int? markAt,
-      Mark? mark,
-      int? cursorAt,
-      required String note,
-      List<InlineSpan>? lead,
-    }) => Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    /// One guess, submitted: every tile has its colour, as the colours only
+    /// appear once a guess is in. A line under it for each colour.
+    Widget colours() {
+      const guess = 'weary';
+      final marks = evaluate('wheel', guess);
+      Widget line(int at, String note) => Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Text.rich(
+          TextSpan(
             children: [
-              for (var i = 0; i < word.length; i++)
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: MarkTile(
-                    word[i],
-                    size: 44,
-                    mark: i == markAt ? mark : null,
-                    cursor: i == cursorAt,
-                  ),
-                ),
+              TextSpan(
+                text: guess[at],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ' $note'),
             ],
           ),
-          const SizedBox(height: 8),
-          Text.rich(
-            TextSpan(
+          style: const TextStyle(height: 1.4),
+        ),
+      );
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              key: const ValueKey('colours-row'),
               children: [
-                ...?lead,
-                TextSpan(text: note),
+                for (var i = 0; i < guess.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: MarkTile(guess[i], size: 44, mark: marks[i]),
+                  ),
               ],
             ),
-            style: const TextStyle(height: 1.4),
-          ),
-        ],
-      ),
-    );
-
-    Widget colour(String word, int at, Mark mark, String note) => tiles(
-      word,
-      markAt: at,
-      mark: mark,
-      note: ' $note',
-      lead: [
-        TextSpan(
-          text: word[at],
-          style: const TextStyle(fontWeight: FontWeight.bold),
+            const SizedBox(height: 10),
+            line(0, 'is in the word and in the correct spot.'),
+            line(1, 'is in the word but in the wrong spot.'),
+            line(2, 'is not in the word in any spot.'),
+          ],
         ),
-      ],
-    );
+      );
+    }
 
     Widget heading(String text) => Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 12),
@@ -144,24 +133,7 @@ class HowToPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 18),
                       heading('the colours'),
-                      colour(
-                        'weary',
-                        0,
-                        Mark.correct,
-                        'is in the word and in the correct spot.',
-                      ),
-                      colour(
-                        'pills',
-                        1,
-                        Mark.present,
-                        'is in the word but in the wrong spot.',
-                      ),
-                      colour(
-                        'vague',
-                        3,
-                        Mark.absent,
-                        'is not in the word in any spot.',
-                      ),
+                      colours(),
                       Text(
                         'the examples are in english; every language plays the '
                         'same.',

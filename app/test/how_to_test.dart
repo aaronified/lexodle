@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/how_to.dart';
+import 'package:lexodle/logic.dart' show Mark;
 import 'package:lexodle/ui.dart' show MarkTile;
 import 'package:lexodle/logo.dart';
 import 'package:lexodle/main.dart';
@@ -43,7 +44,7 @@ void main() {
     expect(find.text(_rule), findsOneWidget);
   });
 
-  testWidgets('the three examples are shown with their colours', (
+  testWidgets('one example shows the three colours, all tiles coloured', (
     tester,
   ) async {
     await tester.pumpWidget(const MaterialApp(home: HowToPage()));
@@ -63,6 +64,18 @@ void main() {
       find.textContaining('not in the word in any spot', findRichText: true),
       findsOneWidget,
     );
+    // the five tiles of the example are all submitted: none is an empty box
+    final row = find.byKey(const ValueKey('colours-row'));
+    final tiles = tester.widgetList<MarkTile>(
+      find.descendant(of: row, matching: find.byType(MarkTile)),
+    );
+    expect(tiles.length, 5);
+    expect(tiles.every((t) => t.mark != null), isTrue);
+    expect(tiles.map((t) => t.mark).toSet(), {
+      Mark.correct,
+      Mark.present,
+      Mark.absent,
+    });
   });
 
   testWidgets('the first-visit screen starts a default english game', (
