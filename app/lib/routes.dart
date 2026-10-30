@@ -57,8 +57,20 @@ const aboutText =
     'Definitions: Wiktionary (CC BY-SA 4.0). Font: JetBrains Mono (OFL). '
     'Icons: Tabler Icons (MIT). Every licence is listed below.';
 
+/// The route inside an address. A link opened by the Android app arrives as
+/// the whole address, `https://…/lexodle/#/puzzle?l=en…`, and the route is
+/// its fragment; a plain route (`/puzzle?l=en…`) is its own.
+String routeOf(String? raw) {
+  final uri = Uri.tryParse(raw ?? '/');
+  if (uri == null) return '/';
+  if (uri.fragment.startsWith('/')) return uri.fragment;
+  return uri.hasScheme ? '/' : raw ?? '/';
+}
+
 Route<dynamic> onGenerateRoute(RouteSettings settings) {
-  final name = Uri.tryParse(settings.name ?? '/')?.path ?? '/';
+  final full = routeOf(settings.name);
+  settings = RouteSettings(name: full, arguments: settings.arguments);
+  final name = Uri.tryParse(full)?.path ?? '/';
   // the settings keep the name they were opened with
   final s = RouteSettings(name: name, arguments: settings.arguments);
   Route<dynamic> page(Widget w) =>
@@ -142,7 +154,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
 
 /// The routes to start with for an address: its parents first, so back works.
 /// A review is built only from a finished game, so by address it is just home.
-List<Route<dynamic>> onGenerateInitialRoutes(String initial) {
+List<Route<dynamic>> onGenerateInitialRoutes(String initialAddress) {
+  final initial = routeOf(initialAddress);
   final path = Uri.tryParse(initial)?.path ?? '/';
   if (path == Routes.review) {
     return [onGenerateRoute(const RouteSettings(name: Routes.home))];
