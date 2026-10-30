@@ -72,6 +72,19 @@
 <table>
   <tr>
     <td width="60%">
+      <h3>🔒 Lockdown</h3>
+      One word and six tries, with hearts: 10, 7, 5, 3 or 1. A letter in the right place locks
+      and stays locked, and a word that is not in the list costs a heart, which breaks with a
+      rumble and a crack. The last three hearts throb. It has a daily of its own.
+      <a href="https://github.com/aaronified/lexodle/wiki/How-to-play">The rules</a>.
+    </td>
+    <td width="40%"><img src="docs/screenshots/lockdown.png" width="100%" alt="A lockdown game: two letters locked in the next guess, three hearts left and two lost"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="60%">
       <h3>🎯 Every guess is scored</h3>
       <b>Skill</b> says how many bits the guess was expected to gain, <b>luck</b> how the answer fell,
       and <b>risk</b> how far you leaned on a rare big gain. The review steps

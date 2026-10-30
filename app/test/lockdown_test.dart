@@ -175,6 +175,14 @@ void main() {
         find.byKey(const ValueKey('locked')),
         findsNWidgets(greens.length),
       );
+      // the lock sits in the corner of its tile
+      final tile = tester.getRect(
+        find.byKey(ValueKey('tile-1-${greens.first}')),
+      );
+      final lock = tester.getCenter(find.byKey(const ValueKey('locked')).first);
+      expect(lock.dx, greaterThan(tile.center.dx));
+      expect(lock.dy, lessThan(tile.center.dy));
+      expect(tile.contains(lock), isTrue);
       for (final i in greens) {
         expect(
           find.descendant(

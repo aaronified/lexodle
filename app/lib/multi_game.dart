@@ -599,29 +599,32 @@ class _MultiGamePageState extends State<MultiGamePage> {
           border: Border.all(color: border, width: cursor ? 2 : 1),
           borderRadius: BorderRadius.circular(3),
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Text(
-              isBlank ? '_' : ch,
-              style: TextStyle(
-                fontSize: size * .5,
-                fontWeight: FontWeight.bold,
-                color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
-              ),
-            ),
-            if (locked)
-              Positioned(
-                top: 3,
-                right: 3,
-                child: Icon(
-                  Icons.lock,
-                  key: const ValueKey('locked'),
-                  size: size * .22,
-                  color: c.primary,
+        // the whole tile, so the lock sits in its corner, not by the letter
+        child: SizedBox.expand(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                isBlank ? '_' : ch,
+                style: TextStyle(
+                  fontSize: size * .5,
+                  fontWeight: FontWeight.bold,
+                  color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
                 ),
               ),
-          ],
+              if (locked)
+                Positioned(
+                  top: 3,
+                  right: 3,
+                  child: TablerIcon(
+                    'lock',
+                    key: const ValueKey('locked'),
+                    size: size * .22,
+                    color: c.primary,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
