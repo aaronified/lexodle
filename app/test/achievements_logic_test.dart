@@ -51,6 +51,16 @@ GameResult lockdown({
   dailyStreak: dailyStreak,
 );
 
+GameResult blind({bool won = true, int used = 4, int tries = 10}) => GameResult(
+  lang: 'en',
+  length: 5,
+  tries: tries,
+  used: used,
+  won: won,
+  mode: GameMode.blind,
+  skills: const [70, 70, 70, 70],
+);
+
 GameResult game({
   bool won = true,
   int used = 3,
@@ -189,6 +199,7 @@ void main() {
       expect(byId('relay_wins').tag, GameMode.relay);
       expect(byId('lockdown_wins').tag, GameMode.lockdown);
       expect(byId('lockdown_streak').tag, GameMode.lockdown);
+      expect(byId('blind_wins').tag, GameMode.blind);
       expect(byId('wins').tag, isNull);
     });
   });
@@ -467,6 +478,35 @@ void main() {
       final (st, _) = play([game(daily: true, dailyStreak: 50)]);
       expect(st['quartet_streak']!.value, 0);
       expect(st['relay_streak']!.value, 0);
+    });
+  });
+
+  group('blind', () {
+    test('wins, quick wins, a last try and the six-try level', () {
+      final (st, _) = play([
+        blind(used: 4), // quick
+        blind(used: 5), // quick
+        blind(used: 10), // last try
+        blind(used: 6, tries: 6), // last try, and six tries
+        blind(used: 7),
+        blind(won: false, used: 10),
+        game(),
+      ]);
+      expect(st['blind_wins']!.value, 5);
+      expect(st['blind_quick']!.value, 2);
+      expect(
+        st['blind_last']!.value,
+        2,
+        reason: 'a lost game is no last-try win',
+      );
+      expect(st['blind_brutal']!.value, 1);
+      expect(st['wins']!.value, 6, reason: 'they count among the wins too');
+    });
+
+    test('a classic game does not feed the blind ones', () {
+      final (st, _) = play([game(used: 2)]);
+      expect(st['blind_wins']!.value, 0);
+      expect(st['blind_quick']!.value, 0);
     });
   });
 
