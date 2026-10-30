@@ -76,15 +76,9 @@ void main() {
     final a = _words(2100, 5);
     final law = {for (final x in a) x: 1 + x.codeUnitAt(0)};
     final one = await analyseGuesses(a, a, weights: law, answer: a[9]);
-    final many = await analyseGuesses(
-      _words(2100, 6),
-      _words(2100, 6),
-      weights: law,
-      answer: a[9],
-      scorer: (e, w, b, words, ans) =>
-          scoreOnThreads(e, w, b, words, ans, threads: 3),
-    );
-    expect(many.partial, isFalse);
+    // another position, so the first is no longer held in memory
+    final b = _words(2100, 6);
+    await analyseGuesses(b, b, weights: law);
     final same = await analyseGuesses(
       a,
       a,
@@ -93,13 +87,13 @@ void main() {
       scorer: (e, w, b, words, ans) =>
           scoreOnThreads(e, w, b, words, ans, threads: 3),
     );
+    expect(same.partial, isFalse);
     expect(same.gains, one.gains);
     expect(same.bestRisk, one.bestRisk);
     expect(same.top.map((r) => (r.word, r.expected)),
         one.top.map((r) => (r.word, r.expected)));
     expect(same.luckiest.map((p) => (p.word, p.luck)),
         one.luckiest.map((p) => (p.word, p.luck)));
-    expect(many.gains, isNotEmpty);
   });
 
   test('a few threads, never all the cores', () {
