@@ -746,6 +746,7 @@ Future<Landscape> analyseGuesses(
   String? answer,
   bool blind = false,
   OpeningDisk? disk,
+  ChunkScorer? scorer,
 }) async {
   final n = eligible.length;
   if (n == 0) return const Landscape([], []);
@@ -770,6 +771,7 @@ Future<Landscape> analyseGuesses(
       : null;
   final scored = <(String, SplitStats)>[];
   var fromDisk = false;
+  final luckBy = <String, double>{};
   final saved = key == null || key == _openingKeyHeld || disk == null
       ? null
       : _decodeOpening(disk.read(key), words.length);
@@ -810,6 +812,27 @@ Future<Landscape> analyseGuesses(
     // like every other analysis, so the screen shows its dots first
     await Future<void>.delayed(Duration.zero);
     scored.addAll(_openingHeld!);
+  } else if (key != null && scorer != null) {
+    // the words are scored on a few threads at once; only the numbers come
+    // back, so there are no group sizes to keep for the next game
+    final rows = await scorer(eligible, weights, blind, words, answer);
+    for (var i = 0; i < words.length; i++) {
+      final o = i * _chunkRow;
+      scored.add((
+        words[i],
+        SplitStats(
+          e: rows[o],
+          h: rows[o + 1],
+          d: rows[o + 2],
+          groups: rows[o + 3].toInt(),
+          largest: rows[o + 4].toInt(),
+          total: rows[o + 5],
+          masses: const [],
+        ),
+      ));
+      if (!rows[o + 6].isNaN) luckBy[words[i]] = rows[o + 6];
+    }
+    if (key != null) disk?.write(key, _encodeOpening(scored));
   } else {
     final context = SplitContext(eligible, weights, blind: blind);
     for (final w in words) {
@@ -853,7 +876,9 @@ Future<Landscape> analyseGuesses(
   if (answer != null) {
     final luck = <(String, double)>[
       for (final (w, s) in scored)
-        if (s.landedOf(w, answer) != null)
+        if (luckBy[w] != null)
+          (w, luckBy[w]!)
+        else if (s.landedOf(w, answer) != null)
           (w, s.luckOf(s.landedOf(w, answer)!).roundToDouble()),
     ];
     final self = luck.where((e) => e.$1 == answer).toList();
@@ -872,6 +897,48 @@ Future<Landscape> analyseGuesses(
     luckiest: luckiest,
     partial: fromDisk && answer != null,
   );
+}
+
+/// Numbers per word in a scored chunk: E, H, D, groups, largest, total, and
+/// the luck for the answer (NaN when there is none).
+const _chunkRow = 7;
+
+/// Scores [words] against [eligible] on the thread it is called on, as
+/// [scoreChunk] does; this is the signature of the callers that may spread the
+/// words over several threads (see opening_parallel.dart).
+typedef ChunkScorer =
+    Future<Float64List> Function(
+      List<String> eligible,
+      Map<String, int>? weights,
+      bool blind,
+      List<String> words,
+      String? answer,
+    );
+
+/// The numbers of each of [words] (see [_chunkRow]), in order. Pure, so it can
+/// run on any thread, and gives what scoring one word at a time gives.
+Float64List scoreChunk(
+  List<String> eligible,
+  Map<String, int>? weights,
+  bool blind,
+  List<String> words,
+  String? answer,
+) {
+  final context = SplitContext(eligible, weights, blind: blind);
+  final out = Float64List(words.length * _chunkRow);
+  for (var i = 0; i < words.length; i++) {
+    final s = context.stats(words[i]);
+    final landed = answer == null ? null : s.landedOf(words[i], answer);
+    final o = i * _chunkRow;
+    out[o] = s.e;
+    out[o + 1] = s.h;
+    out[o + 2] = s.d;
+    out[o + 3] = s.groups.toDouble();
+    out[o + 4] = s.largest.toDouble();
+    out[o + 5] = s.total;
+    out[o + 6] = landed == null ? double.nan : s.luckOf(landed).roundToDouble();
+  }
+  return out;
 }
 
 /// Where the opening analyses are kept between runs of the app (see

@@ -3,6 +3,7 @@ import 'dart:isolate';
 
 import 'logic.dart';
 import 'opening_disk.dart';
+import 'opening_parallel.dart';
 
 /// One worker isolate for the whole app, started on first use. Its memory is
 /// its own, so the opening it keeps for the next game never weighs on the
@@ -89,6 +90,7 @@ void _main(SendPort host) {
         answer: a[5] as String?,
         blind: a[6] as bool,
         disk: a[7] as bool ? disk : null,
+        scorer: scoreOnThreads,
       );
       host.send([id, land]);
     } catch (e) {
@@ -119,6 +121,7 @@ Future<Landscape> analyse(
       answer: answer,
       blind: blind,
       disk: useDisk ? DiskOpenings() : null,
+      scorer: scoreOnThreads,
     );
   }
   return worker.run(eligible, candidates, k, weights, answer, blind, useDisk);
