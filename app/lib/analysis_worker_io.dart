@@ -61,11 +61,12 @@ class _Worker {
     int k,
     Map<String, int>? weights,
     String? answer,
+    bool blind,
   ) {
     final id = _next++;
     final c = Completer<Landscape>();
     _waiting[id] = c;
-    _to.send([id, eligible, candidates, k, weights, answer]);
+    _to.send([id, eligible, candidates, k, weights, answer, blind]);
     return c.future;
   }
 }
@@ -83,6 +84,7 @@ void _main(SendPort host) {
         k: a[3] as int,
         weights: (a[4] as Map?)?.cast<String, int>(),
         answer: a[5] as String?,
+        blind: a[6] as bool,
       );
       host.send([id, land]);
     } catch (e) {
@@ -98,6 +100,7 @@ Future<Landscape> analyse(
   int k,
   Map<String, int>? weights,
   String? answer,
+  bool blind,
 ) async {
   final _Worker worker;
   try {
@@ -109,7 +112,8 @@ Future<Landscape> analyse(
       k: k,
       weights: weights,
       answer: answer,
+      blind: blind,
     );
   }
-  return worker.run(eligible, candidates, k, weights, answer);
+  return worker.run(eligible, candidates, k, weights, answer, blind);
 }

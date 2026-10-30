@@ -16,6 +16,8 @@ String modeIconName(GameMode m) => switch (m) {
   GameMode.quartet => 'layout-grid',
   GameMode.relay => 'chess-knight',
   GameMode.lockdown => 'lock',
+  GameMode.themed => 'world',
+  GameMode.blind => 'zoom-question',
 };
 
 /// The mode under the modes' own line: "four words at once · +3 tries".
@@ -46,8 +48,11 @@ class ModeSwitch extends StatefulWidget {
 
   /// The mode [steps] along the loop from [from] (negative goes back).
   static GameMode step(GameMode from, int steps) {
-    const all = GameMode.values;
-    return all[(from.index + steps) % all.length];
+    const all = GameMode.loop;
+    final i = all.indexOf(from);
+    // a mode of the popup only (themed, blind) goes back into the loop
+    if (i < 0) return steps > 0 ? all.first : all.last;
+    return all[(i + steps) % all.length];
   }
 
   @override
@@ -281,7 +286,7 @@ class _ModeSwitchState extends State<ModeSwitch>
             key: const ValueKey('mode-dots'),
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              for (final m in GameMode.values)
+              for (final m in GameMode.loop)
                 Container(
                   key: ValueKey('mode-dot-${m.name}'),
                   width: 6,

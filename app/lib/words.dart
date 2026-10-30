@@ -29,7 +29,32 @@ class Language {
 }
 
 class WordBank {
-  WordBank._(this.language, this._words, this._weights, this.valid);
+  WordBank._(
+    this.language,
+    this._words,
+    this._weights,
+    this.valid, {
+    this.curveOrigin = defaultCurveOrigin,
+    this.curveWidth = defaultCurveWidth,
+  });
+
+  /// A bank of other words than a language's list (the places of the themed
+  /// wordle): [words] by length, most famous first, with their [weights]. Its
+  /// sigmoid curve is its own: [curveOrigin] and [curveWidth].
+  WordBank.custom(
+    Language language,
+    Map<int, List<String>> words,
+    Map<int, List<int>> weights, {
+    required double curveOrigin,
+    required double curveWidth,
+  }) : this._(
+         language,
+         words,
+         weights,
+         {for (final l in words.values) ...l},
+         curveOrigin: curveOrigin,
+         curveWidth: curveWidth,
+       );
 
   final Language language;
   final Map<int, List<String>> _words;
@@ -45,6 +70,25 @@ class WordBank {
 
   /// How common each word of [guessable] is, in the same order.
   List<int> guessWeights(int length) => _weights[length] ?? const [];
+
+  /// This bank with [word] among the words of its length, as a guess and as an
+  /// answer, when the list does not have it (a word a friend made up). It is
+  /// last in the order, with the least weight.
+  WordBank withWord(String word) {
+    if (valid.contains(word)) return this;
+    final words = {for (final e in _words.entries) e.key: e.value};
+    final weights = {for (final e in _weights.entries) e.key: e.value};
+    words[word.length] = [...?words[word.length], word];
+    weights[word.length] = [...?weights[word.length], 1];
+    return WordBank._(
+      language,
+      words,
+      weights,
+      {...valid, word},
+      curveOrigin: curveOrigin,
+      curveWidth: curveWidth,
+    );
+  }
 
   final _weightMaps = <int, Map<String, int>>{};
 
@@ -74,8 +118,10 @@ class WordBank {
   /// of the list (a short list most likely means an incomplete one). It falls
   /// from about full to about nothing over 1,000 words around that: [curveWidth]
   /// is the logistic scale, so the 2,500th word is at 98% and the 3,500th at 2%.
-  static const curveOrigin = 3000.0;
-  static const curveWidth = 125.0;
+  static const defaultCurveOrigin = 3000.0;
+  static const defaultCurveWidth = 125.0;
+  final double curveOrigin;
+  final double curveWidth;
 
   /// The chance of each word of [answers], as a whole number up to 1,000, by a
   /// sigmoid curve on its rank by frequency: the commonest words almost equally

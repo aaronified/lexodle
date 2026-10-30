@@ -7,10 +7,12 @@ Future<Landscape> analyse(
   int k,
   Map<String, int>? weights,
   String? answer,
+  bool blind,
 ) => analyseGuesses(
   eligible,
   candidates,
   k: k,
   weights: weights,
   answer: answer,
+  blind: blind,
 );

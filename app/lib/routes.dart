@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart';
 import 'daily.dart';
+import 'diy.dart';
 import 'game.dart';
 import 'history_page.dart';
 import 'learn.dart';
@@ -19,6 +20,8 @@ import 'puzzle.dart';
 import 'settings_page.dart';
 import 'solver.dart';
 import 'ui.dart';
+import 'geography.dart';
+import 'modes.dart';
 import 'words.dart';
 
 /// Every screen has an address, so the browser's refresh and back buttons work
@@ -44,6 +47,7 @@ class Routes {
   static const howTo = '/how-to';
   static const settings = '/settings';
   static const gameModes = '/game-modes';
+  static const diy = '/diy';
   static const playstyle = '/playstyle';
   static const about = '/about';
 }
@@ -79,6 +83,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case Routes.play:
       return page(
         BankGate(
+          places: appState.mode == GameMode.themed,
           builder: (bank) => appState.mode.multi
               ? MultiGamePage(bank: bank)
               : GamePage(bank: bank, mode: appState.mode),
@@ -104,6 +109,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           },
         ),
       );
+    case Routes.diy:
+      // a made wordle opened by a link, or the screen that makes one
+      final diy = DiyPuzzle.parse(Uri.tryParse(settings.name ?? '') ?? Uri());
+      return page(diy == null ? const DiyPage() : DiyGate(puzzle: diy));
     case Routes.puzzle:
       // a daily puzzle named by a link: played as practice
       final puzzle = Puzzle.parse(Uri.tryParse(settings.name ?? '') ?? Uri());
@@ -178,6 +187,7 @@ List<Route<dynamic>> onGenerateInitialRoutes(String initialAddress) {
 }
 
 const _known = {
+  Routes.diy,
   Routes.play,
   Routes.daily,
   Routes.puzzle,
@@ -221,8 +231,11 @@ Route<void> _dialog(RouteSettings settings, Widget dialog) =>
 /// needs it, waiting first for the saved settings, since a page opened by
 /// address (a refresh) starts before they are read.
 class BankGate extends StatefulWidget {
-  const BankGate({super.key, required this.builder});
+  const BankGate({super.key, required this.builder, this.places = false});
   final Widget Function(WordBank bank) builder;
+
+  /// Whether the words are the place names of the themed wordle, in English.
+  final bool places;
 
   @override
   State<BankGate> createState() => _BankGateState();
@@ -233,6 +246,9 @@ class _BankGateState extends State<BankGate> {
 
   Future<WordBank> _load() async {
     final langs = await WordBank.languages();
+    if (widget.places) {
+      return Geography.load(langs.firstWhere((l) => l.code == 'en'));
+    }
     final lang = langs.firstWhere(
       (l) => l.code == appState.lang,
       orElse: () => langs.first,

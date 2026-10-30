@@ -10,7 +10,10 @@ import 'dart:typed_data';
 enum Mark { correct, present, absent }
 
 /// Two-pass scoring: greens first, then yellows limited by remaining counts.
-List<Mark> evaluate(String target, String guess) {
+/// With [blind] the marks are only counted: the same marks, greens first, then
+/// yellows, then absents, so two guesses with as many right and as many
+/// elsewhere give the same marks whichever letters they are on.
+List<Mark> evaluate(String target, String guess, {bool blind = false}) {
   final t = target.split('');
   final g = guess.split('');
   final counts = <String, int>{};
@@ -33,18 +36,21 @@ List<Mark> evaluate(String target, String guess) {
       out[i] = Mark.absent;
     }
   }
-  return out.cast<Mark>();
+  final marks = out.cast<Mark>();
+  if (blind) marks.sort((a, b) => a.index - b.index);
+  return marks;
 }
 
 /// Words still possible after a guess produced [marks].
 List<String> filterEligible(
   List<String> words,
   String guess,
-  List<Mark> marks,
-) {
+  List<Mark> marks, {
+  bool blind = false,
+}) {
   return [
     for (final w in words)
-      if (_same(evaluate(w, guess), marks)) w,
+      if (_same(evaluate(w, guess, blind: blind), marks)) w,
   ];
 }
 
@@ -338,10 +344,13 @@ double finestGain(List<String> eligible, Map<String, int>? weights) {
 /// accepts against a large list. Same numbers as scoring each pair with
 /// [patternCode].
 class SplitContext {
-  SplitContext(List<String> eligible, Map<String, int>? weights)
-    : n = eligible.length,
-      len = eligible.isEmpty ? 0 : eligible.first.length,
-      _alpha = {} {
+  SplitContext(
+    List<String> eligible,
+    Map<String, int>? weights, {
+    this.blind = false,
+  }) : n = eligible.length,
+       len = eligible.isEmpty ? 0 : eligible.first.length,
+       _alpha = {} {
     _t = Uint8List(n * len);
     _x = Float64List(n);
     var total = 0.0;
@@ -363,6 +372,10 @@ class SplitContext {
 
   final int n;
   final int len;
+
+  /// Whether a guess tells only how many letters are right and in place and
+  /// how many right elsewhere (a blind game): groups are those counts.
+  final bool blind;
   late final double total;
   final Map<int, int> _alpha;
   late final Uint8List _t;
@@ -388,19 +401,22 @@ class SplitContext {
       for (var j = 0; j < len; j++) {
         if (t[o + j] != g[j]) left[t[o + j]]++;
       }
-      var k = 0;
+      var k = 0, greens = 0, yellows = 0;
       for (var i = 0; i < len; i++) {
         int digit;
         if (t[o + i] == g[i]) {
           digit = correct;
+          greens++;
         } else if (left[g[i]] > 0) {
           left[g[i]]--;
           digit = present;
+          yellows++;
         } else {
           digit = absent;
         }
         k = k * 3 + digit;
       }
+      if (blind) k = greens * (len + 1) + yellows;
       for (var j = 0; j < len; j++) {
         left[t[o + j]] = 0;
       }
@@ -423,7 +439,13 @@ class SplitContext {
     }
     double? landedMass;
     if (answer != null) {
-      final a = patternCode(answer, guess);
+      var a = patternCode(answer, guess);
+      if (blind) {
+        final m = evaluate(answer, guess);
+        a =
+            m.where((x) => x == Mark.correct).length * (len + 1) +
+            m.where((x) => x == Mark.present).length;
+      }
       landedMass = _mass[a];
     }
     for (var i = 0; i < seen; i++) {
@@ -467,7 +489,11 @@ SplitStats splitStats(
   Map<String, int>? weights, {
   String? answer,
   SplitContext? context,
-}) => (context ?? SplitContext(eligible, weights)).stats(guess, answer: answer);
+  bool blind = false,
+}) => (context ?? SplitContext(eligible, weights, blind: blind)).stats(
+  guess,
+  answer: answer,
+);
 
 /// Scores a guess made when [eligibleBefore] words were possible, leaving
 /// [after]. Skill is measured against [best] (H*, the largest expected gain any
@@ -505,11 +531,12 @@ GuessMetrics scoreGuess(
   List<String>? afterWords,
   int fresh = 0,
   int greens = 0,
+  bool blind = false,
 }) {
   final n = eligibleBefore.length;
   final possible = eligibleBefore.contains(guess);
   int weightOf(String w) => weights == null ? 1 : max(weights[w] ?? 1, 1);
-  final st = splitStats(eligibleBefore, guess, weights);
+  final st = splitStats(eligibleBefore, guess, weights, blind: blind);
   final winChance = possible && st.total > 0 ? weightOf(guess) / st.total : 0.0;
   // With one word left a guess cannot split anything; it is either that word
   // (100) or a wasted turn (0).
@@ -690,6 +717,7 @@ Future<Landscape> analyseGuesses(
   int k = 3,
   Map<String, int>? weights,
   String? answer,
+  bool blind = false,
 }) async {
   final n = eligible.length;
   if (n == 0) return const Landscape([], []);
@@ -710,7 +738,7 @@ Future<Landscape> analyseGuesses(
   // the opening of a game scores every word against every word and is the same
   // for every game on that list, so the last one is kept
   final key = words.length * eligible.length >= _openingCells
-      ? _openingKey(eligible, words, weights)
+      ? _openingKey(eligible, words, weights, blind)
       : null;
   final scored = <(String, SplitStats)>[];
   if (key != null && key == _openingKeyHeld) {
@@ -719,7 +747,7 @@ Future<Landscape> analyseGuesses(
     await Future<void>.delayed(Duration.zero);
     scored.addAll(_openingHeld!);
   } else {
-    final context = SplitContext(eligible, weights);
+    final context = SplitContext(eligible, weights, blind: blind);
     for (final w in words) {
       scored.add((w, context.stats(w)));
       if (scored.length % 40 == 0) await Future<void>.delayed(Duration.zero);
@@ -790,6 +818,7 @@ String _openingKey(
   List<String> eligible,
   List<String> guesses,
   Map<String, int>? weights,
+  bool blind,
 ) {
   var h = 0x811c9dc5;
   void mix(int v) => h = ((h ^ v) * 0x01000193) & 0x3fffffff;
@@ -799,7 +828,7 @@ String _openingKey(
     }
     mix(weights == null ? 1 : (weights[w] ?? 1));
   }
-  mix(7);
+  mix(blind ? 8 : 7);
   for (final w in guesses) {
     for (var i = 0; i < w.length; i++) {
       mix(w.codeUnitAt(i));

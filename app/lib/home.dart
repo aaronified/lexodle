@@ -110,8 +110,7 @@ class _HomePageState extends State<HomePage> {
       onTap: () async {
         final code = await showDialog<String>(
           context: context,
-          builder: (context) =>
-              _LanguagePopup(langs: langs, current: lang.code),
+          builder: (context) => LanguagePopup(langs: langs, current: lang.code),
         );
         if (code == null || code == lang.code) return;
         final next = langs.firstWhere((l) => l.code == code);
@@ -243,29 +242,31 @@ class _HomePageState extends State<HomePage> {
               child: const Text('play'),
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton(
-              key: const ValueKey('daily-button'),
-              style: OutlinedButton.styleFrom(
-                fixedSize: const Size.fromHeight(_buttonHeight),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+          if (appState.mode.hasDaily) ...[
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton(
+                key: const ValueKey('daily-button'),
+                style: OutlinedButton.styleFrom(
+                  fixedSize: const Size.fromHeight(_buttonHeight),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                onPressed: () async {
+                  // the daily goes by the server's time: ask again if it has not
+                  // been for a while
+                  if (!TrustedClock.isFresh()) {
+                    await TrustedClock.sync(
+                      timeout: const Duration(milliseconds: 1500),
+                    );
+                  }
+                  if (!context.mounted) return;
+                  Navigator.pushNamed(context, Routes.daily);
+                },
+                child: fit(_dailyChild(lang.code)),
               ),
-              onPressed: () async {
-                // the daily goes by the server's time: ask again if it has not
-                // been for a while
-                if (!TrustedClock.isFresh()) {
-                  await TrustedClock.sync(
-                    timeout: const Duration(milliseconds: 1500),
-                  );
-                }
-                if (!context.mounted) return;
-                Navigator.pushNamed(context, Routes.daily);
-              },
-              child: fit(_dailyChild(lang.code)),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -517,8 +518,8 @@ class _HomePageState extends State<HomePage> {
 
 /// Every language in two columns. Tapping one closes it with that language's
 /// code; back, or a tap outside, closes it with nothing.
-class _LanguagePopup extends StatelessWidget {
-  const _LanguagePopup({required this.langs, required this.current});
+class LanguagePopup extends StatelessWidget {
+  const LanguagePopup({super.key, required this.langs, required this.current});
   final List<Language> langs;
   final String current;
 

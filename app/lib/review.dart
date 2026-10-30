@@ -38,7 +38,12 @@ class GameRecord {
     this.analysis,
     this.kind,
     this.daily = false,
+    this.blind = false,
   });
+
+  /// Whether the game was blind: its guesses told only how many letters were
+  /// right, so the words left and the scores go by those counts.
+  final bool blind;
 
   final WordBank bank;
   final int length;
@@ -187,6 +192,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 guessable,
                 weights: r.weights,
                 answer: r.answer,
+                blind: r.blind,
               ));
       if (!mounted) return;
       setState(() {

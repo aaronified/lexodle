@@ -11,7 +11,9 @@ import 'hearts.dart';
 import 'modes.dart';
 import 'puzzle.dart';
 import 'share_puzzle.dart';
+import 'geography.dart';
 import 'guess_input.dart';
+import 'place_info.dart';
 import 'haptics.dart';
 import 'history.dart';
 import 'keyboard.dart';
@@ -71,6 +73,11 @@ class _GamePageState extends State<GamePage>
 
   GameMode get mode => widget.mode;
   bool get lockdown => mode == GameMode.lockdown;
+
+  /// The themed wordle (the words are places) and the blind one (a guess shows
+  /// only how many letters are right).
+  bool get themed => mode == GameMode.themed;
+  bool get blind => mode == GameMode.blind;
 
   /// The hearts of a lockdown game, and how many are left: a daily has its own
   /// number, any other game the one chosen in the game modes.
@@ -137,7 +144,13 @@ class _GamePageState extends State<GamePage>
   void initState() {
     super.initState();
     length = _daily?.length ?? appState.length;
-    tries = _daily?.tries ?? (lockdown ? lockdownTries : appState.tries);
+    tries =
+        _daily?.tries ??
+        (lockdown
+            ? lockdownTries
+            : blind
+            ? appState.blindTries
+            : appState.tries);
     _pool = widget.bank.answers(length);
     _letters = widget.bank.letters(length);
     _reset();
@@ -216,7 +229,12 @@ class _GamePageState extends State<GamePage>
     unlocked = [];
     // score the opening while the first guess is being chosen
     if (analyseWhilePlaying) {
-      warmOpening(eligible, widget.bank.guessable(length), weights: _law);
+      warmOpening(
+        eligible,
+        widget.bank.guessable(length),
+        weights: _law,
+        blind: blind,
+      );
     }
     // look the answer up now, so the end screen has it
     if (prefetchDefinitions) {
@@ -273,7 +291,9 @@ class _GamePageState extends State<GamePage>
         return;
       }
       Haptics.fire(Haptic.reject);
-      setState(() => message = 'not in the word list');
+      setState(
+        () => message = themed ? 'not a place name' : 'not in the word list',
+      );
       return;
     }
     setState(() => _apply(word));
@@ -314,7 +334,7 @@ class _GamePageState extends State<GamePage>
   /// Plays [word], which has been checked. [restoring] replays a saved daily
   /// guess: it is not saved or recorded again.
   void _apply(String word, {bool restoring = false}) {
-    final m = evaluate(answer, word);
+    final m = evaluate(answer, word, blind: blind);
     guesses.add(word);
     marks.add(m);
     for (var i = 0; i < length; i++) {
@@ -323,7 +343,7 @@ class _GamePageState extends State<GamePage>
       // correct beats present beats absent
       if (old == null || m[i].index < old.index) keyMarks[k] = m[i];
     }
-    final after = filterEligible(eligible, word, m);
+    final after = filterEligible(eligible, word, m, blind: blind);
     metrics.add(
       scoreGuess(
         eligible,
@@ -339,6 +359,7 @@ class _GamePageState extends State<GamePage>
         provisional: analyseWhilePlaying,
         fresh: freshLetters(word, guesses.take(guesses.length - 1)),
         greens: knownGreens(marks.take(marks.length - 1)),
+        blind: blind,
       ),
     );
     befores.add(eligible);
@@ -355,6 +376,7 @@ class _GamePageState extends State<GamePage>
           widget.bank.guessable(length),
           weights: _law,
           answer: answer,
+          blind: blind,
         ),
       );
       _analysis.add(job);
@@ -589,10 +611,15 @@ class _GamePageState extends State<GamePage>
     return LayoutBuilder(
       builder: (context, box) {
         const gap = 6.0;
-        final tile = min(
-          56.0,
-          (box.maxWidth - 32 - gap * (length - 1)) / length,
-        );
+        // the counts of a blind game stand to the right of the tiles
+        const countsWidth = 70.0;
+        final tile = blind
+            ? min(
+                50.0,
+                (box.maxWidth - 32 - 24 - countsWidth - gap * (length - 1)) /
+                    length,
+              )
+            : min(56.0, (box.maxWidth - 32 - gap * (length - 1)) / length);
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
           child: Center(
@@ -601,31 +628,34 @@ class _GamePageState extends State<GamePage>
                 for (var r = 0; r < tries; r++)
                   Padding(
                     padding: const EdgeInsets.only(bottom: gap),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (var i = 0; i < length; i++) ...[
-                          if (i > 0) const SizedBox(width: gap),
-                          _tile(
-                            c,
-                            tile,
-                            r < guesses.length
-                                ? guesses[r][i]
-                                : (r == guesses.length ? input.slot(i) : ''),
-                            r < marks.length ? marks[r][i] : null,
-                            active: r == guesses.length && !over,
-                            cursor:
-                                r == guesses.length &&
-                                !over &&
-                                i == input.cursor,
-                            key: ValueKey('tile-$r-$i'),
-                            locked: r == guesses.length && input.isLocked(i),
-                            onTap: r == guesses.length && !over
-                                ? () => _select(i)
-                                : null,
-                          ),
+                    child: _withTrailing(
+                      r,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (var i = 0; i < length; i++) ...[
+                            if (i > 0) const SizedBox(width: gap),
+                            _tile(
+                              c,
+                              tile,
+                              r < guesses.length
+                                  ? guesses[r][i]
+                                  : (r == guesses.length ? input.slot(i) : ''),
+                              r < marks.length && !blind ? marks[r][i] : null,
+                              active: r == guesses.length && !over,
+                              cursor:
+                                  r == guesses.length &&
+                                  !over &&
+                                  i == input.cursor,
+                              key: ValueKey('tile-$r-$i'),
+                              locked: r == guesses.length && input.isLocked(i),
+                              onTap: r == guesses.length && !over
+                                  ? () => _select(i)
+                                  : null,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
               ],
@@ -634,6 +664,80 @@ class _GamePageState extends State<GamePage>
         );
       },
     );
+  }
+
+  /// A blind row's two counts (right and in place, right elsewhere), kept
+  /// beside the tiles; the row is only as wide as the tiles in themed, whose
+  /// info dot hangs off its right edge.
+  Widget _withTrailing(int r, Widget row) {
+    final c = Theme.of(context).colorScheme;
+    if (blind) {
+      final done = r < marks.length;
+      var green = 0, yellow = 0;
+      if (done) {
+        green = marks[r].where((m) => m == Mark.correct).length;
+        yellow = marks[r].where((m) => m == Mark.present).length;
+      }
+      Widget count(int n, Color fill, String kind) => Container(
+        key: ValueKey('count-$r-$kind'),
+        constraints: const BoxConstraints(minWidth: 26),
+        height: 26,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Text(
+          '$n',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1D1D11),
+          ),
+        ),
+      );
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          row,
+          const SizedBox(width: 8),
+          Opacity(
+            opacity: done ? 1 : 0,
+            child: Row(
+              children: [
+                count(green, markColors(c, Mark.correct).$1, 'g'),
+                const SizedBox(width: 6),
+                count(yellow, markColors(c, Mark.present).$1, 'y'),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+    if (themed && r < guesses.length) {
+      final place = Geography.placeOf(guesses[r]);
+      if (place != null) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            row,
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: FractionalTranslation(
+                  translation: const Offset(1, 0),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: PlaceDot(place, key: ValueKey('place-dot-$r')),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+    }
+    return row;
   }
 
   Widget _tile(
@@ -714,7 +818,7 @@ class _GamePageState extends State<GamePage>
     }
     if (over) return const SizedBox();
     // the daily never shows the helper: only the tries left
-    final h = _daily != null ? Helper.off : appState.helper;
+    final h = _daily != null || blind || themed ? Helper.off : appState.helper;
     final triesLeft = '${tries - guesses.length} tries left';
     final left = lockdown
         ? '$hearts ${hearts == 1 ? 'heart' : 'hearts'} · $triesLeft'
@@ -880,7 +984,7 @@ class _GamePageState extends State<GamePage>
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
-    marks: keyMarks,
+    marks: blind ? const {} : keyMarks,
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,

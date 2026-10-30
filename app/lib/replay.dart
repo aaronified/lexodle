@@ -1,6 +1,7 @@
 import 'analysis_worker.dart';
 import 'daily.dart';
 import 'history.dart';
+import 'geography.dart';
 import 'logic.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
@@ -53,6 +54,7 @@ import 'words.dart';
 /// which it does itself when no analysis is given.
 GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
   final answer = g.answers.first;
+  final blind = g.mode == GameMode.blind;
   final drawn = lawOfGame(bank, g);
   var eligible = drawn.eligible;
   // a word list that has since changed may not hold the answer any more: it is
@@ -65,8 +67,8 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
   final befores = <List<String>>[];
   for (var i = 0; i < rows.length; i++) {
     final word = rows[i].word;
-    final m = evaluate(answer, word);
-    final after = filterEligible(eligible, word, m);
+    final m = evaluate(answer, word, blind: blind);
+    final after = filterEligible(eligible, word, m, blind: blind);
     metrics.add(
       scoreGuess(
         eligible,
@@ -80,6 +82,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
         provisional: true,
         fresh: freshLetters(word, guesses),
         greens: knownGreens(marks),
+        blind: blind,
       ),
     );
     befores.add(eligible);
@@ -102,6 +105,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     weights: law,
     kind: drawKindOf(g.draw, daily: g.daily),
     daily: g.daily.isNotEmpty,
+    blind: blind,
   );
 }
 
@@ -154,12 +158,14 @@ Future<List<GuessRow>> rescoreClassic(
     // the opening position is the same for every game under one law
     final key = i == 0
         ? '${bank.language.code}:${g.length}:${lawOfGame(bank, g).key}'
+              '${g.mode == GameMode.blind ? 'b' : ''}${g.mode == GameMode.themed ? 't' : ''}'
         : null;
     var land = key == null ? null : opening?[key];
     land ??= await analyseOffThread(
       rec.befores[i],
       guessable,
       weights: rec.weights,
+      blind: rec.blind,
     );
     if (key != null) opening?[key] = land;
     out.add(guessRowOf(i, rec.metrics[i].withLandscape(land)));
@@ -218,10 +224,12 @@ Future<int> rescoreStale(
   for (final g in stale) {
     if (cancelled?.call() ?? false) break;
     try {
-      final bank = await bankFor(g.lang);
+      final bank = g.mode == GameMode.themed
+          ? await _placesBank(bankFor, g.lang)
+          : await bankFor(g.lang);
       if (bank == null) continue;
       final rows = h.guessesOf(g.id);
-      final fresh = g.isClassic
+      final fresh = !g.mode.multi
           ? await rescoreClassic(bank, g, rows, opening: opening)
           : await rescoreMulti(bank, g, rows);
       h.replaceGuesses(g.id, fresh);
@@ -232,4 +240,14 @@ Future<int> rescoreStale(
     }
   }
   return done;
+}
+
+/// The places of the themed wordle, as the bank of the language [lang] (they
+/// are English only).
+Future<WordBank?> _placesBank(
+  Future<WordBank?> Function(String code) bankFor,
+  String lang,
+) async {
+  final en = await bankFor(lang);
+  return en == null ? null : Geography.load(en.language);
 }

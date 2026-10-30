@@ -9,9 +9,18 @@ enum GameMode {
   classic('classic', 'one word', 1, 0),
   quartet('quartet', 'four words at once', 4, 3),
   relay('relay race', 'four words, one after the other', 4, 4),
-  lockdown('lockdown', 'greens lock · bad words cost hearts', 1, 0);
+  lockdown('lockdown', 'greens lock · bad words cost hearts', 1, 0),
+  themed('themed', 'words of a theme only · english', 1, 0),
+  blind('blind', 'only counts, no tile colours', 1, 0);
 
   const GameMode(this.label, this.sub, this.boards, this.extraTries);
+
+  /// The modes of the home screen's swipe. The others are in the swiper of
+  /// the game modes screen only.
+  static const loop = [classic, quartet, relay, lockdown];
+
+  /// Whether the mode has a daily.
+  bool get hasDaily => index < loop.length;
   final String label;
   final String sub;
 
@@ -69,6 +78,15 @@ const lockdownHearts = <(String name, int hearts)>[
   ('hard', 5),
   ('brutal', 3),
   ('sudden death', 1),
+];
+
+/// The tries a blind game can have, easiest first: with only counts to go on,
+/// it takes more guesses than a classic game.
+const blindTriesLevels = <(String name, int tries)>[
+  ('easy', 14),
+  ('normal', 10),
+  ('hard', 8),
+  ('brutal', 6),
 ];
 
 /// The hearts of a daily lockdown.

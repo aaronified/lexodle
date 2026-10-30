@@ -20,14 +20,16 @@ Future<Landscape> analyseOffThread(
   int k = 3,
   Map<String, int>? weights,
   String? answer,
+  bool blind = false,
 }) => analyseOffMainThread
-    ? platform.analyse(eligible, candidates.toList(), k, weights, answer)
+    ? platform.analyse(eligible, candidates.toList(), k, weights, answer, blind)
     : analyseGuesses(
         eligible,
         candidates,
         k: k,
         weights: weights,
         answer: answer,
+        blind: blind,
       );
 
 /// Starts scoring the opening of a game, the first guess against every word,
@@ -37,11 +39,13 @@ void warmOpening(
   List<String> eligible,
   Iterable<String> candidates, {
   Map<String, int>? weights,
+  bool blind = false,
 }) {
   if (!analyseOffMainThread) return;
   analyseOffThread(
     eligible,
     candidates,
     weights: weights,
+    blind: blind,
   ).then<void>((_) {}, onError: (_) {});
 }

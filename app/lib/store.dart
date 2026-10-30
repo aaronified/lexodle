@@ -1301,6 +1301,9 @@ class AppState extends ChangeNotifier {
   /// The hearts of an ordinary lockdown game: one of [lockdownHearts].
   int hearts = 5;
 
+  /// The tries of a blind game: one of [blindTriesLevels].
+  int blindTries = 10;
+
   /// Whether presses give a short vibration (on a phone). On until turned off.
   bool haptics = true;
 
@@ -1840,6 +1843,9 @@ class AppState extends ChangeNotifier {
         sound = p.getBool('sound') ?? true;
         final hs = p.getInt('hearts');
         if (hs != null && lockdownHearts.any((h) => h.$2 == hs)) hearts = hs;
+        final bt = p.getInt('blindTries');
+        if (bt != null && blindTriesLevels.any((b) => b.$2 == bt))
+          blindTries = bt;
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
         lastRunVersion = p.getString('lastRunVersion');
         autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
@@ -2146,6 +2152,7 @@ class AppState extends ChangeNotifier {
     'tries': tries,
     'draw': draw.index,
     'hearts': hearts,
+    'blindTries': blindTries,
     'helper': helper.index,
     'mode': mode.index,
     'share': share,
@@ -2206,6 +2213,8 @@ class AppState extends ChangeNotifier {
     tries = settings['tries'] as int? ?? tries;
     final hs = settings['hearts'] as int?;
     if (hs != null && lockdownHearts.any((h) => h.$2 == hs)) hearts = hs;
+    final bt = settings['blindTries'] as int?;
+    if (bt != null && blindTriesLevels.any((b) => b.$2 == bt)) blindTries = bt;
     final d = settings['draw'] as int?;
     if (d != null && d >= 0 && d < Draw.values.length) {
       draw = Draw.values[d];
@@ -2229,6 +2238,7 @@ class AppState extends ChangeNotifier {
         _w('tries', p.setInt('tries', tries));
         _w('draw', p.setInt('draw', draw.index));
         _w('hearts', p.setInt('hearts', hearts));
+        _w('blindTries', p.setInt('blindTries', blindTries));
         _w('helper', p.setInt('helper', helper.index));
         _w('mode', p.setInt('mode', mode.index));
         _w('share', p.setInt('share', share));
@@ -2258,6 +2268,7 @@ class AppState extends ChangeNotifier {
     int? tries,
     Draw? draw,
     int? hearts,
+    int? blindTries,
     Helper? helper,
     GameMode? mode,
     int? share,
@@ -2271,8 +2282,15 @@ class AppState extends ChangeNotifier {
     if (hearts != null && lockdownHearts.any((h) => h.$2 == hearts)) {
       this.hearts = hearts;
     }
+    if (blindTries != null && blindTriesLevels.any((b) => b.$2 == blindTries)) {
+      this.blindTries = blindTries;
+    }
     this.helper = helper ?? this.helper;
     this.mode = mode ?? this.mode;
+    // themed wordles are English only
+    if (this.lang != 'en' && this.mode == GameMode.themed) {
+      this.mode = GameMode.classic;
+    }
     this.themeMode = themeMode ?? this.themeMode;
     // choosing a mode on its own leaves black; black is only ever with dark
     blackTheme =
@@ -2285,6 +2303,7 @@ class AppState extends ChangeNotifier {
       _w('tries', _prefs?.setInt('tries', this.tries));
       _w('draw', _prefs?.setInt('draw', this.draw.index));
       _w('hearts', _prefs?.setInt('hearts', this.hearts));
+      _w('blindTries', _prefs?.setInt('blindTries', this.blindTries));
       _w('helper', _prefs?.setInt('helper', this.helper.index));
       _w('mode', _prefs?.setInt('mode', this.mode.index));
       _w('share', _prefs?.setInt('share', this.share));

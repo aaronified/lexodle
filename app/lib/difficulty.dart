@@ -33,6 +33,7 @@ class DifficultyMatrix extends StatelessWidget {
     this.levels = triesLevels,
     this.unit = ('try', 'tries'),
     this.extra = '',
+    this.noun = 'words',
   });
 
   /// The chosen level: the tries, or in lockdown the hearts.
@@ -44,6 +45,9 @@ class DifficultyMatrix extends StatelessWidget {
 
   /// Added to the summary, after the level: what else is fixed ("6 tries").
   final String extra;
+
+  /// What the length has: words, or place names.
+  final String noun;
   final int length;
 
   /// The word lengths the language has.
@@ -138,7 +142,7 @@ class DifficultyMatrix extends StatelessWidget {
             Expanded(
               child: Text(
                 '${levels[selCol].$1} · $length letters: ${counted(tries)}, '
-                '$extra${available == null ? 'every word of this length' : '${_thousands(available!)} words of this length'}',
+                '$extra${available == null ? 'every $noun of this length' : '${_thousands(available!)} $noun of this length'}',
                 key: const ValueKey('difficulty-summary'),
                 style: TextStyle(
                   fontSize: 12,
