@@ -34,6 +34,7 @@ class ModeSwitch extends StatefulWidget {
   const ModeSwitch({
     super.key,
     required this.mode,
+    this.lang = 'en',
     required this.onChanged,
     required this.onOpen,
     required this.below,
@@ -41,16 +42,19 @@ class ModeSwitch extends StatefulWidget {
   });
 
   final GameMode mode;
+
+  /// The language, which decides the modes the swipe has (themed is English only).
+  final String lang;
   final ValueChanged<GameMode> onChanged;
   final VoidCallback onOpen;
   final Widget below;
   final double height;
 
   /// The mode [steps] along the loop from [from] (negative goes back).
-  static GameMode step(GameMode from, int steps) {
-    const all = GameMode.loop;
+  static GameMode step(GameMode from, int steps, {String lang = 'en'}) {
+    final all = GameMode.loopFor(lang);
     final i = all.indexOf(from);
-    // a mode of the popup only (themed, blind) goes back into the loop
+    // a mode the language does not have goes back into the loop
     if (i < 0) return steps > 0 ? all.first : all.last;
     return all[(i + steps) % all.length];
   }
@@ -102,7 +106,7 @@ class _ModeSwitchState extends State<ModeSwitch>
         _dx = 0;
         _busy = false;
       });
-      widget.onChanged(ModeSwitch.step(widget.mode, by));
+      widget.onChanged(ModeSwitch.step(widget.mode, by, lang: widget.lang));
     });
   }
 
@@ -196,7 +200,10 @@ class _ModeSwitchState extends State<ModeSwitch>
             child: Opacity(
               key: const ValueKey('mode-incoming'),
               opacity: p,
-              child: _face(c, ModeSwitch.step(widget.mode, dir)),
+              child: _face(
+                c,
+                ModeSwitch.step(widget.mode, dir, lang: widget.lang),
+              ),
             ),
           ),
       ],
@@ -286,7 +293,7 @@ class _ModeSwitchState extends State<ModeSwitch>
             key: const ValueKey('mode-dots'),
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              for (final m in GameMode.loop)
+              for (final m in GameMode.loopFor(widget.lang))
                 Container(
                   key: ValueKey('mode-dot-${m.name}'),
                   width: 6,

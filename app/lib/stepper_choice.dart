@@ -80,7 +80,12 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
     super.dispose();
   }
 
-  bool _can(int dir) => _index + dir >= 0 && _index + dir < widget.items.length;
+  /// The swiper is a loop: from the last value the next is the first, and the
+  /// other way round. With one value there is nothing to move to.
+  bool _can(int dir) => widget.items.length > 1;
+
+  int _wrap(int i) =>
+      (i % widget.items.length + widget.items.length) % widget.items.length;
 
   /// Slides to the neighbour in direction [dir] (+1 next, -1 previous).
   void _step(int dir) {
@@ -92,7 +97,7 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
     _anim.forward(from: 0).then((_) {
       if (!mounted) return;
       setState(() {
-        _index += dir;
+        _index = _wrap(_index + dir);
         _dx = 0;
         _busy = false;
       });
@@ -118,7 +123,7 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
   void _drag(double delta) {
     if (_busy) return;
     final dir = (_dx + delta) < 0 ? 1 : -1;
-    // no neighbour that way: pull against a rubber band
+    // a loop has a neighbour both ways; one value alone pulls against a rubber band
     final d = _can(dir) ? delta : delta * .3;
     setState(() => _dx = (_dx + d).clamp(-_width, _width));
   }
@@ -216,8 +221,8 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
       container: true,
       label: widget.semanticLabel,
       value: widget.items[_index].$2,
-      increasedValue: _can(1) ? widget.items[_index + 1].$2 : null,
-      decreasedValue: _can(-1) ? widget.items[_index - 1].$2 : null,
+      increasedValue: _can(1) ? widget.items[_wrap(_index + 1)].$2 : null,
+      decreasedValue: _can(-1) ? widget.items[_wrap(_index - 1)].$2 : null,
       onIncrease: _can(1) ? () => _step(1) : null,
       onDecrease: _can(-1) ? () => _step(-1) : null,
       child: Focus(
@@ -276,7 +281,7 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
                                         child: Opacity(
                                           key: const ValueKey('step-incoming'),
                                           opacity: p,
-                                          child: _item(c, _index + dir),
+                                          child: _item(c, _wrap(_index + dir)),
                                         ),
                                       ),
                                   ],

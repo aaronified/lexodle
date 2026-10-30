@@ -151,17 +151,6 @@ class _GameModesDialogState extends State<GameModesDialog> {
                             color: c.onSurface.withValues(alpha: dimAlpha),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          appState.lang == 'en'
-                              ? 'swipe for more modes: themed and blind are here, not on the home screen.'
-                              : 'swipe for more modes: blind is here, not on the home screen.',
-                          key: const ValueKey('more-modes-note'),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: c.onSurface.withValues(alpha: dimAlpha),
-                          ),
-                        ),
                         if (mode == GameMode.themed) ..._themedChoices(c),
                         // only the modes with several words have words that can
                         // share letters

@@ -125,12 +125,33 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.lockdown);
+      // themed and blind are in the loop too, and no daily comes with them
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.themed);
+      expect(find.byKey(const ValueKey('daily-button')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.blind);
+      expect(find.byKey(const ValueKey('daily-button')), findsNothing);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.classic);
+      expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('mode-prev')));
       await tester.pumpAndSettle();
-      expect(appState.mode, GameMode.lockdown);
+      expect(appState.mode, GameMode.blind);
+    });
+
+    testWidgets('themed is not in the loop in another language', (
+      tester,
+    ) async {
+      appState.setup(lang: 'fr', mode: GameMode.lockdown);
+      await home(tester);
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.blind);
+      expect(find.byKey(const ValueKey('mode-dot-themed')), findsNothing);
     });
 
     testWidgets('a swipe over the area changes the mode, not the page', (

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'guess_input.dart';
 import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
@@ -34,60 +35,49 @@ class HowToPage extends StatelessWidget {
       color: c.onSurface.withValues(alpha: .65),
     );
 
-    /// A row of tiles: a letter, ' ' for a blank; [mark] colours the tile at
-    /// [markAt], and [cursorAt] outlines the slot the next letter goes into.
-    Widget tiles(
-      String word, {
-      int? markAt,
-      Mark? mark,
-      int? cursorAt,
-      required String note,
-      List<InlineSpan>? lead,
-    }) => Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    /// One guess, submitted: every tile has its colour, as the colours only
+    /// appear once a guess is in. A line under it for each colour.
+    Widget colours() {
+      const guess = 'weary';
+      final marks = evaluate('wheel', guess);
+      Widget line(int at, String note) => Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Text.rich(
+          TextSpan(
             children: [
-              for (var i = 0; i < word.length; i++)
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: MarkTile(
-                    word[i],
-                    size: 44,
-                    mark: i == markAt ? mark : null,
-                    cursor: i == cursorAt,
-                  ),
-                ),
+              TextSpan(
+                text: guess[at],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ' $note'),
             ],
           ),
-          const SizedBox(height: 8),
-          Text.rich(
-            TextSpan(
+          style: const TextStyle(height: 1.4),
+        ),
+      );
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              key: const ValueKey('colours-row'),
               children: [
-                ...?lead,
-                TextSpan(text: note),
+                for (var i = 0; i < guess.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: MarkTile(guess[i], size: 44, mark: marks[i]),
+                  ),
               ],
             ),
-            style: const TextStyle(height: 1.4),
-          ),
-        ],
-      ),
-    );
-
-    Widget colour(String word, int at, Mark mark, String note) => tiles(
-      word,
-      markAt: at,
-      mark: mark,
-      note: ' $note',
-      lead: [
-        TextSpan(
-          text: word[at],
-          style: const TextStyle(fontWeight: FontWeight.bold),
+            const SizedBox(height: 10),
+            line(0, 'is in the word and in the correct spot.'),
+            line(1, 'is in the word but in the wrong spot.'),
+            line(2, 'is not in the word in any spot.'),
+          ],
         ),
-      ],
-    );
+      );
+    }
 
     Widget heading(String text) => Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 12),
@@ -142,46 +132,15 @@ class HowToPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 18),
                       heading('the colours'),
-                      colour(
-                        'weary',
-                        0,
-                        Mark.correct,
-                        'is in the word and in the correct spot.',
-                      ),
-                      colour(
-                        'pills',
-                        1,
-                        Mark.present,
-                        'is in the word but in the wrong spot.',
-                      ),
-                      colour(
-                        'vague',
-                        3,
-                        Mark.absent,
-                        'is not in the word in any spot.',
-                      ),
+                      colours(),
                       Text(
                         'the examples are in english; every language plays the '
                         'same.',
                         style: dim,
                       ),
                       const SizedBox(height: 22),
-                      heading('blanks and the cursor'),
-                      tiles(
-                        'a ode',
-                        cursorAt: 1,
-                        note:
-                            'not sure of a letter? press space (or _) to leave '
-                            'a blank. the outlined tile is the cursor: the next '
-                            'letter goes there.',
-                      ),
-                      tiles(
-                        'abode',
-                        cursorAt: 2,
-                        note:
-                            'tap any tile to move the cursor. a blank cannot be '
-                            'submitted.',
-                      ),
+                      heading('blanks, the cursor and locks'),
+                      const HowToTry(),
                       const SizedBox(height: 4),
                       const Divider(),
                       const SizedBox(height: 14),
@@ -232,6 +191,111 @@ class HowToPage extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// One live example for the blanks, the cursor and the locks: a row of tiles
+/// that works as the game's does, so a player can try it right there, with
+/// touch alone (a phone has no keyboard): tap a tile to move the cursor, double
+/// tap it to lock its letter, or to unlock it.
+class HowToTry extends StatefulWidget {
+  const HowToTry({super.key});
+
+  @override
+  State<HowToTry> createState() => _HowToTryState();
+}
+
+class _HowToTryState extends State<HowToTry> {
+  static final _letters = {
+    for (final c in 'abcdefghijklmnopqrstuvwxyz'.split('')) c,
+  };
+  late GuessInput _input = _start();
+
+  /// `a ode` with the cursor on the blank, and nothing locked.
+  GuessInput _start() {
+    final g = GuessInput(5);
+    for (final ch in 'a ode'.split('')) {
+      g.type(ch == ' ' ? GuessInput.blank : ch, _letters);
+    }
+    g.select(1);
+    return g;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final locked = [
+      for (var i = 0; i < 5; i++)
+        if (_input.isLocked(i)) i,
+    ];
+    final at = _input.cursor;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            key: const ValueKey('try-row'),
+            children: [
+              for (var i = 0; i < 5; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: MarkTile(
+                    _input.slot(i),
+                    key: ValueKey('try-$i'),
+                    size: 44,
+                    cursor: i == at,
+                    locked: _input.isLocked(i),
+                    onTap: () => setState(() => _input.tap(i)),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'not sure of a letter? press space (or _) to leave a blank. a '
+            'blank cannot be submitted.',
+            style: TextStyle(height: 1.4),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'the outlined tile is the cursor: the next letter goes there. '
+            'tap any tile to move it.',
+            style: TextStyle(height: 1.4),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'double tap a tile to lock its letter, again to unlock. a locked '
+            'letter stays for the next guess. try it here.',
+            key: ValueKey('try-lock-note'),
+            style: TextStyle(height: 1.4),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  at >= 5
+                      ? 'cursor: after the last tile'
+                      : 'cursor on tile ${at + 1}'
+                            '${locked.isEmpty ? '' : ' · locked: ${locked.map((i) => i + 1).join(', ')}'}',
+                  key: const ValueKey('try-status'),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: c.onSurface.withValues(alpha: .65),
+                  ),
+                ),
+              ),
+              TextButton(
+                key: const ValueKey('try-reset'),
+                onPressed: () => setState(() => _input = _start()),
+                child: const Text('start again'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

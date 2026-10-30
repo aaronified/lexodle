@@ -225,6 +225,7 @@ class _HomePageState extends State<HomePage> {
     Widget fit(Widget w) => FittedBox(fit: BoxFit.scaleDown, child: w);
     return ModeSwitch(
       mode: appState.mode,
+      lang: appState.lang,
       height: _buttonHeight,
       onChanged: (m) => appState.setup(mode: m),
       onOpen: () => Navigator.pushNamed(context, Routes.gameModes),
