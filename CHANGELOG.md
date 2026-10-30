@@ -11,5 +11,9 @@ it to the version.
   Skill in lockdown is measured against the best word that keeps the locked
   greens in place, not the best word in the whole list, in play, in the review
   and when history is re-scored.
+- places: only the best known 1,000 are likely answers
+  The geography draw curve is about even for the 600 most read places and
+  falls to almost nothing past the 1,000th (it was 1,200 and 2,000). Every
+  place is still a valid guess.
 - what's new is shown after an update
   The first start of a new version lists its changes once.

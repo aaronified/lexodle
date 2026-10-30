@@ -145,12 +145,12 @@ void main() {
       expect(spain.link.toString(), contains('wikipedia.org'));
     });
 
-    test('the draw curve is about even to 1,200 and nothing past 2,000', () {
+    test('the draw curve is about even to 600 and nothing past 1,000', () {
       final w = places.curveWeights(5);
       expect(w.first, greaterThan(990));
-      expect(w[1199], greaterThan(900));
-      expect(w[1499], inInclusiveRange(450, 550));
-      expect(w[2300], lessThan(30));
+      expect(w[599], greaterThan(900));
+      expect(w[749], inInclusiveRange(450, 550));
+      expect(w[1000], lessThan(30));
     });
   });
 
