@@ -10,6 +10,7 @@ import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
+import 'package:lexodle/ui.dart' show markColors;
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -232,6 +233,64 @@ void main() {
         '0',
       );
     });
+
+    testWidgets(
+      'blind: the counts are as big as the tiles, and a tap pencils a colour',
+      (tester) async {
+        final bank = (await tester.runAsync(
+          () async => WordBank.load(
+            (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+          ),
+        ))!;
+        await open(tester, GameMode.blind, bank, 'prism', 10);
+        await guess(tester, 'crane');
+        // the two counts are squares of the tile's size
+        final tile = tester.getSize(find.byKey(const ValueKey('tile-0-0')));
+        expect(tester.getSize(find.byKey(const ValueKey('count-0-g'))), tile);
+        expect(tester.getSize(find.byKey(const ValueKey('count-0-y'))), tile);
+        // a tap on a letter of a submitted guess cycles its colour: green,
+        // yellow, grey, none
+        final scheme = Theme.of(tester.element(find.byType(GamePage)))
+            .colorScheme;
+        Color? fill() {
+          final box =
+              tester
+                      .widget<Container>(
+                        find
+                            .descendant(
+                              of: find.byKey(const ValueKey('tile-0-2')),
+                              matching: find.byType(Container),
+                            )
+                            .first,
+                      )
+                      .decoration
+                  as BoxDecoration;
+          return box.color;
+        }
+
+        expect(fill(), isNull);
+        for (final mark in [Mark.correct, Mark.present, Mark.absent]) {
+          await tester.tap(find.byKey(const ValueKey('tile-0-2')));
+          await tester.pump();
+          expect(fill(), markColors(scheme, mark).$1, reason: '$mark');
+        }
+        await tester.tap(find.byKey(const ValueKey('tile-0-2')));
+        await tester.pump();
+        expect(fill(), isNull);
+        // the notes are only notes: the counts do not change
+        expect(
+          tester
+              .widget<Text>(
+                find.descendant(
+                  of: find.byKey(const ValueKey('count-0-g')),
+                  matching: find.byType(Text),
+                ),
+              )
+              .data,
+          '1',
+        );
+      },
+    );
 
     testWidgets('shift locks and unlocks the letter under the cursor', (
       tester,
