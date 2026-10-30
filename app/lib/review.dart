@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'analysis_worker.dart';
+import 'behaviour_popup.dart';
 import 'history.dart';
 import 'logic.dart';
 import 'playstyle.dart';
@@ -392,7 +394,7 @@ class _ReviewPageState extends State<ReviewPage> {
   /// The board with the table beside it. Guesses after the current step stay
   /// blank, so stepping through gives nothing away.
   Widget _board(ColorScheme c) {
-    const wordsW = 36.0, skillW = 32.0, riskW = 62.0;
+    const wordsW = 36.0, skillW = 32.0, riskW = 46.0, typeW = 30.0;
     const gap = 2.0;
     const padX = 8.0, padY = 7.0;
     final head = TextStyle(
@@ -426,7 +428,8 @@ class _ReviewPageState extends State<ReviewPage> {
 
     return LayoutBuilder(
       builder: (context, box) {
-        final area = box.maxWidth - wordsW - skillW - riskW - 8 - padX * 2;
+        final area =
+            box.maxWidth - wordsW - skillW - riskW - typeW - 8 - padX * 2;
         final tile = min(30.0, (area - gap * (r.length - 1)) / r.length);
         return Column(
           children: [
@@ -459,6 +462,15 @@ class _ReviewPageState extends State<ReviewPage> {
                       key: const ValueKey('head-risk'),
                       textAlign: TextAlign.right,
                       style: head.copyWith(color: riskColor(c)),
+                    ),
+                  ),
+                  SizedBox(
+                    width: typeW,
+                    child: Text(
+                      'type',
+                      key: const ValueKey('head-type'),
+                      textAlign: TextAlign.right,
+                      style: head,
                     ),
                   ),
                 ],
@@ -498,11 +510,12 @@ class _ReviewPageState extends State<ReviewPage> {
                         ),
                       const Spacer(),
                       if (i <= step)
-                        ..._rowCells(c, i, wordsW, skillW, riskW, cell)
+                        ..._rowCells(c, i, wordsW, skillW, riskW, typeW, cell)
                       else ...[
                         SizedBox(width: wordsW, child: cell('–', dimmed: true)),
                         SizedBox(width: skillW, child: cell('–', dimmed: true)),
                         SizedBox(width: riskW, child: cell('–', dimmed: true)),
+                        SizedBox(width: typeW, child: cell('–', dimmed: true)),
                       ],
                     ],
                   ),
@@ -526,6 +539,7 @@ class _ReviewPageState extends State<ReviewPage> {
     double wordsW,
     double skillW,
     double riskW,
+    double typeW,
     Widget Function(String, {bool strong, bool dimmed, Color? color, Key? key})
     cell,
   ) {
@@ -571,39 +585,40 @@ class _ReviewPageState extends State<ReviewPage> {
                 color: riskColor(c),
                 key: ValueKey('risk-$i'),
               ),
-              SizedBox(
-                width: 16,
-                child: b == null
-                    ? null
-                    : GestureDetector(
-                        key: ValueKey('type-$i'),
-                        onTap: () => showHairlineDialog<void>(
-                          context,
-                          title: b.label,
-                          children: [
-                            Text(
-                              b.what,
-                              style: const TextStyle(fontSize: 13, height: 1.5),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'counted when: ${b.rule}',
-                              style: const TextStyle(fontSize: 12, height: 1.5),
-                            ),
-                          ],
-                        ),
-                        child: TablerIcon(
-                          b.icon,
-                          size: 14,
-                          color: c.onSurface.withValues(
-                            alpha: dimmed ? .4 : .7,
-                          ),
-                        ),
-                      ),
-              ),
             ],
           ),
         ),
+      ),
+      // the type of the guess, its own column: tap it for what it is
+      SizedBox(
+        width: typeW,
+        child: !m.ready
+            ? cell('…', dimmed: true)
+            : GestureDetector(
+                key: ValueKey('type-$i'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () => showBehaviourPopup(context, guessRowOf(i + 1, m)),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    height: 24,
+                    width: typeW,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: b == null
+                          ? cell('·', strong: false, dimmed: true)
+                          : TablerIcon(
+                              b.icon,
+                              size: chooserIconSize - 8,
+                              color: behaviourColor(
+                                c,
+                                b.label,
+                              ).withValues(alpha: dimmed ? .5 : 1),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
       ),
     ];
   }
@@ -877,22 +892,11 @@ class _ReviewPageState extends State<ReviewPage> {
       children: [
         Caption('the ${words.length} possible words, by how common'),
         const SizedBox(height: 8),
-        SizedBox(
-          height: 72,
-          width: double.infinity,
-          child: CustomPaint(
-            key: const ValueKey('freq-plot'),
-            painter: _FrequencyPainter(
-              series,
-              bars: words.length <= 60,
-              guessAt: guessAt,
-              answerAt: answerAt,
-              base: c.onSurface.withValues(alpha: .3),
-              guess: c.primary,
-              answer: c.secondary,
-              axis: c.outlineVariant,
-            ),
-          ),
+        _FrequencyPlot(
+          words: words,
+          series: series,
+          guessAt: guessAt,
+          answerAt: answerAt,
         ),
         const SizedBox(height: 4),
         Row(
@@ -1075,11 +1079,16 @@ class _FrequencyPainter extends CustomPainter {
     required this.guess,
     required this.answer,
     required this.axis,
+    required this.hoverColor,
+    this.hover = -1,
   });
   final List<double> series;
   final bool bars;
   final int guessAt, answerAt;
-  final Color base, guess, answer, axis;
+  final Color base, guess, answer, axis, hoverColor;
+
+  /// The word the pointer is on, or -1.
+  final int hover;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1106,7 +1115,7 @@ class _FrequencyPainter extends CustomPainter {
         final x = slot * i + (slot - w) / 2;
         canvas.drawRect(
           Rect.fromLTWH(x, size.height - h(series[i]), w, h(series[i])),
-          Paint()..color = colorOf(i),
+          Paint()..color = i == hover ? hoverColor : colorOf(i),
         );
       }
       return;
@@ -1122,20 +1131,20 @@ class _FrequencyPainter extends CustomPainter {
       ..lineTo(size.width, size.height)
       ..close();
     canvas.drawPath(path, Paint()..color = base);
-    for (final i in [guessAt, answerAt]) {
+    for (final i in [guessAt, answerAt, hover]) {
       if (i < 0) continue;
       final x = n == 1 ? 0.0 : i / (n - 1) * size.width;
       canvas.drawLine(
         Offset(x, size.height - h(series[i])),
         Offset(x, size.height),
         Paint()
-          ..color = colorOf(i)
+          ..color = i == hover ? hoverColor : colorOf(i)
           ..strokeWidth = 2,
       );
       canvas.drawCircle(
         Offset(x, size.height - h(series[i])),
         3,
-        Paint()..color = colorOf(i),
+        Paint()..color = i == hover ? hoverColor : colorOf(i),
       );
     }
   }
@@ -1145,5 +1154,168 @@ class _FrequencyPainter extends CustomPainter {
       old.series != series ||
       old.guessAt != guessAt ||
       old.answerAt != answerAt ||
+      old.hover != hover ||
+      old.hoverColor != hoverColor ||
       old.bars != bars;
+}
+
+/// The plot of the words still possible, by how common, that tells the word
+/// under the pointer: hover with a mouse, or touch and drag along it. The word
+/// is lit in the plot and named in a tooltip above it.
+class _FrequencyPlot extends StatefulWidget {
+  const _FrequencyPlot({
+    required this.words,
+    required this.series,
+    required this.guessAt,
+    required this.answerAt,
+  });
+
+  /// The words, most common first, and the height of each in the plot.
+  final List<String> words;
+  final List<double> series;
+  final int guessAt, answerAt;
+
+  @override
+  State<_FrequencyPlot> createState() => _FrequencyPlotState();
+}
+
+class _FrequencyPlotState extends State<_FrequencyPlot> {
+  int _hover = -1;
+  Timer? _fade;
+
+  @override
+  void didUpdateWidget(_FrequencyPlot old) {
+    super.didUpdateWidget(old);
+    if (old.words != widget.words) _hover = -1;
+  }
+
+  @override
+  void dispose() {
+    _fade?.cancel();
+    super.dispose();
+  }
+
+  bool get _bars => widget.words.length <= 60;
+
+  /// The word at [dx] in a plot [width] wide, as the painter lays them out.
+  int _at(double dx, double width) {
+    final n = widget.words.length;
+    if (n == 0 || width <= 0) return -1;
+    if (_bars) return (dx / (width / n)).floor().clamp(0, n - 1);
+    return n == 1 ? 0 : (dx / width * (n - 1)).round().clamp(0, n - 1);
+  }
+
+  void _point(Offset local, double width) {
+    _fade?.cancel();
+    final i = _at(local.dx, width);
+    if (i != _hover) setState(() => _hover = i);
+  }
+
+  /// A mouse leaves at once; a finger lifted leaves the word named a moment.
+  void _leave({bool soon = false}) {
+    _fade?.cancel();
+    if (soon) {
+      _fade = Timer(const Duration(milliseconds: 1400), () {
+        if (mounted) setState(() => _hover = -1);
+      });
+    } else if (_hover != -1) {
+      setState(() => _hover = -1);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final n = widget.words.length;
+    return SizedBox(
+      height: 72,
+      width: double.infinity,
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final width = box.maxWidth;
+          // where the lit word stands, to put the tooltip over it
+          double xOf(int i) => _bars
+              ? (i + .5) * width / n
+              : (n == 1 ? 0.0 : i / (n - 1) * width);
+          final i = _hover;
+          return MouseRegion(
+            onHover: (e) => _point(e.localPosition, width),
+            onExit: (_) => _leave(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (d) => _point(d.localPosition, width),
+              onTapUp: (_) => _leave(soon: true),
+              onTapCancel: () => _leave(soon: true),
+              onHorizontalDragStart: (d) => _point(d.localPosition, width),
+              onHorizontalDragUpdate: (d) => _point(d.localPosition, width),
+              onHorizontalDragEnd: (_) => _leave(soon: true),
+              onHorizontalDragCancel: () => _leave(soon: true),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      key: const ValueKey('freq-plot'),
+                      painter: _FrequencyPainter(
+                        widget.series,
+                        bars: _bars,
+                        guessAt: widget.guessAt,
+                        answerAt: widget.answerAt,
+                        hover: i,
+                        base: c.onSurface.withValues(alpha: .3),
+                        guess: c.primary,
+                        answer: c.secondary,
+                        axis: c.outlineVariant,
+                        hoverColor: c.onSurface,
+                      ),
+                    ),
+                  ),
+                  if (i >= 0 && i < n)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: -30,
+                      child: IgnorePointer(
+                        // over the word, held inside the plot at either end
+                        child: Align(
+                          alignment: Alignment(
+                            (xOf(i) / width * 2 - 1).clamp(-1.0, 1.0),
+                            0,
+                          ),
+                          child: Container(
+                            key: const ValueKey('freq-tooltip'),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: c.surface,
+                              border: Border.all(color: c.outline),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              i == widget.answerAt
+                                  ? '${widget.words[i]} · the answer'
+                                  : i == widget.guessAt
+                                  ? '${widget.words[i]} · your guess'
+                                  : widget.words[i],
+                              maxLines: 1,
+                              softWrap: false,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

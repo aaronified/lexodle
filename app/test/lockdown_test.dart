@@ -1,12 +1,17 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
+import 'dart:io';
+
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/guess_input.dart';
 import 'package:lexodle/logic.dart';
+import 'package:lexodle/mode_wheel.dart' show modeIconName;
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
@@ -229,6 +234,32 @@ void main() {
     final saved = appState.dailyFor('fr', '2026-11-03', GameMode.lockdown);
     expect(saved?.hearts, dailyHearts - 1);
     await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('the home mode button and the achievements show the lock', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    appState.setup(lang: 'fr', mode: GameMode.lockdown);
+    await tester.pumpWidget(const LexodleApp());
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('mode-name-lockdown')), findsOneWidget);
+    await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
+    await tester.pump();
+    // the icon of the mode on the mode button is the lock, drawn
+    final icon = find.descendant(
+      of: find.byKey(const ValueKey('mode-button')),
+      matching: find.byType(SvgPicture),
+    );
+    expect(icon, findsOneWidget);
+    expect(tester.getSize(icon).width, greaterThan(16));
+    expect(modeIconName(GameMode.lockdown), 'lock');
+    expect(
+      File('assets/icons/lock.svg').existsSync(),
+      isTrue,
+      reason: 'the icon is an asset of the app',
+    );
   });
 
   test('a fixed lock cannot be toggled off, and clear lets go of it', () {

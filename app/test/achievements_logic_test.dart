@@ -31,6 +31,26 @@ GameResult multi(
   dailyStreak: dailyStreak,
 );
 
+GameResult lockdown({
+  bool won = true,
+  int hearts = 5,
+  int heartsLeft = 5,
+  bool daily = false,
+  int dailyStreak = 0,
+}) => GameResult(
+  lang: 'en',
+  length: 5,
+  tries: 6,
+  used: 3,
+  won: won,
+  mode: GameMode.lockdown,
+  hearts: hearts,
+  heartsLeft: heartsLeft,
+  skills: const [80, 80, 80],
+  daily: daily,
+  dailyStreak: dailyStreak,
+);
+
 GameResult game({
   bool won = true,
   int used = 3,
@@ -133,7 +153,13 @@ void main() {
     test('only the streaks show a separate icon for each level', () {
       expect(
         achievements.where((a) => a.separate).map((a) => a.metric).toList(),
-        ['streak', 'streakClassic', 'streakQuartet', 'streakRelay'],
+        [
+          'streak',
+          'streakClassic',
+          'streakQuartet',
+          'streakRelay',
+          'streakLockdown',
+        ],
       );
       final s = byId('daily_streak');
       expect(s.atLevel(0).icon, isNot(s.atLevel(3).icon));
@@ -161,6 +187,8 @@ void main() {
     test('the ones about the quartet or the relay carry the mode', () {
       expect(byId('quartet_streak').tag, GameMode.quartet);
       expect(byId('relay_wins').tag, GameMode.relay);
+      expect(byId('lockdown_wins').tag, GameMode.lockdown);
+      expect(byId('lockdown_streak').tag, GameMode.lockdown);
       expect(byId('wins').tag, isNull);
     });
   });
@@ -440,6 +468,54 @@ void main() {
       expect(st['quartet_streak']!.value, 0);
       expect(st['relay_streak']!.value, 0);
     });
+  });
+
+  group('lockdown', () {
+    test('wins, a clean sheet, the last heart and sudden death', () {
+      final (st, _) = play([
+        lockdown(hearts: 5, heartsLeft: 5), // clean
+        lockdown(hearts: 5, heartsLeft: 1), // last heart
+        lockdown(hearts: 3, heartsLeft: 2),
+        lockdown(hearts: 1, heartsLeft: 1), // sudden death, not a clean sheet
+        lockdown(won: false, hearts: 5, heartsLeft: 0),
+        game(),
+      ]);
+      expect(st['lockdown_wins']!.value, 4);
+      expect(
+        st['lockdown_flawless']!.value,
+        1,
+        reason: 'one heart is no clean sheet, and a lost game is none',
+      );
+      expect(
+        st['lockdown_last_heart']!.value,
+        1,
+        reason: 'one heart left of one is sudden death, not the last heart',
+      );
+      expect(st['lockdown_sudden']!.value, 1);
+      expect(st['wins']!.value, 5, reason: 'they count among the wins too');
+    });
+
+    test(
+      'a lockdown streak is its own, and a classic daily does not feed it',
+      () {
+        final (st, _) = play([
+          lockdown(daily: true, dailyStreak: 3),
+          game(daily: true, dailyStreak: 40),
+        ]);
+        expect(st['lockdown_streak']!.value, 3);
+        expect(st['lockdown_streak']!.times, 1);
+        expect(st['daily_streak']!.value, 40);
+      },
+    );
+
+    test(
+      'a lockdown game does not touch the quartet or relay achievements',
+      () {
+        final (st, _) = play([lockdown()]);
+        expect(st['quartet_wins']!.value, 0);
+        expect(st['relay_wins']!.value, 0);
+      },
+    );
   });
 
   group('quartet and relay race', () {

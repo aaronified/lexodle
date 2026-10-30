@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'language_picker.dart';
 import 'main.dart';
-import 'modes.dart';
+import 'mode_wheel.dart' show modeIconName;
 import 'routes.dart';
 import 'store.dart';
 import 'ui.dart';
@@ -384,7 +384,7 @@ class _Row extends StatelessWidget {
               if (a.tag != null) ...[
                 const SizedBox(width: 6),
                 TablerIcon(
-                  a.tag == GameMode.quartet ? 'layout-grid' : 'chess-knight',
+                  modeIconName(a.tag!),
                   size: 13,
                   color: c.onSurface.withValues(alpha: dimAlpha),
                 ),

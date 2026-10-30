@@ -65,7 +65,14 @@ class GameResult {
     this.luck,
     this.risk,
     this.maxBits = 0,
+    this.hearts = 0,
+    this.heartsLeft = 0,
   });
+
+  /// The hearts a lockdown game began with and had left at the end (0 for the
+  /// other modes).
+  final int hearts;
+  final int heartsLeft;
   final String lang;
   final int length;
   final int tries;
@@ -422,6 +429,11 @@ const _counted = {
   'relayWins',
   'relayLast',
   'relayFree',
+  'lockdownWins',
+  'lockdownFlawless',
+  'lockdownLastHeart',
+  'lockdownSudden',
+  'streakLockdown',
   'stylesWorn',
 };
 const _globalMetrics = {'langs', 'mastered', 'completed'};
@@ -435,6 +447,7 @@ const _anyMode = {
 };
 const _quartetOnly = {GameMode.quartet};
 const _relayOnly = {GameMode.relay};
+const _lockdownOnly = {GameMode.lockdown};
 
 /// The achievement with [id], or null for one this version does not have.
 Achievement? achievementById(String id) {
@@ -717,6 +730,57 @@ final achievements = <Achievement>[
     mode: GameMode.relay,
   ),
   Achievement.leveled(
+    'lockdown_wins',
+    'lock',
+    'lockdown wins',
+    (n) => n == 1 ? 'win a lockdown game' : 'win $n lockdown games',
+    'lockdownWins',
+    _lv(
+      [1, 10, 50, 200],
+      ['locked in', 'lockdown regular', 'lockdown veteran', 'warden'],
+    ),
+    mode: GameMode.lockdown,
+  ),
+  Achievement.leveled(
+    'lockdown_flawless',
+    'award',
+    'clean sheet',
+    (n) => n == 1
+        ? 'win a lockdown game with every heart (3 or more hearts)'
+        : 'win a lockdown game with every heart $n times (3 or more hearts)',
+    'lockdownFlawless',
+    _lv([1, 5, 20, 50], ['spotless', 'clean sheet', 'untouchable', 'unbroken']),
+    mode: GameMode.lockdown,
+  ),
+  Achievement.leveled(
+    'lockdown_last_heart',
+    'bomb',
+    'last heart',
+    (n) => n == 1
+        ? 'win a lockdown game with one heart left (3 or more hearts)'
+        : 'win a lockdown game with one heart left $n times (3 or more hearts)',
+    'lockdownLastHeart',
+    _lv(
+      [1, 5, 15, 40],
+      ['last heart', 'by a heartbeat', 'heart in mouth', 'on the brink'],
+    ),
+    mode: GameMode.lockdown,
+  ),
+  Achievement.leveled(
+    'lockdown_sudden',
+    'boom',
+    'sudden death',
+    (n) => n == 1
+        ? 'win a lockdown game with a single heart'
+        : 'win a lockdown game with a single heart $n times',
+    'lockdownSudden',
+    _lv(
+      [1, 5, 15, 40],
+      ['one life', 'no second chances', 'nine lives short', 'immortal'],
+    ),
+    mode: GameMode.lockdown,
+  ),
+  Achievement.leveled(
     'chameleon',
     'replace',
     'chameleon',
@@ -797,6 +861,26 @@ final achievements = <Achievement>[
     separate: true,
     icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
     mode: GameMode.relay,
+  ),
+  Achievement.leveled(
+    'lockdown_streak',
+    'campfire',
+    'lockdown streak',
+    (n) => 'solve the lockdown daily $n days in a row',
+    'streakLockdown',
+    _lv(
+      [3, 10, 30, 100],
+      [
+        'lockdown kindling',
+        'lockdown campfire',
+        'lockdown furnace',
+        'lockdown phoenix',
+      ],
+    ),
+    hit: (r, t) => r.daily && r.mode == GameMode.lockdown && r.dailyStreak == t,
+    separate: true,
+    icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
+    mode: GameMode.lockdown,
   ),
 ];
 
@@ -993,6 +1077,17 @@ final metrics = <String, Metric>{
   'relayWins': _count(_relayOnly, (r) => r.won),
   'relayLast': _count(_relayOnly, (r) => r.won && r.used == r.tries),
   'relayFree': _count(_relayOnly, (r) => r.won && r.freeRides > 0),
+  'lockdownWins': _count(_lockdownOnly, (r) => r.won),
+  'lockdownFlawless': _count(
+    _lockdownOnly,
+    (r) => r.won && r.hearts >= 3 && r.heartsLeft == r.hearts,
+  ),
+  'lockdownLastHeart': _count(
+    _lockdownOnly,
+    (r) => r.won && r.hearts >= 3 && r.heartsLeft == 1,
+  ),
+  'lockdownSudden': _count(_lockdownOnly, (r) => r.won && r.hearts == 1),
+  'streakLockdown': _dailyStreak(GameMode.lockdown),
   for (final p in playstyles) 'style_${p.id}': _style(p.id),
   'styleChanges': _count(_anyMode, (r) => r.styleChanged),
   'stylesWorn': Metric(

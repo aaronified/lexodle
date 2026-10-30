@@ -271,12 +271,22 @@ void main() {
           .map((t) => t.data ?? '')
           .skip(4) // the four letters of the guess
           .toList();
+      // words left, skill, risk; the type is an icon, or a dot when the guess
+      // was counted as none
       expect(
         texts,
-        hasLength(3),
-        reason: 'words before and after, skill, risk',
+        hasLength(4),
+        reason: 'words left, skill, risk, and the dot of a guess with no type',
       );
       expect(int.tryParse(texts[2]), isNotNull, reason: 'risk: ${texts[2]}');
+      expect(find.byKey(const ValueKey('head-type')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: row,
+          matching: find.byKey(const ValueKey('type-0')),
+        ),
+        findsOneWidget,
+      );
     },
   );
 }

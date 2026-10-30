@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/logic.dart';
@@ -224,6 +225,73 @@ void main() {
       final common = tester.getRect(find.text('most common'));
       expect(rarest.right, closeTo(plot.right, 1));
       expect(common.left, closeTo(plot.left, 1));
+    });
+
+    testWidgets('hovering the rarity plot names the word under the mouse', (
+      tester,
+    ) async {
+      await open(tester, 0);
+      final words = record.befores[0];
+      final plot = tester.getRect(find.byKey(const ValueKey('freq-plot')));
+      expect(find.byKey(const ValueKey('freq-tooltip')), findsNothing);
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: Offset.zero);
+      addTearDown(mouse.removePointer);
+      // a fifth of the way along, the sixth word of thirty or so, as drawn
+      final n = words.length;
+      final dx = plot.width * .2;
+      await mouse.moveTo(Offset(plot.left + dx, plot.center.dy));
+      await tester.pump();
+      final bars = n <= 60;
+      final i = bars
+          ? (dx / (plot.width / n)).floor().clamp(0, n - 1)
+          : (dx / plot.width * (n - 1)).round().clamp(0, n - 1);
+      final tip = find.byKey(const ValueKey('freq-tooltip'));
+      expect(tip, findsOneWidget);
+      expect(
+        find.descendant(of: tip, matching: find.textContaining(words[i])),
+        findsOneWidget,
+      );
+      // moving along names the next words; leaving puts the tooltip away
+      await mouse.moveTo(Offset(plot.left + plot.width * .8, plot.center.dy));
+      await tester.pump();
+      final j = bars
+          ? (plot.width * .8 / (plot.width / n)).floor().clamp(0, n - 1)
+          : (.8 * (n - 1)).round().clamp(0, n - 1);
+      expect(
+        find.descendant(of: tip, matching: find.textContaining(words[j])),
+        findsOneWidget,
+      );
+      await mouse.moveTo(const Offset(5, 5));
+      await tester.pump();
+      expect(tip, findsNothing);
+    });
+
+    testWidgets('touching and dragging along the rarity plot does the same', (
+      tester,
+    ) async {
+      await open(tester, 0);
+      final words = record.befores[0];
+      final plot = tester.getRect(find.byKey(const ValueKey('freq-plot')));
+      final g = await tester.startGesture(
+        Offset(plot.left + plot.width * .1, plot.center.dy),
+      );
+      // (a touch is a press once it has stayed a moment)
+      await tester.pump(const Duration(milliseconds: 150));
+      final tip = find.byKey(const ValueKey('freq-tooltip'));
+      expect(tip, findsOneWidget);
+      await g.moveBy(Offset(plot.width * .4, 0));
+      await tester.pump();
+      // still one tooltip, on a word of the list further along
+      expect(tip, findsOneWidget);
+      final shown = tester
+          .widget<Text>(find.descendant(of: tip, matching: find.byType(Text)))
+          .data!;
+      expect(words.any((w) => shown.startsWith(w)), isTrue, reason: shown);
+      await g.up();
+      // a finger lifted leaves the word named for a moment, then it goes
+      await tester.pump(const Duration(seconds: 2));
+      expect(tip, findsNothing);
     });
 
     testWidgets('clicking a row of the board goes to that guess', (

@@ -404,6 +404,8 @@ class _GamePageState extends State<GamePage>
         int stylesHeld = 0,
       }) => GameResult(
         mode: mode,
+        hearts: heartsTotal,
+        heartsLeft: hearts,
         lang: widget.bank.language.code,
         length: length,
         tries: tries,
