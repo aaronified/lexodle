@@ -99,16 +99,13 @@
 <table>
   <tr>
     <td width="60%">
-      <h3>🔍 Blind, and 🎁 make your own</h3>
-      <b>Blind</b> shows only how many letters are right and in place, and how many are right elsewhere,
-      in every language; tap a letter of a guess to pencil a colour on it. <b>Make your own</b> turns
-      any word into a link that others play as practice. Every mode is in the swipe on the home screen.
+      <h3>🔍 Blind</h3>
+      A guess shows only how many letters are right and in place, and how many are right elsewhere,
+      in every language. Tap a letter of a guess to pencil a colour on it and keep track of what you
+      have worked out. Ten tries by default.
+      <a href="https://github.com/aaronified/lexodle/wiki/How-to-play">The rules</a>.
     </td>
-    <td width="40%"><img src="docs/screenshots/features/blind.png" width="100%" alt="The mode swiper on the home screen, on blind"></td>
-  </tr>
-  <tr>
     <td width="40%"><img src="docs/screenshots/blind.png" width="100%" alt="A blind game in Indonesian: the counts as big as the tiles, and colours pencilled on a guess"></td>
-    <td width="40%"><img src="docs/screenshots/modes.png" width="100%" alt="The game modes: the mode, the theme and the word draw as swipers"></td>
   </tr>
 </table>
 
