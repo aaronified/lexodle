@@ -153,10 +153,42 @@ class WordBank {
     },
   };
 
-  /// Letters seen in the words of [length], for the on-screen keyboard.
+  /// Letters seen in the words of [length], for the on-screen keyboard. The
+  /// English keyboard has a to z only: the few English words with an accent
+  /// (café, naïve) are typed without it, see [resolve].
   Set<String> letters(int length) => {
-    for (final w in _words[length] ?? const <String>[]) ...w.split(''),
+    for (final w in _words[length] ?? const <String>[])
+      for (final ch in w.split(''))
+        if (language.code != 'en' || _plain.hasMatch(ch)) ch,
   };
+
+  static final _plain = RegExp('[a-z]');
+
+  Map<String, String>? _folds;
+
+  /// The word a typed one stands for. An English word with an accent can be
+  /// typed without it: `cafe` is `café` when `cafe` is not itself a word. Any
+  /// other typed word is itself.
+  String resolve(String typed) {
+    if (language.code != 'en' || valid.contains(typed)) return typed;
+    final folds = _folds ??= {
+      for (final w in valid)
+        if (!RegExp(r'^[a-z]+$').hasMatch(w))
+          if (_fold(w) case final f when f != w && !valid.contains(f)) f: w,
+    };
+    return folds[typed] ?? typed;
+  }
+
+  static String _fold(String w) {
+    const from = 'àáâãäåāçćčèéêëēìíîïīñńòóôõöøōùúûüūýÿžśšł';
+    const to = 'aaaaaaaccceeeeeiiiiinnooooooouuuuuyyzssl';
+    final b = StringBuffer();
+    for (final ch in w.split('')) {
+      final i = from.indexOf(ch);
+      b.write(i < 0 ? ch : to[i]);
+    }
+    return b.toString();
+  }
 
   static final _cache = <String, WordBank>{};
   static List<Language>? _languages;

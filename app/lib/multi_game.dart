@@ -223,7 +223,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       );
       return;
     }
-    final word = input.word;
+    final word = widget.bank.resolve(input.word);
     if (game.guesses.contains(word)) {
       setState(() => message = 'already guessed');
       return;

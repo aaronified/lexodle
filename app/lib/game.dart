@@ -283,7 +283,7 @@ class _GamePageState extends State<GamePage>
       );
       return;
     }
-    final word = input.word;
+    final word = widget.bank.resolve(input.word);
     if (guesses.contains(word)) {
       Haptics.fire(Haptic.reject);
       setState(() => message = 'already guessed');
