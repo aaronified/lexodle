@@ -303,6 +303,8 @@ void main() {
     await type(t, '${answer.substring(0, 2)} ${answer.substring(3)}');
     await t.pump();
     await shot(t, key, 'game');
+    // the feature list shows the board, not the keyboard
+    await shot(t, key, 'features/game', crop: aboveKeyboard(t));
   }, skip: skip != null);
 
   testWidgets('a quartet', (t) async {
@@ -319,6 +321,7 @@ void main() {
       await t.pump();
     }
     await shot(t, key, 'quartet');
+    await shot(t, key, 'features/quartet', crop: aboveKeyboard(t));
   }, skip: skip != null);
 
   testWidgets('a lockdown game', (t) async {
