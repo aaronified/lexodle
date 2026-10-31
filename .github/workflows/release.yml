@@ -189,10 +189,13 @@ jobs:
 
       # versionName is the tag without its "v"; versionCode is the run number.
       - name: Build the APK
+        env:
+          DAILY_SALT: ${{ secrets.DAILY_SALT }}
         run: |
           flutter build apk --release \
             --build-name="${TAG#v}" \
-            --build-number=${{ github.run_number }}
+            --build-number=${{ github.run_number }} \
+            --dart-define=DAILY_SALT="$DAILY_SALT"
 
       # If AGP ever ignored the injected properties, the build above would still
       # succeed, quietly signed with the debug key. So compare certificates

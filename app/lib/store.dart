@@ -438,6 +438,7 @@ const _counted = {
   'blindLast',
   'blindBrutal',
   'streakLockdown',
+  'streakBlind',
   'stylesWorn',
 };
 const _globalMetrics = {'langs', 'mastered', 'completed'};
@@ -942,6 +943,21 @@ final achievements = <Achievement>[
     icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
     mode: GameMode.lockdown,
   ),
+  Achievement.leveled(
+    'blind_streak',
+    'campfire',
+    'blind streak',
+    (n) => 'solve the blind daily $n days in a row',
+    'streakBlind',
+    _lv(
+      [3, 10, 30, 100],
+      ['blind kindling', 'blind campfire', 'blind furnace', 'blind phoenix'],
+    ),
+    hit: (r, t) => r.daily && r.mode == GameMode.blind && r.dailyStreak == t,
+    separate: true,
+    icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
+    mode: GameMode.blind,
+  ),
 ];
 
 /// Bronze, silver, gold and platinum levels at these targets.
@@ -1152,6 +1168,7 @@ final metrics = <String, Metric>{
   'blindLast': _count(_blindOnly, (r) => r.won && r.used == r.tries),
   'blindBrutal': _count(_blindOnly, (r) => r.won && r.tries <= 6),
   'streakLockdown': _dailyStreak(GameMode.lockdown),
+  'streakBlind': _dailyStreak(GameMode.blind),
   for (final p in playstyles) 'style_${p.id}': _style(p.id),
   'styleChanges': _count(_anyMode, (r) => r.styleChanged),
   'stylesWorn': Metric(
@@ -1377,6 +1394,10 @@ class AppState extends ChangeNotifier {
 
   /// The tries of a blind game: one of [blindTriesLevels].
   int blindTries = 10;
+
+  /// Whether a blind game marks what its counts settle and keeps the colours
+  /// the player pencils possible. Off, the player marks whatever they like.
+  bool blindAssist = true;
 
   /// Whether presses give a short vibration (on a phone). On until turned off.
   bool haptics = true;
@@ -1920,6 +1941,7 @@ class AppState extends ChangeNotifier {
         final bt = p.getInt('blindTries');
         if (bt != null && blindTriesLevels.any((b) => b.$2 == bt))
           blindTries = bt;
+        blindAssist = p.getBool('blindAssist') ?? true;
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
         lastRunVersion = p.getString('lastRunVersion');
         changelogSeen = p.getString('changelogSeen');
@@ -2228,6 +2250,7 @@ class AppState extends ChangeNotifier {
     'draw': draw.index,
     'hearts': hearts,
     'blindTries': blindTries,
+    'blindAssist': blindAssist,
     'helper': helper.index,
     'mode': mode.index,
     'share': share,
@@ -2290,6 +2313,7 @@ class AppState extends ChangeNotifier {
     if (hs != null && lockdownHearts.any((h) => h.$2 == hs)) hearts = hs;
     final bt = settings['blindTries'] as int?;
     if (bt != null && blindTriesLevels.any((b) => b.$2 == bt)) blindTries = bt;
+    blindAssist = settings['blindAssist'] as bool? ?? blindAssist;
     final d = settings['draw'] as int?;
     if (d != null && d >= 0 && d < Draw.values.length) {
       draw = Draw.values[d];
@@ -2314,6 +2338,7 @@ class AppState extends ChangeNotifier {
         _w('draw', p.setInt('draw', draw.index));
         _w('hearts', p.setInt('hearts', hearts));
         _w('blindTries', p.setInt('blindTries', blindTries));
+        _w('blindAssist', p.setBool('blindAssist', blindAssist));
         _w('helper', p.setInt('helper', helper.index));
         _w('mode', p.setInt('mode', mode.index));
         _w('share', p.setInt('share', share));
@@ -2344,6 +2369,7 @@ class AppState extends ChangeNotifier {
     Draw? draw,
     int? hearts,
     int? blindTries,
+    bool? blindAssist,
     Helper? helper,
     GameMode? mode,
     int? share,
@@ -2360,6 +2386,7 @@ class AppState extends ChangeNotifier {
     if (blindTries != null && blindTriesLevels.any((b) => b.$2 == blindTries)) {
       this.blindTries = blindTries;
     }
+    this.blindAssist = blindAssist ?? this.blindAssist;
     this.helper = helper ?? this.helper;
     this.mode = mode ?? this.mode;
     // themed wordles are English only
@@ -2379,6 +2406,7 @@ class AppState extends ChangeNotifier {
       _w('draw', _prefs?.setInt('draw', this.draw.index));
       _w('hearts', _prefs?.setInt('hearts', this.hearts));
       _w('blindTries', _prefs?.setInt('blindTries', this.blindTries));
+      _w('blindAssist', _prefs?.setBool('blindAssist', this.blindAssist));
       _w('helper', _prefs?.setInt('helper', this.helper.index));
       _w('mode', _prefs?.setInt('mode', this.mode.index));
       _w('share', _prefs?.setInt('share', this.share));

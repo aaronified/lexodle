@@ -81,7 +81,8 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
         afterWords: after,
         provisional: true,
         fresh: freshLetters(word, guesses),
-        greens: knownGreens(marks),
+        // the places of a blind game's greens are not shown
+        greens: blind ? 0 : knownGreens(marks),
         blind: blind,
       ),
     );

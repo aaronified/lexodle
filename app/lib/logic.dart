@@ -813,7 +813,7 @@ Future<Landscape> analyseGuesses(
     // back, so there are no group sizes to keep for the next game
     final rows = await scorer(eligible, weights, blind, words, answer);
     for (var i = 0; i < words.length; i++) {
-      final o = i * _chunkRow;
+      final o = i * chunkRow;
       scored.add((
         words[i],
         SplitStats(
@@ -897,7 +897,11 @@ Future<Landscape> analyseGuesses(
 
 /// Numbers per word in a scored chunk: E, H, D, groups, largest, total, and
 /// the luck for the answer (NaN when there is none).
-const _chunkRow = 7;
+/// The numbers [scoreChunk] gives for each word; the second is the gain.
+const chunkRow = 7;
+
+/// Where the gain is in a row of [scoreChunk].
+const chunkGain = 1;
 
 /// Scores [words] against [eligible] on the thread it is called on, as
 /// [scoreChunk] does; this is the signature of the callers that may spread the
@@ -910,7 +914,7 @@ typedef ChunkScorer = Future<Float64List> Function(
   String? answer,
 );
 
-/// The numbers of each of [words] (see [_chunkRow]), in order. Pure, so it can
+/// The numbers of each of [words] (see [chunkRow]), in order. Pure, so it can
 /// run on any thread, and gives what scoring one word at a time gives.
 Float64List scoreChunk(
   List<String> eligible,
@@ -920,11 +924,11 @@ Float64List scoreChunk(
   String? answer,
 ) {
   final context = SplitContext(eligible, weights, blind: blind);
-  final out = Float64List(words.length * _chunkRow);
+  final out = Float64List(words.length * chunkRow);
   for (var i = 0; i < words.length; i++) {
     final s = context.stats(words[i]);
     final landed = answer == null ? null : s.landedOf(words[i], answer);
-    final o = i * _chunkRow;
+    final o = i * chunkRow;
     out[o] = s.e;
     out[o + 1] = s.h;
     out[o + 2] = s.d;

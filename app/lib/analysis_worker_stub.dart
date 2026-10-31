@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'logic.dart';
 
 /// No threads here: the analysis runs where it is called.
@@ -17,3 +19,10 @@ Future<Landscape> analyse(
   answer: answer,
   blind: blind,
 );
+
+/// No threads here: scored where it is called.
+Future<Float64List> scoreOnPool(
+  List<String> board,
+  List<String> words,
+  Map<String, int>? weights,
+) async => scoreChunk(board, weights, false, words, null);

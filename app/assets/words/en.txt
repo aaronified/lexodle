@@ -317,7 +317,6 @@ seat	66069
 draw	64565
 dude	64565
 gain	64565
-http	64565
 ring	64565
 rise	64565
 soul	64565
@@ -592,7 +591,6 @@ bass	19054
 butt	19054
 dual	19054
 gulf	19054
-lmao	19054
 logo	19054
 odds	19054
 pump	19054
@@ -760,7 +758,6 @@ bust	10964
 cope	10964
 echo	10964
 hart	10964
-lgbt	10964
 sins	10964
 soda	10964
 thee	10964
@@ -784,7 +781,6 @@ bail	10232
 buck	10232
 disk	10232
 hats	10232
-nato	10232
 sail	10232
 void	10232
 whip	10232
@@ -850,7 +846,6 @@ scam	8709
 swap	8709
 trio	8709
 vibe	8709
-wifi	8709
 acre	8511
 alot	8511
 amen	8511
@@ -1079,7 +1074,6 @@ yuan	5011
 aide	4897
 bans	4897
 grim	4897
-ipod	4897
 mart	4897
 shin	4897
 taco	4897
@@ -1169,7 +1163,6 @@ hmmm	4073
 homo	4073
 hymn	4073
 noun	4073
-nsfw	4073
 oaks	4073
 reps	4073
 soak	4073
@@ -1617,7 +1610,6 @@ lice	1621
 loco	1621
 pave	1621
 peng	1621
-proc	1621
 soma	1621
 tome	1621
 trot	1621
@@ -1686,7 +1678,6 @@ gent	1412
 hast	1412
 hogg	1412
 mink	1412
-prog	1412
 putt	1412
 rife	1412
 skit	1412
@@ -1764,7 +1755,6 @@ gilt	1230
 imma	1230
 joss	1230
 nbsp	1230
-osha	1230
 pane	1230
 quot	1230
 robo	1230
@@ -1846,7 +1836,6 @@ sues	1122
 whey	1122
 cmon	1096
 hajj	1096
-jpeg	1096
 lees	1096
 macs	1096
 yolk	1096
@@ -1854,7 +1843,6 @@ assn	1071
 blot	1071
 bode	1071
 boos	1071
-conf	1071
 giro	1071
 hove	1071
 jing	1071
@@ -1875,7 +1863,6 @@ jolt	1047
 kami	1047
 keto	1047
 pied	1047
-rsvp	1047
 shag	1047
 sift	1047
 silo	1047
@@ -2052,7 +2039,6 @@ graf	831
 mano	831
 robs	831
 taxa	831
-ufos	831
 boop	812
 dist	812
 faze	812
@@ -2094,10 +2080,8 @@ zine	776
 asha	758
 boba	758
 deir	758
-devs	758
 dodo	758
 falk	758
-faqs	758
 foss	758
 gens	758
 gyro	758
@@ -2123,7 +2107,6 @@ mala	741
 marv	741
 omer	741
 prim	741
-regs	741
 slog	741
 smut	741
 welt	741
@@ -2406,7 +2389,6 @@ vats	512
 waxy	512
 yule	512
 anas	501
-awol	501
 chub	501
 cots	501
 crim	501
@@ -2545,7 +2527,6 @@ nape	436
 ohms	436
 phan	436
 ques	436
-reit	436
 suis	436
 tics	436
 uric	436
@@ -2737,7 +2718,6 @@ neko	354
 nott	354
 oper	354
 peds	354
-recs	354
 roti	354
 sima	354
 sulk	354
@@ -2770,7 +2750,6 @@ bigs	338
 bish	338
 deca	338
 doss	338
-fwiw	338
 mids	338
 miko	338
 nota	338
@@ -4054,7 +4033,6 @@ lory	107
 lyke	107
 nill	107
 nyet	107
-otoh	107
 paya	107
 prio	107
 rdna	107
@@ -4201,7 +4179,6 @@ bhel	95
 biot	95
 bodi	95
 bufo	95
-defs	95
 dews	95
 drat	95
 fabs	95
@@ -4486,7 +4463,6 @@ menz	77
 ossa	77
 poky	77
 rava	77
-reqs	77
 rids	77
 rill	77
 sede	77
@@ -4942,7 +4918,6 @@ jawn	56
 juga	56
 kaon	56
 maté	56
-mirv	56
 naib	56
 pamp	56
 pech	56
@@ -5296,7 +5271,6 @@ chid	42
 chix	42
 daks	42
 dand	42
-deps	42
 enow	42
 eruv	42
 exis	42
@@ -8337,7 +8311,6 @@ salon	7413
 tuned	7413
 vague	7413
 coral	7244
-covid	7244
 dough	7244
 hardy	7244
 irony	7244
@@ -9020,7 +8993,6 @@ crook	2570
 darts	2570
 diver	2570
 fades	2570
-fedex	2570
 filth	2570
 genie	2570
 glued	2570
@@ -9139,7 +9111,6 @@ faked	2238
 geese	2238
 hella	2238
 hunts	2238
-lmfao	2238
 lowry	2238
 ramen	2238
 synth	2238
@@ -9651,7 +9622,6 @@ spoof	1258
 trope	1258
 tufts	1258
 aloha	1230
-bafta	1230
 booed	1230
 butte	1230
 foyer	1230
@@ -10012,7 +9982,6 @@ voila	851
 yarns	851
 valor	849
 aorta	831
-ascii	831
 beret	831
 bogey	831
 boron	831
@@ -10348,7 +10317,6 @@ lurch	616
 majid	616
 mamas	616
 mondo	616
-probs	616
 razed	616
 sarin	616
 scoot	616
@@ -10742,7 +10710,6 @@ jiffy	436
 lofts	436
 mamba	436
 mossy	436
-norad	436
 pasts	436
 quint	436
 raspy	436
@@ -11725,7 +11692,6 @@ brack	213
 chola	213
 cissy	213
 compo	213
-conus	213
 gomer	213
 hobos	213
 imago	213
@@ -12051,7 +12017,6 @@ tante	177
 ulama	177
 whois	177
 abaya	173
-afaik	173
 aurum	173
 balms	173
 boras	173
@@ -36416,7 +36381,6 @@ latency	2041
 mailbox	2041
 midterm	2041
 midtown	2041
-myspace	2041
 nurture	2041
 paisley	2041
 perjury	2041
@@ -41940,7 +41904,6 @@ walkies	125
 warders	125
 weblogs	125
 weenies	125
-wysiwyg	125
 albinos	123
 ascites	123
 bandgap	123

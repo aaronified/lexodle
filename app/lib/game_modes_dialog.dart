@@ -136,13 +136,11 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         const SizedBox(height: 8),
                         Text(
                           !mode.hasDaily
-                              ? 'no daily in this mode. ${switch (mode) {
-                                  GameMode.themed => 'themed wordles accept only the words of the theme, in english: no ordinary words.',
-                                  _ => 'a guess tells only how many letters are right (green) and elsewhere (yellow).',
-                                }}'
+                              ? 'no daily in this mode. themed wordles accept only '
+                                    'the words of the theme, in english: no ordinary words.'
                               : 'the daily of ${mode.label} always uses fixed '
                                     'settings: five letters, '
-                                    '${mode.multi ? 'the words share no letter, ' : ''}'
+                                    '${mode.multi ? 'the words may share a letter (10% chance), ' : ''}'
                                     '${dailyTriesOf(mode)} tries'
                                     '${mode == GameMode.lockdown ? ', $dailyHearts hearts' : ''}.',
                           key: const ValueKey('daily-note'),
@@ -309,34 +307,54 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        const Caption('helper'),
+                        Caption(
+                          mode == GameMode.blind ? 'colour logic' : 'helper',
+                        ),
                         const SizedBox(height: 10),
-                        // the helper only shows in classic, so for the other modes
-                        // it is greyed: dimmed, and out of reach of touch and keys
-                        Opacity(
-                          key: const ValueKey('helper-fade'),
-                          opacity: _noHelper(mode) ? .38 : 1,
-                          child: AbsorbPointer(
-                            absorbing: _noHelper(mode),
-                            child: ExcludeFocus(
-                              excluding: _noHelper(mode),
-                              child: StepperChoice<Helper>(
-                                semanticLabel: 'helper',
-                                items: [
-                                  for (final h in Helper.values)
-                                    (h, h.label, h.sub),
-                                ],
-                                selected: appState.helper,
-                                onChanged: (h) => appState.setup(helper: h),
+                        if (mode == GameMode.blind)
+                          StepperChoice<bool>(
+                            key: const ValueKey('assist-choice'),
+                            semanticLabel: 'colour logic',
+                            items: const [
+                              (true, 'on', 'marks what the counts settle'),
+                              (false, 'off', 'you mark everything'),
+                            ],
+                            selected: appState.blindAssist,
+                            onChanged: (on) => appState.setup(blindAssist: on),
+                          )
+                        else
+                          // the helper only shows in classic, so for the other modes
+                          // it is greyed: dimmed, and out of reach of touch and keys
+                          Opacity(
+                            key: const ValueKey('helper-fade'),
+                            opacity: _noHelper(mode) ? .38 : 1,
+                            child: AbsorbPointer(
+                              absorbing: _noHelper(mode),
+                              child: ExcludeFocus(
+                                excluding: _noHelper(mode),
+                                child: StepperChoice<Helper>(
+                                  semanticLabel: 'helper',
+                                  items: [
+                                    for (final h in Helper.values)
+                                      (h, h.label, h.sub),
+                                  ],
+                                  selected: appState.helper,
+                                  onChanged: (h) => appState.setup(helper: h),
+                                ),
                               ),
                             ),
                           ),
-                        ),
                         const SizedBox(height: 10),
                         Text(
                           mode == GameMode.blind
-                              ? 'the helper has nothing to show in blind. everything '
-                                    'is revealed when the game ends.'
+                              ? (appState.blindAssist
+                                    ? 'the obvious is marked for you, on the keyboard and '
+                                          'the guesses, and you can only pencil colours that '
+                                          'can be true. everything is revealed when the game '
+                                          'ends.'
+                                    : 'nothing is marked for you and you can pencil any '
+                                          'colour on any letter. everything is revealed when '
+                                          'the game ends.')
                               : mode == GameMode.themed
                               ? 'the helper shows in classic and lockdown only. '
                                     'everything is revealed when the game ends.'

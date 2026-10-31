@@ -254,6 +254,11 @@ Map<String, Object> _settings(Object? raw) {
   if (hearts != null) out['hearts'] = hearts;
   final blindTries = integer('blindTries', 1, 20);
   if (blindTries != null) out['blindTries'] = blindTries;
+  final blindAssist = raw['blindAssist'];
+  if (blindAssist != null) {
+    if (blindAssist is! bool) _bad('blindAssist');
+    out['blindAssist'] = blindAssist;
+  }
   final helper = integer('helper', 0, Helper.values.length - 1);
   if (helper != null) out['helper'] = helper;
   final mode = integer('mode', 0, GameMode.values.length - 1);

@@ -212,9 +212,15 @@ void main() {
           if (!greens.contains(i)) i,
       ];
       await typeKey(tester, 'z');
+      // the taps on the locked tiles left the cursor on the last of them: the
+      // letter goes in the first open slot after it, or from the start
+      final target = open0.firstWhere(
+        (i) => i > greens.last,
+        orElse: () => open0.first,
+      );
       expect(
         find.descendant(
-          of: find.byKey(ValueKey('tile-1-${open0.first}')),
+          of: find.byKey(ValueKey('tile-1-$target')),
           matching: find.text('z'),
         ),
         findsOneWidget,

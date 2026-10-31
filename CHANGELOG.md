@@ -7,6 +7,64 @@ it to the version.
 
 ## Unreleased
 
+- dailies change at midnight India time for everyone
+  The date of a daily is the date in IST (UTC+5:30), the same instant all over
+  the world.
+- the words of the dailies cannot be read off the source
+  The daily draw is salted with a secret put in at build time.
+
+- blind has a daily
+  One word, five letters, 10 tries, the same for everyone, with a streak, a
+  calendar and a streak achievement of its own (blind kindling to blind phoenix).
+- the daily quartet and relay race may share a letter
+  From 2026-11-01 a daily word may share a letter with an earlier one with a
+  10% chance, as in any other game (a word with a letter twice counts as
+  sharing). Before, they shared none, which favoured words with a letter twice.
+
+- relay race: locks do not carry to the next target
+  When a target is solved, the next word starts with nothing locked.
+- abbreviations are out of the word lists
+  Acronyms and abbreviations that an en.wiktionary entry let in (http, nato,
+  covid, lgbt, afaik and others, 36 in English, one each in Spanish, French and
+  Swedish) are removed; tools/abbreviations.py keeps them out of a rebuild. It
+  moves the daily picks after them.
+
+- quartet and relay: the screen stays smooth while they are analysed
+  The analysis of each guess of a quartet or relay race now runs on other
+  threads, as a classic game's does. It ran on the screen's own, which made the
+  second guess hard to type.
+- quartet and relay: doubled letters are not favoured
+  Words kept from sharing letters tend to be words with a letter twice, so a
+  daily could be four of them. From 2026-11-01 at most two of a daily's four
+  words have a letter twice; in other games a word with a letter twice counts as
+  sharing a letter.
+
+- blind: a doubled letter can be green in two places
+  A letter may be green in several positions. The limits are: a position is
+  green with one letter, no more letters than the length are green or yellow,
+  and a letter is never yellow in every position.
+- bafta is not a word
+  Removed from the English list (it moves the daily picks after it).
+
+- blind games do not count greens whose places are unknown
+  The game phase and the playstyle of a blind guess no longer treat the
+  places of earlier greens as known.
+
+- blind review shows the real colours and both counts
+  The tiles of a blind game's review are the colours the guesses really had,
+  with the two count squares beside each row.
+- quartet keys have a soft shadow
+  A key every board has greyed no longer blends into the page.
+
+- blind: colour logic keeps your pencil possible, and can be turned off
+  Green and yellow belong to a letter in a position. A letter is green in one
+  position (a new green sends the old back to yellow), a position is green with
+  one letter, a letter yellow everywhere else it can be can only be green, a
+  green or yellow letter cannot be grey, and a row cannot show more than its
+  counts; a toast says why a colour was passed over. The game modes screen has a
+  colour logic switch for blind: off marks nothing for you and lets you pencil
+  anything on any tile.
+
 ## 0.4.5
 
 - blind: a colour you pencil on a letter shows everywhere

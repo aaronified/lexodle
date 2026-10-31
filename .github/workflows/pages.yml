@@ -31,7 +31,7 @@ jobs:
       - run: flutter test
       # --no-web-resources-cdn: CanvasKit is served with the app, not fetched
       # from a CDN, so the page asks no other site for anything it draws with
-      - run: flutter build web --release --no-web-resources-cdn --base-href "/${{ github.event.repository.name }}/"
+      - run: flutter build web --release --no-web-resources-cdn --base-href "/${{ github.event.repository.name }}/" --dart-define=DAILY_SALT=${{ secrets.DAILY_SALT }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app/build/web

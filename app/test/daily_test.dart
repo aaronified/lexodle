@@ -49,28 +49,30 @@ void main() {
 
   group('the date', () {
     test(
-      'is the date on the player\'s own calendar, changing at local midnight',
+      'is the date in India, changing at midnight IST (18:30 UTC) for everyone',
       () {
-        // local times, so the test means the same in every time zone
-        expect(dailyDate(DateTime(2026, 10, 24, 0, 0, 0)), '2026-10-24');
-        expect(dailyDate(DateTime(2026, 10, 24, 23, 59, 59)), '2026-10-24');
-        expect(dailyDate(DateTime(2026, 10, 25, 0, 0, 0)), '2026-10-25');
-        expect(dailyDate(DateTime(2026, 12, 31, 23, 59)), '2026-12-31');
-        expect(dailyDate(DateTime(2027, 1, 1)), '2027-01-01');
+        expect(dailyDate(DateTime.utc(2026, 10, 23, 18, 30)), '2026-10-24');
+        expect(dailyDate(DateTime.utc(2026, 10, 24, 18, 29, 59)), '2026-10-24');
+        expect(dailyDate(DateTime.utc(2026, 10, 24, 18, 30)), '2026-10-25');
+        expect(dailyDate(DateTime.utc(2026, 12, 31, 18, 29)), '2026-12-31');
+        expect(dailyDate(DateTime.utc(2026, 12, 31, 18, 30)), '2027-01-01');
+        // a local time is read as the instant it is
+        expect(
+          dailyDate(DateTime.utc(2026, 10, 24, 18, 30).toLocal()),
+          '2026-10-25',
+        );
       },
     );
 
-    test('an instant given in UTC is read on the local calendar', () {
-      final t = DateTime.utc(2026, 10, 24, 20, 30);
-      final l = t.toLocal();
-      String two(int n) => n.toString().padLeft(2, '0');
-      expect(dailyDate(t), '${l.year}-${two(l.month)}-${two(l.day)}');
+    test('an instant given in UTC is read on the Indian calendar', () {
+      expect(dailyDate(DateTime.utc(2026, 10, 24, 20, 30)), '2026-10-25');
+      expect(dailyDate(DateTime.utc(2026, 10, 24, 5, 0)), '2026-10-24');
     });
 
     test('the date a daily is on is read from the clock it goes by', () {
-      dailyClock = () => DateTime(2026, 10, 24, 23, 59, 30);
+      dailyClock = () => DateTime.utc(2026, 10, 24, 18, 29, 30);
       expect(dailyDate(), '2026-10-24');
-      dailyClock = () => DateTime(2026, 10, 25, 0, 0, 5);
+      dailyClock = () => DateTime.utc(2026, 10, 24, 18, 30, 5);
       expect(dailyDate(), '2026-10-25');
     });
 

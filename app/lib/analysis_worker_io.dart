@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'logic.dart';
 import 'opening_disk.dart';
@@ -126,3 +127,11 @@ Future<Landscape> analyse(
   }
   return worker.run(eligible, candidates, k, weights, answer, blind, useDisk);
 }
+
+/// The numbers of [scoreChunk] for [words] against [board], on threads of their
+/// own so the screen never waits for them.
+Future<Float64List> scoreOnPool(
+  List<String> board,
+  List<String> words,
+  Map<String, int>? weights,
+) => scoreOnThreads(board, weights, false, words, null);

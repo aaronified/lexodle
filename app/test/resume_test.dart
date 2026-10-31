@@ -19,7 +19,7 @@ void main() {
     var mono = Duration.zero;
     TrustedClock.reset();
     TrustedClock.monotonic = () => mono;
-    TrustedClock.deviceNow = () => DateTime(2026, 10, 24, 23, 59, 50);
+    TrustedClock.deviceNow = () => DateTime.utc(2026, 10, 24, 18, 29, 50);
     TrustedClock.clientFactory = () => MockClient((_) async {
       asked++;
       return http.Response(
@@ -88,11 +88,7 @@ void main() {
     await TrustedClock.sync(client: TrustedClock.clientFactory());
     final after = dailyDate();
     expect(before, '2026-10-24');
-    // 18:30:30 UTC is a day later than 23:59:50 local only where local is ahead
-    // of UTC by 5h30 or more; in every zone the date is read from the same
-    // instant, so it matches what the server's time says locally
-    final server = DateTime.utc(2026, 10, 24, 18, 30, 30).toLocal();
-    String two(int n) => n.toString().padLeft(2, '0');
-    expect(after, '${server.year}-${two(server.month)}-${two(server.day)}');
+    // 18:30:30 UTC is 00:00:30 on the 25th in India
+    expect(after, '2026-10-25');
   });
 }

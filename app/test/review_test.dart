@@ -11,6 +11,71 @@ import 'package:lexodle/words.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  testWidgets('a blind review shows the real colours and the two counts', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    final bank = (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+      ),
+    ))!;
+    final pool = bank.answers(5);
+    final answer = pool[3];
+    var eligible = pool;
+    final guesses = [pool[10], pool[20]];
+    final marks = <List<Mark>>[], metrics = <GuessMetrics>[];
+    final befores = <List<String>>[];
+    for (final g in guesses) {
+      final m = evaluate(answer, g, blind: true);
+      final after = filterEligible(eligible, g, m, blind: true);
+      metrics.add(scoreGuess(eligible, g, after.length, blind: true));
+      befores.add(eligible);
+      marks.add(m);
+      eligible = after;
+    }
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(Brightness.dark),
+        home: ReviewPage(
+          record: GameRecord(
+            bank: bank,
+            length: 5,
+            poolSize: 500,
+            answer: answer,
+            guesses: guesses,
+            marks: marks,
+            metrics: metrics,
+            befores: befores,
+            finalEligible: eligible,
+            won: false,
+            blind: true,
+          ),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 10));
+    String n(String key) => tester
+        .widget<Text>(
+          find.descendant(
+            of: find.byKey(ValueKey(key)),
+            matching: find.byType(Text),
+          ),
+        )
+        .data!;
+    // only the guesses up to the step are shown
+    for (var i = 0; i < 1; i++) {
+      expect(
+        n('count-$i-g'),
+        '${marks[i].where((m) => m == Mark.correct).length}',
+      );
+      expect(
+        n('count-$i-y'),
+        '${marks[i].where((m) => m == Mark.present).length}',
+      );
+    }
+  });
+
   testWidgets(
     'the picks share one right edge for the words and another for the skill',
     (tester) async {

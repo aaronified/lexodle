@@ -5159,7 +5159,6 @@ tinto	3801
 after	3715
 busto	3715
 caben	3715
-covid	3715
 densa	3715
 fresa	3715
 gales	3715

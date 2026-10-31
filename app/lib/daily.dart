@@ -31,6 +31,19 @@ const dailyAnswers = 3000;
 /// before it replays against the same word.
 const dailyCurveFrom = '2026-10-30';
 
+/// From this date the words of a daily quartet or relay race may share a letter
+/// with the chance of [dailyShare] percent, as in any other game (a word with
+/// a letter twice counts as sharing one). Before, they shared none, which
+/// favoured words with a letter twice: all four of them, one day.
+const dailyShareFrom = '2026-10-31';
+
+/// The chance, in percent, that a daily word may share a letter with an earlier
+/// one, from [dailyShareFrom].
+const dailyShare = 10;
+
+/// The tries of a blind daily.
+const blindDailyTries = 10;
+
 /// Whether the daily of [date] is drawn by the curve.
 bool dailyUsesCurve(String date) =>
     date.length == 10 && date.compareTo(dailyCurveFrom) >= 0;
@@ -44,10 +57,11 @@ String _ymd(DateTime d) {
   return '${d.year.toString().padLeft(4, '0')}-${two(d.month)}-${two(d.day)}';
 }
 
-/// The date of a daily as `2026-10-24`, on the player's own calendar: the day
-/// changes at their local midnight, so the word is the same for everyone who is
-/// on the same date, not at the same instant.
-String dailyDate([DateTime? now]) => _ymd((now ?? dailyClock()).toLocal());
+/// The date of a daily as `2026-10-24`, on the calendar of India (IST, UTC+5:30)
+/// for everyone: the day changes at the same instant all over the world.
+String dailyDate([DateTime? now]) => _ymd(
+  (now ?? dailyClock()).toUtc().add(const Duration(hours: 5, minutes: 30)),
+);
 
 /// [date] moved by [days] (negative for earlier), still as `2026-10-24`.
 /// A malformed [date] comes back unchanged.
@@ -93,6 +107,11 @@ String dailyLetter(String date) {
 
 const _prime = 2147483647; // 2^31 - 1
 
+/// A secret put in at build time (`--dart-define=DAILY_SALT=...`, from the
+/// repository secret of that name), so the words of the dailies cannot be read
+/// off the source. Empty in a build without it, and in the tests.
+const _salt = String.fromEnvironment('DAILY_SALT');
+
 /// A number from [s], the same on every platform: only integer arithmetic that
 /// stays below 2^53 (a web build has no 64-bit ints) and no `Random`, whose
 /// sequence for a seed is not promised to stay the same between versions.
@@ -102,7 +121,7 @@ const _prime = 2147483647; // 2^31 - 1
 /// neighbouring words.
 int dailyHash(String s) {
   var h = 1;
-  for (final u in s.codeUnits) {
+  for (final u in '$_salt$s'.codeUnits) {
     h = (h * 1000003 + u) % _prime;
   }
   for (var i = 0; i < 3; i++) {
@@ -242,7 +261,7 @@ class Daily {
       return Daily(
         d,
         all[dailyCurveIndex(key, d, w)],
-        tries: mode == GameMode.lockdown ? lockdownTries : dailyTries,
+        tries: mode == GameMode.lockdown ? lockdownTries : dailyTriesOf(mode),
       );
     }
     final pool = all.length > dailyAnswers ? all.sublist(0, dailyAnswers) : all;
@@ -252,7 +271,8 @@ class Daily {
 
 /// The tries of a daily in [mode]: the fixed daily difficulty, with the extra
 /// tries the mode has (9 for a quartet, 10 for a relay race).
-int dailyTriesOf(GameMode mode) => triesFor(mode, dailyTries);
+int dailyTriesOf(GameMode mode) =>
+    mode == GameMode.blind ? blindDailyTries : triesFor(mode, dailyTries);
 
 /// Today's (or [date]'s) daily quartet or relay race: four words, drawn from
 /// the date, the language and the mode alone, so that every device with the same
@@ -295,15 +315,27 @@ class DailyMulti {
       return pool[totals == null ? h % pool.length : _byWeight(totals, h)];
     }
 
+    // from dailyShareFrom a word that shares a letter is kept with the chance
+    // dailyShare, drawn from the date like everything else
+    final mayShare = d.length == 10 && d.compareTo(dailyShareFrom) >= 0;
+    bool keeps(List<String> chosen, String w, int k, int j, int t) {
+      if (chosen.contains(w)) return false;
+      if (!mayShare) return chosen.every((o) => !sharesLetter(o, w));
+      final shared =
+          chosen.where((o) => sharesLetter(o, w)).length +
+          (hasRepeatedLetter(w) ? 1 : 0);
+      if (shared == 0) return true;
+      final u = dailyHash('lexodle-share|$code|$d|${mode.name}|$k|$j|$t');
+      return u % 100 < dailyShare;
+    }
+
     for (var k = 0; k < 2000; k++) {
       final chosen = <String>[];
       for (var j = 0; j < mode.boards; j++) {
         String? pick;
         for (var t = 0; t < 60 && pick == null; t++) {
           final w = word(k, j, t);
-          if (!chosen.contains(w) && chosen.every((o) => !sharesLetter(o, w))) {
-            pick = w;
-          }
+          if (keeps(chosen, w, k, j, t)) pick = w;
         }
         if (pick == null) break;
         chosen.add(pick);
