@@ -642,6 +642,7 @@ class _GamePageState extends State<GamePage>
 
   Widget _grid() {
     final c = Theme.of(context).colorScheme;
+    final deduced = blind ? _deduced : const <String, Mark>{};
     return LayoutBuilder(
       builder: (context, box) {
         const gap = 6.0;
@@ -686,7 +687,9 @@ class _GamePageState extends State<GamePage>
                                   ? guesses[r][i]
                                   : (r == guesses.length ? input.slot(i) : ''),
                               r < marks.length
-                                  ? (blind ? notes[r][i] : marks[r][i])
+                                  ? (blind
+                                        ? notes[r][i] ?? deduced[guesses[r][i]]
+                                        : marks[r][i])
                                   : null,
                               active: r == guesses.length && !over,
                               cursor:
@@ -722,6 +725,27 @@ class _GamePageState extends State<GamePage>
   /// info dot hangs off its right edge.
   /// The colour after [m] in the cycle a tap goes through: none, green,
   /// yellow, grey, and round to none.
+  /// What a blind game's counts settle outright, marked for the player: a
+  /// guess with no right letters rules all of its letters out; one whose
+  /// counts add up to the length has all of its letters in the word, and every
+  /// other letter out.
+  Map<String, Mark> get _deduced {
+    final d = <String, Mark>{};
+    for (var r = 0; r < marks.length; r++) {
+      final hit = marks[r].where((m) => m != Mark.absent).length;
+      if (hit == 0) {
+        for (final ch in guesses[r].split('')) {
+          d[ch] = Mark.absent;
+        }
+      } else if (hit == length) {
+        for (final ch in _letters) {
+          d[ch] = guesses[r].contains(ch) ? Mark.present : Mark.absent;
+        }
+      }
+    }
+    return d;
+  }
+
   static Mark? _nextNote(Mark? m) => switch (m) {
     null => Mark.correct,
     Mark.correct => Mark.present,
@@ -1057,7 +1081,7 @@ class _GamePageState extends State<GamePage>
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
-    marks: blind ? const {} : keyMarks,
+    marks: blind ? _deduced : keyMarks,
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,
