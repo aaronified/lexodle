@@ -242,6 +242,31 @@ class MultiGame {
       )
       .length;
 
+  /// Won with one guess for each of the later three words: in a quartet, the
+  /// first word solved and then the other boards on the next guesses, one a
+  /// guess; in a relay race, every word after the first solved by a single
+  /// guess of its own, or by none (a free ride). The skilled cousin of one
+  /// guess for every word, which is luck.
+  bool get lateSingles {
+    if (!won || boards.length < 2) return false;
+    if (mode == GameMode.quartet) {
+      final s = [for (final b in boards) b.solvedAt!]..sort();
+      for (var i = 1; i < s.length; i++) {
+        if (s[i] != s[0] + i) return false;
+      }
+      return true;
+    }
+    // a relay board opens the guess after the one that solved the board before
+    // it, or at the same moment when that one was solved by earlier guesses
+    var opens = 0;
+    for (var b = 0; b < boards.length; b++) {
+      final at = boards[b].solvedAt!;
+      if (b > 0 && at > opens) return false;
+      if (at >= opens) opens = at + 1;
+    }
+    return true;
+  }
+
   /// The analysis of each guess so far, and when each board opened.
   final steps = <MultiStep>[];
   final heads = <HeadStart>[];

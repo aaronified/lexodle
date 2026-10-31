@@ -57,6 +57,7 @@ class GameResult {
     this.skills = const [],
     this.mode = GameMode.classic,
     this.freeRides = 0,
+    this.lateSingles = false,
     this.daily = false,
     this.dailyStreak = 0,
     this.style,
@@ -93,6 +94,10 @@ class GameResult {
   /// Relay race: boards that were solved the moment they opened, by the
   /// guesses made before.
   final int freeRides;
+
+  /// Quartet or relay race: won with one guess for each of the later three
+  /// words (see [MultiGame.lateSingles]).
+  final bool lateSingles;
 
   /// Whether it was the daily word, and the daily streak it left (0 when the
   /// daily was missed).
@@ -426,6 +431,8 @@ const _counted = {
   'quartetWins',
   'quartetLast',
   'oneEach',
+  'relayChain',
+  'quartetChain',
   'relayWins',
   'relayLast',
   'relayFree',
@@ -698,6 +705,34 @@ final achievements = <Achievement>[
         'luckiest man alive',
       ],
     ),
+  ),
+  Achievement.leveled(
+    'relay_chain',
+    'bike',
+    'baton pass',
+    (n) => n == 1
+        ? 'win a relay race with one guess for each of the last 3 words'
+        : 'win a relay race with one guess for each of the last 3 words $n times',
+    'relayChain',
+    _lv(
+      [1, 5, 15, 40],
+      ['hand-off', 'smooth pass', 'clean relay', 'perfect relay'],
+    ),
+    mode: GameMode.relay,
+  ),
+  Achievement.leveled(
+    'quartet_chain',
+    'puzzle',
+    'domino',
+    (n) => n == 1
+        ? 'win a quartet with one guess for each of the last 3 words'
+        : 'win a quartet with one guess for each of the last 3 words $n times',
+    'quartetChain',
+    _lv(
+      [1, 5, 15, 40],
+      ['first domino', 'chain reaction', 'cascade', 'avalanche'],
+    ),
+    mode: GameMode.quartet,
   ),
   Achievement.leveled(
     'relay_wins',
@@ -1150,6 +1185,8 @@ final metrics = <String, Metric>{
     GameMode.quartet,
     GameMode.relay,
   }, (r) => r.won && r.used <= 4),
+  'relayChain': _count(_relayOnly, (r) => r.won && r.lateSingles),
+  'quartetChain': _count(_quartetOnly, (r) => r.won && r.lateSingles),
   'relayWins': _count(_relayOnly, (r) => r.won),
   'relayLast': _count(_relayOnly, (r) => r.won && r.used == r.tries),
   'relayFree': _count(_relayOnly, (r) => r.won && r.freeRides > 0),
