@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.4.4
+
 - blind marks the obvious on the keyboard and the grid
   A guess with 0 right and 0 elsewhere greys all its letters; one whose counts
   add up to the word length turns its letters yellow and greys every other
