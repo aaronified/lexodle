@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'logic.dart';
 import 'analysis_worker_stub.dart'
     if (dart.library.io) 'analysis_worker_io.dart'
@@ -57,4 +59,18 @@ void warmOpening(
     weights: weights,
     blind: blind,
   ).then<void>((_) {}, onError: (_) {});
+}
+
+/// The expected gain of each of [words] against [board], worked out on other
+/// threads, or null where the analysis stays on this one (the tests, the web).
+Future<Float64List?> gainsOffThread(
+  List<String> board,
+  List<String> words,
+  Map<String, int>? weights,
+) async {
+  if (!analyseOffMainThread) return null;
+  final rows = await platform.scoreOnPool(board, words, weights);
+  return Float64List.fromList([
+    for (var i = 0; i < words.length; i++) rows[i * chunkRow + chunkGain],
+  ]);
 }

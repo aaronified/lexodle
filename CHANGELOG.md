@@ -7,6 +7,16 @@ it to the version.
 
 ## Unreleased
 
+- quartet and relay: the screen stays smooth while they are analysed
+  The analysis of each guess of a quartet or relay race now runs on other
+  threads, as a classic game's does. It ran on the screen's own, which made the
+  second guess hard to type.
+- quartet and relay: doubled letters are not favoured
+  Words kept from sharing letters tend to be words with a letter twice, so a
+  daily could be four of them. From 2026-11-01 at most two of a daily's four
+  words have a letter twice; in other games a word with a letter twice counts as
+  sharing a letter.
+
 - blind: a doubled letter can be green in two places
   A letter may be green in several positions. The limits are: a position is
   green with one letter, no more letters than the length are green or yellow,

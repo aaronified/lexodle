@@ -31,6 +31,11 @@ const dailyAnswers = 3000;
 /// before it replays against the same word.
 const dailyCurveFrom = '2026-10-30';
 
+/// From this date no more than half the words of a daily quartet or relay race
+/// have a letter twice: they are the easiest to keep from sharing letters, so
+/// the draw favoured them (all four, one day).
+const dailyDistinctFrom = '2026-11-01';
+
 /// Whether the daily of [date] is drawn by the curve.
 bool dailyUsesCurve(String date) =>
     date.length == 10 && date.compareTo(dailyCurveFrom) >= 0;
@@ -295,14 +300,22 @@ class DailyMulti {
       return pool[totals == null ? h % pool.length : _byWeight(totals, h)];
     }
 
+    // from dailyDistinctFrom no more than half the words have a letter twice
+    final maxRepeated = d.length == 10 && d.compareTo(dailyDistinctFrom) >= 0
+        ? mode.boards ~/ 2
+        : mode.boards;
     for (var k = 0; k < 2000; k++) {
       final chosen = <String>[];
+      var repeated = 0;
       for (var j = 0; j < mode.boards; j++) {
         String? pick;
         for (var t = 0; t < 60 && pick == null; t++) {
           final w = word(k, j, t);
+          final twice = hasRepeatedLetter(w);
+          if (twice && repeated >= maxRepeated) continue;
           if (!chosen.contains(w) && chosen.every((o) => !sharesLetter(o, w))) {
             pick = w;
+            if (twice) repeated++;
           }
         }
         if (pick == null) break;

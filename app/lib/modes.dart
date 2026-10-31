@@ -71,6 +71,11 @@ int triesFor(GameMode mode, int base) => base + mode.extraTries;
 /// Whether two words have a letter in common.
 bool sharesLetter(String a, String b) => a.split('').any(b.contains);
 
+/// Whether [w] has a letter twice. Words that do are the easiest to keep apart
+/// from other words, so a draw that keeps words from sharing letters would
+/// otherwise favour them.
+bool hasRepeatedLetter(String w) => w.split('').toSet().length < w.length;
+
 /// The tries of a lockdown game: its difficulty is the hearts, not the tries.
 const lockdownTries = 6;
 
@@ -106,7 +111,8 @@ const throbHearts = 3;
 /// letter whenever the language allows it. A pick can paint itself into a
 /// corner (the words so far leave no disjoint candidate), so the whole choice
 /// is started again, up to [restarts] times, keeping the one that was forced
-/// to share least; when none can avoid it (four 8-letter words cannot avoid
+/// to share least (a word with a letter twice counts as sharing one, or the
+/// draw would favour such words); when none can avoid it (four 8-letter words cannot avoid
 /// repeating a letter in a 26-letter alphabet) that is the result.
 List<String> chooseTargets(
   List<String> words,
@@ -130,7 +136,9 @@ List<String> chooseTargets(
       for (var i = 0; i < attempts && pick == null; i++) {
         final w = chooseWord(words, weights, rng);
         if (chosen.contains(w)) continue;
-        final shared = chosen.where((o) => sharesLetter(o, w)).length;
+        final shared =
+            chosen.where((o) => sharesLetter(o, w)).length +
+            (hasRepeatedLetter(w) ? 1 : 0);
         if (shared == 0 || rng.nextDouble() < p) {
           pick = w;
         } else if (shared < bestShared) {

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'dart:typed_data';
 
+import 'analysis_worker.dart';
 import 'logic.dart';
 
 /// The maths of the quartet and the relay race.
@@ -176,10 +177,15 @@ Future<MultiLandscape> analyseMulti(
   for (final i in active) {
     final board = live[i];
     if (sums.containsKey(board)) continue;
-    final ss = Float64List(cands.length);
-    for (var c = 0; c < cands.length; c++) {
-      ss[c] = splitStats(board, cands[c], weights).h;
-      if (++work % 20 == 0) await Future<void>.delayed(Duration.zero);
+    // on other threads where there are some, so the screen stays smooth; else
+    // here, yielding now and then
+    var ss = await gainsOffThread(board, cands, weights);
+    if (ss == null) {
+      ss = Float64List(cands.length);
+      for (var c = 0; c < cands.length; c++) {
+        ss[c] = splitStats(board, cands[c], weights).h;
+        if (++work % 20 == 0) await Future<void>.delayed(Duration.zero);
+      }
     }
     sums[board] = ss;
     sets[board] = board.toSet();
