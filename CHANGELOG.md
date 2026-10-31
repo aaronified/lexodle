@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- relay and quartet: one guess for each of the last 3 words
+  Two achievements, baton pass (relay race) and domino (quartet): win with one
+  guess for each of the last three words, 1/5/15/40 times. The skilled cousin of
+  luckiest man alive, which is luck. In a relay race a free ride counts.
+
 - the end panel can be dragged
   A bar on top of the analysis under a finished game drags it down to show more
   of the guesses, or up (or with a double tap) to read about the word.

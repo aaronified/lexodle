@@ -317,6 +317,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         mode: mode,
         skills: [for (final s in game.steps) s.skill],
         freeRides: game.freeRides,
+        lateSingles: game.lateSingles,
         daily: d != null,
       );
       // a step's skill and luck are the means over the boards it was made for;
@@ -361,6 +362,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
           mode: mode,
           skills: [for (final s in game.steps) s.skill],
           freeRides: game.freeRides,
+          lateSingles: game.lateSingles,
           daily: d != null,
           dailyStreak: streak,
         ),
