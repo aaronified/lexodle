@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- blind marks the obvious on the keyboard and the grid
+  A guess with 0 right and 0 elsewhere greys all its letters; one whose counts
+  add up to the word length turns its letters yellow and greys every other
+  letter. Deduced greys are fixed; deduced yellows can only be tapped between
+  yellow and green.
+
 ## 0.4.3
 
 - lockdown skill counts only the guesses you were allowed
