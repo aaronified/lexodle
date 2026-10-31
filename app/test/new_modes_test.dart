@@ -201,6 +201,47 @@ void main() {
       await tester.pump();
     }
 
+    testWidgets('the end panel has a bar to drag it down, and a double tap '
+        'maximises it', (tester) async {
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+        ),
+      ))!;
+      await open(tester, GameMode.blind, bank, 'prism', 10);
+      await guess(tester, 'prism');
+      expect(find.text('solved in 1 of 10'), findsOneWidget);
+      final handle = find.byKey(const ValueKey('panel-handle'));
+      expect(handle, findsOneWidget);
+      final screen =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      // the panel starts at half the screen; a drag down makes it smaller
+      await tester.drag(handle, const Offset(0, 100));
+      await tester.pump();
+      final dragged = tester
+          .getSize(find.byKey(const ValueKey('over-panel')))
+          .height;
+      expect(dragged, lessThan(screen * .5));
+      expect(dragged, greaterThanOrEqualTo(96));
+      // a double tap maximises it, and another goes back
+      await tester.tap(handle);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(handle);
+      await tester.pump();
+      expect(
+        tester.getSize(find.byKey(const ValueKey('over-panel'))).height,
+        screen - 260,
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(handle);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(handle);
+      await tester.pump();
+      expect(find.byKey(const ValueKey('over-panel')), findsNothing);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(const SizedBox());
+    });
+
     testWidgets('blind shows two counts and no tile colours', (tester) async {
       final bank = (await tester.runAsync(
         () async => WordBank.load(
