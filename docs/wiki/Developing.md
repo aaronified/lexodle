@@ -58,6 +58,32 @@ The `Deploy web app to GitHub Pages` workflow tests, builds and publishes `app/`
 Actions*. You can also run it by hand from the Actions tab. The `wiki` workflow publishes
 `docs/wiki` to this wiki.
 
+## Protecting main: the release deploy key
+
+The release workflow pushes one commit to `main` (the version it records after a release). A
+ruleset that requires pull requests would refuse it, and the workflow's own token cannot be made a
+bypass actor on a personal repository. So that push uses a deploy key, the repository secret
+`RELEASE_DEPLOY_KEY`. The tag is still pushed with the Actions token, which no rule on `main`
+touches. With no secret set the workflow warns and pushes with the token, which works only while
+`main` is unprotected.
+
+Set it up once (PowerShell, in a temporary folder):
+
+```powershell
+ssh-keygen -t ed25519 -N '""' -C "lexodle release workflow" -f lexodle-release-key
+gh api -X POST repos/aaronified/lexodle/keys -f title="release workflow" -f key="$(Get-Content lexodle-release-key.pub -Raw)" -F read_only=false
+Get-Content lexodle-release-key -Raw | gh secret set RELEASE_DEPLOY_KEY --repo aaronified/lexodle
+Remove-Item lexodle-release-key, lexodle-release-key.pub
+```
+
+Then, in Settings → Rules → Rulesets, make a ruleset for `main` that requires a pull request and
+forbids force-push and deletion, and add **Deploy keys** to its bypass list. Create it switched
+off, run one release to check the key works (the run's log should not show the "not set" warning),
+then switch it on. To undo, delete the key under Settings → Deploy keys.
+
+The push by key starts the workflows that listen to `main` (Pages, Android), as any push there
+does. The release workflow itself listens to tags, so it does not start again.
+
 ## The experiments
 
 `app/tools/calibrate_styles.dart` and `predict_tries.dart` (run from `app`, see the head of each)

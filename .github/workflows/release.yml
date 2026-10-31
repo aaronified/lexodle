@@ -289,14 +289,47 @@ jobs:
           body_path: release-notes.md
 
       # Keeps main in step: the version of this release goes into main too, unless
-      # main already has a later one (an older tag run again). A push made with
-      # the workflow's own token starts no other workflow, so this cannot loop; it
-      # retries if someone pushed meanwhile.
+      # main already has a later one (an older tag run again). It retries if
+      # someone pushed meanwhile.
+      #
+      # MAIN CAN BE PROTECTED. A ruleset that requires pull requests also stops this
+      # push, and the workflow's own token cannot be made a bypass actor on a
+      # personal repository. So this push uses a deploy key instead: the repository
+      # secret RELEASE_DEPLOY_KEY is the private half of an SSH deploy key of this
+      # repository with write access, and the ruleset lists deploy keys as bypass.
+      # Setup is in the wiki page Developing. The tag (pushed above) still goes with
+      # the token, which no ruleset on main touches. With no secret set this falls
+      # back to the token, which works only while main is unprotected. The push by
+      # key starts the workflows that listen to main (not this one: it listens to
+      # tags), which is wanted; the token's push started none.
       - name: Record the version in main
         working-directory: .
+        env:
+          DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           v="${TAG#v}"
+          push_main() {
+            if [ -n "${DEPLOY_KEY:-}" ]; then
+              GIT_SSH_COMMAND="ssh -i $keyfile -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
+                git push -q "git@github.com:${REPO}.git" HEAD:refs/heads/main
+            else
+              git push -q origin main
+            fi
+          }
+          keyfile=$(mktemp)
+          trap 'rm -f "$keyfile"' EXIT
+          if [ -n "${DEPLOY_KEY:-}" ]; then
+            printf '%s\n' "$DEPLOY_KEY" > "$keyfile"
+            chmod 600 "$keyfile"
+            if ! ssh-keygen -y -f "$keyfile" > /dev/null; then
+              echo "::warning::RELEASE_DEPLOY_KEY is not an OpenSSH private key (paste the private file made by ssh-keygen, not the .pub). Release ${TAG} is published; set the version in main by hand."
+              exit 0
+            fi
+          else
+            echo "::warning::RELEASE_DEPLOY_KEY is not set, pushing main with the Actions token (fails if main is protected)."
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do
@@ -315,7 +348,7 @@ jobs:
             fi
             git add app/pubspec.yaml app/lib/update_check.dart
             git commit -q -m "Version ${v}" -m "Set by the release workflow from the tag ${TAG}."
-            if git push -q origin main; then exit 0; fi
+            if push_main; then exit 0; fi
             echo "push failed (attempt ${attempt}); trying again"
             sleep $((attempt * 5))
           done
