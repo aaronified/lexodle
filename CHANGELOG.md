@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- dailies change at midnight India time for everyone
+  The date of a daily is the date in IST (UTC+5:30), the same instant all over
+  the world.
+- the words of the dailies cannot be read off the source
+  The daily draw is salted with a secret put in at build time.
+
 - blind has a daily
   One word, five letters, 10 tries, the same for everyone, with a streak, a
   calendar and a streak achievement of its own (blind kindling to blind phoenix).

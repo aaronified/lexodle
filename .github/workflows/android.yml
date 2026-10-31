@@ -34,4 +34,4 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter build apk --debug
+      - run: flutter build apk --debug --dart-define=DAILY_SALT=${{ secrets.DAILY_SALT }}

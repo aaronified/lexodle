@@ -149,9 +149,9 @@ void main() {
       expect(TrustedClock.now().difference(before), const Duration(hours: 3));
     });
 
-    test('the day changes at local midnight, by the server\'s time', () async {
-      // the device is 40 seconds slow: 23:59:30 here, 00:00:10 on the server
-      final device = DateTime(2026, 10, 24, 23, 59, 30);
+    test('the day changes at midnight IST, by the server\'s time', () async {
+      // the device is 40 seconds slow: 23:59:30 IST here, 00:00:10 on the server
+      final device = DateTime.utc(2026, 10, 24, 18, 29, 30);
       TrustedClock.deviceNow = () => device;
       expect(dailyDate(), '2026-10-24');
       await TrustedClock.sync(

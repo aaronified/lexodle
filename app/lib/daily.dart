@@ -35,7 +35,7 @@ const dailyCurveFrom = '2026-10-30';
 /// with the chance of [dailyShare] percent, as in any other game (a word with
 /// a letter twice counts as sharing one). Before, they shared none, which
 /// favoured words with a letter twice: all four of them, one day.
-const dailyShareFrom = '2026-11-01';
+const dailyShareFrom = '2026-10-31';
 
 /// The chance, in percent, that a daily word may share a letter with an earlier
 /// one, from [dailyShareFrom].
@@ -57,10 +57,11 @@ String _ymd(DateTime d) {
   return '${d.year.toString().padLeft(4, '0')}-${two(d.month)}-${two(d.day)}';
 }
 
-/// The date of a daily as `2026-10-24`, on the player's own calendar: the day
-/// changes at their local midnight, so the word is the same for everyone who is
-/// on the same date, not at the same instant.
-String dailyDate([DateTime? now]) => _ymd((now ?? dailyClock()).toLocal());
+/// The date of a daily as `2026-10-24`, on the calendar of India (IST, UTC+5:30)
+/// for everyone: the day changes at the same instant all over the world.
+String dailyDate([DateTime? now]) => _ymd(
+  (now ?? dailyClock()).toUtc().add(const Duration(hours: 5, minutes: 30)),
+);
 
 /// [date] moved by [days] (negative for earlier), still as `2026-10-24`.
 /// A malformed [date] comes back unchanged.
@@ -106,6 +107,11 @@ String dailyLetter(String date) {
 
 const _prime = 2147483647; // 2^31 - 1
 
+/// A secret put in at build time (`--dart-define=DAILY_SALT=...`, from the
+/// repository secret of that name), so the words of the dailies cannot be read
+/// off the source. Empty in a build without it, and in the tests.
+const _salt = String.fromEnvironment('DAILY_SALT');
+
 /// A number from [s], the same on every platform: only integer arithmetic that
 /// stays below 2^53 (a web build has no 64-bit ints) and no `Random`, whose
 /// sequence for a seed is not promised to stay the same between versions.
@@ -115,7 +121,7 @@ const _prime = 2147483647; // 2^31 - 1
 /// neighbouring words.
 int dailyHash(String s) {
   var h = 1;
-  for (final u in s.codeUnits) {
+  for (final u in '$_salt$s'.codeUnits) {
     h = (h * 1000003 + u) % _prime;
   }
   for (var i = 0; i < 3; i++) {
