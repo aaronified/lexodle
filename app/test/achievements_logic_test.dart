@@ -169,6 +169,7 @@ void main() {
           'streakQuartet',
           'streakRelay',
           'streakLockdown',
+          'streakBlind',
         ],
       );
       final s = byId('daily_streak');

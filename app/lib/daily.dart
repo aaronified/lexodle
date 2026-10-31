@@ -31,10 +31,18 @@ const dailyAnswers = 3000;
 /// before it replays against the same word.
 const dailyCurveFrom = '2026-10-30';
 
-/// From this date no more than half the words of a daily quartet or relay race
-/// have a letter twice: they are the easiest to keep from sharing letters, so
-/// the draw favoured them (all four, one day).
-const dailyDistinctFrom = '2026-11-01';
+/// From this date the words of a daily quartet or relay race may share a letter
+/// with the chance of [dailyShare] percent, as in any other game (a word with
+/// a letter twice counts as sharing one). Before, they shared none, which
+/// favoured words with a letter twice: all four of them, one day.
+const dailyShareFrom = '2026-11-01';
+
+/// The chance, in percent, that a daily word may share a letter with an earlier
+/// one, from [dailyShareFrom].
+const dailyShare = 10;
+
+/// The tries of a blind daily.
+const blindDailyTries = 10;
 
 /// Whether the daily of [date] is drawn by the curve.
 bool dailyUsesCurve(String date) =>
@@ -247,7 +255,7 @@ class Daily {
       return Daily(
         d,
         all[dailyCurveIndex(key, d, w)],
-        tries: mode == GameMode.lockdown ? lockdownTries : dailyTries,
+        tries: mode == GameMode.lockdown ? lockdownTries : dailyTriesOf(mode),
       );
     }
     final pool = all.length > dailyAnswers ? all.sublist(0, dailyAnswers) : all;
@@ -257,7 +265,8 @@ class Daily {
 
 /// The tries of a daily in [mode]: the fixed daily difficulty, with the extra
 /// tries the mode has (9 for a quartet, 10 for a relay race).
-int dailyTriesOf(GameMode mode) => triesFor(mode, dailyTries);
+int dailyTriesOf(GameMode mode) =>
+    mode == GameMode.blind ? blindDailyTries : triesFor(mode, dailyTries);
 
 /// Today's (or [date]'s) daily quartet or relay race: four words, drawn from
 /// the date, the language and the mode alone, so that every device with the same
@@ -300,23 +309,27 @@ class DailyMulti {
       return pool[totals == null ? h % pool.length : _byWeight(totals, h)];
     }
 
-    // from dailyDistinctFrom no more than half the words have a letter twice
-    final maxRepeated = d.length == 10 && d.compareTo(dailyDistinctFrom) >= 0
-        ? mode.boards ~/ 2
-        : mode.boards;
+    // from dailyShareFrom a word that shares a letter is kept with the chance
+    // dailyShare, drawn from the date like everything else
+    final mayShare = d.length == 10 && d.compareTo(dailyShareFrom) >= 0;
+    bool keeps(List<String> chosen, String w, int k, int j, int t) {
+      if (chosen.contains(w)) return false;
+      if (!mayShare) return chosen.every((o) => !sharesLetter(o, w));
+      final shared =
+          chosen.where((o) => sharesLetter(o, w)).length +
+          (hasRepeatedLetter(w) ? 1 : 0);
+      if (shared == 0) return true;
+      final u = dailyHash('lexodle-share|$code|$d|${mode.name}|$k|$j|$t');
+      return u % 100 < dailyShare;
+    }
+
     for (var k = 0; k < 2000; k++) {
       final chosen = <String>[];
-      var repeated = 0;
       for (var j = 0; j < mode.boards; j++) {
         String? pick;
         for (var t = 0; t < 60 && pick == null; t++) {
           final w = word(k, j, t);
-          final twice = hasRepeatedLetter(w);
-          if (twice && repeated >= maxRepeated) continue;
-          if (!chosen.contains(w) && chosen.every((o) => !sharesLetter(o, w))) {
-            pick = w;
-            if (twice) repeated++;
-          }
+          if (keeps(chosen, w, k, j, t)) pick = w;
         }
         if (pick == null) break;
         chosen.add(pick);

@@ -125,7 +125,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.lockdown);
-      // themed and blind are in the loop too, and no daily comes with them
+      // themed is in the loop too, and has no daily; blind has one
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.themed);
@@ -133,7 +133,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.blind);
-      expect(find.byKey(const ValueKey('daily-button')), findsNothing);
+      expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.classic);

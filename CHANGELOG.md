@@ -7,6 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- blind has a daily
+  One word, five letters, 10 tries, the same for everyone, with a streak, a
+  calendar and a streak achievement of its own (blind kindling to blind phoenix).
+- the daily quartet and relay race may share a letter
+  From 2026-11-01 a daily word may share a letter with an earlier one with a
+  10% chance, as in any other game (a word with a letter twice counts as
+  sharing). Before, they shared none, which favoured words with a letter twice.
+
 - relay race: locks do not carry to the next target
   When a target is solved, the next word starts with nothing locked.
 - abbreviations are out of the word lists

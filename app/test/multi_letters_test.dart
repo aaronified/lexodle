@@ -31,20 +31,21 @@ void main() {
   });
 
   testWidgets(
-    'a daily quartet and relay from 2026-11-01 have at most two words with a doubled letter',
+    'a daily quartet and relay from 2026-11-01 do not favour doubled letters',
     (tester) async {
       final b = await english(tester);
-      for (var day = 1; day <= 10; day++) {
-        final date = '2026-11-${day.toString().padLeft(2, '0')}';
+      var repeated = 0, total = 0;
+      for (var day = 0; day < 40; day++) {
+        final date = dailyShift(dailyShareFrom, day);
         for (final mode in [GameMode.quartet, GameMode.relay]) {
-          final d = DailyMulti.of(b, mode, date)!;
-          expect(
-            d.answers.where(hasRepeatedLetter).length,
-            lessThanOrEqualTo(2),
-            reason: '$date $mode',
-          );
+          for (final w in DailyMulti.of(b, mode, date)!.answers) {
+            total++;
+            if (hasRepeatedLetter(w)) repeated++;
+          }
         }
       }
+      // about a fifth of English words have a letter twice
+      expect(repeated / total, lessThan(0.35));
     },
   );
 }

@@ -30,9 +30,12 @@ void main() {
             expect(w.length, dailyLength);
             ranks.add(all.indexOf(w));
           }
-          for (var i = 0; i < 4; i++) {
-            for (var j = i + 1; j < 4; j++) {
-              expect(sharesLetter(d.answers[i], d.answers[j]), isFalse);
+          // until the share date the words share no letter
+          if (date.compareTo(dailyShareFrom) < 0) {
+            for (var i = 0; i < 4; i++) {
+              for (var j = i + 1; j < 4; j++) {
+                expect(sharesLetter(d.answers[i], d.answers[j]), isFalse);
+              }
             }
           }
         }
@@ -70,6 +73,22 @@ void main() {
           }
         }
       }
+    });
+
+    test('blind has a daily of its own: one word, ten tries', () {
+      expect(GameMode.blind.hasDaily, isTrue);
+      expect(GameMode.themed.hasDaily, isFalse);
+      expect(dailyTriesOf(GameMode.blind), 10);
+      var differs = 0;
+      for (var day = 0; day < 20; day++) {
+        final date = dailyShift('2026-11-01', day);
+        final b = Daily.of(bank, date, GameMode.blind)!;
+        expect(b.tries, 10);
+        expect(b.answer.length, dailyLength);
+        expect(Daily.of(bank, date, GameMode.blind)!.answer, b.answer);
+        if (b.answer != Daily.of(bank, date)!.answer) differs++;
+      }
+      expect(differs, greaterThan(15));
     });
 
     test('the same for everyone, and each mode and day has its own', () {

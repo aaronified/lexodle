@@ -136,13 +136,11 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         const SizedBox(height: 8),
                         Text(
                           !mode.hasDaily
-                              ? 'no daily in this mode. ${switch (mode) {
-                                  GameMode.themed => 'themed wordles accept only the words of the theme, in english: no ordinary words.',
-                                  _ => 'a guess tells only how many letters are right (green) and elsewhere (yellow).',
-                                }}'
+                              ? 'no daily in this mode. themed wordles accept only '
+                                    'the words of the theme, in english: no ordinary words.'
                               : 'the daily of ${mode.label} always uses fixed '
                                     'settings: five letters, '
-                                    '${mode.multi ? 'the words share no letter, ' : ''}'
+                                    '${mode.multi ? 'the words may share a letter (10% chance), ' : ''}'
                                     '${dailyTriesOf(mode)} tries'
                                     '${mode == GameMode.lockdown ? ', $dailyHearts hearts' : ''}.',
                           key: const ValueKey('daily-note'),

@@ -22,8 +22,8 @@ enum GameMode {
       if (m != themed || lang == 'en') m,
   ];
 
-  /// Whether the mode has a daily: the first four have, themed and blind do not.
-  bool get hasDaily => index <= lockdown.index;
+  /// Whether the mode has a daily: every mode but themed.
+  bool get hasDaily => this != themed;
   final String label;
   final String sub;
 

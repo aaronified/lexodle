@@ -438,6 +438,7 @@ const _counted = {
   'blindLast',
   'blindBrutal',
   'streakLockdown',
+  'streakBlind',
   'stylesWorn',
 };
 const _globalMetrics = {'langs', 'mastered', 'completed'};
@@ -942,6 +943,21 @@ final achievements = <Achievement>[
     icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
     mode: GameMode.lockdown,
   ),
+  Achievement.leveled(
+    'blind_streak',
+    'campfire',
+    'blind streak',
+    (n) => 'solve the blind daily $n days in a row',
+    'streakBlind',
+    _lv(
+      [3, 10, 30, 100],
+      ['blind kindling', 'blind campfire', 'blind furnace', 'blind phoenix'],
+    ),
+    hit: (r, t) => r.daily && r.mode == GameMode.blind && r.dailyStreak == t,
+    separate: true,
+    icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
+    mode: GameMode.blind,
+  ),
 ];
 
 /// Bronze, silver, gold and platinum levels at these targets.
@@ -1152,6 +1168,7 @@ final metrics = <String, Metric>{
   'blindLast': _count(_blindOnly, (r) => r.won && r.used == r.tries),
   'blindBrutal': _count(_blindOnly, (r) => r.won && r.tries <= 6),
   'streakLockdown': _dailyStreak(GameMode.lockdown),
+  'streakBlind': _dailyStreak(GameMode.blind),
   for (final p in playstyles) 'style_${p.id}': _style(p.id),
   'styleChanges': _count(_anyMode, (r) => r.styleChanged),
   'stylesWorn': Metric(
