@@ -9651,7 +9651,6 @@ spoof	1258
 trope	1258
 tufts	1258
 aloha	1230
-bafta	1230
 booed	1230
 butte	1230
 foyer	1230

@@ -11,16 +11,17 @@ class BlindRow {
 
 /// The colours a player of a blind game pencils on letters, with the rules
 /// they must keep. Green and yellow belong to a letter at a position, grey to a
-/// letter. A letter is green in at most one position, and a position is green
-/// with at most one letter. A letter is yellow in at most length - 1 positions,
-/// and when it is yellow in every other position it can still be, it can only
-/// be green. A letter that is green or yellow cannot be grey. A row cannot have
-/// more green, right or wrong letters than its counts say.
+/// letter. A letter can be green in several positions (a doubled letter), but a
+/// position is green with at most one letter. No more letters than the length
+/// can be green or yellow. A letter cannot be yellow in every position: when it
+/// is yellow in every other position it can still be, it can only be green. A
+/// letter that is green or yellow cannot be grey. A row cannot have more
+/// green, right or wrong letters than its counts say.
 class BlindPencil {
   BlindPencil(this.length);
 
   final int length;
-  final green = <String, int>{};
+  final green = <String, Set<int>>{};
   final yellow = <String, Set<int>>{};
   final grey = <String>{};
 
@@ -32,7 +33,9 @@ class BlindPencil {
 
   BlindPencil _copy() {
     final c = BlindPencil(length);
-    c.green.addAll(green);
+    for (final e in green.entries) {
+      c.green[e.key] = {...e.value};
+    }
     for (final e in yellow.entries) {
       c.yellow[e.key] = {...e.value};
     }
@@ -42,7 +45,9 @@ class BlindPencil {
 
   void _become(BlindPencil o) {
     clear();
-    green.addAll(o.green);
+    for (final e in o.green.entries) {
+      green[e.key] = {...e.value};
+    }
     for (final e in o.yellow.entries) {
       yellow[e.key] = {...e.value};
     }
@@ -77,7 +82,7 @@ class BlindPencil {
   Mark? shown(String ch, int p, Map<String, Mark> d) {
     final x = d[ch];
     if (x == Mark.absent) return Mark.absent;
-    if (green[ch] == p) return Mark.correct;
+    if (green[ch]?.contains(p) ?? false) return Mark.correct;
     if (x == Mark.present) return Mark.present;
     if (yellow[ch]?.contains(p) ?? false) return Mark.present;
     if (grey.contains(ch)) return Mark.absent;
@@ -115,12 +120,14 @@ class BlindPencil {
     final at = <int, String>{};
     for (final e in green.entries) {
       if (d[e.key] == Mark.absent) continue;
-      final other = at[e.value];
-      if (other != null) {
-        final who = e.key == focus ? other : e.key;
-        return 'position ${e.value + 1} is already green with $who';
+      for (final p in e.value) {
+        final other = at[p];
+        if (other != null) {
+          final who = e.key == focus ? other : e.key;
+          return 'position ${p + 1} is already green with $who';
+        }
+        at[p] = e.key;
       }
-      at[e.value] = e.key;
     }
     // a letter that is green or yellow is not grey
     for (final ch in grey) {
@@ -132,6 +139,13 @@ class BlindPencil {
     final letters = <String>{...green.keys, ...yellow.keys};
     for (final e in d.entries) {
       if (e.value == Mark.present) letters.add(e.key);
+    }
+    final inWord = [
+      for (final ch in letters)
+        if (_present(ch, d)) ch,
+    ];
+    if (inWord.length > length) {
+      return 'at most $length letters can be in the word';
     }
     for (final ch in letters) {
       if (!_present(ch, d) || green.containsKey(ch)) continue;
@@ -181,7 +195,11 @@ class BlindPencil {
   }
 
   void _set(String ch, int p, Mark? m) {
-    if (green[ch] == p) green.remove(ch);
+    final gs = green[ch];
+    if (gs != null) {
+      gs.remove(p);
+      if (gs.isEmpty) green.remove(ch);
+    }
     final ys = yellow[ch];
     if (ys != null) {
       ys.remove(p);
@@ -192,10 +210,7 @@ class BlindPencil {
         grey.remove(ch);
       case Mark.correct:
         grey.remove(ch);
-        final q = green[ch];
-        green[ch] = p;
-        // the older green goes back to yellow
-        if (q != null && q != p) (yellow[ch] ??= {}).add(q);
+        (green[ch] ??= {}).add(p);
       case Mark.present:
         grey.remove(ch);
         (yellow[ch] ??= {}).add(p);

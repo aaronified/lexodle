@@ -5,19 +5,25 @@ import 'package:lexodle/logic.dart';
 void main() {
   const none = <String, Mark>{};
 
-  test(
-    'a letter is green in one position; a new green sends the old to yellow',
-    () {
-      final p = BlindPencil(3);
-      final rows = [const BlindRow('abc', 2, 0), const BlindRow('cab', 2, 0)];
-      expect(p.tap('a', 0, rows, none), isNull);
-      expect(p.shown('a', 0, none), Mark.correct);
-      expect(p.tap('a', 1, rows, none), isNull);
-      expect(p.shown('a', 1, none), Mark.correct);
-      expect(p.shown('a', 0, none), Mark.present);
-      expect(p.keyboard(none)['a'], Mark.correct);
-    },
-  );
+  test('a doubled letter can be green in two places', () {
+    final p = BlindPencil(3);
+    final rows = [const BlindRow('abc', 2, 0), const BlindRow('cab', 2, 0)];
+    expect(p.tap('a', 0, rows, none), isNull);
+    expect(p.tap('a', 1, rows, none), isNull);
+    expect(p.shown('a', 0, none), Mark.correct);
+    expect(p.shown('a', 1, none), Mark.correct);
+    expect(p.keyboard(none)['a'], Mark.correct);
+  });
+
+  test('no more letters than the length are in the word', () {
+    final p = BlindPencil(2);
+    final rows = [const BlindRow('ab', 2, 0), const BlindRow('cx', 2, 0)];
+    p.tap('a', 0, rows, none);
+    p.tap('b', 1, rows, none);
+    // a third letter cannot be green or yellow, so it stays unmarked
+    expect(p.tap('c', 0, rows, none), isNotNull);
+    expect(p.shown('c', 0, none), isNull);
+  });
 
   test('two letters are not green in one position', () {
     final p = BlindPencil(3);

@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- blind: a doubled letter can be green in two places
+  A letter may be green in several positions. The limits are: a position is
+  green with one letter, no more letters than the length are green or yellow,
+  and a letter is never yellow in every position.
+- bafta is not a word
+  Removed from the English list (it moves the daily picks after it).
+
 - blind games do not count greens whose places are unknown
   The game phase and the playstyle of a blind guess no longer treat the
   places of earlier greens as known.
