@@ -387,7 +387,8 @@ class _GamePageState extends State<GamePage>
         // background analysis is still finding out
         provisional: analyseWhilePlaying,
         fresh: freshLetters(word, guesses.take(guesses.length - 1)),
-        greens: knownGreens(marks.take(marks.length - 1)),
+        // the places of a blind game's greens are not shown
+        greens: blind ? 0 : knownGreens(marks.take(marks.length - 1)),
         blind: blind,
       ),
     );

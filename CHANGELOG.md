@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- blind games do not count greens whose places are unknown
+  The game phase and the playstyle of a blind guess no longer treat the
+  places of earlier greens as known.
+
 - blind review shows the real colours and both counts
   The tiles of a blind game's review are the colours the guesses really had,
   with the two count squares beside each row.
