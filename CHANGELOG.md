@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.4.6
+
 - dailies change at midnight India time for everyone
   The date of a daily is the date in IST (UTC+5:30), the same instant all over
   the world.
