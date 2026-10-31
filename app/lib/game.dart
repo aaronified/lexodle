@@ -238,6 +238,7 @@ class _GamePageState extends State<GamePage>
     marks.clear();
     notes.clear();
     pencil.clear();
+    _panelHeight = null;
     keyMarks.clear();
     metrics.clear();
     befores.clear();
@@ -713,6 +714,7 @@ class _GamePageState extends State<GamePage>
                                   i == input.cursor,
                               key: ValueKey('tile-$r-$i'),
                               locked: r == guesses.length && input.isLocked(i),
+                              fixed: r == guesses.length && input.isFixed(i),
                               onTap: r == guesses.length && !over
                                   ? () => _select(i)
                                   : blind && r < guesses.length && !over
@@ -866,6 +868,7 @@ class _GamePageState extends State<GamePage>
     required bool active,
     bool cursor = false,
     bool locked = false,
+    bool fixed = false,
     Key? key,
     VoidCallback? onTap,
   }) {
@@ -875,12 +878,14 @@ class _GamePageState extends State<GamePage>
         ? c.onSurface.withValues(alpha: .5)
         : c.outlineVariant;
     var borderWidth = 1.0;
+    // the game's lock (a green in lockdown) is green; the player's own is pink
+    final lockColor = fixed ? markColors(c, Mark.correct).$1 : c.primary;
     if (m != null) {
       (fill, fg) = markColors(c, m);
       border = markBorder(c, m);
       borderWidth = markBorderWidth(m);
     } else if (ch.isNotEmpty) {
-      border = locked ? c.primary : c.onSurface;
+      border = locked ? lockColor : c.onSurface;
     }
     if (cursor) {
       border = c.primary;
@@ -920,7 +925,7 @@ class _GamePageState extends State<GamePage>
                     'lock',
                     key: const ValueKey('locked'),
                     size: size * .22,
-                    color: c.primary,
+                    color: lockColor,
                   ),
                 ),
             ],
@@ -1039,71 +1044,130 @@ class _GamePageState extends State<GamePage>
     child: Text(label),
   );
 
-  Widget _overPanel(ColorScheme c) {
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * .5,
-      ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 19),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    won
-                        ? 'solved in ${guesses.length} of $tries'
-                        : 'the word was  $answer',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                // a daily is played once: the next word comes tomorrow
-                if (_daily == null)
-                  _smallButton('replay', () => setState(_reset)),
-              ],
+  /// The height the player has dragged the end panel to, or null for its own:
+  /// as tall as it needs, up to half the screen.
+  double? _panelHeight;
+
+  /// The most the end panel can take: the grid keeps a little room above it.
+  double get _panelMax => max(120, MediaQuery.sizeOf(context).height - 260);
+
+  /// The bar on top of the end panel: drag it down to see more of the guesses,
+  /// up (or double tap) to read about the word.
+  Widget _panelHandle(ColorScheme c) {
+    final half = MediaQuery.sizeOf(context).height * .5;
+    return Semantics(
+      label: 'resize the analysis',
+      child: GestureDetector(
+        key: const ValueKey('panel-handle'),
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragUpdate: (d) => setState(
+          () => _panelHeight = ((_panelHeight ?? half) - d.delta.dy).clamp(
+            96.0,
+            _panelMax,
+          ),
+        ),
+        onDoubleTap: () => setState(
+          () => _panelHeight = (_panelHeight ?? half) >= _panelMax - 1
+              ? null
+              : _panelMax,
+        ),
+        child: SizedBox(
+          height: 24,
+          width: double.infinity,
+          child: Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: c.onSurface.withValues(alpha: .35),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            if (_daily != null)
-              Caption(
-                widget.practice
-                    ? 'practice${_daily.date.isEmpty ? '' : ' ${_daily.date}'} · not counted'
-                    : 'daily ${_daily.date} · streak ${appState.dailyStreak} · '
-                          'the next word comes at midnight, your time',
-              ),
-            // the answer, said as such (a win used to show it bare)
-            if (won) Caption('the word was $answer'),
-            const SizedBox(height: 10),
-            for (final a in unlocked)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    TablerIcon(a.icon, size: 30, color: c.primary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        '${a.title}  —  ${a.description}',
-                        style: TextStyle(color: c.primary, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 10),
-            const Divider(),
-            const SizedBox(height: 10),
-            _summary(c),
-            const SizedBox(height: 10),
-            const Divider(),
-            const SizedBox(height: 10),
-            WordInfoView(word: answer, language: widget.bank.language),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _overPanel(ColorScheme c) {
+    final body = SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 19),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  won
+                      ? 'solved in ${guesses.length} of $tries'
+                      : 'the word was  $answer',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              // a daily is played once: the next word comes tomorrow
+              if (_daily == null)
+                _smallButton('replay', () => setState(_reset)),
+            ],
+          ),
+          if (_daily != null)
+            Caption(
+              widget.practice
+                  ? 'practice${_daily.date.isEmpty ? '' : ' ${_daily.date}'} · not counted'
+                  : 'daily ${_daily.date} · streak ${appState.dailyStreak} · '
+                        'the next word comes at midnight, your time',
+            ),
+          // the answer, said as such (a win used to show it bare)
+          if (won) Caption('the word was $answer'),
+          const SizedBox(height: 10),
+          for (final a in unlocked)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                children: [
+                  TablerIcon(a.icon, size: 30, color: c.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '${a.title}  —  ${a.description}',
+                      style: TextStyle(color: c.primary, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 10),
+          const Divider(),
+          const SizedBox(height: 10),
+          _summary(c),
+          const SizedBox(height: 10),
+          const Divider(),
+          const SizedBox(height: 10),
+          WordInfoView(word: answer, language: widget.bank.language),
+        ],
+      ),
+    );
+    final h = _panelHeight;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _panelHandle(c),
+        h == null
+            ? ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * .5,
+                ),
+                child: body,
+              )
+            : SizedBox(
+                key: const ValueKey('over-panel'),
+                height: h,
+                child: body,
+              ),
+      ],
     );
   }
 

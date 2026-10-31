@@ -7,6 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- the end panel can be dragged
+  A bar on top of the analysis under a finished game drags it down to show more
+  of the guesses, or up (or with a double tap) to read about the word.
+
+- lockdown: the game's locks are green, yours are pink
+  A letter the game locked (a green in lockdown) has a green border and lock;
+  one you locked keeps the accent colour.
+
 ## 0.4.6
 
 - dailies change at midnight India time for everyone
