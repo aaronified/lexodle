@@ -127,10 +127,10 @@ class _GamePageState extends State<GamePage>
   final guesses = <String>[];
   final marks = <List<Mark>>[];
 
-  /// The colours a player of a blind game has pencilled on the letters of the
-  /// guesses so far, by tapping them: green, yellow, grey, or none. They are
-  /// notes: nothing scores by them.
-  final notes = <List<Mark?>>[];
+  /// The colours a player of a blind game has pencilled on letters, by tapping
+  /// them: green, yellow, grey, or none. A letter has one colour everywhere,
+  /// on every tile and on the keyboard. They are notes: nothing scores by them.
+  final notes = <String, Mark>{};
   final metrics = <GuessMetrics>[];
 
   /// The words still possible before each guess, for the post-game analysis.
@@ -357,7 +357,6 @@ class _GamePageState extends State<GamePage>
     final m = evaluate(answer, word, blind: blind);
     guesses.add(word);
     marks.add(m);
-    if (blind) notes.add(List.filled(length, null));
     for (var i = 0; i < length; i++) {
       final k = word[i];
       final old = keyMarks[k];
@@ -688,7 +687,10 @@ class _GamePageState extends State<GamePage>
                                   : (r == guesses.length ? input.slot(i) : ''),
                               r < marks.length
                                   ? (blind
-                                        ? _shown(notes[r][i], deduced[guesses[r][i]])
+                                        ? _shown(
+                                            notes[guesses[r][i]],
+                                            deduced[guesses[r][i]],
+                                          )
                                         : marks[r][i])
                                   : null,
                               active: r == guesses.length && !over,
@@ -701,15 +703,21 @@ class _GamePageState extends State<GamePage>
                               onTap: r == guesses.length && !over
                                   ? () => _select(i)
                                   : blind &&
-                                        r < notes.length &&
+                                        r < guesses.length &&
                                         !over &&
                                         deduced[guesses[r][i]] != Mark.absent
-                                  ? () => setState(
-                                      () => notes[r][i] = _nextNote(
-                                        notes[r][i],
-                                        deduced[guesses[r][i]],
-                                      ),
-                                    )
+                                  ? () => setState(() {
+                                      final ch = guesses[r][i];
+                                      final next = _nextNote(
+                                        notes[ch],
+                                        deduced[ch],
+                                      );
+                                      if (next == null) {
+                                        notes.remove(ch);
+                                      } else {
+                                        notes[ch] = next;
+                                      }
+                                    })
                                   : null,
                             ),
                           ],
@@ -758,6 +766,18 @@ class _GamePageState extends State<GamePage>
     Mark.present => note == Mark.correct ? Mark.correct : Mark.present,
     _ => note,
   };
+
+  /// The colour of each letter on the blind keyboard: the deduced ones, and
+  /// the player's own notes.
+  Map<String, Mark> get _letterMarks {
+    final d = _deduced;
+    final out = <String, Mark>{};
+    for (final ch in {...notes.keys, ...d.keys}) {
+      final m = _shown(notes[ch], d[ch]);
+      if (m != null) out[ch] = m;
+    }
+    return out;
+  }
 
   static Mark? _nextNote(Mark? m, Mark? deduced) {
     if (deduced == Mark.present) {
@@ -1099,7 +1119,7 @@ class _GamePageState extends State<GamePage>
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
-    marks: blind ? _deduced : keyMarks,
+    marks: blind ? _letterMarks : keyMarks,
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,
