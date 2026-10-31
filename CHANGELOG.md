@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.4.5
+
 - blind: a colour you pencil on a letter shows everywhere
   It marks that letter on every tile and on the keyboard, with the colours the
   counts already settle.
