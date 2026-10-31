@@ -713,6 +713,7 @@ class _GamePageState extends State<GamePage>
                                   i == input.cursor,
                               key: ValueKey('tile-$r-$i'),
                               locked: r == guesses.length && input.isLocked(i),
+                              fixed: r == guesses.length && input.isFixed(i),
                               onTap: r == guesses.length && !over
                                   ? () => _select(i)
                                   : blind && r < guesses.length && !over
@@ -866,6 +867,7 @@ class _GamePageState extends State<GamePage>
     required bool active,
     bool cursor = false,
     bool locked = false,
+    bool fixed = false,
     Key? key,
     VoidCallback? onTap,
   }) {
@@ -875,12 +877,14 @@ class _GamePageState extends State<GamePage>
         ? c.onSurface.withValues(alpha: .5)
         : c.outlineVariant;
     var borderWidth = 1.0;
+    // the game's lock (a green in lockdown) is green; the player's own is pink
+    final lockColor = fixed ? markColors(c, Mark.correct).$1 : c.primary;
     if (m != null) {
       (fill, fg) = markColors(c, m);
       border = markBorder(c, m);
       borderWidth = markBorderWidth(m);
     } else if (ch.isNotEmpty) {
-      border = locked ? c.primary : c.onSurface;
+      border = locked ? lockColor : c.onSurface;
     }
     if (cursor) {
       border = c.primary;
@@ -920,7 +924,7 @@ class _GamePageState extends State<GamePage>
                     'lock',
                     key: const ValueKey('locked'),
                     size: size * .22,
-                    color: c.primary,
+                    color: lockColor,
                   ),
                 ),
             ],

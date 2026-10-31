@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- lockdown: the game's locks are green, yours are pink
+  A letter the game locked (a green in lockdown) has a green border and lock;
+  one you locked keeps the accent colour.
+
 ## 0.4.6
 
 - dailies change at midnight India time for everyone
