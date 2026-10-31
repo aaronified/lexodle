@@ -50,6 +50,7 @@ import urllib.request
 from pathlib import Path
 
 from swears import is_swear  # noqa: E402
+from abbreviations import is_abbreviation  # noqa: E402
 
 APP = Path(__file__).resolve().parent.parent
 OUT = APP / "assets" / "words"
@@ -254,7 +255,8 @@ def build(code, wf, dictdir, heading):
     cands = candidates(wf)
     # Roman numerals (xviii) pass a dictionary but are no words to guess
     cands = {
-        n: [(w, z) for w, z in c if not ROMAN.match(w) and not is_swear(code, w)]
+        n: [(w, z) for w, z in c if not ROMAN.match(w) and not is_swear(code, w)
+                and not is_abbreviation(code, w)]
         for n, c in cands.items()
     }
     dirs = dictdir if isinstance(dictdir, list) else [dictdir]

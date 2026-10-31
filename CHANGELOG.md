@@ -7,6 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- relay race: locks do not carry to the next target
+  When a target is solved, the next word starts with nothing locked.
+- abbreviations are out of the word lists
+  Acronyms and abbreviations that an en.wiktionary entry let in (http, nato,
+  covid, lgbt, afaik and others, 36 in English, one each in Spanish, French and
+  Swedish) are removed; tools/abbreviations.py keeps them out of a rebuild. It
+  moves the daily picks after them.
+
 - quartet and relay: the screen stays smooth while they are analysed
   The analysis of each guess of a quartet or relay race now runs on other
   threads, as a classic game's does. It ran on the screen's own, which made the

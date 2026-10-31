@@ -49,7 +49,8 @@ void main() {
         'before the curve date', () {
       final common = bank.answers(dailyLength).take(dailyAnswers).toSet();
       for (final mode in [GameMode.quartet, GameMode.relay]) {
-        for (var day = 0; day < 30; day++) {
+        // the 29 days before the curve date
+        for (var day = 0; day < 29; day++) {
           final date = dailyShift('2026-10-01', day);
           final d = DailyMulti.of(bank, mode, date)!;
           expect(d.answers.length, 4, reason: '$mode $date');

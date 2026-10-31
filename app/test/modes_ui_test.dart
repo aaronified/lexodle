@@ -236,6 +236,27 @@ void main() {
       expect(find.textContaining('1 · solved in 1'), findsOneWidget);
     });
 
+    testWidgets('a relay race does not carry a lock to the next target', (
+      tester,
+    ) async {
+      await open(tester, GameMode.relay, 5);
+      final a = answers(5);
+      for (final ch in a[0].split('')) {
+        await typeKey(tester, ch);
+      }
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pump();
+      expect(find.byKey(const ValueKey('locked')), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+      // the first target is solved; the second starts with nothing locked
+      expect(find.text('word 2 of 4 · 9 tries left'), findsOneWidget);
+      expect(find.byKey(const ValueKey('locked')), findsNothing);
+    });
+
     testWidgets('a wrong word is turned away without costing a try', (
       tester,
     ) async {

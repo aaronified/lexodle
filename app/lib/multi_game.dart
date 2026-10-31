@@ -247,9 +247,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// Plays [word], which has been checked. [restoring] replays a saved daily
   /// guess: it is not saved or recorded again.
   void _apply(String word, {bool restoring = false}) {
+    final solvedBefore = game.solvedCount;
     game.guess(word);
-    // nothing is kept once the game is over: no letter stays locked
-    if (game.over) {
+    // nothing is kept once the game is over: no letter stays locked. Nor in a
+    // relay race when a target is solved: the next one is a new word, and the
+    // locks were for the last
+    if (game.over ||
+        (mode == GameMode.relay && game.solvedCount > solvedBefore)) {
       input.clear();
     } else {
       input.next();

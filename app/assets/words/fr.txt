@@ -849,7 +849,6 @@ coop	3090
 filé	3090
 lima	3090
 mile	3090
-ndlr	3090
 orne	3090
 oses	3090
 pige	3090
