@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- blind review shows the real colours and both counts
+  The tiles of a blind game's review are the colours the guesses really had,
+  with the two count squares beside each row.
+- quartet keys have a soft shadow
+  A key every board has greyed no longer blends into the page.
+
 - blind: colour logic keeps your pencil possible, and can be turned off
   Green and yellow belong to a letter in a position. A letter is green in one
   position (a new green sends the old back to yellow), a position is green with

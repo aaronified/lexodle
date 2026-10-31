@@ -453,7 +453,14 @@ class _ReviewPageState extends State<ReviewPage> {
       builder: (context, box) {
         final area =
             box.maxWidth - wordsW - skillW - riskW - typeW - 8 - padX * 2;
-        final tile = min(30.0, (area - gap * (r.length - 1)) / r.length);
+        // a blind row has two count squares after its tiles, 8 from them
+        final tile = r.blind
+            ? min(30.0, (area - gap * (r.length + 1) - 8) / (r.length + 2))
+            : min(30.0, (area - gap * (r.length - 1)) / r.length);
+        final realMarks = [
+          if (r.blind)
+            for (final w in r.guesses) evaluate(r.answer, w),
+        ];
         return Column(
           children: [
             Padding(
@@ -526,11 +533,50 @@ class _ReviewPageState extends State<ReviewPage> {
                           child: i <= step
                               ? MarkTile(
                                   r.guesses[i][k],
-                                  mark: r.marks[i][k],
+                                  // a blind game's marks are counts, not places: the
+                                  // review shows the real colours
+                                  mark: r.blind
+                                      ? realMarks[i][k]
+                                      : r.marks[i][k],
                                   size: tile,
                                 )
                               : MarkTile('', size: tile),
                         ),
+                      if (r.blind && i <= step) ...[
+                        const SizedBox(width: 8),
+                        for (final (n, m) in [
+                          (
+                            r.marks[i].where((x) => x == Mark.correct).length,
+                            Mark.correct,
+                          ),
+                          (
+                            r.marks[i].where((x) => x == Mark.present).length,
+                            Mark.present,
+                          ),
+                        ]) ...[
+                          if (m == Mark.present) SizedBox(width: gap),
+                          Container(
+                            key: ValueKey(
+                              'count-$i-${m == Mark.correct ? 'g' : 'y'}',
+                            ),
+                            width: tile,
+                            height: tile,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: markColors(c, m).$1,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              '$n',
+                              style: TextStyle(
+                                fontSize: tile * .5,
+                                fontWeight: FontWeight.bold,
+                                color: markColors(c, m).$2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                       const Spacer(),
                       if (i <= step)
                         ..._rowCells(c, i, wordsW, skillW, riskW, typeW, cell)

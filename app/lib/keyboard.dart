@@ -215,28 +215,39 @@ class _QuadKey extends StatelessWidget {
       shown.map((x) => (x.g * 255).round()).reduce((a, b) => a + b) ~/ 4,
       shown.map((x) => (x.b * 255).round()).reduce((a, b) => a + b) ~/ 4,
     );
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
-      child: SizedBox(
-        height: height,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CustomPaint(
-              key: ValueKey('quad-$label'),
-              painter: QuadPainter(colors),
-            ),
-            Center(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: onColor(c, avg),
+    // a soft shadow round the key, so a key the boards have all greyed (or left
+    // clear) still stands out from the page
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(3),
+        boxShadow: [
+          BoxShadow(color: c.onSurface.withValues(alpha: .35), blurRadius: 3),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: SizedBox(
+          height: height,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CustomPaint(
+                key: ValueKey('quad-$label'),
+                painter: QuadPainter(colors),
+              ),
+              Center(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: onColor(c, avg),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
