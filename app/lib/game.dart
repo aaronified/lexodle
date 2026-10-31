@@ -688,7 +688,7 @@ class _GamePageState extends State<GamePage>
                                   : (r == guesses.length ? input.slot(i) : ''),
                               r < marks.length
                                   ? (blind
-                                        ? notes[r][i] ?? deduced[guesses[r][i]]
+                                        ? _shown(notes[r][i], deduced[guesses[r][i]])
                                         : marks[r][i])
                                   : null,
                               active: r == guesses.length && !over,
@@ -700,10 +700,15 @@ class _GamePageState extends State<GamePage>
                               locked: r == guesses.length && input.isLocked(i),
                               onTap: r == guesses.length && !over
                                   ? () => _select(i)
-                                  : blind && r < notes.length && !over
+                                  : blind &&
+                                        r < notes.length &&
+                                        !over &&
+                                        deduced[guesses[r][i]] != Mark.absent
                                   ? () => setState(
-                                      () =>
-                                          notes[r][i] = _nextNote(notes[r][i]),
+                                      () => notes[r][i] = _nextNote(
+                                        notes[r][i],
+                                        deduced[guesses[r][i]],
+                                      ),
                                     )
                                   : null,
                             ),
@@ -746,12 +751,25 @@ class _GamePageState extends State<GamePage>
     return d;
   }
 
-  static Mark? _nextNote(Mark? m) => switch (m) {
-    null => Mark.correct,
-    Mark.correct => Mark.present,
-    Mark.present => Mark.absent,
-    Mark.absent => null,
+  /// A deduced grey is fixed; a deduced yellow only goes between yellow and
+  /// green.
+  static Mark? _shown(Mark? note, Mark? deduced) => switch (deduced) {
+    Mark.absent => Mark.absent,
+    Mark.present => note == Mark.correct ? Mark.correct : Mark.present,
+    _ => note,
   };
+
+  static Mark? _nextNote(Mark? m, Mark? deduced) {
+    if (deduced == Mark.present) {
+      return _shown(m, deduced) == Mark.correct ? Mark.present : Mark.correct;
+    }
+    return switch (m) {
+      null => Mark.correct,
+      Mark.correct => Mark.present,
+      Mark.present => Mark.absent,
+      Mark.absent => null,
+    };
+  }
 
   Widget _withTrailing(int r, double tile, Widget row) {
     final c = Theme.of(context).colorScheme;
