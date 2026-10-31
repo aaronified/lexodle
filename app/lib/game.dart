@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'analysis_worker.dart';
 import 'background.dart';
+import 'blind_pencil.dart';
 import 'daily.dart';
 import 'game_header.dart';
 import 'hearts.dart';
@@ -127,10 +128,16 @@ class _GamePageState extends State<GamePage>
   final guesses = <String>[];
   final marks = <List<Mark>>[];
 
-  /// The colours a player of a blind game has pencilled on letters, by tapping
-  /// them: green, yellow, grey, or none. A letter has one colour everywhere,
-  /// on every tile and on the keyboard. They are notes: nothing scores by them.
-  final notes = <String, Mark>{};
+  /// The colours a player of a blind game has pencilled, by tapping letters of
+  /// the guesses so far. With the colour logic on, [pencil] keeps them by
+  /// letter and position under its rules; off, [notes] keeps one per tile, free.
+  /// They are notes: nothing scores by them.
+  late final pencil = BlindPencil(length);
+  final notes = <List<Mark?>>[];
+
+  /// Whether a blind game marks what the counts settle and keeps the player's
+  /// colours possible: the colour logic of the game modes.
+  bool get _assist => blind && appState.blindAssist;
   final metrics = <GuessMetrics>[];
 
   /// The words still possible before each guess, for the post-game analysis.
@@ -230,6 +237,7 @@ class _GamePageState extends State<GamePage>
     guesses.clear();
     marks.clear();
     notes.clear();
+    pencil.clear();
     keyMarks.clear();
     metrics.clear();
     befores.clear();
@@ -357,6 +365,7 @@ class _GamePageState extends State<GamePage>
     final m = evaluate(answer, word, blind: blind);
     guesses.add(word);
     marks.add(m);
+    if (blind) notes.add(List.filled(length, null));
     for (var i = 0; i < length; i++) {
       final k = word[i];
       final old = keyMarks[k];
@@ -641,7 +650,7 @@ class _GamePageState extends State<GamePage>
 
   Widget _grid() {
     final c = Theme.of(context).colorScheme;
-    final deduced = blind ? _deduced : const <String, Mark>{};
+    final deduced = _deduced;
     return LayoutBuilder(
       builder: (context, box) {
         const gap = 6.0;
@@ -687,10 +696,13 @@ class _GamePageState extends State<GamePage>
                                   : (r == guesses.length ? input.slot(i) : ''),
                               r < marks.length
                                   ? (blind
-                                        ? _shown(
-                                            notes[guesses[r][i]],
-                                            deduced[guesses[r][i]],
-                                          )
+                                        ? (_assist
+                                              ? pencil.shown(
+                                                  guesses[r][i],
+                                                  i,
+                                                  deduced,
+                                                )
+                                              : notes[r][i])
                                         : marks[r][i])
                                   : null,
                               active: r == guesses.length && !over,
@@ -702,22 +714,8 @@ class _GamePageState extends State<GamePage>
                               locked: r == guesses.length && input.isLocked(i),
                               onTap: r == guesses.length && !over
                                   ? () => _select(i)
-                                  : blind &&
-                                        r < guesses.length &&
-                                        !over &&
-                                        deduced[guesses[r][i]] != Mark.absent
-                                  ? () => setState(() {
-                                      final ch = guesses[r][i];
-                                      final next = _nextNote(
-                                        notes[ch],
-                                        deduced[ch],
-                                      );
-                                      if (next == null) {
-                                        notes.remove(ch);
-                                      } else {
-                                        notes[ch] = next;
-                                      }
-                                    })
+                                  : blind && r < guesses.length && !over
+                                  ? () => _pencil(r, i)
                                   : null,
                             ),
                           ],
@@ -733,63 +731,54 @@ class _GamePageState extends State<GamePage>
     );
   }
 
-  /// A blind row's two counts (right and in place, right elsewhere), kept
-  /// beside the tiles; the row is only as wide as the tiles in themed, whose
-  /// info dot hangs off its right edge.
+  /// A tap on tile [i] of submitted guess [r] in a blind game. With the colour
+  /// logic off the tile takes the next colour of none, green, yellow, grey;
+  /// on, the next one that keeps the rules, and a toast says why one was
+  /// passed over.
+  void _pencil(int r, int i) {
+    if (!_assist) {
+      setState(() => notes[r][i] = _nextNote(notes[r][i]));
+      return;
+    }
+    late final String? why;
+    setState(() => why = pencil.tap(guesses[r][i], i, _rows, _deduced));
+    if (why == null) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          content: Text(why!),
+        ),
+      );
+  }
+
+  /// The guesses with their counts, for the pencil's rules.
+  List<BlindRow> get _rows => [
+    for (var r = 0; r < marks.length; r++)
+      BlindRow(
+        guesses[r],
+        marks[r].where((m) => m == Mark.correct).length,
+        marks[r].where((m) => m == Mark.present).length,
+      ),
+  ];
+
+  /// What a blind game's counts settle outright, marked for the player (with
+  /// the colour logic on): a guess with no right letters rules all of its
+  /// letters out; one whose counts add up to the length has all of its letters
+  /// in the word, and every other letter out.
+  Map<String, Mark> get _deduced =>
+      _assist ? BlindPencil.deduce(_rows, _letters) : const {};
+
   /// The colour after [m] in the cycle a tap goes through: none, green,
   /// yellow, grey, and round to none.
-  /// What a blind game's counts settle outright, marked for the player: a
-  /// guess with no right letters rules all of its letters out; one whose
-  /// counts add up to the length has all of its letters in the word, and every
-  /// other letter out.
-  Map<String, Mark> get _deduced {
-    final d = <String, Mark>{};
-    for (var r = 0; r < marks.length; r++) {
-      final hit = marks[r].where((m) => m != Mark.absent).length;
-      if (hit == 0) {
-        for (final ch in guesses[r].split('')) {
-          d[ch] = Mark.absent;
-        }
-      } else if (hit == length) {
-        for (final ch in _letters) {
-          d[ch] = guesses[r].contains(ch) ? Mark.present : Mark.absent;
-        }
-      }
-    }
-    return d;
-  }
-
-  /// A deduced grey is fixed; a deduced yellow only goes between yellow and
-  /// green.
-  static Mark? _shown(Mark? note, Mark? deduced) => switch (deduced) {
-    Mark.absent => Mark.absent,
-    Mark.present => note == Mark.correct ? Mark.correct : Mark.present,
-    _ => note,
+  static Mark? _nextNote(Mark? m) => switch (m) {
+    null => Mark.correct,
+    Mark.correct => Mark.present,
+    Mark.present => Mark.absent,
+    Mark.absent => null,
   };
-
-  /// The colour of each letter on the blind keyboard: the deduced ones, and
-  /// the player's own notes.
-  Map<String, Mark> get _letterMarks {
-    final d = _deduced;
-    final out = <String, Mark>{};
-    for (final ch in {...notes.keys, ...d.keys}) {
-      final m = _shown(notes[ch], d[ch]);
-      if (m != null) out[ch] = m;
-    }
-    return out;
-  }
-
-  static Mark? _nextNote(Mark? m, Mark? deduced) {
-    if (deduced == Mark.present) {
-      return _shown(m, deduced) == Mark.correct ? Mark.present : Mark.correct;
-    }
-    return switch (m) {
-      null => Mark.correct,
-      Mark.correct => Mark.present,
-      Mark.present => Mark.absent,
-      Mark.absent => null,
-    };
-  }
 
   Widget _withTrailing(int r, double tile, Widget row) {
     final c = Theme.of(context).colorScheme;
@@ -1119,7 +1108,7 @@ class _GamePageState extends State<GamePage>
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
-    marks: blind ? _letterMarks : keyMarks,
+    marks: blind ? (_assist ? pencil.keyboard(_deduced) : const {}) : keyMarks,
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,

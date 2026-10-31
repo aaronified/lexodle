@@ -7,6 +7,15 @@ it to the version.
 
 ## Unreleased
 
+- blind: colour logic keeps your pencil possible, and can be turned off
+  Green and yellow belong to a letter in a position. A letter is green in one
+  position (a new green sends the old back to yellow), a position is green with
+  one letter, a letter yellow everywhere else it can be can only be green, a
+  green or yellow letter cannot be grey, and a row cannot show more than its
+  counts; a toast says why a colour was passed over. The game modes screen has a
+  colour logic switch for blind: off marks nothing for you and lets you pencil
+  anything on any tile.
+
 ## 0.4.5
 
 - blind: a colour you pencil on a letter shows everywhere
