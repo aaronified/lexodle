@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- places: the obscure tail is never the answer
+  Every place past the best known thousand or so still had one chance in the
+  draw, which added up (mehetia, an island). They are still valid guesses, but
+  can no longer be drawn.
+
 - relay and quartet: one guess for each of the last 3 words
   Two achievements, baton pass (relay race) and domino (quartet): win with one
   guess for each of the last three words, 1/5/15/40 times. The skilled cousin of

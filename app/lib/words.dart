@@ -36,6 +36,7 @@ class WordBank {
     this.valid, {
     this.curveOrigin = defaultCurveOrigin,
     this.curveWidth = defaultCurveWidth,
+    this.curveFloor = 1,
   });
 
   /// A bank of other words than a language's list (the places of the themed
@@ -54,6 +55,9 @@ class WordBank {
          {for (final l in words.values) ...l},
          curveOrigin: curveOrigin,
          curveWidth: curveWidth,
+         // a bank of other words (the places) never draws the far tail: it is
+         // the many obscure ones, and each would still have its one chance
+         curveFloor: 0,
        );
 
   final Language language;
@@ -87,6 +91,7 @@ class WordBank {
       {...valid, word},
       curveOrigin: curveOrigin,
       curveWidth: curveWidth,
+      curveFloor: curveFloor,
     );
   }
 
@@ -123,6 +128,10 @@ class WordBank {
   final double curveOrigin;
   final double curveWidth;
 
+  /// The least a word's chance on the curve can be: 1 (every word can be drawn,
+  /// the far tail rarely), or 0 (the tail never is).
+  final int curveFloor;
+
   /// The chance of each word of [answers], as a whole number up to 1,000, by a
   /// sigmoid curve on its rank by frequency: the commonest words almost equally
   /// likely, half at the origin ([curveOrigin]) and almost none
@@ -131,7 +140,10 @@ class WordBank {
     final n = answers(length).length;
     return [
       for (var i = 0; i < n; i++)
-        max(1, (1000 / (1 + exp((i + 1 - curveOrigin) / curveWidth))).round()),
+        max(
+          curveFloor,
+          (1000 / (1 + exp((i + 1 - curveOrigin) / curveWidth))).round(),
+        ),
     ];
   }();
 

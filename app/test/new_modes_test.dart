@@ -152,6 +152,15 @@ void main() {
       expect(w[749], inInclusiveRange(450, 550));
       expect(w[1000], lessThan(30));
     });
+
+    test('the far tail of the places is never drawn', () {
+      for (final n in [5, 6, 7]) {
+        final w = places.curveWeights(n);
+        expect(w.last, 0, reason: '$n letters');
+        expect(w.where((x) => x == 0).length, greaterThan(w.length * .8));
+        expect(w.take(900).every((x) => x > 0), isTrue);
+      }
+    });
   });
 
   group('the games', () {
