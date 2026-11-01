@@ -1,0 +1,121 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/drill.dart';
+import 'package:lexodle/drill_page.dart';
+import 'package:lexodle/main.dart';
+import 'package:lexodle/words.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/text_of.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  DrillRound? finished;
+
+  // A position is worked out in slices that give the event loop back between
+  // them, so the test lets the (fake) clock run until it is on screen.
+  Future<void> waitFor(WidgetTester tester, Finder f) async {
+    for (var i = 0; i < 300 && f.evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(f, findsOneWidget);
+  }
+
+  Future<void> open(WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1100));
+    appState.setup(lang: 'fr', length: 4);
+    final bank = (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
+      ),
+    ))!;
+    finished = null;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DrillPage(bank: bank, seed: 7, onRound: (r) => finished = r),
+      ),
+    );
+    await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
+  }
+
+  String text(WidgetTester tester, String key) =>
+      textOf(tester.widget<Text>(find.byKey(ValueKey(key))))!;
+
+  testWidgets('shows the clues, how many words fit, and four words', (
+    tester,
+  ) async {
+    await open(tester);
+    expect(text(tester, 'drill-fits'), endsWith('words fit the clues'));
+    for (var i = 0; i < 4; i++) {
+      expect(find.byKey(ValueKey('drill-option-$i')), findsOneWidget);
+    }
+    expect(find.byKey(const ValueKey('drill-option-4')), findsNothing);
+    expect(find.textContaining('1 of 10'), findsOneWidget);
+    // nothing is said about the answer before a pick
+    expect(find.byKey(const ValueKey('drill-verdict')), findsNothing);
+  });
+
+  testWidgets('a pick says whether it was the best, and why', (tester) async {
+    await open(tester);
+    await tester.tap(find.byKey(const ValueKey('drill-option-0')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('drill-verdict')), findsOneWidget);
+    expect(find.byKey(const ValueKey('drill-next')), findsOneWidget);
+    // every option now shows its skill, one of them 'best · 100'
+    expect(find.textContaining('best · 100'), findsOneWidget);
+    // a second tap on another option changes nothing
+    await tester.tap(
+      find.byKey(const ValueKey('drill-option-1')),
+      warnIfMissed: false,
+    );
+    await tester.pump();
+    expect(find.textContaining('best · 100'), findsOneWidget);
+  });
+
+  testWidgets('ten picks make a round with a score, reported once', (
+    tester,
+  ) async {
+    await open(tester);
+    for (var q = 1; q <= drillRoundLength; q++) {
+      expect(find.textContaining('$q of 10'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('drill-option-0')));
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const ValueKey('drill-next')));
+      await tester.tap(find.byKey(const ValueKey('drill-next')));
+      await tester.pump();
+      if (q < drillRoundLength) {
+        await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
+      }
+    }
+    expect(finished, isNotNull);
+    expect(finished!.answers, hasLength(drillRoundLength));
+    expect(finished!.language, 'fr');
+    expect(finished!.length, 4);
+    final score = text(tester, 'drill-score');
+    expect(score, '${finished!.right} of 10 right');
+    expect(
+      text(tester, 'drill-average'),
+      'average skill ${finished!.averageSkill.round()}',
+    );
+    // another round starts over
+    await tester.ensureVisible(find.byKey(const ValueKey('drill-again')));
+    await tester.tap(find.byKey(const ValueKey('drill-again')));
+    await tester.pump();
+    await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
+    expect(find.textContaining('1 of 10'), findsOneWidget);
+  });
+
+  test('a round counts its right answers and averages the skill', () {
+    final round = DrillRound('fr', 4, [
+      const DrillAnswer('a', 100, true),
+      const DrillAnswer('b', 50, false),
+      const DrillAnswer('c', 80, false),
+    ]);
+    expect(round.right, 1);
+    expect(round.averageSkill, closeTo(76.67, 0.01));
+    expect(round.complete, isFalse);
+    expect(const DrillRound('fr', 4, []).averageSkill, 0);
+  });
+}

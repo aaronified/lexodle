@@ -41,3 +41,11 @@ that the best guess could itself have been the answer.
 then the word (tap it to use it), then why it is the best. Each press is one step.
 
 **Undo** takes the last guess back, with the words that fitted before it, so you can try another.
+
+**Choose the best** (the button under learn) shows a position, the guesses made so far with their
+colours and how many words still fit, and four words. Pick the one that tells the words that fit
+apart best. It says whether you were right (nothing offered did better), the skill of every
+option, and why, in the same words as learn mode. A round is ten positions; at the end it gives
+how many you got right and the average skill of your picks. The positions come from a random word
+of your language and length that one or two common guesses have been played against. Like learn
+mode it is not scored and not kept in the history.

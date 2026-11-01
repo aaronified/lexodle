@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'achievements_page.dart';
 import 'daily.dart';
 import 'diy.dart';
+import 'drill_page.dart';
 import 'game.dart';
 import 'history_page.dart';
 import 'learn.dart';
@@ -42,6 +43,7 @@ class Routes {
   static const review = '/play/review';
   static const solver = '/solver';
   static const learn = '/learn';
+  static const drill = '/learn/choose';
   static const achievements = '/achievements';
   static const mastery = '/achievements/mastery';
   static const howTo = '/how-to';
@@ -131,6 +133,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           : page(const HomePage());
     case Routes.learn:
       return page(BankGate(builder: (bank) => LearnPage(bank: bank)));
+    case Routes.drill:
+      return page(BankGate(builder: (bank) => DrillPage(bank: bank)));
     case Routes.solver:
       // the solver follows the mode: one board, or four that share the guesses
       return page(
@@ -195,6 +199,7 @@ const _known = {
   Routes.mastery,
   Routes.solver,
   Routes.learn,
+  Routes.drill,
   Routes.achievements,
   Routes.howTo,
   Routes.settings,

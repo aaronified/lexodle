@@ -419,6 +419,20 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         const SizedBox(height: 8),
                         SizedBox(
                           width: double.infinity,
+                          child: OutlinedButton(
+                            key: const ValueKey('settings-drill'),
+                            onPressed: _themedOrBlind(mode)
+                                ? null
+                                : () => Navigator.pushReplacementNamed(
+                                    context,
+                                    Routes.drill,
+                                  ),
+                            child: const Text('learn: choose the best'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
                           child: OutlinedButton.icon(
                             key: const ValueKey('settings-diy'),
                             icon: TablerIcon(
