@@ -16,6 +16,7 @@ import 'modes.dart';
 import 'multi_analysis.dart';
 import 'multi_review.dart';
 import 'puzzle.dart';
+import 'resizable_panel.dart';
 import 'review_text.dart';
 import 'routes.dart';
 import 'share_puzzle.dart';
@@ -700,10 +701,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   }
 
   Widget _overPanel(ColorScheme c) {
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * .5,
-      ),
+    return ResizablePanel(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 19),
         child: Column(

@@ -220,6 +220,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('solved all 4 in 4 of 9'), findsOneWidget);
       expect(find.text('replay'), findsOneWidget);
+      // the end panel has the bar to drag it, as a single game's does
+      expect(find.byKey(const ValueKey('panel-handle')), findsOneWidget);
+      await tester.drag(
+        find.byKey(const ValueKey('panel-handle')),
+        const Offset(0, 60),
+      );
+      await tester.pump();
+      expect(find.byKey(const ValueKey('over-panel')), findsOneWidget);
+      await tester.pump(const Duration(seconds: 1));
       for (final w in a) {
         expect(find.text(w), findsWidgets);
       }

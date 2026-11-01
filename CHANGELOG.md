@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- the draggable bar is on every end panel
+  The quartet and the relay race have it too, not only a single word.
+
 - places: the obscure tail is never the answer
   Every place past the best known thousand or so still had one chance in the
   draw, which added up (mehetia, an island). They are still valid guesses, but
