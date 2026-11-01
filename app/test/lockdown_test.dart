@@ -15,6 +15,7 @@ import 'package:lexodle/mode_wheel.dart' show modeIconName;
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
+import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -180,6 +181,29 @@ void main() {
         find.byKey(const ValueKey('locked')),
         findsNWidgets(greens.length),
       );
+      // the game's lock is green, its border too
+      final scheme = Theme.of(tester.element(find.byType(GamePage)))
+          .colorScheme;
+      final green = markColors(scheme, Mark.correct).$1;
+      expect(
+        tester
+            .widget<TablerIcon>(find.byKey(const ValueKey('locked')).first)
+            .color,
+        green,
+      );
+      final box =
+          tester
+                  .widget<Container>(
+                    find
+                        .descendant(
+                          of: find.byKey(ValueKey('tile-1-${greens.first}')),
+                          matching: find.byType(Container),
+                        )
+                        .first,
+                  )
+                  .decoration
+              as BoxDecoration;
+      expect((box.border as Border).top.color, green);
       // the lock sits in the corner of its tile
       final tile = tester.getRect(
         find.byKey(ValueKey('tile-1-${greens.first}')),

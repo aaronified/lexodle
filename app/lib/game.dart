@@ -19,6 +19,7 @@ import 'haptics.dart';
 import 'history.dart';
 import 'keyboard.dart';
 import 'logic.dart';
+import 'resizable_panel.dart';
 import 'review.dart';
 import 'review_text.dart';
 import 'routes.dart';
@@ -238,7 +239,6 @@ class _GamePageState extends State<GamePage>
     marks.clear();
     notes.clear();
     pencil.clear();
-    _panelHeight = null;
     keyMarks.clear();
     metrics.clear();
     befores.clear();
@@ -1044,51 +1044,6 @@ class _GamePageState extends State<GamePage>
     child: Text(label),
   );
 
-  /// The height the player has dragged the end panel to, or null for its own:
-  /// as tall as it needs, up to half the screen.
-  double? _panelHeight;
-
-  /// The most the end panel can take: the grid keeps a little room above it.
-  double get _panelMax => max(120, MediaQuery.sizeOf(context).height - 260);
-
-  /// The bar on top of the end panel: drag it down to see more of the guesses,
-  /// up (or double tap) to read about the word.
-  Widget _panelHandle(ColorScheme c) {
-    final half = MediaQuery.sizeOf(context).height * .5;
-    return Semantics(
-      label: 'resize the analysis',
-      child: GestureDetector(
-        key: const ValueKey('panel-handle'),
-        behavior: HitTestBehavior.opaque,
-        onVerticalDragUpdate: (d) => setState(
-          () => _panelHeight = ((_panelHeight ?? half) - d.delta.dy).clamp(
-            96.0,
-            _panelMax,
-          ),
-        ),
-        onDoubleTap: () => setState(
-          () => _panelHeight = (_panelHeight ?? half) >= _panelMax - 1
-              ? null
-              : _panelMax,
-        ),
-        child: SizedBox(
-          height: 24,
-          width: double.infinity,
-          child: Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: c.onSurface.withValues(alpha: .35),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _overPanel(ColorScheme c) {
     final body = SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 19),
@@ -1150,25 +1105,7 @@ class _GamePageState extends State<GamePage>
         ],
       ),
     );
-    final h = _panelHeight;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _panelHandle(c),
-        h == null
-            ? ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.sizeOf(context).height * .5,
-                ),
-                child: body,
-              )
-            : SizedBox(
-                key: const ValueKey('over-panel'),
-                height: h,
-                child: body,
-              ),
-      ],
-    );
+    return ResizablePanel(child: body);
   }
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
