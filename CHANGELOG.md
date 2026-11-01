@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- learn: tap a guess to see why it scored as it did
+  It shows how the guess and the best guess split the words that fitted: the
+  groups, the biggest group, the words left and the bits.
+- learn: a hint button and undo
+  The hint gives the best guess in three steps (the letter, the word, why).
+  Undo takes the last guess back with the words that fitted before it.
+
 - the draggable bar is on every end panel
   The quartet and the relay race have it too, not only a single word.
 

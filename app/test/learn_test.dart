@@ -111,4 +111,98 @@ void main() {
     expect(find.text('solved in 1'), findsNothing);
     expect(find.byKey(const ValueKey('learn-feedback-0')), findsNothing);
   });
+
+  Future<void> guess(WidgetTester tester, String word) async {
+    await type(tester, word);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump(const Duration(seconds: 3));
+  }
+
+  String hintText(WidgetTester tester) => textOf(
+    tester.widget<Text>(find.byKey(const ValueKey('learn-hint-text'))),
+  )!;
+
+  testWidgets('the hint ladder gives the letter, then the word, then why', (
+    tester,
+  ) async {
+    await open(tester);
+    expect(find.byKey(const ValueKey('learn-hint-text')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('learn-hint')));
+    await tester.pump(const Duration(seconds: 3));
+    expect(hintText(tester), startsWith('the best guess starts with '));
+    final letter = hintText(tester).split(' ').last;
+    await tester.tap(find.byKey(const ValueKey('learn-hint')));
+    await tester.pump();
+    expect(hintText(tester), startsWith('the best guess: '));
+    expect(hintText(tester), isNot(contains('groups')));
+    final word = hintText(tester).substring('the best guess: '.length);
+    expect(word.startsWith(letter), isTrue);
+    await tester.tap(find.byKey(const ValueKey('learn-hint')));
+    await tester.pump();
+    expect(hintText(tester), contains('groups, the biggest'));
+    // the ladder ends there
+    expect(
+      tester
+          .widget<TextButton>(find.byKey(const ValueKey('learn-hint')))
+          .onPressed,
+      isNull,
+    );
+    // the word is the best one: guessing it grades 100
+    final shown = hintText(tester).split(' ')[3].replaceAll('.', '');
+    expect(shown, word);
+    await tester.tap(find.byKey(const ValueKey('learn-hint-text')));
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump(const Duration(seconds: 3));
+    final fb = textOf(
+      tester.widget<Text>(find.byKey(const ValueKey('learn-feedback-0'))),
+    )!;
+    expect(fb, startsWith('skill 100'));
+    // a new position starts with no hint showing
+    expect(find.byKey(const ValueKey('learn-hint-text')), findsNothing);
+  });
+
+  testWidgets('a guess explains itself, and a tap folds the explanation', (
+    tester,
+  ) async {
+    await open(tester);
+    final answer = answerOf(tester);
+    await guess(tester, answer == 'mais' ? 'lien' : 'mais');
+    expect(find.byKey(const ValueKey('learn-why-0')), findsOneWidget);
+    expect(find.textContaining('your '), findsWidgets);
+    await tester.tap(find.byKey(const ValueKey('learn-feedback-tap-0')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('learn-why-0')), findsNothing);
+  });
+
+  testWidgets('undo takes the last guess back, with its position', (
+    tester,
+  ) async {
+    await open(tester);
+    final answer = answerOf(tester);
+    final fits = find.textContaining('words fit the clues so far');
+    final before = textOf(tester.widget<Text>(fits))!;
+    expect(find.byKey(const ValueKey('learn-undo')), findsNothing);
+    await guess(tester, answer == 'mais' ? 'lien' : 'mais');
+    expect(textOf(tester.widget<Text>(fits)), isNot(before));
+    await tester.tap(find.byKey(const ValueKey('learn-undo')));
+    await tester.pump();
+    expect(textOf(tester.widget<Text>(fits)), before);
+    expect(find.byKey(const ValueKey('learn-feedback-0')), findsNothing);
+    expect(find.byKey(const ValueKey('learn-undo')), findsNothing);
+    // the position is analysed again: a hint still works after the undo
+    await tester.tap(find.byKey(const ValueKey('learn-hint')));
+    await tester.pump(const Duration(seconds: 3));
+    expect(hintText(tester), startsWith('the best guess starts with '));
+  });
+
+  testWidgets('undo after solving reopens the word', (tester) async {
+    await open(tester);
+    await guess(tester, answerOf(tester));
+    expect(find.text('solved in 1'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('learn-undo')));
+    await tester.pump();
+    expect(find.text('solved in 1'), findsNothing);
+    expect(find.byKey(const ValueKey('learn-hint')), findsOneWidget);
+  });
 }

@@ -31,3 +31,13 @@ guess at each step. Guess as usual; after each guess it gives the skill of the g
 guesses there were, and the words that still fit the clues are listed at the bottom (the 120 most
 common; tap one to use it). It uses the language, length and pool you set, has no tries, is not
 scored and is not kept in the history. Solve the word and start another.
+
+**Why a guess scored as it did.** Tap the line under a guess. It says how the guess split the
+words that fitted (the groups, the biggest group, the words expected to be left and the bits),
+how the best guess split them, and what the difference was: more groups, a smaller worst case, or
+that the best guess could itself have been the answer.
+
+**Hint.** Before you guess, the hint button gives the best guess in three steps: its first letter,
+then the word (tap it to use it), then why it is the best. Each press is one step.
+
+**Undo** takes the last guess back, with the words that fitted before it, so you can try another.

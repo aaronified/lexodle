@@ -6,22 +6,11 @@ import 'package:flutter/services.dart';
 import 'analysis_worker.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
+import 'learn_text.dart';
 import 'logic.dart';
 import 'main.dart';
 import 'ui.dart';
 import 'words.dart';
-
-/// How a guess did in learn mode: its skill and the best guess there was.
-class LearnFeedback {
-  const LearnFeedback(this.skill, this.best, this.bestWords);
-  final double skill;
-
-  /// The best skill is always 100; this is the expected gain, in bits, it has.
-  final double best;
-
-  /// The best guesses of that position, best first.
-  final List<String> bestWords;
-}
 
 /// Learn mode: the answer is shown, and the job is to find the best guess at
 /// each step. After every guess it says how good it was and what the best was,
@@ -51,9 +40,28 @@ class _LearnPageState extends State<LearnPage> {
   late List<String> eligible;
   final guesses = <String>[];
   final marks = <List<Mark>>[];
-  final feedback = <LearnFeedback?>[];
+  final feedback = <GuessReport?>[];
   String message = '';
   int _game = 0;
+
+  // What the position before each guess looked like, so a guess can be taken
+  // back: the words that fitted, and its analysis (one per position, shared by
+  // the hints and the grade).
+  final _befores = <List<String>>[];
+  final _lands = <Future<Landscape>>[];
+  final _tokens = <int>[];
+  int _serial = 0;
+  Future<Landscape>? _land;
+  Landscape? _landNow;
+  GuessReport? _bestReport;
+
+  /// The rung of the hint ladder the position stands on (0 none, 3 the most),
+  /// and how many hints this word has used in all.
+  int hint = 0;
+  int hintsUsed = 0;
+
+  /// Which guesses show their explanation.
+  final _open = <int>{};
 
   bool get solved => guesses.isNotEmpty && guesses.last == answer;
 
@@ -80,9 +88,43 @@ class _LearnPageState extends State<LearnPage> {
     guesses.clear();
     marks.clear();
     feedback.clear();
+    _befores.clear();
+    _lands.clear();
+    _tokens.clear();
+    _open.clear();
+    hint = 0;
+    hintsUsed = 0;
     input.clear();
     message = '';
     _game++;
+    _startPosition();
+  }
+
+  Map<String, int>? get _law => widget.bank.law(length, appState.draw);
+
+  /// Starts the analysis of the position the words that fit now make: the best
+  /// guesses, for the hints and for grading the next guess.
+  void _startPosition() {
+    _landNow = null;
+    _bestReport = null;
+    final game = _game;
+    final words = eligible;
+    final land = analyseOffThread(
+      words,
+      widget.bank.guessable(length),
+      k: 3,
+      weights: _law,
+    );
+    _land = land;
+    land.then((l) {
+      if (!mounted || game != _game || !identical(_land, land)) return;
+      setState(() {
+        _landNow = l;
+        _bestReport = l.top.isEmpty
+            ? null
+            : reportBest(before: words, landscape: l, weights: _law);
+      });
+    }, onError: (_) {});
   }
 
   void _type(String ch) {
@@ -117,45 +159,94 @@ class _LearnPageState extends State<LearnPage> {
     final before = eligible;
     final after = filterEligible(before, word, m);
     final index = guesses.length;
-    final game = _game;
+    final land = _land!;
+    final token = ++_serial;
     setState(() {
       guesses.add(word);
       marks.add(m);
       feedback.add(null);
+      _befores.add(before);
+      _lands.add(land);
+      _tokens.add(token);
       eligible = after;
+      hint = 0;
+      _open.clear();
       input.clear();
       message = '';
+      if (word == answer) {
+        _land = null;
+        _landNow = null;
+        _bestReport = null;
+      } else {
+        _startPosition();
+      }
     });
-    _grade(game, index, before, word, after);
+    _grade(index, token, before, word, after, land);
   }
 
   Future<void> _grade(
-    int game,
     int index,
+    int token,
     List<String> before,
     String word,
     List<String> after,
+    Future<Landscape> land,
   ) async {
-    final law = widget.bank.law(length, appState.draw);
-    final land = await analyseOffThread(
-      before,
-      widget.bank.guessable(length),
-      k: 3,
-      weights: law,
+    final Landscape l;
+    try {
+      l = await land;
+    } catch (_) {
+      return;
+    }
+    if (!mounted || index >= _tokens.length || _tokens[index] != token) return;
+    final report = reportGuess(
+      before: before,
+      guess: word,
+      after: after,
+      landscape: l,
+      weights: _law,
     );
-    if (!mounted || game != _game || index >= feedback.length) return;
-    final measured = scoreGuess(
-      before,
-      word,
-      after.length,
-      weights: law,
-      afterWords: after,
-      provisional: true,
-    ).withBest(land.bestGain);
     setState(() {
-      feedback[index] = LearnFeedback(measured.skill, land.bestGain, [
-        for (final r in land.top) r.word,
-      ]);
+      feedback[index] = report;
+      _open.add(index);
+    });
+  }
+
+  /// Takes the last guess back, with the position it was made in.
+  void _undo() {
+    if (guesses.isEmpty) return;
+    setState(() {
+      guesses.removeLast();
+      marks.removeLast();
+      feedback.removeLast();
+      _tokens.removeLast();
+      eligible = _befores.removeLast();
+      final land = _lands.removeLast();
+      _open.clear();
+      hint = 0;
+      input.clear();
+      message = '';
+      _landNow = null;
+      _bestReport = null;
+      _land = land;
+      land.then((l) {
+        if (!mounted || !identical(_land, land)) return;
+        setState(() {
+          _landNow = l;
+          _bestReport = l.top.isEmpty
+              ? null
+              : reportBest(before: eligible, landscape: l, weights: _law);
+        });
+      }, onError: (_) {});
+    });
+  }
+
+  /// The next rung of the hint ladder: the first letter, the word, then why.
+  void _hint() {
+    if (solved || hint >= 3) return;
+    setState(() {
+      hint++;
+      hintsUsed++;
     });
   }
 
@@ -276,13 +367,7 @@ class _LearnPageState extends State<LearnPage> {
                                   row(guesses[g].split(''), marks[g]),
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 8),
-                                    child: metricLine(
-                                      context,
-                                      _feedbackText(g),
-                                      'skill',
-                                      key: ValueKey('learn-feedback-$g'),
-                                      style: dim,
-                                    ),
+                                    child: _feedback(g, dim),
                                   ),
                                 ],
                                 if (!solved)
@@ -293,6 +378,7 @@ class _LearnPageState extends State<LearnPage> {
                         ),
                         if (message.isNotEmpty)
                           Text(message, style: TextStyle(color: c.error)),
+                        if (!solved || guesses.isNotEmpty) _tools(c, dim),
                         if (solved) ...[
                           const SizedBox(height: 8),
                           Text(
@@ -333,12 +419,94 @@ class _LearnPageState extends State<LearnPage> {
     );
   }
 
-  String _feedbackText(int g) {
+  /// The line under a guess: its skill and the best guesses; tap it to see
+  /// why (how the guess and the best one split the words that fitted).
+  Widget _feedback(int g, TextStyle dim) {
     final f = feedback[g];
-    if (f == null) return 'working out how it did…';
-    final top = f.bestWords.take(3).join(', ');
-    if (f.skill >= 99.99) return 'skill 100 · as good as any guess ($top)';
-    return 'skill ${f.skill.toStringAsFixed(0)} · the best: $top';
+    if (f == null) {
+      return metricLine(
+        context,
+        'working out how it did…',
+        'skill',
+        key: ValueKey('learn-feedback-$g'),
+        style: dim,
+      );
+    }
+    final open = _open.contains(g);
+    return InkWell(
+      key: ValueKey('learn-feedback-tap-$g'),
+      onTap: () => setState(() => open ? _open.remove(g) : _open.add(g)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          metricLine(
+            context,
+            learnVerdict(f),
+            'skill',
+            key: ValueKey('learn-feedback-$g'),
+            style: dim,
+          ),
+          if (open)
+            Padding(
+              key: ValueKey('learn-why-$g'),
+              padding: const EdgeInsets.only(top: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final line in learnWhy(f))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(line, style: dim),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// The hint and undo buttons, and the hint when one is asked for.
+  Widget _tools(ColorScheme c, TextStyle dim) {
+    final best = _landNow?.top.map((r) => r.word).toList() ?? const <String>[];
+    final text = hint == 0
+        ? ''
+        : _landNow == null
+        ? 'working out the best guess…'
+        : learnHint(hint, best, _bestReport);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (!solved)
+              TextButton(
+                key: const ValueKey('learn-hint'),
+                onPressed: hint >= 3 ? null : _hint,
+                child: Text(hint == 0 ? 'hint' : 'more'),
+              ),
+            if (guesses.isNotEmpty)
+              TextButton(
+                key: const ValueKey('learn-undo'),
+                onPressed: _undo,
+                child: const Text('undo'),
+              ),
+          ],
+        ),
+        if (text.isNotEmpty && !solved)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: InkWell(
+              onTap: best.isEmpty || hint < 2 ? null : () => _use(best.first),
+              child: Text(
+                text,
+                key: const ValueKey('learn-hint-text'),
+                style: TextStyle(color: c.primary),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   /// The words that still fit, at the bottom: tap one to use it.
