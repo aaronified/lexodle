@@ -10,18 +10,27 @@ it to the version.
 - learn: tap a guess to see why it scored as it did
   It shows how the guess and the best guess split the words that fitted: the
   groups, the biggest group, the words left and the bits.
-- learn: eleven achievements for learning
-  Practice, flawless words, unaided words, rounds of choose the best, ten of
-  ten, the opener, a learning streak and a full lesson. They count once for you,
-  not per language.
-- learn: a home with three activities and your progress
-  Practise a word, choose the best, and the opener, each with a trend of its
-  skill in the language and length, and the days in a row you have learned.
-- learn: the opener drill
-  Which word is the best first guess, in five questions of four words.
-- learn: choose the best, a drill of ten positions
-  Each shows the clues so far and four words; pick the one that splits the
-  words that fit best, then see which was best and why.
+- learn: fourteen achievements for learning
+  Practice, flawless words, unaided words, rounds of choose the best and of
+  closing, three words, a learning streak and a full lesson. They count once for
+  you, not per language.
+- learn: a home with five entries and your progress
+  The opening, practise a word, choose the best, closing and three words, each
+  with a trend of its skill in the language and length, and the days in a row.
+- learn: three words, to find a set that tells the most
+  Type three words to play first, whatever the answer. It scores what they tell
+  together and the chance to win by the fourth and fifth guess, against the best
+  set the app could find. They need not start with the best opener.
+- learn: closing, ten endgames
+  Few words fit and two or three tries are left: pick the guess most likely to
+  win in time, from the exact chances. Often it is not a word that fits.
+- learn: the opening, a lesson
+  The best first guess for your language and length, and for each of the colours
+  it is most likely to show the best second guess. Compare the next best openers.
+- learn: choose the best, with the groups behind each pick
+  Each position shows the clues so far and four words; pick the one that splits
+  the words that fit best. The groups of every option can be shown, with their
+  chances, bits and what each adds to the words left.
 - learn: a hint button and undo
   The hint gives the best guess in three steps (the letter, the word, why).
   Undo takes the last guess back with the words that fitted before it.

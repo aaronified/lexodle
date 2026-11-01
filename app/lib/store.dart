@@ -465,8 +465,11 @@ const _counted = {
   'learnUnaided',
   'learnRounds',
   'learnPerfect',
-  'learnOpeners',
-  'learnOpenerPerfect',
+  'learnClosing',
+  'learnClosingPerfect',
+  'learnSequences',
+  'learnSequenceSharp',
+  'learnSequenceBest',
   'learnStreak',
   'learnLanguages',
   'learnLengths',
@@ -1088,30 +1091,70 @@ final achievements = <Achievement>[
     tagIcon: 'bulb',
   ),
   Achievement.leveled(
-    'learn_openers',
-    'compass',
-    'the opener',
-    (n) => n == 1
-        ? 'finish a round of the opener drill'
-        : 'finish $n rounds of the opener drill',
-    'learnOpeners',
+    'learn_closing',
+    'flag',
+    'closing',
+    (n) => n == 1 ? 'finish a round of closing' : 'finish $n rounds of closing',
+    'learnClosing',
     _lv(
       [1, 5, 25, 100],
-      ['opening move', 'opening habit', 'opening book', 'opening theory'],
+      ['last tries', 'closer', 'finisher', 'endgame master'],
     ),
     tagIcon: 'bulb',
   ),
   Achievement.leveled(
-    'learn_opener_perfect',
-    'crown',
-    'opener by heart',
+    'learn_closing_perfect',
+    'trophy',
+    'clean finish',
     (n) => n == 1
-        ? 'get all five right in the opener drill'
-        : 'get all five right in the opener drill $n times',
-    'learnOpenerPerfect',
+        ? 'get all ten right in a round of closing'
+        : 'get all ten right in $n rounds of closing',
+    'learnClosingPerfect',
     _lv(
       [1, 5, 25, 100],
-      ['opener known', 'opener sure', 'opener certain', 'opener by heart'],
+      ['clean finish', 'sure finish', 'cold finish', 'never fails'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_sequences',
+    'cards',
+    'three words',
+    (n) => n == 1
+        ? 'score a sequence of three words at skill 70 or more'
+        : 'score $n sequences of three words at skill 70 or more',
+    'learnSequences',
+    _lv(
+      [1, 10, 50, 200],
+      ['three words', 'good sets', 'many sets', 'a library of sets'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_sequence_sharp',
+    'bolt',
+    'sharp three',
+    (n) => n == 1
+        ? 'score a sequence of three words at skill 90 or more'
+        : 'score $n sequences of three words at skill 90 or more',
+    'learnSequenceSharp',
+    _lv(
+      [1, 5, 25, 100],
+      ['sharp three', 'keen three', 'fine three', 'master three'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_sequence_best',
+    'diamond',
+    'the best three',
+    (n) => n == 1
+        ? 'find a sequence of three words as good as the best found'
+        : 'find $n sequences of three words as good as the best found',
+    'learnSequenceBest',
+    _lv(
+      [1, 3, 10, 50],
+      ['the best three', 'best again', 'a habit of best', 'always best'],
     ),
     tagIcon: 'bulb',
   ),
@@ -1163,8 +1206,8 @@ final achievements = <Achievement>[
     'confetti',
     'a full lesson',
     (n) => n == 1
-        ? 'practise a word, choose the best and do the opener in one day'
-        : 'do all three of learn mode on $n different days',
+        ? 'do every learn mode in one day: practice, choose the best, three words and closing'
+        : 'do every learn mode on $n different days',
     'learnAllThree',
     _lv(
       [1, 7, 30, 100],
@@ -1474,12 +1517,24 @@ final learnMetrics = <String, LearnStep>{
           e.questions >= drillRoundLength
       ? st.value + 1
       : st.value,
-  'learnOpeners': (st, e) =>
-      e.kind == LearnKind.opener ? st.value + 1 : st.value,
-  'learnOpenerPerfect': (st, e) =>
-      e.kind == LearnKind.opener &&
+  'learnClosing': (st, e) =>
+      e.kind == LearnKind.closing ? st.value + 1 : st.value,
+  'learnClosingPerfect': (st, e) =>
+      e.kind == LearnKind.closing &&
           e.flawless &&
-          e.questions >= roundLengthOf(LearnKind.opener)
+          e.questions >= drillRoundLength
+      ? st.value + 1
+      : st.value,
+  // a sequence is one event: its skill against the best found is avgSkill
+  'learnSequences': (st, e) => e.kind == LearnKind.sequence && e.avgSkill >= 70
+      ? st.value + 1
+      : st.value,
+  'learnSequenceSharp': (st, e) =>
+      e.kind == LearnKind.sequence && e.avgSkill >= 90
+      ? st.value + 1
+      : st.value,
+  'learnSequenceBest': (st, e) =>
+      e.kind == LearnKind.sequence && e.avgSkill >= 99
       ? st.value + 1
       : st.value,
   // days in a row: the last day is kept in seen, the run in progress

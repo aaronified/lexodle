@@ -4,7 +4,8 @@
 /// from it, so a backup of the log restores both.
 library;
 
-/// The three things there are to do in learn mode.
+/// The things there are to score in learn mode. (The opening lesson is only
+/// read, so it has no event.)
 enum LearnKind {
   /// A word solved with the answer shown, every guess graded.
   free,
@@ -12,17 +13,17 @@ enum LearnKind {
   /// A round of "choose the best": ten positions, four words each.
   choose,
 
-  /// A round of the opener drill: which word is the best first guess.
-  opener,
+  /// Three words picked to be played first, whatever the answer, scored by what
+  /// they tell together.
+  sequence,
+
+  /// A round of closing: ten endgame positions, the guess most likely to win in
+  /// the tries left.
+  closing,
 }
 
-/// How many questions a round of "choose the best" has.
+/// How many questions a round of a drill has.
 const drillRoundLength = 10;
-
-/// How many questions a round of [kind] has: the opener drill is shorter,
-/// because the best opener is the same word every time.
-int roundLengthOf(LearnKind kind) =>
-    kind == LearnKind.opener ? 5 : drillRoundLength;
 
 /// One finished piece of learning.
 class LearnEvent {

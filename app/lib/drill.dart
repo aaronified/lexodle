@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'analysis_worker.dart';
+import 'closing.dart';
 import 'drill_calc.dart';
 import 'learn_log.dart';
 import 'learn_text.dart';
@@ -8,12 +9,16 @@ import 'logic.dart';
 import 'modes.dart';
 import 'words.dart';
 
-export 'learn_log.dart' show drillRoundLength, roundLengthOf;
+export 'learn_log.dart' show drillRoundLength;
 
 /// One word offered in a drill, with how good a guess it is here.
 class DrillOption {
-  const DrillOption(this.word, this.skill, this.gain);
+  const DrillOption(this.word, this.skill, this.gain, {this.win});
   final String word;
+
+  /// In a closing question, the chance, 0 to 1, that this guess wins within the
+  /// tries left; null otherwise.
+  final double? win;
 
   /// Skill, 0 to 100: its expected gain against the best guess's.
   final double skill;
@@ -34,7 +39,13 @@ class DrillQuestion {
     required this.options,
     required this.landscape,
     required this.weights,
+    this.triesLeft,
   });
+
+  /// In a closing question, the tries left (this guess included): what is asked
+  /// is the guess most likely to win in time. Null in choose the best.
+  final int? triesLeft;
+  bool get closing => triesLeft != null;
 
   /// The word the clues came from. It is not shown: it only fixes the colours.
   final String answer;
@@ -61,6 +72,38 @@ class DrillQuestion {
   /// The bits the best guess is expected to gain, which skill is measured
   /// against.
   double get bestBits => landscape.bestGain;
+
+  /// What choosing [o] comes to in a closing question: whether it can win now,
+  /// how it splits the words that fit, and the chance it wins in time, then the
+  /// same for the best and what the difference is.
+  List<String> closingLines(DrillOption o) {
+    final tries = triesLeft ?? 1;
+    final best = options.firstWhere(isRight);
+    String line(DrillOption x) {
+      final walk = walkGroups(eligible, x.word, weights);
+      final fits = eligible.contains(x.word);
+      final others = walk.groups
+          .where((g) => !(g.words.length == 1 && g.words.first == x.word))
+          .toList();
+      final biggest = others.isEmpty
+          ? 0
+          : others.map((g) => g.words.length).reduce(max);
+      final win = ((x.win ?? 0) * 100).round();
+      return '${x.word}: ${fits ? 'can be right now' : 'cannot be right now'}'
+          '${others.isEmpty ? '' : ', then ${others.length} '
+                    '${others.length == 1 ? 'group' : 'groups'} (the biggest '
+                    '$biggest ${biggest == 1 ? 'word' : 'words'})'}'
+          ' · wins within $tries ${tries == 1 ? 'try' : 'tries'} in $win%';
+    }
+
+    if (isRight(o)) return [line(o), 'nothing here wins in time more often'];
+    return [
+      line(o),
+      line(best),
+      '${best.word} splits the ${eligible.length} words so that the next '
+          'guess is more often right',
+    ];
+  }
 
   /// What the explanation of choosing [o] says (see [learnWhy]).
   GuessReport report(DrillOption o) => reportGuess(
@@ -209,44 +252,111 @@ Future<DrillQuestion?> buildDrillQuestion({
   return null;
 }
 
-/// Builds an opener question: no guess yet, every word of the length still
-/// fits, and four words to choose the first guess from, one of them the best
-/// opener. The analysis of the opener is the same every time, so a caller that
-/// has one passes it as [landscape] and it is not worked out again. A word is
-/// drawn as the answer only to fix what the explanation says came after.
-Future<DrillQuestion?> buildOpenerQuestion({
+/// Picks four words for a closing question from the chance each [wins] of
+/// winning in time: the best, and three clearly worse ones spread across what
+/// the others win. Null when the position is no choice (fewer than three guesses
+/// are clearly worse). Pure: [rng] only orders the options.
+List<DrillOption>? pickClosingOptions(Map<String, double> wins, Random rng) {
+  if (wins.isEmpty) return null;
+  final best = wins.values.reduce(max);
+  if (best <= 0) return null;
+  DrillOption option(String w) {
+    final win = wins[w]!;
+    return DrillOption(w, win / best * 100, 0, win: win);
+  }
+
+  final top = wins.keys.where((w) => wins[w]! >= best - 1e-9).toList()
+    ..shuffle(rng);
+  final worse = [
+    for (final w in wins.keys)
+      if (wins[w]! < best - 0.02) w,
+  ]..sort((a, b) => wins[a]!.compareTo(wins[b]!));
+  if (worse.length < 3) return null;
+  final chosen = <String>[];
+  for (var i = 0; i < 3; i++) {
+    final at = ((worse.length - 1) * i / 2).round();
+    for (var step = 0; step < worse.length; step++) {
+      final w = worse[(at + step) % worse.length];
+      if (chosen.contains(w)) continue;
+      // not a near copy of one already taken, while there is a choice
+      if (chosen.any((c) => (wins[c]! - wins[w]!).abs() < 0.01) &&
+          step < worse.length - 1) {
+        continue;
+      }
+      chosen.add(w);
+      break;
+    }
+  }
+  return [option(top.first), for (final w in chosen) option(w)]..shuffle(rng);
+}
+
+/// Builds a closing position: a few words fit the clues (three to ten) and two
+/// or three tries are left, so the choice is between a word that may be right
+/// now and a word that splits the rest so the next guess is. Every guess is
+/// scored by the exact chance it wins in time (see [winChance]). Null when none
+/// was found in [attempts] tries.
+Future<DrillQuestion?> buildClosingQuestion({
   required WordBank bank,
   required int length,
   required Draw draw,
   required Random rng,
-  Landscape? landscape,
+  int attempts = 80,
 }) async {
   final pool = bank.answers(length);
   final guessable = bank.guessable(length);
   if (pool.isEmpty || guessable.isEmpty) return null;
   final weights = bank.law(length, draw);
-  final land =
-      landscape ??
-      await analyseOffThread(guessable, guessable, k: 3, weights: weights);
-  if (land.top.isEmpty) return null;
-  final options = pickOptions(
-    eligible: guessable,
-    candidates: recommendationCandidates(guessable, guessable),
-    best: land.top.first.word,
-    bestGain: land.bestGain,
-    weights: weights,
-    rng: rng,
-  );
-  if (options.length < 4) return null;
-  return DrillQuestion(
-    answer: chooseWord(pool, bank.drawWeights(length, draw), rng),
-    guesses: const [],
-    marks: const [],
-    eligible: List.of(guessable),
-    options: options,
-    landscape: land,
-    weights: weights,
-  );
+  final drawn = bank.drawWeights(length, draw);
+  for (var attempt = 0; attempt < attempts; attempt++) {
+    final answer = chooseWord(pool, drawn, rng);
+    var eligible = List.of(guessable);
+    final guesses = <String>[];
+    final marks = <List<Mark>>[];
+    var ok = true;
+    for (var step = 0; step < 6 && eligible.length > 10; step++) {
+      final from = step == 0 ? guessable : eligible;
+      final g = from[rng.nextInt(min(from.length, step == 0 ? 300 : 60))];
+      if (g == answer) {
+        ok = false;
+        break;
+      }
+      final m = evaluate(answer, g);
+      eligible = filterEligible(eligible, g, m);
+      guesses.add(g);
+      marks.add(m);
+    }
+    if (!ok || eligible.length < 3 || eligible.length > 10) continue;
+    final tries = 2 + rng.nextInt(2);
+    final probes = closingProbeWords(
+      eligible,
+      guessable.take(800).where((w) => !guesses.contains(w)),
+      weights,
+    );
+    // the words that fit and the probes, and a few words picked at random: a
+    // word that has nothing to do with the position is a fair wrong answer
+    final candidates = {
+      ...eligible,
+      ...probes,
+      for (var i = 0; i < 6; i++) guessable[rng.nextInt(guessable.length)],
+    }..removeAll(guesses);
+    final wins = {
+      for (final c in candidates)
+        c: winChance(eligible, c, tries, probes, weights),
+    };
+    final options = pickClosingOptions(wins, rng);
+    if (options == null) continue;
+    return DrillQuestion(
+      answer: answer,
+      guesses: guesses,
+      marks: marks,
+      eligible: eligible,
+      options: options,
+      landscape: const Landscape([], []),
+      weights: weights,
+      triesLeft: tries,
+    );
+  }
+  return null;
 }
 
 /// A finished round: the drill it was of, the language and length it was
@@ -270,7 +380,7 @@ class DrillRound {
       ? 0
       : answers.fold(0.0, (s, a) => s + a.skill) / answers.length;
 
-  bool get complete => answers.length >= roundLengthOf(kind);
+  bool get complete => answers.length >= drillRoundLength;
 
   /// The round as the learn log keeps it.
   LearnEvent toEvent(String date) => LearnEvent(

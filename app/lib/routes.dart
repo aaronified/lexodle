@@ -9,6 +9,8 @@ import 'history_page.dart';
 import 'learn.dart';
 import 'learn_home.dart';
 import 'learn_log.dart';
+import 'opening_page.dart';
+import 'sequence_page.dart';
 import 'licences_page.dart';
 import 'home.dart';
 import 'how_to.dart';
@@ -47,7 +49,9 @@ class Routes {
   static const learn = '/learn';
   static const learnFree = '/learn/free';
   static const learnChoose = '/learn/choose';
-  static const learnOpener = '/learn/opener';
+  static const learnClosing = '/learn/closing';
+  static const learnOpening = '/learn/opening';
+  static const learnSequence = '/learn/sequence';
   static const achievements = '/achievements';
   static const mastery = '/achievements/mastery';
   static const howTo = '/how-to';
@@ -141,12 +145,16 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(BankGate(builder: (bank) => LearnPage(bank: bank)));
     case Routes.learnChoose:
       return page(BankGate(builder: (bank) => DrillPage(bank: bank)));
-    case Routes.learnOpener:
+    case Routes.learnClosing:
       return page(
         BankGate(
-          builder: (bank) => DrillPage(bank: bank, kind: LearnKind.opener),
+          builder: (bank) => DrillPage(bank: bank, kind: LearnKind.closing),
         ),
       );
+    case Routes.learnOpening:
+      return page(BankGate(builder: (bank) => OpeningPage(bank: bank)));
+    case Routes.learnSequence:
+      return page(BankGate(builder: (bank) => SequencePage(bank: bank)));
     case Routes.solver:
       // the solver follows the mode: one board, or four that share the guesses
       return page(
@@ -213,7 +221,9 @@ const _known = {
   Routes.learn,
   Routes.learnFree,
   Routes.learnChoose,
-  Routes.learnOpener,
+  Routes.learnClosing,
+  Routes.learnOpening,
+  Routes.learnSequence,
   Routes.achievements,
   Routes.howTo,
   Routes.settings,

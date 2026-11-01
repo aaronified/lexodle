@@ -66,7 +66,7 @@ void main() {
 
   testWidgets('a new player sees three activities, none tried', (tester) async {
     await open(tester);
-    for (final k in ['free', 'choose', 'opener']) {
+    for (final k in ['free', 'choose', 'closing', 'sequence']) {
       expect(find.byKey(ValueKey('learn-card-$k')), findsOneWidget);
       expect(text(tester, 'learn-progress-$k'), 'not tried yet at this length');
       expect(find.byKey(ValueKey('learn-trend-$k')), findsNothing);
@@ -96,7 +96,7 @@ void main() {
       'last word: 2 of 3 guesses the best · skill 95',
     );
     expect(
-      text(tester, 'learn-progress-opener'),
+      text(tester, 'learn-progress-closing'),
       'not tried yet at this length',
     );
   });
@@ -119,21 +119,31 @@ void main() {
     expect(opened.last, Routes.learnChoose);
     await tester.pageBack();
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('learn-card-opener')));
+    await tester.tap(find.byKey(const ValueKey('learn-card-closing')));
     await tester.pumpAndSettle();
-    expect(opened.last, Routes.learnOpener);
+    expect(opened.last, Routes.learnClosing);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('learn-card-sequence')));
+    await tester.pumpAndSettle();
+    expect(opened.last, Routes.learnSequence);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('learn-card-opening')));
+    await tester.pumpAndSettle();
+    expect(opened.last, Routes.learnOpening);
   });
 
   testWidgets('it follows the log: a round recorded updates the card', (
     tester,
   ) async {
     await open(tester);
-    expect(find.byKey(const ValueKey('learn-trend-opener')), findsNothing);
-    appState.recordLearn(event(LearnKind.opener, questions: 5, right: 5));
+    expect(find.byKey(const ValueKey('learn-trend-closing')), findsNothing);
+    appState.recordLearn(event(LearnKind.closing, questions: 10, right: 10));
     await tester.pump();
     expect(
-      text(tester, 'learn-progress-opener'),
-      'last round: 5 of 5 right · skill 80',
+      text(tester, 'learn-progress-closing'),
+      'last round: 10 of 10 right · skill 80',
     );
     expect(find.byKey(const ValueKey('learn-streak')), findsOneWidget);
   });

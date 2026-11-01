@@ -179,9 +179,11 @@
     <td width="60%">
       <h3>🎓 Learn mode</h3>
       The answer is shown. Find the guess that cuts the words left the most; each guess is graded
-      against the best, with the reason, and a hint and undo are there when you are stuck. Two
-      drills hide the answer: choose the best of four words in a position, and learn the best
-      opener. Progress is kept per language and length.
+      against the best, with the reason, and a hint and undo are there when you are stuck. Learn
+      more besides: the opening (the best first guess, then the best second guess for each colour
+      it can show), choose the best of four words in a position, closing (the endgame: which guess
+      wins in time), and three words (find a set to play first that tells the answers apart best).
+      Progress is kept per language and length.
     </td>
   </tr>
 </table>

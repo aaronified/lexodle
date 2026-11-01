@@ -4,7 +4,6 @@ import 'package:lexodle/drill.dart';
 import 'package:lexodle/drill_page.dart';
 import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -197,31 +196,37 @@ void main() {
     expect(e.avgSkill, closeTo(finished!.averageSkill, 0.1));
   });
 
-  testWidgets(
-    'the opener drill has no clues, five questions, and logs itself',
-    (tester) async {
-      await open(tester, kind: LearnKind.opener);
-      expect(find.textContaining('the opener'), findsOneWidget);
-      expect(find.textContaining('1 of 5'), findsOneWidget);
-      expect(find.text('which word is the best first guess?'), findsOneWidget);
-      // no guess has been made: no tiles
-      expect(find.byType(MarkTile), findsNothing);
-      for (var q = 1; q <= 5; q++) {
-        await tester.tap(find.byKey(const ValueKey('drill-option-0')));
-        await tester.pump();
-        await tester.ensureVisible(find.byKey(const ValueKey('drill-next')));
-        await tester.tap(find.byKey(const ValueKey('drill-next')));
-        await tester.pump();
-        if (q < 5) {
-          await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
-        }
+  testWidgets('closing: tries left, the chance each wins, and a logged round', (
+    tester,
+  ) async {
+    await open(tester, kind: LearnKind.closing);
+    expect(find.textContaining('closing'), findsWidgets);
+    expect(find.textContaining('1 of 10'), findsOneWidget);
+    expect(
+      find.textContaining('tries left (this one included)'),
+      findsOneWidget,
+    );
+    // no groups button: the explanation is the groups
+    for (var q = 1; q <= drillRoundLength; q++) {
+      await tester.tap(find.byKey(const ValueKey('drill-option-0')));
+      await tester.pump();
+      // every option shows the chance it wins in time, one marked the best
+      expect(find.textContaining('wins '), findsWidgets);
+      expect(find.textContaining('best · wins '), findsWidgets);
+      expect(find.byKey(const ValueKey('drill-calc')), findsNothing);
+      expect(find.textContaining('wins within'), findsWidgets);
+      await tester.ensureVisible(find.byKey(const ValueKey('drill-next')));
+      await tester.tap(find.byKey(const ValueKey('drill-next')));
+      await tester.pump();
+      if (q < drillRoundLength) {
+        await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
       }
-      expect(text(tester, 'drill-score'), '${finished!.right} of 5 right');
-      final e = appState.learnLog.events.single;
-      expect(e.kind, LearnKind.opener);
-      expect(e.questions, 5);
-    },
-  );
+    }
+    expect(text(tester, 'drill-score'), '${finished!.right} of 10 right');
+    final e = appState.learnLog.events.single;
+    expect(e.kind, LearnKind.closing);
+    expect(e.questions, drillRoundLength);
+  });
 
   test('a round counts its right answers and averages the skill', () {
     final round = DrillRound('fr', 4, [

@@ -16,7 +16,13 @@ LearnEvent event(
   double skill = 95,
   int hints = 0,
 }) {
-  final q = questions ?? (kind == LearnKind.free ? 3 : roundLengthOf(kind));
+  final q =
+      questions ??
+      switch (kind) {
+        LearnKind.free => 3,
+        LearnKind.sequence => 1,
+        _ => drillRoundLength,
+      };
   return LearnEvent(
     kind: kind,
     language: language,
@@ -50,7 +56,7 @@ void main() {
   group('what is a learn achievement', () {
     test('they are global, and not cut down to the number of languages', () {
       final learn = achievements.where((a) => a.learn).toList();
-      expect(learn, hasLength(11));
+      expect(learn, hasLength(14));
       for (final a in learn) {
         expect(a.global, isTrue, reason: a.id);
         expect(a.count, 4, reason: a.id);
@@ -66,7 +72,6 @@ void main() {
     test('completing a language does not ask for them', () async {
       final s = AppState();
       await s.load();
-      // every achievement of the language, but none of learn mode's
       final mine = s.achOf('fr');
       for (final a in achievements.where((a) => !a.global)) {
         mine[a.id] = AchState(times: a.count);
@@ -75,14 +80,11 @@ void main() {
       expect(s.completedIn('fr'), isTrue);
     });
 
-    test('a game never moves them', () {
-      final states = <String, AchState>{};
-      // a whole game's worth of results leaves the learn states untouched
-      expect(
-        advanceLearnAchievements(states, event(LearnKind.choose)),
-        isNotEmpty,
-      );
-      expect(states['learn_rounds']!.value, 1);
+    test('every learn kind has something to earn', () {
+      for (final k in LearnKind.values) {
+        final (_, earned) = play([event(k)]);
+        expect(earned, isNotEmpty, reason: k.name);
+      }
     });
   });
 
@@ -127,20 +129,52 @@ void main() {
       expect(earned, containsAll(['learn_rounds:0', 'learn_perfect:0']));
     });
 
-    test('the opener has its own count and its own perfect round', () {
+    test('closing has its own count and its own perfect round', () {
       final (s, _) = play([
-        event(LearnKind.opener, right: 4),
-        event(LearnKind.opener),
+        event(LearnKind.closing, right: 8),
+        event(LearnKind.closing),
         event(LearnKind.choose),
       ]);
-      expect(s['learn_openers']!.value, 2);
-      expect(s['learn_opener_perfect']!.value, 1);
+      expect(s['learn_closing']!.value, 2);
+      expect(s['learn_closing_perfect']!.value, 1);
       expect(s['learn_rounds']!.value, 1, reason: 'the other drill apart');
     });
 
     test('a short round is not a perfect one', () {
-      final (s, _) = play([event(LearnKind.choose, questions: 3, right: 3)]);
+      final (s, _) = play([
+        event(LearnKind.choose, questions: 3, right: 3),
+        event(LearnKind.closing, questions: 3, right: 3),
+      ]);
       expect(s['learn_perfect']!.value, 0);
+      expect(s['learn_closing_perfect']!.value, 0);
+    });
+  });
+
+  group('three words', () {
+    test('a set counts from skill 70, sharp from 90, the best from 99', () {
+      final (s, earned) = play([
+        event(LearnKind.sequence, skill: 69),
+        event(LearnKind.sequence, skill: 70),
+        event(LearnKind.sequence, skill: 90),
+        event(LearnKind.sequence, skill: 99),
+        event(LearnKind.sequence, skill: 100),
+      ]);
+      expect(s['learn_sequences']!.value, 4);
+      expect(s['learn_sequence_sharp']!.value, 3);
+      expect(s['learn_sequence_best']!.value, 2);
+      expect(
+        earned,
+        containsAll([
+          'learn_sequences:0',
+          'learn_sequence_sharp:0',
+          'learn_sequence_best:0',
+        ]),
+      );
+    });
+
+    test('the other modes do not feed them', () {
+      final (s, _) = play([event(LearnKind.choose), event(LearnKind.free)]);
+      expect(s['learn_sequences']!.value, 0);
     });
   });
 
@@ -149,7 +183,7 @@ void main() {
       final (s, earned) = play([
         event(LearnKind.free, date: '2026-10-30'),
         event(LearnKind.choose, date: '2026-10-31'),
-        event(LearnKind.opener, date: '2026-10-31'),
+        event(LearnKind.closing, date: '2026-10-31'),
         event(LearnKind.free, date: '2026-11-01'),
         event(LearnKind.free, date: '2026-11-04'),
       ]);
@@ -179,14 +213,15 @@ void main() {
       expect(earned, containsAll(['learn_languages:0', 'learn_lengths:0']));
     });
 
-    test('a full lesson is all three on one day, counted once a day', () {
+    test('a full lesson is every mode in one day, counted once a day', () {
       final (s, earned) = play([
         event(LearnKind.free, date: '2026-11-01'),
         event(LearnKind.choose, date: '2026-11-01'),
+        event(LearnKind.sequence, date: '2026-11-01'),
         event(LearnKind.free, date: '2026-11-02'),
-        event(LearnKind.opener, date: '2026-11-02'),
+        event(LearnKind.closing, date: '2026-11-02'),
         event(LearnKind.choose, date: '2026-11-02'),
-        event(LearnKind.opener, date: '2026-11-02'),
+        event(LearnKind.sequence, date: '2026-11-02'),
         event(LearnKind.free, date: '2026-11-02'),
       ]);
       expect(s['learn_all_three']!.value, 1, reason: 'only the second day');
@@ -194,7 +229,6 @@ void main() {
         earned.where((e) => e.startsWith('learn_all_three')),
         hasLength(1),
       );
-      // the same three on another day count again
       final (t, _) = play([
         for (final d in ['2026-11-01', '2026-11-02'])
           for (final k in LearnKind.values) event(k, date: d),
@@ -219,13 +253,13 @@ void main() {
 
     test('the top level starts a new round, as the other counters do', () {
       final (s, earned) = play([
-        for (var i = 0; i < 100; i++) event(LearnKind.opener),
+        for (var i = 0; i < 100; i++) event(LearnKind.closing),
       ]);
-      final st = s['learn_openers']!;
+      final st = s['learn_closing']!;
       expect(st.times, 4);
       expect(st.rounds, 1);
       expect(st.value, 0);
-      expect(earned.where((e) => e.startsWith('learn_openers:')), hasLength(4));
+      expect(earned.where((e) => e.startsWith('learn_closing:')), hasLength(4));
     });
   });
 
@@ -243,7 +277,6 @@ void main() {
         1,
         reason: 'global: in view whatever the language',
       );
-      // saved: a restart finds the same
       final again = AppState();
       await again.load();
       expect(again.achOf('fr')['learn_rounds']!.times, 1);
@@ -265,10 +298,10 @@ void main() {
     test('a backup carries them; one from before learn mode keeps them', () async {
       final source = AppState();
       await source.load();
-      source.recordLearn(event(LearnKind.opener));
+      source.recordLearn(event(LearnKind.closing));
       final text = backupToText(source);
       final b = parseBackup(text);
-      expect(b.achievements['learn_openers']!.times, 1);
+      expect(b.achievements['learn_closing']!.times, 1);
       expect(b.earned, 2, reason: 'the round, and the perfect round');
 
       final fresh = AppState();
@@ -280,7 +313,7 @@ void main() {
         languages: b.languages,
         learn: b.learn,
       );
-      expect(fresh.achOf('')['learn_openers']!.times, 1);
+      expect(fresh.achOf('')['learn_closing']!.times, 1);
 
       // an old backup has no learn log and no learn achievements: what is kept
       // here stays, and so do the levels it earned
@@ -296,7 +329,7 @@ void main() {
         learn: old.learn,
       );
       expect(fresh.learnLog.events, hasLength(1));
-      expect(fresh.achOf('')['learn_openers']!.times, 1);
+      expect(fresh.achOf('')['learn_closing']!.times, 1);
     });
   });
 }

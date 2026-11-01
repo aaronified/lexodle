@@ -78,12 +78,12 @@ void main() {
   test('events are picked by kind, language and length', () {
     final log = LearnLog([
       event(),
-      event(kind: LearnKind.opener),
+      event(kind: LearnKind.sequence),
       event(language: 'de'),
       event(length: 4),
     ]);
     expect(log.where(), hasLength(4));
-    expect(log.where(kind: LearnKind.opener), hasLength(1));
+    expect(log.where(kind: LearnKind.sequence), hasLength(1));
     expect(log.where(language: 'fr'), hasLength(3));
     expect(log.where(language: 'fr', length: 5), hasLength(2));
   });

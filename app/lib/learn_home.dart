@@ -61,6 +61,13 @@ class LearnHomePage extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 14),
+                    _lesson(
+                      context,
+                      'the opening',
+                      'the best first guess, then the best second guess for '
+                          'each colour it can show',
+                      Routes.learnOpening,
+                    ),
                     _card(
                       context,
                       LearnKind.free,
@@ -79,10 +86,20 @@ class LearnHomePage extends StatelessWidget {
                     ),
                     _card(
                       context,
-                      LearnKind.opener,
-                      'the opener',
-                      'five questions on the best first guess',
-                      Routes.learnOpener,
+                      LearnKind.closing,
+                      'closing',
+                      'ten endgames: few words left, few tries. which guess '
+                          'wins in time',
+                      Routes.learnClosing,
+                      log,
+                    ),
+                    _card(
+                      context,
+                      LearnKind.sequence,
+                      'three words',
+                      'find three words to play first that tell the answers '
+                          'apart best',
+                      Routes.learnSequence,
                       log,
                     ),
                   ],
@@ -92,6 +109,50 @@ class LearnHomePage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// A lesson: something to read, so there is no progress to show.
+  Widget _lesson(
+    BuildContext context,
+    String title,
+    String about,
+    String route,
+  ) {
+    final c = Theme.of(context).colorScheme;
+    final dim = TextStyle(
+      fontSize: 11,
+      color: c.onSurface.withValues(alpha: dimAlpha),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: OutlinedButton(
+        key: const ValueKey('learn-card-opening'),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          side: BorderSide(color: c.outline),
+          shape: const RoundedRectangleBorder(),
+          alignment: Alignment.centerLeft,
+        ),
+        onPressed: () => Navigator.pushNamed(context, route),
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(about, style: dim),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -126,9 +187,12 @@ class LearnHomePage extends StatelessWidget {
       progress = 'not tried yet at this length';
     } else {
       final last = mine.last;
-      final what = kind == LearnKind.free
-          ? 'last word: ${last.right} of ${last.questions} guesses the best'
-          : 'last round: ${last.right} of ${last.questions} right';
+      final what = switch (kind) {
+        LearnKind.free =>
+          'last word: ${last.right} of ${last.questions} guesses the best',
+        LearnKind.sequence => 'last set',
+        _ => 'last round: ${last.right} of ${last.questions} right',
+      };
       progress = '$what · skill ${last.avgSkill.round()}';
     }
     return Padding(

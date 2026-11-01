@@ -7,13 +7,13 @@ import 'drill_calc.dart';
 import 'earned_rows.dart';
 import 'learn_log.dart';
 import 'learn_text.dart';
-import 'logic.dart';
 import 'main.dart';
 import 'store.dart' show Achievement;
 import 'ui.dart';
 import 'words.dart';
 
-/// Choose the best (or, with [LearnKind.opener], choose the best first guess):
+/// Choose the best, or (with [LearnKind.closing]) the endgame: which of four
+/// guesses is most likely to win in the tries left:
 /// a position is shown (the guesses so far with their colours
 /// and how many words still fit) with four words to choose from, and the job is
 /// to pick the one that tells the words apart best. After each pick it says
@@ -68,31 +68,22 @@ class _DrillPageState extends State<DrillPage> {
     _begin();
   }
 
-  bool get _opener => widget.kind == LearnKind.opener;
-  late final int _total = roundLengthOf(widget.kind);
+  bool get _closing => widget.kind == LearnKind.closing;
+  static const int _total = drillRoundLength;
 
-  // the opener is analysed once, for every question of every round
-  Landscape? _openerLand;
-
-  Future<DrillQuestion?> _build() async {
-    if (!_opener) {
-      return buildDrillQuestion(
-        bank: widget.bank,
-        length: length,
-        draw: appState.draw,
-        rng: _rng,
-      );
-    }
-    final q = await buildOpenerQuestion(
-      bank: widget.bank,
-      length: length,
-      draw: appState.draw,
-      rng: _rng,
-      landscape: _openerLand,
-    );
-    _openerLand ??= q?.landscape;
-    return q;
-  }
+  Future<DrillQuestion?> _build() => _closing
+      ? buildClosingQuestion(
+          bank: widget.bank,
+          length: length,
+          draw: appState.draw,
+          rng: _rng,
+        )
+      : buildDrillQuestion(
+          bank: widget.bank,
+          length: length,
+          draw: appState.draw,
+          rng: _rng,
+        );
 
   void _begin() {
     _answers.clear();
@@ -165,7 +156,7 @@ class _DrillPageState extends State<DrillPage> {
     final lang = widget.bank.language.name.toLowerCase();
     final n = min(_answers.length + (picked == null ? 1 : 0), _total);
     final head =
-        '${_opener ? 'the opener' : 'choose the best'} · $lang · $length';
+        '${_closing ? 'closing' : 'choose the best'} · $lang · $length';
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -215,8 +206,9 @@ class _DrillPageState extends State<DrillPage> {
     final fits = q.eligible.length;
     return [
       Caption(
-        _opener
-            ? 'which word is the best first guess?'
+        q.closing
+            ? '${q.triesLeft} tries left (this one included): which guess is '
+                  'most likely to win in time?'
             : 'which guess tells the words that fit apart best?',
       ),
       const SizedBox(height: 12),
@@ -259,14 +251,15 @@ class _DrillPageState extends State<DrillPage> {
         const SizedBox(height: 10),
         _verdict(c, q, p, dim),
         const SizedBox(height: 4),
-        TextButton(
-          key: const ValueKey('drill-calc'),
-          onPressed: () => setState(() {
-            _calc = !_calc;
-            _walks ??= {for (final o in q.options) o: q.walk(o)};
-          }),
-          child: Text(_calc ? 'hide the groups' : 'show the groups'),
-        ),
+        if (!q.closing)
+          TextButton(
+            key: const ValueKey('drill-calc'),
+            onPressed: () => setState(() {
+              _calc = !_calc;
+              _walks ??= {for (final o in q.options) o: q.walk(o)};
+            }),
+            child: Text(_calc ? 'hide the groups' : 'show the groups'),
+          ),
         if (_calc) _calculations(c, q, dim),
         const SizedBox(height: 10),
         FilledButton(
@@ -439,7 +432,9 @@ class _DrillPageState extends State<DrillPage> {
             ),
             if (p != null)
               Text(
-                isBest
+                q.closing
+                    ? '${isBest ? 'best · ' : ''}wins ${((o.win ?? 0) * 100).round()}%'
+                    : isBest
                     ? 'best · ${o.skill.round()}'
                     : 'skill ${o.skill.round()}',
                 style: TextStyle(
@@ -460,22 +455,25 @@ class _DrillPageState extends State<DrillPage> {
     TextStyle dim,
   ) {
     final right = q.isRight(p);
-    final r = q.report(p);
+    final lines = q.closing ? q.closingLines(p) : learnWhy(q.report(p));
+    final bestWord = q.options.firstWhere(q.isRight).word;
     return Column(
       key: const ValueKey('drill-verdict'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           right
-              ? 'right: nothing here does better'
-              : 'not the best: ${r.bestWord} is',
+              ? (q.closing
+                    ? 'right: nothing here wins more often'
+                    : 'right: nothing here does better')
+              : 'not the best: $bestWord is',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: right ? c.secondary : c.error,
           ),
         ),
-        for (final line in learnWhy(r))
+        for (final line in lines)
           Padding(
             padding: const EdgeInsets.only(top: 3),
             child: Text(line, style: dim),
