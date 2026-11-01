@@ -10,12 +10,19 @@ it to the version.
 - learn: tap a guess to see why it scored as it did
   It shows how the guess and the best guess split the words that fitted: the
   groups, the biggest group, the words left and the bits.
+- learn: the styles, taught
+  The three habits of the opening (gambler, maximiser, eliminator) and the two
+  of the end (closer, prober) with their rules, when each is right, and a real
+  example of each. Luck is explained, with an example that averages nothing.
+- learn: every graded guess says which habit it counts as
+  Practice, choose the best and closing name the habit and the numbers behind
+  it, the habit of the best guess, and the luck, which is the answer's doing.
 - learn: fourteen achievements for learning
   Practice, flawless words, unaided words, rounds of choose the best and of
   closing, three words, a learning streak and a full lesson. They count once for
   you, not per language.
-- learn: a home with five entries and your progress
-  The opening, practise a word, choose the best, closing and three words, each
+- learn: a home with six entries and your progress
+  The opening, the styles, practise a word, choose the best, closing and three words, each
   with a trend of its skill in the language and length, and the days in a row.
 - learn: three words, to find a set that tells the most
   Type three words to play first, whatever the answer. It scores what they tell

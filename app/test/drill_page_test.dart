@@ -76,6 +76,9 @@ void main() {
     await tester.pump();
     expect(find.byKey(const ValueKey('drill-verdict')), findsOneWidget);
     expect(find.byKey(const ValueKey('drill-next')), findsOneWidget);
+    // the habit it counts as, and the luck, explained
+    expect(find.textContaining('style: '), findsOneWidget);
+    expect(find.textContaining('not your choice'), findsOneWidget);
     // every option now shows its skill, one of them 'best · 100'
     expect(find.textContaining('best · 100'), findsOneWidget);
     // a second tap on another option changes nothing

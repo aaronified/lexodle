@@ -11,6 +11,7 @@ import 'learn_home.dart';
 import 'learn_log.dart';
 import 'opening_page.dart';
 import 'sequence_page.dart';
+import 'styles_page.dart';
 import 'licences_page.dart';
 import 'home.dart';
 import 'how_to.dart';
@@ -52,6 +53,7 @@ class Routes {
   static const learnClosing = '/learn/closing';
   static const learnOpening = '/learn/opening';
   static const learnSequence = '/learn/sequence';
+  static const learnStyles = '/learn/styles';
   static const achievements = '/achievements';
   static const mastery = '/achievements/mastery';
   static const howTo = '/how-to';
@@ -155,6 +157,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(BankGate(builder: (bank) => OpeningPage(bank: bank)));
     case Routes.learnSequence:
       return page(BankGate(builder: (bank) => SequencePage(bank: bank)));
+    case Routes.learnStyles:
+      return page(BankGate(builder: (bank) => StylesPage(bank: bank)));
     case Routes.solver:
       // the solver follows the mode: one board, or four that share the guesses
       return page(
@@ -224,6 +228,7 @@ const _known = {
   Routes.learnClosing,
   Routes.learnOpening,
   Routes.learnSequence,
+  Routes.learnStyles,
   Routes.achievements,
   Routes.howTo,
   Routes.settings,

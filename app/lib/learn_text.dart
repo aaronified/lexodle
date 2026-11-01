@@ -1,4 +1,6 @@
+import 'learn_styles.dart';
 import 'logic.dart';
+import 'playstyle.dart';
 
 /// What learn mode knows about one guess once the position it was made in has
 /// been analysed: how it split the words that fitted, and how the best guess
@@ -22,6 +24,8 @@ class GuessReport {
     required this.bestExpected,
     required this.bestCanWin,
     required this.yourCanWin,
+    this.style,
+    this.bestBehaviour,
   });
 
   final String guess;
@@ -52,6 +56,11 @@ class GuessReport {
   final bool bestCanWin;
   final bool yourCanWin;
 
+  /// What the playstyle makes of the guess (its habit, risk, rank and luck), and
+  /// the habit the best guess counts as. Null when not worked out.
+  final StyleProfile? style;
+  final Behaviour? bestBehaviour;
+
   /// Whether no guess does better.
   bool get asGoodAsAny => skill >= 99.99;
 
@@ -77,8 +86,25 @@ String learnVerdict(GuessReport r) {
 }
 
 /// The lines that say why: how the guess split the words that fitted, how the
-/// best one did, and what the difference was. A few short sentences.
-List<String> learnWhy(GuessReport r) {
+/// best one did, and what the difference was; then which habit of the playstyle
+/// it counts as, and the luck it had (explained, as it cannot be learned). A few
+/// short sentences.
+List<String> learnWhy(GuessReport r) => [..._split(r), ..._styleLines(r)];
+
+/// The playstyle and luck lines of a report (none without a profile, or when
+/// there was nothing to choose).
+List<String> _styleLines(GuessReport r) {
+  final st = r.style;
+  if (st == null || r.trivial) return const [];
+  return [
+    styleLine(st),
+    if (r.bestBehaviour != null && r.bestWord != r.guess)
+      'the best, ${r.bestWord}, counts as a ${r.bestBehaviour!.label}',
+    luckExplained(st.luck),
+  ];
+}
+
+List<String> _split(GuessReport r) {
   if (r.trivial) {
     return r.before == 1
         ? ['one word fitted, so only that word could win']
@@ -147,6 +173,8 @@ GuessReport reportGuess({
   required List<String> after,
   required Landscape landscape,
   Map<String, int>? weights,
+  List<String> earlier = const [],
+  List<List<Mark>> earlierMarks = const [],
 }) {
   final measured = scoreGuess(
     before,
@@ -177,6 +205,28 @@ GuessReport reportGuess({
     bestExpected: bestStats?.e ?? measured.expected,
     bestCanWin: best?.canWin ?? false,
     yourCanWin: measured.possible,
+    style: landscape.top.isEmpty
+        ? null
+        : profileGuess(
+            before: before,
+            guess: guess,
+            after: after,
+            landscape: landscape,
+            weights: weights,
+            earlier: earlier,
+            earlierMarks: earlierMarks,
+          ),
+    bestBehaviour: best == null
+        ? null
+        : profileGuess(
+            before: before,
+            guess: best.word,
+            after: after,
+            landscape: landscape,
+            weights: weights,
+            earlier: earlier,
+            earlierMarks: earlierMarks,
+          ).behaviour,
   );
 }
 

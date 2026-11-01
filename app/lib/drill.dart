@@ -4,6 +4,7 @@ import 'analysis_worker.dart';
 import 'closing.dart';
 import 'drill_calc.dart';
 import 'learn_log.dart';
+import 'learn_styles.dart';
 import 'learn_text.dart';
 import 'logic.dart';
 import 'modes.dart';
@@ -96,12 +97,35 @@ class DrillQuestion {
           ' · wins within $tries ${tries == 1 ? 'try' : 'tries'} in $win%';
     }
 
-    if (isRight(o)) return [line(o), 'nothing here wins in time more often'];
+    // which habit of the playstyle each counts as: a closer fits the clues, a
+    // prober does not but is one of the best splits
+    StyleProfile profile(DrillOption x) => profileGuess(
+      before: eligible,
+      guess: x.word,
+      after: filterEligible(eligible, x.word, evaluate(answer, x.word)),
+      landscape: landscape,
+      weights: weights,
+      earlier: guesses,
+      earlierMarks: marks,
+    );
+    final styled = landscape.top.isNotEmpty;
+    if (isRight(o)) {
+      return [
+        line(o),
+        'nothing here wins in time more often',
+        if (styled) styleLine(profile(o)),
+      ];
+    }
+    final bestStyle = styled ? profile(best).behaviour : null;
     return [
       line(o),
       line(best),
       '${best.word} splits the ${eligible.length} words so that the next '
           'guess is more often right',
+      if (styled) styleLine(profile(o)),
+      if (styled)
+        'the best, ${best.word}, counts as '
+            '${bestStyle == null ? 'no habit' : 'a ${bestStyle.label}'}',
     ];
   }
 
@@ -112,6 +136,8 @@ class DrillQuestion {
     after: filterEligible(eligible, o.word, evaluate(answer, o.word)),
     landscape: landscape,
     weights: weights,
+    earlier: guesses,
+    earlierMarks: marks,
   );
 }
 
@@ -345,13 +371,20 @@ Future<DrillQuestion?> buildClosingQuestion({
     };
     final options = pickClosingOptions(wins, rng);
     if (options == null) continue;
+    // the analysis of the position, for the habit each guess counts as
+    final land = await analyseOffThread(
+      eligible,
+      guessable,
+      k: 3,
+      weights: weights,
+    );
     return DrillQuestion(
       answer: answer,
       guesses: guesses,
       marks: marks,
       eligible: eligible,
       options: options,
-      landscape: const Landscape([], []),
+      landscape: land,
       weights: weights,
       triesLeft: tries,
     );

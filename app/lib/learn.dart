@@ -217,6 +217,8 @@ class _LearnPageState extends State<LearnPage> {
       after: after,
       landscape: l,
       weights: _law,
+      earlier: guesses.sublist(0, index),
+      earlierMarks: marks.sublist(0, index),
     );
     setState(() {
       feedback[index] = report;

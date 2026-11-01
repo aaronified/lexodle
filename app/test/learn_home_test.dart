@@ -132,6 +132,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('learn-card-opening')));
     await tester.pumpAndSettle();
     expect(opened.last, Routes.learnOpening);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('learn-card-styles')));
+    await tester.pumpAndSettle();
+    expect(opened.last, Routes.learnStyles);
   });
 
   testWidgets('it follows the log: a round recorded updates the card', (

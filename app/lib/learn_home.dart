@@ -68,6 +68,14 @@ class LearnHomePage extends StatelessWidget {
                           'each colour it can show',
                       Routes.learnOpening,
                     ),
+                    _lesson(
+                      context,
+                      'the styles',
+                      'the three habits of the opening and the two of the end, '
+                          'and luck, explained',
+                      Routes.learnStyles,
+                      key: 'learn-card-styles',
+                    ),
                     _card(
                       context,
                       LearnKind.free,
@@ -117,8 +125,9 @@ class LearnHomePage extends StatelessWidget {
     BuildContext context,
     String title,
     String about,
-    String route,
-  ) {
+    String route, {
+    String key = 'learn-card-opening',
+  }) {
     final c = Theme.of(context).colorScheme;
     final dim = TextStyle(
       fontSize: 11,
@@ -127,7 +136,7 @@ class LearnHomePage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: OutlinedButton(
-        key: const ValueKey('learn-card-opening'),
+        key: ValueKey(key),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           side: BorderSide(color: c.outline),

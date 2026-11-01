@@ -38,7 +38,11 @@ void main() {
     final why = learnWhy(r);
     expect(why.first, startsWith('your bake: '));
     expect(why[1], startsWith('the best, ${r.bestWord}: '));
-    expect(why.last, contains('groups, yours in'));
+    expect(why[2], contains('groups, yours in'));
+    // then the habit it counts as, and the luck (explained, not taught)
+    expect(why.any((l) => l.startsWith('style: ')), isTrue);
+    expect(why.last, startsWith('luck '));
+    expect(why.last, contains('not your choice'));
   });
 
   test(
@@ -51,8 +55,8 @@ void main() {
       expect(r.asGoodAsAny, isTrue);
       expect(learnVerdict(r), startsWith('skill 100 · as good as any guess'));
       expect(
-        learnWhy(r).last,
-        anyOf(contains('no guess splits'), contains('as good:')),
+        learnWhy(r),
+        contains(anyOf(contains('no guess splits'), contains('as good:'))),
       );
     },
   );

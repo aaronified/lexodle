@@ -157,11 +157,15 @@ void main() {
         // and the explanation names both, with the chance in time
         final worse = q.options.firstWhere((o) => !q.isRight(o));
         final lines = q.closingLines(worse);
-        expect(lines, hasLength(3));
+        expect(lines, hasLength(5));
         expect(lines[0], startsWith('${worse.word}: '));
         expect(lines[1], startsWith('${best.word}: '));
         expect(lines[0], contains('wins within ${q.triesLeft} tries in '));
-        expect(q.closingLines(best), hasLength(2));
+        expect(lines[3], startsWith('style: '));
+        expect(lines[4], startsWith('the best, ${best.word}, counts as '));
+        final good = q.closingLines(best);
+        expect(good, hasLength(3));
+        expect(good[2], startsWith('style: '));
       }
     });
   });

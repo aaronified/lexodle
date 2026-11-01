@@ -48,6 +48,19 @@ then the word (tap it to use it), then why it is the best. Each press is one ste
 
 **Undo** takes the last guess back, with the words that fitted before it, so you can try another.
 
+**Styles.** A playstyle is two habits: three in the opening (a gambler, a maximiser, an eliminator)
+and two at the end (a closer, a prober); see [History and playstyles](History-and-playstyles). Every
+guess learn mode grades says which habit it counts as and the numbers behind it (its risk, its rank
+among the guesses, the fresh letters, whether it fits the clues), by the same rule the playstyle
+uses, or why it counts as none; and what the best guess counts as. **The styles** lesson teaches
+the five: the rule, when each is the right guess to play, and a real example worked out for your
+language and length (an opening position for the three, an endgame for each of the two).
+
+**Luck** cannot be taught: you pick the guess, never the answer. Learn mode explains it instead. Each
+graded guess says what its luck was and that it was the answer's doing, and the styles lesson shows
+one guess by where the answer is: a big group leaves many words (unlucky), a small one few (lucky),
+and weighted by their chances the luck over all answers is exactly 0.
+
 **Choose the best** shows a position, the guesses made so far with their colours and how many
 words still fit, and four words. Pick the one that tells the words that fit apart best. It says
 whether you were right (nothing offered did better), the skill of every option, and why, in the

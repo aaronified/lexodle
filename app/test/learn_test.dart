@@ -175,6 +175,9 @@ void main() {
     await guess(tester, answer == 'mais' ? 'lien' : 'mais');
     expect(find.byKey(const ValueKey('learn-why-0')), findsOneWidget);
     expect(find.textContaining('your '), findsWidgets);
+    // which habit of the playstyle the guess counts as, and its luck, explained
+    expect(find.textContaining('style: '), findsOneWidget);
+    expect(find.textContaining('not your choice'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('learn-feedback-tap-0')));
     await tester.pump();
     expect(find.byKey(const ValueKey('learn-why-0')), findsNothing);
