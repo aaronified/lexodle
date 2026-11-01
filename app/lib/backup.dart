@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'daily.dart';
 import 'history.dart';
+import 'learn_log.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'store.dart';
@@ -29,6 +30,7 @@ class Backup {
     required this.achievements,
     this.languages,
     this.history,
+    this.learn,
   });
 
   final DateTime exported;
@@ -42,6 +44,10 @@ class Backup {
   /// Every game played, with its guesses; null in a backup from before the
   /// history, which leaves what is saved alone.
   final History? history;
+
+  /// What learn mode has done; null in a backup from before it, which leaves
+  /// what is saved alone.
+  final LearnLog? learn;
 
   /// The settings present in the file (a missing one keeps its current value).
   final Map<String, Object> settings;
@@ -103,6 +109,7 @@ String backupToText(AppState state, {DateTime? now}) {
     },
     // one compact line: indented, a few hundred games would swamp the file
     'history': jsonEncode(state.history.toJson()),
+    'learn': jsonEncode(state.learnLog.toJson()),
   });
 }
 
@@ -208,6 +215,7 @@ Backup parseBackup(String text) {
       },
       languages: languages,
       history: history,
+      learn: _learn(raw['learn']),
     );
   } on FormatException {
     rethrow;
@@ -338,6 +346,17 @@ History? _history(Object? raw) {
     return History.fromJson(raw is String ? jsonDecode(raw) : raw);
   } on FormatException {
     _bad('history');
+  }
+}
+
+/// The learn log, or null when the file has none. Entries that are not events
+/// are left out rather than refusing the file.
+LearnLog? _learn(Object? raw) {
+  if (raw == null) return null;
+  try {
+    return LearnLog.fromJson(raw is String ? jsonDecode(raw) : raw);
+  } on FormatException {
+    _bad('learn');
   }
 }
 

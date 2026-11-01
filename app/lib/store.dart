@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'daily.dart';
 import 'difficulty.dart';
 import 'history.dart';
+import 'learn_log.dart';
 import 'medal.dart';
 import 'modes.dart';
 import 'playstyle.dart';
@@ -1692,6 +1693,36 @@ class AppState extends ChangeNotifier {
   /// the last 100.
   History history = History();
 
+  /// What learn mode has done: the progress it shows and the learn
+  /// achievements come from it (see [recordLearn]).
+  LearnLog learnLog = LearnLog();
+
+  /// Records a finished word or round of learn mode.
+  void recordLearn(LearnEvent e) {
+    learnLog.add(e);
+    _saveLearn();
+    notifyListeners();
+  }
+
+  void _saveLearn() {
+    try {
+      _w(
+        'learnLog',
+        _prefs?.setString('learnLog', jsonEncode(learnLog.toJson())),
+      );
+    } catch (_) {}
+  }
+
+  void _readLearn(SharedPreferences p) {
+    final raw = p.getString('learnLog');
+    if (raw == null) return;
+    try {
+      learnLog = LearnLog.fromJson(jsonDecode(raw));
+    } catch (e) {
+      appLog.w('store', 'the learn log could not be read: $e');
+    }
+  }
+
   /// The playstyle in each language (a [Playstyle.id]; none until rated),
   /// every one the player has been rated there, and how many times it has
   /// changed. See playstyle.dart.
@@ -2040,6 +2071,7 @@ class AppState extends ChangeNotifier {
         _dailyBests.clear();
       }
       _readAchievements(p);
+      _readLearn(p);
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
       // first start of this version, or it was lost) it is done again.
@@ -2304,6 +2336,7 @@ class AppState extends ChangeNotifier {
     required Map<String, AchState> ach,
     Map<String, LanguageKept>? languages,
     History? history,
+    LearnLog? learn,
   }) {
     appLog.i(
       'restore',
@@ -2343,6 +2376,10 @@ class AppState extends ChangeNotifier {
     _saveDailyLog();
     // likewise a backup from before the history
     if (history != null) _replaceHistory(history);
+    if (learn != null) {
+      learnLog = learn;
+      _saveLearn();
+    }
     lang = settings['lang'] as String? ?? lang;
     length = settings['length'] as int? ?? length;
     tries = settings['tries'] as int? ?? tries;

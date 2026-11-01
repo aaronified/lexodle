@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'analysis_worker.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
+import 'learn_log.dart';
 import 'learn_text.dart';
 import 'logic.dart';
 import 'main.dart';
@@ -60,6 +61,10 @@ class _LearnPageState extends State<LearnPage> {
   int hint = 0;
   int hintsUsed = 0;
 
+  /// Whether this word has been put in the learn log: once, even if it is
+  /// taken back and solved again.
+  bool _recorded = false;
+
   /// Which guesses show their explanation.
   final _open = <int>{};
 
@@ -94,6 +99,7 @@ class _LearnPageState extends State<LearnPage> {
     _open.clear();
     hint = 0;
     hintsUsed = 0;
+    _recorded = false;
     input.clear();
     message = '';
     _game++;
@@ -210,6 +216,27 @@ class _LearnPageState extends State<LearnPage> {
       feedback[index] = report;
       _open.add(index);
     });
+    _record();
+  }
+
+  /// Puts the word in the learn log once it is solved and every guess of it has
+  /// been graded (the last grade can come after the solve).
+  void _record() {
+    if (_recorded || !solved || feedback.any((f) => f == null)) return;
+    _recorded = true;
+    final reports = [for (final f in feedback) f!];
+    appState.recordLearn(
+      LearnEvent(
+        kind: LearnKind.free,
+        language: widget.bank.language.code,
+        length: length,
+        date: DateTime.now().toIso8601String().substring(0, 10),
+        questions: reports.length,
+        right: reports.where((r) => r.asGoodAsAny).length,
+        avgSkill: reports.fold(0.0, (s, r) => s + r.skill) / reports.length,
+        hints: hintsUsed,
+      ),
+    );
   }
 
   /// Takes the last guess back, with the position it was made in.

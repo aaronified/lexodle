@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/drill.dart';
 import 'package:lexodle/drill_page.dart';
+import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,7 +12,10 @@ import 'support/text_of.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    appState.learnLog = LearnLog();
+  });
 
   DrillRound? finished;
 
@@ -23,7 +28,10 @@ void main() {
     expect(f, findsOneWidget);
   }
 
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(
+    WidgetTester tester, {
+    LearnKind kind = LearnKind.choose,
+  }) async {
     await tester.binding.setSurfaceSize(const Size(420, 1100));
     appState.setup(lang: 'fr', length: 4);
     final bank = (await tester.runAsync(
@@ -34,7 +42,12 @@ void main() {
     finished = null;
     await tester.pumpWidget(
       MaterialApp(
-        home: DrillPage(bank: bank, seed: 7, onRound: (r) => finished = r),
+        home: DrillPage(
+          bank: bank,
+          kind: kind,
+          seed: 7,
+          onRound: (r) => finished = r,
+        ),
       ),
     );
     await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
@@ -106,6 +119,54 @@ void main() {
     await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
     expect(find.textContaining('1 of 10'), findsOneWidget);
   });
+
+  testWidgets('a finished round goes in the learn log, once', (tester) async {
+    await open(tester);
+    for (var q = 1; q <= drillRoundLength; q++) {
+      await tester.tap(find.byKey(const ValueKey('drill-option-0')));
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const ValueKey('drill-next')));
+      await tester.tap(find.byKey(const ValueKey('drill-next')));
+      await tester.pump();
+      if (q < drillRoundLength) {
+        expect(appState.learnLog.events, isEmpty, reason: 'not before the end');
+        await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
+      }
+    }
+    final e = appState.learnLog.events.single;
+    expect(e.kind, LearnKind.choose);
+    expect(e.language, 'fr');
+    expect(e.length, 4);
+    expect(e.questions, drillRoundLength);
+    expect(e.right, finished!.right);
+    expect(e.avgSkill, closeTo(finished!.averageSkill, 0.1));
+  });
+
+  testWidgets(
+    'the opener drill has no clues, five questions, and logs itself',
+    (tester) async {
+      await open(tester, kind: LearnKind.opener);
+      expect(find.textContaining('the opener'), findsOneWidget);
+      expect(find.textContaining('1 of 5'), findsOneWidget);
+      expect(find.text('which word is the best first guess?'), findsOneWidget);
+      // no guess has been made: no tiles
+      expect(find.byType(MarkTile), findsNothing);
+      for (var q = 1; q <= 5; q++) {
+        await tester.tap(find.byKey(const ValueKey('drill-option-0')));
+        await tester.pump();
+        await tester.ensureVisible(find.byKey(const ValueKey('drill-next')));
+        await tester.tap(find.byKey(const ValueKey('drill-next')));
+        await tester.pump();
+        if (q < 5) {
+          await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
+        }
+      }
+      expect(text(tester, 'drill-score'), '${finished!.right} of 5 right');
+      final e = appState.learnLog.events.single;
+      expect(e.kind, LearnKind.opener);
+      expect(e.questions, 5);
+    },
+  );
 
   test('a round counts its right answers and averages the skill', () {
     final round = DrillRound('fr', 4, [

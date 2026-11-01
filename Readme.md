@@ -179,7 +179,9 @@
     <td width="60%">
       <h3>🎓 Learn mode</h3>
       The answer is shown. Find the guess that cuts the words left the most; each guess is graded
-      against the best, and the words that still fit are listed at the bottom.
+      against the best, with the reason, and a hint and undo are there when you are stuck. Two
+      drills hide the answer: choose the best of four words in a position, and learn the best
+      opener. Progress is kept per language and length.
     </td>
   </tr>
 </table>

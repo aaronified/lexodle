@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/learn.dart';
+import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +11,10 @@ import 'support/text_of.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    appState.learnLog = LearnLog();
+  });
 
   Future<WordBank> bank(WidgetTester tester) async => (await tester.runAsync(
     () async => WordBank.load(
@@ -204,5 +208,31 @@ void main() {
     await tester.pump();
     expect(find.text('solved in 1'), findsNothing);
     expect(find.byKey(const ValueKey('learn-hint')), findsOneWidget);
+  });
+
+  testWidgets('a solved word is logged once, with its grades and hints', (
+    tester,
+  ) async {
+    await open(tester);
+    final answer = answerOf(tester);
+    expect(appState.learnLog.isEmpty, isTrue);
+    await tester.tap(find.byKey(const ValueKey('learn-hint')));
+    await tester.pump(const Duration(seconds: 3));
+    await guess(tester, answer == 'mais' ? 'lien' : 'mais');
+    expect(appState.learnLog.isEmpty, isTrue, reason: 'not solved yet');
+    await guess(tester, answer);
+    final e = appState.learnLog.events.single;
+    expect(e.kind, LearnKind.free);
+    expect(e.language, 'fr');
+    expect(e.length, 4);
+    expect(e.questions, 2);
+    expect(e.hints, 1);
+    expect(e.right, inInclusiveRange(0, 2));
+    expect(e.avgSkill, inInclusiveRange(0, 100));
+    // taken back and solved again, it is the same word: not logged twice
+    await tester.tap(find.byKey(const ValueKey('learn-undo')));
+    await tester.pump();
+    await guess(tester, answer);
+    expect(appState.learnLog.events, hasLength(1));
   });
 }

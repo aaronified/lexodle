@@ -7,6 +7,8 @@ import 'drill_page.dart';
 import 'game.dart';
 import 'history_page.dart';
 import 'learn.dart';
+import 'learn_home.dart';
+import 'learn_log.dart';
 import 'licences_page.dart';
 import 'home.dart';
 import 'how_to.dart';
@@ -43,7 +45,9 @@ class Routes {
   static const review = '/play/review';
   static const solver = '/solver';
   static const learn = '/learn';
-  static const drill = '/learn/choose';
+  static const learnFree = '/learn/free';
+  static const learnChoose = '/learn/choose';
+  static const learnOpener = '/learn/opener';
   static const achievements = '/achievements';
   static const mastery = '/achievements/mastery';
   static const howTo = '/how-to';
@@ -132,9 +136,17 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           ? page(MultiReviewPage(record: record))
           : page(const HomePage());
     case Routes.learn:
+      return page(BankGate(builder: (bank) => LearnHomePage(bank: bank)));
+    case Routes.learnFree:
       return page(BankGate(builder: (bank) => LearnPage(bank: bank)));
-    case Routes.drill:
+    case Routes.learnChoose:
       return page(BankGate(builder: (bank) => DrillPage(bank: bank)));
+    case Routes.learnOpener:
+      return page(
+        BankGate(
+          builder: (bank) => DrillPage(bank: bank, kind: LearnKind.opener),
+        ),
+      );
     case Routes.solver:
       // the solver follows the mode: one board, or four that share the guesses
       return page(
@@ -199,7 +211,9 @@ const _known = {
   Routes.mastery,
   Routes.solver,
   Routes.learn,
-  Routes.drill,
+  Routes.learnFree,
+  Routes.learnChoose,
+  Routes.learnOpener,
   Routes.achievements,
   Routes.howTo,
   Routes.settings,

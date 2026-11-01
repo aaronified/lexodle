@@ -3,20 +3,32 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'drill.dart';
+import 'learn_log.dart';
 import 'learn_text.dart';
+import 'logic.dart';
 import 'main.dart';
 import 'ui.dart';
 import 'words.dart';
 
-/// Choose the best: a position is shown (the guesses so far with their colours
+/// Choose the best (or, with [LearnKind.opener], choose the best first guess):
+/// a position is shown (the guesses so far with their colours
 /// and how many words still fit) with four words to choose from, and the job is
 /// to pick the one that tells the words apart best. After each pick it says
 /// which was best and why. A round is [drillRoundLength] positions; the next one
 /// is worked out while the last is answered. Not scored and not kept in the
 /// history, as learn mode is not.
 class DrillPage extends StatefulWidget {
-  const DrillPage({super.key, required this.bank, this.seed, this.onRound});
+  const DrillPage({
+    super.key,
+    required this.bank,
+    this.kind = LearnKind.choose,
+    this.seed,
+    this.onRound,
+  });
   final WordBank bank;
+
+  /// Which drill: positions from play, or the opening guess.
+  final LearnKind kind;
 
   /// Fixes the positions drawn, for a test; null draws at random.
   final int? seed;
@@ -45,12 +57,31 @@ class _DrillPageState extends State<DrillPage> {
     _begin();
   }
 
-  Future<DrillQuestion?> _build() => buildDrillQuestion(
-    bank: widget.bank,
-    length: length,
-    draw: appState.draw,
-    rng: _rng,
-  );
+  bool get _opener => widget.kind == LearnKind.opener;
+  late final int _total = roundLengthOf(widget.kind);
+
+  // the opener is analysed once, for every question of every round
+  Landscape? _openerLand;
+
+  Future<DrillQuestion?> _build() async {
+    if (!_opener) {
+      return buildDrillQuestion(
+        bank: widget.bank,
+        length: length,
+        draw: appState.draw,
+        rng: _rng,
+      );
+    }
+    final q = await buildOpenerQuestion(
+      bank: widget.bank,
+      length: length,
+      draw: appState.draw,
+      rng: _rng,
+      landscape: _openerLand,
+    );
+    _openerLand ??= q?.landscape;
+    return q;
+  }
 
   void _begin() {
     _answers.clear();
@@ -71,7 +102,7 @@ class _DrillPageState extends State<DrillPage> {
       failed = q == null;
       picked = null;
     });
-    if (q != null && _answers.length + 1 < drillRoundLength) _next = _build();
+    if (q != null && _answers.length + 1 < _total) _next = _build();
   }
 
   void _pick(DrillOption o) {
@@ -84,10 +115,12 @@ class _DrillPageState extends State<DrillPage> {
   }
 
   void _forward() {
-    if (_answers.length >= drillRoundLength) {
-      widget.onRound?.call(
-        DrillRound(widget.bank.language.code, length, List.of(_answers)),
+    if (_answers.length >= _total) {
+      final round = _round();
+      appState.recordLearn(
+        round.toEvent(DateTime.now().toIso8601String().substring(0, 10)),
       );
+      widget.onRound?.call(round);
       setState(() => done = true);
       return;
     }
@@ -98,12 +131,20 @@ class _DrillPageState extends State<DrillPage> {
     _show();
   }
 
+  DrillRound _round() => DrillRound(
+    widget.bank.language.code,
+    length,
+    List.of(_answers),
+    kind: widget.kind,
+  );
+
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final lang = widget.bank.language.name.toLowerCase();
-    final n = min(_answers.length + (picked == null ? 1 : 0), drillRoundLength);
-    final head = 'choose the best · $lang · $length';
+    final n = min(_answers.length + (picked == null ? 1 : 0), _total);
+    final head =
+        '${_opener ? 'the opener' : 'choose the best'} · $lang · $length';
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -113,7 +154,7 @@ class _DrillPageState extends State<DrillPage> {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                done ? head : '$head · $n of $drillRoundLength',
+                done ? head : '$head · $n of $_total',
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
               ),
@@ -152,7 +193,11 @@ class _DrillPageState extends State<DrillPage> {
     final p = picked;
     final fits = q.eligible.length;
     return [
-      const Caption('which guess tells the words that fit apart best?'),
+      Caption(
+        _opener
+            ? 'which word is the best first guess?'
+            : 'which guess tells the words that fit apart best?',
+      ),
       const SizedBox(height: 12),
       LayoutBuilder(
         builder: (context, box) {
@@ -196,9 +241,7 @@ class _DrillPageState extends State<DrillPage> {
         FilledButton(
           key: const ValueKey('drill-next'),
           onPressed: _forward,
-          child: Text(
-            _answers.length >= drillRoundLength ? 'see the result' : 'next',
-          ),
+          child: Text(_answers.length >= _total ? 'see the result' : 'next'),
         ),
       ],
     ];
@@ -289,11 +332,11 @@ class _DrillPageState extends State<DrillPage> {
   }
 
   List<Widget> _summary(ColorScheme c) {
-    final round = DrillRound(widget.bank.language.code, length, _answers);
+    final round = _round();
     return [
       const SizedBox(height: 12),
       Text(
-        '${round.right} of $drillRoundLength right',
+        '${round.right} of $_total right',
         key: const ValueKey('drill-score'),
         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
       ),

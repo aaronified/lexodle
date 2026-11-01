@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'analysis_worker.dart';
+import 'learn_log.dart';
 import 'learn_text.dart';
 import 'logic.dart';
 import 'modes.dart';
@@ -191,16 +192,67 @@ Future<DrillQuestion?> buildDrillQuestion({
   return null;
 }
 
-/// How many questions a round of a drill has.
+/// Builds an opener question: no guess yet, every word of the length still
+/// fits, and four words to choose the first guess from, one of them the best
+/// opener. The analysis of the opener is the same every time, so a caller that
+/// has one passes it as [landscape] and it is not worked out again. A word is
+/// drawn as the answer only to fix what the explanation says came after.
+Future<DrillQuestion?> buildOpenerQuestion({
+  required WordBank bank,
+  required int length,
+  required Draw draw,
+  required Random rng,
+  Landscape? landscape,
+}) async {
+  final pool = bank.answers(length);
+  final guessable = bank.guessable(length);
+  if (pool.isEmpty || guessable.isEmpty) return null;
+  final weights = bank.law(length, draw);
+  final land =
+      landscape ??
+      await analyseOffThread(guessable, guessable, k: 3, weights: weights);
+  if (land.top.isEmpty) return null;
+  final options = pickOptions(
+    eligible: guessable,
+    candidates: recommendationCandidates(guessable, guessable),
+    best: land.top.first.word,
+    bestGain: land.bestGain,
+    weights: weights,
+    rng: rng,
+  );
+  if (options.length < 4) return null;
+  return DrillQuestion(
+    answer: chooseWord(pool, bank.drawWeights(length, draw), rng),
+    guesses: const [],
+    marks: const [],
+    eligible: List.of(guessable),
+    options: options,
+    landscape: land,
+    weights: weights,
+  );
+}
+
+/// How many questions a round of "choose the best" has.
 const drillRoundLength = 10;
 
-/// A finished round: the language and length it was played in, and each
-/// answer in order.
+/// How many questions a round of [kind] has: the opener drill is shorter,
+/// because the best opener is the same word every time.
+int roundLengthOf(LearnKind kind) =>
+    kind == LearnKind.opener ? 5 : drillRoundLength;
+
+/// A finished round: the drill it was of, the language and length it was
+/// played in, and each answer in order.
 class DrillRound {
-  const DrillRound(this.language, this.length, this.answers);
+  const DrillRound(
+    this.language,
+    this.length,
+    this.answers, {
+    this.kind = LearnKind.choose,
+  });
   final String language;
   final int length;
   final List<DrillAnswer> answers;
+  final LearnKind kind;
 
   int get right => answers.where((a) => a.right).length;
 
@@ -209,5 +261,16 @@ class DrillRound {
       ? 0
       : answers.fold(0.0, (s, a) => s + a.skill) / answers.length;
 
-  bool get complete => answers.length >= drillRoundLength;
+  bool get complete => answers.length >= roundLengthOf(kind);
+
+  /// The round as the learn log keeps it.
+  LearnEvent toEvent(String date) => LearnEvent(
+    kind: kind,
+    language: language,
+    length: length,
+    date: date,
+    questions: answers.length,
+    right: right,
+    avgSkill: averageSkill,
+  );
 }

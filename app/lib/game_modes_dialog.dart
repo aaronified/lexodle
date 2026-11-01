@@ -413,21 +413,7 @@ class _GameModesDialogState extends State<GameModesDialog> {
                                     context,
                                     Routes.learn,
                                   ),
-                            child: const Text('learn: find the best guess'),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            key: const ValueKey('settings-drill'),
-                            onPressed: _themedOrBlind(mode)
-                                ? null
-                                : () => Navigator.pushReplacementNamed(
-                                    context,
-                                    Routes.drill,
-                                  ),
-                            child: const Text('learn: choose the best'),
+                            child: const Text('learn: get better at guessing'),
                           ),
                         ),
                         const SizedBox(height: 8),

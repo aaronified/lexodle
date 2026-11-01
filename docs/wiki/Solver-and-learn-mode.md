@@ -26,7 +26,12 @@ in the colours that board showed for each of them; any row can be corrected by t
 
 ## Learn mode
 
-**Learn** (the last button of game modes) shows you the answer and asks you to find the best
+**Learn** (the last button of game modes) opens the learn home: three things to practise, each
+with how it has been going in the language and length you chose (a row of blocks for the skill of
+the last twelve, and the last result), and the days in a row you have learned something. What
+you do there is kept on the phone, in backups, apart from the game history.
+
+**Practise a word** shows you the answer and asks you to find the best
 guess at each step. Guess as usual; after each guess it gives the skill of the guess and the best
 guesses there were, and the words that still fit the clues are listed at the bottom (the 120 most
 common; tap one to use it). It uses the language, length and pool you set, has no tries, is not
@@ -42,10 +47,14 @@ then the word (tap it to use it), then why it is the best. Each press is one ste
 
 **Undo** takes the last guess back, with the words that fitted before it, so you can try another.
 
-**Choose the best** (the button under learn) shows a position, the guesses made so far with their
+**Choose the best** shows a position, the guesses made so far with their
 colours and how many words still fit, and four words. Pick the one that tells the words that fit
 apart best. It says whether you were right (nothing offered did better), the skill of every
 option, and why, in the same words as learn mode. A round is ten positions; at the end it gives
 how many you got right and the average skill of your picks. The positions come from a random word
 of your language and length that one or two common guesses have been played against. Like learn
 mode it is not scored and not kept in the history.
+
+**The opener** asks which word is the best first guess, in five questions with four words each.
+The best opener is the same word every time, so it is a way to learn it: the other three words
+change.

@@ -10,6 +10,11 @@ it to the version.
 - learn: tap a guess to see why it scored as it did
   It shows how the guess and the best guess split the words that fitted: the
   groups, the biggest group, the words left and the bits.
+- learn: a home with three activities and your progress
+  Practise a word, choose the best, and the opener, each with a trend of its
+  skill in the language and length, and the days in a row you have learned.
+- learn: the opener drill
+  Which word is the best first guess, in five questions of four words.
 - learn: choose the best, a drill of ten positions
   Each shows the clues so far and four words; pick the one that splits the
   words that fit best, then see which was best and why.
