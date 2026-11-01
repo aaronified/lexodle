@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.5.0
+
 - learn: tap a guess to see why it scored as it did
   It shows how the guess and the best guess split the words that fitted: the
   groups, the biggest group, the words left and the bits.
