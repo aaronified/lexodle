@@ -15,6 +15,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     appState.learnLog = LearnLog();
+    appState.achOf('').clear();
   });
 
   DrillRound? finished;
@@ -108,6 +109,9 @@ void main() {
     expect(finished!.length, 4);
     final score = text(tester, 'drill-score');
     expect(score, '${finished!.right} of 10 right');
+    // the first round ever earns the first level of choose the best
+    expect(find.byKey(const ValueKey('earned-rows')), findsOneWidget);
+    expect(find.textContaining('first round'), findsOneWidget);
     expect(
       text(tester, 'drill-average'),
       'average skill ${finished!.averageSkill.round()}',

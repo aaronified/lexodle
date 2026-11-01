@@ -14,6 +14,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     appState.learnLog = LearnLog();
+    appState.achOf('').clear();
   });
 
   Future<WordBank> bank(WidgetTester tester) async => (await tester.runAsync(

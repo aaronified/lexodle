@@ -58,3 +58,9 @@ mode it is not scored and not kept in the history.
 **The opener** asks which word is the best first guess, in five questions with four words each.
 The best opener is the same word every time, so it is a way to learn it: the other three words
 change.
+
+**Achievements.** Learning earns [achievements](Achievements): words practised well, flawless
+words, rounds and perfect rounds of the drills, a streak of days, and a full lesson (all three in
+one day). A word typed straight in, with the answer in front of you, does not count; what counts
+is the quality of the guesses. They show at the end of a word or a round, and are kept once for
+you, not per language.

@@ -14,6 +14,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     appState.learnLog = LearnLog();
+    appState.achOf('').clear();
   });
 
   String today() => DateTime.now().toIso8601String().substring(0, 10);

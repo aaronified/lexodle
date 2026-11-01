@@ -181,6 +181,7 @@ void main() {
       for (final a in achievements) {
         expect(
           metrics.containsKey(a.metric) ||
+              learnMetrics.containsKey(a.metric) ||
               const {'langs', 'mastered', 'completed'}.contains(a.metric),
           isTrue,
           reason: '${a.id}: ${a.metric}',

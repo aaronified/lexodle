@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'analysis_worker.dart';
+import 'earned_rows.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'learn_log.dart';
 import 'learn_text.dart';
 import 'logic.dart';
 import 'main.dart';
+import 'store.dart' show Achievement;
 import 'ui.dart';
 import 'words.dart';
 
@@ -65,6 +67,9 @@ class _LearnPageState extends State<LearnPage> {
   /// taken back and solved again.
   bool _recorded = false;
 
+  /// The achievements this word earned, shown once it is solved.
+  List<Achievement> _earned = const [];
+
   /// Which guesses show their explanation.
   final _open = <int>{};
 
@@ -100,6 +105,7 @@ class _LearnPageState extends State<LearnPage> {
     hint = 0;
     hintsUsed = 0;
     _recorded = false;
+    _earned = const [];
     input.clear();
     message = '';
     _game++;
@@ -225,7 +231,7 @@ class _LearnPageState extends State<LearnPage> {
     if (_recorded || !solved || feedback.any((f) => f == null)) return;
     _recorded = true;
     final reports = [for (final f in feedback) f!];
-    appState.recordLearn(
+    final earned = appState.recordLearn(
       LearnEvent(
         kind: LearnKind.free,
         language: widget.bank.language.code,
@@ -237,6 +243,7 @@ class _LearnPageState extends State<LearnPage> {
         hints: hintsUsed,
       ),
     );
+    if (earned.isNotEmpty) setState(() => _earned = earned);
   }
 
   /// Takes the last guess back, with the position it was made in.
@@ -415,6 +422,10 @@ class _LearnPageState extends State<LearnPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          if (_earned.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            EarnedRows(_earned),
+                          ],
                           const SizedBox(height: 8),
                           FilledButton(
                             key: const ValueKey('learn-next'),

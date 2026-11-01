@@ -278,6 +278,7 @@ class Achievement {
        strict = false,
        smaller = false,
        tag = null,
+       tagIcon = null,
        separate = false,
        icons = const [],
        hit = null,
@@ -298,6 +299,7 @@ class Achievement {
     this.strict = false,
     this.smaller = false,
     GameMode? mode,
+    this.tagIcon,
     this.separate = false,
     this.icons = const [],
     this.hit,
@@ -324,6 +326,7 @@ class Achievement {
       strict = a.strict,
       smaller = a.smaller,
       tag = a.tag,
+      tagIcon = a.tagIcon,
       separate = a.separate,
       icons = a.icons,
       hit = a.hit;
@@ -350,6 +353,10 @@ class Achievement {
 
   /// The mode it is about, shown on it (quartet or relay), if any.
   final GameMode? tag;
+
+  /// The icon shown beside it when it is about something that is not a mode
+  /// (the learn achievements).
+  final String? tagIcon;
   final bool separate;
   final List<String> icons;
 
@@ -380,7 +387,12 @@ class Achievement {
   /// language at a time.
   bool get global =>
       track == Track.badges ||
-      (track == Track.metric && _globalMetrics.contains(metric));
+      (track == Track.metric && (_globalMetrics.contains(metric) || learn));
+
+  /// Whether it is earned by learn mode (see [learnMetrics]). These are kept
+  /// once for the player, like the ones that count languages, but their
+  /// targets are never cut down to the number of languages.
+  bool get learn => track == Track.metric && learnMetrics.containsKey(metric);
 
   /// The target of level [i], with "every language" as [languages] when it asks
   /// for more than there are.
@@ -448,6 +460,17 @@ const _counted = {
   'streakLockdown',
   'streakBlind',
   'stylesWorn',
+  'learnWords',
+  'learnFlawless',
+  'learnUnaided',
+  'learnRounds',
+  'learnPerfect',
+  'learnOpeners',
+  'learnOpenerPerfect',
+  'learnStreak',
+  'learnLanguages',
+  'learnLengths',
+  'learnAllThree',
 };
 const _globalMetrics = {'langs', 'mastered', 'completed'};
 
@@ -994,6 +1017,161 @@ final achievements = <Achievement>[
     icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
     mode: GameMode.blind,
   ),
+  // Learn mode (see learnMetrics): kept once for the player, whatever the
+  // language. Free practice shows the answer, so what it counts has to be about
+  // the quality of the guesses; the drills hide it.
+  Achievement.leveled(
+    'learn_words',
+    'microscope',
+    'practice',
+    (n) => n == 1
+        ? 'practise a word, with an average skill of 80 or more'
+        : 'practise $n words, each with an average skill of 80 or more',
+    'learnWords',
+    _lv(
+      [1, 10, 50, 200],
+      ['first lesson', 'a good start', 'steady hand', 'long practice'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_flawless',
+    'sparkles',
+    'flawless practice',
+    (n) => n == 1
+        ? 'practise a word of 3 guesses or more with every guess the best'
+        : 'practise $n such words with every guess the best',
+    'learnFlawless',
+    _lv(
+      [1, 5, 25, 100],
+      ['flawless', 'clean sheet', 'perfect form', 'never a miss'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_unaided',
+    'shield-check',
+    'unaided',
+    (n) => n == 1
+        ? 'practise a word without a hint, at an average skill of 90 or more'
+        : 'practise $n words without a hint, each at 90 or more',
+    'learnUnaided',
+    _lv(
+      [1, 10, 50, 200],
+      ['unaided', 'no help needed', 'own judgement', 'sure instinct'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_rounds',
+    'dice-5',
+    'choose the best',
+    (n) => n == 1
+        ? 'finish a round of choose the best'
+        : 'finish $n rounds of choose the best',
+    'learnRounds',
+    _lv(
+      [1, 5, 25, 100],
+      ['first round', 'regular', 'dedicated', 'a hundred rounds'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_perfect',
+    'award',
+    'ten of ten',
+    (n) => n == 1
+        ? 'get all ten right in a round of choose the best'
+        : 'get all ten right in $n rounds of choose the best',
+    'learnPerfect',
+    _lv([1, 5, 25, 100], ['ten of ten', 'sharp eye', 'keen eye', 'unerring']),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_openers',
+    'compass',
+    'the opener',
+    (n) => n == 1
+        ? 'finish a round of the opener drill'
+        : 'finish $n rounds of the opener drill',
+    'learnOpeners',
+    _lv(
+      [1, 5, 25, 100],
+      ['opening move', 'opening habit', 'opening book', 'opening theory'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_opener_perfect',
+    'crown',
+    'opener by heart',
+    (n) => n == 1
+        ? 'get all five right in the opener drill'
+        : 'get all five right in the opener drill $n times',
+    'learnOpenerPerfect',
+    _lv(
+      [1, 5, 25, 100],
+      ['opener known', 'opener sure', 'opener certain', 'opener by heart'],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_streak',
+    'flame',
+    'learning streak',
+    (n) => 'learn something $n days in a row',
+    'learnStreak',
+    _lv([3, 7, 30, 100], ['three days', 'a week', 'a month', 'a hundred days']),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_languages',
+    'world',
+    'learning languages',
+    (n) => 'learn in $n languages',
+    'learnLanguages',
+    _lv(
+      [2, 3, 6, 9],
+      [
+        'two tongues learnt',
+        'three tongues learnt',
+        'six tongues learnt',
+        'nine tongues learnt',
+      ],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_lengths',
+    'diamonds',
+    'learning lengths',
+    (n) => 'learn at $n different word lengths',
+    'learnLengths',
+    _lv(
+      [2, 3, 4, 5],
+      [
+        'two lengths learnt',
+        'three lengths learnt',
+        'four lengths learnt',
+        'every length learnt',
+      ],
+    ),
+    tagIcon: 'bulb',
+  ),
+  Achievement.leveled(
+    'learn_all_three',
+    'confetti',
+    'a full lesson',
+    (n) => n == 1
+        ? 'practise a word, choose the best and do the opener in one day'
+        : 'do all three of learn mode on $n different days',
+    'learnAllThree',
+    _lv(
+      [1, 7, 30, 100],
+      ['full lesson', 'full week', 'full month', 'full season'],
+    ),
+    tagIcon: 'bulb',
+  ),
 ];
 
 /// Bronze, silver, gold and platinum levels at these targets.
@@ -1215,6 +1393,148 @@ final metrics = <String, Metric>{
   ),
 };
 
+void _ensureHits(Achievement a, AchState st) {
+  while (st.hits.length < a.count) {
+    st.hits.add(0);
+  }
+}
+
+/// Earns every level [st]'s number has now reached, in order (one game can earn
+/// several), adding them to [earned].
+void _earnLevels(
+  List<Achievement> earned,
+  Achievement a,
+  AchState st,
+  String today,
+  int languages, {
+  double? count,
+}) {
+  if (!a.cycles) {
+    while (st.times < a.count &&
+        a.reached(st.times, st.value, languages: languages)) {
+      earned.add(a.atLevel(st.times));
+      st.times++;
+      st.cycle = st.times;
+      st.dates.add(today);
+    }
+    return;
+  }
+  // it counts up and starts again: each level is counted every round, and the
+  // medal stays once earned
+  _ensureHits(a, st);
+  while (st.cycle < a.count &&
+      a.reached(st.cycle, st.value, languages: languages)) {
+    earned.add(a.atLevel(st.cycle));
+    st.hits[st.cycle]++;
+    if (st.cycle >= st.times) {
+      st.times = st.cycle + 1;
+      st.dates.add(today);
+    }
+    st.cycle++;
+  }
+  if (st.cycle >= a.count) {
+    st.rounds++;
+    st.cycle = 0;
+    st.value = 0;
+    st.progress = 0;
+    st.seen.clear();
+    if (count != null) st.base = count;
+  }
+}
+
+/// How a learn event moves a number: what it does to [AchState.value].
+typedef LearnStep = double Function(AchState st, LearnEvent e);
+
+double _day(String d) => DateTime.parse(d).millisecondsSinceEpoch / 86400000;
+
+/// Every metric a learn achievement reads. Practice shows the answer, so what
+/// it counts is the quality of the guesses (a word typed straight in does not
+/// count); the drills hide it.
+final learnMetrics = <String, LearnStep>{
+  'learnWords': (st, e) =>
+      e.kind == LearnKind.free && e.questions >= 2 && e.avgSkill >= 80
+      ? st.value + 1
+      : st.value,
+  'learnFlawless': (st, e) =>
+      e.kind == LearnKind.free && e.questions >= 3 && e.flawless
+      ? st.value + 1
+      : st.value,
+  'learnUnaided': (st, e) =>
+      e.kind == LearnKind.free &&
+          e.questions >= 2 &&
+          e.hints == 0 &&
+          e.avgSkill >= 90
+      ? st.value + 1
+      : st.value,
+  'learnRounds': (st, e) =>
+      e.kind == LearnKind.choose ? st.value + 1 : st.value,
+  'learnPerfect': (st, e) =>
+      e.kind == LearnKind.choose &&
+          e.flawless &&
+          e.questions >= drillRoundLength
+      ? st.value + 1
+      : st.value,
+  'learnOpeners': (st, e) =>
+      e.kind == LearnKind.opener ? st.value + 1 : st.value,
+  'learnOpenerPerfect': (st, e) =>
+      e.kind == LearnKind.opener &&
+          e.flawless &&
+          e.questions >= roundLengthOf(LearnKind.opener)
+      ? st.value + 1
+      : st.value,
+  // days in a row: the last day is kept in seen, the run in progress
+  'learnStreak': (st, e) {
+    final last = st.seen.isEmpty ? null : st.seen.first;
+    if (last == e.date) return st.value;
+    final gap = last == null ? null : _day(e.date) - _day(last);
+    st.progress = gap != null && gap.round() == 1 ? st.progress + 1 : 1;
+    st.seen
+      ..clear()
+      ..add(e.date);
+    return _best(st.value, st.progress.toDouble());
+  },
+  'learnLanguages': (st, e) {
+    st.seen.add(e.language);
+    return st.seen.length.toDouble();
+  },
+  'learnLengths': (st, e) {
+    st.seen.add('${e.length}');
+    return st.seen.length.toDouble();
+  },
+  // all three on one day: seen holds the day, and the kinds done on it
+  'learnAllThree': (st, e) {
+    final day = 'd:${e.date}';
+    if (!st.seen.contains(day)) {
+      st.seen
+        ..clear()
+        ..add(day);
+    }
+    if (st.seen.contains('done')) return st.value;
+    st.seen.add(e.kind.name);
+    if (LearnKind.values.every((k) => st.seen.contains(k.name))) {
+      st.seen.add('done');
+      return st.value + 1;
+    }
+    return st.value;
+  },
+};
+
+/// Applies one finished piece of learning to the learn achievements in
+/// [states] and returns the levels it earned. Pure, like [advanceAchievements];
+/// the events are applied oldest first, so the log can be replayed.
+List<Achievement> advanceLearnAchievements(
+  Map<String, AchState> states,
+  LearnEvent e,
+) {
+  final earned = <Achievement>[];
+  for (final a in allAchievements.where((a) => a.learn)) {
+    final st = states.putIfAbsent(a.id, AchState.new);
+    st.value = learnMetrics[a.metric]!(st, e);
+    _earnLevels(earned, a, st, e.date, 0);
+  }
+  return earned;
+}
+
 /// Applies one finished game to every achievement's state and returns the
 /// ones it earned. Pure, so it is tested without any storage.
 ///
@@ -1231,46 +1551,9 @@ List<Achievement> advanceAchievements(
   int languages = 0,
 }) {
   final earned = <Achievement>[];
-  void ensureHits(Achievement a, AchState st) {
-    while (st.hits.length < a.count) {
-      st.hits.add(0);
-    }
-  }
-
-  // every level the number has now reached, in order: one game can earn several
-  void earnLevels(Achievement a, AchState st, {double? count}) {
-    if (!a.cycles) {
-      while (st.times < a.count &&
-          a.reached(st.times, st.value, languages: languages)) {
-        earned.add(a.atLevel(st.times));
-        st.times++;
-        st.cycle = st.times;
-        st.dates.add(today);
-      }
-      return;
-    }
-    // it counts up and starts again: each level is counted every round, and the
-    // medal stays once earned
-    ensureHits(a, st);
-    while (st.cycle < a.count &&
-        a.reached(st.cycle, st.value, languages: languages)) {
-      earned.add(a.atLevel(st.cycle));
-      st.hits[st.cycle]++;
-      if (st.cycle >= st.times) {
-        st.times = st.cycle + 1;
-        st.dates.add(today);
-      }
-      st.cycle++;
-    }
-    if (st.cycle >= a.count) {
-      st.rounds++;
-      st.cycle = 0;
-      st.value = 0;
-      st.progress = 0;
-      st.seen.clear();
-      if (count != null) st.base = count;
-    }
-  }
+  void ensureHits(Achievement a, AchState st) => _ensureHits(a, st);
+  void earnLevels(Achievement a, AchState st, {double? count}) =>
+      _earnLevels(earned, a, st, today, languages, count: count);
 
   for (final a in allAchievements) {
     final st = states.putIfAbsent(a.id, AchState.new);
@@ -1290,6 +1573,8 @@ List<Achievement> advanceAchievements(
       continue;
     }
     if (a.track != Track.metric) continue;
+    // learn mode's are advanced by advanceLearnAchievements
+    if (a.learn) continue;
     final m = metrics[a.metric];
     if (m == null) {
       // a metric that counts languages: the languages now, less those when the
@@ -1697,11 +1982,23 @@ class AppState extends ChangeNotifier {
   /// achievements come from it (see [recordLearn]).
   LearnLog learnLog = LearnLog();
 
-  /// Records a finished word or round of learn mode.
-  void recordLearn(LearnEvent e) {
+  /// Records a finished word or round of learn mode; returns the achievement
+  /// levels it earned.
+  List<Achievement> recordLearn(LearnEvent e) {
     learnLog.add(e);
+    final earned = advanceLearnAchievements(_globalAch, e);
     _saveLearn();
+    _saveAchievements();
     notifyListeners();
+    return earned;
+  }
+
+  /// Works the learn achievements out again from the log, oldest first.
+  void _replayLearn() {
+    _globalAch.removeWhere((id, _) => achievementById(id)?.learn ?? false);
+    for (final e in learnLog.events) {
+      advanceLearnAchievements(_globalAch, e);
+    }
   }
 
   void _saveLearn() {
@@ -2282,6 +2579,7 @@ class AppState extends ChangeNotifier {
         languages: langs.length,
       );
     }
+    _replayLearn();
     _grantCompletion(DateTime.now().toIso8601String().substring(0, 10));
     _saveAchievements();
   }
@@ -2377,8 +2675,12 @@ class AppState extends ChangeNotifier {
     // likewise a backup from before the history
     if (history != null) _replaceHistory(history);
     if (learn != null) {
+      // its achievements came with the backup's own
       learnLog = learn;
       _saveLearn();
+    } else {
+      // from before learn mode: what is kept stays, and so do its achievements
+      _replayLearn();
     }
     lang = settings['lang'] as String? ?? lang;
     length = settings['length'] as int? ?? length;

@@ -10,6 +10,10 @@ it to the version.
 - learn: tap a guess to see why it scored as it did
   It shows how the guess and the best guess split the words that fitted: the
   groups, the biggest group, the words left and the bits.
+- learn: eleven achievements for learning
+  Practice, flawless words, unaided words, rounds of choose the best, ten of
+  ten, the opener, a learning streak and a full lesson. They count once for you,
+  not per language.
 - learn: a home with three activities and your progress
   Practise a word, choose the best, and the opener, each with a trend of its
   skill in the language and length, and the days in a row you have learned.

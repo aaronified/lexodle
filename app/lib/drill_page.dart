@@ -3,10 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'drill.dart';
+import 'earned_rows.dart';
 import 'learn_log.dart';
 import 'learn_text.dart';
 import 'logic.dart';
 import 'main.dart';
+import 'store.dart' show Achievement;
 import 'ui.dart';
 import 'words.dart';
 
@@ -51,6 +53,9 @@ class _DrillPageState extends State<DrillPage> {
   bool failed = false;
   bool done = false;
 
+  /// The achievements the finished round earned.
+  List<Achievement> _earned = const [];
+
   @override
   void initState() {
     super.initState();
@@ -89,6 +94,7 @@ class _DrillPageState extends State<DrillPage> {
     picked = null;
     failed = false;
     done = false;
+    _earned = const [];
     _next = _build();
     _show();
   }
@@ -117,11 +123,14 @@ class _DrillPageState extends State<DrillPage> {
   void _forward() {
     if (_answers.length >= _total) {
       final round = _round();
-      appState.recordLearn(
+      final earned = appState.recordLearn(
         round.toEvent(DateTime.now().toIso8601String().substring(0, 10)),
       );
       widget.onRound?.call(round);
-      setState(() => done = true);
+      setState(() {
+        done = true;
+        _earned = earned;
+      });
       return;
     }
     setState(() {
@@ -356,6 +365,10 @@ class _DrillPageState extends State<DrillPage> {
             ),
           ),
         ),
+      if (_earned.isNotEmpty) ...[
+        const SizedBox(height: 16),
+        EarnedRows(_earned),
+      ],
       const SizedBox(height: 16),
       FilledButton(
         key: const ValueKey('drill-again'),

@@ -7,6 +7,8 @@ import 'logic.dart';
 import 'modes.dart';
 import 'words.dart';
 
+export 'learn_log.dart' show drillRoundLength, roundLengthOf;
+
 /// One word offered in a drill, with how good a guess it is here.
 class DrillOption {
   const DrillOption(this.word, this.skill, this.gain);
@@ -231,14 +233,6 @@ Future<DrillQuestion?> buildOpenerQuestion({
     weights: weights,
   );
 }
-
-/// How many questions a round of "choose the best" has.
-const drillRoundLength = 10;
-
-/// How many questions a round of [kind] has: the opener drill is shorter,
-/// because the best opener is the same word every time.
-int roundLengthOf(LearnKind kind) =>
-    kind == LearnKind.opener ? 5 : drillRoundLength;
 
 /// A finished round: the drill it was of, the language and length it was
 /// played in, and each answer in order.

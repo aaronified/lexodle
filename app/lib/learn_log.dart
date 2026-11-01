@@ -16,6 +16,14 @@ enum LearnKind {
   opener,
 }
 
+/// How many questions a round of "choose the best" has.
+const drillRoundLength = 10;
+
+/// How many questions a round of [kind] has: the opener drill is shorter,
+/// because the best opener is the same word every time.
+int roundLengthOf(LearnKind kind) =>
+    kind == LearnKind.opener ? 5 : drillRoundLength;
+
 /// One finished piece of learning.
 class LearnEvent {
   const LearnEvent({

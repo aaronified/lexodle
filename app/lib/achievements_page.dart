@@ -120,6 +120,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
               final s = _record(all ? null : _lang);
               final mine = all ? _merged(codes) : appState.achOf(_lang);
               final won = appState.stats.langsWon.toList()..sort();
+              final learned = {
+                for (final e in appState.learnLog.events) e.language,
+              }.toList()..sort();
               return ListView(
                 padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                 children: [
@@ -171,7 +174,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
                       languages: _langs.length,
                       // one language's own wears its flag; one that counts
                       // languages wears theirs
-                      badges: a.global
+                      badges: a.learn
+                          ? learned
+                          : a.global
                           ? won
                           : all
                           ? codes
@@ -381,10 +386,10 @@ class _Row extends StatelessWidget {
                 key: ValueKey('medal-${a.id}'),
                 style: TextStyle(fontSize: 11, color: medal),
               ),
-              if (a.tag != null) ...[
+              if (a.tag != null || a.tagIcon != null) ...[
                 const SizedBox(width: 6),
                 TablerIcon(
-                  modeIconName(a.tag!),
+                  a.tagIcon ?? modeIconName(a.tag!),
                   size: 13,
                   color: c.onSurface.withValues(alpha: dimAlpha),
                 ),
