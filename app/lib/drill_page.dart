@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'drill.dart';
+import 'drill_calc.dart';
 import 'earned_rows.dart';
 import 'learn_log.dart';
 import 'learn_text.dart';
@@ -53,6 +54,11 @@ class _DrillPageState extends State<DrillPage> {
   bool failed = false;
   bool done = false;
 
+  /// Whether the groups of every option are laid out below the verdict, and
+  /// the walks it shows (worked out when first asked for).
+  bool _calc = false;
+  Map<DrillOption, GroupWalk>? _walks;
+
   /// The achievements the finished round earned.
   List<Achievement> _earned = const [];
 
@@ -92,6 +98,8 @@ class _DrillPageState extends State<DrillPage> {
     _answers.clear();
     question = null;
     picked = null;
+    _calc = false;
+    _walks = null;
     failed = false;
     done = false;
     _earned = const [];
@@ -107,6 +115,8 @@ class _DrillPageState extends State<DrillPage> {
       question = q;
       failed = q == null;
       picked = null;
+      _calc = false;
+      _walks = null;
     });
     if (q != null && _answers.length + 1 < _total) _next = _build();
   }
@@ -136,6 +146,8 @@ class _DrillPageState extends State<DrillPage> {
     setState(() {
       question = null;
       picked = null;
+      _calc = false;
+      _walks = null;
     });
     _show();
   }
@@ -246,6 +258,16 @@ class _DrillPageState extends State<DrillPage> {
       if (p != null) ...[
         const SizedBox(height: 10),
         _verdict(c, q, p, dim),
+        const SizedBox(height: 4),
+        TextButton(
+          key: const ValueKey('drill-calc'),
+          onPressed: () => setState(() {
+            _calc = !_calc;
+            _walks ??= {for (final o in q.options) o: q.walk(o)};
+          }),
+          child: Text(_calc ? 'hide the groups' : 'show the groups'),
+        ),
+        if (_calc) _calculations(c, q, dim),
         const SizedBox(height: 10),
         FilledButton(
           key: const ValueKey('drill-next'),
@@ -254,6 +276,128 @@ class _DrillPageState extends State<DrillPage> {
         ),
       ],
     ];
+  }
+
+  /// The groups of every option, step by step: the colours the words in a group
+  /// would show, how many there are, the chance the answer is in the group, the
+  /// bits learning that gains, and what the group adds to the words left.
+  Widget _calculations(ColorScheme c, DrillQuestion q, TextStyle dim) {
+    final n = q.eligible.length;
+    return Column(
+      key: const ValueKey('drill-calculations'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'every word that fits is tried as the answer, and the words that '
+          'show the same colours are one group. chance is the share of the '
+          '$n words in the group; bits is log2 of 1 over the chance; a group '
+          'adds chance x chance x $n to the words left, and the sum over the '
+          'groups is the words left on average. expected bits is the sum of '
+          'chance x bits, and skill is that over the best guess: '
+          '${q.bestBits.toStringAsFixed(2)}.',
+          style: dim,
+        ),
+        for (final o in q.options) ...[
+          const SizedBox(height: 14),
+          _walk(c, q, o, _walks![o]!, dim),
+        ],
+      ],
+    );
+  }
+
+  Widget _walk(
+    ColorScheme c,
+    DrillQuestion q,
+    DrillOption o,
+    GroupWalk w,
+    TextStyle dim,
+  ) {
+    const shown = 6;
+    final top = w.groups.take(shown).toList();
+    final landed = w.landed;
+    final extra = landed != null && !top.contains(landed) ? landed : null;
+    final rest = w.groups.skip(shown).where((g) => g != extra).toList();
+    final restWords = rest.fold<int>(0, (s, g) => s + g.words.length);
+    final isBest = q.isRight(o);
+    return Column(
+      key: ValueKey('drill-walk-${o.word}'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${o.word}${isBest ? ' · the best' : ''}',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: isBest ? c.secondary : c.onSurface,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          '${w.groups.length} groups · words left on average '
+          '${w.expectedLeft.toStringAsFixed(1)} of ${w.words} · expected bits '
+          '${w.expectedBits.toStringAsFixed(2)} · skill '
+          '${w.expectedBits.toStringAsFixed(2)} / '
+          '${q.bestBits.toStringAsFixed(2)} = ${w.skill(q.bestBits).round()}',
+          key: ValueKey('drill-sums-${o.word}'),
+          style: dim,
+        ),
+        const SizedBox(height: 6),
+        for (final g in top) _group(c, o.word, g, dim),
+        if (extra != null) _group(c, o.word, extra, dim),
+        if (rest.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              '+ ${rest.length} more ${rest.length == 1 ? 'group' : 'groups'}, '
+              '$restWords ${restWords == 1 ? 'word' : 'words'}',
+              style: dim,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _group(ColorScheme c, String guess, GroupLine g, TextStyle dim) {
+    final words = g.words.take(4).join(', ');
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              for (var i = 0; i < guess.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: 2),
+                  child: MarkTile(guess[i], mark: g.marks[i], size: 16),
+                ),
+            ],
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${g.words.length} ${g.words.length == 1 ? 'word' : 'words'}'
+                  ' · chance ${(g.chance * 100).toStringAsFixed(1)}%'
+                  ' · ${g.bits.toStringAsFixed(2)} bits'
+                  ' · adds ${g.share.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 11),
+                ),
+                Text(
+                  '$words${g.words.length > 4 ? ', …' : ''}'
+                  '${g.holdsAnswer ? '   ← the answer was here' : ''}',
+                  style: g.holdsAnswer
+                      ? TextStyle(fontSize: 11, color: c.primary)
+                      : dim,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _option(ColorScheme c, DrillQuestion q, DrillOption o, int i) {

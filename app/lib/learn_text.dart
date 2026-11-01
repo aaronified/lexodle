@@ -106,8 +106,8 @@ List<String> learnWhy(GuessReport r) {
   final reasons = <String>[];
   if (r.bestGroups > r.yourGroups) {
     reasons.add(
-      'it tells ${_words(r.before)} apart in ${r.bestGroups} groups, not '
-      '${r.yourGroups}',
+      'it tells ${_words(r.before)} apart in ${r.bestGroups} groups, '
+      'yours in ${r.yourGroups}',
     );
   }
   if (r.bestLargest < r.yourLargest) {

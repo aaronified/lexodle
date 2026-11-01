@@ -20,7 +20,18 @@ void main() {
     'take',
     'wake',
   ];
-  const probes = [...words, 'flit', 'crow', 'mura', 'plum', 'gnus', 'bake'];
+  const probes = [
+    ...words,
+    'flit',
+    'crow',
+    'mura',
+    'plum',
+    'gnus',
+    'bark',
+    'cola',
+    'pale',
+    'mode',
+  ];
 
   group('pickOptions', () {
     Future<List<DrillOption>> options(int seed) async {
@@ -121,6 +132,27 @@ void main() {
       expect(r.guess, worse.word);
       expect(r.skill, closeTo(worse.skill, 0.5));
       expect(r.bestWord, best.word);
+    });
+
+    testWidgets('a word already played in the position is never offered', (
+      tester,
+    ) async {
+      final bank = (await tester.runAsync(() => fr(tester)))!;
+      for (var seed = 0; seed < 6; seed++) {
+        final q = (await tester.runAsync(
+          () => buildDrillQuestion(
+            bank: bank,
+            length: 4,
+            draw: Draw.sigmoid,
+            rng: Random(seed),
+          ),
+        ))!;
+        for (final o in q.options) {
+          expect(q.guesses, isNot(contains(o.word)), reason: 'seed $seed');
+          // and every option splits the words at least a little
+          expect(q.walk(o).groups.length, greaterThan(1), reason: o.word);
+        }
+      }
     });
 
     testWidgets('an opener question has no clues and every word fitting', (

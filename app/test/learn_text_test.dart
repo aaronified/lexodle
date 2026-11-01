@@ -38,7 +38,7 @@ void main() {
     final why = learnWhy(r);
     expect(why.first, startsWith('your bake: '));
     expect(why[1], startsWith('the best, ${r.bestWord}: '));
-    expect(why.last, contains('groups, not'));
+    expect(why.last, contains('groups, yours in'));
   });
 
   test(

@@ -124,6 +124,57 @@ void main() {
     expect(find.textContaining('1 of 10'), findsOneWidget);
   });
 
+  testWidgets('the groups of every option can be shown, with their sums', (
+    tester,
+  ) async {
+    await open(tester);
+    expect(find.byKey(const ValueKey('drill-calc')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('drill-option-0')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('drill-calculations')), findsNothing);
+    await tester.ensureVisible(find.byKey(const ValueKey('drill-calc')));
+    await tester.tap(find.byKey(const ValueKey('drill-calc')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('drill-calculations')), findsOneWidget);
+    // one walk for each of the four options, each with its sums
+    expect(find.byKey(const ValueKey('drill-calc')), findsOneWidget);
+    final sums = find.byWidgetPredicate(
+      (w) => w.key.toString().contains('drill-sums-'),
+    );
+    expect(sums, findsNWidgets(4));
+    final lines = [
+      for (final e in sums.evaluate()) textOf((e.widget as Text))!,
+    ];
+    // the best guess is 100 of itself: expected bits over the best's own
+    expect(lines.where((l) => l.endsWith('= 100')), hasLength(1));
+    for (final l in lines) {
+      expect(l, contains('groups · words left on average'));
+      expect(l, contains('expected bits'));
+    }
+    expect(find.textContaining('← the answer was here'), findsNWidgets(4));
+    // hiding it, and the next position starts without it
+    await tester.tap(find.byKey(const ValueKey('drill-calc')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('drill-calculations')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('drill-calc')));
+    await tester.pump();
+    // the panel is long: the next button is below it
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('drill-next')),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const ValueKey('drill-next')));
+    await tester.pump();
+    await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
+    expect(find.byKey(const ValueKey('drill-calculations')), findsNothing);
+    expect(find.byKey(const ValueKey('drill-calc')), findsNothing);
+    // the position after this one is being built: let it finish
+    for (var i = 0; i < 100; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  });
+
   testWidgets('a finished round goes in the learn log, once', (tester) async {
     await open(tester);
     for (var q = 1; q <= drillRoundLength; q++) {

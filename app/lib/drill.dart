@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'analysis_worker.dart';
+import 'drill_calc.dart';
 import 'learn_log.dart';
 import 'learn_text.dart';
 import 'logic.dart';
@@ -52,6 +53,15 @@ class DrillQuestion {
   /// Whether choosing [o] was right: nothing offered was better.
   bool isRight(DrillOption o) => o.skill >= topSkill - 1e-9;
 
+  /// [o] walked through the words that fit, group by group (see [walkGroups]),
+  /// with the group the answer is in marked.
+  GroupWalk walk(DrillOption o) =>
+      walkGroups(eligible, o.word, weights, answer: answer);
+
+  /// The bits the best guess is expected to gain, which skill is measured
+  /// against.
+  double get bestBits => landscape.bestGain;
+
   /// What the explanation of choosing [o] says (see [learnWhy]).
   GuessReport report(DrillOption o) => reportGuess(
     before: eligible,
@@ -98,7 +108,8 @@ List<DrillOption> pickOptions({
   final chosen = <DrillOption>[];
   // the worse ones are spread across the range of skills seen: the targets are
   // evenly spaced from the worst to the best below 100
-  final worse = scored.where((o) => o.skill < 99.5).toList();
+  // (a word that splits nothing is no choice: it tells nothing at all)
+  final worse = scored.where((o) => o.skill < 99.5 && o.gain > 1e-9).toList();
   if (worse.isNotEmpty) {
     final need = count - 1;
     for (var i = 0; i < need; i++) {
@@ -174,7 +185,11 @@ Future<DrillQuestion?> buildDrillQuestion({
     if (land.top.isEmpty) continue;
     final options = pickOptions(
       eligible: eligible,
-      candidates: recommendationCandidates(eligible, guessable),
+      // a word already played here splits nothing, and is no choice
+      candidates: recommendationCandidates(
+        eligible,
+        guessable,
+      ).where((w) => !guesses.contains(w)),
       best: land.top.first.word,
       bestGain: land.bestGain,
       weights: weights,
