@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.5.1
+
 - blind: control cycles the colour under the cursor
   Like shift locks: a tap of the control key gives the letter under the cursor
   its next colour, as tapping it in the guesses does.
