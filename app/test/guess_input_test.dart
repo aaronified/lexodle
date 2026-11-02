@@ -200,6 +200,24 @@ void main() {
       expect(g.hasLocked, isFalse);
     });
 
+    test('lockAll replaces the player\'s locks and keeps the game\'s', () {
+      final g = typed('crane')
+        ..toggleLock(0)
+        ..toggleLock(4);
+      g.lockFixed([(2, 'a')]);
+      g.lockAll([(1, 'r'), (3, 'n')]);
+      expect(g.isLocked(0), isFalse);
+      expect(g.isLocked(4), isFalse);
+      expect(
+        [for (var i = 0; i < 5; i++) g.isLocked(i)],
+        [false, true, true, true, false],
+      );
+      expect(g.isFixed(2), isTrue);
+      expect(g.isFixed(1), isFalse);
+      g.toggleLock(1);
+      expect(g.isLocked(1), isFalse);
+    });
+
     test('typing skips a locked letter and never overwrites it', () {
       final g = typed('crane')..toggleLock(0);
       g.next();
@@ -273,6 +291,17 @@ void main() {
       // and the next tap is clean again
       t.tapped(down(LogicalKeyboardKey.shiftLeft));
       expect(t.tapped(up(LogicalKeyboardKey.shiftLeft)), isTrue);
+    });
+
+    test('a tap of control is told apart from a chord, like shift', () {
+      final t = ShiftTap.ctrl();
+      expect(t.tapped(down(LogicalKeyboardKey.shiftLeft)), isFalse);
+      expect(t.tapped(up(LogicalKeyboardKey.shiftLeft)), isFalse);
+      expect(t.tapped(down(LogicalKeyboardKey.controlLeft)), isFalse);
+      expect(t.tapped(up(LogicalKeyboardKey.controlLeft)), isTrue);
+      t.tapped(down(LogicalKeyboardKey.controlRight));
+      t.tapped(down(LogicalKeyboardKey.keyC));
+      expect(t.tapped(up(LogicalKeyboardKey.controlRight)), isFalse);
     });
   });
 }

@@ -145,20 +145,22 @@ void main() {
       expect(spain.link.toString(), contains('wikipedia.org'));
     });
 
-    test('the draw curve is about even to 600 and nothing past 1,000', () {
+    test('the draw curve keeps the best 500 likely and thins past 650', () {
       final w = places.curveWeights(5);
       expect(w.first, greaterThan(990));
-      expect(w[599], greaterThan(900));
-      expect(w[749], inInclusiveRange(450, 550));
-      expect(w[1000], lessThan(30));
+      expect(w[499], greaterThan(700));
+      expect(w[549], inInclusiveRange(450, 550));
+      expect(w[649], lessThan(100));
+      expect(w[800], lessThan(10));
     });
 
-    test('the far tail of the places is never drawn', () {
+    test('the far tail of the places keeps a small chance each', () {
       for (final n in [5, 6, 7]) {
         final w = places.curveWeights(n);
-        expect(w.last, 0, reason: '$n letters');
-        expect(w.where((x) => x == 0).length, greaterThan(w.length * .8));
-        expect(w.take(900).every((x) => x > 0), isTrue);
+        expect(w.last, 1, reason: '$n letters');
+        expect(w.every((x) => x >= 1), isTrue);
+        final tail = w.where((x) => x == 1).length;
+        expect(tail / w.fold(0, (a, x) => a + x), lessThan(.05));
       }
     });
   });
@@ -220,6 +222,8 @@ void main() {
       await open(tester, GameMode.blind, bank, 'prism', 10);
       await guess(tester, 'prism');
       expect(find.text('solved in 1 of 10'), findsOneWidget);
+      // the panel rises in 0.3 seconds
+      await tester.pump(const Duration(milliseconds: 400));
       final handle = find.byKey(const ValueKey('panel-handle'));
       expect(handle, findsOneWidget);
       final screen =

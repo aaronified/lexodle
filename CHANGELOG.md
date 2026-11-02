@@ -7,6 +7,40 @@ it to the version.
 
 ## Unreleased
 
+- blind: control cycles the colour under the cursor
+  Like shift locks: a tap of the control key gives the letter under the cursor
+  its next colour, as tapping it in the guesses does.
+
+- themed: the best 500 places are likely, the rest have a small chance
+  The curve falls away sooner (half at the 550th place, little past the 650th),
+  and every other place keeps a small chance, a few in a hundred in all. The
+  game options still give the frequency or the equal chance.
+- faster, sharper and luckier wins in every mode
+  New achievements for the fewest guesses, the best average skill and the best
+  average luck in lockdown, blind and the relay race, and the luck of a quartet.
+  On the first start after this update they are worked out once from the games
+  kept; from then on they are earned as games are played.
+
+- the achievements are listed by section
+  General, milestones, then quartet, relay race, lockdown and blind, then the
+  streaks, each under a heading.
+- the end panel rises from the bottom
+  It slides up in 0.3 seconds with a square top border and a shadow on the
+  guesses, and the gap between the handle and the guesses is as thin as can be.
+- every game left unfinished resumes, with its locks and colours
+  Leaving a game and coming back puts it as it was: the word (or words), the
+  guesses, hearts, the half-typed row with its locks and cursor, and a blind
+  game's colours. This was only so for the daily. A finished game is not kept.
+  A practice or a puzzle from a link is still not kept.
+- double tap the guesses to lock every green
+  A double tap on the submitted guesses locks all the greens found so far, in
+  place of the locks you had set, and a toast says so. In a quartet it follows
+  the board you tapped. The locks are yours: the same colour, and unlocked as
+  usual. Not in a blind game, which has no greens to read.
+- quartet: locks clear when a word is solved; the cursor has its own colour
+  Locks stay between guesses until a board is solved, as in a relay race. The
+  cursor border is the ink colour, so it no longer looks like a (pink) lock.
+
 ## 0.5.0
 
 - learn: tap a guess to see why it scored as it did

@@ -55,9 +55,6 @@ class WordBank {
          {for (final l in words.values) ...l},
          curveOrigin: curveOrigin,
          curveWidth: curveWidth,
-         // a bank of other words (the places) never draws the far tail: it is
-         // the many obscure ones, and each would still have its one chance
-         curveFloor: 0,
        );
 
   final Language language;

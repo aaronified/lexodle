@@ -23,13 +23,13 @@ class Place {
 /// The place names of assets/geography/places.tsv (see tools/build_geography.py):
 /// key, name, kind, country, tier, Wikipedia page, English Wikipedia views.
 /// Every name is a valid guess; the answer is drawn by how often the page is
-/// read, on a sigmoid curve that is about even for the best known 600 and
-/// nothing past 1,000, since few people know more places than that.
+/// read, on a sigmoid curve that keeps the best known 500 likely, falls away
+/// by 650 and leaves the rest a small chance each.
 class Geography {
   const Geography._();
 
-  static const curveOrigin = 750.0;
-  static const curveWidth = 50.0;
+  static const curveOrigin = 550.0;
+  static const curveWidth = 40.0;
 
   static final _places = <String, Place>{};
   static WordBank? _bank;

@@ -123,6 +123,46 @@ class GuessInput {
     return true;
   }
 
+  /// Locks each of [letters] (slot, letter) in place of every lock the player
+  /// had set: those are dropped (the game's own stay). The locks are the
+  /// player's, so they can be taken off as usual.
+  void lockAll(Iterable<(int, String)> letters) {
+    _locked.removeWhere((i) => !_fixed.contains(i));
+    for (final (i, ch) in letters) {
+      if (i < 0 || i >= length || _fixed.contains(i)) continue;
+      _slots[i] = ch;
+      _locked.add(i);
+    }
+    _cursor = _nextOpen(-1);
+    _lastTap = -1;
+  }
+
+  /// The row as it stands, to be saved: the slots, the locks (and which are
+  /// the game's) and the cursor.
+  Map<String, dynamic> toJson() => {
+    's': _slots,
+    'l': _locked.toList(),
+    'f': _fixed.toList(),
+    'c': _cursor,
+  };
+
+  /// Puts the row back as [toJson] left it; a damaged save is ignored.
+  void restore(Map<String, dynamic> j) {
+    final s = j['s'];
+    if (s is! List || s.length != length) return;
+    for (var i = 0; i < length; i++) {
+      _slots[i] = s[i] as String;
+    }
+    _locked
+      ..clear()
+      ..addAll([for (final i in j['l'] ?? []) i as int]);
+    _fixed
+      ..clear()
+      ..addAll([for (final i in j['f'] ?? []) i as int]);
+    _cursor = ((j['c'] as int?) ?? 0).clamp(0, length);
+    _lastTap = -1;
+  }
+
   /// Moves the cursor [by] slots (the arrow keys): -1 left, 1 right. It stops
   /// at the ends, and from the parked position left selects the last slot.
   void move(int by) {
@@ -197,17 +237,29 @@ class GuessInput {
 
 /// Tells a tap of the shift key from shift held to type a capital: it is a tap
 /// when no other key went down between shift going down and coming up. A tap
-/// locks or unlocks the letter under the cursor.
+/// locks or unlocks the letter under the cursor. [ShiftTap.ctrl] does the same
+/// for the control key.
 class ShiftTap {
+  ShiftTap() : _keys = _shiftKeys;
+  ShiftTap.ctrl() : _keys = _ctrlKeys;
+
+  static final _shiftKeys = {
+    LogicalKeyboardKey.shiftLeft,
+    LogicalKeyboardKey.shiftRight,
+  };
+  static final _ctrlKeys = {
+    LogicalKeyboardKey.controlLeft,
+    LogicalKeyboardKey.controlRight,
+  };
+
+  final Set<LogicalKeyboardKey> _keys;
   bool _clean = false;
 
-  static bool isShift(KeyEvent e) =>
-      e.logicalKey == LogicalKeyboardKey.shiftLeft ||
-      e.logicalKey == LogicalKeyboardKey.shiftRight;
+  static bool isShift(KeyEvent e) => _shiftKeys.contains(e.logicalKey);
 
-  /// Whether [e] completes a tap of shift.
+  /// Whether [e] completes a tap of the key.
   bool tapped(KeyEvent e) {
-    if (isShift(e)) {
+    if (_keys.contains(e.logicalKey)) {
       if (e is KeyDownEvent) _clean = true;
       if (e is KeyUpEvent) {
         final tap = _clean;

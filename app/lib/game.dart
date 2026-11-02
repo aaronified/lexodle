@@ -189,25 +189,94 @@ class _GamePageState extends State<GamePage>
   /// closing the page cannot reroll it. Nothing is recorded again: the game was
   /// counted when it ended.
   void _resume() {
+    final key = _saveKey;
+    if (key == null) return;
     final d = _daily;
-    if (d == null || widget.practice) return;
-    final saved = appState.dailyFor(widget.bank.language.code, d.date, mode);
-    if (saved == null) return;
-    for (final g in saved.guesses) {
+    final extra = appState.progressFor(key);
+    List<String> saved;
+    DailyEntry? entry;
+    if (d != null) {
+      entry = appState.dailyFor(widget.bank.language.code, d.date, mode);
+      saved = entry?.guesses ?? const [];
+    } else {
+      // any other game comes back with the answer it was drawn with
+      final a = extra?['a'];
+      if (extra == null || a is! String || a.length != length) return;
+      answer = a;
+      saved = [for (final g in extra['g'] ?? []) g as String];
+      if (prefetchDefinitions) {
+        final lang = widget.bank.language;
+        Wiktionary.shared.prefetch(answer, lang.code, lang.wikt);
+      }
+    }
+    for (final g in saved) {
       // a damaged save stops the replay rather than breaking the game
       if (over || g.length != length || !widget.bank.valid.contains(g)) break;
       _apply(g, restoring: true);
     }
     // the hearts lost to words that are not in the list are not in the guesses
-    final left = saved.hearts;
-    if (lockdown && left != null && left >= 0 && left <= heartsTotal) {
+    final left = entry?.hearts ?? extra?['h'];
+    if (lockdown && left is int && left >= 0 && left <= heartsTotal) {
       hearts = left;
     }
     // a lockdown daily can be over with tries to spare: no hearts left
-    if (!over && saved.over) {
+    if (!over && entry != null && entry.over) {
       over = true;
-      won = saved.won ?? false;
+      won = entry.won ?? false;
     }
+    if (over || extra == null) return;
+    // the row, its locks and a blind game's colours as they were left
+    try {
+      final inp = extra['in'];
+      if (inp is Map) input.restore(inp.cast<String, dynamic>());
+      final pen = extra['p'];
+      if (pen is Map) pencil.restore(pen.cast<String, dynamic>());
+      final n = extra['n'];
+      if (n is List && n.length == notes.length) {
+        for (var r = 0; r < notes.length; r++) {
+          final row = n[r] as List;
+          if (row.length != length) continue;
+          for (var i = 0; i < length; i++) {
+            final v = row[i] as int;
+            notes[r][i] = v < 0 ? null : Mark.values[v];
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  /// Where this game is kept while it is played, or null when it is not kept (a
+  /// practice, a puzzle from a link).
+  String? get _saveKey {
+    if (widget.practice || widget.chosen || widget.replay.isNotEmpty) {
+      return null;
+    }
+    final lang = widget.bank.language.code;
+    final d = _daily;
+    if (d != null) {
+      return d.date.isEmpty ? null : 'd|$lang|${d.date}|${mode.name}';
+    }
+    return 'p|$lang|${mode.name}|$length|$tries';
+  }
+
+  /// Keeps the game as it stands, to be resumed; a finished game is not kept.
+  void _save() {
+    final key = _saveKey;
+    if (key == null) return;
+    if (over) {
+      appState.clearProgress(key);
+      return;
+    }
+    appState.saveProgress(key, {
+      'a': answer,
+      'g': guesses,
+      'h': hearts,
+      'in': input.toJson(),
+      'p': pencil.toJson(),
+      'n': [
+        for (final row in notes) [for (final m in row) m?.index ?? -1],
+      ],
+    });
   }
 
   @override
@@ -268,6 +337,7 @@ class _GamePageState extends State<GamePage>
     setState(() {
       if (input.type(ch, _letters) >= 0) message = '';
     });
+    _save();
   }
 
   void _back() {
@@ -275,24 +345,60 @@ class _GamePageState extends State<GamePage>
     setState(() {
       if (input.back() >= 0) message = '';
     });
+    _save();
   }
 
   final _shift = ShiftTap();
+  final _ctrl = ShiftTap.ctrl();
 
   /// Shift locks the letter under the cursor, or unlocks it.
   void _toggleLockAtCursor() {
     if (over) return;
     setState(() => input.toggleLock(input.cursor));
+    _save();
+  }
+
+  /// Control, in a blind game, cycles the colour of the letter under the
+  /// cursor: the one typed there, as it was guessed at that slot, or with the
+  /// slot empty the last guess's letter at it.
+  void _cycleAtCursor() {
+    if (!blind || over || guesses.isEmpty) return;
+    final i = input.cursor;
+    if (i >= length) return;
+    var r = guesses.length - 1;
+    if (input.isLetter(i)) {
+      while (r >= 0 && guesses[r][i] != input.slot(i)) {
+        r--;
+      }
+      if (r < 0) return;
+    }
+    _pencil(r, i);
   }
 
   void _select(int i) {
     if (over) return;
     setState(() => input.tap(i));
+    _save();
+  }
+
+  /// A double tap on the submitted guesses locks every green found so far,
+  /// replacing the locks the player had set.
+  void _lockGreens() {
+    if (over || blind) return;
+    final greens = <(int, String)>[
+      for (var r = 0; r < marks.length; r++)
+        for (var i = 0; i < length; i++)
+          if (marks[r][i] == Mark.correct) (i, guesses[r][i]),
+    ];
+    setState(() => input.lockAll(greens));
+    _save();
+    showToast(context, 'all greens are locked');
   }
 
   void _move(int by) {
     if (over) return;
     setState(() => input.move(by));
+    _save();
   }
 
   void _submit() {
@@ -348,6 +454,7 @@ class _GamePageState extends State<GamePage>
 
   /// Keeps a daily's progress, with the hearts it has left.
   void _saveDaily() {
+    _save();
     final d = _daily;
     if (d == null || widget.practice) return;
     appState.saveDaily(
@@ -544,6 +651,10 @@ class _GamePageState extends State<GamePage>
       _toggleLockAtCursor();
       return KeyEventResult.handled;
     }
+    if (_ctrl.tapped(e) && blind) {
+      _cycleAtCursor();
+      return KeyEventResult.handled;
+    }
     if (e is KeyUpEvent) return KeyEventResult.ignored;
     if (HardwareKeyboard.instance.isControlPressed ||
         HardwareKeyboard.instance.isMetaPressed) {
@@ -608,7 +719,7 @@ class _GamePageState extends State<GamePage>
                 children: [
                   Expanded(child: _shake(_grid())),
                   ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 56),
+                    constraints: BoxConstraints(minHeight: over ? 0 : 56),
                     child: Center(
                       child: _shake(
                         lockdown
@@ -685,44 +796,50 @@ class _GamePageState extends State<GamePage>
                     child: _withTrailing(
                       r,
                       tile,
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          for (var i = 0; i < length; i++) ...[
-                            if (i > 0) const SizedBox(width: gap),
-                            _tile(
-                              c,
-                              tile,
-                              r < guesses.length
-                                  ? guesses[r][i]
-                                  : (r == guesses.length ? input.slot(i) : ''),
-                              r < marks.length
-                                  ? (blind
-                                        ? (_assist
-                                              ? pencil.shown(
-                                                  guesses[r][i],
-                                                  i,
-                                                  deduced,
-                                                )
-                                              : notes[r][i])
-                                        : marks[r][i])
-                                  : null,
-                              active: r == guesses.length && !over,
-                              cursor:
-                                  r == guesses.length &&
-                                  !over &&
-                                  i == input.cursor,
-                              key: ValueKey('tile-$r-$i'),
-                              locked: r == guesses.length && input.isLocked(i),
-                              fixed: r == guesses.length && input.isFixed(i),
-                              onTap: r == guesses.length && !over
-                                  ? () => _select(i)
-                                  : blind && r < guesses.length && !over
-                                  ? () => _pencil(r, i)
-                                  : null,
-                            ),
+                      _greensTap(
+                        r < guesses.length,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (var i = 0; i < length; i++) ...[
+                              if (i > 0) const SizedBox(width: gap),
+                              _tile(
+                                c,
+                                tile,
+                                r < guesses.length
+                                    ? guesses[r][i]
+                                    : (r == guesses.length
+                                          ? input.slot(i)
+                                          : ''),
+                                r < marks.length
+                                    ? (blind
+                                          ? (_assist
+                                                ? pencil.shown(
+                                                    guesses[r][i],
+                                                    i,
+                                                    deduced,
+                                                  )
+                                                : notes[r][i])
+                                          : marks[r][i])
+                                    : null,
+                                active: r == guesses.length && !over,
+                                cursor:
+                                    r == guesses.length &&
+                                    !over &&
+                                    i == input.cursor,
+                                key: ValueKey('tile-$r-$i'),
+                                locked:
+                                    r == guesses.length && input.isLocked(i),
+                                fixed: r == guesses.length && input.isFixed(i),
+                                onTap: r == guesses.length && !over
+                                    ? () => _select(i)
+                                    : blind && r < guesses.length && !over
+                                    ? () => _pencil(r, i)
+                                    : null,
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -734,6 +851,15 @@ class _GamePageState extends State<GamePage>
     );
   }
 
+  /// [row], a submitted guess, locks the greens on a double tap.
+  Widget _greensTap(bool submitted, Widget row) => submitted && !blind && !over
+      ? GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onDoubleTap: _lockGreens,
+          child: row,
+        )
+      : row;
+
   /// A tap on tile [i] of submitted guess [r] in a blind game. With the colour
   /// logic off the tile takes the next colour of none, green, yellow, grey;
   /// on, the next one that keeps the rules, and a toast says why one was
@@ -741,10 +867,12 @@ class _GamePageState extends State<GamePage>
   void _pencil(int r, int i) {
     if (!_assist) {
       setState(() => notes[r][i] = _nextNote(notes[r][i]));
+      _save();
       return;
     }
     late final String? why;
     setState(() => why = pencil.tap(guesses[r][i], i, _rows, _deduced));
+    _save();
     if (why == null) return;
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
@@ -887,8 +1015,9 @@ class _GamePageState extends State<GamePage>
     } else if (ch.isNotEmpty) {
       border = locked ? lockColor : c.onSurface;
     }
+    // the cursor is the ink colour, the lock the pink accent
     if (cursor) {
-      border = c.primary;
+      border = c.onSurface;
       borderWidth = 2;
     }
     final isBlank = ch == GuessInput.blank;
