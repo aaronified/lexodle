@@ -41,6 +41,43 @@ it to the version.
   Locks stay between guesses until a board is solved, as in a relay race. The
   cursor border is the ink colour, so it no longer looks like a (pink) lock.
 
+## 0.5.0
+
+- learn: tap a guess to see why it scored as it did
+  It shows how the guess and the best guess split the words that fitted: the
+  groups, the biggest group, the words left and the bits.
+- learn: the styles, taught
+  The three habits of the opening (gambler, maximiser, eliminator) and the two
+  of the end (closer, prober) with their rules, when each is right, and a real
+  example of each. Luck is explained, with an example that averages nothing.
+- learn: every graded guess says which habit it counts as
+  Practice, choose the best and closing name the habit and the numbers behind
+  it, the habit of the best guess, and the luck, which is the answer's doing.
+- learn: fourteen achievements for learning
+  Practice, flawless words, unaided words, rounds of choose the best and of
+  closing, three words, a learning streak and a full lesson. They count once for
+  you, not per language.
+- learn: a home with six entries and your progress
+  The opening, the styles, practise a word, choose the best, closing and three words, each
+  with a trend of its skill in the language and length, and the days in a row.
+- learn: three words, to find a set that tells the most
+  Type three words to play first, whatever the answer. It scores what they tell
+  together and the chance to win by the fourth and fifth guess, against the best
+  set the app could find. They need not start with the best opener.
+- learn: closing, ten endgames
+  Few words fit and two or three tries are left: pick the guess most likely to
+  win in time, from the exact chances. Often it is not a word that fits.
+- learn: the opening, a lesson
+  The best first guess for your language and length, and for each of the colours
+  it is most likely to show the best second guess. Compare the next best openers.
+- learn: choose the best, with the groups behind each pick
+  Each position shows the clues so far and four words; pick the one that splits
+  the words that fit best. The groups of every option can be shown, with their
+  chances, bits and what each adds to the words left.
+- learn: a hint button and undo
+  The hint gives the best guess in three steps (the letter, the word, why).
+  Undo takes the last guess back with the words that fitted before it.
+
 - the draggable bar is on every end panel
   The quartet and the relay race have it too, not only a single word.
 

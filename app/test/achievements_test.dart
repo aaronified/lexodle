@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/achievements_page.dart';
+import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/medal.dart';
 import 'package:lexodle/routes.dart';
@@ -346,5 +347,49 @@ void main() {
       expect(more.map((a) => a.id), isNot(contains('completionist')));
       expect(s.achOf('en')['completionist']!.times, 4);
     });
+  });
+
+  testWidgets('learn achievements wear the flags of the languages learned in', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 16000));
+    appState.learnLog = LearnLog([
+      for (final l in ['fr', 'de'])
+        LearnEvent(
+          kind: LearnKind.choose,
+          language: l,
+          length: 5,
+          date: '2026-11-01',
+          questions: 10,
+          right: 8,
+          avgSkill: 80,
+        ),
+    ]);
+    appState.ach = {
+      'learn_rounds': AchState(times: 1, dates: ['2026-11-01'], value: 2),
+    };
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AchievementsPage(),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('name-learn_rounds')), findsOneWidget);
+    expect(find.byKey(const ValueKey('count-learn_rounds')), findsOneWidget);
+    // the languages learned in, not those won in (none were)
+    expect(find.byKey(const ValueKey('badge-learn_rounds-fr')), findsOneWidget);
+    expect(find.byKey(const ValueKey('badge-learn_rounds-de')), findsOneWidget);
+    expect(find.byKey(const ValueKey('badge-learn_rounds-es')), findsNothing);
+    // and every learn achievement is listed
+    for (final a in achievements.where((a) => a.learn)) {
+      expect(
+        find.byKey(ValueKey('name-${a.id}')),
+        findsOneWidget,
+        reason: a.id,
+      );
+    }
+    appState.learnLog = LearnLog();
   });
 }

@@ -1,7 +1,7 @@
 name: lexodle
 description: "Lexodle: a minimal word game in many Latin-script languages."
 publish_to: 'none'
-version: 0.4.6+1
+version: 0.5.0+1
 
 environment:
   sdk: ^3.13.5

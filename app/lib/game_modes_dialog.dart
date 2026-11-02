@@ -413,7 +413,7 @@ class _GameModesDialogState extends State<GameModesDialog> {
                                     context,
                                     Routes.learn,
                                   ),
-                            child: const Text('learn: find the best guess'),
+                            child: const Text('learn: get better at guessing'),
                           ),
                         ),
                         const SizedBox(height: 8),

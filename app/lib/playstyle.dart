@@ -105,23 +105,38 @@ Phase? phaseOf(int before, int greens) {
 
 /// What a guess is counted as, or null when it is neither (a middle game guess,
 /// or one that does not qualify). Only classic guesses have what it needs.
-Behaviour? behaviourOf(GuessRow r) {
-  final phase = phaseOf(r.before, r.greens);
-  switch (phase) {
+Behaviour? behaviourOf(GuessRow r) => behaviourFor(
+  before: r.before,
+  greens: r.greens,
+  risk: r.risk,
+  rank: r.rank,
+  fresh: r.fresh,
+  fits: r.fits,
+);
+
+/// The same rule on the numbers themselves, so that a guess that was not played
+/// (a learn mode example) is counted just as a played one is. [risk] and [rank]
+/// are null when not known.
+Behaviour? behaviourFor({
+  required int before,
+  required int greens,
+  required double? risk,
+  required double? rank,
+  required int fresh,
+  required bool fits,
+}) {
+  switch (phaseOf(before, greens)) {
     case null:
     case Phase.middle:
       return null;
     case Phase.early:
-      final risk = r.risk;
       if (risk != null && risk >= gamblerRisk) return Behaviour.gambler;
-      final rank = r.rank;
       if (rank != null && rank <= topRank) return Behaviour.maximiser;
-      if (r.fresh >= freshLetters) return Behaviour.eliminator;
+      if (fresh >= freshLetters) return Behaviour.eliminator;
       return null;
     case Phase.end:
-      if (r.fits) return Behaviour.closer;
-      final rank = r.rank;
-      if (rank != null && rank <= topRank && r.before >= 3) {
+      if (fits) return Behaviour.closer;
+      if (rank != null && rank <= topRank && before >= 3) {
         return Behaviour.prober;
       }
       return null;
