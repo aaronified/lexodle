@@ -887,8 +887,9 @@ class _GamePageState extends State<GamePage>
     } else if (ch.isNotEmpty) {
       border = locked ? lockColor : c.onSurface;
     }
+    // the cursor is the ink colour, the lock the pink accent
     if (cursor) {
-      border = c.primary;
+      border = c.onSurface;
       borderWidth = 2;
     }
     final isBlank = ch == GuessInput.blank;

@@ -252,8 +252,9 @@ class _MultiGamePageState extends State<MultiGamePage> {
     game.guess(word);
     // nothing is kept once the game is over: no letter stays locked. Nor in a
     // relay race when a target is solved: the next one is a new word, and the
-    // locks were for the last
+    // locks were for the last. In a quartet a lock is for one guess only
     if (game.over ||
+        mode == GameMode.quartet ||
         (mode == GameMode.relay && game.solvedCount > solvedBefore)) {
       input.clear();
     } else {
@@ -610,7 +611,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
     } else if (ch.isNotEmpty) {
       border = locked ? c.primary : c.onSurface;
     }
-    if (cursor) border = c.primary;
+    // the cursor is the ink colour, the lock the pink accent
+    if (cursor) border = c.onSurface;
     final isBlank = ch == GuessInput.blank;
     return GestureDetector(
       onTap: onTap,
