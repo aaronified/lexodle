@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.6.0
+
 - the end panel scrolls and moves with it
   Scroll the text up and the panel rises, to three quarters of the screen, then
   the text scrolls; scroll down and the text returns to the top, then the panel
