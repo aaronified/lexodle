@@ -7,9 +7,9 @@ it to the version.
 
 ## Unreleased
 
-- quartet: locks last one guess; the cursor has its own colour
-  A lock no longer carries to the next guess in a quartet. The cursor border is
-  the ink colour, so it no longer looks like a (pink) lock.
+- quartet: locks clear when a word is solved; the cursor has its own colour
+  Locks stay between guesses until a board is solved, as in a relay race. The
+  cursor border is the ink colour, so it no longer looks like a (pink) lock.
 
 - the draggable bar is on every end panel
   The quartet and the relay race have it too, not only a single word.
