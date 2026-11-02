@@ -689,6 +689,19 @@ final achievements = <Achievement>[
     mode: GameMode.quartet,
   ),
   Achievement.leveled(
+    'quartet_luck',
+    'clover',
+    'quartet luck',
+    (n) => 'win a quartet with an average luck of +$n or more',
+    'quartetLuck',
+    _lv(
+      [20, 40, 60, 80],
+      ['lucky four', 'charmed four', 'blessed four', 'fated four'],
+    ),
+    hit: (r, t) => r.won && r.luck != null && r.luck! >= t,
+    mode: GameMode.quartet,
+  ),
+  Achievement.leveled(
     'one_each',
     'butterfly',
     'luckiest man alive',
@@ -772,6 +785,44 @@ final achievements = <Achievement>[
     mode: GameMode.relay,
   ),
   Achievement.leveled(
+    'relay_fast',
+    'bolt',
+    'relay race speed',
+    (n) => 'win a relay race race in $n guesses or fewer',
+    'fastestRelay',
+    _lv([8, 7, 6, 5], ['steady runner', 'good pace', 'fast legs', 'sprinter']),
+    hit: (r, t) => r.won && r.used <= t,
+    smaller: true,
+    mode: GameMode.relay,
+  ),
+  Achievement.leveled(
+    'relay_skill',
+    'diamond',
+    'relay skill',
+    (n) => 'win a relay race with an average skill above $n',
+    'relaySkill',
+    _lv(
+      [70, 80, 85, 90],
+      ['steady relay', 'sharp relay', 'keen relay', 'flawless relay'],
+    ),
+    hit: (r, t) => r.won && r.skills.isNotEmpty && r.avgSkill > t,
+    strict: true,
+    mode: GameMode.relay,
+  ),
+  Achievement.leveled(
+    'relay_luck',
+    'clover',
+    'relay luck',
+    (n) => 'win a relay race with an average luck of +$n or more',
+    'relayLuck',
+    _lv(
+      [20, 40, 60, 80],
+      ['lucky relay', 'charmed relay', 'blessed relay', 'fated relay'],
+    ),
+    hit: (r, t) => r.won && r.luck != null && r.luck! >= t,
+    mode: GameMode.relay,
+  ),
+  Achievement.leveled(
     'lockdown_wins',
     'lock',
     'lockdown wins',
@@ -820,6 +871,44 @@ final achievements = <Achievement>[
       [1, 5, 15, 40],
       ['one life', 'no second chances', 'nine lives short', 'immortal'],
     ),
+    mode: GameMode.lockdown,
+  ),
+  Achievement.leveled(
+    'lockdown_fast',
+    'bolt',
+    'lockdown speed',
+    (n) => 'win a lockdown game in $n guesses or fewer',
+    'fastestLockdown',
+    _lv([5, 4, 3, 2], ['quick lock', 'fast lock', 'speed lock', 'master key']),
+    hit: (r, t) => r.won && r.used <= t,
+    smaller: true,
+    mode: GameMode.lockdown,
+  ),
+  Achievement.leveled(
+    'lockdown_skill',
+    'diamond',
+    'lockdown skill',
+    (n) => 'win a lockdown game with an average skill above $n',
+    'lockdownSkill',
+    _lv(
+      [70, 80, 85, 90],
+      ['steady lock', 'sharp lock', 'keen lock', 'flawless lock'],
+    ),
+    hit: (r, t) => r.won && r.skills.isNotEmpty && r.avgSkill > t,
+    strict: true,
+    mode: GameMode.lockdown,
+  ),
+  Achievement.leveled(
+    'lockdown_luck',
+    'clover',
+    'lockdown luck',
+    (n) => 'win a lockdown game with an average luck of +$n or more',
+    'lockdownLuck',
+    _lv(
+      [20, 40, 60, 80],
+      ['lucky lock', 'charmed lock', 'blessed lock', 'fated lock'],
+    ),
+    hit: (r, t) => r.won && r.luck != null && r.luck! >= t,
     mode: GameMode.lockdown,
   ),
   Achievement.leveled(
@@ -874,6 +963,44 @@ final achievements = <Achievement>[
       [1, 5, 15, 40],
       ['six and blind', 'no margin', 'hairline', 'unblinking'],
     ),
+    mode: GameMode.blind,
+  ),
+  Achievement.leveled(
+    'blind_fast',
+    'bolt',
+    'blind speed',
+    (n) => 'win a blind game in $n guesses or fewer',
+    'fastestBlind',
+    _lv([8, 6, 5, 4], ['quick count', 'sharp count', 'fast count', 'blink']),
+    hit: (r, t) => r.won && r.used <= t,
+    smaller: true,
+    mode: GameMode.blind,
+  ),
+  Achievement.leveled(
+    'blind_skill',
+    'diamond',
+    'blind skill',
+    (n) => 'win a blind game with an average skill above $n',
+    'blindSkill',
+    _lv(
+      [70, 80, 85, 90],
+      ['steady count', 'sharp count', 'keen count', 'flawless count'],
+    ),
+    hit: (r, t) => r.won && r.skills.isNotEmpty && r.avgSkill > t,
+    strict: true,
+    mode: GameMode.blind,
+  ),
+  Achievement.leveled(
+    'blind_luck',
+    'clover',
+    'blind luck',
+    (n) => 'win a blind game with an average luck of +$n or more',
+    'blindLuck',
+    _lv(
+      [20, 40, 60, 80],
+      ['lucky count', 'charmed count', 'blessed count', 'fated count'],
+    ),
+    hit: (r, t) => r.won && r.luck != null && r.luck! >= t,
     mode: GameMode.blind,
   ),
   Achievement.leveled(
@@ -1122,6 +1249,14 @@ Metric _most(Set<GameMode> modes, double? Function(GameResult r) of) =>
       return x == null ? st.value : _best(st.value, x);
     });
 
+/// The fewest guesses a win took, in [modes].
+Metric _fastest(Set<GameMode> modes) => Metric(
+  modes,
+  (st, r) => !r.won || r.used <= 0
+      ? st.value
+      : (st.value == 0 || r.used < st.value ? r.used.toDouble() : st.value),
+);
+
 Metric _dailyStreak(GameMode mode) => Metric({
   mode,
 }, (st, r) => r.daily ? _best(st.value, r.dailyStreak.toDouble()) : st.value);
@@ -1204,6 +1339,25 @@ final metrics = <String, Metric>{
   'blindQuick': _count(_blindOnly, (r) => r.won && r.used <= 5),
   'blindLast': _count(_blindOnly, (r) => r.won && r.used == r.tries),
   'blindBrutal': _count(_blindOnly, (r) => r.won && r.tries <= 6),
+  'quartetLuck': _most(_quartetOnly, (r) => r.won ? r.luck : null),
+  'fastestRelay': _fastest(_relayOnly),
+  'relaySkill': _most(
+    _relayOnly,
+    (r) => r.won && r.skills.isNotEmpty ? r.avgSkill : null,
+  ),
+  'relayLuck': _most(_relayOnly, (r) => r.won ? r.luck : null),
+  'fastestLockdown': _fastest(_lockdownOnly),
+  'lockdownSkill': _most(
+    _lockdownOnly,
+    (r) => r.won && r.skills.isNotEmpty ? r.avgSkill : null,
+  ),
+  'lockdownLuck': _most(_lockdownOnly, (r) => r.won ? r.luck : null),
+  'fastestBlind': _fastest(_blindOnly),
+  'blindSkill': _most(
+    _blindOnly,
+    (r) => r.won && r.skills.isNotEmpty ? r.avgSkill : null,
+  ),
+  'blindLuck': _most(_blindOnly, (r) => r.won ? r.luck : null),
   'streakLockdown': _dailyStreak(GameMode.lockdown),
   'streakBlind': _dailyStreak(GameMode.blind),
   for (final p in playstyles) 'style_${p.id}': _style(p.id),
@@ -2216,7 +2370,7 @@ class AppState extends ChangeNotifier {
 
   /// The version of the achievements kept: when it is older than this, they are
   /// worked out again from the games kept (see [rebuildAchievements]).
-  static const achievementsVersion = 2;
+  static const achievementsVersion = 3;
 
   /// Works every achievement out again from the games kept, oldest first, as
   /// if each had just been played: what was earned, on which day, and how far
@@ -2235,7 +2389,8 @@ class AppState extends ChangeNotifier {
       var luck = 0.0, risk = 0.0, n = 0, rn = 0, bits = 0.0;
       for (final r in rows) {
         if (r.gain > bits) bits = r.gain;
-        if (r.before <= 1) continue;
+        // a quartet or relay race keeps no word counts: every step counts
+        if (r.before <= 1 && !g.mode.multi) continue;
         luck += r.luck;
         n++;
         final k = r.risk;

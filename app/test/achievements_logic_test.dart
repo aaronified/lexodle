@@ -504,6 +504,23 @@ void main() {
       expect(st['wins']!.value, 6, reason: 'they count among the wins too');
     });
 
+    test('faster, more skilful and luckier wins in every mode', () {
+      final (st, _) = play([
+        blind(used: 7),
+        blind(used: 5),
+        blind(used: 3, won: false), // a loss is no fast win
+        lockdown(),
+        multi(GameMode.relay, used: 6, skills: [90, 92]),
+        game(used: 2),
+      ]);
+      expect(st['blind_fast']!.value, 5);
+      expect(st['blind_fast']!.times, 3, reason: '8, 6 and 5 or fewer');
+      expect(st['relay_fast']!.value, 6);
+      expect(st['relay_skill']!.value, 91);
+      expect(st['lockdown_skill']!.value, 80);
+      expect(st['quick']!.value, 2, reason: 'the classic one is its own');
+    });
+
     test('a classic game does not feed the blind ones', () {
       final (st, _) = play([game(used: 2)]);
       expect(st['blind_wins']!.value, 0);

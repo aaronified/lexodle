@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'language_picker.dart';
 import 'main.dart';
 import 'mode_wheel.dart' show modeIconName;
+import 'modes.dart' show GameMode;
 import 'routes.dart';
 import 'store.dart';
 import 'ui.dart';
@@ -86,6 +87,58 @@ class _AchievementsPageState extends State<AchievementsPage> {
     return out;
   }
 
+  /// The sections of the list, in order.
+  static const _sections = [
+    'general',
+    'milestones',
+    'quartet',
+    'relay race',
+    'lockdown',
+    'blind',
+    'streaks',
+  ];
+
+  /// The section [a] is listed in: the mode it is about, else its kind.
+  static String _sectionOf(Achievement a) {
+    if (a.separate) return 'streaks';
+    final mode = a.tag;
+    if (mode != null) {
+      return switch (mode) {
+        GameMode.quartet => 'quartet',
+        GameMode.relay => 'relay race',
+        GameMode.lockdown => 'lockdown',
+        GameMode.blind => 'blind',
+        _ => 'general',
+      };
+    }
+    return const {
+          'lengths',
+          'langs',
+          'mastered',
+          'completed',
+          'dailies',
+          'doubles',
+          'stylesWorn',
+        }.contains(a.metric)
+        ? 'milestones'
+        : 'general';
+  }
+
+  /// What is listed, by section (each keeps its own order), under the medal
+  /// filter.
+  List<Achievement> _shown(Map<String, AchState> mine) {
+    final list = [
+      for (final a in achievements)
+        if (_medal == null || _topMedal(mine, a) == _medal) a,
+    ];
+    // a stable sort: within a section the order is the one they are defined in
+    return [
+      for (final sec in _sections)
+        for (final a in list)
+          if (_sectionOf(a) == sec) a,
+    ];
+  }
+
   /// The medal of the highest level earned of [a], or null for none.
   Medal? _topMedal(Map<String, AchState> mine, Achievement a) {
     final n = (mine[a.id]?.times ?? 0).clamp(0, a.count);
@@ -161,9 +214,13 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  for (final a in achievements.where(
-                    (a) => _medal == null || _topMedal(mine, a) == _medal,
-                  )) ...[
+                  for (final (i, a) in _shown(mine).indexed) ...[
+                    if (i == 0 ||
+                        _sectionOf(_shown(mine)[i - 1]) != _sectionOf(a))
+                      Padding(
+                        padding: EdgeInsets.only(top: i == 0 ? 0 : 20),
+                        child: Caption(_sectionOf(a)),
+                      ),
                     const Divider(),
                     _Row(
                       a,

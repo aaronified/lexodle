@@ -104,7 +104,7 @@ class _ResizablePanelState extends State<ResizablePanel>
       ),
       child: SizeTransition(
         sizeFactor: CurvedAnimation(parent: _rise, curve: Curves.easeOutCubic),
-        axisAlignment: 1,
+        alignment: Alignment.bottomCenter,
         child: panel,
       ),
     );

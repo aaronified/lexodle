@@ -7,6 +7,15 @@ it to the version.
 
 ## Unreleased
 
+- faster, sharper and luckier wins in every mode
+  New achievements for the fewest guesses, the best average skill and the best
+  average luck in lockdown, blind and the relay race, and the luck of a quartet.
+  On the first start after this update they are worked out once from the games
+  kept; from then on they are earned as games are played.
+
+- the achievements are listed by section
+  General, milestones, then quartet, relay race, lockdown and blind, then the
+  streaks, each under a heading.
 - the end panel rises from the bottom
   It slides up in 0.3 seconds with a square top border and a shadow on the
   guesses, and the gap between the handle and the guesses is as thin as can be.

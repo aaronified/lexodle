@@ -370,6 +370,12 @@ class _MultiGamePageState extends State<MultiGamePage> {
     }
   }
 
+  /// The mean luck of the guesses so far, or null with none.
+  double? get _luck => game.steps.isEmpty
+      ? null
+      : game.steps.map((s) => s.luck).reduce((a, b) => a + b) /
+            game.steps.length;
+
   /// The finished game counts towards the achievements of its mode. Skill is
   /// final only once every guess has been analysed, so that is waited for.
   void _finish() {
@@ -388,6 +394,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         pool: pool,
         mode: mode,
         skills: [for (final s in game.steps) s.skill],
+        luck: _luck,
         freeRides: game.freeRides,
         lateSingles: game.lateSingles,
         daily: d != null,
@@ -433,6 +440,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
           pool: pool,
           mode: mode,
           skills: [for (final s in game.steps) s.skill],
+          luck: _luck,
           freeRides: game.freeRides,
           lateSingles: game.lateSingles,
           daily: d != null,
