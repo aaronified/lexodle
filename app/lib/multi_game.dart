@@ -540,7 +540,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
                 children: [
                   Expanded(child: _boards(c)),
                   ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 40),
+                    constraints: BoxConstraints(minHeight: game.over ? 0 : 40),
                     child: Center(child: _status(c)),
                   ),
                   if (game.over) _overPanel(c) else _keyboard(),

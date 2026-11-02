@@ -697,7 +697,7 @@ class _GamePageState extends State<GamePage>
                 children: [
                   Expanded(child: _shake(_grid())),
                   ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 56),
+                    constraints: BoxConstraints(minHeight: over ? 0 : 56),
                     child: Center(
                       child: _shake(
                         lockdown

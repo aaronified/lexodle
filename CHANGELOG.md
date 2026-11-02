@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- the end panel rises from the bottom
+  It slides up in 0.3 seconds with a square top border and a shadow on the
+  guesses, and the gap between the handle and the guesses is as thin as can be.
 - every game left unfinished resumes, with its locks and colours
   Leaving a game and coming back puts it as it was: the word (or words), the
   guesses, hearts, the half-typed row with its locks and cursor, and a blind

@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 /// The panel under a finished game, with a bar on top of it: drag the bar down
 /// to give the guesses more room, up (or double tap) to make the panel as tall
 /// as it can be and read about the words. Until it is dragged it is as tall as
-/// its [child] needs, up to half the screen.
+/// its [child] needs, up to half the screen. It rises from the bottom when it
+/// first appears, with a hairline on top (square) and a shadow on the guesses.
 class ResizablePanel extends StatefulWidget {
   const ResizablePanel({super.key, required this.child});
   final Widget child;
@@ -14,8 +15,26 @@ class ResizablePanel extends StatefulWidget {
   State<ResizablePanel> createState() => _ResizablePanelState();
 }
 
-class _ResizablePanelState extends State<ResizablePanel> {
+class _ResizablePanelState extends State<ResizablePanel>
+    with SingleTickerProviderStateMixin {
   double? _height;
+
+  late final AnimationController _rise = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _rise.forward();
+  }
+
+  @override
+  void dispose() {
+    _rise.dispose();
+    super.dispose();
+  }
 
   double get _screen => MediaQuery.sizeOf(context).height;
 
@@ -27,7 +46,8 @@ class _ResizablePanelState extends State<ResizablePanel> {
     final c = Theme.of(context).colorScheme;
     final half = _screen * .5;
     final h = _height;
-    return Column(
+    if (MediaQuery.disableAnimationsOf(context)) _rise.value = 1;
+    final panel = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Semantics(
@@ -43,7 +63,7 @@ class _ResizablePanelState extends State<ResizablePanel> {
               () => _height = (_height ?? half) >= _max - 1 ? null : _max,
             ),
             child: SizedBox(
-              height: 24,
+              height: 10,
               width: double.infinity,
               child: Center(
                 child: Container(
@@ -69,6 +89,24 @@ class _ResizablePanelState extends State<ResizablePanel> {
                 child: widget.child,
               ),
       ],
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: Border(top: BorderSide(color: c.outlineVariant)),
+        boxShadow: [
+          BoxShadow(
+            color: c.shadow.withValues(alpha: .35),
+            blurRadius: 14,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SizeTransition(
+        sizeFactor: CurvedAnimation(parent: _rise, curve: Curves.easeOutCubic),
+        axisAlignment: 1,
+        child: panel,
+      ),
     );
   }
 }

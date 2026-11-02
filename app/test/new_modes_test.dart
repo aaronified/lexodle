@@ -220,6 +220,8 @@ void main() {
       await open(tester, GameMode.blind, bank, 'prism', 10);
       await guess(tester, 'prism');
       expect(find.text('solved in 1 of 10'), findsOneWidget);
+      // the panel rises in 0.3 seconds
+      await tester.pump(const Duration(milliseconds: 400));
       final handle = find.byKey(const ValueKey('panel-handle'));
       expect(handle, findsOneWidget);
       final screen =
