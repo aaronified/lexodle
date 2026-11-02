@@ -117,7 +117,7 @@ jobs:
           awk '/^## /{on=($2=="Unreleased");next} on && /^- /{sub(/^- /,"");print}' CHANGELOG.md > app/assets/changelog.txt
           cat app/assets/changelog.txt
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
