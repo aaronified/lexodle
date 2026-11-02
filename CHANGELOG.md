@@ -15,6 +15,8 @@ it to the version.
   Hasnt, didnt, thats and 28 more (31 in all) are removed from the word list.
   The daily words change with the list, so this ships right before midnight.
 
+## 0.5.1
+
 - blind: control cycles the colour under the cursor
   Like shift locks: a tap of the control key gives the letter under the cursor
   its next colour, as tapping it in the guesses does.
