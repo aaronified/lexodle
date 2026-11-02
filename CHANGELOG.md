@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- double tap the guesses to lock every green
+  A double tap on the submitted guesses locks all the greens found so far, in
+  place of the locks you had set, and a toast says so. In a quartet it follows
+  the board you tapped. The locks are yours: the same colour, and unlocked as
+  usual. Not in a blind game, which has no greens to read.
 - quartet: locks clear when a word is solved; the cursor has its own colour
   Locks stay between guesses until a board is solved, as in a relay race. The
   cursor border is the ink colour, so it no longer looks like a (pink) lock.

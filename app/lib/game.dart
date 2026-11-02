@@ -290,6 +290,19 @@ class _GamePageState extends State<GamePage>
     setState(() => input.tap(i));
   }
 
+  /// A double tap on the submitted guesses locks every green found so far,
+  /// replacing the locks the player had set.
+  void _lockGreens() {
+    if (over || blind) return;
+    final greens = <(int, String)>[
+      for (var r = 0; r < marks.length; r++)
+        for (var i = 0; i < length; i++)
+          if (marks[r][i] == Mark.correct) (i, guesses[r][i]),
+    ];
+    setState(() => input.lockAll(greens));
+    showToast(context, 'all greens are locked');
+  }
+
   void _move(int by) {
     if (over) return;
     setState(() => input.move(by));
@@ -685,44 +698,50 @@ class _GamePageState extends State<GamePage>
                     child: _withTrailing(
                       r,
                       tile,
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          for (var i = 0; i < length; i++) ...[
-                            if (i > 0) const SizedBox(width: gap),
-                            _tile(
-                              c,
-                              tile,
-                              r < guesses.length
-                                  ? guesses[r][i]
-                                  : (r == guesses.length ? input.slot(i) : ''),
-                              r < marks.length
-                                  ? (blind
-                                        ? (_assist
-                                              ? pencil.shown(
-                                                  guesses[r][i],
-                                                  i,
-                                                  deduced,
-                                                )
-                                              : notes[r][i])
-                                        : marks[r][i])
-                                  : null,
-                              active: r == guesses.length && !over,
-                              cursor:
-                                  r == guesses.length &&
-                                  !over &&
-                                  i == input.cursor,
-                              key: ValueKey('tile-$r-$i'),
-                              locked: r == guesses.length && input.isLocked(i),
-                              fixed: r == guesses.length && input.isFixed(i),
-                              onTap: r == guesses.length && !over
-                                  ? () => _select(i)
-                                  : blind && r < guesses.length && !over
-                                  ? () => _pencil(r, i)
-                                  : null,
-                            ),
+                      _greensTap(
+                        r < guesses.length,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (var i = 0; i < length; i++) ...[
+                              if (i > 0) const SizedBox(width: gap),
+                              _tile(
+                                c,
+                                tile,
+                                r < guesses.length
+                                    ? guesses[r][i]
+                                    : (r == guesses.length
+                                          ? input.slot(i)
+                                          : ''),
+                                r < marks.length
+                                    ? (blind
+                                          ? (_assist
+                                                ? pencil.shown(
+                                                    guesses[r][i],
+                                                    i,
+                                                    deduced,
+                                                  )
+                                                : notes[r][i])
+                                          : marks[r][i])
+                                    : null,
+                                active: r == guesses.length && !over,
+                                cursor:
+                                    r == guesses.length &&
+                                    !over &&
+                                    i == input.cursor,
+                                key: ValueKey('tile-$r-$i'),
+                                locked:
+                                    r == guesses.length && input.isLocked(i),
+                                fixed: r == guesses.length && input.isFixed(i),
+                                onTap: r == guesses.length && !over
+                                    ? () => _select(i)
+                                    : blind && r < guesses.length && !over
+                                    ? () => _pencil(r, i)
+                                    : null,
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -733,6 +752,15 @@ class _GamePageState extends State<GamePage>
       },
     );
   }
+
+  /// [row], a submitted guess, locks the greens on a double tap.
+  Widget _greensTap(bool submitted, Widget row) => submitted && !blind && !over
+      ? GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onDoubleTap: _lockGreens,
+          child: row,
+        )
+      : row;
 
   /// A tap on tile [i] of submitted guess [r] in a blind game. With the colour
   /// logic off the tile takes the next colour of none, green, yellow, grey;

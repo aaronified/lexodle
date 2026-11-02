@@ -7,6 +7,19 @@ import 'words.dart';
 
 export 'medal.dart' show Medal;
 
+/// A floating one-line toast, replacing any that is showing.
+void showToast(BuildContext context, String text) {
+  ScaffoldMessenger.of(context)
+    ..clearSnackBars()
+    ..showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        content: Text(text),
+      ),
+    );
+}
+
 /// The sizes of the one-line choosers (the steppers and the mode button): the
 /// label, the line under it, and the icons, so they read alike wherever they are.
 const chooserLabelSize = 16.0;

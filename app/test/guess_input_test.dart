@@ -200,6 +200,24 @@ void main() {
       expect(g.hasLocked, isFalse);
     });
 
+    test('lockAll replaces the player\'s locks and keeps the game\'s', () {
+      final g = typed('crane')
+        ..toggleLock(0)
+        ..toggleLock(4);
+      g.lockFixed([(2, 'a')]);
+      g.lockAll([(1, 'r'), (3, 'n')]);
+      expect(g.isLocked(0), isFalse);
+      expect(g.isLocked(4), isFalse);
+      expect(
+        [for (var i = 0; i < 5; i++) g.isLocked(i)],
+        [false, true, true, true, false],
+      );
+      expect(g.isFixed(2), isTrue);
+      expect(g.isFixed(1), isFalse);
+      g.toggleLock(1);
+      expect(g.isLocked(1), isFalse);
+    });
+
     test('typing skips a locked letter and never overwrites it', () {
       final g = typed('crane')..toggleLock(0);
       g.next();

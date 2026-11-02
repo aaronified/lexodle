@@ -216,6 +216,20 @@ class _MultiGamePageState extends State<MultiGamePage> {
     setState(() => input.tap(i));
   }
 
+  /// A double tap on the submitted guesses of board [b] locks every green found
+  /// on it, replacing the locks the player had set.
+  void _lockGreens(int b) {
+    if (!game.isLive(b)) return;
+    final marks = game.boards[b].marks;
+    final greens = <(int, String)>[
+      for (var r = 0; r < marks.length; r++)
+        for (var i = 0; i < length; i++)
+          if (marks[r][i] == Mark.correct) (i, game.guesses[r][i]),
+    ];
+    setState(() => input.lockAll(greens));
+    showToast(context, 'all greens are locked');
+  }
+
   void _move(int by) {
     if (game.over) return;
     setState(() => input.move(by));
@@ -556,31 +570,41 @@ class _MultiGamePageState extends State<MultiGamePage> {
           for (var r = 0; r < tries; r++)
             Padding(
               padding: EdgeInsets.only(bottom: gap),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var k = 0; k < length; k++) ...[
-                    if (k > 0) SizedBox(width: gap),
-                    _tile(
-                      c,
-                      tile,
-                      r < b.marks.length
-                          ? game.guesses[r][k]
-                          : (live && r == game.guesses.length
-                                ? input.slot(k)
-                                : ''),
-                      r < b.marks.length ? b.marks[r][k] : null,
-                      active: live && r == game.guesses.length,
-                      cursor:
-                          live && r == game.guesses.length && k == input.cursor,
-                      locked:
-                          live && r == game.guesses.length && input.isLocked(k),
-                      onTap: live && r == game.guesses.length
-                          ? () => _select(k)
-                          : null,
-                    ),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onDoubleTap: live && r < b.marks.length
+                    ? () => _lockGreens(i)
+                    : null,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var k = 0; k < length; k++) ...[
+                      if (k > 0) SizedBox(width: gap),
+                      _tile(
+                        c,
+                        tile,
+                        r < b.marks.length
+                            ? game.guesses[r][k]
+                            : (live && r == game.guesses.length
+                                  ? input.slot(k)
+                                  : ''),
+                        r < b.marks.length ? b.marks[r][k] : null,
+                        active: live && r == game.guesses.length,
+                        cursor:
+                            live &&
+                            r == game.guesses.length &&
+                            k == input.cursor,
+                        locked:
+                            live &&
+                            r == game.guesses.length &&
+                            input.isLocked(k),
+                        onTap: live && r == game.guesses.length
+                            ? () => _select(k)
+                            : null,
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
         ],

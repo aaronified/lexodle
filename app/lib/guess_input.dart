@@ -123,6 +123,20 @@ class GuessInput {
     return true;
   }
 
+  /// Locks each of [letters] (slot, letter) in place of every lock the player
+  /// had set: those are dropped (the game's own stay). The locks are the
+  /// player's, so they can be taken off as usual.
+  void lockAll(Iterable<(int, String)> letters) {
+    _locked.removeWhere((i) => !_fixed.contains(i));
+    for (final (i, ch) in letters) {
+      if (i < 0 || i >= length || _fixed.contains(i)) continue;
+      _slots[i] = ch;
+      _locked.add(i);
+    }
+    _cursor = _nextOpen(-1);
+    _lastTap = -1;
+  }
+
   /// Moves the cursor [by] slots (the arrow keys): -1 left, 1 right. It stops
   /// at the ends, and from the parked position left selects the last slot.
   void move(int by) {
