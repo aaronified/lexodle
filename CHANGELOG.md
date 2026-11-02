@@ -7,6 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- double tap on a board's guesses clears the typed row
+  Locking the greens keeps only the locked letters; the other letters typed in
+  the row are cleared. In a relay race only the board in play can lock.
+
+- english: contractions without the apostrophe are no longer words
+  Hasnt, didnt, thats and 28 more (31 in all) are removed from the word list.
+  The daily words change with the list, so this ships right before midnight.
+
 ## 0.5.1
 
 - blind: control cycles the colour under the cursor

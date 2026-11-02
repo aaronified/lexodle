@@ -124,10 +124,14 @@ class GuessInput {
   }
 
   /// Locks each of [letters] (slot, letter) in place of every lock the player
-  /// had set: those are dropped (the game's own stay). The locks are the
+  /// had set: those are dropped (the game's own stay), and so is every other
+  /// letter typed in the row, so only the locked ones remain. The locks are the
   /// player's, so they can be taken off as usual.
   void lockAll(Iterable<(int, String)> letters) {
     _locked.removeWhere((i) => !_fixed.contains(i));
+    for (var i = 0; i < length; i++) {
+      if (!_fixed.contains(i)) _slots[i] = '';
+    }
     for (final (i, ch) in letters) {
       if (i < 0 || i >= length || _fixed.contains(i)) continue;
       _slots[i] = ch;

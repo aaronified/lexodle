@@ -342,7 +342,6 @@ ends	56234
 farm	56234
 file	56234
 roll	56234
-dont	54954
 edge	54954
 evil	54954
 iron	54954
@@ -889,7 +888,6 @@ fist	7762
 fond	7762
 frog	7762
 heir	7762
-isnt	7762
 moss	7762
 tens	7762
 tomb	7762
@@ -1188,7 +1186,6 @@ heap	3890
 meds	3890
 muse	3890
 rods	3890
-shes	3890
 spec	3890
 suns	3890
 baba	3801
@@ -1433,7 +1430,6 @@ moor	2238
 oily	2238
 slay	2238
 wasp	2238
-aint	2187
 bard	2187
 cams	2187
 deem	2187
@@ -1614,7 +1610,6 @@ soma	1621
 tome	1621
 trot	1621
 upto	1621
-yall	1621
 tyre	1618
 airy	1584
 anew	1584
@@ -1817,7 +1812,6 @@ tins	1148
 tres	1148
 tris	1148
 vail	1148
-whos	1148
 yuck	1148
 mums	1145
 beet	1122
@@ -2186,7 +2180,6 @@ pers	660
 puri	660
 racy	660
 tana	660
-weve	660
 aren	645
 boas	645
 burg	645
@@ -7642,7 +7635,6 @@ debut	33113
 paint	33113
 pilot	33113
 steam	33113
-thats	33113
 clubs	32359
 exact	32359
 kinds	32359
@@ -7937,7 +7929,6 @@ trace	15488
 bases	15135
 chill	15135
 codes	15135
-didnt	15135
 grain	15135
 grows	15135
 knees	15135
@@ -8296,7 +8287,6 @@ shiny	7585
 spoon	7585
 teddy	7585
 thief	7585
-whats	7585
 alley	7413
 bully	7413
 marsh	7413
@@ -8321,7 +8311,6 @@ risen	7244
 stunt	7244
 wiped	7244
 yahoo	7244
-youre	7244
 acids	7079
 aired	7079
 cakes	7079
@@ -8564,7 +8553,6 @@ titan	4897
 trait	4897
 troop	4897
 urges	4897
-wasnt	4897
 clone	4786
 drown	4786
 jewel	4786
@@ -8798,7 +8786,6 @@ salsa	3388
 swore	3388
 vomit	3388
 weave	3388
-arent	3311
 cores	3311
 dared	3311
 denim	3311
@@ -9527,7 +9514,6 @@ sects	1380
 soggy	1380
 stoop	1380
 ville	1380
-youve	1380
 abode	1348
 clams	1348
 dazed	1348
@@ -9710,7 +9696,6 @@ biggs	1122
 bosom	1122
 cools	1122
 divas	1122
-hasnt	1122
 kamal	1122
 leapt	1122
 milly	1122
@@ -11790,7 +11775,6 @@ dobie	199
 extol	199
 gummi	199
 gunny	199
-hadnt	199
 howto	199
 idler	199
 keels	199
@@ -11937,7 +11921,6 @@ swire	186
 swizz	186
 tanga	186
 teats	186
-theyd	186
 tizzy	186
 twits	186
 vihar	186
@@ -14880,7 +14863,6 @@ rudie	42
 scena	42
 scopa	42
 selfe	42
-shant	42
 strew	42
 subah	42
 tamal	42
@@ -18535,7 +18517,6 @@ tonno	11
 torse	11
 vided	11
 weele	11
-wholl	11
 zamak	11
 ahigh	11
 allat	11
@@ -19914,7 +19895,6 @@ whites	11481
 booked	11220
 detect	11220
 diesel	11220
-doesnt	11220
 filing	11220
 hatred	11220
 median	11220
@@ -20167,7 +20147,6 @@ esteem	7943
 framed	7943
 lakers	7943
 peanut	7943
-theres	7943
 titans	7943
 unlock	7943
 aiming	7762
@@ -20904,7 +20883,6 @@ cradle	3162
 crappy	3162
 fellas	3162
 haters	3162
-havent	3162
 hitter	3162
 legged	3162
 mailed	3162
@@ -20947,7 +20925,6 @@ suites	3090
 tariff	3090
 techno	3090
 teller	3090
-theyre	3090
 trance	3090
 weaken	3090
 webcam	3090
@@ -22619,7 +22596,6 @@ siphon	831
 taming	831
 truest	831
 vassal	831
-werent	831
 armory	830
 litres	830
 accrue	812
@@ -23508,7 +23484,6 @@ squall	467
 strove	467
 ultras	467
 usages	467
-wheres	467
 woking	467
 lustre	466
 avowed	457
@@ -35849,7 +35824,6 @@ shuffle	3090
 skyline	3090
 sprayed	3090
 swimmer	3090
-wouldnt	3090
 abolish	3019
 alarmed	3019
 auditor	3019
@@ -36014,7 +35988,6 @@ centric	2691
 chaired	2691
 clement	2691
 coroner	2691
-couldnt	2691
 diapers	2691
 flaming	2691
 hopping	2691
@@ -38783,7 +38756,6 @@ unearth	489
 velvety	489
 wheelie	489
 wiretap	489
-wouldve	489
 ascends	478
 baboons	478
 batgirl	478
@@ -40074,7 +40046,6 @@ cession	263
 collate	263
 colonia	263
 colonic	263
-couldve	263
 divisor	263
 ductile	263
 ferrier	263
@@ -53755,7 +53726,6 @@ revamped	1513
 revising	1513
 sadistic	1513
 shelling	1513
-shouldnt	1513
 snowball	1513
 stalling	1513
 stamping	1513
@@ -57141,7 +57111,6 @@ rezoning	251
 ritually	251
 saboteur	251
 shivered	251
-shouldve	251
 showgirl	251
 silkworm	251
 silliest	251
