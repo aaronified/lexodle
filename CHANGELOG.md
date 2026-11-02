@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- the end panel scrolls and moves with it
+  Scroll the text up and the panel rises, to three quarters of the screen, then
+  the text scrolls; scroll down and the text returns to the top, then the panel
+  drops. The handle and the result row stay in place and drag the panel. The
+  boards no longer move: the panel slides over them.
+
 - double tap on a board's guesses clears the typed row
   Locking the greens keeps only the locked letters; the other letters typed in
   the row are cleared. In a relay race only the board in play can lock.

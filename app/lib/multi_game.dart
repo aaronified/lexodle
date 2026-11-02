@@ -544,15 +544,27 @@ class _MultiGamePageState extends State<MultiGamePage> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
-              child: Column(
+              child: Stack(
                 children: [
-                  Expanded(child: _boards(c)),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: game.over ? 0 : 40),
-                    child: Center(child: _status(c)),
+                  Column(
+                    children: [
+                      Expanded(child: _boards(c)),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: game.over ? 0 : 40,
+                        ),
+                        child: Center(child: _status(c)),
+                      ),
+                      // the panel is drawn over the boards from the bottom, so they
+                      // keep the room it has at its starting height and never move
+                      if (game.over)
+                        SizedBox(height: ResizablePanel.restHeight(context))
+                      else
+                        _keyboard(),
+                      const SizedBox(height: 12),
+                    ],
                   ),
-                  if (game.over) _overPanel(c) else _keyboard(),
-                  const SizedBox(height: 12),
+                  if (game.over) Positioned.fill(child: _overPanel(c)),
                 ],
               ),
             ),
@@ -792,37 +804,34 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   Widget _overPanel(ColorScheme c) {
     return ResizablePanel(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 19),
+      header: Row(
+        children: [
+          Expanded(
+            child: Text(
+              game.won
+                  ? 'solved all ${mode.boards} in '
+                        '${game.guesses.length} of $tries'
+                  : 'solved ${game.solvedCount} of ${mode.boards}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          // a daily is played once: the next words come tomorrow
+          if (_daily == null)
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+              ),
+              onPressed: () => setState(_reset),
+              child: const Text('replay'),
+            ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 6, bottom: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    game.won
-                        ? 'solved all ${mode.boards} in '
-                              '${game.guesses.length} of $tries'
-                        : 'solved ${game.solvedCount} of ${mode.boards}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                // a daily is played once: the next words come tomorrow
-                if (_daily == null)
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 36),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                    ),
-                    onPressed: () => setState(_reset),
-                    child: const Text('replay'),
-                  ),
-              ],
-            ),
             if (_daily != null)
               Caption(
                 widget.practice

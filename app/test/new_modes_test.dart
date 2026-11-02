@@ -243,14 +243,55 @@ void main() {
       await tester.pump();
       expect(
         tester.getSize(find.byKey(const ValueKey('over-panel'))).height,
-        screen - 260,
+        screen * .75,
       );
       await tester.pump(const Duration(milliseconds: 400));
       await tester.tap(handle);
       await tester.pump(const Duration(milliseconds: 50));
       await tester.tap(handle);
       await tester.pump();
-      expect(find.byKey(const ValueKey('over-panel')), findsNothing);
+      expect(
+        tester.getSize(find.byKey(const ValueKey('over-panel'))).height,
+        screen * .5,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('scrolling the end panel raises it to 75% of the screen, then '
+        'scrolls its text; the boards never move', (tester) async {
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+        ),
+      ))!;
+      await open(tester, GameMode.blind, bank, 'prism', 10);
+      await guess(tester, 'prism');
+      await tester.pump(const Duration(milliseconds: 400));
+      final screen =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final panel = find.byKey(const ValueKey('over-panel'));
+      double height() => tester.getSize(panel).height;
+      final board = find.byType(GestureDetector).first;
+      final firstTile = tester.getTopLeft(find.text('p').first);
+      expect(height(), screen * .5);
+      final text = find.text('review');
+      // the text up: the panel rises first, and stops at 75% of the screen
+      await tester.drag(text, const Offset(0, -100));
+      await tester.pump();
+      expect(height(), greaterThan(screen * .5));
+      expect(height(), lessThanOrEqualTo(screen * .5 + 100));
+      await tester.drag(text, const Offset(0, -2000));
+      await tester.pump();
+      expect(height(), screen * .75);
+      // the boards stayed where they were
+      expect(tester.getTopLeft(find.text('p').first), firstTile);
+      expect(board, findsWidgets);
+      // the text down: back to the top first, then the panel drops
+      await tester.fling(text, const Offset(0, 3000), 3000);
+      await tester.pumpAndSettle();
+      expect(height(), lessThan(screen * .75));
+      expect(tester.getTopLeft(find.text('p').first), firstTile);
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpWidget(const SizedBox());
     });

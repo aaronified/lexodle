@@ -715,28 +715,41 @@ class _GamePageState extends State<GamePage>
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(
+              child: Stack(
                 children: [
-                  Expanded(child: _shake(_grid())),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: over ? 0 : 56),
-                    child: Center(
-                      child: _shake(
-                        lockdown
-                            ? Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  HeartsRow(total: heartsTotal, left: hearts),
-                                  const SizedBox(height: 6),
-                                  _status(c),
-                                ],
-                              )
-                            : _status(c),
+                  Column(
+                    children: [
+                      Expanded(child: _shake(_grid())),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: over ? 0 : 56),
+                        child: Center(
+                          child: _shake(
+                            lockdown
+                                ? Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      HeartsRow(
+                                        total: heartsTotal,
+                                        left: hearts,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      _status(c),
+                                    ],
+                                  )
+                                : _status(c),
+                          ),
+                        ),
                       ),
-                    ),
+                      // the panel is drawn over the boards from the bottom, so they
+                      // keep the room it has at its starting height and never move
+                      if (over)
+                        SizedBox(height: ResizablePanel.restHeight(context))
+                      else
+                        _keyboard(c),
+                      const SizedBox(height: 12),
+                    ],
                   ),
-                  if (over) _overPanel(c) else _keyboard(c),
-                  const SizedBox(height: 12),
+                  if (over) Positioned.fill(child: _overPanel(c)),
                 ],
               ),
             ),
@@ -1174,29 +1187,25 @@ class _GamePageState extends State<GamePage>
   );
 
   Widget _overPanel(ColorScheme c) {
-    final body = SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 19),
+    return ResizablePanel(
+      header: Row(
+        children: [
+          Expanded(
+            child: Text(
+              won
+                  ? 'solved in ${guesses.length} of $tries'
+                  : 'the word was  $answer',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          // a daily is played once: the next word comes tomorrow
+          if (_daily == null) _smallButton('replay', () => setState(_reset)),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  won
-                      ? 'solved in ${guesses.length} of $tries'
-                      : 'the word was  $answer',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              // a daily is played once: the next word comes tomorrow
-              if (_daily == null)
-                _smallButton('replay', () => setState(_reset)),
-            ],
-          ),
+          const SizedBox(height: 6),
           if (_daily != null)
             Caption(
               widget.practice
@@ -1231,10 +1240,10 @@ class _GamePageState extends State<GamePage>
           const Divider(),
           const SizedBox(height: 10),
           WordInfoView(word: answer, language: widget.bank.language),
+          const SizedBox(height: 12),
         ],
       ),
     );
-    return ResizablePanel(child: body);
   }
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
