@@ -218,6 +218,14 @@ void main() {
       expect(g.isLocked(1), isFalse);
     });
 
+    test('lockAll purges the letters that are not locked', () {
+      final g = typed('crane')..toggleLock(0);
+      g.lockFixed([(2, 'a')]);
+      g.lockAll([(1, 'r'), (3, 'n')]);
+      expect(g.slots, ['', 'r', 'a', 'n', '']);
+      expect(g.cursor, 0);
+    });
+
     test('typing skips a locked letter and never overwrites it', () {
       final g = typed('crane')..toggleLock(0);
       g.next();
