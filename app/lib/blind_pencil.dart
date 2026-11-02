@@ -31,6 +31,24 @@ class BlindPencil {
     grey.clear();
   }
 
+  Map<String, dynamic> toJson() => {
+    'g': {for (final e in green.entries) e.key: e.value.toList()},
+    'y': {for (final e in yellow.entries) e.key: e.value.toList()},
+    'x': grey.toList(),
+  };
+
+  /// Puts the colours back as [toJson] left them.
+  void restore(Map<String, dynamic> j) {
+    clear();
+    for (final e in (j['g'] as Map? ?? {}).entries) {
+      green[e.key as String] = {for (final i in e.value) i as int};
+    }
+    for (final e in (j['y'] as Map? ?? {}).entries) {
+      yellow[e.key as String] = {for (final i in e.value) i as int};
+    }
+    grey.addAll([for (final c in j['x'] ?? []) c as String]);
+  }
+
   BlindPencil _copy() {
     final c = BlindPencil(length);
     for (final e in green.entries) {

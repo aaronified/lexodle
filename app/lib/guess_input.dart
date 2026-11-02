@@ -137,6 +137,32 @@ class GuessInput {
     _lastTap = -1;
   }
 
+  /// The row as it stands, to be saved: the slots, the locks (and which are
+  /// the game's) and the cursor.
+  Map<String, dynamic> toJson() => {
+    's': _slots,
+    'l': _locked.toList(),
+    'f': _fixed.toList(),
+    'c': _cursor,
+  };
+
+  /// Puts the row back as [toJson] left it; a damaged save is ignored.
+  void restore(Map<String, dynamic> j) {
+    final s = j['s'];
+    if (s is! List || s.length != length) return;
+    for (var i = 0; i < length; i++) {
+      _slots[i] = s[i] as String;
+    }
+    _locked
+      ..clear()
+      ..addAll([for (final i in j['l'] ?? []) i as int]);
+    _fixed
+      ..clear()
+      ..addAll([for (final i in j['f'] ?? []) i as int]);
+    _cursor = ((j['c'] as int?) ?? 0).clamp(0, length);
+    _lastTap = -1;
+  }
+
   /// Moves the cursor [by] slots (the arrow keys): -1 left, 1 right. It stops
   /// at the ends, and from the parked position left selects the last slot.
   void move(int by) {

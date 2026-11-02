@@ -134,17 +134,67 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// closing the page cannot reroll it. Nothing is recorded again: the game was
   /// counted when it ended.
   void _resume() {
+    final key = _saveKey;
+    if (key == null) return;
     final d = _daily;
-    if (d == null || widget.practice) return;
-    final saved = appState.dailyFor(widget.bank.language.code, d.date, mode);
-    if (saved == null) return;
-    for (final g in saved.guesses) {
+    final extra = appState.progressFor(key);
+    List<String> saved;
+    if (d != null) {
+      saved =
+          appState.dailyFor(widget.bank.language.code, d.date, mode)?.guesses ??
+          const [];
+    } else {
+      // any other game comes back with the words it was drawn with
+      final a = extra?['a'];
+      if (extra == null ||
+          a is! List ||
+          a.length != mode.boards ||
+          a.any((w) => w is! String || w.length != length)) {
+        return;
+      }
+      _reset(answers: [for (final w in a) w as String]);
+      saved = [for (final g in extra['g'] ?? []) g as String];
+    }
+    for (final g in saved) {
       // a damaged save stops the replay rather than breaking the game
       if (game.over || g.length != length || !widget.bank.valid.contains(g)) {
         break;
       }
       _apply(g, restoring: true);
     }
+    if (game.over || extra == null) return;
+    // the row, its locks and its cursor as they were left
+    try {
+      final inp = extra['in'];
+      if (inp is Map) input.restore(inp.cast<String, dynamic>());
+    } catch (_) {}
+  }
+
+  /// Where this game is kept while it is played, or null when it is not kept (a
+  /// practice, a puzzle from a link).
+  String? get _saveKey {
+    if (widget.practice || widget.replay.isNotEmpty) return null;
+    final lang = widget.bank.language.code;
+    final d = _daily;
+    if (d != null) {
+      return d.date.isEmpty ? null : 'd|$lang|${d.date}|${mode.name}';
+    }
+    return 'p|$lang|${mode.name}|$length|$tries';
+  }
+
+  /// Keeps the game as it stands, to be resumed; a finished game is not kept.
+  void _save() {
+    final key = _saveKey;
+    if (key == null) return;
+    if (game.over) {
+      appState.clearProgress(key);
+      return;
+    }
+    appState.saveProgress(key, {
+      'a': [for (final b in game.boards) b.answer],
+      'g': game.guesses,
+      'in': input.toJson(),
+    });
   }
 
   @override
@@ -154,7 +204,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     super.dispose();
   }
 
-  void _reset() {
+  void _reset({List<String>? answers}) {
     _jobs.close(); // work on the last game's guesses is no longer wanted
     _jobs = JobQueue();
     _analysis.clear();
@@ -162,7 +212,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
     unlocked = [];
     game = MultiGame(
       mode,
-      _daily?.answers ??
+      answers ??
+          _daily?.answers ??
           chooseTargets(
             _pool,
             widget.bank.drawWeights(length, draw),
@@ -194,6 +245,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     setState(() {
       if (input.type(ch, _letters) >= 0) message = '';
     });
+    _save();
   }
 
   void _back() {
@@ -201,6 +253,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     setState(() {
       if (input.back() >= 0) message = '';
     });
+    _save();
   }
 
   final _shift = ShiftTap();
@@ -209,11 +262,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
   void _toggleLockAtCursor() {
     if (game.over) return;
     setState(() => input.toggleLock(input.cursor));
+    _save();
   }
 
   void _select(int i) {
     if (game.over) return;
     setState(() => input.tap(i));
+    _save();
   }
 
   /// A double tap on the submitted guesses of board [b] locks every green found
@@ -227,12 +282,14 @@ class _MultiGamePageState extends State<MultiGamePage> {
           if (marks[r][i] == Mark.correct) (i, game.guesses[r][i]),
     ];
     setState(() => input.lockAll(greens));
+    _save();
     showToast(context, 'all greens are locked');
   }
 
   void _move(int by) {
     if (game.over) return;
     setState(() => input.move(by));
+    _save();
   }
 
   void _submit() {
@@ -296,6 +353,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     } else {
       _analysis.add(null);
     }
+    if (!restoring) _save();
     final d = _daily;
     if (d != null && !restoring && !widget.practice) {
       appState.saveDaily(

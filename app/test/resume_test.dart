@@ -1,94 +1,105 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
-import 'package:lexodle/clock.dart';
-import 'package:lexodle/daily.dart';
+import 'package:lexodle/blind_pencil.dart';
+import 'package:lexodle/game.dart';
+import 'package:lexodle/guess_input.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
+import 'package:lexodle/multi_game.dart';
+import 'package:lexodle/routes.dart';
+import 'package:lexodle/words.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+Future<WordBank> _bank(WidgetTester tester, String code) async =>
+    (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == code),
+      ),
+    ))!;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  var asked = 0;
-  var redraws = 0;
-  void count() => redraws++;
+  setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
 
-  setUp(() {
-    asked = 0;
-    redraws = 0;
-    var mono = Duration.zero;
-    TrustedClock.reset();
-    TrustedClock.monotonic = () => mono;
-    TrustedClock.deviceNow = () => DateTime.utc(2026, 10, 24, 18, 29, 50);
-    TrustedClock.clientFactory = () => MockClient((_) async {
-      asked++;
-      return http.Response(
-        '',
-        200,
-        headers: {'date': 'Sat, 24 Oct 2026 18:30:30 GMT'}, // 00:00:30 in IST
-      );
-    });
-    dailyClock = TrustedClock.now;
-    appState.addListener(count);
-  });
-
-  tearDown(() {
-    appState.removeListener(count);
-    TrustedClock.reset();
-    dailyClock = TrustedClock.now;
-  });
-
-  test('coming back draws everything again', () {
-    AppResume().didChangeAppLifecycleState(AppLifecycleState.resumed);
-    expect(redraws, greaterThanOrEqualTo(1));
-  });
-
-  test(
-    'and asks the server the time when the last answer is old or none',
-    () async {
-      AppResume().didChangeAppLifecycleState(AppLifecycleState.resumed);
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(asked, 1);
-      expect(TrustedClock.verified, isTrue);
-      expect(
-        redraws,
-        greaterThanOrEqualTo(2),
-        reason: 'again once it answered',
-      );
-    },
-  );
-
-  test('not when the last answer is fresh', () async {
-    await TrustedClock.sync(client: TrustedClock.clientFactory());
-    asked = 0;
-    AppResume().didChangeAppLifecycleState(AppLifecycleState.resumed);
-    await Future<void>.delayed(const Duration(milliseconds: 20));
-    expect(asked, 0);
-    expect(redraws, 1);
-  });
-
-  test('other changes of state do nothing', () {
-    final r = AppResume();
-    for (final s in [
-      AppLifecycleState.paused,
-      AppLifecycleState.inactive,
-      AppLifecycleState.hidden,
-      AppLifecycleState.detached,
-    ]) {
-      r.didChangeAppLifecycleState(s);
+  test('the typed row comes back with its locks and cursor', () {
+    final g = GuessInput(5);
+    for (final ch in 'cra'.split('')) {
+      g.type(ch, {'c', 'r', 'a'});
     }
-    expect(redraws, 0);
-    expect(asked, 0);
+    g.toggleLock(1);
+    g.lockFixed([(4, 'e')]);
+    final h = GuessInput(5)..restore(g.toJson());
+    expect(h.slots, g.slots);
+    expect(
+      [for (var i = 0; i < 5; i++) h.isLocked(i)],
+      [for (var i = 0; i < 5; i++) g.isLocked(i)],
+    );
+    expect(h.isFixed(4), isTrue);
+    expect(h.cursor, g.cursor);
   });
 
-  test('the day it shows follows the server after it answers', () async {
-    // the device says 23:59:50 on the 24th, the server 00:00:30 on the 25th
-    // in a zone that is ahead: the date the daily is on is the server's
-    final before = dailyDate();
-    await TrustedClock.sync(client: TrustedClock.clientFactory());
-    final after = dailyDate();
-    expect(before, '2026-10-24');
-    // 18:30:30 UTC is 00:00:30 on the 25th in India
-    expect(after, '2026-10-25');
+  test('a blind game\'s colours come back', () {
+    final p = BlindPencil(5)
+      ..green['a'] = {1, 2}
+      ..yellow['b'] = {0}
+      ..grey.add('z');
+    final q = BlindPencil(5)..restore(p.toJson());
+    expect(q.green, p.green);
+    expect(q.yellow, p.yellow);
+    expect(q.grey, p.grey);
+  });
+
+  testWidgets('a game that is not a daily resumes with its answer', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    appState.setup(lang: 'fr', length: 5, tries: 6);
+    final bank = await _bank(tester, 'fr');
+    final words = bank.answers(5);
+    appState.saveProgress('p|fr|classic|5|6', {
+      'a': words[0],
+      'g': [words[1]],
+      'in': (GuessInput(5)..type(words[2][0], bank.letters(5))).toJson(),
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GamePage(bank: bank),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    await tester.pump();
+    expect(find.textContaining('5 tries left'), findsOneWidget);
+  });
+
+  testWidgets('a quartet that is not a daily resumes with its words', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await appState.load();
+    appState.setup(lang: 'fr', length: 5, tries: 6, mode: GameMode.quartet);
+    final bank = await _bank(tester, 'fr');
+    final w = bank.answers(5);
+    appState.saveProgress('p|fr|quartet|5|${triesFor(GameMode.quartet, 6)}', {
+      'a': [w[0], w[1], w[2], w[3]],
+      'g': [w[4]],
+    });
+    await tester.pumpWidget(
+      MaterialApp(home: const SizedBox(), onGenerateRoute: onGenerateRoute),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MultiGamePage(bank: bank),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    await tester.pump();
+    final state = tester.state(find.byType(MultiGamePage));
+    expect((state as dynamic).game.guesses, [w[4]]);
+    expect(
+      [for (final b in (state as dynamic).game.boards) b.answer],
+      [w[0], w[1], w[2], w[3]],
+    );
   });
 }

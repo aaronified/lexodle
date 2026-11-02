@@ -1635,6 +1635,36 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Games left half played, by [progressKey]: everything needed to put one
+  /// back as it was (the answers, the guesses, the hearts, the typed row with
+  /// its locks and cursor, a blind game's colours). Gone once the game is over.
+  Map<String, Map<String, dynamic>> progress = {};
+
+  /// A daily's key is `d|language|date[|mode]`; any other game's
+  /// `p|language|mode|length|tries`.
+  Map<String, dynamic>? progressFor(String key) => progress[key];
+
+  void saveProgress(String key, Map<String, dynamic> state) {
+    progress[key] = state;
+    if (key.startsWith('d|')) {
+      final oldest = dailyShift(dailyDate(), -7);
+      progress.removeWhere(
+        (k, _) => k.startsWith('d|') && k.split('|')[2].compareTo(oldest) < 0,
+      );
+    }
+    _writeProgress();
+  }
+
+  void clearProgress(String key) {
+    if (progress.remove(key) != null) _writeProgress();
+  }
+
+  void _writeProgress() {
+    try {
+      _w('progress', _prefs?.setString('progress', jsonEncode(progress)));
+    } catch (_) {}
+  }
+
   /// How each day's daily went in a language (date -> [dailyMissed],
   /// [dailySolved] or [dailyDouble]): each language has its own streak and its
   /// own calendar, and so has each mode (the quartet and the relay race have a
@@ -2001,6 +2031,19 @@ class AppState extends ChangeNotifier {
           appLog.w('store', 'could not read the statistics: $e');
           _keepUnread(p, 'stats', s); // the rest is still read
         }
+      }
+      progress = {};
+      try {
+        final pr = p.getString('progress');
+        if (pr != null) {
+          progress = {
+            for (final e in (jsonDecode(pr) as Map).entries)
+              e.key as String: (e.value as Map).cast<String, dynamic>(),
+          };
+        }
+      } catch (e) {
+        appLog.w('store', 'could not read the games in progress: $e');
+        progress = {};
       }
       try {
         // its own guard: a damaged daily must not stop the rest being read

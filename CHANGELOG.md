@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- every game left unfinished resumes, with its locks and colours
+  Leaving a game and coming back puts it as it was: the word (or words), the
+  guesses, hearts, the half-typed row with its locks and cursor, and a blind
+  game's colours. This was only so for the daily. A finished game is not kept.
+  A practice or a puzzle from a link is still not kept.
 - double tap the guesses to lock every green
   A double tap on the submitted guesses locks all the greens found so far, in
   place of the locks you had set, and a toast says so. In a quartet it follows
