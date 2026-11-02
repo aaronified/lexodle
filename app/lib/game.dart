@@ -349,12 +349,30 @@ class _GamePageState extends State<GamePage>
   }
 
   final _shift = ShiftTap();
+  final _ctrl = ShiftTap.ctrl();
 
   /// Shift locks the letter under the cursor, or unlocks it.
   void _toggleLockAtCursor() {
     if (over) return;
     setState(() => input.toggleLock(input.cursor));
     _save();
+  }
+
+  /// Control, in a blind game, cycles the colour of the letter under the
+  /// cursor: the one typed there, as it was guessed at that slot, or with the
+  /// slot empty the last guess's letter at it.
+  void _cycleAtCursor() {
+    if (!blind || over || guesses.isEmpty) return;
+    final i = input.cursor;
+    if (i >= length) return;
+    var r = guesses.length - 1;
+    if (input.isLetter(i)) {
+      while (r >= 0 && guesses[r][i] != input.slot(i)) {
+        r--;
+      }
+      if (r < 0) return;
+    }
+    _pencil(r, i);
   }
 
   void _select(int i) {
@@ -631,6 +649,10 @@ class _GamePageState extends State<GamePage>
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
     if (_shift.tapped(e)) {
       _toggleLockAtCursor();
+      return KeyEventResult.handled;
+    }
+    if (_ctrl.tapped(e) && blind) {
+      _cycleAtCursor();
       return KeyEventResult.handled;
     }
     if (e is KeyUpEvent) return KeyEventResult.ignored;

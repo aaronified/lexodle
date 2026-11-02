@@ -292,5 +292,16 @@ void main() {
       t.tapped(down(LogicalKeyboardKey.shiftLeft));
       expect(t.tapped(up(LogicalKeyboardKey.shiftLeft)), isTrue);
     });
+
+    test('a tap of control is told apart from a chord, like shift', () {
+      final t = ShiftTap.ctrl();
+      expect(t.tapped(down(LogicalKeyboardKey.shiftLeft)), isFalse);
+      expect(t.tapped(up(LogicalKeyboardKey.shiftLeft)), isFalse);
+      expect(t.tapped(down(LogicalKeyboardKey.controlLeft)), isFalse);
+      expect(t.tapped(up(LogicalKeyboardKey.controlLeft)), isTrue);
+      t.tapped(down(LogicalKeyboardKey.controlRight));
+      t.tapped(down(LogicalKeyboardKey.keyC));
+      expect(t.tapped(up(LogicalKeyboardKey.controlRight)), isFalse);
+    });
   });
 }

@@ -237,17 +237,29 @@ class GuessInput {
 
 /// Tells a tap of the shift key from shift held to type a capital: it is a tap
 /// when no other key went down between shift going down and coming up. A tap
-/// locks or unlocks the letter under the cursor.
+/// locks or unlocks the letter under the cursor. [ShiftTap.ctrl] does the same
+/// for the control key.
 class ShiftTap {
+  ShiftTap() : _keys = _shiftKeys;
+  ShiftTap.ctrl() : _keys = _ctrlKeys;
+
+  static final _shiftKeys = {
+    LogicalKeyboardKey.shiftLeft,
+    LogicalKeyboardKey.shiftRight,
+  };
+  static final _ctrlKeys = {
+    LogicalKeyboardKey.controlLeft,
+    LogicalKeyboardKey.controlRight,
+  };
+
+  final Set<LogicalKeyboardKey> _keys;
   bool _clean = false;
 
-  static bool isShift(KeyEvent e) =>
-      e.logicalKey == LogicalKeyboardKey.shiftLeft ||
-      e.logicalKey == LogicalKeyboardKey.shiftRight;
+  static bool isShift(KeyEvent e) => _shiftKeys.contains(e.logicalKey);
 
-  /// Whether [e] completes a tap of shift.
+  /// Whether [e] completes a tap of the key.
   bool tapped(KeyEvent e) {
-    if (isShift(e)) {
+    if (_keys.contains(e.logicalKey)) {
       if (e is KeyDownEvent) _clean = true;
       if (e is KeyUpEvent) {
         final tap = _clean;

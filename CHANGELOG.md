@@ -7,6 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- blind: control cycles the colour under the cursor
+  Like shift locks: a tap of the control key gives the letter under the cursor
+  its next colour, as tapping it in the guesses does.
+
+- themed: the best 500 places are likely, the rest have a small chance
+  The curve falls away sooner (half at the 550th place, little past the 650th),
+  and every other place keeps a small chance, a few in a hundred in all. The
+  game options still give the frequency or the equal chance.
 - faster, sharper and luckier wins in every mode
   New achievements for the fewest guesses, the best average skill and the best
   average luck in lockdown, blind and the relay race, and the luck of a quartet.
