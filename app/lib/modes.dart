@@ -14,7 +14,7 @@ enum GameMode {
   blind('blind', 'only counts, no tile colours', 1, 0),
   // the two last were added after the others: a saved game or setting keeps its
   // mode by position, so the order here must not change
-  equations('equations', 'nerdle: find the sum', 1, 0),
+  equations('equations', 'find the true equation', 1, 0),
   mastermind('mastermind', 'the word dodges you · no limit', 1, 0);
 
   const GameMode(this.label, this.sub, this.boards, this.extraTries);

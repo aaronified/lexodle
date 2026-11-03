@@ -414,6 +414,16 @@ void main() {
         expect(find.text(k), findsWidgets, reason: k);
       }
       expect(find.text('q'), findsNothing);
+      // a number pad: 7 8 9 over 4 5 6 over 1 2 3 over 0
+      double top(String k) => tester.getTopLeft(find.text(k).last).dy;
+      expect(top('7'), lessThan(top('4')));
+      expect(top('4'), lessThan(top('1')));
+      expect(top('1'), lessThan(top('0')));
+      expect(top('7'), top('9'));
+      expect(
+        tester.getTopLeft(find.text('7').last).dx,
+        lessThan(tester.getTopLeft(find.text('9').last).dx),
+      );
       // typed on the keyboard of the screen, as a phone would
       for (final ch in '12+34=47'.split('')) {
         await tester.tap(find.text(ch).last);
