@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- a swipe from right to left erases the row being typed
+  Over the current guess only. Shift and backspace do the same on a keyboard,
+  and delete works like backspace. The game's own locks stay.
+
 - an update is downloaded once
   If Android's installer is closed (or the install permission is asked for),
   pressing install opens it again on the file already downloaded, checked

@@ -186,6 +186,24 @@ class GuessInput {
     _lastTap = -1;
   }
 
+  /// Erases the whole row being typed: every letter and every lock the player
+  /// set. The game's own locks (a green in lockdown) stay, as they cannot be
+  /// taken off. The cursor goes to the first open slot. Returns whether anything
+  /// was there.
+  bool clearTyped() {
+    var any = false;
+    for (var i = 0; i < length; i++) {
+      if (_fixed.contains(i)) continue;
+      if (_slots[i].isNotEmpty) any = true;
+      _slots[i] = '';
+    }
+    if (_locked.any((i) => !_fixed.contains(i))) any = true;
+    _locked.removeWhere((i) => !_fixed.contains(i));
+    _cursor = _nextOpen(-1);
+    _lastTap = -1;
+    return any;
+  }
+
   /// Puts each of [letters] (slot, letter) in its place and locks it for good,
   /// then selects the first slot that is open.
   void lockFixed(Iterable<(int, String)> letters) {

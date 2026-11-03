@@ -8,6 +8,7 @@ import 'daily.dart';
 import 'game_header.dart';
 import 'guess_input.dart';
 import 'help.dart';
+import 'swipe_clear.dart';
 import 'haptics.dart';
 import 'history.dart';
 import 'keyboard.dart';
@@ -287,6 +288,14 @@ class _MultiGamePageState extends State<MultiGamePage> {
     showToast(context, 'all greens are locked');
   }
 
+  /// Erases the row being typed (a swipe from right to left over it, or shift
+  /// and backspace).
+  void _clearRow() {
+    if (game.over) return;
+    setState(() => input.clearTyped());
+    _save();
+  }
+
   void _move(int by) {
     if (game.over) return;
     setState(() => input.move(by));
@@ -492,8 +501,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
     }
     if (e.logicalKey == LogicalKeyboardKey.enter) {
       _submit();
-    } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
-      _back();
+    } else if (e.logicalKey == LogicalKeyboardKey.backspace ||
+        e.logicalKey == LogicalKeyboardKey.delete) {
+      if (HardwareKeyboard.instance.isShiftPressed) {
+        _clearRow();
+      } else {
+        _back();
+      }
     } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
       _move(-1);
     } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
@@ -653,40 +667,43 @@ class _MultiGamePageState extends State<MultiGamePage> {
           for (var r = 0; r < tries; r++)
             Padding(
               padding: EdgeInsets.only(bottom: gap),
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onDoubleTap: live && r < b.marks.length
-                    ? () => _lockGreens(i)
-                    : null,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (var k = 0; k < length; k++) ...[
-                      if (k > 0) SizedBox(width: gap),
-                      _tile(
-                        c,
-                        tile,
-                        r < b.marks.length
-                            ? game.guesses[r][k]
-                            : (live && r == game.guesses.length
-                                  ? input.slot(k)
-                                  : ''),
-                        r < b.marks.length ? b.marks[r][k] : null,
-                        active: live && r == game.guesses.length,
-                        cursor:
-                            live &&
-                            r == game.guesses.length &&
-                            k == input.cursor,
-                        locked:
-                            live &&
-                            r == game.guesses.length &&
-                            input.isLocked(k),
-                        onTap: live && r == game.guesses.length
-                            ? () => _select(k)
-                            : null,
-                      ),
+              child: _swipeClear(
+                live && r == game.guesses.length,
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onDoubleTap: live && r < b.marks.length
+                      ? () => _lockGreens(i)
+                      : null,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var k = 0; k < length; k++) ...[
+                        if (k > 0) SizedBox(width: gap),
+                        _tile(
+                          c,
+                          tile,
+                          r < b.marks.length
+                              ? game.guesses[r][k]
+                              : (live && r == game.guesses.length
+                                    ? input.slot(k)
+                                    : ''),
+                          r < b.marks.length ? b.marks[r][k] : null,
+                          active: live && r == game.guesses.length,
+                          cursor:
+                              live &&
+                              r == game.guesses.length &&
+                              k == input.cursor,
+                          locked:
+                              live &&
+                              r == game.guesses.length &&
+                              input.isLocked(k),
+                          onTap: live && r == game.guesses.length
+                              ? () => _select(k)
+                              : null,
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -694,6 +711,11 @@ class _MultiGamePageState extends State<MultiGamePage> {
       ),
     );
   }
+
+  /// A swipe from right to left over [row], when it is the one being typed
+  /// ([typing]), erases it.
+  Widget _swipeClear(bool typing, Widget row) =>
+      typing ? SwipeClear(onClear: _clearRow, child: row) : row;
 
   Widget _tile(
     ColorScheme c,
