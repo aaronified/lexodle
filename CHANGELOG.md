@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- hold alt to see every shortcut and gesture
+  After a tenth of a second a frosted pane lists them, for as long as alt is
+  held. It takes no touch or key: the screen under it goes on working.
+
 - a swipe from right to left erases the row being typed
   Over the current guess only. Shift and backspace do the same on a keyboard,
   and delete works like backspace. The game's own locks stay.

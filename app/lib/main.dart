@@ -8,6 +8,7 @@ import 'clock.dart';
 import 'haptics.dart';
 import 'licences.dart';
 import 'routes.dart';
+import 'shortcuts_overlay.dart';
 import 'store.dart';
 import 'update_check.dart';
 import 'update_section.dart';
@@ -160,8 +161,10 @@ class LexodleApp extends StatelessWidget {
         navigatorObservers: observers,
         // up and down scroll whatever the mouse is over, on every screen
         // and a press anywhere gives a short vibration on a phone
-        builder: (context, child) =>
-            TapHaptics(child: ArrowScroll(child: child!)),
+        // and Alt held shows the shortcuts and gestures
+        builder: (context, child) => ShortcutsOverlay(
+          child: TapHaptics(child: ArrowScroll(child: child!)),
+        ),
         onGenerateRoute: onGenerateRoute,
         onGenerateInitialRoutes: onGenerateInitialRoutes,
       ),
