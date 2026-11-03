@@ -699,6 +699,7 @@ class _GamePageState extends State<GamePage>
         risk: traits.risk,
         maxBits: traits.maxBits,
         daily: d != null,
+        date: d?.date ?? '',
         dailyStreak: streak,
         style: style,
         styleChanged: styleChanged,

@@ -454,6 +454,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
           freeRides: game.freeRides,
           lateSingles: game.lateSingles,
           daily: d != null,
+          date: d?.date ?? '',
           dailyStreak: streak,
         ),
       );

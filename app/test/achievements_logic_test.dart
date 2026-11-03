@@ -829,4 +829,82 @@ void main() {
       expect(state.ach['mastery_badges']!.seen, {'en'});
     });
   });
+
+  group('every mode and every daily', () {
+    GameResult dailyOf(GameMode m, String date, {bool won = true}) =>
+        GameResult(
+          lang: 'en',
+          length: 5,
+          tries: 6,
+          used: 4,
+          won: won,
+          mode: m,
+          daily: true,
+          date: date,
+        );
+
+    final dailyModes = [
+      for (final m in GameMode.values)
+        if (m.hasDaily) m,
+    ];
+
+    test('modes won in are counted once each, the new ones too', () {
+      final (st, _) = play([
+        game(),
+        game(),
+        multi(GameMode.quartet),
+        blind(),
+        multi(GameMode.relay, won: false),
+        GameResult(
+          lang: 'en',
+          length: 8,
+          tries: 6,
+          used: 4,
+          won: true,
+          mode: GameMode.equations,
+        ),
+      ]);
+      // classic, quartet, blind and equations; the lost relay does not count
+      expect(st['modes_won']!.value, 4);
+    });
+
+    test('the dailies of one day are counted, the best day kept', () {
+      final (st, _) = play([
+        dailyOf(GameMode.classic, '2026-11-01'),
+        dailyOf(GameMode.blind, '2026-11-01'),
+        dailyOf(GameMode.equations, '2026-11-01'),
+        dailyOf(GameMode.classic, '2026-11-02'),
+        dailyOf(GameMode.classic, '2026-11-02'), // the same one again
+        dailyOf(GameMode.quartet, '2026-11-02', won: false),
+      ]);
+      expect(st['daily_day']!.value, 3);
+    });
+
+    test('a day with every daily solved is counted once', () {
+      final day1 = [for (final m in dailyModes) dailyOf(m, '2026-11-01')];
+      final day2 = [
+        for (final m in dailyModes.take(dailyModes.length - 1))
+          dailyOf(m, '2026-11-02'),
+      ];
+      final day3 = [for (final m in dailyModes) dailyOf(m, '2026-11-03')];
+      final (st, earned) = play([...day1, ...day1, ...day2, ...day3]);
+      expect(st['daily_full_days']!.value, 2, reason: 'days 1 and 3');
+      expect(st['daily_day']!.value, dailyModes.length);
+      expect(earned.expand((e) => e), contains('daily_full_days'));
+    });
+
+    test('an earlier day, or a game that is not a daily, changes nothing', () {
+      final (st, _) = play([
+        dailyOf(GameMode.classic, '2026-11-05'),
+        dailyOf(GameMode.blind, '2026-11-04'),
+        game(),
+      ]);
+      expect(st['daily_day']!.value, 1);
+    });
+
+    test('equations dailies count among the dailies', () {
+      final (st, _) = play([dailyOf(GameMode.equations, '2026-11-01')]);
+      expect(st['dailies']!.value, 1);
+    });
+  });
 }

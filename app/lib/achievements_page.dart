@@ -122,6 +122,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
           'completed',
           'dailies',
           'doubles',
+          'modesWon',
+          'dailyDay',
+          'dailyFullDays',
           'stylesWorn',
         }.contains(a.metric)
         ? 'milestones'
