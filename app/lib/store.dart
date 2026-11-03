@@ -2233,9 +2233,10 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Whether the app looks for a newer version by itself when it opens (at most
-  /// once a day). Off until chosen: each check is a request to GitHub.
-  bool autoUpdateCheck = false;
+  /// Whether the app looks for a newer version by itself each time it opens,
+  /// and says so in a toast when there is one. On unless switched off: each
+  /// check is one request to GitHub.
+  bool autoUpdateCheck = true;
 
   /// When the last check that got an answer was, and the newest version it found
   /// (null when it found none newer).
@@ -2843,7 +2844,7 @@ class AppState extends ChangeNotifier {
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
         lastRunVersion = p.getString('lastRunVersion');
         changelogSeen = p.getString('changelogSeen');
-        autoUpdateCheck = p.getBool('autoUpdateCheck') ?? false;
+        autoUpdateCheck = p.getBool('autoUpdateCheck') ?? true;
         final last = p.getInt('lastUpdateCheck');
         if (last != null) {
           lastUpdateCheck = DateTime.fromMillisecondsSinceEpoch(last);

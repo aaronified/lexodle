@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- the app looks for an update when it opens, and a toast says so
+  Each time it starts (on Android), unless the check is switched off in
+  settings. The toast has an underlined link that saves a backup and downloads
+  the update; the settings show how it goes. The equations pad has the space
+  key, wider.
+
 - a yellow dot above a chevron when a daily is pending that way
   The nearest pending daily in each direction round the modes, so at most two
   dots, one above each chevron. The mode in view is not counted.

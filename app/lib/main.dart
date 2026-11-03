@@ -106,16 +106,23 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
 
 final appState = AppState();
 
+/// The messenger of the whole app, so a toast can be shown from outside a
+/// screen (the one that says a newer version is out).
+final appMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   registerLicences();
   appLog.i('app', 'main starts');
   unawaited(appLog.start(version: appVersion));
-  appState.load().then((_) {
-    // a new version keeps a copy of what it found, then looks for a newer one
-    unawaited(AutoBackup.afterUpgrade(appState));
-    return checkForUpdateAtLaunch();
-  });
+  appState
+      .load()
+      .then((_) {
+        // a new version keeps a copy of what it found, then looks for a newer one
+        unawaited(AutoBackup.afterUpgrade(appState));
+        return checkForUpdateAtLaunch();
+      })
+      .then(_toastIfNewer);
   // ask the server the time (for the daily); the screens redraw when it answers,
   // since the date they show may change by it
   TrustedClock.sync().then((ok) {
@@ -123,6 +130,16 @@ void main() {
   });
   WidgetsBinding.instance.addObserver(AppResume());
   runApp(const LexodleApp());
+}
+
+/// Says in a toast that [version], found by the check at launch, is out, once
+/// the app has a screen to show it on.
+Future<void> _toastIfNewer(String? version) async {
+  if (version == null) return;
+  for (var i = 0; i < 50 && appMessengerKey.currentState == null; i++) {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+  }
+  showUpdateToast(version);
 }
 
 /// Coming back to the app after it was left, perhaps over midnight: the day it
@@ -153,6 +170,7 @@ class LexodleApp extends StatelessWidget {
       listenable: appState,
       builder: (context, _) => MaterialApp(
         title: 'lexodle',
+        scaffoldMessengerKey: appMessengerKey,
         debugShowCheckedModeBanner: false,
         theme: buildTheme(Brightness.light),
         darkTheme: buildTheme(Brightness.dark, black: appState.blackTheme),

@@ -198,9 +198,10 @@ class LetterKeyboard extends StatelessWidget {
           if (onBlank != null)
             Row(
               children: [
-                const Spacer(flex: 20),
-                key('_', onBlank!, flex: 6),
-                const Spacer(flex: 20),
+                // wider under a number pad, which is narrow
+                Spacer(flex: custom != null ? 1 : 20),
+                key('_', onBlank!, flex: custom != null ? 3 : 6),
+                Spacer(flex: custom != null ? 1 : 20),
               ],
             ),
         ],

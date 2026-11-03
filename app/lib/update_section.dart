@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
 
 import 'apk_install.dart';
@@ -16,35 +17,119 @@ import 'wiki_links.dart';
 bool get updatesSupported =>
     !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
-/// How long since the last automatic check before another may run.
-const autoCheckEvery = Duration(hours: 24);
-
-/// When the player has switched on automatic checks, looks for a newer version
-/// as the app opens, at most once a day. What it finds is kept, so the settings
-/// say so without asking again.
-Future<void> checkForUpdateAtLaunch({
+/// Looks for a newer version as the app opens, each time, unless the player has
+/// switched the check off. What it finds is kept, so the settings say so without
+/// asking again. Returns the newer version it found, or null (up to date, no
+/// answer, switched off, or nothing that can be installed).
+Future<String?> checkForUpdateAtLaunch({
   ReleaseCheck? check,
   bool? supported,
-  DateTime? now,
 }) async {
-  if (!(supported ?? updatesSupported) || !appState.autoUpdateCheck) return;
-  final last = appState.lastUpdateCheck;
-  if (last != null &&
-      (now ?? DateTime.now()).difference(last) < autoCheckEvery) {
-    return;
+  if (!(supported ?? updatesSupported) || !appState.autoUpdateCheck) {
+    return null;
   }
   final r = await (check ?? GitHubReleaseCheck()).check();
   switch (r) {
     case UpdateAvailable(release: final found):
       appLog.i('update', 'launch check: ${found.version} is available');
       appState.noteUpdateCheck(latest: found.version);
+      return found.version;
     case UpToDate():
       appLog.i('update', 'launch check: up to date');
       appState.noteUpdateCheck(latest: null);
     case CheckFailed(why: final why):
       appLog.w('update', 'launch check failed: ${why.name}');
-      break; // not counted: the next launch tries again
   }
+  return null;
+}
+
+/// The toast that says a newer version is out, with the way to get it: an
+/// underlined link that starts the download.
+void showUpdateToast(String version, {ScaffoldMessengerState? messenger}) {
+  final m = messenger ?? appMessengerKey.currentState;
+  if (m == null) return;
+  m
+    ..clearSnackBars()
+    ..showSnackBar(
+      SnackBar(
+        key: const ValueKey('update-toast'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 15),
+        showCloseIcon: true,
+        content: _UpdateToast(version, onLink: startUpdateFromToast),
+      ),
+    );
+}
+
+class _UpdateToast extends StatefulWidget {
+  const _UpdateToast(this.version, {required this.onLink});
+  final String version;
+  final VoidCallback onLink;
+
+  @override
+  State<_UpdateToast> createState() => _UpdateToastState();
+}
+
+class _UpdateToastState extends State<_UpdateToast> {
+  late final TapGestureRecognizer _tap = TapGestureRecognizer()
+    ..onTap = widget.onLink;
+
+  @override
+  void dispose() {
+    _tap.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Text.rich(
+    TextSpan(
+      children: [
+        TextSpan(text: 'version ${widget.version} is out · '),
+        TextSpan(
+          text: 'download it',
+          recognizer: _tap,
+          style: const TextStyle(
+            decoration: TextDecoration.underline,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+    key: const ValueKey('update-toast-text'),
+  );
+}
+
+/// What the link of the toast does: saves a backup (as the settings do), then
+/// downloads and hands the update to Android's installer. It says in a toast
+/// how that went when it did not.
+Future<void> startUpdateFromToast({ScaffoldMessengerState? messenger}) async {
+  final m = messenger ?? appMessengerKey.currentState;
+  void say(String text) => m
+    ?..clearSnackBars()
+    ..showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+        content: Text(text),
+      ),
+    );
+  final c = UpdateController.shared;
+  if (c.step == UpdateStep.downloading || c.step == UpdateStep.installing) {
+    return;
+  }
+  say('saving a backup, then downloading…');
+  final r = await AutoBackup.run(
+    appState,
+    downloads: appState.downloadsBackup,
+    label: 'update',
+  );
+  if (!r.any) {
+    say('no backup saved. open settings, update, to go on without one');
+    return;
+  }
+  await c.update();
+  final failure = c.installFailure;
+  if (failure != null) say(_installMessage(failure));
 }
 
 /// Where an update stands.
@@ -64,6 +149,10 @@ enum UpdateStep {
 /// Checks GitHub for a newer release, and downloads and installs it. Pure
 /// enough to test: the check and the installer are given.
 class UpdateController extends ChangeNotifier {
+  /// The one the toast at launch and the settings share, so the download the
+  /// toast starts shows in the settings.
+  static final shared = UpdateController();
+
   UpdateController({ReleaseCheck? check, ApkInstaller? installer})
     : _check = check ?? GitHubReleaseCheck(),
       _installer = installer ?? platformInstaller();
@@ -235,7 +324,7 @@ class UpdateSection extends StatefulWidget {
 
 class _UpdateSectionState extends State<UpdateSection>
     with WidgetsBindingObserver {
-  late final UpdateController _c = widget.controller ?? UpdateController();
+  late final UpdateController _c = widget.controller ?? UpdateController.shared;
 
   @override
   void initState() {
@@ -251,7 +340,6 @@ class _UpdateSectionState extends State<UpdateSection>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (widget.controller == null) _c.dispose();
     super.dispose();
   }
 
@@ -420,7 +508,7 @@ class _UpdateSectionState extends State<UpdateSection>
               dense: true,
               title: const Text('check automatically'),
               subtitle: Text(
-                'once a day, at launch. each check asks GitHub.',
+                'at every launch, with a toast if one is out.',
                 style: dim.copyWith(fontSize: 11),
               ),
               value: appState.autoUpdateCheck,

@@ -423,6 +423,8 @@ void main() {
         expect(find.text(k), findsWidgets, reason: k);
       }
       expect(find.text('q'), findsNothing);
+      // the space (a blank) is on the pad too, and types a blank
+      expect(find.text('_'), findsOneWidget);
       // a number pad: 7 8 9 over 4 5 6 over 1 2 3 over 0
       double top(String k) => tester.getTopLeft(find.text(k).last).dy;
       expect(top('7'), lessThan(top('4')));
