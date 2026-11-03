@@ -7,6 +7,17 @@ it to the version.
 
 ## Unreleased
 
+- new mode: equations (nerdle), with a daily
+  Guess a true equation of 6, 7 or 8 tiles: digits and + − × ÷ =, one = with a
+  sum on the left and a whole number on the right, no leading zeros and no lone
+  0. The colours work as in classic. The daily is 8 tiles, 6 tries, the same in
+  every language. It has no skill, luck or review; it has achievements of its
+  own (wins, quick wins, last try, brutal, speed and a daily streak).
+
+- the modes swipe: blind after lockdown, themed last
+  The order is classic, quartet, relay, lockdown, blind, equations and themed
+  (English only). Saved games and settings are not affected.
+
 - blind: double tap on the counts locks the pencilled greens
   The guesses of a blind game cycle their colour on a tap, so they cannot lock;
   the counts do instead, as the board does in the other modes.

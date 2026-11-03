@@ -170,6 +170,7 @@ void main() {
           'streakRelay',
           'streakLockdown',
           'streakBlind',
+          'streakEquations',
         ],
       );
       final s = byId('daily_streak');

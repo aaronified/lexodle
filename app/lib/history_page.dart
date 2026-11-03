@@ -91,7 +91,8 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Future<void> _open(GameRow g) async {
     final lang = _langs[g.lang];
-    if (lang == null || _opening) return;
+    // an equations game has nothing to review
+    if (lang == null || _opening || !g.mode.scored) return;
     setState(() {
       _opening = true;
       _error = '';
@@ -625,7 +626,7 @@ class _GameTile extends StatelessWidget {
     // a classic guess with one word left has no skill to speak of
     final scored = [
       for (final r in rows)
-        if (!game.isClassic || r.before > 1) r.skill,
+        if (game.mode.scored && (!game.isClassic || r.before > 1)) r.skill,
     ];
     final skill = scored.isEmpty
         ? '–'
@@ -686,7 +687,7 @@ class _GameTile extends StatelessWidget {
             ),
             // a past game can be shared as a puzzle, hashed or with its guesses;
             // the daily is not shared, as anyone can open the app and play it
-            if (!game.isDaily)
+            if (!game.isDaily && game.mode.scored)
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: SharePuzzleButton(

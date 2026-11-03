@@ -1,6 +1,7 @@
 import 'dart:math' show min;
 
 import 'clock.dart';
+import 'equations.dart';
 import 'modes.dart';
 import 'words.dart';
 
@@ -252,6 +253,17 @@ class Daily {
     GameMode mode = GameMode.classic,
   ]) {
     final d = date ?? dailyDate();
+    if (mode == GameMode.equations) {
+      // the same equation in every language, drawn from all of them
+      final eqs = bank.answers(equationDailyLength);
+      if (eqs.isEmpty) return null;
+      return Daily(
+        d,
+        eqs[dailyIndex('equations', d, eqs.length)],
+        length: equationDailyLength,
+        tries: equationDailyTries,
+      );
+    }
     final all = bank.answers(dailyLength);
     if (all.isEmpty) return null;
     final code = bank.language.code;
@@ -271,8 +283,11 @@ class Daily {
 
 /// The tries of a daily in [mode]: the fixed daily difficulty, with the extra
 /// tries the mode has (9 for a quartet, 10 for a relay race).
-int dailyTriesOf(GameMode mode) =>
-    mode == GameMode.blind ? blindDailyTries : triesFor(mode, dailyTries);
+int dailyTriesOf(GameMode mode) => switch (mode) {
+  GameMode.blind => blindDailyTries,
+  GameMode.equations => equationDailyTries,
+  _ => triesFor(mode, dailyTries),
+};
 
 /// Today's (or [date]'s) daily quartet or relay race: four words, drawn from
 /// the date, the language and the mode alone, so that every device with the same

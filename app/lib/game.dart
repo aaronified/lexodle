@@ -7,6 +7,7 @@ import 'analysis_worker.dart';
 import 'background.dart';
 import 'blind_pencil.dart';
 import 'daily.dart';
+import 'equations.dart';
 import 'game_header.dart';
 import 'hearts.dart';
 import 'modes.dart';
@@ -86,6 +87,14 @@ class _GamePageState extends State<GamePage>
   bool get themed => mode == GameMode.themed;
   bool get blind => mode == GameMode.blind;
 
+  /// The equations (the tiles are digits and signs): no skill and luck scores
+  /// or a review.
+  bool get equations => mode == GameMode.equations;
+  bool get _unscored => equations;
+
+  /// The noun of what is hidden.
+  String get _noun => equations ? 'equation' : 'word';
+
   /// The hearts of a lockdown game, and how many are left: a daily has its own
   /// number, any other game the one chosen in the game modes.
   late final int heartsTotal = !lockdown
@@ -110,7 +119,9 @@ class _GamePageState extends State<GamePage>
   /// How the answer is drawn, and so the chances its scores are worked out
   /// under: the setting, the curve for a daily, and equal chances for the old
   /// daily and for a puzzle from a link.
-  late final Draw draw = _daily == null
+  late final Draw draw = equations
+      ? Draw.equal
+      : _daily == null
       ? appState.draw
       : _curveDaily
       ? Draw.sigmoid
@@ -161,7 +172,8 @@ class _GamePageState extends State<GamePage>
   @override
   void initState() {
     super.initState();
-    length = _daily?.length ?? appState.length;
+    length =
+        _daily?.length ?? (equations ? appState.eqLength : appState.length);
     tries =
         _daily?.tries ??
         (lockdown
@@ -204,7 +216,7 @@ class _GamePageState extends State<GamePage>
       if (extra == null || a is! String || a.length != length) return;
       answer = a;
       saved = [for (final g in extra['g'] ?? []) g as String];
-      if (prefetchDefinitions) {
+      if (prefetchDefinitions && !_unscored) {
         final lang = widget.bank.language;
         Wiktionary.shared.prefetch(answer, lang.code, lang.wikt);
       }
@@ -317,7 +329,7 @@ class _GamePageState extends State<GamePage>
     hearts = heartsTotal;
     unlocked = [];
     // score the opening while the first guess is being chosen
-    if (analyseWhilePlaying) {
+    if (analyseWhilePlaying && !_unscored) {
       warmOpening(
         eligible,
         widget.bank.guessable(length),
@@ -326,7 +338,7 @@ class _GamePageState extends State<GamePage>
       );
     }
     // look the answer up now, so the end screen has it
-    if (prefetchDefinitions) {
+    if (prefetchDefinitions && !_unscored) {
       final lang = widget.bank.language;
       Wiktionary.shared.prefetch(answer, lang.code, lang.wikt);
     }
@@ -435,7 +447,11 @@ class _GamePageState extends State<GamePage>
       }
       Haptics.fire(Haptic.reject);
       setState(
-        () => message = themed ? 'not a place name' : 'not in the word list',
+        () => message = equations
+            ? equationProblem(word) ?? 'not an equation of the list'
+            : themed
+            ? 'not a place name'
+            : 'not in the word list',
       );
       return;
     }
@@ -488,6 +504,11 @@ class _GamePageState extends State<GamePage>
       final old = keyMarks[k];
       // correct beats present beats absent
       if (old == null || m[i].index < old.index) keyMarks[k] = m[i];
+    }
+    if (_unscored) {
+      // no scores, no review: only what the rules need
+      _analysis.add(null);
+      return _afterGuess(word, m, restoring);
     }
     final after = filterEligible(eligible, word, m, blind: blind);
     metrics.add(
@@ -543,6 +564,12 @@ class _GamePageState extends State<GamePage>
     } else {
       _analysis.add(null);
     }
+    _afterGuess(word, m, restoring);
+  }
+
+  /// What follows a guess, scored or not: the row moves on, a lockdown locks its
+  /// greens and the game may end.
+  void _afterGuess(String word, List<Mark> m, bool restoring) {
     final solved = word == answer;
     input.next();
     // in lockdown a letter in the right place is locked for the rest of the game
@@ -553,7 +580,7 @@ class _GamePageState extends State<GamePage>
       ]);
     }
     message = '';
-    if (solved || guesses.length >= tries) {
+    if (solved || (tries > 0 && guesses.length >= tries)) {
       over = true;
       won = solved;
       // nothing is kept once the game is over: no letter stays locked
@@ -616,9 +643,15 @@ class _GamePageState extends State<GamePage>
           pool: pool,
           answers: [answer],
           won: won,
-          guesses: [
-            for (var i = 0; i < metrics.length; i++) guessRowOf(i, metrics[i]),
-          ],
+          guesses: _unscored
+              ? [
+                  for (final (i, g) in guesses.indexed)
+                    GuessRow(game: 0, n: i, word: g),
+                ]
+              : [
+                  for (var i = 0; i < metrics.length; i++)
+                    guessRowOf(i, metrics[i]),
+                ],
           daily: d?.date ?? '',
           draw: draw,
         );
@@ -678,7 +711,8 @@ class _GamePageState extends State<GamePage>
     } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
       _move(1);
     } else if (e.character != null) {
-      _type(e.character!.toLowerCase());
+      final ch = e.character!.toLowerCase();
+      _type(equations ? typedEquationChar(ch) : ch);
     } else {
       return KeyEventResult.ignored;
     }
@@ -696,7 +730,7 @@ class _GamePageState extends State<GamePage>
         appBar: AppBar(
           actions: [
             // the daily is not shared: anyone can open the app and play it
-            if (_daily == null || _daily.date.isEmpty)
+            if ((_daily == null || _daily.date.isEmpty) && !_unscored)
               SharePuzzleButton(
                 (withGuesses) => Puzzle.hashed(
                   widget.bank.language.code,
@@ -1066,7 +1100,7 @@ class _GamePageState extends State<GamePage>
             alignment: Alignment.center,
             children: [
               Text(
-                isBlank ? '_' : ch,
+                isBlank ? '_' : faceOf(ch),
                 style: TextStyle(
                   fontSize: size * .5,
                   fontWeight: FontWeight.bold,
@@ -1102,7 +1136,7 @@ class _GamePageState extends State<GamePage>
     final left = lockdown
         ? '$hearts ${hearts == 1 ? 'heart' : 'hearts'} · $triesLeft'
         : triesLeft;
-    if (guesses.isEmpty) return Caption(left);
+    if (guesses.isEmpty || _unscored) return Caption(left);
     final m = metrics.last;
     final parts = <(String, String?)>[
       if (h.showSkill)
@@ -1208,7 +1242,7 @@ class _GamePageState extends State<GamePage>
             child: Text(
               won
                   ? 'solved in ${guesses.length} of $tries'
-                  : 'the word was  $answer',
+                  : 'the $_noun was  ${equations ? answer.split('').map(faceOf).join() : answer}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
@@ -1228,7 +1262,10 @@ class _GamePageState extends State<GamePage>
                         'the next word comes at midnight, your time',
             ),
           // the answer, said as such (a win used to show it bare)
-          if (won) Caption('the word was $answer'),
+          if (won)
+            Caption(
+              'the $_noun was ${equations ? answer.split('').map(faceOf).join() : answer}',
+            ),
           const SizedBox(height: 10),
           for (final a in unlocked)
             Padding(
@@ -1253,7 +1290,8 @@ class _GamePageState extends State<GamePage>
           const SizedBox(height: 10),
           const Divider(),
           const SizedBox(height: 10),
-          WordInfoView(word: answer, language: widget.bank.language),
+          if (!equations)
+            WordInfoView(word: answer, language: widget.bank.language),
           const SizedBox(height: 12),
         ],
       ),
@@ -1262,6 +1300,7 @@ class _GamePageState extends State<GamePage>
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
+    layout: equations ? equationRows : null,
     marks: blind ? (_assist ? pencil.keyboard(_deduced) : const {}) : keyMarks,
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),

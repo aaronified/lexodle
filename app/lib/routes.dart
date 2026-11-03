@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'achievements_page.dart';
 import 'daily.dart';
 import 'diy.dart';
+import 'equations.dart';
 import 'drill_page.dart';
 import 'game.dart';
 import 'history_page.dart';
@@ -96,6 +97,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(
         BankGate(
           places: appState.mode == GameMode.themed,
+          equations: appState.mode == GameMode.equations,
           builder: (bank) => appState.mode.multi
               ? MultiGamePage(bank: bank)
               : GamePage(bank: bank, mode: appState.mode),
@@ -105,6 +107,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       // today's word for the saved language, at the fixed daily difficulty
       return page(
         BankGate(
+          equations: appState.mode == GameMode.equations,
           builder: (bank) {
             // each mode has a daily of its own: the mode in view decides
             final mode = appState.mode;
@@ -265,8 +268,16 @@ Route<void> _dialog(RouteSettings settings, Widget dialog) =>
 /// needs it, waiting first for the saved settings, since a page opened by
 /// address (a refresh) starts before they are read.
 class BankGate extends StatefulWidget {
-  const BankGate({super.key, required this.builder, this.places = false});
+  const BankGate({
+    super.key,
+    required this.builder,
+    this.places = false,
+    this.equations = false,
+  });
   final Widget Function(WordBank bank) builder;
+
+  /// Whether the words are the equations of the equations mode.
+  final bool equations;
 
   /// Whether the words are the place names of the themed wordle, in English.
   final bool places;
@@ -287,7 +298,7 @@ class _BankGateState extends State<BankGate> {
       (l) => l.code == appState.lang,
       orElse: () => langs.first,
     );
-    return WordBank.load(lang);
+    return widget.equations ? Equations.load(lang) : WordBank.load(lang);
   }
 
   Widget _waiting(String text) => Scaffold(
