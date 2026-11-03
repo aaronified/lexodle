@@ -27,6 +27,7 @@ import 'review_text.dart';
 import 'routes.dart';
 import 'main.dart';
 import 'sounds.dart';
+import 'swipe_clear.dart';
 import 'store.dart';
 import 'ui.dart';
 import 'wiktionary.dart';
@@ -387,6 +388,16 @@ class _GamePageState extends State<GamePage>
     if (over) return;
     setState(() {
       if (input.type(ch, _letters) >= 0) message = '';
+    });
+    _save();
+  }
+
+  /// Erases the row being typed (a swipe from right to left over it, or shift
+  /// and backspace).
+  void _clearRow() {
+    if (over) return;
+    setState(() {
+      if (input.clearTyped()) message = '';
     });
     _save();
   }
@@ -770,8 +781,13 @@ class _GamePageState extends State<GamePage>
     }
     if (e.logicalKey == LogicalKeyboardKey.enter) {
       _submit();
-    } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
-      _back();
+    } else if (e.logicalKey == LogicalKeyboardKey.backspace ||
+        e.logicalKey == LogicalKeyboardKey.delete) {
+      if (HardwareKeyboard.instance.isShiftPressed) {
+        _clearRow();
+      } else {
+        _back();
+      }
     } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
       _move(-1);
     } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
@@ -924,49 +940,53 @@ class _GamePageState extends State<GamePage>
                     child: _withTrailing(
                       r,
                       tile,
-                      _greensTap(
-                        r < guesses.length,
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            for (var i = 0; i < length; i++) ...[
-                              if (i > 0) const SizedBox(width: gap),
-                              _tile(
-                                c,
-                                tile,
-                                r < guesses.length
-                                    ? guesses[r][i]
-                                    : (r == guesses.length
-                                          ? input.slot(i)
-                                          : ''),
-                                r < marks.length
-                                    ? (blind
-                                          ? (_assist
-                                                ? pencil.shown(
-                                                    guesses[r][i],
-                                                    i,
-                                                    deduced,
-                                                  )
-                                                : notes[r][i])
-                                          : marks[r][i])
-                                    : null,
-                                active: r == guesses.length && !over,
-                                cursor:
-                                    r == guesses.length &&
-                                    !over &&
-                                    i == input.cursor,
-                                key: ValueKey('tile-$r-$i'),
-                                locked:
-                                    r == guesses.length && input.isLocked(i),
-                                fixed: r == guesses.length && input.isFixed(i),
-                                onTap: r == guesses.length && !over
-                                    ? () => _select(i)
-                                    : blind && r < guesses.length && !over
-                                    ? () => _pencil(r, i)
-                                    : null,
-                              ),
+                      _swipeClear(
+                        r == guesses.length && !over,
+                        _greensTap(
+                          r < guesses.length,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (var i = 0; i < length; i++) ...[
+                                if (i > 0) const SizedBox(width: gap),
+                                _tile(
+                                  c,
+                                  tile,
+                                  r < guesses.length
+                                      ? guesses[r][i]
+                                      : (r == guesses.length
+                                            ? input.slot(i)
+                                            : ''),
+                                  r < marks.length
+                                      ? (blind
+                                            ? (_assist
+                                                  ? pencil.shown(
+                                                      guesses[r][i],
+                                                      i,
+                                                      deduced,
+                                                    )
+                                                  : notes[r][i])
+                                            : marks[r][i])
+                                      : null,
+                                  active: r == guesses.length && !over,
+                                  cursor:
+                                      r == guesses.length &&
+                                      !over &&
+                                      i == input.cursor,
+                                  key: ValueKey('tile-$r-$i'),
+                                  locked:
+                                      r == guesses.length && input.isLocked(i),
+                                  fixed:
+                                      r == guesses.length && input.isFixed(i),
+                                  onTap: r == guesses.length && !over
+                                      ? () => _select(i)
+                                      : blind && r < guesses.length && !over
+                                      ? () => _pencil(r, i)
+                                      : null,
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -978,6 +998,11 @@ class _GamePageState extends State<GamePage>
       },
     );
   }
+
+  /// A swipe from right to left over [row], when it is the one being typed
+  /// ([typing]), erases it.
+  Widget _swipeClear(bool typing, Widget row) =>
+      typing ? SwipeClear(onClear: _clearRow, child: row) : row;
 
   /// [row], a submitted guess, locks the greens on a double tap.
   Widget _greensTap(bool submitted, Widget row) => submitted && !blind && !over
