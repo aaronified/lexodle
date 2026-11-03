@@ -43,6 +43,8 @@ screen in the app has one live row of tiles to try the blanks, the cursor and th
 
 ## Modes
 
+Hold **alt** on a keyboard to see every shortcut and gesture of the app in a frosted pane.
+
 Every game screen has a help button at the top right (the daily too) that shows the rules of its mode,
 with how typing, spaces (blanks) and locks work.
 
