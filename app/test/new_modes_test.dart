@@ -387,6 +387,46 @@ void main() {
       },
     );
 
+    testWidgets(
+      'blind: a double tap on the counts locks the pencilled greens',
+      (tester) async {
+        final bank = (await tester.runAsync(
+          () async => WordBank.load(
+            (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+          ),
+        ))!;
+        await open(tester, GameMode.blind, bank, 'prism', 10);
+        await guess(tester, 'crane');
+        Finder lockOn(int i) => find.descendant(
+          of: find.byKey(ValueKey('tile-1-$i')),
+          matching: find.byType(SvgPicture),
+        );
+        // nothing pencilled: nothing to lock
+        final counts = find.byKey(const ValueKey('counts-0'));
+        await tester.tap(counts);
+        await tester.pump(const Duration(milliseconds: 60));
+        await tester.tap(counts);
+        await tester.pumpAndSettle();
+        expect(lockOn(1), findsNothing);
+        // pencil the r green (one tap), then double tap the counts
+        await tester.tap(find.byKey(const ValueKey('tile-0-1')));
+        await tester.pump();
+        await tester.tap(counts);
+        await tester.pump(const Duration(milliseconds: 60));
+        await tester.tap(counts);
+        await tester.pumpAndSettle();
+        expect(lockOn(1), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('tile-1-1')),
+            matching: find.text('r'),
+          ),
+          findsOneWidget,
+        );
+        expect(lockOn(0), findsNothing);
+      },
+    );
+
     testWidgets('shift locks and unlocks the letter under the cursor', (
       tester,
     ) async {
