@@ -12,9 +12,10 @@ enum GameMode {
   lockdown('lockdown', 'greens lock · bad words cost hearts', 1, 0),
   themed('themed', 'words of a theme only · english', 1, 0),
   blind('blind', 'only counts, no tile colours', 1, 0),
-  // added after the others: a saved game or setting keeps its mode by
-  // position, so the order here must not change
-  equations('equations', 'nerdle: find the sum', 1, 0);
+  // the two last were added after the others: a saved game or setting keeps its
+  // mode by position, so the order here must not change
+  equations('equations', 'nerdle: find the sum', 1, 0),
+  mastermind('mastermind', 'the word dodges you · no limit', 1, 0);
 
   const GameMode(this.label, this.sub, this.boards, this.extraTries);
 
@@ -28,21 +29,25 @@ enum GameMode {
       lockdown,
       blind,
       equations,
+      mastermind,
       themed,
     ])
       if (m != themed || lang == 'en') m,
   ];
 
-  /// Whether the mode has a daily: every mode but themed.
-  bool get hasDaily => this != themed;
+  /// Whether the mode has a daily: every mode but themed and mastermind.
+  bool get hasDaily => this != themed && this != mastermind;
 
   /// Whether the guesses have skill and luck scores, and so a review: not the
-  /// equations.
-  bool get scored => this != equations;
+  /// equations, nor the mastermind (there is no answer to measure against).
+  bool get scored => this != equations && this != mastermind;
 
   /// Whether the answers are equations, not words.
   bool get isEquations => this == equations;
 
+  /// Whether the game has no tries to run out of (the word dodges for as long
+  /// as it can, so the guesses are the score).
+  bool get endless => this == mastermind;
   final String label;
   final String sub;
 
@@ -177,6 +182,46 @@ List<String> chooseTargets(
     }
   }
   return bestSet!;
+}
+
+/// What the mastermind answers to [guess]: the marks one of the [words] still
+/// possible would give, drawn at random. A reply is a bucket (the words that
+/// would give those marks), and drawing a word makes the chance of a bucket its
+/// size over all the words, so the bucket that keeps the most words is the
+/// likeliest and the player is nudged towards bad luck. The all-green bucket is
+/// the guess alone, so it comes up with a chance of 1 in however many words are
+/// left.
+List<Mark> mastermindReply(List<String> words, String guess, Random rng) =>
+    words.isEmpty
+    ? evaluate(guess, guess)
+    : evaluate(words[rng.nextInt(words.length)], guess);
+
+/// What the mastermind answers to [guess] in its largest-pool variant: the marks
+/// of the bucket (the words that would give them) that keeps the most of
+/// [words]. It has no chance in it, so a player can work it out. A tie goes to
+/// the bucket with the fewest greens, then the fewest yellows, then the marks
+/// that come first (green, yellow, grey), so the all-green bucket (the guess
+/// alone) is only chosen when it is the only one left.
+List<Mark> mastermindLargest(List<String> words, String guess) {
+  if (words.isEmpty) return evaluate(guess, guess);
+  final sizes = <String, int>{};
+  final marks = <String, List<Mark>>{};
+  for (final w in words) {
+    final m = evaluate(w, guess);
+    final k = m.map((x) => x.index).join();
+    sizes[k] = (sizes[k] ?? 0) + 1;
+    marks[k] = m;
+  }
+  int count(String k, Mark x) => marks[k]!.where((m) => m == x).length;
+  final best = sizes.keys.reduce((a, b) {
+    if (sizes[a] != sizes[b]) return sizes[a]! > sizes[b]! ? a : b;
+    final g = count(a, Mark.correct) - count(b, Mark.correct);
+    if (g != 0) return g < 0 ? a : b;
+    final y = count(a, Mark.present) - count(b, Mark.present);
+    if (y != 0) return y < 0 ? a : b;
+    return a.compareTo(b) <= 0 ? a : b;
+  });
+  return marks[best]!;
 }
 
 /// One hidden word and what the guesses made so far say about it.

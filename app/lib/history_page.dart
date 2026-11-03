@@ -91,7 +91,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Future<void> _open(GameRow g) async {
     final lang = _langs[g.lang];
-    // an equations game has nothing to review
+    // an equations or mastermind game has nothing to review
     if (lang == null || _opening || !g.mode.scored) return;
     setState(() {
       _opening = true;

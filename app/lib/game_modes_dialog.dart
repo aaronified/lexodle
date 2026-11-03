@@ -150,7 +150,12 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          !mode.hasDaily
+                          mode == GameMode.mastermind
+                              ? 'no daily in this mode. the word is not chosen: '
+                                    'it answers each guess as one of the words still '
+                                    'possible would. you win by guessing the one '
+                                    'left. there is no limit on guesses.'
+                              : !mode.hasDaily
                               ? 'no daily in this mode. themed wordles accept only '
                                     'the words of the theme, in english: no ordinary words.'
                               : mode == GameMode.equations
@@ -203,6 +208,36 @@ class _GameModesDialogState extends State<GameModesDialog> {
                             ),
                           ),
                         ],
+                        if (mode == GameMode.mastermind) ...[
+                          const SizedBox(height: 16),
+                          const Caption('pool choice'),
+                          const SizedBox(height: 10),
+                          StepperChoice<bool>(
+                            key: const ValueKey('largest-choice'),
+                            semanticLabel: 'pool choice',
+                            items: const [
+                              (false, 'random', 'bigger pools are likelier'),
+                              (true, 'largest', 'always the biggest pool'),
+                            ],
+                            selected: appState.mastermindLargest,
+                            onChanged: (on) =>
+                                appState.setup(mastermindLargest: on),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            appState.mastermindLargest
+                                ? 'every reply keeps the most words, with no '
+                                      'chance in it, so it can be worked out. '
+                                      'ties go to the fewest greens, then yellows.'
+                                : 'a reply is drawn at random, the pools with '
+                                      'more words likelier.',
+                            key: const ValueKey('largest-note'),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: c.onSurface.withValues(alpha: dimAlpha),
+                            ),
+                          ),
+                        ],
                         if (lang != null) ...[
                           const SizedBox(height: 24),
                           const Caption('difficulty'),
@@ -220,6 +255,16 @@ class _GameModesDialogState extends State<GameModesDialog> {
                               available: Equations.counts[appState.eqLength],
                               onChanged: (t, n) =>
                                   appState.setup(tries: t, eqLength: n),
+                            )
+                          else if (mode == GameMode.mastermind)
+                            DifficultyMatrix(
+                              key: const ValueKey('mastermind-matrix'),
+                              tries: 0,
+                              levels: const [('endless', 0)],
+                              length: length,
+                              lengths: lang.lengths,
+                              available: lang.counts[length],
+                              onChanged: (_, n) => appState.setup(length: n),
                             )
                           else if (mode == GameMode.blind)
                             DifficultyMatrix(
@@ -273,8 +318,8 @@ class _GameModesDialogState extends State<GameModesDialog> {
                                   appState.setup(tries: t, length: n),
                             ),
                         ],
-                        // equations have no word to draw and no helper
-                        if (!mode.isEquations) ...[
+                        // the two have no word to draw and no helper
+                        if (!mode.endless && !mode.isEquations) ...[
                           const SizedBox(height: 24),
                           const Caption('word draw'),
                           const SizedBox(height: 10),

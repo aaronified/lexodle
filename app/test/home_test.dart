@@ -125,7 +125,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.lockdown);
-      // blind and equations have a daily; themed (last) has none
+      // blind and equations have a daily; mastermind and themed (last) none
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.blind);
@@ -134,6 +134,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.equations);
       expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.mastermind);
+      expect(find.byKey(const ValueKey('daily-button')), findsNothing);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.themed);
@@ -150,7 +154,7 @@ void main() {
     testWidgets('themed is not in the loop in another language', (
       tester,
     ) async {
-      appState.setup(lang: 'fr', mode: GameMode.equations);
+      appState.setup(lang: 'fr', mode: GameMode.mastermind);
       await home(tester);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
