@@ -42,7 +42,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     // the one app state is shared by every test of the file
     appState
-      ..autoUpdateCheck = false
+      ..autoUpdateCheck = true
       ..lastUpdateCheck = null
       ..latestRelease = null;
   });
@@ -354,37 +354,46 @@ void main() {
       ),
     );
 
-    test('is off until chosen', () async {
+    test('is on unless switched off', () async {
       await appState.load();
-      expect(appState.autoUpdateCheck, isFalse);
+      expect(appState.autoUpdateCheck, isTrue);
+      appState.setAutoUpdateCheck(false);
       final check = FixedReleaseCheck(found);
-      await checkForUpdateAtLaunch(check: check, supported: true);
+      expect(
+        await checkForUpdateAtLaunch(check: check, supported: true),
+        isNull,
+      );
       expect(check.asked, 0);
     });
 
     test(
-      'once on, checks at most once a day, and remembers what it found',
+      'checks every launch, remembers what it found and says the version',
       () async {
         await appState.load();
-        appState.setAutoUpdateCheck(true);
         final check = FixedReleaseCheck(found);
-        await checkForUpdateAtLaunch(check: check, supported: true);
+        expect(
+          await checkForUpdateAtLaunch(check: check, supported: true),
+          '9.9.9',
+        );
         expect(check.asked, 1);
         expect(appState.latestRelease, '9.9.9');
         await checkForUpdateAtLaunch(check: check, supported: true);
-        expect(check.asked, 1, reason: 'under a day later');
-        await checkForUpdateAtLaunch(
-          check: check,
-          supported: true,
-          now: DateTime.now().add(const Duration(hours: 25)),
-        );
-        expect(check.asked, 2);
+        expect(check.asked, 2, reason: 'each time the app opens');
       },
     );
 
+    test('up to date says nothing', () async {
+      await appState.load();
+      final check = FixedReleaseCheck(const UpToDate());
+      expect(
+        await checkForUpdateAtLaunch(check: check, supported: true),
+        isNull,
+      );
+      expect(appState.latestRelease, isNull);
+    });
+
     test('a failed check does not count, so the next launch tries', () async {
       await appState.load();
-      appState.setAutoUpdateCheck(true);
       final check = FixedReleaseCheck(const CheckFailed(CheckFailure.offline));
       await checkForUpdateAtLaunch(check: check, supported: true);
       await checkForUpdateAtLaunch(check: check, supported: true);
@@ -393,7 +402,6 @@ void main() {
 
     test('does nothing where nothing can be installed', () async {
       await appState.load();
-      appState.setAutoUpdateCheck(true);
       final check = FixedReleaseCheck(found);
       await checkForUpdateAtLaunch(check: check, supported: false);
       expect(check.asked, 0);
@@ -401,11 +409,11 @@ void main() {
 
     test('the switch and the last answer are kept', () async {
       await appState.load();
-      appState.setAutoUpdateCheck(true);
+      appState.setAutoUpdateCheck(false);
       appState.noteUpdateCheck(latest: '9.9.9');
       final again = AppState();
       await again.load();
-      expect(again.autoUpdateCheck, isTrue);
+      expect(again.autoUpdateCheck, isFalse);
       expect(again.latestRelease, '9.9.9');
       expect(again.lastUpdateCheck, isNotNull);
     });
@@ -486,10 +494,10 @@ void main() {
         installer: const NullApkInstaller(),
       );
       await show(tester, c);
-      expect(appState.autoUpdateCheck, isFalse);
+      expect(appState.autoUpdateCheck, isTrue);
       await tester.tap(find.byKey(const ValueKey('update-auto')));
       await tester.pump();
-      expect(appState.autoUpdateCheck, isTrue);
+      expect(appState.autoUpdateCheck, isFalse);
     });
 
     group('the backup made by itself before it installs', () {

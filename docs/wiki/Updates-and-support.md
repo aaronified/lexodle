@@ -17,8 +17,9 @@ version and has:
   cancelled, and one that goes quiet for a minute counts as failed.
   The download is kept: if Android's installer is closed, **install** opens it again on the same file
   (when its checksum matches GitHub's) with no second download.
-- **check automatically**: off until you choose it. When on, the app looks once a day, when it opens,
-  and remembers what it found. Each check is a request to GitHub, which is why it is off by default.
+- **check automatically**: on unless you switch it off. The app looks each time it opens, remembers
+  what it found, and says in a toast when a newer version is out, with an underlined link that
+  saves a backup and downloads it. Each check is one request to GitHub.
 
 Releases are built by a workflow when a version tag like `v0.1.2` is pushed (or when it is run by hand
 from the Actions tab with a version such as `0.1.5`, which makes the tag on `main` first), and signed with the
