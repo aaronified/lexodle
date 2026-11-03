@@ -11,19 +11,43 @@ enum GameMode {
   relay('relay race', 'four words, one after the other', 4, 4),
   lockdown('lockdown', 'greens lock · bad words cost hearts', 1, 0),
   themed('themed', 'words of a theme only · english', 1, 0),
-  blind('blind', 'only counts, no tile colours', 1, 0);
+  blind('blind', 'only counts, no tile colours', 1, 0),
+  // the two last were added after the others: a saved game or setting keeps its
+  // mode by position, so the order here must not change
+  equations('equations', 'nerdle: find the sum', 1, 0),
+  mastermind('mastermind', 'the word dodges you · no limit', 1, 0);
 
   const GameMode(this.label, this.sub, this.boards, this.extraTries);
 
   /// The modes of a swipe, in order, for the language [lang]: every mode, and
-  /// themed only in English.
+  /// themed (the last) only in English.
   static List<GameMode> loopFor(String lang) => [
-    for (final m in values)
+    for (final m in [
+      classic,
+      quartet,
+      relay,
+      lockdown,
+      blind,
+      equations,
+      mastermind,
+      themed,
+    ])
       if (m != themed || lang == 'en') m,
   ];
 
-  /// Whether the mode has a daily: every mode but themed.
-  bool get hasDaily => this != themed;
+  /// Whether the mode has a daily: every mode but themed and mastermind.
+  bool get hasDaily => this != themed && this != mastermind;
+
+  /// Whether the guesses have skill and luck scores, and so a review: not the
+  /// equations, nor the mastermind (there is no answer to measure against).
+  bool get scored => this != equations && this != mastermind;
+
+  /// Whether the answers are equations, not words.
+  bool get isEquations => this == equations;
+
+  /// Whether the game has no tries to run out of (the word dodges for as long
+  /// as it can, so the guesses are the score).
+  bool get endless => this == mastermind;
   final String label;
   final String sub;
 
@@ -159,6 +183,18 @@ List<String> chooseTargets(
   }
   return bestSet!;
 }
+
+/// What the mastermind answers to [guess]: the marks one of the [words] still
+/// possible would give, drawn at random. A reply is a bucket (the words that
+/// would give those marks), and drawing a word makes the chance of a bucket its
+/// size over all the words, so the bucket that keeps the most words is the
+/// likeliest and the player is nudged towards bad luck. The all-green bucket is
+/// the guess alone, so it comes up with a chance of 1 in however many words are
+/// left.
+List<Mark> mastermindReply(List<String> words, String guess, Random rng) =>
+    words.isEmpty
+    ? evaluate(guess, guess)
+    : evaluate(words[rng.nextInt(words.length)], guess);
 
 /// One hidden word and what the guesses made so far say about it.
 class Board {

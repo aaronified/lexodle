@@ -240,7 +240,7 @@ void main() {
         ('helper', 4),
         ('helper', -1),
         ('helper', 'full'),
-        ('mode', 6),
+        ('mode', 8),
         ('blindTries', 0),
         ('blindTries', 21),
         ('mode', -1),

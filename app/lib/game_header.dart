@@ -42,4 +42,9 @@ String gameTitleText({
   required String date,
   required int length,
   required int tries,
-}) => date.isNotEmpty ? date : '$length · $tries tries';
+  bool endless = false,
+}) => date.isNotEmpty
+    ? date
+    : endless
+    ? '$length · no limit'
+    : '$length · $tries tries';

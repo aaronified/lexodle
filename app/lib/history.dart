@@ -498,7 +498,7 @@ class History {
   /// Games whose cached numbers are from an older [metricsVersion].
   List<GameRow> stale() => [
     for (final g in games)
-      if (g.version != metricsVersion) g,
+      if (g.version != metricsVersion && g.mode.scored) g,
   ];
 
   /// Replaces the numbers of game [id] with [rows] (worked out afresh), under

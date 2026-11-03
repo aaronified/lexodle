@@ -37,6 +37,7 @@ class WordBank {
     this.curveOrigin = defaultCurveOrigin,
     this.curveWidth = defaultCurveWidth,
     this.curveFloor = 1,
+    this.anyChar = false,
   });
 
   /// A bank of other words than a language's list (the places of the themed
@@ -48,6 +49,7 @@ class WordBank {
     Map<int, List<int>> weights, {
     required double curveOrigin,
     required double curveWidth,
+    bool anyChar = false,
   }) : this._(
          language,
          words,
@@ -55,7 +57,12 @@ class WordBank {
          {for (final l in words.values) ...l},
          curveOrigin: curveOrigin,
          curveWidth: curveWidth,
+         anyChar: anyChar,
        );
+
+  /// Whether the words are made of any characters (the equations), so no
+  /// language's alphabet applies to them.
+  final bool anyChar;
 
   final Language language;
   final Map<int, List<String>> _words;
@@ -89,6 +96,7 @@ class WordBank {
       curveOrigin: curveOrigin,
       curveWidth: curveWidth,
       curveFloor: curveFloor,
+      anyChar: anyChar,
     );
   }
 
@@ -168,7 +176,7 @@ class WordBank {
   Set<String> letters(int length) => {
     for (final w in _words[length] ?? const <String>[])
       for (final ch in w.split(''))
-        if (language.code != 'en' || _plain.hasMatch(ch)) ch,
+        if (anyChar || language.code != 'en' || _plain.hasMatch(ch)) ch,
   };
 
   static final _plain = RegExp('[a-z]');
@@ -179,7 +187,7 @@ class WordBank {
   /// typed without it: `cafe` is `café` when `cafe` is not itself a word. Any
   /// other typed word is itself.
   String resolve(String typed) {
-    if (language.code != 'en' || valid.contains(typed)) return typed;
+    if (anyChar || language.code != 'en' || valid.contains(typed)) return typed;
     final folds = _folds ??= {
       for (final w in valid)
         if (!RegExp(r'^[a-z]+$').hasMatch(w))

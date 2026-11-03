@@ -14,6 +14,7 @@ import 'difficulty.dart';
 import 'history.dart';
 import 'learn_log.dart';
 import 'medal.dart';
+import 'equations.dart' show equationLengths;
 import 'modes.dart';
 import 'playstyle.dart';
 import 'words.dart';
@@ -489,6 +490,12 @@ const _quartetOnly = {GameMode.quartet};
 const _relayOnly = {GameMode.relay};
 const _lockdownOnly = {GameMode.lockdown};
 const _blindOnly = {GameMode.blind};
+const _equationsOnly = {GameMode.equations};
+const _mastermindOnly = {GameMode.mastermind};
+
+/// Every game counts as a game played and won, the two new modes too. The other
+/// achievements that read a word's length or its skill stay with [_anyMode].
+const _everyMode = {..._anyMode, GameMode.equations, GameMode.mastermind};
 
 /// The achievement with [id], or null for one this version does not have.
 Achievement? achievementById(String id) {
@@ -1031,6 +1038,94 @@ final achievements = <Achievement>[
     mode: GameMode.blind,
   ),
   Achievement.leveled(
+    'equation_wins',
+    'calculator',
+    'sum total',
+    (n) => n == 1 ? 'win an equations game' : 'win $n equations games',
+    'equationWins',
+    _lv(
+      [1, 10, 50, 200],
+      ['it adds up', 'number cruncher', 'mathematician', 'grand theorem'],
+    ),
+    mode: GameMode.equations,
+  ),
+  Achievement.leveled(
+    'equation_quick',
+    'bulb',
+    'mental arithmetic',
+    (n) => n == 1
+        ? 'win an equations game in 4 guesses or fewer'
+        : 'win an equations game in 4 guesses or fewer $n times',
+    'equationQuick',
+    _lv(
+      [1, 5, 20, 50],
+      ['quick sum', 'mental maths', 'human calculator', 'prodigy'],
+    ),
+    mode: GameMode.equations,
+  ),
+  Achievement.leveled(
+    'equation_last',
+    'hourglass',
+    'equal at last',
+    (n) => n == 1
+        ? 'win an equations game on your last try'
+        : 'win an equations game on your last try $n times',
+    'equationLast',
+    _lv(
+      [1, 5, 15, 40],
+      ['just balanced', 'by a digit', 'last digit', 'against the sum'],
+    ),
+    mode: GameMode.equations,
+  ),
+  Achievement.leveled(
+    'equation_fast',
+    'bolt',
+    'equation speed',
+    (n) => 'win an equations game in $n guesses or fewer',
+    'fastestEquation',
+    _lv([5, 4, 3, 2], ['quick sum', 'sharp sum', 'fast sum', 'in a flash']),
+    hit: (r, t) => r.won && r.used <= t,
+    smaller: true,
+    mode: GameMode.equations,
+  ),
+  Achievement.leveled(
+    'mastermind_wins',
+    'ghost',
+    'caught the ghost',
+    (n) => n == 1 ? 'win a mastermind game' : 'win $n mastermind games',
+    'mastermindWins',
+    _lv(
+      [1, 5, 20, 50],
+      ['cornered', 'ghost hunter', 'mastermind', 'unshakeable'],
+    ),
+    mode: GameMode.mastermind,
+  ),
+  Achievement.leveled(
+    'mastermind_quick',
+    'bulb',
+    'no place to hide',
+    (n) => n == 1
+        ? 'win a mastermind game in 4 guesses or fewer'
+        : 'win a mastermind game in 4 guesses or fewer $n times',
+    'mastermindQuick',
+    _lv(
+      [1, 5, 15, 40],
+      ['no place to hide', 'short chase', 'quick catch', 'inescapable'],
+    ),
+    mode: GameMode.mastermind,
+  ),
+  Achievement.leveled(
+    'mastermind_fast',
+    'bolt',
+    'mastermind speed',
+    (n) => 'win a mastermind game in $n guesses or fewer',
+    'fastestMastermind',
+    _lv([6, 5, 4, 3], ['swift catch', 'sharp catch', 'fast catch', 'blink']),
+    hit: (r, t) => r.won && r.used <= t,
+    smaller: true,
+    mode: GameMode.mastermind,
+  ),
+  Achievement.leveled(
     'chameleon',
     'replace',
     'chameleon',
@@ -1146,6 +1241,27 @@ final achievements = <Achievement>[
     separate: true,
     icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
     mode: GameMode.blind,
+  ),
+  Achievement.leveled(
+    'equations_streak',
+    'campfire',
+    'equations streak',
+    (n) => 'solve the equations daily $n days in a row',
+    'streakEquations',
+    _lv(
+      [3, 10, 30, 100],
+      [
+        'equations kindling',
+        'equations campfire',
+        'equations furnace',
+        'equations phoenix',
+      ],
+    ),
+    hit: (r, t) =>
+        r.daily && r.mode == GameMode.equations && r.dailyStreak == t,
+    separate: true,
+    icons: const ['candle', 'campfire', 'temperature-plus', 'butterfly'],
+    mode: GameMode.equations,
   ),
   // Learn mode (see learnMetrics): kept once for the player, whatever the
   // language. Free practice shows the answer, so what it counts has to be about
@@ -1489,9 +1605,9 @@ Metric _style(String id) =>
 /// Every metric an achievement reads. The ones that count languages are not
 /// here: they are given to [advanceAchievements] (see [_globalMetrics]).
 final metrics = <String, Metric>{
-  'wins': _count(_anyMode, (r) => r.won),
-  'played': _count(_anyMode, (r) => true),
-  'streak': Metric(_anyMode, (st, r) {
+  'wins': _count(_everyMode, (r) => r.won),
+  'played': _count(_everyMode, (r) => true),
+  'streak': Metric(_everyMode, (st, r) {
     st.progress = r.won ? st.progress + 1 : 0;
     return _best(st.value, st.progress.toDouble());
   }),
@@ -1582,6 +1698,17 @@ final metrics = <String, Metric>{
   'blindLuck': _most(_blindOnly, (r) => r.won ? r.luck : null),
   'streakLockdown': _dailyStreak(GameMode.lockdown),
   'streakBlind': _dailyStreak(GameMode.blind),
+  'streakEquations': _dailyStreak(GameMode.equations),
+  'equationWins': _count(_equationsOnly, (r) => r.won),
+  'equationQuick': _count(_equationsOnly, (r) => r.won && r.used <= 4),
+  'equationLast': _count(
+    _equationsOnly,
+    (r) => r.won && r.used == r.tries && r.tries >= 4,
+  ),
+  'fastestEquation': _fastest(_equationsOnly),
+  'mastermindWins': _count(_mastermindOnly, (r) => r.won),
+  'mastermindQuick': _count(_mastermindOnly, (r) => r.won && r.used <= 4),
+  'fastestMastermind': _fastest(_mastermindOnly),
   for (final p in playstyles) 'style_${p.id}': _style(p.id),
   'styleChanges': _count(_anyMode, (r) => r.styleChanged),
   'stylesWorn': Metric(
@@ -1926,6 +2053,9 @@ class AppState extends ChangeNotifier {
 
   /// The tries of a blind game: one of [blindTriesLevels].
   int blindTries = 10;
+
+  /// The length of an equation, in tiles: one of [equationLengths].
+  int eqLength = 8;
 
   /// Whether a blind game marks what its counts settle and keeps the colours
   /// the player pencils possible. Off, the player marks whatever they like.
@@ -2545,6 +2675,8 @@ class AppState extends ChangeNotifier {
         final bt = p.getInt('blindTries');
         if (bt != null && blindTriesLevels.any((b) => b.$2 == bt))
           blindTries = bt;
+        final el = p.getInt('eqLength');
+        if (el != null && equationLengths.contains(el)) eqLength = el;
         blindAssist = p.getBool('blindAssist') ?? true;
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
         lastRunVersion = p.getString('lastRunVersion');
@@ -2967,6 +3099,7 @@ class AppState extends ChangeNotifier {
         _w('draw', p.setInt('draw', draw.index));
         _w('hearts', p.setInt('hearts', hearts));
         _w('blindTries', p.setInt('blindTries', blindTries));
+        _w('eqLength', p.setInt('eqLength', eqLength));
         _w('blindAssist', p.setBool('blindAssist', blindAssist));
         _w('helper', p.setInt('helper', helper.index));
         _w('mode', p.setInt('mode', mode.index));
@@ -2998,6 +3131,7 @@ class AppState extends ChangeNotifier {
     Draw? draw,
     int? hearts,
     int? blindTries,
+    int? eqLength,
     bool? blindAssist,
     Helper? helper,
     GameMode? mode,
@@ -3014,6 +3148,9 @@ class AppState extends ChangeNotifier {
     }
     if (blindTries != null && blindTriesLevels.any((b) => b.$2 == blindTries)) {
       this.blindTries = blindTries;
+    }
+    if (eqLength != null && equationLengths.contains(eqLength)) {
+      this.eqLength = eqLength;
     }
     this.blindAssist = blindAssist ?? this.blindAssist;
     this.helper = helper ?? this.helper;
@@ -3035,6 +3172,7 @@ class AppState extends ChangeNotifier {
       _w('draw', _prefs?.setInt('draw', this.draw.index));
       _w('hearts', _prefs?.setInt('hearts', this.hearts));
       _w('blindTries', _prefs?.setInt('blindTries', this.blindTries));
+      _w('eqLength', _prefs?.setInt('eqLength', this.eqLength));
       _w('blindAssist', _prefs?.setBool('blindAssist', this.blindAssist));
       _w('helper', _prefs?.setInt('helper', this.helper.index));
       _w('mode', _prefs?.setInt('mode', this.mode.index));

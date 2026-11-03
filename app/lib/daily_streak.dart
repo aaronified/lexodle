@@ -210,7 +210,8 @@ String _streakIcon(GameMode mode, int streak) {
     GameMode.relay => 'relay_streak',
     GameMode.lockdown => 'lockdown_streak',
     GameMode.blind => 'blind_streak',
-    GameMode.themed => 'daily_streak',
+    GameMode.equations => 'equations_streak',
+    GameMode.themed || GameMode.mastermind => 'daily_streak',
   };
   final a = achievementById(id);
   if (a == null) return 'flame';

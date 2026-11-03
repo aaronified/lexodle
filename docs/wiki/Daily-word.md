@@ -22,7 +22,8 @@ everyone, with 9 tries (quartet) and 10 (relay). As in any other game, a word ma
 with an earlier one with a 10% chance, and a word with a letter twice counts as sharing one (before
 2026-11-01 the words shared none, which favoured words with a letter twice). The **lockdown** daily
 is a single word with 6 tries and 5 hearts. The **blind** daily is a single word with 10 tries,
-played by the counts alone. The mode in view on the
+played by the counts alone. The **equations** daily is one 8-tile equation with 6 tries, the same in
+every language. **Mastermind** and themed have no daily. The mode in view on the
 home page, which you change with its chevrons or by swiping, decides which daily the daily button
 plays. Each mode has its own streak, calendar and best. It is saved as you go, so closing the page
 cannot reroll it, and it is played once a day.

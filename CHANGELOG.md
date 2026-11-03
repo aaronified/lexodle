@@ -7,6 +7,28 @@ it to the version.
 
 ## Unreleased
 
+- new mode: equations (nerdle), with a daily
+  Guess a true equation of 6, 7 or 8 tiles: digits and + − × ÷ =, one = with a
+  sum on the left and a whole number on the right, no leading zeros and no lone
+  0. The colours work as in classic. The daily is 8 tiles, 6 tries, the same in
+  every language. It has no skill, luck or review; it has achievements of its
+  own (wins, quick wins, last try, speed and a daily streak).
+
+- new mode: mastermind (absurdle), no daily
+  The word is not chosen: every guess is answered as a word still possible
+  would answer it, picked at random, so the reply that keeps the most words is
+  the likeliest and the game runs long. Win by guessing the word that is left.
+  There is no limit on guesses. No skill, luck or review; it has achievements
+  for wins and for short games.
+
+- the modes swipe: blind after lockdown, themed last
+  The order is classic, quartet, relay, lockdown, blind, equations, mastermind
+  and themed (English only). Saved games and settings are not affected.
+
+- blind: double tap on the counts locks the pencilled greens
+  The guesses of a blind game cycle their colour on a tap, so they cannot lock;
+  the counts do instead, as the board does in the other modes.
+
 - the end panel scrolls and moves with it
   Scroll the text up and the panel rises, to three quarters of the screen, then
   the text scrolls; scroll down and the text returns to the top, then the panel

@@ -68,6 +68,21 @@ that anyone can open to play your word as practice; nothing is saved or counted.
 lightly disguised in the link (four digits a letter), not secret. The app opens these links itself
 on Android. None of the three has a daily.
 
+The home swipe goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
+(English only) themed, and round again. In **blind**, a double tap on the counts locks every green
+you have pencilled into the row you are typing (the guesses themselves cannot lock: a tap on them
+cycles their colour).
+
+**Equations** is nerdle: the tiles are digits and signs, `0`-`9` and `+ − × ÷ =`, and a guess has to be a
+true equation with one `=`, a sum on the left and one whole number on the right, read with the usual
+order of operations (no leading zeros, no sign in front of a number, and no lone 0, so `10` is fine).
+The colours work as in classic. It has 6, 7 or 8 tiles and the tries of the difficulty (6 by default),
+and no helper, skill or review. It has a **daily**: 8 tiles, 6 tries, the same equation in every
+language. **Mastermind** is an absurdle: no word is chosen. Each guess is answered as a word still
+possible would answer it, picked at random, so the reply that keeps the most words is the likeliest
+and the game is nudged to run long. You win by guessing the word that is left; there are no tries to
+run out of, so the guesses are the score. It has no daily, helper, skill or review.
+
 ## The helper and the review
 
 The **helper** setting chooses what the game tells you while you play: *off*, *skill only*,
