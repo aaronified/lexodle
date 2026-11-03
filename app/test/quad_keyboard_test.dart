@@ -94,4 +94,30 @@ void main() {
     await tester.tap(find.text('a'));
     expect(typed, ['a']);
   });
+
+  for (final b in Brightness.values) {
+    testWidgets('the letter on a split key is ringed by shadow of the opposite '
+        'colour, to read on any colour (${b.name})', (tester) async {
+      await tester.pumpWidget(
+        board({
+          'a': [Mark.correct, Mark.present, Mark.present, Mark.correct],
+        }, b),
+      );
+      final letter = tester.widget<Text>(find.text('a'));
+      final style = letter.style!;
+      expect(style.shadows!.length, greaterThanOrEqualTo(8));
+      // all round the letter, not to one side
+      final offsets = {for (final s in style.shadows!) s.offset};
+      expect(offsets.any((o) => o.dx < 0), isTrue);
+      expect(offsets.any((o) => o.dx > 0), isTrue);
+      expect(offsets.any((o) => o.dy < 0), isTrue);
+      expect(offsets.any((o) => o.dy > 0), isTrue);
+      final halo = style.shadows!.first.color;
+      expect(
+        halo.computeLuminance() > .5,
+        isNot(style.color!.computeLuminance() > .5),
+        reason: 'the opposite of the letter',
+      );
+    });
+  }
 }
