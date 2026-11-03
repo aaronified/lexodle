@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- learn has a strategy guide for the mode you have selected
+  Every mode has one: how to play it well. The word drills stay for the modes
+  that play single words with the usual colours (classic, quartet, relay,
+  lockdown, mastermind); equations, blind and themed show the guide alone.
+  The learn button in game modes now works in every mode.
+
 - every game has a help button with the rules of its mode
   At the top right, daily games too: the rules and colours of the mode, then
   typing, spaces (blanks), locks and what a daily is.

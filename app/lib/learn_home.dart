@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'learn_guide.dart';
 import 'learn_log.dart';
+import 'modes.dart';
 import 'main.dart';
 import 'routes.dart';
 import 'ui.dart';
@@ -19,6 +21,8 @@ class LearnHomePage extends StatelessWidget {
       listenable: appState,
       builder: (context, _) {
         final c = Theme.of(context).colorScheme;
+        final mode = appState.mode;
+        final fits = learnDrillsFit(mode);
         final length = appState.length;
         final lang = bank.language.name.toLowerCase();
         final log = appState.learnLog;
@@ -33,7 +37,9 @@ class LearnHomePage extends StatelessWidget {
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
-                    'learn · $lang · $length',
+                    mode == GameMode.classic
+                        ? 'learn · $lang · $length'
+                        : 'learn · ${mode.label}',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                   ),
@@ -61,55 +67,104 @@ class LearnHomePage extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 14),
-                    _lesson(
-                      context,
-                      'the opening',
-                      'the best first guess, then the best second guess for '
-                          'each colour it can show',
-                      Routes.learnOpening,
+                    // how to play the mode in view well, for every mode
+                    OutlinedButton(
+                      key: const ValueKey('learn-card-guide'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                        side: BorderSide(color: c.outline),
+                        shape: const RoundedRectangleBorder(),
+                        alignment: Alignment.centerLeft,
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => ModeGuidePage(mode: mode),
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${mode.label}: how to play it well',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              'strategy for the mode you have selected',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: c.onSurface.withValues(alpha: dimAlpha),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    _lesson(
-                      context,
-                      'the styles',
-                      'the three habits of the opening and the two of the end, '
-                          'and luck, explained',
-                      Routes.learnStyles,
-                      key: 'learn-card-styles',
-                    ),
-                    _card(
-                      context,
-                      LearnKind.free,
-                      'practise a word',
-                      'the answer is shown. find the best guess at each step',
-                      Routes.learnFree,
-                      log,
-                    ),
-                    _card(
-                      context,
-                      LearnKind.choose,
-                      'choose the best',
-                      'ten positions, four words each: which splits the rest best',
-                      Routes.learnChoose,
-                      log,
-                    ),
-                    _card(
-                      context,
-                      LearnKind.closing,
-                      'closing',
-                      'ten endgames: few words left, few tries. which guess '
-                          'wins in time',
-                      Routes.learnClosing,
-                      log,
-                    ),
-                    _card(
-                      context,
-                      LearnKind.sequence,
-                      'three words',
-                      'find three words to play first that tell the answers '
-                          'apart best',
-                      Routes.learnSequence,
-                      log,
-                    ),
+                    const SizedBox(height: 10),
+                    if (!fits)
+                      const Caption(
+                        'the word drills (the opening, practice, choose the '
+                        'best, closing, three words) teach single words with '
+                        'the usual colours. choose another mode in game modes '
+                        'to use them.',
+                      ),
+                    if (fits) ...[
+                      _lesson(
+                        context,
+                        'the opening',
+                        'the best first guess, then the best second guess for '
+                            'each colour it can show',
+                        Routes.learnOpening,
+                      ),
+                      _lesson(
+                        context,
+                        'the styles',
+                        'the three habits of the opening and the two of the end, '
+                            'and luck, explained',
+                        Routes.learnStyles,
+                        key: 'learn-card-styles',
+                      ),
+                      _card(
+                        context,
+                        LearnKind.free,
+                        'practise a word',
+                        'the answer is shown. find the best guess at each step',
+                        Routes.learnFree,
+                        log,
+                      ),
+                      _card(
+                        context,
+                        LearnKind.choose,
+                        'choose the best',
+                        'ten positions, four words each: which splits the rest best',
+                        Routes.learnChoose,
+                        log,
+                      ),
+                      _card(
+                        context,
+                        LearnKind.closing,
+                        'closing',
+                        'ten endgames: few words left, few tries. which guess '
+                            'wins in time',
+                        Routes.learnClosing,
+                        log,
+                      ),
+                      _card(
+                        context,
+                        LearnKind.sequence,
+                        'three words',
+                        'find three words to play first that tell the answers '
+                            'apart best',
+                        Routes.learnSequence,
+                        log,
+                      ),
+                    ],
                   ],
                 ),
               ),

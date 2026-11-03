@@ -488,12 +488,10 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           width: double.infinity,
                           child: OutlinedButton(
                             key: const ValueKey('settings-learn'),
-                            onPressed: _themedOrBlind(mode)
-                                ? null
-                                : () => Navigator.pushReplacementNamed(
-                                    context,
-                                    Routes.learn,
-                                  ),
+                            onPressed: () => Navigator.pushReplacementNamed(
+                              context,
+                              Routes.learn,
+                            ),
                             child: const Text('learn: get better at guessing'),
                           ),
                         ),
