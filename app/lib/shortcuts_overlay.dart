@@ -41,7 +41,7 @@ const shortcutGroups = <(String, List<(String, String)>)>[
       ('swipe right to left on the row', 'erase the row being typed'),
       ('blind: tap a guess letter', 'pencil a colour: green, yellow, grey'),
       ('blind: double tap the counts', 'lock the pencilled greens'),
-      ('swipe the mode button', 'turn through the modes'),
+      ('swipe the mode button', 'turn through the modes, three to a drag'),
       ('drag the end panel', 'raise or lower it'),
     ],
   ),

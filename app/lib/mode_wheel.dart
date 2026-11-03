@@ -1,10 +1,12 @@
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 
+import 'haptics.dart';
 import 'modes.dart';
 import 'ui.dart';
 
-/// How far a drag must go, in logical pixels, to change the mode on release.
-const modeSwipeDistance = 50.0;
+/// How many modes a drag across the whole button turns.
+const modeDetents = 3;
 
 /// A fling faster than this (logical pixels a second) changes the mode too.
 const modeSwipeSpeed = 700.0;
@@ -67,25 +69,37 @@ class ModeSwitch extends StatefulWidget {
 
 class _ModeSwitchState extends State<ModeSwitch>
     with SingleTickerProviderStateMixin {
-  /// How far the mode on show is dragged, in pixels: the next mode comes in
-  /// from the side the finger is going, as wide as the button, and the pair
-  /// follows the finger.
-  double _dx = 0;
+  /// How far the finger has gone, in pixels (left is negative), and where the
+  /// ratchet is as a result, in modes: a drag of [modeDetents] detents across the
+  /// button, one mode to each, so a full drag turns three. The face follows the
+  /// finger inside a detent and takes the next mode as one is crossed, with a
+  /// tick, as a ratchet does.
+  double _acc = 0;
+  double _pos = 0;
+  int _ticked = 0;
   double _width = 1;
   double _from = 0, _to = 0;
   bool _busy = false;
   bool _moved = false;
   late final AnimationController _anim = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 220),
+    duration: const Duration(milliseconds: 180),
   );
+
+  /// How far a finger goes for one mode, in pixels.
+  double get _detent => _width / modeDetents;
+
+  /// The mode the ratchet is on now: the one it was on, moved by the detents
+  /// passed.
+  GameMode get _shown =>
+      ModeSwitch.step(widget.mode, _pos.round(), lang: widget.lang);
 
   @override
   void initState() {
     super.initState();
     _anim.addListener(() {
       final t = Curves.easeOutCubic.transform(_anim.value);
-      setState(() => _dx = _from + (_to - _from) * t);
+      setState(() => _setPos(_from + (_to - _from) * t));
     });
   }
 
@@ -95,57 +109,61 @@ class _ModeSwitchState extends State<ModeSwitch>
     super.dispose();
   }
 
-  /// Slides to the mode [by] along the loop (+1 next, -1 previous), then
-  /// reports it.
-  void _step(int by) {
-    if (_busy) return;
+  /// Moves the ratchet to [p] detents, with a tick for each one crossed.
+  void _setPos(double p) {
+    _pos = p;
+    final k = p.round();
+    if (k != _ticked) {
+      _ticked = k;
+      Haptics.fire(Haptic.tap);
+    }
+  }
+
+  /// Runs the ratchet on to [target] detents, then reports the mode it lands on.
+  void _goTo(int target) {
+    // nothing to run on from a ratchet at rest (a tap that cancelled a drag)
+    if (_busy || (target == 0 && _pos == 0)) return;
     _busy = true;
-    _from = _dx;
-    _to = by > 0 ? -_width : _width;
+    _from = _pos;
+    _to = target.toDouble();
     _anim.forward(from: 0).then((_) {
       if (!mounted) return;
       setState(() {
-        _dx = 0;
+        _pos = 0;
+        _ticked = 0;
         _busy = false;
       });
-      widget.onChanged(ModeSwitch.step(widget.mode, by, lang: widget.lang));
+      if (target != 0) {
+        widget.onChanged(
+          ModeSwitch.step(widget.mode, target, lang: widget.lang),
+        );
+      }
     });
   }
 
-  /// Slides back to the mode on show.
-  void _settle() {
-    if (_busy || _dx == 0) return;
-    _busy = true;
-    _from = _dx;
-    _to = 0;
-    _anim.forward(from: 0).then((_) {
-      if (!mounted) return;
-      setState(() {
-        _dx = 0;
-        _busy = false;
-      });
-    });
-  }
+  /// One mode along the loop (+1 next, -1 previous), for a chevron.
+  void _step(int by) => _goTo(by);
 
   void _update(DragUpdateDetails d) {
     if (_busy) return;
     setState(() {
-      _dx = (_dx + d.delta.dx).clamp(-_width, _width);
-      if (_dx.abs() > 6) _moved = true;
+      _acc += d.delta.dx;
+      if (_acc.abs() > 6) _moved = true;
+      // dragged left brings the next mode, right the previous
+      _setPos(-_acc / _detent);
     });
   }
 
   void _end(DragEndDetails d) {
     if (_busy) return;
+    var target = _pos.round();
     final v = d.primaryVelocity ?? 0;
-    final far = _dx.abs() >= modeSwipeDistance;
-    if (far || v.abs() >= modeSwipeSpeed) {
-      // dragged left brings the next mode, right the previous
-      final dir = far ? _dx.sign : v.sign;
-      _step(dir < 0 ? 1 : -1);
-    } else {
-      _settle();
-    }
+    // a short, fast flick is still one mode
+    if (target == 0 && v.abs() >= modeSwipeSpeed) target = v < 0 ? 1 : -1;
+    _acc = 0;
+    _goTo(target);
+    // the drag is over: the tap that may follow it on the button is a new one
+    Future<void>.delayed(Duration.zero, () => _moved = false);
   }
 
   Widget _face(ColorScheme c, GameMode m) => Padding(
@@ -185,30 +203,19 @@ class _ModeSwitchState extends State<ModeSwitch>
     ),
   );
 
-  /// The mode on show and, while it is dragged, the one coming in beside it.
+  /// The mode the ratchet is on, slid a little off centre by the finger inside
+  /// its detent and fading as it nears the next.
   Widget _faces(ColorScheme c) {
-    final dir = _dx < 0 ? 1 : -1;
-    final p = (_dx.abs() / _width).clamp(0.0, 1.0);
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Transform.translate(
-          offset: Offset(_dx, 0),
-          child: Opacity(opacity: 1 - p, child: _face(c, widget.mode)),
+    final f = _pos - _pos.round();
+    return Center(
+      child: Transform.translate(
+        offset: Offset(-f * _detent, 0),
+        child: Opacity(
+          key: const ValueKey('mode-face'),
+          opacity: 1 - f.abs() * 0.9,
+          child: _face(c, _shown),
         ),
-        if (_dx != 0)
-          Transform.translate(
-            offset: Offset(_dx + (dir > 0 ? _width : -_width), 0),
-            child: Opacity(
-              key: const ValueKey('mode-incoming'),
-              opacity: p,
-              child: _face(
-                c,
-                ModeSwitch.step(widget.mode, dir, lang: widget.lang),
-              ),
-            ),
-          ),
-      ],
+      ),
     );
   }
 
@@ -230,9 +237,11 @@ class _ModeSwitchState extends State<ModeSwitch>
     return GestureDetector(
       key: const ValueKey('play-area'),
       behavior: HitTestBehavior.translucent,
+      // the drag is tracked from where the finger went down, so it follows it 1:1
+      dragStartBehavior: DragStartBehavior.down,
       onHorizontalDragUpdate: _update,
       onHorizontalDragEnd: _end,
-      onHorizontalDragCancel: _settle,
+      onHorizontalDragCancel: () => _end(DragEndDetails()),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -303,7 +312,7 @@ class _ModeSwitchState extends State<ModeSwitch>
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: m == widget.mode ? c.primary : c.outlineVariant,
+                    color: m == _shown ? c.primary : c.outlineVariant,
                   ),
                 ),
             ],
