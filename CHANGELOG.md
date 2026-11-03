@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.7.0
+
 - new mode: mastermind (absurdle), no daily
   The word is not chosen: every guess is answered as a word still possible
   would answer it, and you win by guessing the word that is left. Random draws
