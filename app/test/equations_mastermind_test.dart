@@ -74,6 +74,15 @@ void main() {
       expect(equationProblem('2+3*4=14'), isNull);
       expect(equationProblem('2+3*4=20'), 'both sides must be equal');
       expect(equationProblem('5+0=5'), 'a lone 0 is not allowed');
+      // × and ÷ before + and −, each kind left to right
+      expect(equationProblem('10-3+2=9'), isNull);
+      expect(equationProblem('10-3+2=5'), 'both sides must be equal');
+      expect(equationProblem('8/2*4=16'), isNull);
+      expect(equationProblem('2+8/4=4'), isNull);
+      // no number starts with 0
+      for (final bad in ['05+3=8', '5+03=8', '12+3=015', '3*04=12']) {
+        expect(equationProblem(bad), isNotNull, reason: bad);
+      }
     });
 
     test('every equation of the lists is one, of the length of its list', () {
