@@ -48,7 +48,18 @@ Future<void> checkForUpdateAtLaunch({
 }
 
 /// Where an update stands.
-enum UpdateStep { idle, checking, upToDate, available, downloading, installing }
+enum UpdateStep {
+  idle,
+  checking,
+  upToDate,
+  available,
+  downloading,
+  installing,
+
+  /// The download is kept and not installed (the player closed Android's
+  /// installer): update opens the installer on it again, with no download.
+  downloaded,
+}
 
 /// Checks GitHub for a newer release, and downloads and installs it. Pure
 /// enough to test: the check and the installer are given.
@@ -67,8 +78,6 @@ class UpdateController extends ChangeNotifier {
 
   /// How much of the download is done, 0 to 100.
   int percent = 0;
-
-  StreamSubscription<InstallEvent>? _installing;
 
   /// Looks for a newer version. A check that reached GitHub is remembered (so
   /// an automatic one waits a day); one that could not is not.
@@ -106,45 +115,77 @@ class UpdateController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Checks again (for the newest version and its checksum), then downloads.
+  /// The finished download of this launch: its version and size, which a later
+  /// press is checked against before the file is used again.
+  ({String version, int size})? _downloaded;
+
+  /// Checks again (for the newest version and its checksum), then installs: from
+  /// the download already kept when it is the whole file of that version, else
+  /// by downloading it. A download is never made twice.
   Future<void> update() async {
     if (step == UpdateStep.downloading || step == UpdateStep.installing) return;
     await checkNow();
     final r = release;
     if (step != UpdateStep.available || r == null) return;
+    installFailure = null;
+    if (await _keptChecksOut(r)) {
+      appLog.i('update', '${r.version} is already downloaded: no second one');
+      step = UpdateStep.installing;
+      notifyListeners();
+      await _follow(_installer.installFile(r.apkName), r);
+      return;
+    }
     appLog.i('update', 'download of ${r.version} starts');
     step = UpdateStep.downloading;
     percent = 0;
-    installFailure = null;
     notifyListeners();
-    final done = Completer<void>();
-    _installing = _installer
-        .install(r.apkUrl, fileName: r.apkName, sha256: r.sha256)
-        .listen(
-          (e) {
-            if (e.failure != null) {
-              appLog.w(
-                'update',
-                'install did not go through: ${e.failure!.name}',
-              );
-              installFailure = e.failure == InstallFailure.cancelled
-                  ? null
-                  : e.failure;
-              step = UpdateStep.available;
-            } else if (e.installing) {
-              appLog.i('update', 'handed to the installer');
-              step = UpdateStep.installing;
-            } else {
-              percent = e.percent ?? percent;
-            }
-            notifyListeners();
-          },
-          onDone: () {
-            if (!done.isCompleted) done.complete();
-          },
-        );
-    await done.future;
-    _installing = null;
+    await _follow(
+      _installer.install(r.apkUrl, fileName: r.apkName, sha256: r.sha256),
+      r,
+    );
+  }
+
+  /// Whether the file kept as [r]'s APK is the whole download of that version:
+  /// its SHA-256 is the one GitHub gave, or with no digest it is the size of the
+  /// download this launch finished.
+  Future<bool> _keptChecksOut(ReleaseInfo r) async {
+    final k = await _installer.kept(r.apkName);
+    if (k == null || k.size <= 0) return false;
+    final want = r.sha256;
+    if (want != null) return k.sha256 == want;
+    final d = _downloaded;
+    return d != null && d.version == r.version && d.size == k.size;
+  }
+
+  /// Follows [events] of an install of [r] into the step.
+  Future<void> _follow(Stream<InstallEvent> events, ReleaseInfo r) async {
+    await for (final e in events) {
+      if (_disposed) return;
+      if (e.failure != null) {
+        appLog.w('update', 'install did not go through: ${e.failure!.name}');
+        installFailure = e.failure == InstallFailure.cancelled
+            ? null
+            : e.failure;
+        step = UpdateStep.available;
+      } else if (e.installing) {
+        appLog.i('update', 'handed to the installer');
+        step = UpdateStep.installing;
+        final k = await _installer.kept(r.apkName);
+        if (k != null) _downloaded = (version: r.version, size: k.size);
+      } else {
+        percent = e.percent ?? percent;
+      }
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  /// The player is back in the app. If Android's installer was open on the
+  /// download and the app is still here, it was closed without installing: the
+  /// update is [UpdateStep.downloaded], and installing it needs no download.
+  void appResumed() {
+    if (step != UpdateStep.installing) return;
+    step = UpdateStep.downloaded;
+    notifyListeners();
   }
 
   Future<void> cancel() async {
@@ -152,9 +193,11 @@ class UpdateController extends ChangeNotifier {
     await _installer.cancel();
   }
 
+  bool _disposed = false;
+
   @override
   void dispose() {
-    unawaited(_installing?.cancel());
+    _disposed = true;
     super.dispose();
   }
 }
@@ -190,11 +233,24 @@ class UpdateSection extends StatefulWidget {
   State<UpdateSection> createState() => _UpdateSectionState();
 }
 
-class _UpdateSectionState extends State<UpdateSection> {
+class _UpdateSectionState extends State<UpdateSection>
+    with WidgetsBindingObserver {
   late final UpdateController _c = widget.controller ?? UpdateController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _c.appResumed();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (widget.controller == null) _c.dispose();
     super.dispose();
   }
@@ -270,6 +326,8 @@ class _UpdateSectionState extends State<UpdateSection> {
                 UpdateStep.downloading => 'downloading… ${_c.percent}%',
                 UpdateStep.installing =>
                   'Android is installing it. confirm there',
+                UpdateStep.downloaded =>
+                  'downloaded. install opens it again, with no new download',
                 _ when newer != null => 'version $newer is available',
                 _ => '',
               };
@@ -325,9 +383,18 @@ class _UpdateSectionState extends State<UpdateSection> {
                   Expanded(
                     child: FilledButton(
                       key: const ValueKey('update-install'),
-                      onPressed: busy ? null : _backupThenUpdate,
+                      // a download already made needs no second backup
+                      onPressed: busy
+                          ? null
+                          : _c.step == UpdateStep.downloaded
+                          ? _c.update
+                          : _backupThenUpdate,
                       child: Text(
-                        _c.installFailure != null ? 'try again' : 'update',
+                        _c.step == UpdateStep.downloaded
+                            ? 'install'
+                            : _c.installFailure != null
+                            ? 'try again'
+                            : 'update',
                       ),
                     ),
                   ),

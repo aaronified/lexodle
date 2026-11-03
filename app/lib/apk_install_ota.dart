@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:ota_update/ota_update.dart';
 
 import 'apk_install.dart';
@@ -19,6 +20,42 @@ class OtaApkInstaller implements ApkInstaller {
 
   final Duration stall;
   void Function()? _cancel;
+
+  /// The app's own channel (MainActivity): the kept download's size and
+  /// checksum, and Android's installer opened on it with no download.
+  static const _channel = MethodChannel('io.github.aaronified.lexodle/files');
+
+  @override
+  Future<({int size, String? sha256})?> kept(String fileName) async {
+    try {
+      final r = await _channel.invokeMapMethod<String, Object?>('keptApk', {
+        'name': fileName,
+      });
+      final size = r?['size'];
+      if (size is! int) return null;
+      return (size: size, sha256: r?['sha256'] as String?);
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
+  @override
+  Stream<InstallEvent> installFile(String fileName) async* {
+    try {
+      final opened = await _channel.invokeMethod<bool>('installApk', {
+        'name': fileName,
+      });
+      yield opened ?? false
+          ? const InstallEvent.installing()
+          : const InstallEvent.failed(InstallFailure.install);
+    } on PlatformException {
+      yield const InstallEvent.failed(InstallFailure.install);
+    } on MissingPluginException {
+      yield const InstallEvent.failed(InstallFailure.internal);
+    }
+  }
 
   @override
   Stream<InstallEvent> install(

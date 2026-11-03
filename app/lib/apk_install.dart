@@ -59,6 +59,16 @@ abstract interface class ApkInstaller {
     String? sha256,
   });
 
+  /// The size and SHA-256 of the file kept as [fileName] by an earlier
+  /// [install], or null when there is none.
+  Future<({int size, String? sha256})?> kept(String fileName);
+
+  /// Opens the installer on [fileName], already in the app's own storage from
+  /// an earlier [install], with no download: what an update does after the
+  /// player closed Android's installer. The stream ends after
+  /// [InstallEvent.installing] or a failure, and never throws.
+  Stream<InstallEvent> installFile(String fileName);
+
   /// Stops the download under way; its stream ends with
   /// [InstallFailure.cancelled].
   Future<void> cancel();
@@ -82,6 +92,15 @@ class NullApkInstaller implements ApkInstaller {
   );
 
   @override
+  Future<({int size, String? sha256})?> kept(String fileName) async => null;
+
+  @override
+  Stream<InstallEvent> installFile(String fileName) =>
+      Stream<InstallEvent>.value(
+        const InstallEvent.failed(InstallFailure.internal),
+      );
+
+  @override
   Future<void> cancel() async {}
 }
 
@@ -96,6 +115,13 @@ class FixedApkInstaller implements ApkInstaller {
 
   /// Every install asked for: its url, file name and checksum.
   final asked = <({String url, String fileName, String? sha256})>[];
+
+  /// What [kept] says, set by a test (a download is kept once [events] end in
+  /// the installer opening, with this size and checksum).
+  ({int size, String? sha256})? keptFile;
+
+  /// Every file the installer was opened on again, with no download.
+  final reopened = <String>[];
   int cancels = 0;
   Completer<void>? _cancelled;
 
@@ -118,6 +144,15 @@ class FixedApkInstaller implements ApkInstaller {
         return;
       }
     }
+  }
+
+  @override
+  Future<({int size, String? sha256})?> kept(String fileName) async => keptFile;
+
+  @override
+  Stream<InstallEvent> installFile(String fileName) async* {
+    reopened.add(fileName);
+    yield const InstallEvent.installing();
   }
 
   @override

@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- an update is downloaded once
+  If Android's installer is closed (or the install permission is asked for),
+  pressing install opens it again on the file already downloaded, checked
+  against GitHub's checksum, instead of downloading it a second time.
+
 - learn has a strategy guide for the mode you have selected
   Every mode has one: how to play it well. The word drills stay for the modes
   that play single words with the usual colours (classic, quartet, relay,

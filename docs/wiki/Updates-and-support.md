@@ -15,6 +15,8 @@ version and has:
   SHA-256 GitHub gives for it, and opens Android's installer. If Android has not allowed lexodle to
   install apps, it says to turn on "Install unknown apps" for it, then try again. A download can be
   cancelled, and one that goes quiet for a minute counts as failed.
+  The download is kept: if Android's installer is closed, **install** opens it again on the same file
+  (when its checksum matches GitHub's) with no second download.
 - **check automatically**: off until you choose it. When on, the app looks once a day, when it opens,
   and remembers what it found. Each check is a request to GitHub, which is why it is off by default.
 
