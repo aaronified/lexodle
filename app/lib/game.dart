@@ -15,6 +15,7 @@ import 'puzzle.dart';
 import 'share_puzzle.dart';
 import 'geography.dart';
 import 'guess_input.dart';
+import 'help.dart';
 import 'place_info.dart';
 import 'haptics.dart';
 import 'history.dart';
@@ -806,6 +807,10 @@ class _GamePageState extends State<GamePage>
                   guesses: withGuesses ? List.of(guesses) : const [],
                 ),
               ),
+            ModeHelpButton(
+              mode: mode,
+              daily: _daily != null && _daily.date.isNotEmpty,
+            ),
           ],
           centerTitle: true,
           title: gameTitle(

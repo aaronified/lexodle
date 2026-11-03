@@ -43,6 +43,9 @@ screen in the app has one live row of tiles to try the blanks, the cursor and th
 
 ## Modes
 
+Every game screen has a help button at the top right (the daily too) that shows the rules of its mode,
+with how typing, spaces (blanks) and locks work.
+
 **Classic** is one word. **Lockdown** is one word too, with six tries: a letter in the right place
 locks and stays locked for the rest of the game, and a word that is not in the list costs a heart (10,
 7, 5, 3 or 1 hearts, as you choose; the daily has 5). The hearts break with a rumble and a crack, and

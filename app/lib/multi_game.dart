@@ -7,6 +7,7 @@ import 'background.dart';
 import 'daily.dart';
 import 'game_header.dart';
 import 'guess_input.dart';
+import 'help.dart';
 import 'haptics.dart';
 import 'history.dart';
 import 'keyboard.dart';
@@ -527,6 +528,10 @@ class _MultiGamePageState extends State<MultiGamePage> {
                   guesses: withGuesses ? List.of(game.guesses) : const [],
                 ),
               ),
+            ModeHelpButton(
+              mode: mode,
+              daily: _daily != null && _daily.date.isNotEmpty,
+            ),
           ],
           centerTitle: true,
           title: gameTitle(

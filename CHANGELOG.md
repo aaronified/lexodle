@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- every game has a help button with the rules of its mode
+  At the top right, daily games too: the rules and colours of the mode, then
+  typing, spaces (blanks), locks and what a daily is.
+
 - equations: the keys are a number pad
   Digits in three rows of three with 0 under them, the signs beside them, then
   enter and backspace.
