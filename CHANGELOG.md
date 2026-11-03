@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- blind: double tap on the counts locks the pencilled greens
+  The guesses of a blind game cycle their colour on a tap, so they cannot lock;
+  the counts do instead, as the board does in the other modes.
+
 ## 0.6.0
 
 - the end panel scrolls and moves with it

@@ -68,6 +68,9 @@ that anyone can open to play your word as practice; nothing is saved or counted.
 lightly disguised in the link (four digits a letter), not secret. The app opens these links itself
 on Android. None of the three has a daily.
 
+In **blind**, a double tap on the counts locks every green you have pencilled into the row you
+are typing (the guesses themselves cannot lock: a tap on them cycles their colour).
+
 ## The helper and the review
 
 The **helper** setting chooses what the game tells you while you play: *off*, *skill only*,

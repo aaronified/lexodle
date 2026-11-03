@@ -382,13 +382,22 @@ class _GamePageState extends State<GamePage>
   }
 
   /// A double tap on the submitted guesses locks every green found so far,
-  /// replacing the locks the player had set.
+  /// replacing the locks the player had set. A blind game has no board to tap
+  /// (its tiles cycle colours), so it is a double tap on the counts, and the
+  /// greens are those pencilled.
   void _lockGreens() {
-    if (over || blind) return;
+    if (over) return;
+    final deduced = _deduced;
     final greens = <(int, String)>[
       for (var r = 0; r < marks.length; r++)
         for (var i = 0; i < length; i++)
-          if (marks[r][i] == Mark.correct) (i, guesses[r][i]),
+          if ((blind
+                  ? (_assist
+                        ? pencil.shown(guesses[r][i], i, deduced)
+                        : notes[r][i])
+                  : marks[r][i]) ==
+              Mark.correct)
+            (i, guesses[r][i]),
     ];
     setState(() => input.lockAll(greens));
     _save();
@@ -956,24 +965,29 @@ class _GamePageState extends State<GamePage>
         children: [
           row,
           const SizedBox(width: 8),
-          Opacity(
-            opacity: done ? 1 : 0,
-            child: Row(
-              children: [
-                count(
-                  green,
-                  markColors(c, Mark.correct).$1,
-                  markColors(c, Mark.correct).$2,
-                  'g',
-                ),
-                const SizedBox(width: 6),
-                count(
-                  yellow,
-                  markColors(c, Mark.present).$1,
-                  markColors(c, Mark.present).$2,
-                  'y',
-                ),
-              ],
+          GestureDetector(
+            key: ValueKey('counts-$r'),
+            behavior: HitTestBehavior.opaque,
+            onDoubleTap: done ? _lockGreens : null,
+            child: Opacity(
+              opacity: done ? 1 : 0,
+              child: Row(
+                children: [
+                  count(
+                    green,
+                    markColors(c, Mark.correct).$1,
+                    markColors(c, Mark.correct).$2,
+                    'g',
+                  ),
+                  const SizedBox(width: 6),
+                  count(
+                    yellow,
+                    markColors(c, Mark.present).$1,
+                    markColors(c, Mark.present).$2,
+                    'y',
+                  ),
+                ],
+              ),
             ),
           ),
         ],
