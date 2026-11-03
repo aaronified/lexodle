@@ -196,6 +196,34 @@ List<Mark> mastermindReply(List<String> words, String guess, Random rng) =>
     ? evaluate(guess, guess)
     : evaluate(words[rng.nextInt(words.length)], guess);
 
+/// What the mastermind answers to [guess] in its largest-pool variant: the marks
+/// of the bucket (the words that would give them) that keeps the most of
+/// [words]. It has no chance in it, so a player can work it out. A tie goes to
+/// the bucket with the fewest greens, then the fewest yellows, then the marks
+/// that come first (green, yellow, grey), so the all-green bucket (the guess
+/// alone) is only chosen when it is the only one left.
+List<Mark> mastermindLargest(List<String> words, String guess) {
+  if (words.isEmpty) return evaluate(guess, guess);
+  final sizes = <String, int>{};
+  final marks = <String, List<Mark>>{};
+  for (final w in words) {
+    final m = evaluate(w, guess);
+    final k = m.map((x) => x.index).join();
+    sizes[k] = (sizes[k] ?? 0) + 1;
+    marks[k] = m;
+  }
+  int count(String k, Mark x) => marks[k]!.where((m) => m == x).length;
+  final best = sizes.keys.reduce((a, b) {
+    if (sizes[a] != sizes[b]) return sizes[a]! > sizes[b]! ? a : b;
+    final g = count(a, Mark.correct) - count(b, Mark.correct);
+    if (g != 0) return g < 0 ? a : b;
+    final y = count(a, Mark.present) - count(b, Mark.present);
+    if (y != 0) return y < 0 ? a : b;
+    return a.compareTo(b) <= 0 ? a : b;
+  });
+  return marks[best]!;
+}
+
 /// One hidden word and what the guesses made so far say about it.
 class Board {
   Board(this.answer);

@@ -153,10 +153,8 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           mode == GameMode.mastermind
                               ? 'no daily in this mode. the word is not chosen: '
                                     'it answers each guess as one of the words still '
-                                    'possible would, picked at random, and the more '
-                                    'words a reply keeps the likelier it is. you win '
-                                    'by guessing the one left. there is no limit on '
-                                    'guesses.'
+                                    'possible would. you win by guessing the one '
+                                    'left. there is no limit on guesses.'
                               : !mode.hasDaily
                               ? 'no daily in this mode. themed wordles accept only '
                                     'the words of the theme, in english: no ordinary words.'
@@ -204,6 +202,36 @@ class _GameModesDialogState extends State<GameModesDialog> {
                                 : 'the chance that the words share a letter. '
                                       'lower makes them more different.',
                             key: const ValueKey('share-note'),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: c.onSurface.withValues(alpha: dimAlpha),
+                            ),
+                          ),
+                        ],
+                        if (mode == GameMode.mastermind) ...[
+                          const SizedBox(height: 16),
+                          const Caption('pool choice'),
+                          const SizedBox(height: 10),
+                          StepperChoice<bool>(
+                            key: const ValueKey('largest-choice'),
+                            semanticLabel: 'pool choice',
+                            items: const [
+                              (false, 'random', 'bigger pools are likelier'),
+                              (true, 'largest', 'always the biggest pool'),
+                            ],
+                            selected: appState.mastermindLargest,
+                            onChanged: (on) =>
+                                appState.setup(mastermindLargest: on),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            appState.mastermindLargest
+                                ? 'every reply keeps the most words, with no '
+                                      'chance in it, so it can be worked out. '
+                                      'ties go to the fewest greens, then yellows.'
+                                : 'a reply is drawn at random, the pools with '
+                                      'more words likelier.',
+                            key: const ValueKey('largest-note'),
                             style: TextStyle(
                               fontSize: 11,
                               color: c.onSurface.withValues(alpha: dimAlpha),

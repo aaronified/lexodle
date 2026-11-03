@@ -188,6 +188,61 @@ void main() {
       );
     });
 
+    test('the largest pool: the bucket with most words, no chance', () {
+      // against "plate": the sizes of the buckets decide
+      final sizes = <String, int>{};
+      for (final w in words) {
+        final k = evaluate(w, 'plate').toString();
+        sizes[k] = (sizes[k] ?? 0) + 1;
+      }
+      final top = sizes.values.reduce(max);
+      final m = mastermindLargest(words, 'plate');
+      expect(sizes[m.toString()], top);
+      // the same every time
+      for (var i = 0; i < 5; i++) {
+        expect(mastermindLargest(words, 'plate').toString(), m.toString());
+      }
+    });
+
+    test(
+      'the largest pool never says all green while another reply is left',
+      () {
+        // two words: the guess and one other, buckets of one each: not green
+        final m = mastermindLargest(['plate', 'place'], 'plate');
+        expect(m, evaluate('place', 'plate'));
+        // alone it has to
+        expect(
+          mastermindLargest(['plate'], 'plate'),
+          everyElement(Mark.correct),
+        );
+      },
+    );
+
+    test('a tie goes to the fewest greens, then the fewest yellows', () {
+      // against "abcde": bbbbb has a green (and the rest grey); edcba has the
+      // letters all present with one green; xxxxx is all grey: three buckets of
+      // one, so the all grey one wins on fewest greens, then yellows
+      final m = mastermindLargest(['abbbb', 'edcba', 'xxxxx'], 'abcde');
+      expect(m, evaluate('xxxxx', 'abcde'));
+    });
+
+    test('a largest-pool game ends, on the word it kept', () async {
+      final langs = await WordBank.languages();
+      final bank = await WordBank.load(langs.firstWhere((l) => l.code == 'en'));
+      var left = List.of(bank.guessable(5));
+      final rng = Random(4);
+      var n = 0;
+      while (true) {
+        n++;
+        expect(n, lessThan(80));
+        final g = left[rng.nextInt(left.length)];
+        final m = mastermindLargest(left, g);
+        left = filterEligible(left, g, m);
+        expect(left, isNotEmpty);
+        if (m.every((x) => x == Mark.correct)) break;
+      }
+    });
+
     test('a game always ends, on a word that fits every reply', () async {
       final langs = await WordBank.languages();
       final bank = await WordBank.load(langs.firstWhere((l) => l.code == 'en'));

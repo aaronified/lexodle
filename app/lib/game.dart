@@ -94,6 +94,9 @@ class _GamePageState extends State<GamePage>
   bool get mastermind => mode == GameMode.mastermind;
   bool get _unscored => equations || mastermind;
 
+  /// The mastermind that always keeps the largest pool, as chosen when it began.
+  late final bool largest = mastermind && appState.mastermindLargest;
+
   /// The noun of what is hidden.
   String get _noun => equations ? 'equation' : 'word';
 
@@ -296,7 +299,7 @@ class _GamePageState extends State<GamePage>
     if (d != null) {
       return d.date.isEmpty ? null : 'd|$lang|${d.date}|${mode.name}';
     }
-    return 'p|$lang|${mode.name}|$length|$tries';
+    return 'p|$lang|${mode.name}|$length|$tries${largest ? '|L' : ''}';
   }
 
   /// Keeps the game as it stands, to be resumed; a finished game is not kept.
@@ -545,7 +548,11 @@ class _GamePageState extends State<GamePage>
     if (mastermind) {
       // the word dodges: it answers as one of the words still possible would
       // (a saved game gives what it said), and the guess that is that word wins
-      m = given ?? mastermindReply(eligible, word, _rng);
+      m =
+          given ??
+          (largest
+              ? mastermindLargest(eligible, word)
+              : mastermindReply(eligible, word, _rng));
       if (m.every((x) => x == Mark.correct)) answer = word;
     } else {
       m = evaluate(answer, word, blind: blind);
@@ -674,6 +681,7 @@ class _GamePageState extends State<GamePage>
         pool: pool,
         used: guesses.length,
         won: won,
+        largest: largest,
         skills: [for (final m in metrics) m.skill],
         luck: traits.luck,
         risk: traits.risk,
@@ -1194,7 +1202,9 @@ class _GamePageState extends State<GamePage>
     if (mastermind) {
       return Caption(
         guesses.isEmpty
-            ? 'no limit · it dodges as long as it can'
+            ? (largest
+                  ? 'no limit · it keeps the largest pool'
+                  : 'no limit · it dodges as long as it can')
             : '${guesses.length} ${guesses.length == 1 ? 'guess' : 'guesses'}',
       );
     }

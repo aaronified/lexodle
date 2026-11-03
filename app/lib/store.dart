@@ -70,7 +70,11 @@ class GameResult {
     this.maxBits = 0,
     this.hearts = 0,
     this.heartsLeft = 0,
+    this.largest = false,
   });
+
+  /// A mastermind game that always kept the largest pool.
+  final bool largest;
 
   /// The hearts a lockdown game began with and had left at the end (0 for the
   /// other modes).
@@ -1089,6 +1093,20 @@ final achievements = <Achievement>[
     mode: GameMode.equations,
   ),
   Achievement.leveled(
+    'equation_brutal',
+    'microscope',
+    'equations and brutal',
+    (n) => n == 1
+        ? 'win an equations game with 3 tries'
+        : 'win an equations game with 3 tries $n times',
+    'equationBrutal',
+    _lv(
+      [1, 5, 15, 40],
+      ['three and counting', 'no margin', 'hairline sum', 'unerring'],
+    ),
+    mode: GameMode.equations,
+  ),
+  Achievement.leveled(
     'mastermind_wins',
     'ghost',
     'caught the ghost',
@@ -1112,6 +1130,45 @@ final achievements = <Achievement>[
       [1, 5, 15, 40],
       ['no place to hide', 'short chase', 'quick catch', 'inescapable'],
     ),
+    mode: GameMode.mastermind,
+  ),
+  Achievement.leveled(
+    'largest_wins',
+    'crown',
+    'against the odds',
+    (n) => n == 1
+        ? 'win a mastermind game that keeps the largest pool'
+        : 'win $n mastermind games that keep the largest pool',
+    'largestWins',
+    _lv(
+      [1, 5, 20, 50],
+      ['outwitted', 'the long way round', 'worked it out', 'unbeatable'],
+    ),
+    mode: GameMode.mastermind,
+  ),
+  Achievement.leveled(
+    'largest_quick',
+    'hourglass',
+    'against the clock',
+    (n) => n == 1
+        ? 'win a largest-pool mastermind game in 7 guesses or fewer'
+        : 'win a largest-pool mastermind game in 7 guesses or fewer $n times',
+    'largestQuick',
+    _lv(
+      [1, 5, 15, 40],
+      ['tight corner', 'cornered fast', 'no escape', 'checkmate'],
+    ),
+    mode: GameMode.mastermind,
+  ),
+  Achievement.leveled(
+    'largest_fast',
+    'bolt',
+    'largest-pool speed',
+    (n) => 'win a largest-pool mastermind game in $n guesses or fewer',
+    'fastestLargest',
+    _lv([9, 8, 7, 6], ['steady chase', 'sharp chase', 'swift chase', 'gambit']),
+    hit: (r, t) => r.won && r.largest && r.used <= t,
+    smaller: true,
     mode: GameMode.mastermind,
   ),
   Achievement.leveled(
@@ -1709,6 +1766,18 @@ final metrics = <String, Metric>{
   'mastermindWins': _count(_mastermindOnly, (r) => r.won),
   'mastermindQuick': _count(_mastermindOnly, (r) => r.won && r.used <= 4),
   'fastestMastermind': _fastest(_mastermindOnly),
+  'equationBrutal': _count(_equationsOnly, (r) => r.won && r.tries <= 3),
+  'largestWins': _count(_mastermindOnly, (r) => r.won && r.largest),
+  'largestQuick': _count(
+    _mastermindOnly,
+    (r) => r.won && r.largest && r.used <= 7,
+  ),
+  'fastestLargest': Metric(
+    _mastermindOnly,
+    (st, r) => !r.won || !r.largest || r.used <= 0
+        ? st.value
+        : (st.value == 0 || r.used < st.value ? r.used.toDouble() : st.value),
+  ),
   for (final p in playstyles) 'style_${p.id}': _style(p.id),
   'styleChanges': _count(_anyMode, (r) => r.styleChanged),
   'stylesWorn': Metric(
@@ -2056,6 +2125,9 @@ class AppState extends ChangeNotifier {
 
   /// The length of an equation, in tiles: one of [equationLengths].
   int eqLength = 8;
+
+  /// Whether the mastermind always keeps the largest pool, not a random one.
+  bool mastermindLargest = false;
 
   /// Whether a blind game marks what its counts settle and keeps the colours
   /// the player pencils possible. Off, the player marks whatever they like.
@@ -2677,6 +2749,7 @@ class AppState extends ChangeNotifier {
           blindTries = bt;
         final el = p.getInt('eqLength');
         if (el != null && equationLengths.contains(el)) eqLength = el;
+        mastermindLargest = p.getBool('mastermindLargest') ?? false;
         blindAssist = p.getBool('blindAssist') ?? true;
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
         lastRunVersion = p.getString('lastRunVersion');
@@ -3100,6 +3173,10 @@ class AppState extends ChangeNotifier {
         _w('hearts', p.setInt('hearts', hearts));
         _w('blindTries', p.setInt('blindTries', blindTries));
         _w('eqLength', p.setInt('eqLength', eqLength));
+        _w(
+          'mastermindLargest',
+          p.setBool('mastermindLargest', mastermindLargest),
+        );
         _w('blindAssist', p.setBool('blindAssist', blindAssist));
         _w('helper', p.setInt('helper', helper.index));
         _w('mode', p.setInt('mode', mode.index));
@@ -3132,6 +3209,7 @@ class AppState extends ChangeNotifier {
     int? hearts,
     int? blindTries,
     int? eqLength,
+    bool? mastermindLargest,
     bool? blindAssist,
     Helper? helper,
     GameMode? mode,
@@ -3152,6 +3230,7 @@ class AppState extends ChangeNotifier {
     if (eqLength != null && equationLengths.contains(eqLength)) {
       this.eqLength = eqLength;
     }
+    this.mastermindLargest = mastermindLargest ?? this.mastermindLargest;
     this.blindAssist = blindAssist ?? this.blindAssist;
     this.helper = helper ?? this.helper;
     this.mode = mode ?? this.mode;
@@ -3173,6 +3252,10 @@ class AppState extends ChangeNotifier {
       _w('hearts', _prefs?.setInt('hearts', this.hearts));
       _w('blindTries', _prefs?.setInt('blindTries', this.blindTries));
       _w('eqLength', _prefs?.setInt('eqLength', this.eqLength));
+      _w(
+        'mastermindLargest',
+        _prefs?.setBool('mastermindLargest', this.mastermindLargest),
+      );
       _w('blindAssist', _prefs?.setBool('blindAssist', this.blindAssist));
       _w('helper', _prefs?.setInt('helper', this.helper.index));
       _w('mode', _prefs?.setInt('mode', this.mode.index));
