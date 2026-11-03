@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- split keys: the letter has a stronger shadow
+  A ring of shadow in the opposite colour all round the letter, so it reads
+  over yellow and green.
+
 - history: equations and mastermind games can be opened
   Tap one in the list to see its board as it was played, each guess coloured.
   They have no review, so the board is all there is.

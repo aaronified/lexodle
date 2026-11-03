@@ -249,6 +249,10 @@ class _QuadKey extends StatelessWidget {
       shown.map((x) => (x.g * 255).round()).reduce((a, b) => a + b) ~/ 4,
       shown.map((x) => (x.b * 255).round()).reduce((a, b) => a + b) ~/ 4,
     );
+    // the letter has an outline of the opposite colour, so it reads over any of
+    // the four parts, yellow and green included
+    final ink = onColor(c, avg);
+    final halo = ink.computeLuminance() > .5 ? Colors.black : Colors.white;
     // a soft shadow round the key, so a key the boards have all greyed (or left
     // clear) still stands out from the page
     return DecoratedBox(
@@ -270,16 +274,7 @@ class _QuadKey extends StatelessWidget {
                 key: ValueKey('quad-$label'),
                 painter: QuadPainter(colors),
               ),
-              Center(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: onColor(c, avg),
-                  ),
-                ),
-              ),
+              Center(child: _HaloText(label, ink, halo)),
             ],
           ),
         ),
@@ -312,4 +307,42 @@ class QuadPainter extends CustomPainter {
   @override
   bool shouldRepaint(QuadPainter old) =>
       old.colors.toString() != colors.toString();
+}
+
+/// A letter drawn over colours of every kind: in [color], with a ring of
+/// shadows of [halo] all round it (and a soft one), so it can be read on yellow,
+/// green and grey alike. One Text, so it is found and tapped as any letter.
+class _HaloText extends StatelessWidget {
+  const _HaloText(this.text, this.color, this.halo);
+  final String text;
+  final Color color;
+  final Color halo;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w900,
+      color: color,
+      shadows: [
+        for (final (dx, dy) in const [
+          (-1.5, 0.0),
+          (1.5, 0.0),
+          (0.0, -1.5),
+          (0.0, 1.5),
+          (-1.1, -1.1),
+          (1.1, -1.1),
+          (-1.1, 1.1),
+          (1.1, 1.1),
+        ])
+          Shadow(
+            color: halo.withValues(alpha: .9),
+            offset: Offset(dx, dy),
+            blurRadius: 1,
+          ),
+        Shadow(color: halo.withValues(alpha: .7), blurRadius: 5),
+      ],
+    ),
+  );
 }
