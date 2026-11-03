@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- the mode swipe is a ratchet
+  A drag across the whole button turns three modes: the face follows the
+  finger and takes the next mode as each third is passed, with a tick. A short,
+  quick flick is still one mode.
+
 - achievements for winning in every mode and for every daily of a day
   Every way in (win in 2, 4, 6 or 7 different modes), a full day (solve 2, 3,
   4 or 6 different dailies in one day) and clean sweep (every daily on the

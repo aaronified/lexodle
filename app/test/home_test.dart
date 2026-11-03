@@ -168,14 +168,14 @@ void main() {
       await home(tester);
       await tester.drag(
         find.byKey(const ValueKey('mode-button')),
-        const Offset(-200, 0),
+        const Offset(-140, 0),
       );
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.quartet);
       expect(find.byType(HomePage), findsOneWidget);
       await tester.drag(
         find.widgetWithText(FilledButton, 'play'),
-        const Offset(200, 0),
+        const Offset(140, 0),
       );
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.classic);
