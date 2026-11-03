@@ -2,11 +2,15 @@ import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 
 import 'haptics.dart';
+import 'logic.dart' show Mark;
 import 'modes.dart';
 import 'ui.dart';
 
 /// How many modes a drag across the whole button turns.
 const modeDetents = 3;
+
+/// The size of the dot that says a daily is pending, above a chevron.
+const _dotSize = 7.0;
 
 /// A fling faster than this (logical pixels a second) changes the mode too.
 const modeSwipeSpeed = 700.0;
@@ -42,10 +46,16 @@ class ModeSwitch extends StatefulWidget {
     required this.onChanged,
     required this.onOpen,
     required this.below,
+    this.pending = const {},
     this.height = 52,
   });
 
   final GameMode mode;
+
+  /// The modes whose daily is not done today. Each chevron has a yellow dot
+  /// above it when the nearest of them, going that way round the loop, is on
+  /// its side: at most two dots, however many dailies are pending.
+  final Set<GameMode> pending;
 
   /// The language, which decides the modes the swipe has (themed is English only).
   final String lang;
@@ -53,6 +63,31 @@ class ModeSwitch extends StatefulWidget {
   final VoidCallback onOpen;
   final Widget below;
   final double height;
+
+  /// Which chevrons have a pending daily nearer in their direction, from [from]:
+  /// each pending mode is on the side it is fewer steps away by (the next one
+  /// when it is as far both ways).
+  static ({bool prev, bool next}) dotsFor(
+    GameMode from,
+    Set<GameMode> pending, {
+    String lang = 'en',
+  }) {
+    final all = GameMode.loopFor(lang);
+    final i = all.indexOf(from);
+    var prev = false, next = false;
+    if (i < 0) return (prev: prev, next: next);
+    for (final m in pending) {
+      final j = all.indexOf(m);
+      if (j < 0 || j == i) continue;
+      final ahead = (j - i) % all.length;
+      if (ahead <= all.length - ahead) {
+        next = true;
+      } else {
+        prev = true;
+      }
+    }
+    return (prev: prev, next: next);
+  }
 
   /// The mode [steps] along the loop from [from] (negative goes back).
   static GameMode step(GameMode from, int steps, {String lang = 'en'}) {
@@ -234,6 +269,15 @@ class _ModeSwitchState extends State<ModeSwitch>
         onPressed: () => _step(by),
       ),
     );
+    final dots = ModeSwitch.dotsFor(_shown, widget.pending, lang: widget.lang);
+    // the yellow of a letter that is in the word elsewhere
+    final yellow = markColors(c, Mark.present).$1;
+    Widget dot(String key) => Container(
+      key: ValueKey(key),
+      width: _dotSize,
+      height: _dotSize,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: yellow),
+    );
     return GestureDetector(
       key: const ValueKey('play-area'),
       behavior: HitTestBehavior.translucent,
@@ -297,6 +341,19 @@ class _ModeSwitchState extends State<ModeSwitch>
                 right: 1,
                 child: arrow('mode-next', Icons.chevron_right, 'next mode', 1),
               ),
+              // a yellow dot above a chevron: a daily is pending that way
+              if (dots.prev)
+                Positioned(
+                  left: 1 + (44 - _dotSize) / 2,
+                  top: 5,
+                  child: dot('daily-dot-prev'),
+                ),
+              if (dots.next)
+                Positioned(
+                  right: 1 + (44 - _dotSize) / 2,
+                  top: 5,
+                  child: dot('daily-dot-next'),
+                ),
             ],
           ),
           const SizedBox(height: 6),

@@ -9,7 +9,7 @@ import 'logo.dart';
 import 'style_chip.dart';
 import 'main.dart';
 import 'mode_wheel.dart';
-import 'modes.dart' show Draw;
+import 'modes.dart' show Draw, GameMode;
 import 'routes.dart';
 import 'store.dart' show Achievement, achievements;
 import 'ui.dart';
@@ -84,6 +84,16 @@ class _HomePageState extends State<HomePage> {
         );
       }
     });
+  }
+
+  /// The modes whose daily has not been finished today in [lang].
+  Set<GameMode> _pendingDailies(String lang) {
+    final today = dailyDate();
+    return {
+      for (final m in GameMode.loopFor(lang))
+        if (m.hasDaily && !(appState.dailyFor(lang, today, m)?.over ?? false))
+          m,
+    };
   }
 
   /// The small second line under "daily": where today's daily word stands for
@@ -249,6 +259,7 @@ class _HomePageState extends State<HomePage> {
       lang: appState.lang,
       height: _buttonHeight,
       onChanged: (m) => appState.setup(mode: m),
+      pending: _pendingDailies(lang.code),
       onOpen: () => Navigator.pushNamed(context, Routes.gameModes),
       below: Row(
         children: [
