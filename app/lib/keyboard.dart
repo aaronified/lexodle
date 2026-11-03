@@ -252,7 +252,8 @@ class _QuadKey extends StatelessWidget {
     // the letter has an outline of the opposite colour, so it reads over any of
     // the four parts, yellow and green included
     final ink = onColor(c, avg);
-    final halo = ink.computeLuminance() > .5 ? Colors.black : Colors.white;
+    // (the other of the page's two text colours)
+    final halo = ink == c.surface ? c.onSurface : c.surface;
     // a soft shadow round the key, so a key the boards have all greyed (or left
     // clear) still stands out from the page
     return DecoratedBox(
