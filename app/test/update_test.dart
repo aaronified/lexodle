@@ -236,6 +236,80 @@ void main() {
       expect(c.step, UpdateStep.installing);
     });
 
+    test(
+      'install after the installer was closed does not download again',
+      () async {
+        await appState.load();
+        final installer = FixedApkInstaller(const [
+          InstallEvent.downloading(90),
+          InstallEvent.installing(),
+        ]);
+        final c = UpdateController(
+          check: FixedReleaseCheck(UpdateAvailable(info)),
+          installer: installer,
+        );
+        await c.update();
+        expect(c.step, UpdateStep.installing);
+        expect(installer.asked, hasLength(1));
+        // the download is now kept, whole
+        installer.keptFile = (size: 1234, sha256: _sha);
+        // the player closed Android's installer without installing
+        c.appResumed();
+        expect(c.step, UpdateStep.downloaded);
+        await c.update();
+        expect(c.step, UpdateStep.installing);
+        expect(installer.asked, hasLength(1), reason: 'no second download');
+        expect(installer.reopened, ['lexodle-v9.9.9.apk']);
+      },
+    );
+
+    test(
+      'a kept file that is not the whole download is downloaded again',
+      () async {
+        await appState.load();
+        final installer = FixedApkInstaller(const [InstallEvent.installing()]);
+        installer.keptFile = (size: 1234, sha256: 'not the checksum');
+        final c = UpdateController(
+          check: FixedReleaseCheck(UpdateAvailable(info)),
+          installer: installer,
+        );
+        await c.update();
+        expect(installer.asked, hasLength(1));
+        expect(installer.reopened, isEmpty);
+      },
+    );
+
+    test(
+      'with no checksum, the size of this launch\'s download decides',
+      () async {
+        await appState.load();
+        const bare = ReleaseInfo(
+          version: '9.9.9',
+          apkUrl: 'https://example.test/lexodle-v9.9.9.apk',
+          apkName: 'lexodle-v9.9.9.apk',
+        );
+        final installer = FixedApkInstaller(const [InstallEvent.installing()]);
+        installer.keptFile = (size: 500, sha256: 'abc');
+        final c = UpdateController(
+          check: FixedReleaseCheck(const UpdateAvailable(bare)),
+          installer: installer,
+        );
+        // a file from an earlier launch cannot be vouched for: downloaded
+        await c.update();
+        expect(installer.asked, hasLength(1));
+        c.appResumed();
+        // the one this launch finished is the same size: reused
+        await c.update();
+        expect(installer.asked, hasLength(1));
+        expect(installer.reopened, hasLength(1));
+        // a different size: downloaded again
+        c.appResumed();
+        installer.keptFile = (size: 501, sha256: 'abc');
+        await c.update();
+        expect(installer.asked, hasLength(2));
+      },
+    );
+
     test('cancelling a download is not a failure', () async {
       await appState.load();
       final gate = Completer();
