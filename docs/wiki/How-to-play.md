@@ -71,8 +71,8 @@ on Android. None of the three has a daily.
 In **blind**, a double tap on the counts locks every green you have pencilled into the row you
 are typing (the guesses themselves cannot lock: a tap on them cycles their colour).
 
-The home swipe goes classic, quartet, relay race, lockdown, blind, equations and (English only)
-themed, and round again.
+The home swipe goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
+(English only) themed, and round again.
 
 **Equations** is nerdle: the tiles are digits and signs, `0`-`9` and `+ − × ÷ =`, and a guess has to be a
 true equation with one `=`, a sum on the left and one whole number on the right, read with the usual
@@ -80,6 +80,15 @@ order of operations (no leading zeros, no sign in front of a number, and no lone
 The colours work as in classic. It has 6, 7 or 8 tiles and the tries of the difficulty (6 by default),
 and no helper, skill or review. It has a **daily**: 8 tiles, 6 tries, the same equation in every
 language.
+
+**Mastermind** is an absurdle: no word is chosen. Each guess is answered as a word still possible
+would answer it, and you win by guessing the word that is left. It uses the word list of the
+language and the length you chose, and there are no tries to run out of, so the guesses are the
+score. The *pool choice* decides the reply: *random* draws one of the words still possible, so the
+reply that keeps the most words is the likeliest; *largest* always gives the reply that keeps the
+most words, with no chance in it, so it can be worked out (ties go to the fewest greens, then the
+fewest yellows, and all green only when nothing else is left). There is no daily, helper, skill or
+review.
 
 ## The helper and the review
 

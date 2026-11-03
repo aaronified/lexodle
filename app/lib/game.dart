@@ -87,13 +87,23 @@ class _GamePageState extends State<GamePage>
   bool get themed => mode == GameMode.themed;
   bool get blind => mode == GameMode.blind;
 
-  /// The equations (the tiles are digits and signs): no skill and luck scores
-  /// or a review.
+  /// The equations (the tiles are digits and signs) and the mastermind (a word
+  /// that dodges, so there is no answer to measure the guesses against): neither
+  /// has skill and luck scores or a review.
   bool get equations => mode == GameMode.equations;
-  bool get _unscored => equations;
+  bool get mastermind => mode == GameMode.mastermind;
+  bool get _unscored => equations || mastermind;
+
+  /// The mastermind that always keeps the largest pool, as chosen when it began.
+  late final bool largest = mastermind && appState.mastermindLargest;
 
   /// The noun of what is hidden.
   String get _noun => equations ? 'equation' : 'word';
+
+  /// The rows of the board: the tries, or in the endless mastermind one for
+  /// each guess made and the one being typed.
+  int get _boardRows => mastermind ? guesses.length + (over ? 0 : 1) : tries;
+  final _scroll = ScrollController();
 
   /// The hearts of a lockdown game, and how many are left: a daily has its own
   /// number, any other game the one chosen in the game modes.
@@ -176,7 +186,9 @@ class _GamePageState extends State<GamePage>
         _daily?.length ?? (equations ? appState.eqLength : appState.length);
     tries =
         _daily?.tries ??
-        (lockdown
+        (mastermind
+            ? 0
+            : lockdown
             ? lockdownTries
             : blind
             ? appState.blindTries
@@ -206,6 +218,7 @@ class _GamePageState extends State<GamePage>
     final d = _daily;
     final extra = appState.progressFor(key);
     List<String> saved;
+    List<List<Mark>>? savedMarks;
     DailyEntry? entry;
     if (d != null) {
       entry = appState.dailyFor(widget.bank.language.code, d.date, mode);
@@ -213,18 +226,36 @@ class _GamePageState extends State<GamePage>
     } else {
       // any other game comes back with the answer it was drawn with
       final a = extra?['a'];
-      if (extra == null || a is! String || a.length != length) return;
-      answer = a;
+      if (extra == null) return;
       saved = [for (final g in extra['g'] ?? []) g as String];
-      if (prefetchDefinitions && !_unscored) {
-        final lang = widget.bank.language;
-        Wiktionary.shared.prefetch(answer, lang.code, lang.wikt);
+      if (mastermind) {
+        // the mastermind has no answer to come back to: what it said to each
+        // guess is what is kept
+        try {
+          savedMarks = [
+            for (final row in extra['m'] as List)
+              [for (final i in row as List) Mark.values[i as int]],
+          ];
+        } catch (_) {
+          return;
+        }
+        if (savedMarks.length != saved.length ||
+            savedMarks.any((r) => r.length != length)) {
+          return;
+        }
+      } else {
+        if (a is! String || a.length != length) return;
+        answer = a;
+        if (prefetchDefinitions && !_unscored) {
+          final lang = widget.bank.language;
+          Wiktionary.shared.prefetch(answer, lang.code, lang.wikt);
+        }
       }
     }
-    for (final g in saved) {
+    for (final (i, g) in saved.indexed) {
       // a damaged save stops the replay rather than breaking the game
       if (over || g.length != length || !widget.bank.valid.contains(g)) break;
-      _apply(g, restoring: true);
+      _apply(g, restoring: true, given: savedMarks?[i]);
     }
     // the hearts lost to words that are not in the list are not in the guesses
     final left = entry?.hearts ?? extra?['h'];
@@ -268,7 +299,7 @@ class _GamePageState extends State<GamePage>
     if (d != null) {
       return d.date.isEmpty ? null : 'd|$lang|${d.date}|${mode.name}';
     }
-    return 'p|$lang|${mode.name}|$length|$tries';
+    return 'p|$lang|${mode.name}|$length|$tries${largest ? '|L' : ''}';
   }
 
   /// Keeps the game as it stands, to be resumed; a finished game is not kept.
@@ -283,6 +314,10 @@ class _GamePageState extends State<GamePage>
       'a': answer,
       'g': guesses,
       'h': hearts,
+      if (mastermind)
+        'm': [
+          for (final r in marks) [for (final m in r) m.index],
+        ],
       'in': input.toJson(),
       'p': pencil.toJson(),
       'n': [
@@ -295,14 +330,17 @@ class _GamePageState extends State<GamePage>
   void dispose() {
     _jobs.close();
     _rumble.dispose();
+    _scroll.dispose();
     _focus.dispose();
     super.dispose();
   }
 
   void _reset() {
-    answer =
-        _daily?.answer ??
-        chooseWord(_pool, widget.bank.drawWeights(length, draw), _rng);
+    // the mastermind has no answer: it is whichever word is left at the end
+    answer = mastermind
+        ? ''
+        : _daily?.answer ??
+              chooseWord(_pool, widget.bank.drawWeights(length, draw), _rng);
     // Every word the game accepts counts as possible, so a real word that fits
     // every clue is never ruled out behind the player's back. A daily is the
     // exception: only its 3,000 words can be the answer, and the scores
@@ -456,6 +494,17 @@ class _GamePageState extends State<GamePage>
       return;
     }
     setState(() => _apply(word));
+    // an endless board grows: keep the row being typed in view
+    if (mastermind) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scroll.hasClients) return;
+        _scroll.animateTo(
+          _scroll.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+      });
+    }
   }
 
   /// A word that is not in the list: it costs a heart, which breaks with a
@@ -494,8 +543,20 @@ class _GamePageState extends State<GamePage>
 
   /// Plays [word], which has been checked. [restoring] replays a saved daily
   /// guess: it is not saved or recorded again.
-  void _apply(String word, {bool restoring = false}) {
-    final m = evaluate(answer, word, blind: blind);
+  void _apply(String word, {bool restoring = false, List<Mark>? given}) {
+    final List<Mark> m;
+    if (mastermind) {
+      // the word dodges: it answers as one of the words still possible would
+      // (a saved game gives what it said), and the guess that is that word wins
+      m =
+          given ??
+          (largest
+              ? mastermindLargest(eligible, word)
+              : mastermindReply(eligible, word, _rng));
+      if (m.every((x) => x == Mark.correct)) answer = word;
+    } else {
+      m = evaluate(answer, word, blind: blind);
+    }
     guesses.add(word);
     marks.add(m);
     if (blind) notes.add(List.filled(length, null));
@@ -507,6 +568,7 @@ class _GamePageState extends State<GamePage>
     }
     if (_unscored) {
       // no scores, no review: only what the rules need
+      if (mastermind) eligible = filterEligible(eligible, word, m);
       _analysis.add(null);
       return _afterGuess(word, m, restoring);
     }
@@ -602,6 +664,8 @@ class _GamePageState extends State<GamePage>
     void record() {
       final d = _daily;
       final traits = gameTraits(metrics);
+      // an endless game is kept with the tries it took: a record has at least one
+      final triesKept = mastermind ? guesses.length.clamp(1, 40) : tries;
       GameResult result({
         int streak = 0,
         String? style,
@@ -613,10 +677,11 @@ class _GamePageState extends State<GamePage>
         heartsLeft: hearts,
         lang: widget.bank.language.code,
         length: length,
-        tries: tries,
+        tries: triesKept,
         pool: pool,
         used: guesses.length,
         won: won,
+        largest: largest,
         skills: [for (final m in metrics) m.skill],
         luck: traits.luck,
         risk: traits.risk,
@@ -639,7 +704,7 @@ class _GamePageState extends State<GamePage>
           lang: widget.bank.language.code,
           mode: mode,
           length: length,
-          tries: tries,
+          tries: triesKept,
           pool: pool,
           answers: [answer],
           won: won,
@@ -751,6 +816,7 @@ class _GamePageState extends State<GamePage>
               date: _daily?.date ?? '',
               length: length,
               tries: tries,
+              endless: mastermind,
             ),
           ),
         ),
@@ -842,11 +908,12 @@ class _GamePageState extends State<GamePage>
                     length,
               );
         return SingleChildScrollView(
+          controller: _scroll,
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
           child: Center(
             child: Column(
               children: [
-                for (var r = 0; r < tries; r++)
+                for (var r = 0; r < _boardRows; r++)
                   Padding(
                     padding: const EdgeInsets.only(bottom: gap),
                     child: _withTrailing(
@@ -1132,6 +1199,15 @@ class _GamePageState extends State<GamePage>
     if (over) return const SizedBox();
     // the daily never shows the helper: only the tries left
     final h = _daily != null || blind || themed ? Helper.off : appState.helper;
+    if (mastermind) {
+      return Caption(
+        guesses.isEmpty
+            ? (largest
+                  ? 'no limit · it keeps the largest pool'
+                  : 'no limit · it dodges as long as it can')
+            : '${guesses.length} ${guesses.length == 1 ? 'guess' : 'guesses'}',
+      );
+    }
     final triesLeft = '${tries - guesses.length} tries left';
     final left = lockdown
         ? '$hearts ${hearts == 1 ? 'heart' : 'hearts'} · $triesLeft'
@@ -1241,7 +1317,9 @@ class _GamePageState extends State<GamePage>
           Expanded(
             child: Text(
               won
-                  ? 'solved in ${guesses.length} of $tries'
+                  ? (mastermind
+                        ? 'solved in ${guesses.length}'
+                        : 'solved in ${guesses.length} of $tries')
                   : 'the $_noun was  ${equations ? answer.split('').map(faceOf).join() : answer}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),

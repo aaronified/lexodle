@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- new mode: mastermind (absurdle), no daily
+  The word is not chosen: every guess is answered as a word still possible
+  would answer it, and you win by guessing the word that is left. Random draws
+  one of the words left, so the reply that keeps the most is the likeliest;
+  largest always keeps the most, with no chance in it. There is no limit on
+  guesses. It has achievements for wins and for short games in both.
+
 - new mode: equations (nerdle), with a daily
   Guess a true equation of 6, 7 or 8 tiles: digits and + − × ÷ =, one = with a
   sum on the left and a whole number on the right, no leading zeros and no lone

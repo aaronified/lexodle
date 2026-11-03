@@ -96,6 +96,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
     'lockdown',
     'blind',
     'equations',
+    'mastermind',
     'streaks',
   ];
 
@@ -110,6 +111,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
         GameMode.lockdown => 'lockdown',
         GameMode.blind => 'blind',
         GameMode.equations => 'equations',
+        GameMode.mastermind => 'mastermind',
         _ => 'general',
       };
     }
