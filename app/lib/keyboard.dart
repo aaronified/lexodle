@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'equations.dart' show faceOf;
 import 'haptics.dart';
 import 'logic.dart';
 import 'ui.dart';
@@ -23,7 +24,16 @@ class LetterKeyboard extends StatelessWidget {
     this.marks = const {},
     this.quadMarks = const {},
     this.enterLabel = 'enter',
+    this.layout,
+    this.faces = faceOf,
   });
+
+  /// The keys by row, in place of the language's letters (the equations'
+  /// digits and signs); enter and backspace go on the last row.
+  final List<String>? layout;
+
+  /// What a key is drawn as.
+  final String Function(String) faces;
 
   final Set<String> letters;
   final Map<String, Mark> marks;
@@ -56,11 +66,18 @@ class LetterKeyboard extends StatelessWidget {
     const base = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
     final extra = letters.where((l) => !base.join().contains(l)).toList()
       ..sort();
+    final custom = layout;
     final rows = <List<String>>[
-      for (final r in base) r.split('').where(letters.contains).toList(),
-      for (var i = 0; i < extra.length; i += 10)
-        extra.sublist(i, min(i + 10, extra.length)),
+      if (custom != null)
+        for (final r in custom) r.split('')
+      else ...[
+        for (final r in base) r.split('').where(letters.contains).toList(),
+        for (var i = 0; i < extra.length; i += 10)
+          extra.sublist(i, min(i + 10, extra.length)),
+      ],
     ];
+    // enter and backspace flank the third row of letters, or the last of a layout
+    final actionRow = custom != null ? custom.length - 1 : 2;
 
     // Letters take the feedback colours; the two action keys have colours of
     // their own, from the scheme: enter is the accent, backspace the error
@@ -146,9 +163,11 @@ class LetterKeyboard extends StatelessWidget {
               children: [
                 // a short row of a language's extra letters keeps keys of the
                 // same size, centred, not stretched across the whole row
-                if (i > 2 && rows[i].length < 10)
+                if (i != actionRow &&
+                    (i > 2 || custom != null) &&
+                    rows[i].length < 10)
                   Spacer(flex: (10 - rows[i].length) * 5),
-                if (i == 2)
+                if (i == actionRow)
                   key(
                     enterLabel,
                     onEnter,
@@ -157,8 +176,13 @@ class LetterKeyboard extends StatelessWidget {
                     feel: Haptic.submit,
                   ),
                 for (final l in rows[i])
-                  key(l, () => onLetter(l), mark: marks[l], quad: quadMarks[l]),
-                if (i == 2)
+                  key(
+                    faces(l),
+                    () => onLetter(l),
+                    mark: marks[l],
+                    quad: quadMarks[l],
+                  ),
+                if (i == actionRow)
                   key(
                     '⌫',
                     onBack,
@@ -166,7 +190,9 @@ class LetterKeyboard extends StatelessWidget {
                     colors: (c.errorContainer, c.onErrorContainer),
                     feel: Haptic.erase,
                   ),
-                if (i > 2 && rows[i].length < 10)
+                if (i != actionRow &&
+                    (i > 2 || custom != null) &&
+                    rows[i].length < 10)
                   Spacer(flex: (10 - rows[i].length) * 5),
               ],
             ),

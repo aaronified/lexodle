@@ -35,7 +35,11 @@ class DifficultyMatrix extends StatelessWidget {
     this.extra = '',
     this.noun = 'words',
     this.nounOne = 'word',
+    this.lengthUnit = 'letters',
   });
+
+  /// What the length counts: letters, or the tiles of an equation.
+  final String lengthUnit;
 
   /// The chosen level: the tries, or in lockdown the hearts.
   final int tries;
@@ -65,7 +69,8 @@ class DifficultyMatrix extends StatelessWidget {
     // longest first: the easiest row is at the top, the colour follows
     final rows = [...lengths]..sort((a, b) => b.compareTo(a));
     final cols = levels.length;
-    String counted(int n) => '$n ${n == 1 ? unit.$1 : unit.$2}';
+    String counted(int n) =>
+        n == 0 ? 'no limit' : '$n ${n == 1 ? unit.$1 : unit.$2}';
     final selCol = levels.indexWhere((l) => l.$2 == tries).clamp(0, cols - 1);
     final selRow = rows.indexOf(length).clamp(0, rows.length - 1);
     final span = (rows.length - 1 + cols - 1).clamp(1, 100);
@@ -110,7 +115,7 @@ class DifficultyMatrix extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: Text(
-                    '${rows[r]} letters',
+                    '${rows[r]} $lengthUnit',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -123,7 +128,7 @@ class DifficultyMatrix extends StatelessWidget {
                   child: _Cell(
                     color: difficultyColor(c, (r + col) / span),
                     selected: r == selRow && col == selCol,
-                    label: '${counted(levels[col].$2)}, ${rows[r]} letters',
+                    label: '${counted(levels[col].$2)}, ${rows[r]} $lengthUnit',
                     onTap: () => onChanged(levels[col].$2, rows[r]),
                   ),
                 ),
@@ -143,7 +148,7 @@ class DifficultyMatrix extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '${levels[selCol].$1} · $length letters: ${counted(tries)}, '
+                '${levels[selCol].$1} · $length $lengthUnit: ${counted(tries)}, '
                 '$extra${available == null ? 'every $nounOne of this length' : '${_thousands(available!)} $noun of this length'}',
                 key: const ValueKey('difficulty-summary'),
                 style: TextStyle(

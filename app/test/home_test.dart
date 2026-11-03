@@ -125,32 +125,36 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.lockdown);
-      // themed is in the loop too, and has no daily; blind has one
+      // blind and equations have a daily; themed (last) has none
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.blind);
+      expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('mode-next')));
+      await tester.pumpAndSettle();
+      expect(appState.mode, GameMode.equations);
+      expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.themed);
       expect(find.byKey(const ValueKey('daily-button')), findsNothing);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
-      expect(appState.mode, GameMode.blind);
-      expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('mode-next')));
-      await tester.pumpAndSettle();
       expect(appState.mode, GameMode.classic);
       expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('mode-prev')));
       await tester.pumpAndSettle();
-      expect(appState.mode, GameMode.blind);
+      expect(appState.mode, GameMode.themed);
     });
 
     testWidgets('themed is not in the loop in another language', (
       tester,
     ) async {
-      appState.setup(lang: 'fr', mode: GameMode.lockdown);
+      appState.setup(lang: 'fr', mode: GameMode.equations);
       await home(tester);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
-      expect(appState.mode, GameMode.blind);
+      expect(appState.mode, GameMode.classic);
       expect(find.byKey(const ValueKey('mode-dot-themed')), findsNothing);
     });
 

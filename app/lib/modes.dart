@@ -11,19 +11,38 @@ enum GameMode {
   relay('relay race', 'four words, one after the other', 4, 4),
   lockdown('lockdown', 'greens lock · bad words cost hearts', 1, 0),
   themed('themed', 'words of a theme only · english', 1, 0),
-  blind('blind', 'only counts, no tile colours', 1, 0);
+  blind('blind', 'only counts, no tile colours', 1, 0),
+  // added after the others: a saved game or setting keeps its mode by
+  // position, so the order here must not change
+  equations('equations', 'nerdle: find the sum', 1, 0);
 
   const GameMode(this.label, this.sub, this.boards, this.extraTries);
 
   /// The modes of a swipe, in order, for the language [lang]: every mode, and
-  /// themed only in English.
+  /// themed (the last) only in English.
   static List<GameMode> loopFor(String lang) => [
-    for (final m in values)
+    for (final m in [
+      classic,
+      quartet,
+      relay,
+      lockdown,
+      blind,
+      equations,
+      themed,
+    ])
       if (m != themed || lang == 'en') m,
   ];
 
   /// Whether the mode has a daily: every mode but themed.
   bool get hasDaily => this != themed;
+
+  /// Whether the guesses have skill and luck scores, and so a review: not the
+  /// equations.
+  bool get scored => this != equations;
+
+  /// Whether the answers are equations, not words.
+  bool get isEquations => this == equations;
+
   final String label;
   final String sub;
 

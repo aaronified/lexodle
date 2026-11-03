@@ -18,6 +18,7 @@ String modeIconName(GameMode m) => switch (m) {
   GameMode.lockdown => 'lock',
   GameMode.themed => 'world',
   GameMode.blind => 'zoom-question',
+  GameMode.equations => 'calculator',
 };
 
 /// The mode under the modes' own line: "four words at once · +3 tries".

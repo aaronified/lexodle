@@ -95,6 +95,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
     'relay race',
     'lockdown',
     'blind',
+    'equations',
     'streaks',
   ];
 
@@ -108,6 +109,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
         GameMode.relay => 'relay race',
         GameMode.lockdown => 'lockdown',
         GameMode.blind => 'blind',
+        GameMode.equations => 'equations',
         _ => 'general',
       };
     }
