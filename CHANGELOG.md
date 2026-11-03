@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- history: equations and mastermind games can be opened
+  Tap one in the list to see its board as it was played, each guess coloured.
+  They have no review, so the board is all there is.
+
 - the mode swipe is a ratchet
   A drag across the whole button turns three modes: the face follows the
   finger and takes the next mode as each third is passed, with a tick. A short,

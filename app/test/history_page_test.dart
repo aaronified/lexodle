@@ -527,6 +527,62 @@ void main() {
     expect(find.byType(HistoryPage), findsOneWidget);
   });
 
+  testWidgets('an equations game opens as its board, coloured as played', (
+    tester,
+  ) async {
+    await load(tester);
+    final h = History();
+    final row = h.add(
+      at: ms(24),
+      lang: 'fr',
+      mode: GameMode.equations,
+      length: 8,
+      tries: 6,
+      pool: 17356,
+      answers: ['12+34=46'],
+      won: true,
+      guesses: const [
+        GuessRow(game: 0, n: 0, word: '10+20=30'),
+        GuessRow(game: 0, n: 1, word: '12+34=46'),
+      ],
+    );
+    await show(tester, h);
+    await tester.tap(find.byKey(ValueKey('game-${row.id}')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('plain-replay')), findsOneWidget);
+    expect(find.text('solved in 2'), findsOneWidget);
+    expect(find.byKey(const ValueKey('replay-row-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('replay-1-7')), findsOneWidget);
+    expect(find.text('+'), findsWidgets);
+  });
+
+  testWidgets('a mastermind game opens as its board, every row fitting the '
+      'word it settled on', (tester) async {
+    await load(tester);
+    final h = History();
+    final row = h.add(
+      at: ms(24),
+      lang: 'fr',
+      mode: GameMode.mastermind,
+      length: 4,
+      tries: 3,
+      pool: 500,
+      answers: [pool[10]],
+      won: true,
+      guesses: [
+        GuessRow(game: 0, n: 0, word: pool[3]),
+        GuessRow(game: 0, n: 1, word: pool[7]),
+        GuessRow(game: 0, n: 2, word: pool[10]),
+      ],
+    );
+    await show(tester, h);
+    await tester.tap(find.byKey(ValueKey('game-${row.id}')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('plain-replay')), findsOneWidget);
+    expect(find.text('solved in 3'), findsOneWidget);
+    expect(find.byKey(const ValueKey('replay-row-2')), findsOneWidget);
+  });
+
   testWidgets(
     'games saved under older maths are scored again while it is open',
     (tester) async {

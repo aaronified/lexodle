@@ -6,6 +6,7 @@ import 'analysis.dart';
 import 'daily.dart';
 import 'geography.dart';
 import 'history.dart';
+import 'plain_replay_page.dart';
 import 'logic.dart';
 import 'language_picker.dart';
 import 'main.dart';
@@ -91,8 +92,21 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Future<void> _open(GameRow g) async {
     final lang = _langs[g.lang];
-    // an equations or mastermind game has nothing to review
-    if (lang == null || _opening || !g.mode.scored) return;
+    if (lang == null || _opening) return;
+    // an equations or mastermind game has no review: its board is shown as
+    // it was played
+    if (!g.mode.scored) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => PlainReplayPage(
+            game: g,
+            guesses: [for (final r in appState.history.guessesOf(g.id)) r.word],
+          ),
+        ),
+      );
+      return;
+    }
     setState(() {
       _opening = true;
       _error = '';
