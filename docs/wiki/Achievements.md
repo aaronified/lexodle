@@ -11,6 +11,7 @@ the easy version to the platinum one.
 | skill | average skill 70/80/90/95; every guess above 60/75/90; 10 wins above 95 |
 | luck, risk, bits | average luck +20/40/60/80; average risk 25/40/55/70; 6/8/10/12 bits in one guess |
 | lengths, languages | a 4-letter and an 8-letter win, every length; 2/3/6/9 languages |
+| every mode, every daily | **every way in** (win in 2/4/6/7 different modes); **a full day** (solve 2/3/4/6 different dailies in one day); **clean sweep** (solve every daily on the same day) 1/7/30/100 days |
 | mastery, completionist | master 1/3/6/all languages; complete 1/3/6/all |
 | dailies | 5/25/100/365 solved; streaks of 3/14/60/365; double fires 1/10/50/200 |
 | quartet, relay race | wins, last-try wins, spare tries, free rides, daily streaks of their own; **domino** (a quartet) and **baton pass** (a relay race): win with one guess for each of the last 3 words, 1/5/15/40 |

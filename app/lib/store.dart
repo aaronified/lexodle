@@ -71,7 +71,11 @@ class GameResult {
     this.hearts = 0,
     this.heartsLeft = 0,
     this.largest = false,
+    this.date = '',
   });
+
+  /// The date of the daily (`2026-11-04`), empty for any other game.
+  final String date;
 
   /// A mastermind game that always kept the largest pool.
   final bool largest;
@@ -426,7 +430,13 @@ class Achievement {
       track == Track.metric &&
       hit == null &&
       !separate &&
-      !const {'completed', 'mastered', 'stylesWorn'}.contains(metric);
+      !const {
+        'completed',
+        'mastered',
+        'stylesWorn',
+        'modesWon',
+        'dailyDay',
+      }.contains(metric);
 }
 
 /// The metrics that count up (they get a progress bar), and those that count
@@ -442,6 +452,8 @@ const _counted = {
   'mastered',
   'completed',
   'dailies',
+  'modesWon',
+  'dailyFullDays',
   'streakClassic',
   'streakQuartet',
   'streakRelay',
@@ -613,6 +625,41 @@ final achievements = <Achievement>[
     (n) => 'win at $n different word lengths',
     'lengths',
     _lv([2, 3, 4, 5], ['brevity', 'long haul', 'wide range', 'full range']),
+  ),
+  Achievement.leveled(
+    'modes_won',
+    'apps',
+    'every way in',
+    (n) => 'win in $n different modes',
+    'modesWon',
+    _lv(
+      [2, 4, 6, 7],
+      ['two ways in', 'well rounded', 'all but one', 'every way in'],
+    ),
+  ),
+  Achievement.leveled(
+    'daily_day',
+    'sun-high',
+    'a full day',
+    (n) => 'solve $n different dailies in one day',
+    'dailyDay',
+    _lv(
+      [2, 3, 4, 6],
+      ['double daily', 'triple daily', 'four-leaf day', 'full house'],
+    ),
+  ),
+  Achievement.leveled(
+    'daily_full_days',
+    'laurel-wreath',
+    'clean sweep',
+    (n) => n == 1
+        ? 'solve every daily on the same day'
+        : 'solve every daily on $n days',
+    'dailyFullDays',
+    _lv(
+      [1, 7, 30, 100],
+      ['clean sweep', 'sweep week', 'sweep month', 'century sweep'],
+    ),
   ),
   Achievement.leveled(
     'languages',
@@ -1656,6 +1703,27 @@ Metric _dailyStreak(GameMode mode) => Metric({
   mode,
 }, (st, r) => r.daily ? _best(st.value, r.dailyStreak.toDouble()) : st.value);
 
+/// The modes that have a daily.
+final _dailyModes = {
+  for (final m in GameMode.values)
+    if (m.hasDaily) m,
+};
+
+/// Notes a solved daily of [r] in [st]'s day (a new day starts it afresh).
+/// False when the game is not a solved daily, or is of an earlier day.
+bool _dailyDaySeen(AchState st, GameResult r) {
+  if (!r.daily || !r.won || r.date.isEmpty) return false;
+  final day = st.seen.isEmpty ? null : st.seen.first;
+  if (day != null && r.date.compareTo(day) < 0) return false;
+  if (day != r.date) {
+    st.seen
+      ..clear()
+      ..add(r.date);
+  }
+  st.seen.add(r.mode.name);
+  return true;
+}
+
 Metric _style(String id) =>
     Metric(_anyMode, (st, r) => r.style == id ? 1 : st.value);
 
@@ -1690,17 +1758,38 @@ final metrics = <String, Metric>{
   'bestLuck': _most(_classicOnly, (r) => r.won ? r.luck : null),
   'bestRisk': _most(_classicOnly, (r) => r.won ? r.risk : null),
   'bestBits': _most(_classicOnly, (r) => r.maxBits > 0 ? r.maxBits : null),
+  // the modes won in, all of them counting
+  'modesWon': Metric(GameMode.values.toSet(), (st, r) {
+    if (r.won) st.seen.add(r.mode.name);
+    return st.seen.length.toDouble();
+  }),
+  // the dailies solved on one day: seen holds the day first, then the modes
+  // solved on it
+  'dailyDay': Metric(_dailyModes, (st, r) {
+    if (!_dailyDaySeen(st, r)) return st.value;
+    return _best(st.value, (st.seen.length - 1).toDouble());
+  }),
+  // the days on which every daily was solved ('done' marks the day counted)
+  'dailyFullDays': Metric(_dailyModes, (st, r) {
+    if (!_dailyDaySeen(st, r)) return st.value;
+    if (st.seen.contains('done') ||
+        !_dailyModes.every((m) => st.seen.contains(m.name))) {
+      return st.value;
+    }
+    st.seen.add('done');
+    return st.value + 1;
+  }),
   'lengths': Metric(_anyMode, (st, r) {
     if (r.won) st.seen.add('${r.length}');
     return st.seen.length.toDouble();
   }),
   'won4': _count(_anyMode, (r) => r.won && r.length == 4),
   'won8': _count(_anyMode, (r) => r.won && r.length == 8),
-  'dailies': _count(_anyMode, (r) => r.daily && r.won),
+  'dailies': _count(_everyMode, (r) => r.daily && r.won),
   'streakClassic': _dailyStreak(GameMode.classic),
   'streakQuartet': _dailyStreak(GameMode.quartet),
   'streakRelay': _dailyStreak(GameMode.relay),
-  'doubles': _count(_anyMode, (r) => r.daily && r.isDouble),
+  'doubles': _count(_everyMode, (r) => r.daily && r.isDouble),
   'quartetWins': _count(_quartetOnly, (r) => r.won),
   'quartetLast': _count(_quartetOnly, (r) => r.won && r.used == r.tries),
   'quartetSpare': _most(
@@ -3002,6 +3091,7 @@ class AppState extends ChangeNotifier {
         risk: rn == 0 ? null : risk / rn,
         maxBits: bits,
         daily: g.daily.isNotEmpty,
+        date: g.daily,
         dailyStreak: streak,
         style: last ? styleIdOf(g.lang) : null,
         stylesHeld: last ? stylesHeldOf(g.lang).length : 0,

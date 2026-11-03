@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- achievements for winning in every mode and for every daily of a day
+  Every way in (win in 2, 4, 6 or 7 different modes), a full day (solve 2, 3,
+  4 or 6 different dailies in one day) and clean sweep (every daily on the
+  same day, 1, 7, 30 and 100 days). The equations daily now counts among the
+  dailies and double fires too.
+
 - hold alt to see every shortcut and gesture
   After a tenth of a second a frosted pane lists them, for as long as alt is
   held. It takes no touch or key: the screen under it goes on working.
