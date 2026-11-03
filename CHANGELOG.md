@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- a yellow dot above a chevron when a daily is pending that way
+  The nearest pending daily in each direction round the modes, so at most two
+  dots, one above each chevron. The mode in view is not counted.
+
 - split keys: the letter has a stronger shadow
   A ring of shadow in the opposite colour all round the letter, so it reads
   over yellow and green.
