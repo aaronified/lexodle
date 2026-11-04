@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/analysis.dart';
 import 'package:lexodle/daily.dart';
+import 'package:lexodle/equations.dart';
 import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
 import 'package:lexodle/main.dart';
@@ -527,33 +528,33 @@ void main() {
     expect(find.byType(HistoryPage), findsOneWidget);
   });
 
-  testWidgets('an equations game opens as its board, coloured as played', (
+  testWidgets('an equations game opens in the review, as a word game does', (
     tester,
   ) async {
     await load(tester);
+    await tester.runAsync(() async {
+      final langs = await WordBank.languages();
+      await Equations.load(langs.firstWhere((l) => l.code == 'fr'));
+    });
     final h = History();
     final row = h.add(
       at: ms(24),
       lang: 'fr',
       mode: GameMode.equations,
-      length: 8,
+      length: 6,
       tries: 6,
-      pool: 17356,
-      answers: ['12+34=46'],
+      pool: 206,
+      answers: ['4*5=20'],
       won: true,
       guesses: const [
-        GuessRow(game: 0, n: 0, word: '10+20=30'),
-        GuessRow(game: 0, n: 1, word: '12+34=46'),
+        GuessRow(game: 0, n: 0, word: '1+9=10'),
+        GuessRow(game: 0, n: 1, word: '4*5=20'),
       ],
     );
     await show(tester, h);
     await tester.tap(find.byKey(ValueKey('game-${row.id}')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('plain-replay')), findsOneWidget);
-    expect(find.text('solved in 2'), findsOneWidget);
-    expect(find.byKey(const ValueKey('replay-row-1')), findsOneWidget);
-    expect(find.byKey(const ValueKey('replay-1-7')), findsOneWidget);
-    expect(find.text('+'), findsWidgets);
+    expect(find.byType(ReviewPage), findsOneWidget);
   });
 
   testWidgets('a mastermind game opens as its board, every row fitting the '

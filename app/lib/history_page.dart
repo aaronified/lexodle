@@ -1,3 +1,5 @@
+import 'equations.dart';
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -93,8 +95,7 @@ class _HistoryPageState extends State<HistoryPage> {
   Future<void> _open(GameRow g) async {
     final lang = _langs[g.lang];
     if (lang == null || _opening) return;
-    // an equations or mastermind game has no review: its board is shown as
-    // it was played
+    // a mastermind game has no review: its board is shown as it was played
     if (!g.mode.scored) {
       await Navigator.push(
         context,
@@ -114,6 +115,8 @@ class _HistoryPageState extends State<HistoryPage> {
     try {
       final bank = g.mode == GameMode.themed
           ? await Geography.load(lang)
+          : g.mode == GameMode.equations
+          ? await Equations.load(lang)
           : await WordBank.load(lang);
       final rows = appState.history.guessesOf(g.id);
       final record = !g.mode.multi

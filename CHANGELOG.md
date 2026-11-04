@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- equations: skill, luck and a review after the game
+  Scored as words are, against the best equation that could have been played.
+  The opening is searched on another thread from the moment the game starts and
+  kept for the next game (about 10 seconds the first time at 8 tiles). New
+  achievements for skill and luck. History opens an equations game in its
+  review.
+
 - mastermind: the word's wiktionary page loads before the last guess
   The word is known once only one is left, so it is looked up then, and the
   game over page has it at once.

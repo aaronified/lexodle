@@ -83,7 +83,7 @@ The home swipe goes classic, quartet, relay race, lockdown, blind, equations, ma
 true equation with one `=`, a sum on the left and one whole number on the right, read with the usual
 order of operations (no leading zeros, no sign in front of a number, and no lone 0, so `10` is fine).
 The colours work as in classic. It has 6, 7 or 8 tiles and the tries of the difficulty (6 by default),
-and no helper, skill or review. It has a **daily**: 8 tiles, 6 tries, the same equation in every
+and no helper. Its guesses are scored for skill and luck and reviewed after the game, as words are (the first, slowest score is worked out on another thread when the game starts and kept for the next game). It has a **daily**: 8 tiles, 6 tries, the same equation in every
 language.
 
 **Mastermind**: no word is chosen. Each guess is answered as a word still possible

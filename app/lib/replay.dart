@@ -1,3 +1,4 @@
+import 'equations.dart';
 import 'analysis_worker.dart';
 import 'daily.dart';
 import 'history.dart';
@@ -234,6 +235,8 @@ Future<int> rescoreStale(
     try {
       final bank = g.mode == GameMode.themed
           ? await _placesBank(bankFor, g.lang)
+          : g.mode == GameMode.equations
+          ? await _equationsBank(bankFor, g.lang)
           : await bankFor(g.lang);
       if (bank == null) continue;
       final rows = h.guessesOf(g.id);
@@ -248,6 +251,15 @@ Future<int> rescoreStale(
     }
   }
   return done;
+}
+
+/// The equations, as the bank of the language [lang].
+Future<WordBank?> _equationsBank(
+  Future<WordBank?> Function(String code) bankFor,
+  String lang,
+) async {
+  final b = await bankFor(lang);
+  return b == null ? null : Equations.load(b.language);
 }
 
 /// The places of the themed wordle, as the bank of the language [lang] (they

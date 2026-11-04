@@ -50,7 +50,8 @@ void main() {
       expect(GameMode.mastermind.hasDaily, isFalse);
       expect(GameMode.themed.hasDaily, isFalse);
       expect(GameMode.mastermind.endless, isTrue);
-      expect(GameMode.equations.scored, isFalse);
+      expect(GameMode.equations.scored, isTrue);
+      expect(GameMode.mastermind.scored, isFalse);
       expect(GameMode.classic.scored, isTrue);
     });
   });
@@ -488,6 +489,47 @@ void main() {
       await tester.tap(find.text('enter'));
       await tester.pump();
       expect(find.textContaining('solved in 1 of 6'), findsOneWidget);
+    });
+
+    testWidgets('an equations game is scored and can be reviewed', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1700));
+      await appState.load();
+      appState.setup(mode: GameMode.equations, tries: 6, eqLength: 6);
+      final bank = (await tester.runAsync(
+        () async => Equations.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+        ),
+      ))!;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GamePage(
+            bank: bank,
+            mode: GameMode.equations,
+            practice: true,
+            daily: const Daily('', '4*5=20', length: 6, tries: 6),
+          ),
+          onGenerateRoute: onGenerateRoute,
+        ),
+      );
+      await tester.pump();
+      Future<void> play(String eq) async {
+        for (final ch in eq.split('')) {
+          await tester.tap(find.text(faceOf(ch)).last);
+          await tester.pump();
+        }
+        await tester.tap(find.text('enter'));
+        await tester.pump();
+      }
+
+      await play('1+9=10');
+      await play('4*5=20');
+      await tester.pumpAndSettle();
+      expect(find.textContaining('solved in 2'), findsOneWidget);
+      // skill and luck are there, and the review button
+      expect(find.textContaining('average'), findsOneWidget);
+      expect(find.text('review'), findsOneWidget);
     });
 
     testWidgets('equations: the hardware keyboard takes x as times', (
