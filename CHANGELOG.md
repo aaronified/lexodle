@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- precomputed openings, on the web and on the phone
+  The web reads the opening of a list from the `precomputed` branch instead of
+  working it out (a minute on the web), and the opening page shows the best
+  second guesses at once. On the phone, settings has a faster openings section
+  that shows the size of the language in use, the equations, the places and
+  every list, and downloads the ones chosen; they can be removed again.
 - learn achievements are counted for each mode
   Practice, choose the best, closing and three words have their own levels in
   every mode, worded for it (equations, places, words); what was earned in

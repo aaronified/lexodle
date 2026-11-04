@@ -129,9 +129,18 @@ keep tens of megabytes of old copies:
   under the key the app looks it up by (a hash of the words, the guesses and the weights, so a
   changed word list simply misses and is worked out on the device).
 - `trees/<key>.json`: the best first guess and the best second guesses after each of the 12
-  likeliest replies to it.
+  likeliest replies to it, each as `[word, skill, words left on average, 1 if it could be the answer]`.
 - `manifest.json`: every file with its list, length, draw, size, and the total per list.
 
-Luck is not precomputed: it depends on the answer, so it is worked out on the device. To run it by
+Luck is not precomputed: it depends on the answer, so it is worked out on the device.
+
+How the app uses them: **on the web** the analysis fetches `openings/<key>.bin` from
+`raw.githubusercontent.com/<owner>/<repo>/precomputed/` before scoring a list of 2,000 words or more
+(a minute of work there otherwise), and the opening page fetches the tree. A miss (offline, a changed
+list, nothing published) just works it out. **On a phone** settings has a **faster openings** section:
+it reads `manifest.json`, shows what the language in use, the equations, the places and every list take
+(for example "english · download 3.4 MB"), and downloads the ones chosen to the app's own files
+(`files/lexodle-precomputed` on Android). The analysis finds them where it would have kept its own
+openings, and they are never trimmed with the ten kept last; **remove** deletes them. To run it by
 hand: `flutter test tool/precompute_test.dart --timeout none` in `app` (the environment variables
 `PRECOMPUTE_OUT`, `PRECOMPUTE_LANGS` and `PRECOMPUTE_LENGTHS` are in the file's header).

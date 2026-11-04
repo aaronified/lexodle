@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,8 @@ import 'main.dart';
 import 'opening.dart';
 import 'ui.dart';
 import 'modes.dart';
+import 'precomputed.dart';
+import 'precomputed_local.dart';
 import 'words.dart';
 
 /// The opening, as a lesson: the best first guess for the language and length,
@@ -72,11 +75,56 @@ class _OpeningPageState extends State<OpeningPage> {
       seconds.clear();
       _open.clear();
     });
-    _fill(serial, lines);
+    _fromTree(serial, first, lines).whenComplete(() => _fill(serial, lines));
+  }
+
+  /// The best second guesses the precompute workflow kept for the best first
+  /// guess, when they were downloaded (or, on the web, can be read): shown at
+  /// once, and only the replies it has not got are worked out.
+  Future<void> _fromTree(
+    int serial,
+    String first,
+    List<GroupLine> lines,
+  ) async {
+    try {
+      final key = openingKeyOf(_words, _words, _law, false);
+      final name = openingFileName(key);
+      final local = PrecomputedLocal.readTree(name);
+      final tree = local != null
+          ? jsonDecode(local) as Map<String, dynamic>
+          : await fetchPrecomputedTree(key);
+      if (tree == null ||
+          tree['first'] != first ||
+          !mounted ||
+          serial != _serial) {
+        return;
+      }
+      final by = {
+        for (final g in tree['groups'] as List)
+          g['marks'] as String: [
+            for (final r in g['seconds'] as List)
+              Recommendation(
+                r[0] as String,
+                (r[1] as num).toDouble(),
+                (r[2] as num).toDouble(),
+                r[3] == 1,
+              ),
+          ],
+      };
+      setState(() {
+        for (var i = 0; i < lines.length; i++) {
+          final got = by[lines[i].marks.map((m) => m.index).join()];
+          if (got != null && got.isNotEmpty) seconds[i] = got;
+        }
+      });
+    } catch (_) {
+      // a hint: the second guesses are worked out when there is none
+    }
   }
 
   Future<void> _fill(int serial, List<GroupLine> lines) async {
     for (var i = 0; i < lines.length; i++) {
+      if (seconds.containsKey(i)) continue;
       final best = await secondGuesses(
         group: lines[i],
         guessable: _words,
