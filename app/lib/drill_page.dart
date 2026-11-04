@@ -80,13 +80,13 @@ class _DrillPageState extends State<DrillPage> {
       ? buildClosingQuestion(
           bank: widget.bank,
           length: length,
-          draw: appState.draw,
+          draw: appState.learnDraw,
           rng: _rng,
         )
       : buildDrillQuestion(
           bank: widget.bank,
           length: length,
-          draw: appState.draw,
+          draw: appState.learnDraw,
           rng: _rng,
         );
 

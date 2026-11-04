@@ -25,12 +25,12 @@ Future<SequenceScore> _findBenchmark(WordBank bank) async {
   final land = await openingLandscape(
     bank: bank,
     length: length,
-    draw: appState.draw,
+    draw: appState.learnDraw,
   );
   return benchmarkSequence(
     bank: bank,
     length: length,
-    draw: appState.draw,
+    draw: appState.learnDraw,
     firsts: [for (final r in land.top) r.word],
   );
 }
@@ -57,7 +57,10 @@ class _SequencePageState extends State<SequencePage> {
   late final int length = appState.learnLength;
   late final List<String> _answers = widget.bank.guessable(length);
   late final Set<String> _letters = widget.bank.letters(length);
-  late final Map<String, int>? _law = widget.bank.law(length, appState.draw);
+  late final Map<String, int>? _law = widget.bank.law(
+    length,
+    appState.learnDraw,
+  );
   late final input = GuessInput(length);
 
   final words = <String>[];

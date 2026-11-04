@@ -2369,6 +2369,13 @@ class AppState extends ChangeNotifier {
   /// The length of an equation, in tiles: one of [equationLengths].
   int eqLength = 8;
 
+  /// The chances the learn pages weigh the words by: as the game does, every
+  /// equation and every word of the mastermind is as likely as the next.
+  Draw get learnDraw =>
+      mode == GameMode.equations || mode == GameMode.mastermind
+      ? Draw.equal
+      : draw;
+
   /// The length the learn pages work at: the equations have their own.
   int get learnLength => mode == GameMode.equations ? eqLength : length;
 

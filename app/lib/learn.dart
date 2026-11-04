@@ -96,7 +96,7 @@ class _LearnPageState extends State<LearnPage> {
   void _reset() {
     answer = chooseWord(
       _pool,
-      widget.bank.drawWeights(length, appState.draw),
+      widget.bank.drawWeights(length, appState.learnDraw),
       _rng,
     );
     // every word the game accepts could be the answer as far as a clue goes
@@ -119,7 +119,7 @@ class _LearnPageState extends State<LearnPage> {
     _startPosition();
   }
 
-  Map<String, int>? get _law => widget.bank.law(length, appState.draw);
+  Map<String, int>? get _law => widget.bank.law(length, appState.learnDraw);
 
   /// Starts the analysis of the position the words that fit now make: the best
   /// guesses, for the hints and for grading the next guess.
