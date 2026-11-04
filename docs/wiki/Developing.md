@@ -111,3 +111,27 @@ One run holds the newest 4,000 lines. At the next start it moves to a history of
 characters. **view this run** shows the last lines; **export this run** and **export everything**
 save a text file to Downloads (`lexodle-log-run-…txt`, `lexodle-log-all-…txt`) to send with a
 problem report. A failed save is counted and shown in the section's summary line.
+
+## Precomputed openings
+
+The opening of a game scores every word of a list against every other, which takes seconds on a
+phone and about a minute on the web (no worker thread there). The **precompute** workflow
+(Actions > precompute > Run workflow, by hand only) works them out ahead for every language and
+length, for the three answer weightings (curve, equal, frequency), blind and not, for the equations
+and for the places, with the app's own scoring (`app/lib/logic.dart`) and the word lists as they are
+at that commit. Its input `lists` limits a run to some languages (or `equations`, `places`); the
+lists left out keep their published files.
+
+It publishes to the **`precomputed`** branch, replaced whole by every run so the history does not
+keep tens of megabytes of old copies:
+
+- `openings/<key>.bin`: the gain and risk of every first guess, in the app's own cache format and
+  under the key the app looks it up by (a hash of the words, the guesses and the weights, so a
+  changed word list simply misses and is worked out on the device).
+- `trees/<key>.json`: the best first guess and the best second guesses after each of the 12
+  likeliest replies to it.
+- `manifest.json`: every file with its list, length, draw, size, and the total per list.
+
+Luck is not precomputed: it depends on the answer, so it is worked out on the device. To run it by
+hand: `flutter test tool/precompute_test.dart --timeout none` in `app` (the environment variables
+`PRECOMPUTE_OUT`, `PRECOMPUTE_LANGS` and `PRECOMPUTE_LENGTHS` are in the file's header).

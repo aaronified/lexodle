@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- a workflow that precomputes the openings
+  Run by hand, it works out the opening of every list ahead, with the app's own
+  scoring, and publishes it to the `precomputed` branch (the web app and the
+  phone's download will read it; that comes next).
 - practise an equation no longer crashes
   The learn pages worked at the word length (5) in the equations mode, where no
   equation has that length, so the page broke. They now use the length of the

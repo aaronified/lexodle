@@ -1,0 +1,158 @@
+name: precompute
+
+# Works out the opening of every word list the app has, with the app's own
+# scoring code (app/lib/logic.dart) and the word lists as they are now, and
+# publishes the result to the `precomputed` branch: the web app reads it from
+# there, and the phone app downloads it from the settings. Run by hand only
+# (Actions > precompute > Run workflow); it takes a few hours.
+#
+# The branch is replaced by every run, so the history does not fill up with
+# copies of files that are tens of megabytes together.
+#
+# `lists`: language codes, `equations` and `places`, comma separated; empty is
+# all of them. A partial run replaces only those lists in the published files.
+
+on:
+  workflow_dispatch:
+    inputs:
+      lists:
+        description: 'language codes, equations, places (comma separated; empty = all)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: precompute
+  cancel-in-progress: false
+
+jobs:
+  lists:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: m
+        run: |
+          set -euo pipefail
+          all=$(jq -c '[.[].code] + ["equations","places"]' app/assets/words/languages.json)
+          want='${{ inputs.lists }}'
+          if [ -z "$want" ]; then
+            echo "matrix={\"list\":$all}" >> "$GITHUB_OUTPUT"
+          else
+            sel=$(jq -c --arg w "$want" '[ .[] | select(. as $x | ($w | split(",") | map(gsub(" ";"")) | index($x))) ]' <<<"$all")
+            echo "matrix={\"list\":$sel}" >> "$GITHUB_OUTPUT"
+          fi
+
+  compute:
+    needs: lists
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.lists.outputs.matrix) }}
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Work out the openings of ${{ matrix.list }}
+        env:
+          PRECOMPUTE_OUT: ${{ github.workspace }}/out
+          PRECOMPUTE_LANGS: ${{ matrix.list }}
+        run: flutter test tool/precompute_test.dart --timeout none
+      - uses: actions/upload-artifact@v4
+        with:
+          name: precomputed-${{ matrix.list }}
+          path: out
+          retention-days: 2
+
+  publish:
+    needs: compute
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: precomputed-*
+          path: parts
+
+      - name: Keep the lists this run did not redo
+        run: |
+          set -euo pipefail
+          # the branch as it is, so a partial run only replaces its own lists
+          if git ls-remote --exit-code --heads "https://github.com/${GITHUB_REPOSITORY}.git" precomputed >/dev/null 2>&1; then
+            git clone --depth 1 --branch precomputed "https://github.com/${GITHUB_REPOSITORY}.git" site
+            rm -rf site/.git
+          else
+            mkdir site
+          fi
+
+      - name: Put the new files in, and the manifest
+        run: |
+          set -euo pipefail
+          mkdir -p site/openings site/trees
+          python3 - <<'PY'
+          import glob, json, os, shutil
+          old = {}
+          if os.path.exists('site/manifest.json'):
+              old = {f['key']: f for f in json.load(open('site/manifest.json'))['files']}
+          parts = [json.load(open(os.path.join(p, 'manifest.json'))) for p in sorted(glob.glob('parts/*'))]
+          # a list that was redone is replaced whole: its old files go
+          redone = {f['list'] for m in parts for f in m['files']}
+          for key, f in list(old.items()):
+              if f['list'] in redone:
+                  del old[key]
+          for kind, ext in (('openings', 'bin'), ('trees', 'json')):
+              keep = {os.path.basename(p) for p in glob.glob('site/%s/*' % kind)}
+          for part, m in zip(sorted(glob.glob('parts/*')), parts):
+              for f in m['files']:
+                  old[f['key']] = f
+          wanted = set()
+          for f in old.values():
+              n = ''.join(c if c.isalnum() or c in '._-' else '_' for c in f['key'])
+              wanted.add(n)
+          for part in sorted(glob.glob('parts/*')):
+              for kind in ('openings', 'trees'):
+                  for p in glob.glob(os.path.join(part, kind, '*')):
+                      shutil.copy(p, os.path.join('site', kind, os.path.basename(p)))
+          for kind in ('openings', 'trees'):
+              for p in glob.glob('site/%s/*' % kind):
+                  if os.path.splitext(os.path.basename(p))[0] not in wanted:
+                      os.remove(p)
+          files = sorted(old.values(), key=lambda f: (f['list'], f['length'], f['draw'], f['blind']))
+          by_list = {}
+          for f in files:
+              by_list[f['list']] = by_list.get(f['list'], 0) + f['bytes'] + f['treeBytes']
+          import datetime
+          json.dump({
+              'format': 1,
+              'generated': datetime.datetime.utcnow().isoformat() + 'Z',
+              'source': os.environ.get('GITHUB_SHA', ''),
+              'bytes': sum(by_list.values()),
+              'lists': by_list,
+              'files': files,
+          }, open('site/manifest.json', 'w'), indent=1)
+          PY
+          du -sh site
+          cat site/manifest.json | jq '{bytes, lists}'
+
+      - name: Publish to the precomputed branch
+        working-directory: site
+        run: |
+          set -euo pipefail
+          git init -q -b precomputed
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "precomputed openings from ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" precomputed
