@@ -4,18 +4,6 @@ import 'help.dart';
 import 'modes.dart';
 import 'ui.dart';
 
-/// Whether the word drills of learn (the opening, practice, choose the best,
-/// closing, three words) fit [mode]: they teach single words with the usual
-/// colours, so they fit the modes that play like that. The rest have the guide.
-bool learnDrillsFit(GameMode mode) => switch (mode) {
-  GameMode.classic ||
-  GameMode.quartet ||
-  GameMode.relay ||
-  GameMode.lockdown ||
-  GameMode.mastermind => true,
-  GameMode.blind || GameMode.equations || GameMode.themed => false,
-};
-
 /// The strategy guide of [mode]: headed paragraphs on how to play it well.
 List<HelpSection> modeGuide(GameMode mode) => switch (mode) {
   GameMode.classic => const [

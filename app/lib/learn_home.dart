@@ -22,7 +22,6 @@ class LearnHomePage extends StatelessWidget {
       builder: (context, _) {
         final c = Theme.of(context).colorScheme;
         final mode = appState.mode;
-        final fits = learnDrillsFit(mode);
         final length = appState.length;
         final lang = bank.language.name.toLowerCase();
         final log = appState.learnLog;
@@ -114,14 +113,7 @@ class LearnHomePage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    if (!fits)
-                      const Caption(
-                        'the word drills (the opening, practice, choose the '
-                        'best, closing, three words) teach single words with '
-                        'the usual colours. choose another mode in game modes '
-                        'to use them.',
-                      ),
-                    if (fits) ...[
+                    ...[
                       _lesson(
                         context,
                         'the opening',
