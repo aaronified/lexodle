@@ -35,6 +35,13 @@ class LearnHomePage extends StatelessWidget {
               children: [
                 FlagBadge(bank.language.flag, size: 16),
                 const SizedBox(width: 8),
+                // the graduation hat: this is learn
+                TablerIcon(
+                  'school',
+                  size: headerIconSize,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
                 Flexible(
                   child: Text(
                     mode == GameMode.classic
