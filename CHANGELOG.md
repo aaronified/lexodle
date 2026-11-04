@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- learn achievements are counted for each mode
+  Practice, choose the best, closing and three words have their own levels in
+  every mode, worded for it (equations, places, words); what was earned in
+  classic stays where it was. The days in a row, the languages and the lengths
+  count whatever the mode. A learn event now knows its mode (an old one is
+  classic's), and the progress on the learn home is that of the mode in view.
 - practise a word takes everything the game takes
   Its keyboard takes the colours of the guesses; delete, shift and backspace,
   and shift to lock work; a swipe clears the row; a tap moves the cursor and a

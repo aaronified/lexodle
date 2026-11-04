@@ -389,7 +389,9 @@ class Achievement {
 
   /// Whether it has targets and a progress bar: it counts up to the next one (a
   /// best-of number, such as the best skill, has none).
-  bool get numbered => track == Track.metric && _counted.contains(metric);
+  bool get numbered =>
+      track == Track.metric &&
+      (_counted.contains(metric) || learnMetrics.containsKey(metric));
 
   /// Whether it spans languages (the ones that count languages, and the mastery
   /// badges), so belongs to none. Every other is earned, and counted, in one
@@ -1425,141 +1427,7 @@ final achievements = <Achievement>[
   // Learn mode (see learnMetrics): kept once for the player, whatever the
   // language. Free practice shows the answer, so what it counts has to be about
   // the quality of the guesses; the drills hide it.
-  Achievement.leveled(
-    'learn_words',
-    'microscope',
-    'practice',
-    (n) => n == 1
-        ? 'practise a word, with an average skill of 80 or more'
-        : 'practise $n words, each with an average skill of 80 or more',
-    'learnWords',
-    _lv(
-      [1, 10, 50, 200],
-      ['first lesson', 'a good start', 'steady hand', 'long practice'],
-    ),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_flawless',
-    'sparkles',
-    'flawless practice',
-    (n) => n == 1
-        ? 'practise a word of 3 guesses or more with every guess the best'
-        : 'practise $n such words with every guess the best',
-    'learnFlawless',
-    _lv(
-      [1, 5, 25, 100],
-      ['flawless', 'clean sheet', 'perfect form', 'never a miss'],
-    ),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_unaided',
-    'shield-check',
-    'unaided',
-    (n) => n == 1
-        ? 'practise a word without a hint, at an average skill of 90 or more'
-        : 'practise $n words without a hint, each at 90 or more',
-    'learnUnaided',
-    _lv(
-      [1, 10, 50, 200],
-      ['unaided', 'no help needed', 'own judgement', 'sure instinct'],
-    ),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_rounds',
-    'dice-5',
-    'choose the best',
-    (n) => n == 1
-        ? 'finish a round of choose the best'
-        : 'finish $n rounds of choose the best',
-    'learnRounds',
-    _lv(
-      [1, 5, 25, 100],
-      ['first round', 'regular', 'dedicated', 'a hundred rounds'],
-    ),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_perfect',
-    'award',
-    'ten of ten',
-    (n) => n == 1
-        ? 'get all ten right in a round of choose the best'
-        : 'get all ten right in $n rounds of choose the best',
-    'learnPerfect',
-    _lv([1, 5, 25, 100], ['ten of ten', 'sharp eye', 'keen eye', 'unerring']),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_closing',
-    'flag',
-    'closing',
-    (n) => n == 1 ? 'finish a round of closing' : 'finish $n rounds of closing',
-    'learnClosing',
-    _lv(
-      [1, 5, 25, 100],
-      ['last tries', 'closer', 'finisher', 'endgame master'],
-    ),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_closing_perfect',
-    'trophy',
-    'clean finish',
-    (n) => n == 1
-        ? 'get all ten right in a round of closing'
-        : 'get all ten right in $n rounds of closing',
-    'learnClosingPerfect',
-    _lv(
-      [1, 5, 25, 100],
-      ['clean finish', 'sure finish', 'cold finish', 'never fails'],
-    ),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_sequences',
-    'cards',
-    'three words',
-    (n) => n == 1
-        ? 'score a sequence of three words at skill 70 or more'
-        : 'score $n sequences of three words at skill 70 or more',
-    'learnSequences',
-    _lv(
-      [1, 10, 50, 200],
-      ['three words', 'good sets', 'many sets', 'a library of sets'],
-    ),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_sequence_sharp',
-    'bolt',
-    'sharp three',
-    (n) => n == 1
-        ? 'score a sequence of three words at skill 90 or more'
-        : 'score $n sequences of three words at skill 90 or more',
-    'learnSequenceSharp',
-    _lv(
-      [1, 5, 25, 100],
-      ['sharp three', 'keen three', 'fine three', 'master three'],
-    ),
-    tagIcon: 'bulb',
-  ),
-  Achievement.leveled(
-    'learn_sequence_best',
-    'diamond',
-    'the best three',
-    (n) => n == 1
-        ? 'find a sequence of three words as good as the best found'
-        : 'find $n sequences of three words as good as the best found',
-    'learnSequenceBest',
-    _lv(
-      [1, 3, 10, 50],
-      ['the best three', 'best again', 'a habit of best', 'always best'],
-    ),
-    tagIcon: 'bulb',
-  ),
+  for (final m in GameMode.values) ..._learnOf(m),
   Achievement.leveled(
     'learn_streak',
     'flame',
@@ -1618,6 +1486,165 @@ final achievements = <Achievement>[
     tagIcon: 'bulb',
   ),
 ];
+
+/// The learn achievements of [m]: the same for every mode, each counted on its
+/// own. Classic's keep their old ids and metrics, so what was earned stays.
+List<Achievement> _learnOf(GameMode m) {
+  String id(String base) => m == GameMode.classic ? base : '${base}_${m.name}';
+  String metric(String base) => learnMetricOf(base, m);
+  final things = thingOf(m);
+  final a = m == GameMode.equations
+      ? 'an equation'
+      : 'a ${thingOf(m, plural: false)}';
+  return [
+    Achievement.leveled(
+      id('learn_words'),
+      'microscope',
+      'practice',
+      (n) => n == 1
+          ? 'practise $a, with an average skill of 80 or more'
+          : 'practise $n $things, each with an average skill of 80 or more',
+      metric('learnWords'),
+      _lv(
+        [1, 10, 50, 200],
+        ['first lesson', 'a good start', 'steady hand', 'long practice'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_flawless'),
+      'sparkles',
+      'flawless practice',
+      (n) => n == 1
+          ? 'practise $a of 3 guesses or more with every guess the best'
+          : 'practise $n such $things with every guess the best',
+      metric('learnFlawless'),
+      _lv(
+        [1, 5, 25, 100],
+        ['flawless', 'clean sheet', 'perfect form', 'never a miss'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_unaided'),
+      'shield-check',
+      'unaided',
+      (n) => n == 1
+          ? 'practise $a without a hint, at an average skill of 90 or more'
+          : 'practise $n $things without a hint, each at 90 or more',
+      metric('learnUnaided'),
+      _lv(
+        [1, 10, 50, 200],
+        ['unaided', 'no help needed', 'own judgement', 'sure instinct'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_rounds'),
+      'dice-5',
+      'choose the best',
+      (n) => n == 1
+          ? 'finish a round of choose the best'
+          : 'finish $n rounds of choose the best',
+      metric('learnRounds'),
+      _lv(
+        [1, 5, 25, 100],
+        ['first round', 'regular', 'dedicated', 'a hundred rounds'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_perfect'),
+      'award',
+      'ten of ten',
+      (n) => n == 1
+          ? 'get all ten right in a round of choose the best'
+          : 'get all ten right in $n rounds of choose the best',
+      metric('learnPerfect'),
+      _lv([1, 5, 25, 100], ['ten of ten', 'sharp eye', 'keen eye', 'unerring']),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_closing'),
+      'flag',
+      'closing',
+      (n) =>
+          n == 1 ? 'finish a round of closing' : 'finish $n rounds of closing',
+      metric('learnClosing'),
+      _lv(
+        [1, 5, 25, 100],
+        ['last tries', 'closer', 'finisher', 'endgame master'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_closing_perfect'),
+      'trophy',
+      'clean finish',
+      (n) => n == 1
+          ? 'get all ten right in a round of closing'
+          : 'get all ten right in $n rounds of closing',
+      metric('learnClosingPerfect'),
+      _lv(
+        [1, 5, 25, 100],
+        ['clean finish', 'sure finish', 'cold finish', 'never fails'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_sequences'),
+      'cards',
+      'three $things',
+      (n) => n == 1
+          ? 'score a sequence of three $things at skill 70 or more'
+          : 'score $n sequences of three $things at skill 70 or more',
+      metric('learnSequences'),
+      _lv(
+        [1, 10, 50, 200],
+        ['three $things', 'good sets', 'many sets', 'a library of sets'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_sequence_sharp'),
+      'bolt',
+      'sharp three',
+      (n) => n == 1
+          ? 'score a sequence of three $things at skill 90 or more'
+          : 'score $n sequences of three $things at skill 90 or more',
+      metric('learnSequenceSharp'),
+      _lv(
+        [1, 5, 25, 100],
+        ['sharp three', 'keen three', 'fine three', 'master three'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_sequence_best'),
+      'diamond',
+      'the best three',
+      (n) => n == 1
+          ? 'find a sequence of three $things as good as the best found'
+          : 'find $n sequences of three $things as good as the best found',
+      metric('learnSequenceBest'),
+      _lv(
+        [1, 3, 10, 50],
+        ['the best three', 'best again', 'a habit of best', 'always best'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+  ];
+}
 
 /// Bronze, silver, gold and platinum levels at these targets.
 List<Level> _lv(List<int> targets, List<String> names) => [
@@ -1995,10 +2022,10 @@ typedef LearnStep = double Function(AchState st, LearnEvent e);
 
 double _day(String d) => DateTime.parse(d).millisecondsSinceEpoch / 86400000;
 
-/// Every metric a learn achievement reads. Practice shows the answer, so what
-/// it counts is the quality of the guesses (a word typed straight in does not
-/// count); the drills hide it.
-final learnMetrics = <String, LearnStep>{
+/// The metrics of a learn achievement that each mode has for itself. Practice
+/// shows the answer, so what it counts is the quality of the guesses (a word
+/// typed straight in does not count); the drills hide it.
+final _perModeLearn = <String, LearnStep>{
   'learnWords': (st, e) =>
       e.kind == LearnKind.free && e.questions >= 2 && e.avgSkill >= 80
       ? st.value + 1
@@ -2042,6 +2069,15 @@ final learnMetrics = <String, LearnStep>{
       e.kind == LearnKind.sequence && e.avgSkill >= 99
       ? st.value + 1
       : st.value,
+};
+
+/// The metric of [base] for [mode]: classic's keep their names, the others'
+/// are suffixed with the mode.
+String learnMetricOf(String base, GameMode mode) =>
+    mode == GameMode.classic ? base : '${base}_${mode.name}';
+
+/// The learn metrics that count whatever the mode: days, languages, lengths.
+final _globalLearn = <String, LearnStep>{
   // days in a row: the last day is kept in seen, the run in progress
   'learnStreak': (st, e) {
     final last = st.seen.isEmpty ? null : st.seen.first;
@@ -2077,6 +2113,15 @@ final learnMetrics = <String, LearnStep>{
     }
     return st.value;
   },
+};
+
+/// Every metric a learn achievement reads: each mode's own, and the global.
+final learnMetrics = <String, LearnStep>{
+  for (final m in GameMode.values)
+    for (final r in _perModeLearn.entries)
+      learnMetricOf(r.key, m): (st, e) =>
+          e.mode == m ? r.value(st, e) : st.value,
+  ..._globalLearn,
 };
 
 /// Applies one finished piece of learning to the learn achievements in

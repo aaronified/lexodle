@@ -170,6 +170,7 @@ class _SequencePageState extends State<SequencePage> {
         questions: 1,
         right: skill >= 99 ? 1 : 0,
         avgSkill: skill,
+        mode: appState.mode,
       ),
     );
     if (got.isNotEmpty && mounted) setState(() => earned = got);

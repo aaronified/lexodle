@@ -36,7 +36,7 @@ void main() {
   testWidgets('the screen shows icons, counts, bars and the history table', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(420, 16000));
+    await tester.binding.setSurfaceSize(const Size(420, 60000));
     appState.stats = Stats()
       ..mastery = {
         'en': {'5:6', '4:6', '5:3'},
@@ -159,7 +159,7 @@ void main() {
   testWidgets('a medal chip shows the achievements whose top level is it', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(420, 16000));
+    await tester.binding.setSurfaceSize(const Size(420, 60000));
     appState.ach = {
       'quick': AchState(times: 3, dates: ['a', 'b', 'c']),
       'wins': AchState(times: 1, dates: ['a']),
@@ -182,7 +182,7 @@ void main() {
   });
 
   testWidgets('the history says so when nothing is earned yet', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(420, 16000));
+    await tester.binding.setSurfaceSize(const Size(420, 60000));
     await tester.pumpWidget(
       const MaterialApp(
         home: AchievementsPage(),
@@ -197,7 +197,7 @@ void main() {
   testWidgets(
     'each language shows its own, with its flag; shared ones show theirs',
     (tester) async {
-      await tester.binding.setSurfaceSize(const Size(420, 16000));
+      await tester.binding.setSurfaceSize(const Size(420, 60000));
       appState.lang = 'en';
       appState.stats = Stats()..langsWon = {'en', 'fr'};
       appState.setAch('en', {
@@ -239,7 +239,7 @@ void main() {
   testWidgets('all languages: every flag, bright where earned, dim where not', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(420, 16000));
+    await tester.binding.setSurfaceSize(const Size(420, 60000));
     appState.lang = 'en';
     appState.stats = Stats()..langsWon = {'en', 'fr'};
     appState.setAch('en', {
@@ -352,7 +352,7 @@ void main() {
   testWidgets('learn achievements wear the flags of the languages learned in', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(420, 16000));
+    await tester.binding.setSurfaceSize(const Size(420, 60000));
     appState.learnLog = LearnLog([
       for (final l in ['fr', 'de'])
         LearnEvent(

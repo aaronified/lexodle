@@ -4,6 +4,8 @@
 /// from it, so a backup of the log restores both.
 library;
 
+import 'modes.dart' show GameMode;
+
 /// The things there are to score in learn mode. (The opening lesson is only
 /// read, so it has no event.)
 enum LearnKind {
@@ -36,9 +38,14 @@ class LearnEvent {
     required this.right,
     required this.avgSkill,
     this.hints = 0,
+    this.mode = GameMode.classic,
   });
 
   final LearnKind kind;
+
+  /// The mode it was learnt in. An event kept before modes were told apart is
+  /// classic's.
+  final GameMode mode;
   final String language;
   final int length;
 
@@ -71,6 +78,7 @@ class LearnEvent {
     'r': right,
     's': double.parse(avgSkill.toStringAsFixed(1)),
     if (hints != 0) 'h': hints,
+    if (mode != GameMode.classic) 'm': mode.index,
   };
 
   /// The event in [j], or null when it is not one (a damaged entry is left out
@@ -83,7 +91,7 @@ class LearnEvent {
     if (l is! String || n is! int || d is! String) return null;
     if (q is! int || r is! int || s is! num) return null;
     if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(d)) return null;
-    final h = j['h'];
+    final h = j['h'], m = j['m'];
     return LearnEvent(
       kind: LearnKind.values[k],
       language: l,
@@ -93,6 +101,9 @@ class LearnEvent {
       right: r.clamp(0, q),
       avgSkill: s.toDouble().clamp(0.0, 100.0),
       hints: h is int ? h : 0,
+      mode: m is int && m >= 0 && m < GameMode.values.length
+          ? GameMode.values[m]
+          : GameMode.classic,
     );
   }
 }
@@ -119,9 +130,15 @@ class LearnLog {
 
   /// The events of [kind] (all kinds when null) in [language] at [length]
   /// (either left out for all), oldest first.
-  List<LearnEvent> where({LearnKind? kind, String? language, int? length}) => [
+  List<LearnEvent> where({
+    LearnKind? kind,
+    String? language,
+    int? length,
+    GameMode? mode,
+  }) => [
     for (final e in events)
       if ((kind == null || e.kind == kind) &&
+          (mode == null || e.mode == mode) &&
           (language == null || e.language == language) &&
           (length == null || e.length == length))
         e,
@@ -134,8 +151,14 @@ class LearnLog {
     LearnKind? kind,
     String? language,
     int? length,
+    GameMode? mode,
   }) {
-    final all = where(kind: kind, language: language, length: length);
+    final all = where(
+      kind: kind,
+      language: language,
+      length: length,
+      mode: mode,
+    );
     return [
       for (final e in all.skip(all.length > n ? all.length - n : 0)) e.avgSkill,
     ];
