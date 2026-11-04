@@ -3,12 +3,13 @@ import 'haptics.dart';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
+import 'swipe_clear.dart';
+import 'typing_keys.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -104,6 +105,10 @@ class _SolverPageState extends State<SolverPage> {
 
   void _move(int by) => setState(() => input.move(by));
 
+  /// A swipe from right to left over the row being typed erases it.
+  Widget _swipeClear(bool typing, Widget row) =>
+      typing ? SwipeClear(onClear: _clearRow, child: row) : row;
+
   void _resetInput() {
     input.clear();
     inputMarks.fillRange(0, length, Mark.absent);
@@ -145,27 +150,19 @@ class _SolverPageState extends State<SolverPage> {
     message = '';
   });
 
-  KeyEventResult _onKey(FocusNode _, KeyEvent e) {
-    if (e is KeyUpEvent) return KeyEventResult.ignored;
-    if (HardwareKeyboard.instance.isControlPressed ||
-        HardwareKeyboard.instance.isMetaPressed) {
-      return KeyEventResult.ignored;
-    }
-    if (e.logicalKey == LogicalKeyboardKey.enter) {
-      _add();
-    } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
-      _back();
-    } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      _move(-1);
-    } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
-      _move(1);
-    } else if (e.character != null) {
-      _type(e.character!.toLowerCase());
-    } else {
-      return KeyEventResult.ignored;
-    }
-    return KeyEventResult.handled;
-  }
+  void _clearRow() => setState(() {
+    input.clearTyped();
+  });
+
+  late final _keys = TypingKeys(
+    submit: _add,
+    back: _back,
+    clearRow: _clearRow,
+    move: _move,
+    type: _type,
+  );
+
+  KeyEventResult _onKey(FocusNode _, KeyEvent e) => _keys.handle(e);
 
   @override
   Widget build(BuildContext context) {
@@ -223,28 +220,31 @@ class _SolverPageState extends State<SolverPage> {
                               int? cursor,
                             }) => Padding(
                               padding: const EdgeInsets.only(bottom: gap),
-                              child: Row(
-                                children: [
-                                  for (var i = 0; i < length; i++) ...[
-                                    if (i > 0) const SizedBox(width: gap),
-                                    MarkTile(
-                                      chars[i],
-                                      mark:
-                                          chars[i].isEmpty ||
-                                              chars[i] == GuessInput.blank
-                                          ? null
-                                          : marks[i],
-                                      size: size,
-                                      cursor: i == cursor,
-                                      onTap:
-                                          tap != null &&
-                                              chars[i].isNotEmpty &&
-                                              chars[i] != GuessInput.blank
-                                          ? () => tap(i)
-                                          : null,
-                                    ),
+                              child: _swipeClear(
+                                cursor != null,
+                                Row(
+                                  children: [
+                                    for (var i = 0; i < length; i++) ...[
+                                      if (i > 0) const SizedBox(width: gap),
+                                      MarkTile(
+                                        chars[i],
+                                        mark:
+                                            chars[i].isEmpty ||
+                                                chars[i] == GuessInput.blank
+                                            ? null
+                                            : marks[i],
+                                        size: size,
+                                        cursor: i == cursor,
+                                        onTap:
+                                            tap != null &&
+                                                chars[i].isNotEmpty &&
+                                                chars[i] != GuessInput.blank
+                                            ? () => tap(i)
+                                            : null,
+                                      ),
+                                    ],
                                   ],
-                                ],
+                                ),
                               ),
                             );
                             return Column(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'learn_guide.dart';
 import 'learn_log.dart';
 import 'modes.dart';
 import 'main.dart';

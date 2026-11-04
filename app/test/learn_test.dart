@@ -179,7 +179,9 @@ void main() {
     expect(find.textContaining('style: '), findsOneWidget);
     expect(find.textContaining('not your choice'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('learn-feedback-tap-0')));
-    await tester.pump();
+    // the double tap for the greens is over the guesses: a single tap is
+    // known to be single once its time is up
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.byKey(const ValueKey('learn-why-0')), findsNothing);
   });
 
