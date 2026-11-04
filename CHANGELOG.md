@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- how to play is short, with pictures
+  Each mode's help shows crops of the real tiles under short lines: the rules
+  and what the colours mean, typing, spaces, locks and erase. The same parts
+  read the same in every mode.
 - make your own works in every mode with an answer
   Classic, lockdown (with its hearts), blind, quartet and relay (four words),
   equations (a true equation, on the number pad) and themed (a place). The link
