@@ -72,6 +72,27 @@ void main() {
     expect(dir.listSync(), hasLength(1));
   });
 
+  test('only the ten used last are kept, the least recent going first', () {
+    final dir = Directory.systemTemp.createTempSync('lexodle-keep');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final disk = DiskOpenings(dir: dir);
+    final bytes = Uint8List(100);
+    for (var i = 0; i < 10; i++) {
+      disk.write('mode$i', bytes);
+      // each older than the next: mode0 the oldest
+      File('${dir.path}/mode$i.bin')
+          .setLastModifiedSync(DateTime(2020, 1, 1 + i));
+    }
+    expect(dir.listSync(), hasLength(10));
+    // reading mode0 uses it: it is no longer the oldest
+    expect(disk.read('mode0'), isNotNull);
+    disk.write('mode10', bytes);
+    expect(dir.listSync(), hasLength(10));
+    expect(disk.read('mode1'), isNull, reason: 'the oldest unused one went');
+    expect(disk.read('mode0'), isNotNull, reason: 'used lately, so kept');
+    expect(disk.read('mode10'), isNotNull);
+  });
+
   test('scoring on several threads gives what one thread gives', () async {
     final a = _words(2100, 5);
     final law = {for (final x in a) x: 1 + x.codeUnitAt(0)};

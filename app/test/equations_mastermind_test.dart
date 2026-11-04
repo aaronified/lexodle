@@ -152,6 +152,22 @@ void main() {
     });
   });
 
+  group('warming the equations opening', () {
+    test('on first use of the mode, and when its length changes', () {
+      const eq = GameMode.equations;
+      // chosen just now
+      expect(equationsNewlyInUse(GameMode.classic, 8, eq, 8), isTrue);
+      // the app opened on it
+      expect(equationsNewlyInUse(null, null, eq, 8), isTrue);
+      // already in use at that length: nothing to start
+      expect(equationsNewlyInUse(eq, 8, eq, 8), isFalse);
+      // its length changed while it is the mode
+      expect(equationsNewlyInUse(eq, 8, eq, 7), isTrue);
+      // another mode: not the equations' business
+      expect(equationsNewlyInUse(eq, 8, GameMode.blind, 8), isFalse);
+    });
+  });
+
   group('the mastermind', () {
     const words = ['plate', 'peace', 'place', 'spate', 'stale', 'later'];
 

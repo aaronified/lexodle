@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- equations: the opening is scored the first time the mode is used
+  The moment it is chosen (or its length changes), on another thread, and kept
+  for every later game. The ten openings used last are kept, older ones are
+  worked out again if wanted.
+
 - equations: skill, luck and a review after the game
   Scored as words are, against the best equation that could have been played.
   The opening is searched on another thread from the moment the game starts and

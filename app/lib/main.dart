@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'arrow_scroll.dart';
 import 'auto_backup.dart';
 import 'clock.dart';
+import 'equations.dart';
 import 'haptics.dart';
 import 'licences.dart';
+import 'modes.dart' show GameMode;
+import 'words.dart' show WordBank;
 import 'routes.dart';
 import 'shortcuts_overlay.dart';
 import 'store.dart';
@@ -120,6 +123,7 @@ void main() {
       .then((_) {
         // a new version keeps a copy of what it found, then looks for a newer one
         unawaited(AutoBackup.afterUpgrade(appState));
+        _watchEquations();
         return checkForUpdateAtLaunch();
       })
       .then(_toastIfNewer);
@@ -130,6 +134,30 @@ void main() {
   });
   WidgetsBinding.instance.addObserver(AppResume());
   runApp(const LexodleApp());
+}
+
+/// Scores the opening of the equations mode as soon as it is in use (chosen, or
+/// already the mode at launch, or its length changed), on the worker thread.
+void _watchEquations() {
+  GameMode? mode;
+  int? length;
+  void check() {
+    final now = appState.mode, n = appState.eqLength;
+    final fresh = equationsNewlyInUse(mode, length, now, n);
+    mode = now;
+    length = n;
+    if (!fresh) return;
+    WordBank.languages().then((langs) {
+      final lang = langs.firstWhere(
+        (l) => l.code == appState.lang,
+        orElse: () => langs.first,
+      );
+      return warmEquations(lang, n);
+    });
+  }
+
+  appState.addListener(check);
+  check();
 }
 
 /// Says in a toast that [version], found by the check at launch, is out, once
