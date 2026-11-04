@@ -94,8 +94,15 @@ groups). Skill is its bits against the best sequence the app found: a search tha
 opening guesses and adds, one at a time, the word that tells the most, so there may be a better set.
 The three need not start with the best opener, and the order does not change what they tell.
 
+**Read the clue** shows a guess with its clues (the counts, in blind) and four words; pick the one
+that fits every clue. A wrong pick shows the colours it would have given. Ten to a round. In
+choose the best, closing and read the clue the keys 1 to 4 choose, and enter goes on.
+
+Every learn page works in every mode, on the words of the mode in view (the equations, the places,
+or the words of the language), and its address names the mode (`#/equations/learn/free`).
+
 **Achievements.** Learning earns [achievements](Achievements): words practised well, flawless
-words, rounds and perfect rounds of the drills, sets of three words, a streak of days, and a full
-lesson (every mode in one day). A word typed straight in, with the answer in front of you, does not count; what counts
+words, rounds and perfect rounds of the drills and of read the clue, sets of three words, a streak of days, and a full
+lesson (practice, choose the best, three words and closing in one day). Each mode counts its own. A word typed straight in, with the answer in front of you, does not count; what counts
 is the quality of the guesses. They show at the end of a word or a round, and are kept once for
 you, not per language.

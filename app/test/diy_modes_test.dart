@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/diy.dart';
 import 'package:lexodle/equations.dart';
@@ -185,6 +186,48 @@ void main() {
       expect(p.mode, GameMode.quartet);
       expect(p.words, ['crane', 'plumb', 'ghost', 'fifty']);
       expect(p.tries, 9);
+    });
+
+    testWidgets('the keyboard of the computer types, erases and makes', (
+      tester,
+    ) async {
+      await open(tester, GameMode.classic);
+      Future<void> type(String w) async {
+        for (final ch in w.split('')) {
+          await tester.sendKeyEvent(
+            LogicalKeyboardKey(ch.codeUnitAt(0)),
+            character: ch,
+          );
+        }
+        await tester.pump();
+      }
+
+      await type('cranx');
+      await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+      await type('e');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+      final link = tester
+          .widget<SelectableText>(
+            find.descendant(
+              of: find.byKey(const ValueKey('diy-link')),
+              matching: find.byType(SelectableText),
+            ),
+          )
+          .data!;
+      expect(DiyPuzzle.parse(Uri.parse(routeOf(link)))!.word, 'crane');
+      // shift and backspace clear the word, and the link with it
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pump();
+      expect(find.byKey(const ValueKey('diy-link')), findsNothing);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('diy-make')))
+            .onPressed,
+        isNull,
+      );
     });
 
     testWidgets('lockdown: hearts, not tries', (tester) async {

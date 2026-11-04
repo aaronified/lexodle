@@ -13,6 +13,7 @@ import 'multi_game.dart';
 import 'puzzle.dart';
 import 'routes.dart';
 import 'stepper_choice.dart';
+import 'typing_keys.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -247,6 +248,25 @@ class _DiyPageState extends State<DiyPage> {
     });
   }
 
+  /// Shift and backspace (or a swipe) clear the word being made.
+  void _clearWord() {
+    if (_words[_active].isEmpty) return;
+    setState(() {
+      _words[_active] = '';
+      _link = null;
+    });
+  }
+
+  late final _keys = TypingKeys(
+    submit: _make,
+    back: _back,
+    clearRow: _clearWord,
+    // a word here is made by adding to its end: there is no cursor to move
+    move: (_) {},
+    type: _type,
+    equations: _equations,
+  );
+
   void _back() {
     final w = _words[_active];
     if (w.isEmpty) return;
@@ -402,164 +422,168 @@ class _DiyPageState extends State<DiyPage> {
     final lang = _language;
     if (_bank == null && lang != null) _loadBank();
     final problem = _problem(_active);
-    return Scaffold(
-      appBar: AppBar(title: Text('make your own · ${_mode.label}')),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(19, 8, 19, 16),
-                children: [
-                  if (!_equations && !_places) ...[
-                    const Caption('language'),
-                    const SizedBox(height: 8),
-                    InkWell(
-                      key: const ValueKey('diy-language'),
-                      borderRadius: BorderRadius.circular(4),
-                      onTap: lang == null ? null : _pickLanguage,
-                      child: Container(
-                        height: 56,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: c.outline),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          children: [
-                            if (lang != null) FlagBadge(lang.flag),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                lang?.name ?? '',
-                                style: const TextStyle(fontSize: 16),
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (_, e) => _keys.handle(e),
+      child: Scaffold(
+        appBar: AppBar(title: Text('make your own · ${_mode.label}')),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(19, 8, 19, 16),
+                  children: [
+                    if (!_equations && !_places) ...[
+                      const Caption('language'),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        key: const ValueKey('diy-language'),
+                        borderRadius: BorderRadius.circular(4),
+                        onTap: lang == null ? null : _pickLanguage,
+                        child: Container(
+                          height: 56,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: c.outline),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              if (lang != null) FlagBadge(lang.flag),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  lang?.name ?? '',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
                               ),
-                            ),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              color: c.onSurfaceVariant,
-                            ),
-                          ],
+                              Icon(
+                                Icons.arrow_drop_down,
+                                color: c.onSurfaceVariant,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 18),
-                  ],
-                  Caption('your $_noun'),
-                  const SizedBox(height: 8),
-                  for (var b = 0; b < _words.length; b++) _tiles(c, b),
-                  const SizedBox(height: 8),
-                  Text(
-                    problem ??
-                        (_equations
-                            ? 'a true equation of six to eight tiles: one =, a '
-                                  'sum on the left, a whole number on the right.'
-                            : _places
-                            ? 'a place of the list, in english, with no spaces.'
-                            : _mode.boards > 1
-                            ? 'four words of one length, four to eight letters, '
-                                  'in this language\'s letters. tap a word to '
-                                  'type in it. they do not have to be in the '
-                                  'word list.'
-                            : 'type any word, four to eight letters, in this '
-                                  'language\'s letters. it does not have to be '
-                                  'in the word list.'),
-                    key: const ValueKey('diy-note'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: problem == null ? dim : c.error,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  if (_mode == GameMode.lockdown) ...[
-                    const Caption('hearts'),
-                    const SizedBox(height: 10),
-                    StepperChoice<int>(
-                      key: const ValueKey('diy-hearts'),
-                      semanticLabel: 'hearts',
-                      items: [
-                        for (final (name, n) in lockdownHearts)
-                          (n, '$n ${n == 1 ? 'heart' : 'hearts'}', name),
-                      ],
-                      selected: _hearts,
-                      onChanged: (h) => setState(() {
-                        _hearts = h;
-                        _link = null;
-                      }),
-                    ),
-                  ] else ...[
-                    const Caption('tries'),
-                    const SizedBox(height: 10),
-                    StepperChoice<int>(
-                      key: const ValueKey('diy-tries'),
-                      semanticLabel: 'tries',
-                      items: _triesItems,
-                      selected: _triesItems.any((i) => i.$1 == _tries)
-                          ? _tries
-                          : _triesItems.first.$1,
-                      onChanged: (t) => setState(() {
-                        _tries = t;
-                        _link = null;
-                      }),
-                    ),
-                  ],
-                  const SizedBox(height: 18),
-                  FilledButton(
-                    key: const ValueKey('diy-make'),
-                    onPressed: _ready ? _make : null,
-                    child: const Text('create the link'),
-                  ),
-                  if (_link != null) ...[
-                    const SizedBox(height: 18),
-                    const Caption('the link'),
+                      const SizedBox(height: 18),
+                    ],
+                    Caption('your $_noun'),
                     const SizedBox(height: 8),
-                    Container(
-                      key: const ValueKey('diy-link'),
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: c.outlineVariant),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: SelectableText(
-                        _link!,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    OutlinedButton(
-                      key: const ValueKey('diy-copy'),
-                      onPressed: () async {
-                        final messenger = ScaffoldMessenger.of(context);
-                        await Clipboard.setData(ClipboardData(text: _link!));
-                        messenger
-                          ..hideCurrentSnackBar()
-                          ..showSnackBar(
-                            const SnackBar(content: Text('link copied')),
-                          );
-                      },
-                      child: const Text('copy'),
-                    ),
-                    const SizedBox(height: 10),
+                    for (var b = 0; b < _words.length; b++) _tiles(c, b),
+                    const SizedBox(height: 8),
                     Text(
-                      'whoever opens it plays your $_noun as practice: nothing '
-                      'is saved or counted. it is only lightly disguised, not '
-                      'secret: each character is four digits.',
-                      style: TextStyle(fontSize: 11, color: dim),
+                      problem ??
+                          (_equations
+                              ? 'a true equation of six to eight tiles: one =, a '
+                                    'sum on the left, a whole number on the right.'
+                              : _places
+                              ? 'a place of the list, in english, with no spaces.'
+                              : _mode.boards > 1
+                              ? 'four words of one length, four to eight letters, '
+                                    'in this language\'s letters. tap a word to '
+                                    'type in it. they do not have to be in the '
+                                    'word list.'
+                              : 'type any word, four to eight letters, in this '
+                                    'language\'s letters. it does not have to be '
+                                    'in the word list.'),
+                      key: const ValueKey('diy-note'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: problem == null ? dim : c.error,
+                      ),
                     ),
+                    const SizedBox(height: 18),
+                    if (_mode == GameMode.lockdown) ...[
+                      const Caption('hearts'),
+                      const SizedBox(height: 10),
+                      StepperChoice<int>(
+                        key: const ValueKey('diy-hearts'),
+                        semanticLabel: 'hearts',
+                        items: [
+                          for (final (name, n) in lockdownHearts)
+                            (n, '$n ${n == 1 ? 'heart' : 'hearts'}', name),
+                        ],
+                        selected: _hearts,
+                        onChanged: (h) => setState(() {
+                          _hearts = h;
+                          _link = null;
+                        }),
+                      ),
+                    ] else ...[
+                      const Caption('tries'),
+                      const SizedBox(height: 10),
+                      StepperChoice<int>(
+                        key: const ValueKey('diy-tries'),
+                        semanticLabel: 'tries',
+                        items: _triesItems,
+                        selected: _triesItems.any((i) => i.$1 == _tries)
+                            ? _tries
+                            : _triesItems.first.$1,
+                        onChanged: (t) => setState(() {
+                          _tries = t;
+                          _link = null;
+                        }),
+                      ),
+                    ],
+                    const SizedBox(height: 18),
+                    FilledButton(
+                      key: const ValueKey('diy-make'),
+                      onPressed: _ready ? _make : null,
+                      child: const Text('create the link'),
+                    ),
+                    if (_link != null) ...[
+                      const SizedBox(height: 18),
+                      const Caption('the link'),
+                      const SizedBox(height: 8),
+                      Container(
+                        key: const ValueKey('diy-link'),
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: c.outlineVariant),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: SelectableText(
+                          _link!,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      OutlinedButton(
+                        key: const ValueKey('diy-copy'),
+                        onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          await Clipboard.setData(ClipboardData(text: _link!));
+                          messenger
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              const SnackBar(content: Text('link copied')),
+                            );
+                        },
+                        child: const Text('copy'),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'whoever opens it plays your $_noun as practice: nothing '
+                        'is saved or counted. it is only lightly disguised, not '
+                        'secret: each character is four digits.',
+                        style: TextStyle(fontSize: 11, color: dim),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            LetterKeyboard(
-              letters: _letters,
-              numberPad: _equations,
-              onLetter: _type,
-              onEnter: _make,
-              onBack: _back,
-              enterLabel: 'create',
-            ),
-          ],
+              LetterKeyboard(
+                letters: _letters,
+                numberPad: _equations,
+                onLetter: _type,
+                onEnter: _make,
+                onBack: _back,
+                enterLabel: 'create',
+              ),
+            ],
+          ),
         ),
       ),
     );

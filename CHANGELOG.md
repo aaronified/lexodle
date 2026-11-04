@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- read the clue counts, and the learn pages take keys
+  A finished round of read the clue is kept in the learn log, shows its
+  progress on the learn home, and earns two new achievements for each mode
+  (rounds finished, ten of ten). In choose the best, closing and read the clue
+  the keys 1 to 4 choose and enter goes on. Make your own now takes the
+  computer's keyboard: type, backspace and delete, shift and backspace clear
+  the word, enter makes it.
 - precomputed openings, on the web and on the phone
   The web reads the opening of a list from the `precomputed` branch instead of
   working it out (a minute on the web), and the opening page shows the best

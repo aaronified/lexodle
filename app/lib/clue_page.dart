@@ -3,9 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'clue.dart';
+import 'earned_rows.dart';
+import 'learn_log.dart';
+import 'store.dart' show Achievement;
 import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
+import 'typing_keys.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -30,6 +34,7 @@ class _CluePageState extends State<CluePage> {
   int right = 0;
   int? picked;
   bool done = false;
+  List<Achievement> _earned = const [];
 
   ClueQuestion? _next() => buildClueQuestion(
     bank: widget.bank,
@@ -48,7 +53,22 @@ class _CluePageState extends State<CluePage> {
 
   void _forward() {
     if (asked >= clueRoundLength) {
-      setState(() => done = true);
+      final earned = appState.recordLearn(
+        LearnEvent(
+          kind: LearnKind.clue,
+          language: widget.bank.language.code,
+          length: length,
+          date: DateTime.now().toIso8601String().substring(0, 10),
+          questions: clueRoundLength,
+          right: right,
+          avgSkill: 100.0 * right / clueRoundLength,
+          mode: appState.mode,
+        ),
+      );
+      setState(() {
+        done = true;
+        _earned = earned;
+      });
       return;
     }
     setState(() {
@@ -63,6 +83,7 @@ class _CluePageState extends State<CluePage> {
     right = 0;
     picked = null;
     done = false;
+    _earned = const [];
     question = _next();
   });
 
@@ -200,6 +221,10 @@ class _CluePageState extends State<CluePage> {
       key: const ValueKey('clue-result'),
       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
     ),
+    if (_earned.isNotEmpty) ...[
+      const SizedBox(height: 10),
+      EarnedRows(_earned),
+    ],
     const SizedBox(height: 14),
     FilledButton(
       key: const ValueKey('clue-again'),
@@ -212,30 +237,42 @@ class _CluePageState extends State<CluePage> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final head = 'read the clue · ${widget.bank.language.name.toLowerCase()}';
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TablerIcon('school', size: headerIconSize, color: c.primary),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                done ? head : '$head · $asked of $clueRoundLength',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-              ),
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (_, e) => done
+          ? KeyEventResult.ignored
+          : handleChoiceKey(
+              e,
+              count: question?.options.length ?? 0,
+              answered: picked != null,
+              pick: _pick,
+              next: _forward,
             ),
-          ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TablerIcon('school', size: headerIconSize, color: c.primary),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  done ? head : '$head · $asked of $clueRoundLength',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
-              children: done ? _summary() : _body(c),
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
+                children: done ? _summary() : _body(c),
+              ),
             ),
           ),
         ),

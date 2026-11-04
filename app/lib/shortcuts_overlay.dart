@@ -25,6 +25,16 @@ const shortcutGroups = <(String, List<(String, String)>)>[
     ],
   ),
   (
+    'keyboard · learn',
+    [
+      (
+        '1 – 4',
+        'choose that answer, in choose the best, closing and read the clue',
+      ),
+      ('enter', 'go on to the next, once one is chosen'),
+    ],
+  ),
+  (
     'keyboard · everywhere',
     [
       ('↑ ↓', 'scroll whatever the mouse is over'),

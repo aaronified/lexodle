@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'daily.dart';
 import 'difficulty.dart';
 import 'history.dart';
+import 'clue.dart' show clueRoundLength;
 import 'learn_log.dart';
 import 'medal.dart';
 import 'equations.dart' show equationLengths;
@@ -1599,6 +1600,36 @@ List<Achievement> _learnOf(GameMode m) {
       tagIcon: 'bulb',
     ),
     Achievement.leveled(
+      id('learn_clue'),
+      'zoom-question',
+      'read the clue',
+      (n) => n == 1
+          ? 'finish a round of read the clue'
+          : 'finish $n rounds of read the clue',
+      metric('learnClue'),
+      _lv(
+        [1, 5, 25, 100],
+        ['first read', 'careful reader', 'close reader', 'never misread'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
+      id('learn_clue_sharp'),
+      'sparkles',
+      'every clue read',
+      (n) => n == 1
+          ? 'get all ten right in a round of read the clue'
+          : 'get all ten right in $n rounds of read the clue',
+      metric('learnClueSharp'),
+      _lv(
+        [1, 5, 25, 100],
+        ['ten of ten read', 'sharp reader', 'keen reader', 'misses nothing'],
+      ),
+      mode: m,
+      tagIcon: 'bulb',
+    ),
+    Achievement.leveled(
       id('learn_sequences'),
       'cards',
       'three $things',
@@ -2057,6 +2088,11 @@ final _perModeLearn = <String, LearnStep>{
           e.questions >= drillRoundLength
       ? st.value + 1
       : st.value,
+  'learnClue': (st, e) => e.kind == LearnKind.clue ? st.value + 1 : st.value,
+  'learnClueSharp': (st, e) =>
+      e.kind == LearnKind.clue && e.flawless && e.questions >= clueRoundLength
+      ? st.value + 1
+      : st.value,
   // a sequence is one event: its skill against the best found is avgSkill
   'learnSequences': (st, e) => e.kind == LearnKind.sequence && e.avgSkill >= 70
       ? st.value + 1
@@ -2107,7 +2143,14 @@ final _globalLearn = <String, LearnStep>{
     }
     if (st.seen.contains('done')) return st.value;
     st.seen.add(e.kind.name);
-    if (LearnKind.values.every((k) => st.seen.contains(k.name))) {
+    // the four a lesson was always made of (read the clue came after)
+    const lesson = [
+      LearnKind.free,
+      LearnKind.choose,
+      LearnKind.sequence,
+      LearnKind.closing,
+    ];
+    if (lesson.every((k) => st.seen.contains(k.name))) {
       st.seen.add('done');
       return st.value + 1;
     }

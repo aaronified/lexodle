@@ -22,6 +22,9 @@ enum LearnKind {
   /// A round of closing: ten endgame positions, the guess most likely to win in
   /// the tries left.
   closing,
+
+  /// A round of read the clue: ten positions, the word that fits chosen of four.
+  clue,
 }
 
 /// How many questions a round of a drill has.
