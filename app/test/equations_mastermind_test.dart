@@ -479,16 +479,38 @@ void main() {
       expect(find.text('q'), findsNothing);
       // the space (a blank) is on the pad too, and types a blank
       expect(find.text('_'), findsOneWidget);
-      // a number pad: 7 8 9 over 4 5 6 over 1 2 3 over 0
-      double top(String k) => tester.getTopLeft(find.text(k).last).dy;
-      expect(top('7'), lessThan(top('4')));
-      expect(top('4'), lessThan(top('1')));
-      expect(top('1'), lessThan(top('0')));
-      expect(top('7'), top('9'));
-      expect(
-        tester.getTopLeft(find.text('7').last).dx,
-        lessThan(tester.getTopLeft(find.text('9').last).dx),
+      // the pad: = ÷ × − along the top, then 7 8 9, 4 5 6, 1 2 3, then 0 and
+      // backspace, the space under it all
+      Rect box(String k) => tester.getRect(
+        find
+            .ancestor(of: find.text(k).last, matching: find.byType(InkWell))
+            .first,
       );
+      expect(box('=').top, lessThan(box('7').top));
+      expect(box('7').top, lessThan(box('4').top));
+      expect(box('4').top, lessThan(box('1').top));
+      expect(box('1').top, lessThan(box('0').top));
+      expect(box('0').top, lessThan(box('_').top), reason: 'space under');
+      // columns line up: = over 7 over 4 over 1 over 0
+      for (final k in ['7', '4', '1', '0']) {
+        expect(box(k).left, closeTo(box('=').left, 1), reason: k);
+      }
+      expect(box('÷').left, closeTo(box('8').left, 1));
+      expect(box('×').left, closeTo(box('9').left, 1));
+      // the right column: − over + (two rows tall) over enter (two rows tall)
+      expect(box('−').left, closeTo(box('+').left, 1));
+      expect(box('+').left, closeTo(box('enter').left, 1));
+      expect(box('+').height, closeTo(box('7').height * 2 + 4, 6));
+      expect(box('enter').height, closeTo(box('+').height, 1));
+      expect(box('+').top, closeTo(box('7').top, 1));
+      expect(box('enter').top, closeTo(box('1').top, 1));
+      // 0 is one key wide, backspace two
+      expect(box('0').width, closeTo(box('7').width, 1));
+      expect(box('⌫').width, closeTo(box('7').width * 2, 6));
+      expect(box('⌫').top, closeTo(box('0').top, 1));
+      // no other keys: no letters, no top bar
+      expect(find.text('esc'), findsNothing);
+      expect(find.text('q'), findsNothing);
       // typed on the keyboard of the screen, as a phone would
       for (final ch in '12+34=47'.split('')) {
         await tester.tap(find.text(ch).last);

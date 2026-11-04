@@ -25,7 +25,7 @@ class LetterKeyboard extends StatelessWidget {
     this.marks = const {},
     this.quadMarks = const {},
     this.enterLabel = 'enter',
-    this.layout,
+    this.numberPad = false,
     this.faces = faceOf,
     this.onCursor,
   });
@@ -35,9 +35,11 @@ class LetterKeyboard extends StatelessWidget {
   /// bar. Only the games give it; the solvers and the rest do not.
   final void Function(int by)? onCursor;
 
-  /// The keys by row, in place of the language's letters (the equations'
-  /// digits and signs); enter and backspace go on the last row.
-  final List<String>? layout;
+  /// The number pad of the equations, in place of the letters: the signs along
+  /// the top, 7 8 9 / 4 5 6 / 1 2 3 with + and enter tall on the right, then 0
+  /// and a wide backspace, and the space (a blank, whose drag moves the cursor)
+  /// under it.
+  final bool numberPad;
 
   /// What a key is drawn as.
   final String Function(String) faces;
@@ -73,21 +75,13 @@ class LetterKeyboard extends StatelessWidget {
     const base = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
     final extra = letters.where((l) => !base.join().contains(l)).toList()
       ..sort();
-    final custom = layout;
     final rows = <List<String>>[
-      if (custom != null) ...[
-        for (final r in custom) r.split(''),
-        // enter and backspace have a row of their own under a number pad
-        <String>[],
-      ] else ...[
-        for (final r in base) r.split('').where(letters.contains).toList(),
-        for (var i = 0; i < extra.length; i += 10)
-          extra.sublist(i, min(i + 10, extra.length)),
-      ],
+      for (final r in base) r.split('').where(letters.contains).toList(),
+      for (var i = 0; i < extra.length; i += 10)
+        extra.sublist(i, min(i + 10, extra.length)),
     ];
-    // enter and backspace flank the third row of letters, or are the row under
-    // a layout
-    final actionRow = custom != null ? custom.length : 2;
+    // enter and backspace flank the third row of letters
+    const actionRow = 2;
 
     // Letters take the feedback colours; the two action keys have colours of
     // their own, from the scheme: enter is the accent, backspace the error
@@ -169,6 +163,83 @@ class LetterKeyboard extends StatelessWidget {
       );
     }
 
+    if (numberPad) {
+      // one cell of the pad, and a key two cells tall for + and enter
+      final cell = keyHeight + 2 * gap;
+      Widget digit(String ch) =>
+          key(faces(ch), () => onLetter(ch), mark: marks[ch]);
+      Widget tall(Widget k) => SizedBox(
+        height: cell * 2,
+        child: Column(children: [k]),
+      );
+      return Center(
+        child: ConstrainedBox(
+          // a number pad is narrower than a row of letters
+          constraints: const BoxConstraints(maxWidth: 340),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: phone ? 2 : 6),
+            child: Column(
+              children: [
+                Row(children: [digit('='), digit('/'), digit('*'), digit('-')]),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 30,
+                      child: Column(
+                        children: [
+                          Row(children: [digit('7'), digit('8'), digit('9')]),
+                          Row(children: [digit('4'), digit('5'), digit('6')]),
+                        ],
+                      ),
+                    ),
+                    Expanded(flex: 10, child: tall(digit('+'))),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 30,
+                      child: Column(
+                        children: [
+                          Row(children: [digit('1'), digit('2'), digit('3')]),
+                          Row(
+                            children: [
+                              digit('0'),
+                              key(
+                                '⌫',
+                                onBack,
+                                flex: 2,
+                                colors: (c.errorContainer, c.onErrorContainer),
+                                feel: Haptic.erase,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 10,
+                      child: tall(
+                        key(
+                          enterLabel,
+                          onEnter,
+                          colors: (c.primary, c.onPrimary),
+                          feel: Haptic.submit,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // the space: a tap is a blank, a drag along it moves the cursor
+                if (onBlank != null)
+                  Row(children: [key('_', onBlank!, flex: 4, drag: onCursor)]),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final pad = Padding(
       padding: EdgeInsets.symmetric(horizontal: phone ? 2 : 6),
       child: Column(
@@ -178,13 +249,13 @@ class LetterKeyboard extends StatelessWidget {
               children: [
                 // a short row of a language's extra letters keeps keys of the
                 // same size, centred, not stretched across the whole row
-                if (custom == null && i > 2 && rows[i].length < 10)
+                if (i > 2 && rows[i].length < 10)
                   Spacer(flex: (10 - rows[i].length) * 5),
                 if (i == actionRow)
                   key(
                     enterLabel,
                     onEnter,
-                    flex: custom != null ? 3 : 1.6,
+                    flex: 1.6,
                     colors: (c.primary, c.onPrimary),
                     feel: Haptic.submit,
                   ),
@@ -199,40 +270,26 @@ class LetterKeyboard extends StatelessWidget {
                   key(
                     '⌫',
                     onBack,
-                    flex: custom != null ? 1 : 1.6,
+                    flex: 1.6,
                     colors: (c.errorContainer, c.onErrorContainer),
                     feel: Haptic.erase,
                   ),
-                if (custom == null && i > 2 && rows[i].length < 10)
+                if (i > 2 && rows[i].length < 10)
                   Spacer(flex: (10 - rows[i].length) * 5),
               ],
             ),
           if (onBlank != null)
             Row(
               children: [
-                // wider under a number pad, which is narrow
-                Spacer(flex: custom != null ? 1 : 20),
-                key(
-                  '_',
-                  onBlank!,
-                  flex: custom != null ? 3 : 6,
-                  drag: onCursor,
-                ),
-                Spacer(flex: custom != null ? 1 : 20),
+                const Spacer(flex: 20),
+                key('_', onBlank!, flex: 6, drag: onCursor),
+                const Spacer(flex: 20),
               ],
             ),
         ],
       ),
     );
-    // a number pad is narrower than a row of letters
-    return custom == null
-        ? pad
-        : Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 340),
-              child: pad,
-            ),
-          );
+    return pad;
   }
 }
 

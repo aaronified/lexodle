@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- equations: the number pad is laid out like a keypad
+  = ÷ × − along the top, 7 8 9, 4 5 6 and 1 2 3 with a tall + and a tall enter
+  on the right, then a small 0 and a wide backspace, and the space under it all.
+  Dragging the space moves the cursor, as in the other modes.
+
 - the cursor moves by dragging the space key, not the whole keyboard
   As along the space bar of a phone keyboard, and only in the games: not in the
   solvers. The other keys only type.
