@@ -22,7 +22,7 @@ class LearnHomePage extends StatelessWidget {
       builder: (context, _) {
         final c = Theme.of(context).colorScheme;
         final mode = appState.mode;
-        final length = appState.length;
+        final length = appState.learnLength;
         final lang = bank.language.name.toLowerCase();
         final log = appState.learnLog;
         final today = DateTime.now().toIso8601String().substring(0, 10);
@@ -240,13 +240,13 @@ class LearnHomePage extends StatelessWidget {
     final mine = log.where(
       kind: kind,
       language: bank.language.code,
-      length: appState.length,
+      length: appState.learnLength,
     );
     final trend = log.recentSkill(
       12,
       kind: kind,
       language: bank.language.code,
-      length: appState.length,
+      length: appState.learnLength,
     );
     final String progress;
     if (mine.isEmpty) {

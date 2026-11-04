@@ -20,7 +20,7 @@ import 'words.dart';
 typedef SequenceBenchmarkFinder = Future<SequenceScore> Function(WordBank bank);
 
 Future<SequenceScore> _findBenchmark(WordBank bank) async {
-  final length = appState.length;
+  final length = appState.learnLength;
   final land = await openingLandscape(
     bank: bank,
     length: length,
@@ -53,7 +53,7 @@ class SequencePage extends StatefulWidget {
 
 class _SequencePageState extends State<SequencePage> {
   final _focus = FocusNode();
-  late final int length = appState.length;
+  late final int length = appState.learnLength;
   late final List<String> _answers = widget.bank.guessable(length);
   late final Set<String> _letters = widget.bank.letters(length);
   late final Map<String, int>? _law = widget.bank.law(length, appState.draw);
@@ -287,6 +287,7 @@ class _SequencePageState extends State<SequencePage> {
                   ),
                   LetterKeyboard(
                     letters: _letters,
+                    numberPad: appState.mode == GameMode.equations,
                     onLetter: _type,
                     onBlank: () => _type(GuessInput.blank),
                     onCursor: _move,

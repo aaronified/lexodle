@@ -2281,6 +2281,9 @@ class AppState extends ChangeNotifier {
   /// The length of an equation, in tiles: one of [equationLengths].
   int eqLength = 8;
 
+  /// The length the learn pages work at: the equations have their own.
+  int get learnLength => mode == GameMode.equations ? eqLength : length;
+
   /// Whether the mastermind always keeps the largest pool, not a random one.
   bool mastermindLargest = false;
 

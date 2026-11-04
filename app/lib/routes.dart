@@ -91,9 +91,25 @@ String routeOf(String? raw) {
 Route<dynamic> onGenerateRoute(RouteSettings settings) {
   final full = routeOf(settings.name);
   settings = RouteSettings(name: full, arguments: settings.arguments);
-  final name = Uri.tryParse(full)?.path ?? '/';
-  // the settings keep the name they were opened with
-  final s = RouteSettings(name: name, arguments: settings.arguments);
+  var name = Uri.tryParse(full)?.path ?? '/';
+  // a learn address names its mode (/equations/learn/free): opening it chooses
+  // that mode, and the page is the same as the plain /learn/free
+  final segs = name.split('/').where((p) => p.isNotEmpty).toList();
+  final named = segs.length >= 2 && segs[1] == 'learn'
+      ? GameMode.values.where((m) => m.name == segs[0]).firstOrNull
+      : null;
+  if (named != null) {
+    if (appState.mode != named) appState.setup(mode: named);
+    name = '/${segs.skip(1).join('/')}';
+  }
+  // the settings keep the name they were opened with, a learn page with its
+  // mode in front, so each mode's learn pages have addresses of their own
+  final s = RouteSettings(
+    name: name == Routes.learn || name.startsWith('${Routes.learn}/')
+        ? '/${appState.mode.name}$name'
+        : name,
+    arguments: settings.arguments,
+  );
   Route<dynamic> page(Widget w) =>
       MaterialPageRoute<void>(settings: s, builder: (_) => w);
   switch (name) {
@@ -239,7 +255,15 @@ List<Route<dynamic>> onGenerateInitialRoutes(String initialAddress) {
   if (path == Routes.review) {
     return [onGenerateRoute(const RouteSettings(name: Routes.home))];
   }
-  final parts = path.split('/').where((p) => p.isNotEmpty).toList();
+  var parts = path.split('/').where((p) => p.isNotEmpty).toList();
+  // a learn address names its mode: /equations/learn/free
+  if (parts.length >= 2 &&
+      parts[1] == 'learn' &&
+      GameMode.values.any((m) => m.name == parts[0])) {
+    final m = GameMode.values.firstWhere((m) => m.name == parts[0]);
+    if (appState.mode != m) appState.setup(mode: m);
+    parts = parts.skip(1).toList();
+  }
   final query = Uri.tryParse(initial)?.query ?? '';
   return [
     onGenerateRoute(const RouteSettings(name: Routes.home)),

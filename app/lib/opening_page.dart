@@ -24,7 +24,7 @@ class OpeningPage extends StatefulWidget {
 }
 
 class _OpeningPageState extends State<OpeningPage> {
-  late final int length = appState.length;
+  late final int length = appState.learnLength;
   late final List<String> _words = widget.bank.guessable(length);
   late final Map<String, int>? _law = widget.bank.law(length, appState.draw);
 

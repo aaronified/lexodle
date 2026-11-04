@@ -48,7 +48,7 @@ String whenRight(Behaviour b) => switch (b) {
 };
 
 class _StylesPageState extends State<StylesPage> {
-  late final int length = appState.length;
+  late final int length = appState.learnLength;
   late final List<String> _all = widget.bank.guessable(length);
   late final Map<String, int>? _law = widget.bank.law(length, appState.draw);
 
