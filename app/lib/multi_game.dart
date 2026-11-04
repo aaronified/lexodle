@@ -792,6 +792,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     quadMarks: mode == GameMode.relay ? const {} : game.letterMarks(),
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
+    onCursor: _move,
     onEnter: _submit,
     onBack: _back,
   );

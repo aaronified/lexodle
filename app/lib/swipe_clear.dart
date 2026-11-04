@@ -1,4 +1,7 @@
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
+
+import 'haptics.dart';
 
 /// A swipe from right to left over [child], the row being typed, calls
 /// [onClear]: far enough, or fast enough, to be meant. Taps pass through to the
@@ -34,6 +37,48 @@ class _SwipeClearState extends State<SwipeClear> {
     onHorizontalDragEnd: (d) {
       if (SwipeClear.counts(_dx, d.primaryVelocity ?? 0)) widget.onClear();
       _dx = 0;
+    },
+    child: widget.child,
+  );
+}
+
+/// A drag along [child], the on-screen keyboard, moves the cursor of the row
+/// being typed, as a drag along the space bar does on a phone's keyboard: one
+/// tile for each [step] pixels, to the right or to the left with the finger,
+/// each with a tick. A tap on a key still types it.
+class CursorDrag extends StatefulWidget {
+  const CursorDrag({super.key, required this.onMove, required this.child});
+
+  /// Moves the cursor by this many tiles (negative is to the left).
+  final void Function(int by) onMove;
+  final Widget child;
+
+  /// How far a finger goes for one tile, in logical pixels.
+  static const step = 26.0;
+
+  /// The whole tiles in [travel] pixels of drag (the rest stays to be carried).
+  static int tiles(double travel) => (travel / step).truncate();
+
+  @override
+  State<CursorDrag> createState() => _CursorDragState();
+}
+
+class _CursorDragState extends State<CursorDrag> {
+  double _travel = 0;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.translucent,
+    // tracked from where the finger went down, so it follows it 1:1
+    dragStartBehavior: DragStartBehavior.down,
+    onHorizontalDragStart: (_) => _travel = 0,
+    onHorizontalDragUpdate: (d) {
+      _travel += d.delta.dx;
+      final n = CursorDrag.tiles(_travel);
+      if (n == 0) return;
+      _travel -= n * CursorDrag.step;
+      Haptics.fire(Haptic.tap);
+      widget.onMove(n);
     },
     child: widget.child,
   );

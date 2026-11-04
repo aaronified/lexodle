@@ -43,6 +43,13 @@ void main() {
     expect(SwipeClear.counts(-5, -2000), isFalse);
   });
 
+  test('a drag moves the cursor a tile for every few dozen pixels', () {
+    expect(CursorDrag.tiles(10), 0);
+    expect(CursorDrag.tiles(CursorDrag.step), 1);
+    expect(CursorDrag.tiles(CursorDrag.step * 2.9), 2);
+    expect(CursorDrag.tiles(-CursorDrag.step * 1.5), -1);
+  });
+
   group('in a game', () {
     Future<void> open(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
@@ -124,6 +131,36 @@ void main() {
       await tester.pump();
       expect(letter(0, 'c'), findsNothing);
       expect(letter(1, 'r'), findsNothing);
+    });
+
+    testWidgets('a drag along the keyboard moves the cursor, a tap types', (
+      tester,
+    ) async {
+      await open(tester);
+      await type(tester, 'cra');
+      // the cursor is past the last tile: drag left two tiles, to the second
+      await tester.drag(find.text('q'), Offset(-CursorDrag.step * 2.5, 0));
+      await tester.pump();
+      await tester.tap(find.text('x').last);
+      await tester.pump();
+      expect(letter(1, 'x'), findsOneWidget);
+      expect(letter(0, 'c'), findsOneWidget);
+      // typing x left the cursor on the next free tile (3); one tile to the
+      // right of it is the last
+      await tester.drag(find.text('q'), Offset(CursorDrag.step * 1.2, 0));
+      await tester.pump();
+      await tester.tap(find.text('z').last);
+      await tester.pump();
+      expect(letter(4, 'z'), findsOneWidget);
+    });
+
+    testWidgets('a drag that starts on a key does not type it', (tester) async {
+      await open(tester);
+      await tester.drag(find.text('q'), Offset(CursorDrag.step * 2, 0));
+      await tester.pump();
+      for (var i = 0; i < 5; i++) {
+        expect(letter(i, 'q'), findsNothing);
+      }
     });
   });
 }
