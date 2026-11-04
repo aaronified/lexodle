@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- mastermind: the word's wiktionary page loads before the last guess
+  The word is known once only one is left, so it is looked up then, and the
+  game over page has it at once.
+
 ## 0.7.1
 
 - the app looks for an update when it opens, and a toast says so
