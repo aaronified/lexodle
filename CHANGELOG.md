@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- learn is short, with pictures
+  The strategy page of each mode is short lines under headings, with crops of
+  the real tiles where a picture says more.
 - how to play is short, with pictures
   Each mode's help shows crops of the real tiles under short lines: the rules
   and what the colours mean, typing, spaces, locks and erase. The same parts

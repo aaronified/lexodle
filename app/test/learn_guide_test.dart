@@ -15,7 +15,14 @@ void main() {
     for (final m in GameMode.values) {
       final g = modeGuide(m);
       expect(g, isNotEmpty, reason: '$m');
-      final text = [for (final (h, b) in g) '$h $b'].join(' ').toLowerCase();
+      final text = [
+        for (final sec in g) '${sec.heading} ${sec.lines.join(' ')}',
+      ].join(' ').toLowerCase();
+      for (final sec in g) {
+        for (final l in sec.lines) {
+          expect(l.length, lessThan(70), reason: '$m: $l');
+        }
+      }
       for (final name in ['wordle', 'nerdle', 'absurdle', 'sudoku']) {
         expect(text, isNot(contains(name)), reason: '$m');
       }
