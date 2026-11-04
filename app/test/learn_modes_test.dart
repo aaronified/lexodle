@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lexodle/routes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/drill_page.dart';
 import 'package:lexodle/main.dart';
@@ -70,5 +72,59 @@ void main() {
     expect(find.byKey(const ValueKey('drill-fits')), findsOneWidget);
     // two count tiles follow the five letters of every guess
     expect(find.byType(MarkTile).evaluate().length % 7, 0);
+  });
+
+  testWidgets('every learn page is titled mode/learn/page for the tab', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    await tester.binding.setSurfaceSize(const Size(420, 1400));
+    await appState.load();
+    final titles = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'SystemChrome.setApplicationSwitcherDescription') {
+          titles.add((call.arguments as Map)['label'] as String);
+        }
+        return null;
+      },
+    );
+    for (final (mode, route, title) in [
+      (GameMode.classic, Routes.learn, 'classic/learn'),
+      (GameMode.equations, Routes.learn, 'equations/learn'),
+      (GameMode.blind, Routes.learn, 'blind/learn'),
+    ]) {
+      appState.setup(
+        lang: 'en',
+        length: mode == GameMode.equations ? 6 : 5,
+        mode: mode,
+      );
+      await tester.runAsync(() async {
+        final langs = await WordBank.languages();
+        final en = langs.firstWhere((l) => l.code == 'en');
+        await WordBank.load(en);
+        await Equations.load(en);
+      });
+      titles.clear();
+      await tester.pumpWidget(
+        MaterialApp(initialRoute: route, onGenerateRoute: onGenerateRoute),
+      );
+      for (var i = 0; i < 40 && !titles.contains(title); i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(titles, contains(title), reason: route);
+    }
+    // a page of learn has its own: the guide, with its own address
+    titles.clear();
+    await tester.tap(find.byKey(const ValueKey('learn-card-guide')));
+    await tester.pumpAndSettle();
+    expect(titles, contains('blind/learn/guide'));
+    expect(
+      ModalRoute.of(tester.element(find.byKey(const ValueKey('mode-guide'))))!
+          .settings
+          .name,
+      Routes.learnGuide,
+    );
   });
 }

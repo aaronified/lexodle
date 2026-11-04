@@ -13,6 +13,7 @@ import 'logic.dart';
 import 'main.dart';
 import 'store.dart' show Achievement;
 import 'ui.dart';
+import 'modes.dart';
 import 'words.dart';
 
 /// Learn mode: the answer is shown, and the job is to find the best guess at
@@ -362,9 +363,9 @@ class _LearnPageState extends State<LearnPage> {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
                       children: [
-                        const Caption(
+                        Caption(
                           'you know the answer. find the guess that cuts '
-                          'the words that fit down the most',
+                          'the ${thingOf(appState.mode)} that fit down the most',
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -567,7 +568,9 @@ class _LearnPageState extends State<LearnPage> {
       key: const ValueKey('learn-words'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Caption('$n ${n == 1 ? 'word fits' : 'words fit'} the clues so far'),
+        Caption(
+          '$n ${thingOf(appState.mode, plural: n != 1)} ${n == 1 ? 'fits' : 'fit'} the clues so far',
+        ),
         const SizedBox(height: 6),
         Wrap(
           spacing: 12,

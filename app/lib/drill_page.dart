@@ -209,7 +209,7 @@ class _DrillPageState extends State<DrillPage> {
     );
     if (failed) {
       return const [
-        Caption('this word list has no position to choose in at this length'),
+        Caption('this list has no position to choose in at this length'),
       ];
     }
     if (q == null) {
@@ -222,7 +222,7 @@ class _DrillPageState extends State<DrillPage> {
         q.closing
             ? '${q.triesLeft} tries left (this one included): which guess is '
                   'most likely to win in time?'
-            : 'which guess tells the words that fit apart best?',
+            : 'which guess tells the ${thingOf(appState.mode)} that fit apart best?',
       ),
       const SizedBox(height: 12),
       LayoutBuilder(
@@ -268,7 +268,7 @@ class _DrillPageState extends State<DrillPage> {
       ),
       const SizedBox(height: 6),
       Text(
-        '$fits ${fits == 1 ? 'word fits' : 'words fit'} the clues',
+        '$fits ${thingOf(appState.mode, plural: fits != 1)} ${fits == 1 ? 'fits' : 'fit'} the clues',
         key: const ValueKey('drill-fits'),
         style: dim,
       ),
@@ -369,7 +369,7 @@ class _DrillPageState extends State<DrillPage> {
             padding: const EdgeInsets.only(top: 2),
             child: Text(
               '+ ${rest.length} more ${rest.length == 1 ? 'group' : 'groups'}, '
-              '$restWords ${restWords == 1 ? 'word' : 'words'}',
+              '$restWords ${thingOf(appState.mode, plural: restWords != 1)}',
               style: dim,
             ),
           ),
@@ -399,7 +399,7 @@ class _DrillPageState extends State<DrillPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${g.words.length} ${g.words.length == 1 ? 'word' : 'words'}'
+                  '${g.words.length} ${thingOf(appState.mode, plural: g.words.length != 1)}'
                   ' · chance ${(g.chance * 100).toStringAsFixed(1)}%'
                   ' · ${g.bits.toStringAsFixed(2)} bits'
                   ' · adds ${g.share.toStringAsFixed(2)}',

@@ -12,6 +12,7 @@ import 'opening.dart';
 import 'sequence.dart';
 import 'store.dart' show Achievement;
 import 'ui.dart';
+import 'modes.dart';
 import 'words.dart';
 
 /// Finds the best sequence for the page (the real search by default; a test
@@ -248,7 +249,7 @@ class _SequencePageState extends State<SequencePage> {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  'three words · $lang · $length',
+                  'three ${thingOf(appState.mode)} · $lang · $length',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
                 ),
@@ -266,8 +267,8 @@ class _SequencePageState extends State<SequencePage> {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
                       children: [
-                        const Caption(
-                          'pick three words to play first, whatever the '
+                        Caption(
+                          'pick three ${thingOf(appState.mode)} to play first, whatever the '
                           'answer. the more finely the colours of the three '
                           'tell the answers apart, the surer the fourth or '
                           'fifth guess',
@@ -369,7 +370,7 @@ class _SequencePageState extends State<SequencePage> {
         ),
         const SizedBox(height: 8),
         Text(
-          'information after each word: '
+          'information after each ${thingOf(appState.mode, plural: false)}: '
           '${s.cumulativeBits.map(_bits).join(' → ')} bits, of '
           '${_bits(needed)} needed to know the answer outright',
           key: const ValueKey('sequence-bits'),
@@ -377,12 +378,12 @@ class _SequencePageState extends State<SequencePage> {
         const SizedBox(height: 4),
         Text(
           'the ${s.answers} answers fall into ${s.groups} groups: the biggest '
-          'has ${s.largest} words, and ${s.alone} answers are alone in theirs',
+          'has ${s.largest} ${thingOf(appState.mode)}, and ${s.alone} answers are alone in theirs',
           key: const ValueKey('sequence-groups'),
         ),
         const SizedBox(height: 4),
         Text(
-          'about ${s.expectedLeft.toStringAsFixed(1)} words left on average '
+          'about ${s.expectedLeft.toStringAsFixed(1)} ${thingOf(appState.mode)} left on average '
           'after the three',
           key: const ValueKey('sequence-left'),
         ),
@@ -435,8 +436,8 @@ class _SequencePageState extends State<SequencePage> {
           ),
           Text(
             '${_bits(b.bits)} bits · ${b.groups} groups · the biggest '
-            '${b.largest} words · about ${b.expectedLeft.toStringAsFixed(1)} '
-            'words left · wins by the fourth guess in ${_pct(b.by4)}, by the '
+            '${b.largest} ${thingOf(appState.mode)} · about ${b.expectedLeft.toStringAsFixed(1)} '
+            '${thingOf(appState.mode)} left · wins by the fourth guess in ${_pct(b.by4)}, by the '
             'fifth in ${_pct(b.by5)}',
             style: dim,
           ),

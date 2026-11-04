@@ -9,6 +9,7 @@ import 'drill_page.dart';
 import 'game.dart';
 import 'history_page.dart';
 import 'learn.dart';
+import 'learn_guide.dart';
 import 'learn_home.dart';
 import 'learn_log.dart';
 import 'opening_page.dart';
@@ -57,6 +58,7 @@ class Routes {
   static const learnOpening = '/learn/opening';
   static const learnSequence = '/learn/sequence';
   static const learnStyles = '/learn/styles';
+  static const learnGuide = '/learn/guide';
   static const achievements = '/achievements';
   static const mastery = '/achievements/mastery';
   static const howTo = '/how-to';
@@ -149,23 +151,56 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case Routes.learn:
       return page(learnGate(builder: (bank) => LearnHomePage(bank: bank)));
     case Routes.learnFree:
-      return page(learnGate(builder: (bank) => LearnPage(bank: bank)));
+      return page(
+        learnGate(
+          page: 'free',
+          builder: (bank) => LearnPage(bank: bank),
+        ),
+      );
     case Routes.learnChoose:
-      return page(learnGate(builder: (bank) => DrillPage(bank: bank)));
+      return page(
+        learnGate(
+          page: 'choose',
+          builder: (bank) => DrillPage(bank: bank),
+        ),
+      );
     case Routes.learnClue:
-      return page(learnGate(builder: (bank) => CluePage(bank: bank)));
+      return page(
+        learnGate(
+          page: 'clue',
+          builder: (bank) => CluePage(bank: bank),
+        ),
+      );
     case Routes.learnClosing:
       return page(
         learnGate(
+          page: 'closing',
           builder: (bank) => DrillPage(bank: bank, kind: LearnKind.closing),
         ),
       );
     case Routes.learnOpening:
-      return page(learnGate(builder: (bank) => OpeningPage(bank: bank)));
+      return page(
+        learnGate(
+          page: 'opening',
+          builder: (bank) => OpeningPage(bank: bank),
+        ),
+      );
     case Routes.learnSequence:
-      return page(learnGate(builder: (bank) => SequencePage(bank: bank)));
+      return page(
+        learnGate(
+          page: 'sequence',
+          builder: (bank) => SequencePage(bank: bank),
+        ),
+      );
+    case Routes.learnGuide:
+      return page(ModeGuidePage(mode: appState.mode));
     case Routes.learnStyles:
-      return page(learnGate(builder: (bank) => StylesPage(bank: bank)));
+      return page(
+        learnGate(
+          page: 'styles',
+          builder: (bank) => StylesPage(bank: bank),
+        ),
+      );
     case Routes.solver:
       // the solver follows the mode: one board, or four that share the guesses
       return page(
@@ -237,6 +272,7 @@ const _known = {
   Routes.learnOpening,
   Routes.learnSequence,
   Routes.learnStyles,
+  Routes.learnGuide,
   Routes.achievements,
   Routes.howTo,
   Routes.settings,
@@ -274,10 +310,20 @@ Route<void> _dialog(RouteSettings settings, Widget dialog) =>
 /// address (a refresh) starts before they are read.
 /// The gate of a learn page: the words of the mode in view (the equations, the
 /// places, or the words of the language).
-Widget learnGate({required Widget Function(WordBank bank) builder}) => BankGate(
-  builder: builder,
+Widget learnGate({
+  required Widget Function(WordBank bank) builder,
+  String? page,
+}) => BankGate(
   equations: appState.mode == GameMode.equations,
   places: appState.mode == GameMode.themed,
+  builder: (bank) => Builder(
+    builder: (context) => Title(
+      // the tab says where you are: classic/learn, equations/learn/opening
+      title: '${appState.mode.name}/learn${page == null ? '' : '/$page'}',
+      color: Theme.of(context).colorScheme.surface,
+      child: builder(bank),
+    ),
+  ),
 );
 
 class BankGate extends StatefulWidget {

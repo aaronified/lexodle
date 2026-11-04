@@ -146,53 +146,57 @@ class ModeGuidePage extends StatelessWidget {
   final GameMode mode;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TablerIcon(
-            'school',
-            size: headerIconSize,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'learn · ${mode.label}',
-            style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-          ),
-        ],
+  Widget build(BuildContext context) => Title(
+    title: '${mode.name}/learn/guide',
+    color: Theme.of(context).colorScheme.surface,
+    child: Scaffold(
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TablerIcon(
+              'school',
+              size: headerIconSize,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'learn · ${mode.label}',
+              style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+            ),
+          ],
+        ),
       ),
-    ),
-    body: SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: ListView(
-            key: const ValueKey('mode-guide'),
-            padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
-            children: [
-              for (final sec in modeGuide(mode))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Caption(sec.heading),
-                      const SizedBox(height: 8),
-                      if (sec.crop != null) ...[
-                        HelpCrop(sec.crop!),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: ListView(
+              key: const ValueKey('mode-guide'),
+              padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
+              children: [
+                for (final sec in modeGuide(mode))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Caption(sec.heading),
                         const SizedBox(height: 8),
+                        if (sec.crop != null) ...[
+                          HelpCrop(sec.crop!),
+                          const SizedBox(height: 8),
+                        ],
+                        for (final line in sec.lines)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(line),
+                          ),
                       ],
-                      for (final line in sec.lines)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(line),
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

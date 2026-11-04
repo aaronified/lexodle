@@ -1,5 +1,7 @@
 import 'learn_styles.dart';
 import 'logic.dart';
+import 'main.dart' show appState;
+import 'modes.dart' show thingOf;
 import 'playstyle.dart';
 
 /// What learn mode knows about one guess once the position it was made in has
@@ -68,7 +70,7 @@ class GuessReport {
   bool get trivial => before <= 1;
 }
 
-String _words(num n) => '${_trim(n)} ${n == 1 ? 'word' : 'words'}';
+String _words(num n) => '${_trim(n)} ${thingOf(appState.mode, plural: n != 1)}';
 
 String _trim(num n) {
   if (n == n.roundToDouble()) return n.round().toString();

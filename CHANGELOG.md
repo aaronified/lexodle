@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- learn talks about equations and places in those modes
+  The learn pages said "word" in every mode; the equations mode now says
+  equations, the themed mode places.
+- the browser tab names the learn page
+  The tab reads like `classic/learn` or `equations/learn/guide`, and the guide
+  has its own address, so the browser's back and forward keep it. So does each
+  licence text.
 - the learn drills work in every mode
   The opening, practise, choose the best, closing and three words now run on
   the words of the mode in view: the equations, the places, or the words of the
