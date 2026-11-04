@@ -557,8 +557,8 @@ void main() {
     expect(find.byType(ReviewPage), findsOneWidget);
   });
 
-  testWidgets('a mastermind game opens as its board, every row fitting the '
-      'word it settled on', (tester) async {
+  testWidgets('a mastermind game opens in the review, against the word it '
+      'settled on', (tester) async {
     await load(tester);
     final h = History();
     final row = h.add(
@@ -579,9 +579,40 @@ void main() {
     await show(tester, h);
     await tester.tap(find.byKey(ValueKey('game-${row.id}')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('plain-replay')), findsOneWidget);
-    expect(find.text('solved in 3'), findsOneWidget);
-    expect(find.byKey(const ValueKey('replay-row-2')), findsOneWidget);
+    expect(find.byType(ReviewPage), findsOneWidget);
+  });
+
+  test('a largest-pool mastermind game keeps its flag in the history', () {
+    final h = History();
+    final row = h.add(
+      at: ms(24),
+      lang: 'fr',
+      mode: GameMode.mastermind,
+      length: 4,
+      tries: 3,
+      pool: 500,
+      answers: ['abcd'],
+      won: true,
+      guesses: const [GuessRow(game: 0, n: 0, word: 'abcd')],
+      largest: true,
+    );
+    expect(row.largest, isTrue);
+    expect(GameRow.fromAny(row.toRow()).largest, isTrue);
+    expect(GameRow.fromAny(row.toJson()).largest, isTrue);
+    // a game without it reads as before, in the shorter row of earlier versions
+    final plain = h.add(
+      at: ms(24),
+      lang: 'fr',
+      mode: GameMode.mastermind,
+      length: 4,
+      tries: 3,
+      pool: 500,
+      answers: ['abcd'],
+      won: true,
+      guesses: const [GuessRow(game: 0, n: 0, word: 'abcd')],
+    );
+    expect(plain.toRow().length, 12);
+    expect(GameRow.fromAny(plain.toRow()).largest, isFalse);
   });
 
   testWidgets(

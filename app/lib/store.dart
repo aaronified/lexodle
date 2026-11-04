@@ -1207,6 +1207,34 @@ final achievements = <Achievement>[
     mode: GameMode.mastermind,
   ),
   Achievement.leveled(
+    'mastermind_skill',
+    'diamond',
+    'mastermind skill',
+    (n) => 'win a mastermind game with an average skill above $n',
+    'mastermindSkill',
+    _lv(
+      [70, 80, 85, 90],
+      ['steady chase', 'sharp chase', 'keen chase', 'flawless chase'],
+    ),
+    hit: (r, t) => r.won && r.skills.isNotEmpty && r.avgSkill > t,
+    strict: true,
+    mode: GameMode.mastermind,
+  ),
+  Achievement.leveled(
+    'mastermind_luck',
+    'clover',
+    'mastermind luck',
+    (n) =>
+        'win a random-pool mastermind game with an average luck of +$n or more',
+    'mastermindLuck',
+    _lv(
+      [20, 40, 60, 80],
+      ['lucky break', 'charmed break', 'blessed break', 'fated break'],
+    ),
+    hit: (r, t) => r.won && r.luck != null && r.luck! >= t,
+    mode: GameMode.mastermind,
+  ),
+  Achievement.leveled(
     'largest_wins',
     'crown',
     'against the odds',
@@ -1887,6 +1915,12 @@ final metrics = <String, Metric>{
   'mastermindWins': _count(_mastermindOnly, (r) => r.won),
   'mastermindQuick': _count(_mastermindOnly, (r) => r.won && r.used <= 4),
   'fastestMastermind': _fastest(_mastermindOnly),
+  'mastermindSkill': _most(
+    _mastermindOnly,
+    (r) => r.won && r.skills.isNotEmpty ? r.avgSkill : null,
+  ),
+  // (a largest-pool game has no luck: its result carries none)
+  'mastermindLuck': _most(_mastermindOnly, (r) => r.won ? r.luck : null),
   'equationBrutal': _count(_equationsOnly, (r) => r.won && r.tries <= 3),
   'largestWins': _count(_mastermindOnly, (r) => r.won && r.largest),
   'largestQuick': _count(
@@ -2663,6 +2697,7 @@ class AppState extends ChangeNotifier {
     required List<GuessRow> guesses,
     String daily = '',
     Draw draw = Draw.frequency,
+    bool largest = false,
     DateTime? now,
   }) {
     appLog.i(
@@ -2682,6 +2717,7 @@ class AppState extends ChangeNotifier {
       guesses: guesses,
       daily: daily,
       draw: draw,
+      largest: largest,
     );
     saveHistory();
     notifyListeners();

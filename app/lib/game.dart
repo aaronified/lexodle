@@ -90,11 +90,11 @@ class _GamePageState extends State<GamePage>
   bool get blind => mode == GameMode.blind;
 
   /// The equations: the tiles are digits and signs, scored and reviewed as
-  /// words are. The mastermind is a word that dodges, so there is no answer to
-  /// measure the guesses against: no skill and luck scores, no review.
+  /// words are. The mastermind is a word that dodges: each guess is scored
+  /// against the words still possible, and reviewed against the word it settled
+  /// on, which fits every reply it gave.
   bool get equations => mode == GameMode.equations;
   bool get mastermind => mode == GameMode.mastermind;
-  bool get _unscored => mastermind;
 
   /// Neither has a word of the language to look up.
   bool get _noDictionary => equations || mastermind;
@@ -134,7 +134,7 @@ class _GamePageState extends State<GamePage>
   /// How the answer is drawn, and so the chances its scores are worked out
   /// under: the setting, the curve for a daily, and equal chances for the old
   /// daily and for a puzzle from a link.
-  late final Draw draw = equations
+  late final Draw draw = equations || mastermind
       ? Draw.equal
       : _daily == null
       ? appState.draw
@@ -372,7 +372,7 @@ class _GamePageState extends State<GamePage>
     hearts = heartsTotal;
     unlocked = [];
     // score the opening while the first guess is being chosen
-    if (analyseWhilePlaying && !_unscored) {
+    if (analyseWhilePlaying) {
       warmOpening(
         eligible,
         widget.bank.guessable(length),
@@ -590,39 +590,34 @@ class _GamePageState extends State<GamePage>
       // correct beats present beats absent
       if (old == null || m[i].index < old.index) keyMarks[k] = m[i];
     }
-    if (_unscored) {
-      // no scores, no review: only what the rules need
-      if (mastermind) eligible = filterEligible(eligible, word, m);
-      // the word is known once one is left: look it up before it is guessed
-      if (mastermind && eligible.length == 1 && prefetchDefinitions) {
-        final lang = widget.bank.language;
-        Wiktionary.shared.prefetch(eligible.first, lang.code, lang.wikt);
-      }
-      _analysis.add(null);
-      return _afterGuess(word, m, restoring);
-    }
     final after = filterEligible(eligible, word, m, blind: blind);
-    metrics.add(
-      scoreGuess(
-        eligible,
-        word,
-        after.length,
-        finalTry: guesses.length >= tries,
-        solved: word == answer,
-        triesLeft: tries - (guesses.length - 1),
-        weights: _law,
-        afterWords: after,
-        // skill is measured against the best real guess, which the
-        // background analysis is still finding out
-        provisional: analyseWhilePlaying,
-        fresh: freshLetters(word, guesses.take(guesses.length - 1)),
-        // the places of a blind game's greens are not shown
-        greens: blind ? 0 : knownGreens(marks.take(marks.length - 1)),
-        blind: blind,
-      ),
+    final measured = scoreGuess(
+      eligible,
+      word,
+      after.length,
+      // (the mastermind has no tries to run out of)
+      finalTry: !mastermind && guesses.length >= tries,
+      solved: word == answer,
+      triesLeft: mastermind ? 99 : tries - (guesses.length - 1),
+      weights: _law,
+      afterWords: after,
+      // skill is measured against the best real guess, which the
+      // background analysis is still finding out
+      provisional: analyseWhilePlaying,
+      fresh: freshLetters(word, guesses.take(guesses.length - 1)),
+      // the places of a blind game's greens are not shown
+      greens: blind ? 0 : knownGreens(marks.take(marks.length - 1)),
+      blind: blind,
     );
+    // a reply with no chance in it has no luck
+    metrics.add(largest ? measured.withoutLuck() : measured);
     befores.add(eligible);
     eligible = after;
+    // the word is known once one is left: look it up before it is guessed
+    if (mastermind && eligible.length == 1 && prefetchDefinitions) {
+      final lang = widget.bank.language;
+      Wiktionary.shared.prefetch(eligible.first, lang.code, lang.wikt);
+    }
     // work the guess out now, in the background, one at a time: the best
     // real split (for its skill) and the picks and plots of the review
     final before = befores.last;
@@ -641,7 +636,8 @@ class _GamePageState extends State<GamePage>
                 )
               : widget.bank.guessable(length),
           weights: _law,
-          answer: answer,
+          // (the mastermind's word is not settled until the end)
+          answer: mastermind ? null : answer,
           blind: blind,
         ),
       );
@@ -712,7 +708,8 @@ class _GamePageState extends State<GamePage>
         won: won,
         largest: largest,
         skills: [for (final m in metrics) m.skill],
-        luck: traits.luck,
+        // (a reply with no chance in it has no luck to average)
+        luck: largest ? null : traits.luck,
         risk: traits.risk,
         maxBits: traits.maxBits,
         daily: d != null,
@@ -738,17 +735,12 @@ class _GamePageState extends State<GamePage>
           pool: pool,
           answers: [answer],
           won: won,
-          guesses: _unscored
-              ? [
-                  for (final (i, g) in guesses.indexed)
-                    GuessRow(game: 0, n: i, word: g),
-                ]
-              : [
-                  for (var i = 0; i < metrics.length; i++)
-                    guessRowOf(i, metrics[i]),
-                ],
+          guesses: [
+            for (var i = 0; i < metrics.length; i++) guessRowOf(i, metrics[i]),
+          ],
           daily: d?.date ?? '',
           draw: draw,
+          largest: largest,
         );
       }
       final code = widget.bank.language.code;
@@ -1269,7 +1261,7 @@ class _GamePageState extends State<GamePage>
     final left = lockdown
         ? '$hearts ${hearts == 1 ? 'heart' : 'hearts'} · $triesLeft'
         : triesLeft;
-    if (guesses.isEmpty || _unscored) return Caption(left);
+    if (guesses.isEmpty) return Caption(left);
     final m = metrics.last;
     final parts = <(String, String?)>[
       if (h.showSkill)
@@ -1327,6 +1319,7 @@ class _GamePageState extends State<GamePage>
     tries: tries,
     weights: _law,
     analysis: List.of(_analysis),
+    luckless: largest,
   );
 
   /// A one-line summary with the review button; the helper's step-by-step
@@ -1344,8 +1337,11 @@ class _GamePageState extends State<GamePage>
                 'skill ${metrics.every((m) => m.ready) ? avg(metrics.map((m) => m.skill)).round() : '…'}',
                 'skill',
               ),
-              (' · ', null),
-              ('luck ${luckText(avg(metrics.map((m) => m.luck)))}', 'luck'),
+              // (a reply with no chance in it has no luck)
+              if (!largest) ...[
+                (' · ', null),
+                ('luck ${luckText(avg(metrics.map((m) => m.luck)))}', 'luck'),
+              ],
             ]),
           ),
         ),

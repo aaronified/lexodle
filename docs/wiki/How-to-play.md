@@ -92,8 +92,9 @@ language and the length you chose, and there are no tries to run out of, so the 
 score. The *pool choice* decides the reply: *random* draws one of the words still possible, so the
 reply that keeps the most words is the likeliest; *largest* always gives the reply that keeps the
 most words, with no chance in it, so it can be worked out (ties go to the fewest greens, then the
-fewest yellows, and all green only when nothing else is left). There is no daily, helper, skill or
-review.
+fewest yellows, and all green only when nothing else is left). There is no daily or helper. Each guess is scored for skill against the words still possible, and
+for luck in the random pool (the largest pool's replies have no chance in them, so it has skill only);
+the game is reviewed against the word it settled on, which fits every reply.
 
 ## The helper and the review
 

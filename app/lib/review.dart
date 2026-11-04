@@ -40,7 +40,12 @@ class GameRecord {
     this.daily = false,
     this.blind = false,
     this.lockdown = false,
+    this.luckless = false,
   });
+
+  /// Whether the replies had no chance in them (the mastermind that kept the
+  /// largest pool): there is no luck to show.
+  final bool luckless;
 
   /// Whether the game was lockdown: only guesses that keep the greens were
   /// allowed, so skill is measured against those.
@@ -395,7 +400,7 @@ class _ReviewPageState extends State<ReviewPage> {
       children: [
         pill('skill', ready ? '${skill.round()}' : '…'),
         const SizedBox(width: 8),
-        pill('luck', signedLuck(luck)),
+        pill('luck', r.luckless ? '–' : signedLuck(luck)),
         const SizedBox(width: 8),
         pill('risk', !ready ? '…' : (risk == null ? '–' : '${risk.round()}')),
         const SizedBox(width: 8),

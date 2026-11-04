@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- mastermind: skill, luck and a review after the game
+  Each guess is scored against the words still possible, and the game is
+  reviewed against the word it settled on, which fits every reply. The random
+  pool has luck too; the largest pool has none, since its replies have no
+  chance in them, so it shows skill only. New achievements for skill and luck.
+
 - double tap for the greens works over the gaps too
   Over the submitted guesses as one area: on a tile, in the gap between tiles or
   between rows, or one tap on a row and the next on another. A quartet or relay
