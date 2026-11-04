@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'guess_input.dart';
 import 'keyboard.dart';
@@ -9,6 +8,7 @@ import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
+import 'typing_keys.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -289,27 +289,19 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
     message = '';
   });
 
-  KeyEventResult _onKey(FocusNode _, KeyEvent e) {
-    if (e is KeyUpEvent) return KeyEventResult.ignored;
-    if (HardwareKeyboard.instance.isControlPressed ||
-        HardwareKeyboard.instance.isMetaPressed) {
-      return KeyEventResult.ignored;
-    }
-    if (e.logicalKey == LogicalKeyboardKey.enter) {
-      _add();
-    } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
-      _back();
-    } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      _move(-1);
-    } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
-      _move(1);
-    } else if (e.character != null) {
-      _type(e.character!.toLowerCase());
-    } else {
-      return KeyEventResult.ignored;
-    }
-    return KeyEventResult.handled;
-  }
+  void _clearRow() => setState(() {
+    input.clearTyped();
+  });
+
+  late final _keys = TypingKeys(
+    submit: _add,
+    back: _back,
+    clearRow: _clearRow,
+    move: _move,
+    type: _type,
+  );
+
+  KeyEventResult _onKey(FocusNode _, KeyEvent e) => _keys.handle(e);
 
   @override
   Widget build(BuildContext context) {

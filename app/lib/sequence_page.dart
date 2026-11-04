@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'earned_rows.dart';
 import 'guess_input.dart';
@@ -11,6 +10,8 @@ import 'main.dart';
 import 'opening.dart';
 import 'sequence.dart';
 import 'store.dart' show Achievement;
+import 'swipe_clear.dart';
+import 'typing_keys.dart';
 import 'ui.dart';
 import 'modes.dart';
 import 'words.dart';
@@ -199,27 +200,20 @@ class _SequencePageState extends State<SequencePage> {
   /// Moves the cursor of the row being typed (a drag along the space key).
   void _move(int by) => setState(() => input.move(by));
 
-  KeyEventResult _onKey(FocusNode _, KeyEvent e) {
-    if (e is KeyUpEvent) return KeyEventResult.ignored;
-    if (HardwareKeyboard.instance.isControlPressed ||
-        HardwareKeyboard.instance.isMetaPressed) {
-      return KeyEventResult.ignored;
-    }
-    if (e.logicalKey == LogicalKeyboardKey.enter) {
-      _submit();
-    } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
-      _back();
-    } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      setState(() => input.move(-1));
-    } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
-      setState(() => input.move(1));
-    } else if (e.character != null) {
-      _type(e.character!.toLowerCase());
-    } else {
-      return KeyEventResult.ignored;
-    }
-    return KeyEventResult.handled;
-  }
+  void _clearRow() => setState(() {
+    input.clearTyped();
+  });
+
+  late final _keys = TypingKeys(
+    submit: _submit,
+    back: _back,
+    clearRow: _clearRow,
+    move: _move,
+    type: _type,
+    equations: appState.mode == GameMode.equations,
+  );
+
+  KeyEventResult _onKey(FocusNode _, KeyEvent e) => _keys.handle(e);
 
   @override
   Widget build(BuildContext context) {
@@ -309,21 +303,30 @@ class _SequencePageState extends State<SequencePage> {
       builder: (context, box) {
         const gap = 6.0;
         final size = min(44.0, (box.maxWidth - gap * (length - 1)) / length);
-        Widget row(List<String> chars, {int? cursor, VoidCallback? onTap}) =>
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: InkWell(
-                onTap: onTap,
-                child: Row(
-                  children: [
-                    for (var i = 0; i < length; i++) ...[
-                      if (i > 0) const SizedBox(width: gap),
-                      MarkTile(chars[i], size: size, cursor: i == cursor),
-                    ],
-                  ],
+        Widget row(List<String> chars, {int? cursor, VoidCallback? onTap}) {
+          final typed = cursor != null;
+          final tiles = Row(
+            children: [
+              for (var i = 0; i < length; i++) ...[
+                if (i > 0) const SizedBox(width: gap),
+                MarkTile(
+                  chars[i],
+                  size: size,
+                  cursor: i == cursor,
+                  // a tap on a tile of the row being typed moves the cursor
+                  onTap: typed ? () => setState(() => input.select(i)) : null,
                 ),
-              ),
-            );
+              ],
+            ],
+          );
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: typed
+                ? SwipeClear(onClear: _clearRow, child: tiles)
+                : InkWell(onTap: onTap, child: tiles),
+          );
+        }
+
         final typing = !full || editing != null;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

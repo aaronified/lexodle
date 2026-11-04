@@ -1,17 +1,19 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'analysis_worker.dart';
 import 'earned_rows.dart';
 import 'guess_input.dart';
+import 'haptics.dart';
 import 'keyboard.dart';
 import 'learn_log.dart';
 import 'learn_text.dart';
 import 'logic.dart';
 import 'main.dart';
 import 'store.dart' show Achievement;
+import 'swipe_clear.dart';
+import 'typing_keys.dart';
 import 'ui.dart';
 import 'modes.dart';
 import 'words.dart';
@@ -39,6 +41,9 @@ class _LearnPageState extends State<LearnPage> {
   late final List<String> _pool = widget.bank.answers(length);
   late final Set<String> _letters = widget.bank.letters(length);
   late final input = GuessInput(length);
+
+  /// What each key has been told, from the guesses so far (the best colour).
+  final keyMarks = <String, Mark>{};
 
   late String answer;
   late List<String> eligible;
@@ -108,6 +113,7 @@ class _LearnPageState extends State<LearnPage> {
     _recorded = false;
     _earned = const [];
     input.clear();
+    keyMarks.clear();
     message = '';
     _game++;
     _startPosition();
@@ -177,6 +183,10 @@ class _LearnPageState extends State<LearnPage> {
     setState(() {
       guesses.add(word);
       marks.add(m);
+      for (var i = 0; i < word.length; i++) {
+        final old = keyMarks[word[i]];
+        if (old == null || m[i].index < old.index) keyMarks[word[i]] = m[i];
+      }
       feedback.add(null);
       _befores.add(before);
       _lands.add(land);
@@ -184,7 +194,7 @@ class _LearnPageState extends State<LearnPage> {
       eligible = after;
       hint = 0;
       _open.clear();
-      input.clear();
+      input.next();
       message = '';
       if (word == answer) {
         _land = null;
@@ -295,27 +305,54 @@ class _LearnPageState extends State<LearnPage> {
   /// Moves the cursor of the row being typed (a drag along the space key).
   void _move(int by) => setState(() => input.move(by));
 
-  KeyEventResult _onKey(FocusNode _, KeyEvent e) {
-    if (e is KeyUpEvent) return KeyEventResult.ignored;
-    if (HardwareKeyboard.instance.isControlPressed ||
-        HardwareKeyboard.instance.isMetaPressed) {
-      return KeyEventResult.ignored;
-    }
-    if (e.logicalKey == LogicalKeyboardKey.enter) {
-      _submit();
-    } else if (e.logicalKey == LogicalKeyboardKey.backspace) {
-      _back();
-    } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      setState(() => input.move(-1));
-    } else if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
-      setState(() => input.move(1));
-    } else if (e.character != null) {
-      _type(e.character!.toLowerCase());
-    } else {
-      return KeyEventResult.ignored;
-    }
-    return KeyEventResult.handled;
+  void _clearRow() {
+    if (solved) return;
+    setState(() {
+      if (input.clearTyped()) {
+        message = '';
+        Haptics.fire(Haptic.erase);
+      }
+    });
   }
+
+  void _select(int i) {
+    if (solved) return;
+    // a second tap on a tile locks its letter, or lets it go
+    setState(() {
+      if (input.tap(i)) Haptics.lockToggled(locked: input.isLocked(i));
+    });
+  }
+
+  void _toggleLockAtCursor() {
+    if (solved) return;
+    setState(() => input.toggleLock(input.cursor));
+    Haptics.lockToggled(locked: input.isLocked(input.cursor));
+  }
+
+  /// A double tap on the guesses locks every green found so far.
+  void _lockGreens() {
+    if (solved) return;
+    final greens = <(int, String)>[
+      for (var r = 0; r < marks.length; r++)
+        for (var i = 0; i < length; i++)
+          if (marks[r][i] == Mark.correct) (i, guesses[r][i]),
+    ];
+    setState(() => input.lockAll(greens));
+    Haptics.fire(Haptic.lock);
+    showToast(context, 'all greens are locked');
+  }
+
+  late final _keys = TypingKeys(
+    submit: _submit,
+    back: _back,
+    clearRow: _clearRow,
+    move: _move,
+    type: _type,
+    toggleLock: _toggleLockAtCursor,
+    equations: appState.mode == GameMode.equations,
+  );
+
+  KeyEventResult _onKey(FocusNode _, KeyEvent e) => _keys.handle(e);
 
   @override
   Widget build(BuildContext context) {
@@ -388,10 +425,9 @@ class _LearnPageState extends State<LearnPage> {
                             Widget row(
                               List<String> chars,
                               List<Mark>? ms, {
-                              int? cursor,
-                            }) => Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Row(
+                              bool typing = false,
+                            }) {
+                              final tiles = Row(
                                 children: [
                                   for (var i = 0; i < length; i++) ...[
                                     if (i > 0) const SizedBox(width: gap),
@@ -401,24 +437,58 @@ class _LearnPageState extends State<LearnPage> {
                                           ? null
                                           : ms[i],
                                       size: size,
-                                      cursor: i == cursor,
+                                      cursor: typing && i == input.cursor,
+                                      locked: typing && input.isLocked(i),
+                                      onTap: typing ? () => _select(i) : null,
                                     ),
                                   ],
                                 ],
-                              ),
+                              );
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: typing
+                                    ? SwipeClear(
+                                        onClear: _clearRow,
+                                        child: tiles,
+                                      )
+                                    : tiles,
+                              );
+                            }
+
+                            Widget submitted(int g) => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                row(guesses[g].split(''), marks[g]),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: _feedback(g, dim),
+                                ),
+                              ],
                             );
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                for (var g = 0; g < guesses.length; g++) ...[
-                                  row(guesses[g].split(''), marks[g]),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: _feedback(g, dim),
-                                  ),
-                                ],
+                                // the submitted guesses, gaps included, are one
+                                // place to double tap for the greens
+                                if (!solved && guesses.isNotEmpty)
+                                  GestureDetector(
+                                    key: const ValueKey('greens-area'),
+                                    behavior: HitTestBehavior.opaque,
+                                    onDoubleTap: _lockGreens,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        for (var g = 0; g < guesses.length; g++)
+                                          submitted(g),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  for (var g = 0; g < guesses.length; g++)
+                                    submitted(g),
                                 if (!solved)
-                                  row(input.slots, null, cursor: input.cursor),
+                                  row(input.slots, null, typing: true),
                               ],
                             );
                           },
@@ -456,6 +526,7 @@ class _LearnPageState extends State<LearnPage> {
                   LetterKeyboard(
                     letters: _letters,
                     numberPad: appState.mode == GameMode.equations,
+                    marks: keyMarks,
                     onLetter: _type,
                     onBlank: () => _type(GuessInput.blank),
                     onCursor: _move,

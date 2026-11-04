@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 
 import 'arrow_scroll.dart';
@@ -204,6 +205,8 @@ class LexodleApp extends StatelessWidget {
         darkTheme: buildTheme(Brightness.dark, black: appState.blackTheme),
         themeMode: appState.themeMode,
         initialRoute: initialRoute,
+        // a mouse drags a list as a finger does
+        scrollBehavior: const _EveryPointerScroll(),
         navigatorObservers: observers,
         // up and down scroll whatever the mouse is over, on every screen
         // and a press anywhere gives a short vibration on a phone
@@ -216,4 +219,18 @@ class LexodleApp extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Scrolling by dragging, with a mouse or a pen as well as a finger (Flutter's
+/// default leaves the mouse to the wheel and the scroll bar).
+class _EveryPointerScroll extends MaterialScrollBehavior {
+  const _EveryPointerScroll();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    ...super.dragDevices,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.trackpad,
+  };
 }
