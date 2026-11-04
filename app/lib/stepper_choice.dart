@@ -1,3 +1,5 @@
+import 'haptics.dart';
+
 import 'dart:async';
 import 'dart:math';
 
@@ -92,6 +94,7 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
     if (_busy) return;
     if (!_can(dir)) return _settle();
     _busy = true;
+    Haptics.fire(Haptic.tap);
     _from = _dx;
     _to = dir > 0 ? -_width : _width;
     _anim.forward(from: 0).then((_) {

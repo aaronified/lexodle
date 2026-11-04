@@ -1,3 +1,5 @@
+import 'haptics.dart';
+
 import 'dart:math';
 
 import 'package:flutter/gestures.dart';
@@ -75,9 +77,16 @@ class _ResizablePanelState extends State<ResizablePanel>
   double get _current =>
       (_height ?? _rest).clamp(ResizablePanel.minHeight, _max).toDouble();
 
-  void _resize(double by) => setState(
-    () => _height = (_current + by).clamp(ResizablePanel.minHeight, _max),
-  );
+  void _resize(double by) {
+    final before = _current;
+    final next = (before + by).clamp(ResizablePanel.minHeight, _max).toDouble();
+    // a tick when it reaches the top or the bottom of its travel
+    final ends = [ResizablePanel.minHeight, _max];
+    if (ends.any((e) => (next - e).abs() < 0.5 && (before - e).abs() >= 0.5)) {
+      Haptics.fire(Haptic.tap);
+    }
+    setState(() => _height = next);
+  }
 
   /// Moves the panel and its text by [d] (positive shows more of the text:
   /// finger up, wheel down): the panel rises, then the text scrolls; or the

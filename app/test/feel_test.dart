@@ -7,6 +7,7 @@ import 'package:lexodle/game.dart';
 import 'package:lexodle/haptics.dart';
 import 'package:lexodle/keyboard.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/stepper_choice.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -186,6 +187,68 @@ void main() {
       expect(log, ['mediumImpact', 'heavyImpact']);
     });
 
+    testWidgets('locking a letter is firm, letting it go a click, erasing a '
+        'click', (tester) async {
+      final log = _record(tester);
+      await board(tester);
+      await type(tester, 'cra');
+      await settle(tester);
+      log.clear();
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      Future<void> shift() async {
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        await settle(tester);
+      }
+
+      await shift();
+      expect(log, ['mediumImpact'], reason: 'locked');
+      log.clear();
+      await shift();
+      expect(log, ['selectionClick'], reason: 'let go');
+      log.clear();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await settle(tester);
+      expect(log, ['selectionClick'], reason: 'the row erased');
+      log.clear();
+      // nothing left to erase: no click
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await settle(tester);
+      expect(log, isEmpty);
+    });
+
+    testWidgets('an achievement is three knocks, each harder', (tester) async {
+      final log = _record(tester);
+      await tester.binding.setSurfaceSize(const Size(420, 900));
+      await tester.pumpWidget(const SizedBox());
+      Haptics.fire(Haptic.reward);
+      await settle(tester);
+      expect(log, ['lightImpact', 'mediumImpact', 'heavyImpact']);
+    });
+
+    testWidgets('a swiper ticks as it steps', (tester) async {
+      final log = _record(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StepperChoice<int>(
+              semanticLabel: 'x',
+              items: const [(1, 'one', ''), (2, 'two', ''), (3, 'three', '')],
+              selected: 1,
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byIcon(Icons.chevron_right).first);
+      await settle(tester);
+      expect(log, ['selectionClick']);
+    });
+
     testWidgets('a word that is not allowed knocks', (tester) async {
       final log = _record(tester);
       await board(tester);
@@ -216,6 +279,12 @@ void main() {
         await tester.sendKeyEvent(LogicalKeyboardKey.enter);
         await settle(tester);
         expect(log, ['heavyImpact', 'lightImpact']);
+        // the first win earns achievements: their knocks come once the win's
+        // are over, not on top of them
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 900)),
+        );
+        expect(log.skip(2), ['lightImpact', 'mediumImpact', 'heavyImpact']);
       },
     );
 

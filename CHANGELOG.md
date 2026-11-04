@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- haptics for what had none
+  A lock going on is a firm click and coming off a light one; erasing a row, a
+  swiper stepping, the end panel reaching the top or bottom of its travel, a
+  right or wrong answer in a drill, and an incomplete row in the solver all have
+  a feel now; the achievements of a game end are three knocks, each harder,
+  after the win or loss. The settings switch still turns them all off.
+
 - the end panel shows the boards when it is pulled down
   The boards run on beneath it, so lowering the panel reveals them instead of
   an empty space, and they can be scrolled above it.
