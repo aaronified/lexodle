@@ -254,6 +254,7 @@ class _LearnPageState extends State<LearnPage> {
         right: reports.where((r) => r.asGoodAsAny).length,
         avgSkill: reports.fold(0.0, (s, r) => s + r.skill) / reports.length,
         hints: hintsUsed,
+        mode: appState.mode,
       ),
     );
     if (earned.isNotEmpty) setState(() => _earned = earned);

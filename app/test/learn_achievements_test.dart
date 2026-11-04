@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/store.dart';
@@ -56,7 +57,8 @@ void main() {
   group('what is a learn achievement', () {
     test('they are global, and not cut down to the number of languages', () {
       final learn = achievements.where((a) => a.learn).toList();
-      expect(learn, hasLength(14));
+      // ten for each mode, counted on its own, and four for every mode together
+      expect(learn, hasLength(10 * GameMode.values.length + 4));
       for (final a in learn) {
         expect(a.global, isTrue, reason: a.id);
         expect(a.count, 4, reason: a.id);
@@ -330,6 +332,51 @@ void main() {
       );
       expect(fresh.learnLog.events, hasLength(1));
       expect(fresh.achOf('')['learn_closing']!.times, 1);
+    });
+  });
+
+  group('each mode counts its own', () {
+    LearnEvent round(GameMode m) => LearnEvent(
+      kind: LearnKind.choose,
+      language: 'en',
+      length: 7,
+      date: '2026-11-04',
+      questions: 10,
+      right: 10,
+      avgSkill: 95,
+      mode: m,
+    );
+
+    test('a round counts for its mode and for no other', () {
+      final states = <String, AchState>{};
+      advanceLearnAchievements(states, round(GameMode.equations));
+      expect(states['learn_rounds_equations']!.value, 1);
+      expect(states['learn_perfect_equations']!.value, 1);
+      expect(states['learn_rounds']!.value, 0, reason: 'classic');
+      expect(states['learn_rounds_blind']!.value, 0);
+      advanceLearnAchievements(states, round(GameMode.classic));
+      expect(states['learn_rounds']!.value, 1);
+      expect(states['learn_rounds_equations']!.value, 1);
+    });
+
+    test('the days count whatever the mode', () {
+      final states = <String, AchState>{};
+      advanceLearnAchievements(states, round(GameMode.blind));
+      expect(states['learn_streak']!.value, 1);
+    });
+
+    test('the mode is kept, and an old event is classic', () {
+      final e = round(GameMode.mastermind);
+      expect(LearnEvent.fromJson(e.toJson())!.mode, GameMode.mastermind);
+      final old = e.toJson()..remove('m');
+      expect(LearnEvent.fromJson(old)!.mode, GameMode.classic);
+      expect(round(GameMode.classic).toJson().containsKey('m'), isFalse);
+    });
+
+    test('the log tells the modes apart', () {
+      final log = LearnLog([round(GameMode.blind), round(GameMode.classic)]);
+      expect(log.where(mode: GameMode.blind), hasLength(1));
+      expect(log.where(), hasLength(2));
     });
   });
 }

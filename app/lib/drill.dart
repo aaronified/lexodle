@@ -400,11 +400,15 @@ class DrillRound {
     this.length,
     this.answers, {
     this.kind = LearnKind.choose,
+    this.mode = GameMode.classic,
   });
   final String language;
   final int length;
   final List<DrillAnswer> answers;
   final LearnKind kind;
+
+  /// The mode it was played in.
+  final GameMode mode;
 
   int get right => answers.where((a) => a.right).length;
 
@@ -424,5 +428,6 @@ class DrillRound {
     questions: answers.length,
     right: right,
     avgSkill: averageSkill,
+    mode: mode,
   );
 }
