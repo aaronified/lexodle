@@ -9,7 +9,9 @@ import 'drill_calc.dart';
 import 'earned_rows.dart';
 import 'learn_log.dart';
 import 'learn_text.dart';
+import 'logic.dart';
 import 'main.dart';
+import 'modes.dart';
 import 'store.dart' show Achievement;
 import 'ui.dart';
 import 'words.dart';
@@ -226,7 +228,9 @@ class _DrillPageState extends State<DrillPage> {
       LayoutBuilder(
         builder: (context, box) {
           const gap = 6.0;
-          final size = min(44.0, (box.maxWidth - gap * (length - 1)) / length);
+          final blind = appState.mode == GameMode.blind;
+          final slots = length + (blind ? 3 : 0);
+          final size = min(44.0, (box.maxWidth - gap * (slots - 1)) / slots);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -239,9 +243,21 @@ class _DrillPageState extends State<DrillPage> {
                         if (i > 0) const SizedBox(width: gap),
                         MarkTile(
                           q.guesses[g][i],
-                          mark: q.marks[g][i],
+                          // blind shows the counts, not the tile colours
+                          mark: blind ? null : q.marks[g][i],
                           size: size,
                         ),
+                      ],
+                      if (blind) ...[
+                        const SizedBox(width: gap * 2),
+                        for (final m in [Mark.correct, Mark.present]) ...[
+                          MarkTile(
+                            '${q.marks[g].where((x) => x == m).length}',
+                            mark: m,
+                            size: size,
+                          ),
+                          const SizedBox(width: 2),
+                        ],
                       ],
                     ],
                   ),

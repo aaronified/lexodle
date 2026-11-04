@@ -29,13 +29,6 @@ void main() {
     }
   });
 
-  test('the word drills fit the modes that play single words', () {
-    expect(learnDrillsFit(GameMode.classic), isTrue);
-    expect(learnDrillsFit(GameMode.mastermind), isTrue);
-    expect(learnDrillsFit(GameMode.equations), isFalse);
-    expect(learnDrillsFit(GameMode.blind), isFalse);
-  });
-
   Future<void> open(WidgetTester tester, GameMode mode) async {
     await tester.binding.setSurfaceSize(const Size(420, 1100));
     appState.setup(lang: 'en', length: 5, mode: mode);
@@ -48,12 +41,12 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('learn for equations has its guide and no word drills', (
+  testWidgets('learn for equations has its guide and its drills', (
     tester,
   ) async {
     await open(tester, GameMode.equations);
     expect(find.text('equations: how to play it well'), findsOneWidget);
-    expect(find.byKey(const ValueKey('learn-card-opening')), findsNothing);
+    expect(find.byKey(const ValueKey('learn-card-opening')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('learn-card-guide')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('mode-guide')), findsOneWidget);

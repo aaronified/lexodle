@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- the learn drills work in every mode
+  The opening, practise, choose the best, closing and three words now run on
+  the words of the mode in view: the equations, the places, or the words of the
+  language. Blind shows the counts, not the tile colours.
 - learn is short, with pictures
   The strategy page of each mode is short lines under headings, with crops of
   the real tiles where a picture says more.

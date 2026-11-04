@@ -145,23 +145,23 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           ? page(MultiReviewPage(record: record))
           : page(const HomePage());
     case Routes.learn:
-      return page(BankGate(builder: (bank) => LearnHomePage(bank: bank)));
+      return page(learnGate(builder: (bank) => LearnHomePage(bank: bank)));
     case Routes.learnFree:
-      return page(BankGate(builder: (bank) => LearnPage(bank: bank)));
+      return page(learnGate(builder: (bank) => LearnPage(bank: bank)));
     case Routes.learnChoose:
-      return page(BankGate(builder: (bank) => DrillPage(bank: bank)));
+      return page(learnGate(builder: (bank) => DrillPage(bank: bank)));
     case Routes.learnClosing:
       return page(
-        BankGate(
+        learnGate(
           builder: (bank) => DrillPage(bank: bank, kind: LearnKind.closing),
         ),
       );
     case Routes.learnOpening:
-      return page(BankGate(builder: (bank) => OpeningPage(bank: bank)));
+      return page(learnGate(builder: (bank) => OpeningPage(bank: bank)));
     case Routes.learnSequence:
-      return page(BankGate(builder: (bank) => SequencePage(bank: bank)));
+      return page(learnGate(builder: (bank) => SequencePage(bank: bank)));
     case Routes.learnStyles:
-      return page(BankGate(builder: (bank) => StylesPage(bank: bank)));
+      return page(learnGate(builder: (bank) => StylesPage(bank: bank)));
     case Routes.solver:
       // the solver follows the mode: one board, or four that share the guesses
       return page(
@@ -267,6 +267,14 @@ Route<void> _dialog(RouteSettings settings, Widget dialog) =>
 /// Loads the word list of the saved language before building a screen that
 /// needs it, waiting first for the saved settings, since a page opened by
 /// address (a refresh) starts before they are read.
+/// The gate of a learn page: the words of the mode in view (the equations, the
+/// places, or the words of the language).
+Widget learnGate({required Widget Function(WordBank bank) builder}) => BankGate(
+  builder: builder,
+  equations: appState.mode == GameMode.equations,
+  places: appState.mode == GameMode.themed,
+);
+
 class BankGate extends StatefulWidget {
   const BankGate({
     super.key,
