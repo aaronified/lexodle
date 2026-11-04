@@ -1,0 +1,4403 @@
+{
+ "format": 1,
+ "generated": "2026-11-04T12:26:58.150151Z",
+ "source": "697ec7bec793d6527441b85b22efe49ff742ac36",
+ "bytes": 22170615,
+ "lists": {
+  "ca": 1185694,
+  "cs": 2767131,
+  "da": 336355,
+  "de": 1155017,
+  "en": 1696151,
+  "equations": 97795,
+  "es": 1849695,
+  "fr": 1404900,
+  "hu": 515596,
+  "id": 272444,
+  "it": 1464998,
+  "nb": 1316693,
+  "nl": 1114296,
+  "pl": 2507490,
+  "places": 469897,
+  "pt": 1277416,
+  "ro": 475260,
+  "sv": 1603122,
+  "tr": 660665
+ },
+ "files": [
+  {
+   "key": "3014/3014/true/814094968",
+   "list": "ca",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 12064,
+   "treeBytes": 1296
+  },
+  {
+   "key": "3014/3014/true/564039313",
+   "list": "ca",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 12064,
+   "treeBytes": 1304
+  },
+  {
+   "key": "3014/3014/false/456439358",
+   "list": "ca",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 12064,
+   "treeBytes": 1296
+  },
+  {
+   "key": "3014/3014/false/50732971",
+   "list": "ca",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 12064,
+   "treeBytes": 1296
+  },
+  {
+   "key": "3014/3014/false/40614727",
+   "list": "ca",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 12064,
+   "treeBytes": 1296
+  },
+  {
+   "key": "3014/3014/false/649475442",
+   "list": "ca",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 12064,
+   "treeBytes": 1302
+  },
+  {
+   "key": "6562/6562/true/449833748",
+   "list": "ca",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 26256,
+   "treeBytes": 1329
+  },
+  {
+   "key": "6562/6562/true/575193145",
+   "list": "ca",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 26256,
+   "treeBytes": 1329
+  },
+  {
+   "key": "6562/6562/false/997065007",
+   "list": "ca",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 26256,
+   "treeBytes": 1349
+  },
+  {
+   "key": "6562/6562/false/1040787510",
+   "list": "ca",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 26256,
+   "treeBytes": 1354
+  },
+  {
+   "key": "6562/6562/false/1031761944",
+   "list": "ca",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 26256,
+   "treeBytes": 1342
+  },
+  {
+   "key": "6562/6562/false/949257877",
+   "list": "ca",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 26256,
+   "treeBytes": 1337
+  },
+  {
+   "key": "10074/10074/true/123012058",
+   "list": "ca",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 40304,
+   "treeBytes": 1371
+  },
+  {
+   "key": "10074/10074/true/810211195",
+   "list": "ca",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 40304,
+   "treeBytes": 1372
+  },
+  {
+   "key": "10074/10074/false/581197362",
+   "list": "ca",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 40304,
+   "treeBytes": 1398
+  },
+  {
+   "key": "10074/10074/false/213185603",
+   "list": "ca",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 40304,
+   "treeBytes": 1402
+  },
+  {
+   "key": "10074/10074/false/484168320",
+   "list": "ca",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 40304,
+   "treeBytes": 1374
+  },
+  {
+   "key": "10074/10074/false/83237949",
+   "list": "ca",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 40304,
+   "treeBytes": 1375
+  },
+  {
+   "key": "13201/13201/true/290721061",
+   "list": "ca",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 52812,
+   "treeBytes": 1420
+  },
+  {
+   "key": "13201/13201/true/370259858",
+   "list": "ca",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 52812,
+   "treeBytes": 1421
+  },
+  {
+   "key": "13201/13201/false/408900839",
+   "list": "ca",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 52812,
+   "treeBytes": 1397
+  },
+  {
+   "key": "13201/13201/false/607304872",
+   "list": "ca",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 52812,
+   "treeBytes": 1450
+  },
+  {
+   "key": "13201/13201/false/584695213",
+   "list": "ca",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 52812,
+   "treeBytes": 1419
+  },
+  {
+   "key": "13201/13201/false/754651722",
+   "list": "ca",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 52812,
+   "treeBytes": 1416
+  },
+  {
+   "key": "14814/14814/true/602063314",
+   "list": "ca",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 59264,
+   "treeBytes": 1460
+  },
+  {
+   "key": "14814/14814/true/371098979",
+   "list": "ca",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 59264,
+   "treeBytes": 1470
+  },
+  {
+   "key": "14814/14814/false/339529947",
+   "list": "ca",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 59264,
+   "treeBytes": 1487
+  },
+  {
+   "key": "14814/14814/false/321343482",
+   "list": "ca",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 59264,
+   "treeBytes": 1501
+  },
+  {
+   "key": "14814/14814/false/318976288",
+   "list": "ca",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 59264,
+   "treeBytes": 1462
+  },
+  {
+   "key": "14814/14814/false/320772245",
+   "list": "ca",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 59264,
+   "treeBytes": 1469
+  },
+  {
+   "key": "6235/6235/true/667033757",
+   "list": "cs",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 24948,
+   "treeBytes": 1314
+  },
+  {
+   "key": "6235/6235/true/159573932",
+   "list": "cs",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 24948,
+   "treeBytes": 1314
+  },
+  {
+   "key": "6235/6235/false/130935916",
+   "list": "cs",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 24948,
+   "treeBytes": 1320
+  },
+  {
+   "key": "6235/6235/false/447524445",
+   "list": "cs",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 24948,
+   "treeBytes": 1313
+  },
+  {
+   "key": "6235/6235/false/917199343",
+   "list": "cs",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 24948,
+   "treeBytes": 1315
+  },
+  {
+   "key": "6235/6235/false/259042018",
+   "list": "cs",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 24948,
+   "treeBytes": 1314
+  },
+  {
+   "key": "17265/17265/true/704619689",
+   "list": "cs",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 69068,
+   "treeBytes": 1372
+  },
+  {
+   "key": "17265/17265/true/532349022",
+   "list": "cs",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 69068,
+   "treeBytes": 1374
+  },
+  {
+   "key": "17265/17265/false/508695211",
+   "list": "cs",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 69068,
+   "treeBytes": 1394
+  },
+  {
+   "key": "17265/17265/false/669999060",
+   "list": "cs",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 69068,
+   "treeBytes": 1387
+  },
+  {
+   "key": "17265/17265/false/6361521",
+   "list": "cs",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 69068,
+   "treeBytes": 1381
+  },
+  {
+   "key": "17265/17265/false/738645910",
+   "list": "cs",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 69068,
+   "treeBytes": 1374
+  },
+  {
+   "key": "30000/30000/true/862543546",
+   "list": "cs",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1439
+  },
+  {
+   "key": "30000/30000/true/841496027",
+   "list": "cs",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1436
+  },
+  {
+   "key": "30000/30000/false/274146738",
+   "list": "cs",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1446
+  },
+  {
+   "key": "30000/30000/false/644300963",
+   "list": "cs",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1437
+  },
+  {
+   "key": "30000/30000/false/143855748",
+   "list": "cs",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1437
+  },
+  {
+   "key": "30000/30000/false/1003835113",
+   "list": "cs",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1439
+  },
+  {
+   "key": "30000/30000/true/617990832",
+   "list": "cs",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1455
+  },
+  {
+   "key": "30000/30000/true/239426869",
+   "list": "cs",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1475
+  },
+  {
+   "key": "30000/30000/false/233879250",
+   "list": "cs",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1496
+  },
+  {
+   "key": "30000/30000/false/410529747",
+   "list": "cs",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1496
+  },
+  {
+   "key": "30000/30000/false/627931760",
+   "list": "cs",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1500
+  },
+  {
+   "key": "30000/30000/false/440413173",
+   "list": "cs",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1506
+  },
+  {
+   "key": "30000/30000/true/449380688",
+   "list": "cs",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1503
+  },
+  {
+   "key": "30000/30000/true/1019024785",
+   "list": "cs",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1520
+  },
+  {
+   "key": "30000/30000/false/358800506",
+   "list": "cs",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1553
+  },
+  {
+   "key": "30000/30000/false/569546183",
+   "list": "cs",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1520
+  },
+  {
+   "key": "30000/30000/false/167760498",
+   "list": "cs",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1532
+  },
+  {
+   "key": "30000/30000/false/888519439",
+   "list": "cs",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1529
+  },
+  {
+   "key": "2598/2598/true/735326282",
+   "list": "da",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 10400,
+   "treeBytes": 1317
+  },
+  {
+   "key": "2598/2598/true/776166879",
+   "list": "da",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 10400,
+   "treeBytes": 1317
+  },
+  {
+   "key": "2598/2598/false/295937527",
+   "list": "da",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 10400,
+   "treeBytes": 1347
+  },
+  {
+   "key": "2598/2598/false/93101074",
+   "list": "da",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 10400,
+   "treeBytes": 1342
+  },
+  {
+   "key": "2598/2598/false/653532732",
+   "list": "da",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 10400,
+   "treeBytes": 1320
+  },
+  {
+   "key": "2598/2598/false/439698469",
+   "list": "da",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 10400,
+   "treeBytes": 1320
+  },
+  {
+   "key": "3459/3459/true/336846371",
+   "list": "da",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 13844,
+   "treeBytes": 1371
+  },
+  {
+   "key": "3459/3459/true/297157806",
+   "list": "da",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 13844,
+   "treeBytes": 1363
+  },
+  {
+   "key": "3459/3459/false/849111732",
+   "list": "da",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 13844,
+   "treeBytes": 1383
+  },
+  {
+   "key": "3459/3459/false/524730853",
+   "list": "da",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 13844,
+   "treeBytes": 1376
+  },
+  {
+   "key": "3459/3459/false/703651243",
+   "list": "da",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 13844,
+   "treeBytes": 1371
+  },
+  {
+   "key": "3459/3459/false/267661894",
+   "list": "da",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 13844,
+   "treeBytes": 1364
+  },
+  {
+   "key": "3444/3444/true/569749786",
+   "list": "da",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 13784,
+   "treeBytes": 1409
+  },
+  {
+   "key": "3444/3444/true/876473975",
+   "list": "da",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 13784,
+   "treeBytes": 1409
+  },
+  {
+   "key": "3444/3444/false/37325460",
+   "list": "da",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 13784,
+   "treeBytes": 1403
+  },
+  {
+   "key": "3444/3444/false/73589869",
+   "list": "da",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 13784,
+   "treeBytes": 1399
+  },
+  {
+   "key": "3444/3444/false/277874022",
+   "list": "da",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 13784,
+   "treeBytes": 1409
+  },
+  {
+   "key": "3444/3444/false/641411915",
+   "list": "da",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 13784,
+   "treeBytes": 1410
+  },
+  {
+   "key": "3119/3119/true/920481393",
+   "list": "da",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 12484,
+   "treeBytes": 1459
+  },
+  {
+   "key": "3119/3119/true/492959728",
+   "list": "da",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 12484,
+   "treeBytes": 1459
+  },
+  {
+   "key": "3119/3119/false/199509138",
+   "list": "da",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 12484,
+   "treeBytes": 1410
+  },
+  {
+   "key": "3119/3119/false/586090543",
+   "list": "da",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 12484,
+   "treeBytes": 1408
+  },
+  {
+   "key": "3119/3119/false/510883047",
+   "list": "da",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 12484,
+   "treeBytes": 1461
+  },
+  {
+   "key": "3119/3119/false/503037530",
+   "list": "da",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 12484,
+   "treeBytes": 1456
+  },
+  {
+   "key": "4732/4732/true/352405476",
+   "list": "de",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 18936,
+   "treeBytes": 1339
+  },
+  {
+   "key": "4732/4732/true/943680529",
+   "list": "de",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 18936,
+   "treeBytes": 1332
+  },
+  {
+   "key": "4732/4732/false/239888765",
+   "list": "de",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 18936,
+   "treeBytes": 1347
+  },
+  {
+   "key": "4732/4732/false/345533016",
+   "list": "de",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 18936,
+   "treeBytes": 1336
+  },
+  {
+   "key": "4732/4732/false/1071226136",
+   "list": "de",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 18936,
+   "treeBytes": 1338
+  },
+  {
+   "key": "4732/4732/false/385842493",
+   "list": "de",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 18936,
+   "treeBytes": 1343
+  },
+  {
+   "key": "8627/8627/true/157318055",
+   "list": "de",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 34516,
+   "treeBytes": 1382
+  },
+  {
+   "key": "8627/8627/true/1071078494",
+   "list": "de",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 34516,
+   "treeBytes": 1378
+  },
+  {
+   "key": "8627/8627/false/355918775",
+   "list": "de",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 34516,
+   "treeBytes": 1402
+  },
+  {
+   "key": "8627/8627/false/919855534",
+   "list": "de",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 34516,
+   "treeBytes": 1402
+  },
+  {
+   "key": "8627/8627/false/943203177",
+   "list": "de",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 34516,
+   "treeBytes": 1381
+  },
+  {
+   "key": "8627/8627/false/569390948",
+   "list": "de",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 34516,
+   "treeBytes": 1382
+  },
+  {
+   "key": "13083/13083/true/219516879",
+   "list": "de",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 52340,
+   "treeBytes": 1422
+  },
+  {
+   "key": "13083/13083/true/800558748",
+   "list": "de",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 52340,
+   "treeBytes": 1420
+  },
+  {
+   "key": "13083/13083/false/937248011",
+   "list": "de",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 52340,
+   "treeBytes": 1448
+  },
+  {
+   "key": "13083/13083/false/53124240",
+   "list": "de",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 52340,
+   "treeBytes": 1454
+  },
+  {
+   "key": "13083/13083/false/136535439",
+   "list": "de",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 52340,
+   "treeBytes": 1428
+  },
+  {
+   "key": "13083/13083/false/1014461276",
+   "list": "de",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 52340,
+   "treeBytes": 1421
+  },
+  {
+   "key": "20266/20266/true/736670952",
+   "list": "de",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 81072,
+   "treeBytes": 1470
+  },
+  {
+   "key": "20266/20266/true/883941493",
+   "list": "de",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 81072,
+   "treeBytes": 1470
+  },
+  {
+   "key": "20266/20266/false/394557376",
+   "list": "de",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 81072,
+   "treeBytes": 1499
+  },
+  {
+   "key": "20266/20266/false/836355133",
+   "list": "de",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 81072,
+   "treeBytes": 1493
+  },
+  {
+   "key": "20266/20266/false/94547002",
+   "list": "de",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 81072,
+   "treeBytes": 1470
+  },
+  {
+   "key": "20266/20266/false/898142723",
+   "list": "de",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 81072,
+   "treeBytes": 1476
+  },
+  {
+   "key": "7129/7129/true/625516849",
+   "list": "en",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 28524,
+   "treeBytes": 1313
+  },
+  {
+   "key": "7129/7129/true/19665912",
+   "list": "en",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 28524,
+   "treeBytes": 1313
+  },
+  {
+   "key": "7129/7129/false/332554741",
+   "list": "en",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 28524,
+   "treeBytes": 1316
+  },
+  {
+   "key": "7129/7129/false/886219060",
+   "list": "en",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 28524,
+   "treeBytes": 1306
+  },
+  {
+   "key": "7129/7129/false/712015511",
+   "list": "en",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 28524,
+   "treeBytes": 1310
+  },
+  {
+   "key": "7129/7129/false/896901058",
+   "list": "en",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 28524,
+   "treeBytes": 1310
+  },
+  {
+   "key": "11797/11797/true/13134937",
+   "list": "en",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 47196,
+   "treeBytes": 1358
+  },
+  {
+   "key": "11797/11797/true/705721962",
+   "list": "en",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 47196,
+   "treeBytes": 1358
+  },
+  {
+   "key": "11797/11797/false/703112977",
+   "list": "en",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 47196,
+   "treeBytes": 1357
+  },
+  {
+   "key": "11797/11797/false/37755730",
+   "list": "en",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 47196,
+   "treeBytes": 1364
+  },
+  {
+   "key": "11797/11797/false/946344429",
+   "list": "en",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 47196,
+   "treeBytes": 1358
+  },
+  {
+   "key": "11797/11797/false/468303798",
+   "list": "en",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 47196,
+   "treeBytes": 1358
+  },
+  {
+   "key": "14871/14871/true/390184797",
+   "list": "en",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 59492,
+   "treeBytes": 1380
+  },
+  {
+   "key": "14871/14871/true/793934568",
+   "list": "en",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 59492,
+   "treeBytes": 1380
+  },
+  {
+   "key": "14871/14871/false/869886061",
+   "list": "en",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 59492,
+   "treeBytes": 1405
+  },
+  {
+   "key": "14871/14871/false/990118264",
+   "list": "en",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 59492,
+   "treeBytes": 1406
+  },
+  {
+   "key": "14871/14871/false/440021183",
+   "list": "en",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 59492,
+   "treeBytes": 1390
+  },
+  {
+   "key": "14871/14871/false/348086638",
+   "list": "en",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 59492,
+   "treeBytes": 1386
+  },
+  {
+   "key": "17267/17267/true/1050608255",
+   "list": "en",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 69076,
+   "treeBytes": 1422
+  },
+  {
+   "key": "17267/17267/true/825188444",
+   "list": "en",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 69076,
+   "treeBytes": 1420
+  },
+  {
+   "key": "17267/17267/false/468016306",
+   "list": "en",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 69076,
+   "treeBytes": 1451
+  },
+  {
+   "key": "17267/17267/false/659805089",
+   "list": "en",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 69076,
+   "treeBytes": 1451
+  },
+  {
+   "key": "17267/17267/false/351676691",
+   "list": "en",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 69076,
+   "treeBytes": 1427
+  },
+  {
+   "key": "17267/17267/false/1060585624",
+   "list": "en",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 69076,
+   "treeBytes": 1431
+  },
+  {
+   "key": "17857/17857/true/685914091",
+   "list": "en",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 71436,
+   "treeBytes": 1460
+  },
+  {
+   "key": "17857/17857/true/438742014",
+   "list": "en",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 71436,
+   "treeBytes": 1466
+  },
+  {
+   "key": "17857/17857/false/424893155",
+   "list": "en",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 71436,
+   "treeBytes": 1481
+  },
+  {
+   "key": "17857/17857/false/570773158",
+   "list": "en",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 71436,
+   "treeBytes": 1502
+  },
+  {
+   "key": "17857/17857/false/842416145",
+   "list": "en",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 71436,
+   "treeBytes": 1460
+  },
+  {
+   "key": "17857/17857/false/790767144",
+   "list": "en",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 71436,
+   "treeBytes": 1468
+  },
+  {
+   "key": "6371/6371/true/549968487",
+   "list": "equations",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 25492,
+   "treeBytes": 1412
+  },
+  {
+   "key": "17356/17356/true/170312374",
+   "list": "equations",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 69432,
+   "treeBytes": 1459
+  },
+  {
+   "key": "3546/3546/true/384773406",
+   "list": "es",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 14192,
+   "treeBytes": 1308
+  },
+  {
+   "key": "3546/3546/true/784431771",
+   "list": "es",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 14192,
+   "treeBytes": 1304
+  },
+  {
+   "key": "3546/3546/false/378503608",
+   "list": "es",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 14192,
+   "treeBytes": 1306
+  },
+  {
+   "key": "3546/3546/false/184031881",
+   "list": "es",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 14192,
+   "treeBytes": 1277
+  },
+  {
+   "key": "3546/3546/false/20876645",
+   "list": "es",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 14192,
+   "treeBytes": 1310
+  },
+  {
+   "key": "3546/3546/false/133545708",
+   "list": "es",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 14192,
+   "treeBytes": 1301
+  },
+  {
+   "key": "8835/8835/true/403233555",
+   "list": "es",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 35348,
+   "treeBytes": 1357
+  },
+  {
+   "key": "8835/8835/true/920060892",
+   "list": "es",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 35348,
+   "treeBytes": 1354
+  },
+  {
+   "key": "8835/8835/false/1066135019",
+   "list": "es",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 35348,
+   "treeBytes": 1359
+  },
+  {
+   "key": "8835/8835/false/317658180",
+   "list": "es",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 35348,
+   "treeBytes": 1356
+  },
+  {
+   "key": "8835/8835/false/548062807",
+   "list": "es",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 35348,
+   "treeBytes": 1353
+  },
+  {
+   "key": "8835/8835/false/856500360",
+   "list": "es",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 35348,
+   "treeBytes": 1352
+  },
+  {
+   "key": "14743/14743/true/105873113",
+   "list": "es",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 58980,
+   "treeBytes": 1376
+  },
+  {
+   "key": "14743/14743/true/482330556",
+   "list": "es",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 58980,
+   "treeBytes": 1383
+  },
+  {
+   "key": "14743/14743/false/579370428",
+   "list": "es",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 58980,
+   "treeBytes": 1403
+  },
+  {
+   "key": "14743/14743/false/202912985",
+   "list": "es",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 58980,
+   "treeBytes": 1380
+  },
+  {
+   "key": "14743/14743/false/782466951",
+   "list": "es",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 58980,
+   "treeBytes": 1390
+  },
+  {
+   "key": "14743/14743/false/849398198",
+   "list": "es",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 58980,
+   "treeBytes": 1393
+  },
+  {
+   "key": "21870/21870/true/146621406",
+   "list": "es",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 87488,
+   "treeBytes": 1419
+  },
+  {
+   "key": "21870/21870/true/816525079",
+   "list": "es",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 87488,
+   "treeBytes": 1424
+  },
+  {
+   "key": "21870/21870/false/574630415",
+   "list": "es",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 87488,
+   "treeBytes": 1450
+  },
+  {
+   "key": "21870/21870/false/828840902",
+   "list": "es",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 87488,
+   "treeBytes": 1454
+  },
+  {
+   "key": "21870/21870/false/1060753422",
+   "list": "es",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 87488,
+   "treeBytes": 1434
+  },
+  {
+   "key": "21870/21870/false/228415047",
+   "list": "es",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 87488,
+   "treeBytes": 1435
+  },
+  {
+   "key": "26329/26329/true/636740301",
+   "list": "es",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 105324,
+   "treeBytes": 1467
+  },
+  {
+   "key": "26329/26329/true/975623536",
+   "list": "es",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 105324,
+   "treeBytes": 1474
+  },
+  {
+   "key": "26329/26329/false/166427012",
+   "list": "es",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 105324,
+   "treeBytes": 1429
+  },
+  {
+   "key": "26329/26329/false/565709849",
+   "list": "es",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 105324,
+   "treeBytes": 1487
+  },
+  {
+   "key": "26329/26329/false/155011767",
+   "list": "es",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 105324,
+   "treeBytes": 1490
+  },
+  {
+   "key": "26329/26329/false/413602654",
+   "list": "es",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 105324,
+   "treeBytes": 1478
+  },
+  {
+   "key": "2710/2710/true/26701958",
+   "list": "fr",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 10848,
+   "treeBytes": 1309
+  },
+  {
+   "key": "2710/2710/true/342733451",
+   "list": "fr",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 10848,
+   "treeBytes": 1290
+  },
+  {
+   "key": "2710/2710/false/556828076",
+   "list": "fr",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 10848,
+   "treeBytes": 1304
+  },
+  {
+   "key": "2710/2710/false/352216333",
+   "list": "fr",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 10848,
+   "treeBytes": 1297
+  },
+  {
+   "key": "2710/2710/false/920871158",
+   "list": "fr",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 10848,
+   "treeBytes": 1306
+  },
+  {
+   "key": "2710/2710/false/669156859",
+   "list": "fr",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 10848,
+   "treeBytes": 1292
+  },
+  {
+   "key": "6615/6615/true/483418275",
+   "list": "fr",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 26468,
+   "treeBytes": 1360
+  },
+  {
+   "key": "6615/6615/true/327073844",
+   "list": "fr",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 26468,
+   "treeBytes": 1360
+  },
+  {
+   "key": "6615/6615/false/380264429",
+   "list": "fr",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 26468,
+   "treeBytes": 1356
+  },
+  {
+   "key": "6615/6615/false/406857762",
+   "list": "fr",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 26468,
+   "treeBytes": 1365
+  },
+  {
+   "key": "6615/6615/false/493988375",
+   "list": "fr",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 26468,
+   "treeBytes": 1353
+  },
+  {
+   "key": "6615/6615/false/403943184",
+   "list": "fr",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 26468,
+   "treeBytes": 1354
+  },
+  {
+   "key": "11702/11702/true/924545256",
+   "list": "fr",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 46816,
+   "treeBytes": 1402
+  },
+  {
+   "key": "11702/11702/true/185973581",
+   "list": "fr",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 46816,
+   "treeBytes": 1402
+  },
+  {
+   "key": "11702/11702/false/714722947",
+   "list": "fr",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 46816,
+   "treeBytes": 1409
+  },
+  {
+   "key": "11702/11702/false/25440274",
+   "list": "fr",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 46816,
+   "treeBytes": 1409
+  },
+  {
+   "key": "11702/11702/false/910914562",
+   "list": "fr",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 46816,
+   "treeBytes": 1396
+  },
+  {
+   "key": "11702/11702/false/361603955",
+   "list": "fr",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 46816,
+   "treeBytes": 1396
+  },
+  {
+   "key": "16374/16374/true/269689758",
+   "list": "fr",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 65504,
+   "treeBytes": 1443
+  },
+  {
+   "key": "16374/16374/true/278608251",
+   "list": "fr",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 65504,
+   "treeBytes": 1444
+  },
+  {
+   "key": "16374/16374/false/970971120",
+   "list": "fr",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 65504,
+   "treeBytes": 1466
+  },
+  {
+   "key": "16374/16374/false/481044377",
+   "list": "fr",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 65504,
+   "treeBytes": 1469
+  },
+  {
+   "key": "16374/16374/false/984553114",
+   "list": "fr",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 65504,
+   "treeBytes": 1433
+  },
+  {
+   "key": "16374/16374/false/1027760927",
+   "list": "fr",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 65504,
+   "treeBytes": 1443
+  },
+  {
+   "key": "19375/19375/true/695833329",
+   "list": "fr",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 77508,
+   "treeBytes": 1487
+  },
+  {
+   "key": "19375/19375/true/966806400",
+   "list": "fr",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 77508,
+   "treeBytes": 1493
+  },
+  {
+   "key": "19375/19375/false/143689011",
+   "list": "fr",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 77508,
+   "treeBytes": 1501
+  },
+  {
+   "key": "19375/19375/false/473559950",
+   "list": "fr",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 77508,
+   "treeBytes": 1513
+  },
+  {
+   "key": "19375/19375/false/979935375",
+   "list": "fr",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 77508,
+   "treeBytes": 1487
+  },
+  {
+   "key": "19375/19375/false/94283234",
+   "list": "fr",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 77508,
+   "treeBytes": 1497
+  },
+  {
+   "key": "3420/3420/true/265677214",
+   "list": "hu",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 13688,
+   "treeBytes": 1356
+  },
+  {
+   "key": "3420/3420/true/802988727",
+   "list": "hu",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 13688,
+   "treeBytes": 1356
+  },
+  {
+   "key": "3420/3420/false/736194777",
+   "list": "hu",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 13688,
+   "treeBytes": 1364
+  },
+  {
+   "key": "3420/3420/false/844107812",
+   "list": "hu",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 13688,
+   "treeBytes": 1350
+  },
+  {
+   "key": "3420/3420/false/1002936023",
+   "list": "hu",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 13688,
+   "treeBytes": 1350
+  },
+  {
+   "key": "3420/3420/false/133792062",
+   "list": "hu",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 13688,
+   "treeBytes": 1346
+  },
+  {
+   "key": "4963/4963/true/786014455",
+   "list": "hu",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 19860,
+   "treeBytes": 1385
+  },
+  {
+   "key": "4963/4963/true/1033848378",
+   "list": "hu",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 19860,
+   "treeBytes": 1387
+  },
+  {
+   "key": "4963/4963/false/295462846",
+   "list": "hu",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 19860,
+   "treeBytes": 1399
+  },
+  {
+   "key": "4963/4963/false/701152915",
+   "list": "hu",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 19860,
+   "treeBytes": 1310
+  },
+  {
+   "key": "4963/4963/false/50372785",
+   "list": "hu",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 19860,
+   "treeBytes": 1396
+  },
+  {
+   "key": "4963/4963/false/743547016",
+   "list": "hu",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 19860,
+   "treeBytes": 1389
+  },
+  {
+   "key": "5738/5738/true/308941426",
+   "list": "hu",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 22960,
+   "treeBytes": 1439
+  },
+  {
+   "key": "5738/5738/true/63531871",
+   "list": "hu",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 22960,
+   "treeBytes": 1440
+  },
+  {
+   "key": "5738/5738/false/871558629",
+   "list": "hu",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 22960,
+   "treeBytes": 1428
+  },
+  {
+   "key": "5738/5738/false/101228812",
+   "list": "hu",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 22960,
+   "treeBytes": 1454
+  },
+  {
+   "key": "5738/5738/false/991715138",
+   "list": "hu",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 22960,
+   "treeBytes": 1434
+  },
+  {
+   "key": "5738/5738/false/181706095",
+   "list": "hu",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 22960,
+   "treeBytes": 1433
+  },
+  {
+   "key": "5942/5942/true/92314514",
+   "list": "hu",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 23776,
+   "treeBytes": 1479
+  },
+  {
+   "key": "5942/5942/true/203228327",
+   "list": "hu",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 23776,
+   "treeBytes": 1480
+  },
+  {
+   "key": "5942/5942/false/345707738",
+   "list": "hu",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 23776,
+   "treeBytes": 1451
+  },
+  {
+   "key": "5942/5942/false/536391007",
+   "list": "hu",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 23776,
+   "treeBytes": 1502
+  },
+  {
+   "key": "5942/5942/false/769395648",
+   "list": "hu",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 23776,
+   "treeBytes": 1472
+  },
+  {
+   "key": "5942/5942/false/766243273",
+   "list": "hu",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 23776,
+   "treeBytes": 1492
+  },
+  {
+   "key": "2458/2458/true/947590448",
+   "list": "id",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 9840,
+   "treeBytes": 1314
+  },
+  {
+   "key": "2458/2458/true/676669205",
+   "list": "id",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 9840,
+   "treeBytes": 1318
+  },
+  {
+   "key": "2458/2458/false/717592759",
+   "list": "id",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 9840,
+   "treeBytes": 1339
+  },
+  {
+   "key": "2458/2458/false/640388502",
+   "list": "id",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 9840,
+   "treeBytes": 1302
+  },
+  {
+   "key": "2458/2458/false/817956692",
+   "list": "id",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 9840,
+   "treeBytes": 1315
+  },
+  {
+   "key": "2458/2458/false/497095985",
+   "list": "id",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 9840,
+   "treeBytes": 1317
+  },
+  {
+   "key": "2305/2305/true/684778069",
+   "list": "id",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 9228,
+   "treeBytes": 1356
+  },
+  {
+   "key": "2305/2305/true/125601668",
+   "list": "id",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 9228,
+   "treeBytes": 1358
+  },
+  {
+   "key": "2305/2305/false/42771336",
+   "list": "id",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 9228,
+   "treeBytes": 1382
+  },
+  {
+   "key": "2305/2305/false/206173041",
+   "list": "id",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 9228,
+   "treeBytes": 1381
+  },
+  {
+   "key": "2305/2305/false/406827274",
+   "list": "id",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 9228,
+   "treeBytes": 1356
+  },
+  {
+   "key": "2305/2305/false/942170687",
+   "list": "id",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 9228,
+   "treeBytes": 1359
+  },
+  {
+   "key": "2695/2695/true/857843083",
+   "list": "id",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 10788,
+   "treeBytes": 1407
+  },
+  {
+   "key": "2695/2695/true/686530036",
+   "list": "id",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 10788,
+   "treeBytes": 1407
+  },
+  {
+   "key": "2695/2695/false/24216569",
+   "list": "id",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 10788,
+   "treeBytes": 1368
+  },
+  {
+   "key": "2695/2695/false/542973022",
+   "list": "id",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 10788,
+   "treeBytes": 1374
+  },
+  {
+   "key": "2695/2695/false/694546048",
+   "list": "id",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 10788,
+   "treeBytes": 1410
+  },
+  {
+   "key": "2695/2695/false/885757167",
+   "list": "id",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 10788,
+   "treeBytes": 1410
+  },
+  {
+   "key": "2510/2510/true/171256866",
+   "list": "id",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 10048,
+   "treeBytes": 1459
+  },
+  {
+   "key": "2510/2510/true/920016707",
+   "list": "id",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 10048,
+   "treeBytes": 1459
+  },
+  {
+   "key": "2510/2510/false/1071719241",
+   "list": "id",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 10048,
+   "treeBytes": 1303
+  },
+  {
+   "key": "2510/2510/false/788534580",
+   "list": "id",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 10048,
+   "treeBytes": 1408
+  },
+  {
+   "key": "2510/2510/false/364613612",
+   "list": "id",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 10048,
+   "treeBytes": 1459
+  },
+  {
+   "key": "2510/2510/false/674851089",
+   "list": "id",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 10048,
+   "treeBytes": 1459
+  },
+  {
+   "key": "2389/2389/true/329400731",
+   "list": "it",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 9564,
+   "treeBytes": 1299
+  },
+  {
+   "key": "2389/2389/true/278275326",
+   "list": "it",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 9564,
+   "treeBytes": 1299
+  },
+  {
+   "key": "2389/2389/false/74114472",
+   "list": "it",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 9564,
+   "treeBytes": 1304
+  },
+  {
+   "key": "2389/2389/false/87065809",
+   "list": "it",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 9564,
+   "treeBytes": 1296
+  },
+  {
+   "key": "2389/2389/false/515340675",
+   "list": "it",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 9564,
+   "treeBytes": 1300
+  },
+  {
+   "key": "2389/2389/false/165806710",
+   "list": "it",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 9564,
+   "treeBytes": 1300
+  },
+  {
+   "key": "6143/6143/true/147543631",
+   "list": "it",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 24580,
+   "treeBytes": 1347
+  },
+  {
+   "key": "6143/6143/true/378026928",
+   "list": "it",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 24580,
+   "treeBytes": 1344
+  },
+  {
+   "key": "6143/6143/false/962659412",
+   "list": "it",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 24580,
+   "treeBytes": 1354
+  },
+  {
+   "key": "6143/6143/false/109417771",
+   "list": "it",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 24580,
+   "treeBytes": 1359
+  },
+  {
+   "key": "6143/6143/false/132787431",
+   "list": "it",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 24580,
+   "treeBytes": 1346
+  },
+  {
+   "key": "6143/6143/false/264465976",
+   "list": "it",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 24580,
+   "treeBytes": 1336
+  },
+  {
+   "key": "10400/10400/true/173685146",
+   "list": "it",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 41608,
+   "treeBytes": 1368
+  },
+  {
+   "key": "10400/10400/true/330160971",
+   "list": "it",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 41608,
+   "treeBytes": 1370
+  },
+  {
+   "key": "10400/10400/false/37554910",
+   "list": "it",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 41608,
+   "treeBytes": 1399
+  },
+  {
+   "key": "10400/10400/false/901565543",
+   "list": "it",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 41608,
+   "treeBytes": 1397
+  },
+  {
+   "key": "10400/10400/false/570979860",
+   "list": "it",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 41608,
+   "treeBytes": 1369
+  },
+  {
+   "key": "10400/10400/false/575362569",
+   "list": "it",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 41608,
+   "treeBytes": 1371
+  },
+  {
+   "key": "18280/18280/true/261604190",
+   "list": "it",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 73128,
+   "treeBytes": 1419
+  },
+  {
+   "key": "18280/18280/true/485957899",
+   "list": "it",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 73128,
+   "treeBytes": 1420
+  },
+  {
+   "key": "18280/18280/false/194172783",
+   "list": "it",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 73128,
+   "treeBytes": 1412
+  },
+  {
+   "key": "18280/18280/false/660855514",
+   "list": "it",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 73128,
+   "treeBytes": 1422
+  },
+  {
+   "key": "18280/18280/false/527438178",
+   "list": "it",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 73128,
+   "treeBytes": 1416
+  },
+  {
+   "key": "18280/18280/false/506437031",
+   "list": "it",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 73128,
+   "treeBytes": 1426
+  },
+  {
+   "key": "22089/22089/true/539875793",
+   "list": "it",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 88364,
+   "treeBytes": 1468
+  },
+  {
+   "key": "22089/22089/true/618898324",
+   "list": "it",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 88364,
+   "treeBytes": 1470
+  },
+  {
+   "key": "22089/22089/false/135365739",
+   "list": "it",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 88364,
+   "treeBytes": 1490
+  },
+  {
+   "key": "22089/22089/false/658945586",
+   "list": "it",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 88364,
+   "treeBytes": 1503
+  },
+  {
+   "key": "22089/22089/false/769536863",
+   "list": "it",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 88364,
+   "treeBytes": 1462
+  },
+  {
+   "key": "22089/22089/false/533878878",
+   "list": "it",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 88364,
+   "treeBytes": 1468
+  },
+  {
+   "key": "3941/3941/true/923203811",
+   "list": "nb",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 15772,
+   "treeBytes": 1309
+  },
+  {
+   "key": "3941/3941/true/606531062",
+   "list": "nb",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 15772,
+   "treeBytes": 1305
+  },
+  {
+   "key": "3941/3941/false/541616449",
+   "list": "nb",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 15772,
+   "treeBytes": 1301
+  },
+  {
+   "key": "3941/3941/false/192370768",
+   "list": "nb",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 15772,
+   "treeBytes": 1304
+  },
+  {
+   "key": "3941/3941/false/363876269",
+   "list": "nb",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 15772,
+   "treeBytes": 1310
+  },
+  {
+   "key": "3941/3941/false/403272964",
+   "list": "nb",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 15772,
+   "treeBytes": 1306
+  },
+  {
+   "key": "7365/7365/true/48216017",
+   "list": "nb",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 29468,
+   "treeBytes": 1350
+  },
+  {
+   "key": "7365/7365/true/420806578",
+   "list": "nb",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 29468,
+   "treeBytes": 1350
+  },
+  {
+   "key": "7365/7365/false/165254964",
+   "list": "nb",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 29468,
+   "treeBytes": 1358
+  },
+  {
+   "key": "7365/7365/false/453265839",
+   "list": "nb",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 29468,
+   "treeBytes": 1357
+  },
+  {
+   "key": "7365/7365/false/203353397",
+   "list": "nb",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 29468,
+   "treeBytes": 1352
+  },
+  {
+   "key": "7365/7365/false/368309406",
+   "list": "nb",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 29468,
+   "treeBytes": 1352
+  },
+  {
+   "key": "10986/10986/true/240395276",
+   "list": "nb",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 43952,
+   "treeBytes": 1381
+  },
+  {
+   "key": "10986/10986/true/559699409",
+   "list": "nb",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 43952,
+   "treeBytes": 1376
+  },
+  {
+   "key": "10986/10986/false/326439888",
+   "list": "nb",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 43952,
+   "treeBytes": 1403
+  },
+  {
+   "key": "10986/10986/false/1031997421",
+   "list": "nb",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 43952,
+   "treeBytes": 1403
+  },
+  {
+   "key": "10986/10986/false/564437990",
+   "list": "nb",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 43952,
+   "treeBytes": 1390
+  },
+  {
+   "key": "10986/10986/false/1037234111",
+   "list": "nb",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 43952,
+   "treeBytes": 1383
+  },
+  {
+   "key": "13639/13639/true/752043583",
+   "list": "nb",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 54564,
+   "treeBytes": 1422
+  },
+  {
+   "key": "13639/13639/true/1012880212",
+   "list": "nb",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 54564,
+   "treeBytes": 1420
+  },
+  {
+   "key": "13639/13639/false/443020278",
+   "list": "nb",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 54564,
+   "treeBytes": 1448
+  },
+  {
+   "key": "13639/13639/false/719464797",
+   "list": "nb",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 54564,
+   "treeBytes": 1426
+  },
+  {
+   "key": "13639/13639/false/573146147",
+   "list": "nb",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 54564,
+   "treeBytes": 1419
+  },
+  {
+   "key": "13639/13639/false/512079392",
+   "list": "nb",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 54564,
+   "treeBytes": 1420
+  },
+  {
+   "key": "17186/17186/true/1071102888",
+   "list": "nb",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 68752,
+   "treeBytes": 1464
+  },
+  {
+   "key": "17186/17186/true/306202705",
+   "list": "nb",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 68752,
+   "treeBytes": 1467
+  },
+  {
+   "key": "17186/17186/false/292459846",
+   "list": "nb",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 68752,
+   "treeBytes": 1462
+  },
+  {
+   "key": "17186/17186/false/404528387",
+   "list": "nb",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 68752,
+   "treeBytes": 1477
+  },
+  {
+   "key": "17186/17186/false/20342834",
+   "list": "nb",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 68752,
+   "treeBytes": 1462
+  },
+  {
+   "key": "17186/17186/false/645558743",
+   "list": "nb",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 68752,
+   "treeBytes": 1468
+  },
+  {
+   "key": "2935/2935/true/678397365",
+   "list": "nl",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 11748,
+   "treeBytes": 1300
+  },
+  {
+   "key": "2935/2935/true/374096572",
+   "list": "nl",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 11748,
+   "treeBytes": 1300
+  },
+  {
+   "key": "2935/2935/false/23256795",
+   "list": "nl",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 11748,
+   "treeBytes": 1299
+  },
+  {
+   "key": "2935/2935/false/676962102",
+   "list": "nl",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 11748,
+   "treeBytes": 1256
+  },
+  {
+   "key": "2935/2935/false/655516119",
+   "list": "nl",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 11748,
+   "treeBytes": 1300
+  },
+  {
+   "key": "2935/2935/false/151436330",
+   "list": "nl",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 11748,
+   "treeBytes": 1300
+  },
+  {
+   "key": "5033/5033/true/125439153",
+   "list": "nl",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 20140,
+   "treeBytes": 1338
+  },
+  {
+   "key": "5033/5033/true/783092226",
+   "list": "nl",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 20140,
+   "treeBytes": 1343
+  },
+  {
+   "key": "5033/5033/false/827957676",
+   "list": "nl",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 20140,
+   "treeBytes": 1355
+  },
+  {
+   "key": "5033/5033/false/346997391",
+   "list": "nl",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 20140,
+   "treeBytes": 1351
+  },
+  {
+   "key": "5033/5033/false/685727293",
+   "list": "nl",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 20140,
+   "treeBytes": 1336
+  },
+  {
+   "key": "5033/5033/false/183496518",
+   "list": "nl",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 20140,
+   "treeBytes": 1333
+  },
+  {
+   "key": "8672/8672/true/327555166",
+   "list": "nl",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 34696,
+   "treeBytes": 1380
+  },
+  {
+   "key": "8672/8672/true/750410515",
+   "list": "nl",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 34696,
+   "treeBytes": 1374
+  },
+  {
+   "key": "8672/8672/false/770726159",
+   "list": "nl",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 34696,
+   "treeBytes": 1402
+  },
+  {
+   "key": "8672/8672/false/180675234",
+   "list": "nl",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 34696,
+   "treeBytes": 1396
+  },
+  {
+   "key": "8672/8672/false/1059054776",
+   "list": "nl",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 34696,
+   "treeBytes": 1374
+  },
+  {
+   "key": "8672/8672/false/881244617",
+   "list": "nl",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 34696,
+   "treeBytes": 1373
+  },
+  {
+   "key": "12153/12153/true/1023313889",
+   "list": "nl",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 48620,
+   "treeBytes": 1418
+  },
+  {
+   "key": "12153/12153/true/1011912502",
+   "list": "nl",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 48620,
+   "treeBytes": 1418
+  },
+  {
+   "key": "12153/12153/false/1061669976",
+   "list": "nl",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 48620,
+   "treeBytes": 1443
+  },
+  {
+   "key": "12153/12153/false/1004748447",
+   "list": "nl",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 48620,
+   "treeBytes": 1453
+  },
+  {
+   "key": "12153/12153/false/743152509",
+   "list": "nl",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 48620,
+   "treeBytes": 1416
+  },
+  {
+   "key": "12153/12153/false/718402250",
+   "list": "nl",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 48620,
+   "treeBytes": 1419
+  },
+  {
+   "key": "15901/15901/true/809643405",
+   "list": "nl",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 63612,
+   "treeBytes": 1460
+  },
+  {
+   "key": "15901/15901/true/33844900",
+   "list": "nl",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 63612,
+   "treeBytes": 1471
+  },
+  {
+   "key": "15901/15901/false/500493609",
+   "list": "nl",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 63612,
+   "treeBytes": 1456
+  },
+  {
+   "key": "15901/15901/false/985100344",
+   "list": "nl",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 63612,
+   "treeBytes": 1406
+  },
+  {
+   "key": "15901/15901/false/929680631",
+   "list": "nl",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 63612,
+   "treeBytes": 1461
+  },
+  {
+   "key": "15901/15901/false/107508354",
+   "list": "nl",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 63612,
+   "treeBytes": 1469
+  },
+  {
+   "key": "5890/5890/true/420573502",
+   "list": "pl",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 23568,
+   "treeBytes": 1318
+  },
+  {
+   "key": "5890/5890/true/273350727",
+   "list": "pl",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 23568,
+   "treeBytes": 1318
+  },
+  {
+   "key": "5890/5890/false/141141121",
+   "list": "pl",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 23568,
+   "treeBytes": 1328
+  },
+  {
+   "key": "5890/5890/false/1010336172",
+   "list": "pl",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 23568,
+   "treeBytes": 1306
+  },
+  {
+   "key": "5890/5890/false/743925628",
+   "list": "pl",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 23568,
+   "treeBytes": 1313
+  },
+  {
+   "key": "5890/5890/false/482242065",
+   "list": "pl",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 23568,
+   "treeBytes": 1315
+  },
+  {
+   "key": "13952/13952/true/589194476",
+   "list": "pl",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 55816,
+   "treeBytes": 1361
+  },
+  {
+   "key": "13952/13952/true/957432769",
+   "list": "pl",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 55816,
+   "treeBytes": 1363
+  },
+  {
+   "key": "13952/13952/false/163408056",
+   "list": "pl",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 55816,
+   "treeBytes": 1376
+  },
+  {
+   "key": "13952/13952/false/24794309",
+   "list": "pl",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 55816,
+   "treeBytes": 1363
+  },
+  {
+   "key": "13952/13952/false/131799104",
+   "list": "pl",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 55816,
+   "treeBytes": 1365
+  },
+  {
+   "key": "13952/13952/false/1022156925",
+   "list": "pl",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 55816,
+   "treeBytes": 1361
+  },
+  {
+   "key": "22858/22858/true/178237418",
+   "list": "pl",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 91440,
+   "treeBytes": 1421
+  },
+  {
+   "key": "22858/22858/true/257712463",
+   "list": "pl",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 91440,
+   "treeBytes": 1421
+  },
+  {
+   "key": "22858/22858/false/249005040",
+   "list": "pl",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 91440,
+   "treeBytes": 1415
+  },
+  {
+   "key": "22858/22858/false/1049013921",
+   "list": "pl",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 91440,
+   "treeBytes": 1415
+  },
+  {
+   "key": "22858/22858/false/547381676",
+   "list": "pl",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 91440,
+   "treeBytes": 1418
+  },
+  {
+   "key": "22858/22858/false/616638245",
+   "list": "pl",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 91440,
+   "treeBytes": 1422
+  },
+  {
+   "key": "30000/30000/true/803807582",
+   "list": "pl",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1444
+  },
+  {
+   "key": "30000/30000/true/103037859",
+   "list": "pl",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1439
+  },
+  {
+   "key": "30000/30000/false/801659046",
+   "list": "pl",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1483
+  },
+  {
+   "key": "30000/30000/false/994894235",
+   "list": "pl",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1474
+  },
+  {
+   "key": "30000/30000/false/268689050",
+   "list": "pl",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1484
+  },
+  {
+   "key": "30000/30000/false/585689063",
+   "list": "pl",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1474
+  },
+  {
+   "key": "30000/30000/true/1020825206",
+   "list": "pl",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1489
+  },
+  {
+   "key": "30000/30000/true/194381031",
+   "list": "pl",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1484
+  },
+  {
+   "key": "30000/30000/false/963828473",
+   "list": "pl",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1520
+  },
+  {
+   "key": "30000/30000/false/889690892",
+   "list": "pl",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1527
+  },
+  {
+   "key": "30000/30000/false/888708248",
+   "list": "pl",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 120008,
+   "treeBytes": 1518
+  },
+  {
+   "key": "30000/30000/false/661896701",
+   "list": "pl",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 120008,
+   "treeBytes": 1515
+  },
+  {
+   "key": "4421/4421/true/828578671",
+   "list": "places",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 17692,
+   "treeBytes": 1309
+  },
+  {
+   "key": "4421/4421/false/133490899",
+   "list": "places",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 17692,
+   "treeBytes": 1307
+  },
+  {
+   "key": "9423/9423/true/995521663",
+   "list": "places",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 37700,
+   "treeBytes": 1352
+  },
+  {
+   "key": "9423/9423/false/474126041",
+   "list": "places",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 37700,
+   "treeBytes": 1352
+  },
+  {
+   "key": "13046/13046/true/724368146",
+   "list": "places",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 52192,
+   "treeBytes": 1375
+  },
+  {
+   "key": "13046/13046/false/921389422",
+   "list": "places",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 52192,
+   "treeBytes": 1404
+  },
+  {
+   "key": "14385/14385/true/173561093",
+   "list": "places",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 57548,
+   "treeBytes": 1419
+  },
+  {
+   "key": "14385/14385/false/630217143",
+   "list": "places",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 57548,
+   "treeBytes": 1455
+  },
+  {
+   "key": "15711/15711/true/837456793",
+   "list": "places",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 62852,
+   "treeBytes": 1466
+  },
+  {
+   "key": "15711/15711/false/745327877",
+   "list": "places",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 62852,
+   "treeBytes": 1490
+  },
+  {
+   "key": "2614/2614/true/145270620",
+   "list": "pt",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 10464,
+   "treeBytes": 1299
+  },
+  {
+   "key": "2614/2614/true/451101733",
+   "list": "pt",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 10464,
+   "treeBytes": 1300
+  },
+  {
+   "key": "2614/2614/false/750883140",
+   "list": "pt",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 10464,
+   "treeBytes": 1302
+  },
+  {
+   "key": "2614/2614/false/1036937821",
+   "list": "pt",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 10464,
+   "treeBytes": 1305
+  },
+  {
+   "key": "2614/2614/false/575473749",
+   "list": "pt",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 10464,
+   "treeBytes": 1302
+  },
+  {
+   "key": "2614/2614/false/59891212",
+   "list": "pt",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 10464,
+   "treeBytes": 1296
+  },
+  {
+   "key": "6615/6615/true/655354235",
+   "list": "pt",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 26468,
+   "treeBytes": 1343
+  },
+  {
+   "key": "6615/6615/true/660933764",
+   "list": "pt",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 26468,
+   "treeBytes": 1350
+  },
+  {
+   "key": "6615/6615/false/817620575",
+   "list": "pt",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 26468,
+   "treeBytes": 1357
+  },
+  {
+   "key": "6615/6615/false/571593296",
+   "list": "pt",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 26468,
+   "treeBytes": 1353
+  },
+  {
+   "key": "6615/6615/false/641593207",
+   "list": "pt",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 26468,
+   "treeBytes": 1350
+  },
+  {
+   "key": "6615/6615/false/838892728",
+   "list": "pt",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 26468,
+   "treeBytes": 1346
+  },
+  {
+   "key": "10318/10318/true/439238130",
+   "list": "pt",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 41280,
+   "treeBytes": 1368
+  },
+  {
+   "key": "10318/10318/true/768593859",
+   "list": "pt",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 41280,
+   "treeBytes": 1372
+  },
+  {
+   "key": "10318/10318/false/450769897",
+   "list": "pt",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 41280,
+   "treeBytes": 1396
+  },
+  {
+   "key": "10318/10318/false/756687468",
+   "list": "pt",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 41280,
+   "treeBytes": 1410
+  },
+  {
+   "key": "10318/10318/false/809808228",
+   "list": "pt",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 41280,
+   "treeBytes": 1370
+  },
+  {
+   "key": "10318/10318/false/287222513",
+   "list": "pt",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 41280,
+   "treeBytes": 1374
+  },
+  {
+   "key": "14597/14597/true/902660077",
+   "list": "pt",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 58396,
+   "treeBytes": 1418
+  },
+  {
+   "key": "14597/14597/true/573146874",
+   "list": "pt",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 58396,
+   "treeBytes": 1420
+  },
+  {
+   "key": "14597/14597/false/266829552",
+   "list": "pt",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 58396,
+   "treeBytes": 1453
+  },
+  {
+   "key": "14597/14597/false/510604239",
+   "list": "pt",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 58396,
+   "treeBytes": 1456
+  },
+  {
+   "key": "14597/14597/false/722723385",
+   "list": "pt",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 58396,
+   "treeBytes": 1421
+  },
+  {
+   "key": "14597/14597/false/143035070",
+   "list": "pt",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 58396,
+   "treeBytes": 1421
+  },
+  {
+   "key": "17338/17338/true/835380198",
+   "list": "pt",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 69360,
+   "treeBytes": 1464
+  },
+  {
+   "key": "17338/17338/true/823708627",
+   "list": "pt",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 69360,
+   "treeBytes": 1470
+  },
+  {
+   "key": "17338/17338/false/597486064",
+   "list": "pt",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 69360,
+   "treeBytes": 1496
+  },
+  {
+   "key": "17338/17338/false/812026593",
+   "list": "pt",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 69360,
+   "treeBytes": 1468
+  },
+  {
+   "key": "17338/17338/false/65788100",
+   "list": "pt",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 69360,
+   "treeBytes": 1463
+  },
+  {
+   "key": "17338/17338/false/251228589",
+   "list": "pt",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 69360,
+   "treeBytes": 1465
+  },
+  {
+   "key": "3051/3051/true/143611023",
+   "list": "ro",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 12212,
+   "treeBytes": 1324
+  },
+  {
+   "key": "3051/3051/true/640960652",
+   "list": "ro",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 12212,
+   "treeBytes": 1319
+  },
+  {
+   "key": "3051/3051/false/798630828",
+   "list": "ro",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 12212,
+   "treeBytes": 1336
+  },
+  {
+   "key": "3051/3051/false/974657967",
+   "list": "ro",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 12212,
+   "treeBytes": 1330
+  },
+  {
+   "key": "3051/3051/false/263314656",
+   "list": "ro",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 12212,
+   "treeBytes": 1322
+  },
+  {
+   "key": "3051/3051/false/566241451",
+   "list": "ro",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 12212,
+   "treeBytes": 1316
+  },
+  {
+   "key": "4480/4480/true/295922100",
+   "list": "ro",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 17928,
+   "treeBytes": 1369
+  },
+  {
+   "key": "4480/4480/true/238778389",
+   "list": "ro",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 17928,
+   "treeBytes": 1368
+  },
+  {
+   "key": "4480/4480/false/100976292",
+   "list": "ro",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 17928,
+   "treeBytes": 1375
+  },
+  {
+   "key": "4480/4480/false/897139013",
+   "list": "ro",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 17928,
+   "treeBytes": 1334
+  },
+  {
+   "key": "4480/4480/false/632576314",
+   "list": "ro",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 17928,
+   "treeBytes": 1368
+  },
+  {
+   "key": "4480/4480/false/562025775",
+   "list": "ro",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 17928,
+   "treeBytes": 1368
+  },
+  {
+   "key": "5437/5437/true/218349101",
+   "list": "ro",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 21756,
+   "treeBytes": 1423
+  },
+  {
+   "key": "5437/5437/true/502415130",
+   "list": "ro",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 21756,
+   "treeBytes": 1421
+  },
+  {
+   "key": "5437/5437/false/1064414017",
+   "list": "ro",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 21756,
+   "treeBytes": 1405
+  },
+  {
+   "key": "5437/5437/false/571915670",
+   "list": "ro",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 21756,
+   "treeBytes": 1430
+  },
+  {
+   "key": "5437/5437/false/578598269",
+   "list": "ro",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 21756,
+   "treeBytes": 1419
+  },
+  {
+   "key": "5437/5437/false/98896490",
+   "list": "ro",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 21756,
+   "treeBytes": 1425
+  },
+  {
+   "key": "5431/5431/true/552435767",
+   "list": "ro",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 21732,
+   "treeBytes": 1468
+  },
+  {
+   "key": "5431/5431/true/142066374",
+   "list": "ro",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 21732,
+   "treeBytes": 1473
+  },
+  {
+   "key": "5431/5431/false/961418741",
+   "list": "ro",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 21732,
+   "treeBytes": 1480
+  },
+  {
+   "key": "5431/5431/false/479508952",
+   "list": "ro",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 21732,
+   "treeBytes": 1477
+  },
+  {
+   "key": "5431/5431/false/866787305",
+   "list": "ro",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 21732,
+   "treeBytes": 1473
+  },
+  {
+   "key": "5431/5431/false/993474100",
+   "list": "ro",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 21732,
+   "treeBytes": 1469
+  },
+  {
+   "key": "3426/3426/true/991591754",
+   "list": "sv",
+   "length": 4,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 13712,
+   "treeBytes": 1309
+  },
+  {
+   "key": "3426/3426/true/55099999",
+   "list": "sv",
+   "length": 4,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 13712,
+   "treeBytes": 1309
+  },
+  {
+   "key": "3426/3426/false/186667414",
+   "list": "sv",
+   "length": 4,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 13712,
+   "treeBytes": 1300
+  },
+  {
+   "key": "3426/3426/false/991194323",
+   "list": "sv",
+   "length": 4,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 13712,
+   "treeBytes": 1283
+  },
+  {
+   "key": "3426/3426/false/520579489",
+   "list": "sv",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 13712,
+   "treeBytes": 1311
+  },
+  {
+   "key": "3426/3426/false/515977608",
+   "list": "sv",
+   "length": 4,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 13712,
+   "treeBytes": 1311
+  },
+  {
+   "key": "7753/7753/true/215173501",
+   "list": "sv",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 31020,
+   "treeBytes": 1354
+  },
+  {
+   "key": "7753/7753/true/400289990",
+   "list": "sv",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 31020,
+   "treeBytes": 1358
+  },
+  {
+   "key": "7753/7753/false/66382610",
+   "list": "sv",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 31020,
+   "treeBytes": 1379
+  },
+  {
+   "key": "7753/7753/false/2213105",
+   "list": "sv",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 31020,
+   "treeBytes": 1359
+  },
+  {
+   "key": "7753/7753/false/398194789",
+   "list": "sv",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 31020,
+   "treeBytes": 1355
+  },
+  {
+   "key": "7753/7753/false/186243262",
+   "list": "sv",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 31020,
+   "treeBytes": 1365
+  },
+  {
+   "key": "13647/13647/true/1048758373",
+   "list": "sv",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 54596,
+   "treeBytes": 1381
+  },
+  {
+   "key": "13647/13647/true/917886656",
+   "list": "sv",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 54596,
+   "treeBytes": 1376
+  },
+  {
+   "key": "13647/13647/false/892160860",
+   "list": "sv",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 54596,
+   "treeBytes": 1415
+  },
+  {
+   "key": "13647/13647/false/1055755513",
+   "list": "sv",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 54596,
+   "treeBytes": 1409
+  },
+  {
+   "key": "13647/13647/false/502903083",
+   "list": "sv",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 54596,
+   "treeBytes": 1399
+  },
+  {
+   "key": "13647/13647/false/626374786",
+   "list": "sv",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 54596,
+   "treeBytes": 1395
+  },
+  {
+   "key": "18055/18055/true/273356647",
+   "list": "sv",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 72228,
+   "treeBytes": 1441
+  },
+  {
+   "key": "18055/18055/true/662915392",
+   "list": "sv",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 72228,
+   "treeBytes": 1422
+  },
+  {
+   "key": "18055/18055/false/858592961",
+   "list": "sv",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 72228,
+   "treeBytes": 1457
+  },
+  {
+   "key": "18055/18055/false/249346670",
+   "list": "sv",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 72228,
+   "treeBytes": 1414
+  },
+  {
+   "key": "18055/18055/false/502457055",
+   "list": "sv",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 72228,
+   "treeBytes": 1446
+  },
+  {
+   "key": "18055/18055/false/14487112",
+   "list": "sv",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 72228,
+   "treeBytes": 1441
+  },
+  {
+   "key": "22159/22159/true/690122529",
+   "list": "sv",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 88644,
+   "treeBytes": 1475
+  },
+  {
+   "key": "22159/22159/true/700004444",
+   "list": "sv",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 88644,
+   "treeBytes": 1479
+  },
+  {
+   "key": "22159/22159/false/53840037",
+   "list": "sv",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 88644,
+   "treeBytes": 1504
+  },
+  {
+   "key": "22159/22159/false/691277464",
+   "list": "sv",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 88644,
+   "treeBytes": 1513
+  },
+  {
+   "key": "22159/22159/false/830604139",
+   "list": "sv",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 88644,
+   "treeBytes": 1487
+  },
+  {
+   "key": "22159/22159/false/678472626",
+   "list": "sv",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 88644,
+   "treeBytes": 1475
+  },
+  {
+   "key": "4315/4315/true/639089511",
+   "list": "tr",
+   "length": 5,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 17268,
+   "treeBytes": 1350
+  },
+  {
+   "key": "4315/4315/true/81544696",
+   "list": "tr",
+   "length": 5,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 17268,
+   "treeBytes": 1338
+  },
+  {
+   "key": "4315/4315/false/664599278",
+   "list": "tr",
+   "length": 5,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 17268,
+   "treeBytes": 1361
+  },
+  {
+   "key": "4315/4315/false/906317601",
+   "list": "tr",
+   "length": 5,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 17268,
+   "treeBytes": 1355
+  },
+  {
+   "key": "4315/4315/false/685780831",
+   "list": "tr",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 17268,
+   "treeBytes": 1353
+  },
+  {
+   "key": "4315/4315/false/584115552",
+   "list": "tr",
+   "length": 5,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 17268,
+   "treeBytes": 1337
+  },
+  {
+   "key": "5910/5910/true/491922020",
+   "list": "tr",
+   "length": 6,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 23648,
+   "treeBytes": 1391
+  },
+  {
+   "key": "5910/5910/true/990708369",
+   "list": "tr",
+   "length": 6,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 23648,
+   "treeBytes": 1373
+  },
+  {
+   "key": "5910/5910/false/868925515",
+   "list": "tr",
+   "length": 6,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 23648,
+   "treeBytes": 1404
+  },
+  {
+   "key": "5910/5910/false/528318914",
+   "list": "tr",
+   "length": 6,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 23648,
+   "treeBytes": 1392
+  },
+  {
+   "key": "5910/5910/false/710334542",
+   "list": "tr",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 23648,
+   "treeBytes": 1393
+  },
+  {
+   "key": "5910/5910/false/933031631",
+   "list": "tr",
+   "length": 6,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 23648,
+   "treeBytes": 1372
+  },
+  {
+   "key": "7807/7807/true/494060127",
+   "list": "tr",
+   "length": 7,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 31236,
+   "treeBytes": 1450
+  },
+  {
+   "key": "7807/7807/true/331699308",
+   "list": "tr",
+   "length": 7,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 31236,
+   "treeBytes": 1423
+  },
+  {
+   "key": "7807/7807/false/683918484",
+   "list": "tr",
+   "length": 7,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 31236,
+   "treeBytes": 1461
+  },
+  {
+   "key": "7807/7807/false/695789175",
+   "list": "tr",
+   "length": 7,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 31236,
+   "treeBytes": 1437
+  },
+  {
+   "key": "7807/7807/false/644714743",
+   "list": "tr",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 31236,
+   "treeBytes": 1446
+  },
+  {
+   "key": "7807/7807/false/362492692",
+   "list": "tr",
+   "length": 7,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 31236,
+   "treeBytes": 1428
+  },
+  {
+   "key": "8071/8071/true/605593367",
+   "list": "tr",
+   "length": 8,
+   "draw": "equal",
+   "blind": false,
+   "bytes": 32292,
+   "treeBytes": 1501
+  },
+  {
+   "key": "8071/8071/true/845370606",
+   "list": "tr",
+   "length": 8,
+   "draw": "equal",
+   "blind": true,
+   "bytes": 32292,
+   "treeBytes": 1470
+  },
+  {
+   "key": "8071/8071/false/18460061",
+   "list": "tr",
+   "length": 8,
+   "draw": "frequency",
+   "blind": false,
+   "bytes": 32292,
+   "treeBytes": 1478
+  },
+  {
+   "key": "8071/8071/false/1005717384",
+   "list": "tr",
+   "length": 8,
+   "draw": "frequency",
+   "blind": true,
+   "bytes": 32292,
+   "treeBytes": 1494
+  },
+  {
+   "key": "8071/8071/false/246941181",
+   "list": "tr",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": false,
+   "bytes": 32292,
+   "treeBytes": 1512
+  },
+  {
+   "key": "8071/8071/false/812817256",
+   "list": "tr",
+   "length": 8,
+   "draw": "sigmoid",
+   "blind": true,
+   "bytes": 32292,
+   "treeBytes": 1482
+  }
+ ]
+}
