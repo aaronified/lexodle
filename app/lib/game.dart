@@ -1439,7 +1439,7 @@ class _GamePageState extends State<GamePage>
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
-    layout: equations ? equationRows : null,
+    numberPad: equations,
     onCursor: _move,
     marks: blind ? (_assist ? pencil.keyboard(_deduced) : const {}) : keyMarks,
     onLetter: _type,

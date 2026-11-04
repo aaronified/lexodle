@@ -11,11 +11,6 @@ const equationLengths = [6, 7, 8];
 const equationDailyLength = 8;
 const equationDailyTries = 6;
 
-/// The keys of the equations keyboard, a number pad, by row (enter and
-/// backspace flank the last). The signs are kept as `*`, `/` and `-` (a
-/// hardware keyboard has them) and drawn by [faceOf].
-const equationRows = ['789/', '456*', '123-', '0+='];
-
 /// What a character is drawn as: the times, divide and minus signs for the
 /// ASCII ones; every other character is itself.
 String faceOf(String ch) => switch (ch) {
