@@ -31,7 +31,8 @@ class LetterKeyboard extends StatelessWidget {
   });
 
   /// Moves the cursor of the row being typed by this many tiles: a drag along
-  /// the keyboard does it, as along a phone keyboard's space bar.
+  /// the space key (the blank, `_`) does it, as along a phone keyboard's space
+  /// bar. Only the games give it; the solvers and the rest do not.
   final void Function(int by)? onCursor;
 
   /// The keys by row, in place of the language's letters (the equations'
@@ -59,13 +60,9 @@ class LetterKeyboard extends StatelessWidget {
   final String enterLabel;
 
   @override
-  Widget build(BuildContext context) {
-    final keys = LayoutBuilder(
-      builder: (context, box) => _build(context, box.maxWidth < phoneWidth),
-    );
-    final move = onCursor;
-    return move == null ? keys : CursorDrag(onMove: move, child: keys);
-  }
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => _build(context, box.maxWidth < phoneWidth),
+  );
 
   Widget _build(BuildContext context, bool phone) {
     final c = Theme.of(context).colorScheme;
@@ -103,6 +100,7 @@ class LetterKeyboard extends StatelessWidget {
       (Color fill, Color fg)? colors,
       List<Mark?>? quad,
       Haptic feel = Haptic.key,
+      void Function(int by)? drag,
     }) {
       // each press has its own feel (see [Haptic])
       void press() {
@@ -133,36 +131,40 @@ class LetterKeyboard extends StatelessWidget {
         edgeWidth = markBorderWidth(mark);
       }
       if (colors != null) (fill, fg) = colors;
+      final button = InkWell(
+        onTap: press,
+        borderRadius: BorderRadius.circular(3),
+        child: Container(
+          height: keyHeight,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: fill,
+            border: Border.all(
+              color: edge ?? fill ?? c.outline,
+              width: edgeWidth,
+            ),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: label.length > 1
+                  ? (phone ? 13 : 11)
+                  : (phone ? 21 : 16),
+              fontWeight: FontWeight.bold,
+              color: fg,
+            ),
+          ),
+        ),
+      );
       return Expanded(
         flex: (flex * 10).round(),
         child: Padding(
           padding: EdgeInsets.all(gap),
-          child: InkWell(
-            onTap: press,
-            borderRadius: BorderRadius.circular(3),
-            child: Container(
-              height: keyHeight,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: fill,
-                border: Border.all(
-                  color: edge ?? fill ?? c.outline,
-                  width: edgeWidth,
-                ),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: label.length > 1
-                      ? (phone ? 13 : 11)
-                      : (phone ? 21 : 16),
-                  fontWeight: FontWeight.bold,
-                  color: fg,
-                ),
-              ),
-            ),
-          ),
+          // a drag along the key (the space) moves the cursor; a tap presses it
+          child: drag == null
+              ? button
+              : CursorDrag(onMove: drag, child: button),
         ),
       );
     }
@@ -210,7 +212,12 @@ class LetterKeyboard extends StatelessWidget {
               children: [
                 // wider under a number pad, which is narrow
                 Spacer(flex: custom != null ? 1 : 20),
-                key('_', onBlank!, flex: custom != null ? 3 : 6),
+                key(
+                  '_',
+                  onBlank!,
+                  flex: custom != null ? 3 : 6,
+                  drag: onCursor,
+                ),
                 Spacer(flex: custom != null ? 1 : 20),
               ],
             ),

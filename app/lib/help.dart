@@ -86,7 +86,7 @@ List<(String, String)> modeHelp(GameMode mode, {bool daily = false}) {
       'typing',
       'type on your keyboard or the keys on the screen. the tile with the thick '
           'border is the cursor: tap a tile, or use the arrow keys, to move it. '
-          'backspace (or delete) clears a tile. drag along the keys to move it. swipe from right to left over '
+          'backspace (or delete) clears a tile. drag along the space key to move it. swipe from right to left over '
           'the row you are typing, or press shift and backspace, to erase the '
           'whole row.',
     ),

@@ -293,7 +293,6 @@ class _SolverPageState extends State<SolverPage> {
                     letters: _letters,
                     onLetter: _type,
                     onBlank: () => _type(GuessInput.blank),
-                    onCursor: _move,
                     onEnter: _add,
                     onBack: _back,
                     enterLabel: 'add',
