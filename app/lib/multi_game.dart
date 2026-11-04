@@ -575,12 +575,9 @@ class _MultiGamePageState extends State<MultiGamePage> {
                         ),
                         child: Center(child: _status(c)),
                       ),
-                      // the panel is drawn over the boards from the bottom, so they
-                      // keep the room it has at its starting height and never move
-                      if (game.over)
-                        SizedBox(height: ResizablePanel.restHeight(context))
-                      else
-                        _keyboard(),
+                      // the panel is drawn over the boards, which run on under it
+                      // (see [_boards]' padding), so lowering it shows them
+                      if (!game.over) _keyboard(),
                       const SizedBox(height: 12),
                     ],
                   ),
@@ -616,7 +613,15 @@ class _MultiGamePageState extends State<MultiGamePage> {
         final tile = min(40.0, (boardWidth - gap * (length - 1)) / length);
         Widget board(int i) => _board(c, i, tile, gap);
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+          key: const ValueKey('boards-scroll'),
+          // when the game is over the end panel covers the lower half: room
+          // under the last board so it can be scrolled above it
+          padding: EdgeInsets.fromLTRB(
+            11,
+            8,
+            11,
+            8 + (game.over ? ResizablePanel.restHeight(context) : 0),
+          ),
           child: Column(
             children: [
               for (var row = 0; row < mode.boards; row += 2)

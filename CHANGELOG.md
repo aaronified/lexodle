@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- the end panel shows the boards when it is pulled down
+  The boards run on beneath it, so lowering the panel reveals them instead of
+  an empty space, and they can be scrolled above it.
+
 - drag along the on-screen keyboard to move the cursor
   A tile for every few finger-widths, with a tick, as along the space bar of a
   phone keyboard. Taps still type. In the games and the solvers.

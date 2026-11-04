@@ -879,12 +879,9 @@ class _GamePageState extends State<GamePage>
                           ),
                         ),
                       ),
-                      // the panel is drawn over the boards from the bottom, so they
-                      // keep the room it has at its starting height and never move
-                      if (over)
-                        SizedBox(height: ResizablePanel.restHeight(context))
-                      else
-                        _keyboard(c),
+                      // the panel is drawn over the boards, which run on under it
+                      // (see [_grid]'s padding), so lowering it shows them
+                      if (!over) _keyboard(c),
                       const SizedBox(height: 12),
                     ],
                   ),
@@ -938,8 +935,17 @@ class _GamePageState extends State<GamePage>
                     length,
               );
         return SingleChildScrollView(
+          key: const ValueKey('boards-scroll'),
           controller: _scroll,
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+          // when the game is over the end panel covers the lower half: room
+          // under the last row so it can be scrolled above it, while the boards
+          // run on beneath for when the panel is lowered
+          padding: EdgeInsets.fromLTRB(
+            11,
+            8,
+            11,
+            8 + (over ? ResizablePanel.restHeight(context) : 0),
+          ),
           child: Center(
             child: Column(
               children: [
