@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- the styles page names equations and places, the tab names the page on top
+  The styles page said "words" in the equations and themed modes. The tab of a
+  learn page opened by its address (the guide) was renamed by the page under
+  it; now only the page on top names it. The opening page no longer asks for
+  second guesses that the precompute workflow never makes for a small list.
 - read the clue counts, and the learn pages take keys
   A finished round of read the clue is kept in the learn log, shows its
   progress on the learn home, and earns two new achievements for each mode

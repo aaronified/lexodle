@@ -6,6 +6,7 @@ import 'package:lexodle/routes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/drill_page.dart';
 import 'package:lexodle/learn.dart';
+import 'package:lexodle/styles_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -198,5 +199,74 @@ void main() {
     // the plain address is the mode in view
     final plain = onGenerateRoute(const RouteSettings(name: '/learn/free'));
     expect(plain.settings.name, '/mastermind/learn/free');
+  });
+
+  testWidgets('the styles page talks of equations, and of places', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    await tester.binding.setSurfaceSize(const Size(420, 2400));
+    await appState.load();
+    for (final (mode, thing, length) in [
+      (GameMode.equations, 'equations', 7),
+      (GameMode.themed, 'places', 5),
+    ]) {
+      appState.setup(lang: 'en', length: length, mode: mode, eqLength: length);
+      final bank = (await tester.runAsync(() async {
+        final en = (await WordBank.languages()).firstWhere(
+          (l) => l.code == 'en',
+        );
+        return mode == GameMode.equations
+            ? Equations.load(en)
+            : Geography.load(en);
+      }))!;
+      await tester.pumpWidget(MaterialApp(home: StylesPage(bank: bank)));
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final texts = [
+        for (final t in tester.widgetList<Text>(find.byType(Text)))
+          if (t.data != null) t.data!,
+      ].join(' | ');
+      expect(texts, contains('or more $thing possible'), reason: '$mode');
+      expect(texts, isNot(contains('or more words possible')), reason: '$mode');
+    }
+  });
+
+  testWidgets('a direct link to the guide names the tab for the guide', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    await tester.binding.setSurfaceSize(const Size(420, 1400));
+    await appState.load();
+    appState.setup(lang: 'en', length: 5, mode: GameMode.blind);
+    await tester.runAsync(() async {
+      await WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+      );
+    });
+    final titles = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'SystemChrome.setApplicationSwitcherDescription') {
+          titles.add((call.arguments as Map)['label'] as String);
+        }
+        return null;
+      },
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        initialRoute: '/blind/learn/guide',
+        onGenerateInitialRoutes: onGenerateInitialRoutes,
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    // the learn page under it takes a moment to have its words: the last
+    // name given is still the guide's
+    for (var i = 0; i < 30; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(titles.last, 'blind/learn/guide');
   });
 }

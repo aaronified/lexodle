@@ -86,6 +86,9 @@ class _OpeningPageState extends State<OpeningPage> {
     String first,
     List<GroupLine> lines,
   ) async {
+    // the workflow keeps only the lists the app keeps: a small one is no
+    // request at all
+    if (_words.length * _words.length < openingCells) return;
     try {
       final key = openingKeyOf(_words, _words, _law, false);
       final name = openingFileName(key);
