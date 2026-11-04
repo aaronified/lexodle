@@ -44,7 +44,12 @@ class GamePage extends StatefulWidget {
     this.replay = const [],
     this.mode = GameMode.classic,
     this.chosen = false,
+    this.hearts,
   });
+
+  /// The hearts of a lockdown puzzle made by a friend (a link); null for the
+  /// player's own setting.
+  final int? hearts;
 
   /// Whether the word was chosen by a friend (a made wordle), not drawn.
   final bool chosen;
@@ -114,9 +119,10 @@ class _GamePageState extends State<GamePage>
   /// number, any other game the one chosen in the game modes.
   late final int heartsTotal = !lockdown
       ? 0
-      : (_daily != null && _daily.date.isNotEmpty
-            ? dailyHearts
-            : appState.hearts);
+      : (widget.hearts ??
+            (_daily != null && _daily.date.isNotEmpty
+                ? dailyHearts
+                : appState.hearts));
   late int hearts = heartsTotal;
 
   /// The shake of the board when a heart breaks: 0 at rest, then 1 to 0.

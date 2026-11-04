@@ -68,7 +68,8 @@ many letters are right and in place (green) and how many are right elsewhere (ye
 it has 10 tries by default (14, 10, 8 or 6) and works in every language. The two counts are as big as
 the tiles, and a tap on a letter of a guess you have made pencils a colour on it (green, yellow, grey,
 then none) to keep track of what you have worked out; nothing scores by those notes. **Make your own** (a button
-in the game modes screen) lets you type a word, choose the language and the tries, and gives a link
+in the game modes screen, in every mode but mastermind) lets you type a word (four words for a quartet or a
+relay race, an equation, a place), choose the language, the tries or the hearts, and gives a link
 that anyone can open to play your word as practice; nothing is saved or counted. The word is only
 lightly disguised in the link (four digits a letter), not secret. The app opens these links itself
 on Android. None of the three has a daily.
