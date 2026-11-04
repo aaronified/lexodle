@@ -154,6 +154,7 @@ class _DrillPageState extends State<DrillPage> {
     length,
     List.of(_answers),
     kind: widget.kind,
+    mode: appState.mode,
   );
 
   @override

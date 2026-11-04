@@ -240,12 +240,14 @@ class LearnHomePage extends StatelessWidget {
       kind: kind,
       language: bank.language.code,
       length: appState.learnLength,
+      mode: appState.mode,
     );
     final trend = log.recentSkill(
       12,
       kind: kind,
       language: bank.language.code,
       length: appState.learnLength,
+      mode: appState.mode,
     );
     final String progress;
     if (mine.isEmpty) {
