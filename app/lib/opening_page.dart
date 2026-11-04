@@ -7,6 +7,7 @@ import 'logic.dart';
 import 'main.dart';
 import 'opening.dart';
 import 'ui.dart';
+import 'modes.dart';
 import 'words.dart';
 
 /// The opening, as a lesson: the best first guess for the language and length,
@@ -151,9 +152,9 @@ class _OpeningPageState extends State<OpeningPage> {
                   const SizedBox(height: 4),
                   Text(
                     '${w.groups.length} groups · the biggest '
-                    '${w.groups.map((g) => g.words.length).reduce(max)} words · '
+                    '${w.groups.map((g) => g.words.length).reduce(max)} ${thingOf(appState.mode)} · '
                     'about ${w.expectedLeft.toStringAsFixed(1)} of '
-                    '${w.words} words left · ${w.expectedBits.toStringAsFixed(2)} '
+                    '${w.words} ${thingOf(appState.mode)} left · ${w.expectedBits.toStringAsFixed(2)} '
                     'bits expected',
                     key: const ValueKey('opening-stats'),
                     style: dim,
@@ -229,7 +230,7 @@ class _OpeningPageState extends State<OpeningPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${g.words.length} ${g.words.length == 1 ? 'word' : 'words'}'
+                      '${g.words.length} ${thingOf(appState.mode, plural: g.words.length != 1)}'
                       ' · ${(g.chance * 100).toStringAsFixed(1)}%',
                       style: dim,
                     ),
@@ -257,7 +258,7 @@ class _OpeningPageState extends State<OpeningPage> {
                         TextSpan(
                           text:
                               '  ·  about ${best.first.expected.toStringAsFixed(1)} '
-                              'words left after it',
+                              '${thingOf(appState.mode)} left after it',
                           style: dim,
                         ),
                     ],
@@ -271,7 +272,7 @@ class _OpeningPageState extends State<OpeningPage> {
                       padding: const EdgeInsets.only(bottom: 2),
                       child: Text(
                         '${r.word} · skill ${r.skill.round()} · '
-                        'words left ${r.expected.toStringAsFixed(1)} · '
+                        '${thingOf(appState.mode)} left ${r.expected.toStringAsFixed(1)} · '
                         '${r.gain.toStringAsFixed(2)} bits'
                         '${r.canWin ? ' · can be right' : ''}',
                         key: ValueKey('opening-more-$i-${r.word}'),

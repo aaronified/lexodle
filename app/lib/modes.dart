@@ -470,3 +470,11 @@ class MultiGame {
     }
   }
 }
+
+/// What the answers of [mode] are called on the learn pages: the equations, the
+/// places, or words.
+String thingOf(GameMode mode, {bool plural = true}) => switch (mode) {
+  GameMode.equations => plural ? 'equations' : 'equation',
+  GameMode.themed => plural ? 'places' : 'place',
+  _ => plural ? 'words' : 'word',
+};

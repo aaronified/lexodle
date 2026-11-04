@@ -60,9 +60,9 @@ class LearnHomePage extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
                   children: [
-                    const Caption(
+                    Caption(
                       'get better at the first guesses, and at seeing '
-                      'which word splits the rest best',
+                      'which ${thingOf(mode, plural: false)} splits the rest best',
                     ),
                     if (streak > 0) ...[
                       const SizedBox(height: 10),
@@ -82,12 +82,8 @@ class LearnHomePage extends StatelessWidget {
                         shape: const RoundedRectangleBorder(),
                         alignment: Alignment.centerLeft,
                       ),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) => ModeGuidePage(mode: mode),
-                        ),
-                      ),
+                      onPressed: () =>
+                          Navigator.pushNamed(context, Routes.learnGuide),
                       child: SizedBox(
                         width: double.infinity,
                         child: Column(
@@ -132,14 +128,14 @@ class LearnHomePage extends StatelessWidget {
                       _lesson(
                         context,
                         'read the clue',
-                        'a guess and its clues, four words: which one fits',
+                        'a guess and its clues, four ${thingOf(mode)}: which one fits',
                         Routes.learnClue,
                         key: 'learn-card-clue',
                       ),
                       _card(
                         context,
                         LearnKind.free,
-                        'practise a word',
+                        'practise ${mode == GameMode.equations ? 'an equation' : 'a ${thingOf(mode, plural: false)}'}',
                         'the answer is shown. find the best guess at each step',
                         Routes.learnFree,
                         log,
@@ -148,7 +144,7 @@ class LearnHomePage extends StatelessWidget {
                         context,
                         LearnKind.choose,
                         'choose the best',
-                        'ten positions, four words each: which splits the rest best',
+                        'ten positions, four ${thingOf(mode)} each: which splits the rest best',
                         Routes.learnChoose,
                         log,
                       ),
@@ -156,7 +152,7 @@ class LearnHomePage extends StatelessWidget {
                         context,
                         LearnKind.closing,
                         'closing',
-                        'ten endgames: few words left, few tries. which guess '
+                        'ten endgames: few ${thingOf(mode)} left, few tries. which guess '
                             'wins in time',
                         Routes.learnClosing,
                         log,
@@ -164,8 +160,8 @@ class LearnHomePage extends StatelessWidget {
                       _card(
                         context,
                         LearnKind.sequence,
-                        'three words',
-                        'find three words to play first that tell the answers '
+                        'three ${thingOf(mode)}',
+                        'find three ${thingOf(mode)} to play first that tell the answers '
                             'apart best',
                         Routes.learnSequence,
                         log,
@@ -259,7 +255,7 @@ class LearnHomePage extends StatelessWidget {
       final last = mine.last;
       final what = switch (kind) {
         LearnKind.free =>
-          'last word: ${last.right} of ${last.questions} guesses the best',
+          'last ${thingOf(appState.mode, plural: false)}: ${last.right} of ${last.questions} guesses the best',
         LearnKind.sequence => 'last set',
         _ => 'last round: ${last.right} of ${last.questions} right',
       };

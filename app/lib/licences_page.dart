@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/foundation.dart' show LicenseRegistry;
 import 'package:flutter/material.dart';
 
+import 'routes.dart';
+
 import 'ui.dart';
 
 /// One package (or bundled thing) and the licence texts that name it.
@@ -179,7 +181,11 @@ class _LicencesPageState extends State<LicencesPage> {
               key: ValueKey('licence-tile-${p.name}'),
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute<void>(builder: (_) => _LicenceText(p)),
+                MaterialPageRoute<void>(
+                  // its own address, so the browser's back and forward keep it
+                  settings: RouteSettings(name: '${Routes.about}/${p.name}'),
+                  builder: (_) => _LicenceText(p),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 19),

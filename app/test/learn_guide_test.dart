@@ -4,6 +4,7 @@ import 'package:lexodle/learn_guide.dart';
 import 'package:lexodle/learn_home.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
+import 'package:lexodle/routes.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,7 +38,12 @@ void main() {
         (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
       ),
     ))!;
-    await tester.pumpWidget(MaterialApp(home: LearnHomePage(bank: bank)));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LearnHomePage(bank: bank),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
     await tester.pump();
   }
 
@@ -59,5 +65,22 @@ void main() {
     await open(tester, GameMode.classic);
     expect(find.byKey(const ValueKey('learn-card-guide')), findsOneWidget);
     expect(find.byKey(const ValueKey('learn-card-opening')), findsOneWidget);
+  });
+
+  testWidgets('learn for equations and places does not talk about words', (
+    tester,
+  ) async {
+    for (final (mode, thing) in [
+      (GameMode.equations, 'equation'),
+      (GameMode.themed, 'place'),
+    ]) {
+      await open(tester, mode);
+      final texts = [
+        for (final t in tester.widgetList<Text>(find.byType(Text)))
+          if (t.data != null) t.data!,
+      ].join(' | ');
+      expect(texts, isNot(contains('word')), reason: '$mode: $texts');
+      expect(texts, contains(thing), reason: '$mode');
+    }
   });
 }

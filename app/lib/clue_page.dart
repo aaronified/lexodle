@@ -80,11 +80,7 @@ class _CluePageState extends State<CluePage> {
       if (blind) ...[
         const SizedBox(width: 12),
         for (final m in [Mark.correct, Mark.present]) ...[
-          MarkTile(
-            '${marks.where((x) => x == m).length}',
-            mark: m,
-            size: size,
-          ),
+          MarkTile('${marks.where((x) => x == m).length}', mark: m, size: size),
           const SizedBox(width: 2),
         ],
       ],
@@ -103,7 +99,9 @@ class _CluePageState extends State<CluePage> {
     final blind = appState.mode == GameMode.blind;
     final p = picked;
     return [
-      const Caption('which word fits every clue?'),
+      Caption(
+        'which ${thingOf(appState.mode, plural: false)} fits every clue?',
+      ),
       const SizedBox(height: 12),
       LayoutBuilder(
         builder: (context, box) {
@@ -185,7 +183,7 @@ class _CluePageState extends State<CluePage> {
           ),
         ],
         const SizedBox(height: 4),
-        Text('the fitting word is ${q.options[q.fit]}.', style: dim),
+        Text('the one that fits is ${q.options[q.fit]}.', style: dim),
         const SizedBox(height: 10),
         FilledButton(
           key: const ValueKey('clue-next'),

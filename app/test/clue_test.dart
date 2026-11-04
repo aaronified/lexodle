@@ -14,29 +14,32 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
 
-  test('exactly one of the four words fits every clue, in words and sums', () async {
-    final langs = await WordBank.languages();
-    final en = langs.firstWhere((l) => l.code == 'en');
-    for (final (bank, length) in [
-      (await WordBank.load(en), 5),
-      (await Equations.load(en), 7),
-    ]) {
-      for (var seed = 0; seed < 20; seed++) {
-        final q = buildClueQuestion(
-          bank: bank,
-          length: length,
-          draw: Draw.equal,
-          rng: Random(seed),
-        )!;
-        expect(q.options.toSet(), hasLength(4));
-        final fitting = [
-          for (final o in q.options)
-            if (q.broken(o) == null) o,
-        ];
-        expect(fitting, [q.options[q.fit]], reason: '$length seed $seed');
+  test(
+    'exactly one of the four words fits every clue, in words and sums',
+    () async {
+      final langs = await WordBank.languages();
+      final en = langs.firstWhere((l) => l.code == 'en');
+      for (final (bank, length) in [
+        (await WordBank.load(en), 5),
+        (await Equations.load(en), 7),
+      ]) {
+        for (var seed = 0; seed < 20; seed++) {
+          final q = buildClueQuestion(
+            bank: bank,
+            length: length,
+            draw: Draw.equal,
+            rng: Random(seed),
+          )!;
+          expect(q.options.toSet(), hasLength(4));
+          final fitting = [
+            for (final o in q.options)
+              if (q.broken(o) == null) o,
+          ];
+          expect(fitting, [q.options[q.fit]], reason: '$length seed $seed');
+        }
       }
-    }
-  });
+    },
+  );
 
   testWidgets('a round: a wrong pick says why, ten questions end in a result', (
     tester,
