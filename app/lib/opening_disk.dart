@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'logic.dart';
+import 'precomputed.dart' show openingFileName;
+import 'precomputed_local.dart';
 
 /// The most the kept openings take up, in bytes: the oldest are deleted first.
 const openingDiskCap = 10 * 1024 * 1024;
@@ -33,7 +35,10 @@ class DiskOpenings implements OpeningDisk {
   Uint8List? read(String key) {
     try {
       final f = _file(key);
-      if (!f.existsSync()) return null;
+      if (!f.existsSync()) {
+        // the openings the player downloaded, which are kept apart and last
+        return PrecomputedLocal.readOpening(openingFileName(key));
+      }
       final bytes = f.readAsBytesSync();
       f.setLastModifiedSync(DateTime.now()); // used lately: deleted last
       return bytes;

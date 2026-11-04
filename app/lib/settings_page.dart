@@ -8,6 +8,8 @@ import 'donate.dart';
 import 'haptics.dart';
 import 'sounds.dart';
 import 'log_section.dart';
+import 'precomputed_local.dart';
+import 'precomputed_section.dart';
 import 'main.dart';
 import 'routes.dart';
 import 'store.dart';
@@ -107,6 +109,12 @@ class SettingsPage extends StatelessWidget {
                       const Caption('updates'),
                       const SizedBox(height: 10),
                       const UpdateSection(),
+                      const SizedBox(height: 24),
+                    ],
+                    if (PrecomputedLocal.supported) ...[
+                      const Caption('faster openings'),
+                      const SizedBox(height: 10),
+                      const PrecomputedSection(),
                       const SizedBox(height: 24),
                     ],
                     const Caption('log'),

@@ -17,7 +17,8 @@
 //   openings/<key>.bin  the gain and risk of every first guess (the app's own
 //                       cache format, so the app reads it as it is)
 //   trees/<key>.json    the best first guess, and the best second guesses after
-//                       each of the 12 likeliest replies to it
+//                       each of the 12 likeliest replies to it: [word, skill,
+//                       words left on average, 1 when it could be the answer]
 //   manifest.json       every file, its size, and what it is for
 import 'dart:convert';
 import 'dart:io';
@@ -96,7 +97,12 @@ void main() {
           'words': g.words.length,
           'seconds': [
             for (final r in seconds)
-              [r.word, double.parse(r.skill.toStringAsFixed(2))],
+              [
+                r.word,
+                double.parse(r.skill.toStringAsFixed(2)),
+                double.parse(r.expected.toStringAsFixed(1)),
+                r.canWin ? 1 : 0,
+              ],
           ],
         });
       }

@@ -221,7 +221,7 @@ void main() {
       expect(RegExp(r'uses-material-design:\s*true').hasMatch(pubspec), isTrue);
     });
 
-    test('the only things the app source fetches are definitions and the time', () {
+    test('the only things the app source fetches are definitions, the time and the precomputed openings', () {
       // every address the code can ask: Wiktionary for the meaning of the
       // answer, and the hosting site for the time
       final hosts = <String>{};
@@ -239,13 +239,16 @@ void main() {
       // a project are text, not addresses the app asks; github.com is the wiki,
       // which the player's browser opens from a "learn more" link, never the
       // app: see wiki_links.dart; en.wikipedia.org is the same for the info
-      // dot of a place: a link the browser opens, see place_info.dart)
+      // dot of a place: a link the browser opens, see place_info.dart;
+      // raw.githubusercontent.com is the precomputed openings, fetched by the
+      // web app and, when the player asks, by the phone: precomputed.dart)
       final fetched = hosts.where(
         (h) =>
             !h.endsWith('wiktionary.org') &&
             h != 'aaronified.github.io' &&
             h != 'github.com' &&
-            h != 'en.wikipedia.org',
+            h != 'en.wikipedia.org' &&
+            h != 'raw.githubusercontent.com',
       );
       expect(fetched, isEmpty, reason: 'unexpected hosts: $fetched');
     });

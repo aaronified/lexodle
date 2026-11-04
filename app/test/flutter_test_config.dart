@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:lexodle/analysis_worker.dart';
 import 'package:lexodle/background.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:lexodle/changelog.dart';
+import 'package:lexodle/precomputed.dart';
 import 'package:lexodle/sounds.dart';
 import 'package:lexodle/wiktionary.dart';
 
@@ -16,6 +19,8 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   analyseWhilePlaying = false;
   analyseOffMainThread = false;
   showWhatsNew = false;
+  // nothing is published in a test
+  precomputedClient = () => MockClient((_) async => http.Response('', 404));
   Sounds.enabled = false;
   await testMain();
 }

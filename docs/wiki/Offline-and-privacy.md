@@ -18,6 +18,12 @@ What the app does ask for is Wiktionary, for the meaning of the answer when a ga
 time, from the site it is hosted on (see [Daily word](Daily-word)). If either cannot be reached
 the game carries on, quietly.
 
+The opening of a word list (the best first guess, scored ahead) is the one other thing it asks for:
+the web app reads it from this repository's `precomputed` branch on GitHub when a list is large, and
+the phone downloads it only when you tap download in the settings (**faster openings**), after being
+told the size. Both are plain requests for a public file; nothing about you or your games is sent.
+Without them the app works the opening out itself, slower.
+
 Nothing else leaves the device. Your games, playstyles, streaks and achievements are kept in the
 browser's storage (or the phone's); the backup in the settings saves them all, per language, as one
 file you keep.
