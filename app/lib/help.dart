@@ -208,6 +208,42 @@ class HelpCrop extends StatelessWidget {
     final c = Theme.of(context).colorScheme;
     const g = Mark.correct, y = Mark.present, a = Mark.absent;
     switch (kind) {
+      case 'opening':
+        return _frame(context, [
+          _word('crane', [a, y, g, a, y]),
+          const SizedBox(width: 12),
+          _label(context, 'five new letters'),
+          const SizedBox(width: 12),
+          _word('eerie', [a, a, a, a, a]),
+          const SizedBox(width: 12),
+          _label(context, 'repeats: less to learn'),
+        ]);
+      case 'groups':
+        return _frame(context, [
+          _word('batch'),
+          _label(context, '  '),
+          _word('catch'),
+          _label(context, '  '),
+          _word('match'),
+          _label(context, '  '),
+          _word('patch'),
+          const SizedBox(width: 12),
+          _label(context, 'one guess, many groups'),
+        ]);
+      case 'compare':
+        return _frame(context, [
+          _word('crane'),
+          _row([_tile('1', mark: g), _tile('2', mark: y)]),
+          const SizedBox(width: 14),
+          _word('crate'),
+          _row([_tile('1', mark: g), _tile('1', mark: y)]),
+        ]);
+      case 'signs':
+        return _frame(context, [
+          _word('4+5×7', [g, y, a, a, a]),
+          const SizedBox(width: 12),
+          _label(context, 'try the signs early'),
+        ]);
       case 'colours':
         return Column(
           children: [
