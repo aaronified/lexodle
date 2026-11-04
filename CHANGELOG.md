@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- the key of a precomputed opening is the same on the web and on the phone
+  The key hashed with a multiplication that a web build rounds, so the web
+  asked for files that did not exist. It is now done in 16-bit halves, and a
+  test pins the keys. Openings kept before this are worked out again once; the
+  precompute workflow has to be run again.
 - the styles page names equations and places, the tab names the page on top
   The styles page said "words" in the equations and themed modes. The tab of a
   learn page opened by its address (the guide) was renamed by the page under

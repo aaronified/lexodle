@@ -995,13 +995,27 @@ String _openingKey(
   Map<String, int>? weights,
   bool blind,
 ) {
-  var h = 0x811c9dc5;
-  void mix(int v) => h = ((h ^ v) * 0x01000193) & 0x3fffffff;
+  // FNV-1a, in 30 bits. The multiplication is done in 16-bit halves: a plain
+  // product can pass 2^53, which a web build (numbers are doubles there) rounds
+  // and a phone does not, so the same list would have two keys.
+  var h = 0x811c9dc5 & 0x3fffffff;
+  void mix(int v) {
+    final x = h ^ (v & 0xffff);
+    final lo = x & 0xffff, hi = x >> 16;
+    // x * 0x01000193 mod 2^32, with 0x01000193 = 0x0100 * 2^16 + 0x0193
+    h =
+        (lo * 0x0193 + (((hi * 0x0193 + lo * 0x0100) & 0xffff) << 16)) &
+        0x3fffffff;
+  }
+
   for (final w in eligible) {
     for (var i = 0; i < w.length; i++) {
       mix(w.codeUnitAt(i));
     }
-    mix(weights == null ? 1 : (weights[w] ?? 1));
+    // a weight can be large (a count of uses): both halves of it
+    final weight = weights == null ? 1 : (weights[w] ?? 1);
+    mix(weight & 0xffff);
+    mix((weight >> 16) & 0xffff);
   }
   mix(blind ? 8 : 7);
   for (final w in guesses) {
