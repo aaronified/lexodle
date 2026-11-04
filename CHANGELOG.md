@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.7.2
+
 - learn weighs the equations and the mastermind as the game does
   The learn pages used the answer curve of the setting for the equations and
   the mastermind, where the game counts every one as likely as the next; so a
