@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart';
 
+import 'analysis_worker.dart' show warmOpening;
+import 'modes.dart' show GameMode;
 import 'words.dart';
 
 /// The lengths of the equations mode, in tiles.
@@ -65,6 +67,29 @@ class Equations {
     );
   }
 }
+
+/// Starts scoring the opening of an equations game of [length] on the worker
+/// thread, on the first use of the mode (and when the length changes), so it
+/// is ready, and kept on the disk for every later game, by the time the first
+/// guess is made. About ten seconds at 8 tiles, nothing the screen waits for.
+Future<void> warmEquations(Language lang, int length) async {
+  try {
+    final bank = await Equations.load(lang);
+    final all = bank.guessable(length);
+    if (all.isNotEmpty) warmOpening(all, all);
+  } catch (_) {
+    // a hint: the game scores its opening itself when it has to
+  }
+}
+
+/// Whether the equations of [length] are newly in use: the mode has just been
+/// chosen, or its length changed while it is.
+bool equationsNewlyInUse(
+  GameMode? before,
+  int? lengthBefore,
+  GameMode now,
+  int length,
+) => now == GameMode.equations && (before != now || lengthBefore != length);
 
 /// Why [s] is not an equation of the list, in a few words: the rules a player
 /// can read the fault off, or null when it breaks none of them (it is an
