@@ -39,7 +39,7 @@ class _CluePageState extends State<CluePage> {
   ClueQuestion? _next() => buildClueQuestion(
     bank: widget.bank,
     length: length,
-    draw: appState.draw,
+    draw: appState.learnDraw,
     rng: _rng,
   );
 

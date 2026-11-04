@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- learn weighs the equations and the mastermind as the game does
+  The learn pages used the answer curve of the setting for the equations and
+  the mastermind, where the game counts every one as likely as the next; so a
+  skill in learn could differ from the same guess in the game. They now use
+  equal chances there too, which is also what the precomputed openings hold.
 - the key of a precomputed opening is the same on the web and on the phone
   The key hashed with a multiplication that a web build rounds, so the web
   asked for files that did not exist. It is now done in 16-bit halves, and a

@@ -51,7 +51,10 @@ String whenRight(Behaviour b) => switch (b) {
 class _StylesPageState extends State<StylesPage> {
   late final int length = appState.learnLength;
   late final List<String> _all = widget.bank.guessable(length);
-  late final Map<String, int>? _law = widget.bank.law(length, appState.draw);
+  late final Map<String, int>? _law = widget.bank.law(
+    length,
+    appState.learnDraw,
+  );
 
   OpeningPosition? position;
   List<OpeningExample> openings = const [];
@@ -69,7 +72,7 @@ class _StylesPageState extends State<StylesPage> {
     final pos = await openingPosition(
       bank: widget.bank,
       length: length,
-      draw: appState.draw,
+      draw: appState.learnDraw,
     );
     if (!mounted) return;
     final ex = openingExamples(pos: pos, guessable: _all, weights: _law);
@@ -82,7 +85,7 @@ class _StylesPageState extends State<StylesPage> {
     await closingExamples(
       bank: widget.bank,
       length: length,
-      draw: appState.draw,
+      draw: appState.learnDraw,
       onFound: (e) {
         if (mounted) setState(() => closings[e.behaviour] = e);
       },

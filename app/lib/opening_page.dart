@@ -29,7 +29,10 @@ class OpeningPage extends StatefulWidget {
 class _OpeningPageState extends State<OpeningPage> {
   late final int length = appState.learnLength;
   late final List<String> _words = widget.bank.guessable(length);
-  late final Map<String, int>? _law = widget.bank.law(length, appState.draw);
+  late final Map<String, int>? _law = widget.bank.law(
+    length,
+    appState.learnDraw,
+  );
 
   Landscape? land;
   int selected = 0;
@@ -52,7 +55,7 @@ class _OpeningPageState extends State<OpeningPage> {
     final l = await openingLandscape(
       bank: widget.bank,
       length: length,
-      draw: appState.draw,
+      draw: appState.learnDraw,
     );
     if (!mounted) return;
     setState(() => land = l);

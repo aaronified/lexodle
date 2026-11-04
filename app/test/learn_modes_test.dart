@@ -5,7 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:lexodle/routes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/drill_page.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:lexodle/learn.dart';
+import 'package:lexodle/logic.dart';
+import 'package:lexodle/opening_page.dart';
+import 'package:lexodle/precomputed.dart';
 import 'package:lexodle/styles_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/ui.dart';
@@ -268,5 +273,59 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(titles.last, 'blind/learn/guide');
+  });
+
+  test('the learn pages weigh by the chances the game does', () {
+    for (final m in GameMode.values) {
+      appState.setup(lang: 'en', length: 5, mode: m, draw: Draw.sigmoid);
+      expect(
+        appState.learnDraw,
+        m == GameMode.equations || m == GameMode.mastermind
+            ? Draw.equal
+            : Draw.sigmoid,
+        reason: '$m',
+      );
+    }
+  });
+
+  testWidgets('the opening of the equations asks for the file that exists', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    await tester.binding.setSurfaceSize(const Size(420, 2000));
+    await appState.load();
+    appState.setup(
+      lang: 'en',
+      length: 5,
+      mode: GameMode.equations,
+      eqLength: 7,
+      draw: Draw.sigmoid,
+    );
+    final bank = (await tester.runAsync(
+      () async => Equations.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+      ),
+    ))!;
+    final asked = <String>[];
+    precomputedClient = () => MockClient((r) async {
+      asked.add(r.url.path);
+      return http.Response('', 404);
+    });
+    addTearDown(
+      () =>
+          precomputedClient = () =>
+              MockClient((_) async => http.Response('', 404)),
+    );
+    await tester.pumpWidget(MaterialApp(home: OpeningPage(bank: bank)));
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final words = bank.guessable(7);
+    final file = openingFileName(openingKeyOf(words, words, null, false));
+    expect(
+      asked.any((p) => p.endsWith('/trees/$file.json')),
+      isTrue,
+      reason: '$asked',
+    );
   });
 }
