@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- the cursor moves by dragging the space key, not the whole keyboard
+  As along the space bar of a phone keyboard, and only in the games: not in the
+  solvers. The other keys only type.
+
 - haptics for what had none
   A lock going on is a firm click and coming off a light one; erasing a row, a
   swiper stepping, the end panel reaching the top or bottom of its travel, a
