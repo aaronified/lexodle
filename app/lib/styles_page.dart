@@ -8,6 +8,7 @@ import 'main.dart';
 import 'playstyle.dart';
 import 'styles_lesson.dart';
 import 'ui.dart';
+import 'modes.dart';
 import 'words.dart';
 
 /// The styles, as a lesson: the three habits of the opening and the two of the
@@ -134,8 +135,8 @@ class _StylesPageState extends State<StylesPage> {
                   'habits, or none',
                 ),
                 const SizedBox(height: 16),
-                const Caption(
-                  'the opening · $earlyFrom or more words possible',
+                Caption(
+                  'the opening · $earlyFrom or more ${thingOf(appState.mode)} possible',
                 ),
                 const SizedBox(height: 8),
                 for (final b in [
@@ -145,8 +146,8 @@ class _StylesPageState extends State<StylesPage> {
                 ])
                   _card(c, dim, b, _openingBody(c, dim, b)),
                 const SizedBox(height: 10),
-                const Caption(
-                  'the end · $endUpTo or fewer words, or $endGreens greens known',
+                Caption(
+                  'the end · $endUpTo or fewer ${thingOf(appState.mode)}, or $endGreens greens known',
                 ),
                 const SizedBox(height: 8),
                 for (final b in [Behaviour.closer, Behaviour.prober])
@@ -155,7 +156,7 @@ class _StylesPageState extends State<StylesPage> {
                 const Caption('between them'),
                 const SizedBox(height: 6),
                 Text(
-                  'from $endUpTo to ${earlyFrom - 1} words, with under '
+                  'from $endUpTo to ${earlyFrom - 1} ${thingOf(appState.mode)}, with under '
                   '$endGreens greens, is the middle game: it counts for '
                   'no habit.',
                   style: dim,
@@ -229,7 +230,7 @@ class _StylesPageState extends State<StylesPage> {
           pos.marks.isEmpty
               ? 'an example, at the start of a game:'
               : 'an example, after ${pos.first} showed these colours '
-                    '(${pos.eligible.length} words fit):',
+                    '(${pos.eligible.length} ${thingOf(appState.mode)} fit):',
           style: dim,
         ),
         if (pos.marks.isNotEmpty) ...[
@@ -253,7 +254,7 @@ class _StylesPageState extends State<StylesPage> {
         ),
         Text(
           '${e.walk.groups.length} groups · about '
-          '${e.walk.expectedLeft.toStringAsFixed(1)} of ${e.walk.words} words '
+          '${e.walk.expectedLeft.toStringAsFixed(1)} of ${e.walk.words} ${thingOf(appState.mode)} '
           'left · the biggest group $top',
           style: dim,
         ),
@@ -294,7 +295,7 @@ class _StylesPageState extends State<StylesPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'an example: $fits words fit, ${q.triesLeft} tries left',
+          'an example: $fits ${thingOf(appState.mode)} fit, ${q.triesLeft} tries left',
           style: dim,
         ),
         const SizedBox(height: 4),
@@ -351,10 +352,10 @@ class _StylesPageState extends State<StylesPage> {
       children: [
         const Caption('luck: explained, not taught'),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'luck is what the answer did for your guess. the same guess on '
           'different answers lands in different groups: a big group leaves '
-          'many words (unlucky), a small one few (lucky). you choose the '
+          'many ${thingOf(appState.mode)} (unlucky), a small one few (lucky). you choose the '
           'guess, never the answer, so there is nothing to practise: skill '
           'and risk are yours, luck is not. over every answer it averages '
           'exactly nothing.',
@@ -370,7 +371,7 @@ class _StylesPageState extends State<StylesPage> {
               padding: const EdgeInsets.only(bottom: 2),
               child: Text(
                 'in a group of ${r.group.words.length} '
-                '${r.group.words.length == 1 ? 'word' : 'words'} '
+                '${thingOf(appState.mode, plural: r.group.words.length != 1)} '
                 '(${(r.group.chance * 100).toStringAsFixed(1)}% of answers): '
                 'luck ${r.luck >= 0 ? '+' : '−'}${r.luck.abs().round()}',
               ),

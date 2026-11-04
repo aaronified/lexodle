@@ -341,12 +341,17 @@ Widget learnGate({
   equations: appState.mode == GameMode.equations,
   places: appState.mode == GameMode.themed,
   builder: (bank) => Builder(
-    builder: (context) => Title(
-      // the tab says where you are: classic/learn, equations/learn/opening
-      title: '${appState.mode.name}/learn${page == null ? '' : '/$page'}',
-      color: Theme.of(context).colorScheme.surface,
-      child: builder(bank),
-    ),
+    // only the page on top names the tab: the pages under it (a learn page
+    // under the guide) are built later, when their words have come, and would
+    // otherwise rename it
+    builder: (context) => (ModalRoute.of(context)?.isCurrent ?? true)
+        ? Title(
+            // the tab says where you are: classic/learn, equations/learn/opening
+            title: '${appState.mode.name}/learn${page == null ? '' : '/$page'}',
+            color: Theme.of(context).colorScheme.surface,
+            child: builder(bank),
+          )
+        : builder(bank),
   ),
 );
 
