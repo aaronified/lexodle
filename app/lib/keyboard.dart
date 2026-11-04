@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'equations.dart' show faceOf;
+import 'swipe_clear.dart' show CursorDrag;
 import 'haptics.dart';
 import 'logic.dart';
 import 'ui.dart';
@@ -26,7 +27,12 @@ class LetterKeyboard extends StatelessWidget {
     this.enterLabel = 'enter',
     this.layout,
     this.faces = faceOf,
+    this.onCursor,
   });
+
+  /// Moves the cursor of the row being typed by this many tiles: a drag along
+  /// the keyboard does it, as along a phone keyboard's space bar.
+  final void Function(int by)? onCursor;
 
   /// The keys by row, in place of the language's letters (the equations'
   /// digits and signs); enter and backspace go on the last row.
@@ -53,9 +59,13 @@ class LetterKeyboard extends StatelessWidget {
   final String enterLabel;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) => _build(context, box.maxWidth < phoneWidth),
-  );
+  Widget build(BuildContext context) {
+    final keys = LayoutBuilder(
+      builder: (context, box) => _build(context, box.maxWidth < phoneWidth),
+    );
+    final move = onCursor;
+    return move == null ? keys : CursorDrag(onMove: move, child: keys);
+  }
 
   Widget _build(BuildContext context, bool phone) {
     final c = Theme.of(context).colorScheme;

@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- drag along the on-screen keyboard to move the cursor
+  A tile for every few finger-widths, with a tick, as along the space bar of a
+  phone keyboard. Taps still type. In the games and the solvers.
+
 - equations: the opening is scored the first time the mode is used
   The moment it is chosen (or its length changes), on another thread, and kept
   for every later game. The ten openings used last are kept, older ones are
