@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/drill.dart';
 import 'package:lexodle/drill_page.dart';
@@ -55,6 +56,20 @@ void main() {
 
   String text(WidgetTester tester, String key) =>
       textOf(tester.widget<Text>(find.byKey(ValueKey(key))))!;
+
+  testWidgets('the keys 1 to 4 choose a word, and enter goes on', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit1, character: '1');
+    await tester.pump();
+    expect(find.byKey(const ValueKey('drill-next')), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    await waitFor(tester, find.byKey(const ValueKey('drill-option-0')));
+    expect(find.byKey(const ValueKey('drill-next')), findsNothing);
+    await tester.pump(const Duration(seconds: 2));
+  });
 
   testWidgets('shows the clues, how many words fit, and four words', (
     tester,

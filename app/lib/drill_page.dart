@@ -13,6 +13,7 @@ import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'store.dart' show Achievement;
+import 'typing_keys.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -164,37 +165,47 @@ class _DrillPageState extends State<DrillPage> {
     final n = min(_answers.length + (picked == null ? 1 : 0), _total);
     final head =
         '${_closing ? 'closing' : 'choose the best'} · $lang · $length';
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FlagBadge(widget.bank.language.flag, size: 16),
-            const SizedBox(width: 8),
-            // the graduation hat: this is learn
-            TablerIcon(
-              'school',
-              size: headerIconSize,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                done ? head : '$head · $n of $_total',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-              ),
-            ),
-          ],
-        ),
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (_, e) => handleChoiceKey(
+        e,
+        count: question?.options.length ?? 0,
+        answered: picked != null,
+        pick: (i) => _pick(question!.options[i]),
+        next: _forward,
       ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
-              children: done ? _summary(c) : _body(c),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FlagBadge(widget.bank.language.flag, size: 16),
+              const SizedBox(width: 8),
+              // the graduation hat: this is learn
+              TablerIcon(
+                'school',
+                size: headerIconSize,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  done ? head : '$head · $n of $_total',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
+                children: done ? _summary(c) : _body(c),
+              ),
             ),
           ),
         ),

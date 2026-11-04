@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/clue.dart';
 import 'package:lexodle/clue_page.dart';
 import 'package:lexodle/equations.dart';
+import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/words.dart';
@@ -62,8 +64,40 @@ void main() {
       await tester.pump();
     }
     expect(find.byKey(const ValueKey('clue-result')), findsOneWidget);
+    // the round is kept in the learn log, for its mode
+    expect(
+      appState.learnLog.where(kind: LearnKind.clue, mode: GameMode.classic),
+      hasLength(1),
+    );
     await tester.tap(find.byKey(const ValueKey('clue-again')));
     await tester.pump();
     expect(find.byKey(const ValueKey('clue-option-0')), findsOneWidget);
+  });
+
+  testWidgets('the keys 1 to 4 choose, and enter goes on', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1100));
+    await appState.load();
+    appState.setup(lang: 'en', length: 5, mode: GameMode.classic);
+    final bank = (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+      ),
+    ))!;
+    await tester.pumpWidget(MaterialApp(home: CluePage(bank: bank, seed: 5)));
+    // enter before choosing does nothing
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('clue-verdict')), findsNothing);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit2, character: '2');
+    await tester.pump();
+    expect(find.byKey(const ValueKey('clue-verdict')), findsOneWidget);
+    // a second key does not change the choice
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit3, character: '3');
+    await tester.pump();
+    expect(find.byKey(const ValueKey('clue-verdict')), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('clue-verdict')), findsNothing);
+    expect(find.textContaining('2 of 10'), findsOneWidget);
   });
 }

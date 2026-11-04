@@ -57,8 +57,8 @@ void main() {
   group('what is a learn achievement', () {
     test('they are global, and not cut down to the number of languages', () {
       final learn = achievements.where((a) => a.learn).toList();
-      // ten for each mode, counted on its own, and four for every mode together
-      expect(learn, hasLength(10 * GameMode.values.length + 4));
+      // twelve for each mode, counted on its own, and four for every mode together
+      expect(learn, hasLength(12 * GameMode.values.length + 4));
       for (final a in learn) {
         expect(a.global, isTrue, reason: a.id);
         expect(a.count, 4, reason: a.id);
@@ -357,6 +357,46 @@ void main() {
       advanceLearnAchievements(states, round(GameMode.classic));
       expect(states['learn_rounds']!.value, 1);
       expect(states['learn_rounds_equations']!.value, 1);
+    });
+
+    test('a round of read the clue counts for its mode', () {
+      final states = <String, AchState>{};
+      final e = LearnEvent(
+        kind: LearnKind.clue,
+        language: 'en',
+        length: 5,
+        date: '2026-11-04',
+        questions: 10,
+        right: 10,
+        avgSkill: 100,
+        mode: GameMode.blind,
+      );
+      advanceLearnAchievements(states, e);
+      expect(states['learn_clue_blind']!.value, 1);
+      expect(states['learn_clue_sharp_blind']!.value, 1);
+      expect(states['learn_clue']!.value, 0, reason: 'classic');
+    });
+
+    test('a full lesson is still the four it was made of', () {
+      final states = <String, AchState>{};
+      LearnEvent of(LearnKind k) => LearnEvent(
+        kind: k,
+        language: 'en',
+        length: 5,
+        date: '2026-11-04',
+        questions: 10,
+        right: 10,
+        avgSkill: 100,
+      );
+      for (final k in [
+        LearnKind.free,
+        LearnKind.choose,
+        LearnKind.sequence,
+        LearnKind.closing,
+      ]) {
+        advanceLearnAchievements(states, of(k));
+      }
+      expect(states['learn_all_three']!.value, 1);
     });
 
     test('the days count whatever the mode', () {
