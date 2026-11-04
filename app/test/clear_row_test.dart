@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/guess_input.dart';
+import 'package:lexodle/keyboard.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
@@ -48,6 +51,48 @@ void main() {
     expect(CursorDrag.tiles(CursorDrag.step), 1);
     expect(CursorDrag.tiles(CursorDrag.step * 2.9), 2);
     expect(CursorDrag.tiles(-CursorDrag.step * 1.5), -1);
+  });
+
+  testWidgets('on the keyboard only the space key drags the cursor', (
+    tester,
+  ) async {
+    final moves = <int>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: LetterKeyboard(
+            letters: {...'abcdefghijklmnopqrstuvwxyz'.split('')},
+            onLetter: (_) {},
+            onEnter: () {},
+            onBack: () {},
+            onBlank: () {},
+            onCursor: moves.add,
+          ),
+        ),
+      ),
+    );
+    await tester.drag(find.text('q'), Offset(CursorDrag.step * 3, 0));
+    await tester.pump();
+    expect(moves, isEmpty, reason: 'a letter key does not move it');
+    await tester.drag(find.text('_'), Offset(CursorDrag.step * 4, 0));
+    await tester.pump();
+    expect(moves.fold<int>(0, (a, b) => a + b), greaterThanOrEqualTo(3));
+  });
+
+  test('every screen with a space key lets it move the cursor', () {
+    // a keyboard with a blank key and no cursor drag would be a gap
+    for (final f in Directory('lib').listSync().whereType<File>()) {
+      if (!f.path.endsWith('.dart')) continue;
+      final text = f.readAsStringSync();
+      for (final m in RegExp(
+        r'LetterKeyboard\(([\s\S]*?)\n\s*\),',
+      ).allMatches(text)) {
+        final body = m.group(1)!;
+        if (body.contains('onBlank')) {
+          expect(body, contains('onCursor'), reason: f.path);
+        }
+      }
+    }
   });
 
   group('in a game', () {

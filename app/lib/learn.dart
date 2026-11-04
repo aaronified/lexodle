@@ -291,6 +291,9 @@ class _LearnPageState extends State<LearnPage> {
     message = '';
   });
 
+  /// Moves the cursor of the row being typed (a drag along the space key).
+  void _move(int by) => setState(() => input.move(by));
+
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
     if (e is KeyUpEvent) return KeyEventResult.ignored;
     if (HardwareKeyboard.instance.isControlPressed ||
@@ -446,6 +449,7 @@ class _LearnPageState extends State<LearnPage> {
                     letters: _letters,
                     onLetter: _type,
                     onBlank: () => _type(GuessInput.blank),
+                    onCursor: _move,
                     onEnter: _submit,
                     onBack: _back,
                   ),

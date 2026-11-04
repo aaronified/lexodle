@@ -658,6 +658,34 @@ class _MultiGamePageState extends State<MultiGamePage> {
     final b = game.boards[i];
     final live = game.isLive(i);
     final locked = game.isLocked(i);
+    Widget rowAt(int r) => Padding(
+      padding: EdgeInsets.only(bottom: gap),
+      child: _swipeClear(
+        live && r == game.guesses.length,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var k = 0; k < length; k++) ...[
+              if (k > 0) SizedBox(width: gap),
+              _tile(
+                c,
+                tile,
+                r < b.marks.length
+                    ? game.guesses[r][k]
+                    : (live && r == game.guesses.length ? input.slot(k) : ''),
+                r < b.marks.length ? b.marks[r][k] : null,
+                active: live && r == game.guesses.length,
+                cursor: live && r == game.guesses.length && k == input.cursor,
+                locked: live && r == game.guesses.length && input.isLocked(k),
+                onTap: live && r == game.guesses.length
+                    ? () => _select(k)
+                    : null,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
     return Opacity(
       opacity: locked ? .35 : 1,
       child: Column(
@@ -681,49 +709,23 @@ class _MultiGamePageState extends State<MultiGamePage> {
               ),
             ),
           ),
-          for (var r = 0; r < tries; r++)
-            Padding(
-              padding: EdgeInsets.only(bottom: gap),
-              child: _swipeClear(
-                live && r == game.guesses.length,
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onDoubleTap: live && r < b.marks.length
-                      ? () => _lockGreens(i)
-                      : null,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (var k = 0; k < length; k++) ...[
-                        if (k > 0) SizedBox(width: gap),
-                        _tile(
-                          c,
-                          tile,
-                          r < b.marks.length
-                              ? game.guesses[r][k]
-                              : (live && r == game.guesses.length
-                                    ? input.slot(k)
-                                    : ''),
-                          r < b.marks.length ? b.marks[r][k] : null,
-                          active: live && r == game.guesses.length,
-                          cursor:
-                              live &&
-                              r == game.guesses.length &&
-                              k == input.cursor,
-                          locked:
-                              live &&
-                              r == game.guesses.length &&
-                              input.isLocked(k),
-                          onTap: live && r == game.guesses.length
-                              ? () => _select(k)
-                              : null,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+          // the board's submitted guesses, the gaps between the rows included,
+          // are one place to double tap for its greens
+          if (live && b.marks.isNotEmpty)
+            GestureDetector(
+              key: ValueKey('greens-area-$i'),
+              behavior: HitTestBehavior.opaque,
+              onDoubleTap: () => _lockGreens(i),
+              child: Column(
+                children: [for (var r = 0; r < b.marks.length; r++) rowAt(r)],
               ),
             ),
+          for (
+            var r = live && b.marks.isNotEmpty ? b.marks.length : 0;
+            r < tries;
+            r++
+          )
+            rowAt(r),
         ],
       ),
     );
