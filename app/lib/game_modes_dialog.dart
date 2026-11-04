@@ -1,3 +1,5 @@
+import 'diy.dart' show diyApplies;
+
 import 'package:flutter/material.dart';
 
 import 'daily.dart';
@@ -500,23 +502,35 @@ class _GameModesDialogState extends State<GameModesDialog> {
                             label: const Text('learn: get better at guessing'),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            key: const ValueKey('settings-diy'),
-                            icon: TablerIcon(
-                              'gift',
-                              size: 18,
-                              color: c.primary,
+                        // every mode with an answer someone can make up has it;
+                        // the mastermind has none
+                        if (diyApplies(mode)) ...[
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              key: const ValueKey('settings-diy'),
+                              icon: TablerIcon(
+                                'gift',
+                                size: 18,
+                                color: c.primary,
+                              ),
+                              onPressed: () => Navigator.pushReplacementNamed(
+                                context,
+                                Routes.diy,
+                              ),
+                              label: Text(
+                                mode == GameMode.equations
+                                    ? 'diy: make an equation of your own'
+                                    : mode == GameMode.themed
+                                    ? 'diy: make a place of your own'
+                                    : mode.multi
+                                    ? 'diy: make four words of your own'
+                                    : 'diy: make a wordle of your own',
+                              ),
                             ),
-                            onPressed: () => Navigator.pushReplacementNamed(
-                              context,
-                              Routes.diy,
-                            ),
-                            label: const Text('diy: make a wordle of your own'),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),

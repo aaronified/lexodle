@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- make your own works in every mode with an answer
+  Classic, lockdown (with its hearts), blind, quartet and relay (four words),
+  equations (a true equation, on the number pad) and themed (a place). The link
+  carries the mode, so whoever opens it plays that mode as practice. The
+  mastermind has no answer to make up, so it has no button there. Links made
+  before still open as classic.
+
 - learn has the graduation hat
   On its button in the game modes and in the title of every learn screen.
 

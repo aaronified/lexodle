@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'game.dart';
 import 'daily.dart';
+import 'equations.dart';
+import 'game.dart';
+import 'geography.dart';
 import 'home.dart' show HomePage, LanguagePopup;
 import 'keyboard.dart';
 import 'main.dart';
+import 'modes.dart';
+import 'multi_game.dart';
 import 'puzzle.dart';
 import 'routes.dart';
 import 'stepper_choice.dart';
@@ -60,30 +64,96 @@ String? diyDecode(String digits) {
   return out.toString();
 }
 
-/// A made wordle.
+/// The modes a made puzzle can be in: every one with an answer someone can
+/// make up. Not the mastermind, which has none (its word is not chosen).
+bool diyApplies(GameMode m) => m != GameMode.mastermind;
+
+/// The tries a made quartet or relay race can have.
+const diyMultiTries = [7, 9, 10, 12, 14];
+
+/// The lengths of a made equation.
+const diyEquationLengths = equationLengths;
+
+/// A made puzzle: its mode, language, words and tries (and, in lockdown, hearts).
 class DiyPuzzle {
-  const DiyPuzzle(this.lang, this.word, this.tries);
+  DiyPuzzle(
+    this.lang,
+    String word,
+    this.tries, {
+    this.mode = GameMode.classic,
+    List<String>? words,
+    this.hearts,
+  }) : words = words ?? [word];
+
   final String lang;
-  final String word;
+  final GameMode mode;
+
+  /// One word (one equation, one place), or four for a quartet or a relay race.
+  final List<String> words;
   final int tries;
 
-  String get link =>
-      '$puzzleBase#${Routes.diy}?l=$lang&t=$tries&w=${diyEncode(word)}';
+  /// The hearts of a lockdown puzzle; null for every other mode.
+  final int? hearts;
 
-  /// The wordle a link names, or null when it names none.
+  String get word => words.first;
+
+  String get link =>
+      '$puzzleBase#${Routes.diy}?l=$lang'
+      '${mode == GameMode.classic ? '' : '&m=${mode.name}'}'
+      '&t=$tries${hearts == null ? '' : '&h=$hearts'}'
+      '&w=${words.map(diyEncode).join('.')}';
+
+  /// The puzzle a link names, or null when it names none. A link without a mode
+  /// is a classic one, as every link was before the other modes had one.
   static DiyPuzzle? parse(Uri uri) {
     final q = uri.queryParameters;
     final lang = q['l'], t = int.tryParse(q['t'] ?? '');
     if (lang == null || !RegExp(r'^[a-z]{2,3}$').hasMatch(lang)) return null;
     if (t == null || t < 1 || t > 20) return null;
-    final word = diyDecode(q['w'] ?? '');
-    if (word == null || !diyLengths.contains(word.length)) return null;
-    return DiyPuzzle(lang, word, t);
+    final modes = GameMode.values.where(
+      (m) => m.name == (q['m'] ?? GameMode.classic.name),
+    );
+    if (modes.isEmpty || !diyApplies(modes.first)) return null;
+    final mode = modes.first;
+    final words = <String>[];
+    for (final d in (q['w'] ?? '').split('.')) {
+      final w = diyDecode(d);
+      if (w == null) return null;
+      words.add(w);
+    }
+    if (words.length != mode.boards) return null;
+    if (words.any((w) => w.length != words.first.length)) return null;
+    final n = words.first.length;
+    switch (mode) {
+      case GameMode.equations:
+        if (!diyEquationLengths.contains(n)) return null;
+        if (words.any((w) => equationProblem(w) != null)) return null;
+      case GameMode.themed:
+        if (n < 3 || n > 40) return null;
+      default:
+        if (!diyLengths.contains(n)) return null;
+    }
+    int? hearts;
+    if (mode == GameMode.lockdown) {
+      hearts = int.tryParse(q['h'] ?? '');
+      if (hearts == null || !lockdownHearts.any((h) => h.$2 == hearts)) {
+        return null;
+      }
+    }
+    return DiyPuzzle(
+      lang,
+      words.first,
+      t,
+      mode: mode,
+      words: words,
+      hearts: hearts,
+    );
   }
 }
 
-/// The screen where a wordle is made: its language, its word and its tries,
-/// then the link to copy.
+/// The screen where a puzzle is made, in the mode in view: its language, its
+/// word (or four, or an equation, or a place), its tries, then the link to
+/// copy.
 class DiyPage extends StatefulWidget {
   const DiyPage({super.key});
 
@@ -93,10 +163,26 @@ class DiyPage extends StatefulWidget {
 
 class _DiyPageState extends State<DiyPage> {
   List<Language> _langs = WordBank.loadedLanguages ?? const [];
-  late String _lang = appState.lang;
-  String _word = '';
-  int _tries = 6;
+  late final GameMode _mode = diyApplies(appState.mode)
+      ? appState.mode
+      : GameMode.classic;
+  // places are English
+  late String _lang = _mode == GameMode.themed ? 'en' : appState.lang;
+  late final List<String> _words = List.filled(_mode.boards, '');
+  int _active = 0;
+  late int _tries = switch (_mode) {
+    GameMode.blind => appState.blindTries,
+    GameMode.quartet => 9,
+    GameMode.relay => 10,
+    GameMode.lockdown => lockdownTries,
+    GameMode.equations => appState.tries,
+    _ => 6,
+  };
+  int _hearts = appState.hearts;
   String? _link;
+
+  bool get _equations => _mode == GameMode.equations;
+  bool get _places => _mode == GameMode.themed;
 
   @override
   void initState() {
@@ -106,7 +192,16 @@ class _DiyPageState extends State<DiyPage> {
         if (mounted) setState(() => _langs = l);
       });
     }
+    if (_places) {
+      WordBank.languages()
+          .then((l) => Geography.load(l.firstWhere((x) => x.code == 'en')))
+          .then((b) {
+            if (mounted) setState(() => _placeBank = b);
+          }, onError: (_) {});
+    }
   }
+
+  WordBank? _placeBank;
 
   Language? get _language {
     for (final l in _langs) {
@@ -116,9 +211,11 @@ class _DiyPageState extends State<DiyPage> {
   }
 
   Set<String> get _letters {
-    final alphabet = <String>{};
+    if (_equations) return {...'0123456789+-*/='.split('')};
+    if (_places)
+      return {for (final c in 'abcdefghijklmnopqrstuvwxyz'.split('')) c};
     final lang = _language;
-    if (lang == null) return alphabet;
+    if (lang == null) return {};
     // the language's letters: those of the words of its lists (see the
     // keyboard of a game), from the bank when it has been read
     final bank = _bank;
@@ -130,32 +227,78 @@ class _DiyPageState extends State<DiyPage> {
   WordBank? _bank;
   Future<void> _loadBank() async {
     final lang = _language;
-    if (lang == null) return;
+    if (lang == null || _equations || _places) return;
     final bank = await WordBank.load(lang);
     if (mounted && lang.code == _lang) setState(() => _bank = bank);
   }
 
+  int get _maxLength => _equations
+      ? diyEquationLengths.last
+      : _places
+      ? 20
+      : diyLengths.last;
+
   void _type(String ch) {
-    if (_word.length >= diyLengths.last) return;
+    final w = _words[_active];
+    if (w.length >= _maxLength) return;
     setState(() {
-      _word += ch;
+      _words[_active] = w + (_equations ? typedEquationChar(ch) : ch);
       _link = null;
     });
   }
 
   void _back() {
-    if (_word.isEmpty) return;
+    final w = _words[_active];
+    if (w.isEmpty) return;
     setState(() {
-      _word = _word.substring(0, _word.length - 1);
+      _words[_active] = w.substring(0, w.length - 1);
       _link = null;
     });
   }
 
-  bool get _ready => diyLengths.contains(_word.length);
+  /// What is wrong with word [i], in a few words, or null when it is fine.
+  String? _problem(int i) {
+    final w = _words[i];
+    if (w.isEmpty) return null;
+    if (_equations) {
+      if (!diyEquationLengths.contains(w.length)) {
+        return 'six, seven or eight tiles';
+      }
+      return equationProblem(w);
+    }
+    if (_places) {
+      final b = _placeBank;
+      if (b != null && w.length >= 3 && !b.valid.contains(w)) {
+        return 'not a place of the list';
+      }
+      return null;
+    }
+    if (!diyLengths.contains(w.length)) return 'four to eight letters';
+    return null;
+  }
+
+  bool get _ready {
+    final n = _words.first.length;
+    for (var i = 0; i < _words.length; i++) {
+      if (_words[i].isEmpty || _words[i].length != n) return false;
+      if (_problem(i) != null) return false;
+    }
+    if (_places) return _placeBank != null && n >= 3;
+    return true;
+  }
 
   void _make() {
     if (!_ready) return;
-    setState(() => _link = DiyPuzzle(_lang, _word, _tries).link);
+    setState(
+      () => _link = DiyPuzzle(
+        _lang,
+        _words.first,
+        _tries,
+        mode: _mode,
+        words: List.of(_words),
+        hearts: _mode == GameMode.lockdown ? _hearts : null,
+      ).link,
+    );
   }
 
   Future<void> _pickLanguage() async {
@@ -166,11 +309,90 @@ class _DiyPageState extends State<DiyPage> {
     if (code == null || code == _lang) return;
     setState(() {
       _lang = code;
-      _word = '';
+      for (var i = 0; i < _words.length; i++) {
+        _words[i] = '';
+      }
       _link = null;
       _bank = null;
     });
     _loadBank();
+  }
+
+  /// What a made puzzle of this mode is called.
+  String get _noun => _equations
+      ? 'equation'
+      : _places
+      ? 'place'
+      : _mode.boards > 1
+      ? 'words'
+      : 'word';
+
+  List<(int, String, String)> get _triesItems {
+    if (_mode == GameMode.blind) {
+      return [for (final (name, n) in blindTriesLevels) (n, '$n tries', name)];
+    }
+    if (_mode == GameMode.quartet || _mode == GameMode.relay) {
+      return [for (final t in diyMultiTries) (t, '$t tries', '')];
+    }
+    return [
+      for (final t in diyTries)
+        (
+          t,
+          '$t tries',
+          switch (t) {
+            4 => 'hard',
+            5 => '',
+            6 => 'normal',
+            8 => 'easy',
+            10 => 'easier',
+            _ => 'easiest',
+          },
+        ),
+    ];
+  }
+
+  Widget _tiles(ColorScheme c, int b) {
+    final w = _words[b];
+    final shown = w.length < 5 ? 5 : (w.length + 1).clamp(5, _maxLength);
+    final on = b == _active;
+    return InkWell(
+      key: ValueKey('diy-word-$b'),
+      onTap: () => setState(() => _active = b),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          children: [
+            for (var i = 0; i < shown; i++)
+              Container(
+                key: ValueKey(b == 0 ? 'diy-tile-$i' : 'diy-tile-$b-$i'),
+                width: 38,
+                height: 38,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: on && i == w.length
+                        ? c.primary
+                        : i < w.length
+                        ? c.onSurface
+                        : c.onSurface.withValues(alpha: on ? .5 : .25),
+                    width: on && i == w.length ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: Text(
+                  i < w.length ? faceOf(w[i]) : '',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -179,9 +401,9 @@ class _DiyPageState extends State<DiyPage> {
     final dim = c.onSurface.withValues(alpha: dimAlpha);
     final lang = _language;
     if (_bank == null && lang != null) _loadBank();
-    final shown = _word.length < 5 ? 5 : (_word.length + 1).clamp(5, 8);
+    final problem = _problem(_active);
     return Scaffold(
-      appBar: AppBar(title: const Text('make your own')),
+      appBar: AppBar(title: Text('make your own · ${_mode.label}')),
       body: SafeArea(
         child: Column(
           children: [
@@ -189,103 +411,98 @@ class _DiyPageState extends State<DiyPage> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(19, 8, 19, 16),
                 children: [
-                  const Caption('language'),
-                  const SizedBox(height: 8),
-                  InkWell(
-                    key: const ValueKey('diy-language'),
-                    borderRadius: BorderRadius.circular(4),
-                    onTap: lang == null ? null : _pickLanguage,
-                    child: Container(
-                      height: 56,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: c.outline),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        children: [
-                          if (lang != null) FlagBadge(lang.flag),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              lang?.name ?? '',
-                              style: const TextStyle(fontSize: 16),
+                  if (!_equations && !_places) ...[
+                    const Caption('language'),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      key: const ValueKey('diy-language'),
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: lang == null ? null : _pickLanguage,
+                      child: Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: c.outline),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          children: [
+                            if (lang != null) FlagBadge(lang.flag),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                lang?.name ?? '',
+                                style: const TextStyle(fontSize: 16),
+                              ),
                             ),
-                          ),
-                          Icon(
-                            Icons.arrow_drop_down,
-                            color: c.onSurfaceVariant,
-                          ),
-                        ],
+                            Icon(
+                              Icons.arrow_drop_down,
+                              color: c.onSurfaceVariant,
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                  Caption('your $_noun'),
+                  const SizedBox(height: 8),
+                  for (var b = 0; b < _words.length; b++) _tiles(c, b),
+                  const SizedBox(height: 8),
+                  Text(
+                    problem ??
+                        (_equations
+                            ? 'a true equation of six to eight tiles: one =, a '
+                                  'sum on the left, a whole number on the right.'
+                            : _places
+                            ? 'a place of the list, in english, with no spaces.'
+                            : _mode.boards > 1
+                            ? 'four words of one length, four to eight letters, '
+                                  'in this language\'s letters. tap a word to '
+                                  'type in it. they do not have to be in the '
+                                  'word list.'
+                            : 'type any word, four to eight letters, in this '
+                                  'language\'s letters. it does not have to be '
+                                  'in the word list.'),
+                    key: const ValueKey('diy-note'),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: problem == null ? dim : c.error,
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Caption('your word'),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 4,
-                    children: [
-                      for (var i = 0; i < shown; i++)
-                        Container(
-                          key: ValueKey('diy-tile-$i'),
-                          width: 38,
-                          height: 38,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: i == _word.length
-                                  ? c.primary
-                                  : i < _word.length
-                                  ? c.onSurface
-                                  : c.onSurface.withValues(alpha: .5),
-                              width: i == _word.length ? 2 : 1,
-                            ),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: Text(
-                            i < _word.length ? _word[i] : '',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'type any word, four to eight letters, in this language\'s '
-                    'letters. it does not have to be in the word list.',
-                    style: TextStyle(fontSize: 11, color: dim),
-                  ),
-                  const SizedBox(height: 18),
-                  const Caption('tries'),
-                  const SizedBox(height: 10),
-                  StepperChoice<int>(
-                    key: const ValueKey('diy-tries'),
-                    semanticLabel: 'tries',
-                    items: [
-                      for (final t in diyTries)
-                        (
-                          t,
-                          '$t tries',
-                          switch (t) {
-                            4 => 'hard',
-                            5 => '',
-                            6 => 'normal',
-                            8 => 'easy',
-                            10 => 'easier',
-                            _ => 'easiest',
-                          },
-                        ),
-                    ],
-                    selected: _tries,
-                    onChanged: (t) => setState(() {
-                      _tries = t;
-                      _link = null;
-                    }),
-                  ),
+                  if (_mode == GameMode.lockdown) ...[
+                    const Caption('hearts'),
+                    const SizedBox(height: 10),
+                    StepperChoice<int>(
+                      key: const ValueKey('diy-hearts'),
+                      semanticLabel: 'hearts',
+                      items: [
+                        for (final (name, n) in lockdownHearts)
+                          (n, '$n ${n == 1 ? 'heart' : 'hearts'}', name),
+                      ],
+                      selected: _hearts,
+                      onChanged: (h) => setState(() {
+                        _hearts = h;
+                        _link = null;
+                      }),
+                    ),
+                  ] else ...[
+                    const Caption('tries'),
+                    const SizedBox(height: 10),
+                    StepperChoice<int>(
+                      key: const ValueKey('diy-tries'),
+                      semanticLabel: 'tries',
+                      items: _triesItems,
+                      selected: _triesItems.any((i) => i.$1 == _tries)
+                          ? _tries
+                          : _triesItems.first.$1,
+                      onChanged: (t) => setState(() {
+                        _tries = t;
+                        _link = null;
+                      }),
+                    ),
+                  ],
                   const SizedBox(height: 18),
                   FilledButton(
                     key: const ValueKey('diy-make'),
@@ -325,9 +542,9 @@ class _DiyPageState extends State<DiyPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'whoever opens it plays your word as practice: nothing '
-                      'is saved or counted. the word is only lightly disguised, '
-                      'not secret: each letter is four digits.',
+                      'whoever opens it plays your $_noun as practice: nothing '
+                      'is saved or counted. it is only lightly disguised, not '
+                      'secret: each character is four digits.',
                       style: TextStyle(fontSize: 11, color: dim),
                     ),
                   ],
@@ -336,6 +553,7 @@ class _DiyPageState extends State<DiyPage> {
             ),
             LetterKeyboard(
               letters: _letters,
+              numberPad: _equations,
               onLetter: _type,
               onEnter: _make,
               onBack: _back,
@@ -348,7 +566,7 @@ class _DiyPageState extends State<DiyPage> {
   }
 }
 
-/// Plays a made wordle opened by a link, as practice.
+/// Plays a made puzzle opened by a link, as practice, in its mode.
 class DiyGate extends StatefulWidget {
   const DiyGate({super.key, required this.puzzle});
   final DiyPuzzle puzzle;
@@ -364,8 +582,20 @@ class _DiyGateState extends State<DiyGate> {
     final langs = await WordBank.languages();
     final found = langs.where((l) => l.code == widget.puzzle.lang);
     if (found.isEmpty) return null;
-    final bank = await WordBank.load(found.first);
-    return bank.withWord(widget.puzzle.word);
+    final p = widget.puzzle;
+    switch (p.mode) {
+      case GameMode.equations:
+        return Equations.load(found.first);
+      case GameMode.themed:
+        final places = await Geography.load(found.first);
+        return places.valid.contains(p.word) ? places : null;
+      default:
+        var bank = await WordBank.load(found.first);
+        for (final w in p.words) {
+          bank = bank.withWord(w);
+        }
+        return bank;
+    }
   }
 
   @override
@@ -382,10 +612,25 @@ class _DiyGateState extends State<DiyGate> {
         final bank = snap.data;
         if (bank == null) return const HomePage();
         final p = widget.puzzle;
+        if (p.mode.multi) {
+          return MultiGamePage(
+            bank: bank,
+            practice: true,
+            daily: DailyMulti(
+              '',
+              p.mode,
+              p.words,
+              length: p.word.length,
+              tries: p.tries,
+            ),
+          );
+        }
         return GamePage(
           bank: bank,
+          mode: p.mode,
           practice: true,
           chosen: true,
+          hearts: p.hearts,
           daily: Daily('', p.word, length: p.word.length, tries: p.tries),
         );
       },
