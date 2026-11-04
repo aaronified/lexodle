@@ -344,6 +344,43 @@ void main() {
       expect(find.textContaining('guess'), findsWidgets);
     });
 
+    testWidgets('a won mastermind game shows the word\'s wiktionary page', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1700));
+      await appState.load();
+      appState.setup(lang: 'en', length: 5, mode: GameMode.mastermind);
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+        ),
+      ))!;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GamePage(
+            bank: bank,
+            random: Random(5),
+            mode: GameMode.mastermind,
+            practice: true,
+          ),
+          onGenerateRoute: onGenerateRoute,
+        ),
+      );
+      await tester.pump();
+      // play it out: the same draws as the page's, on a list of our own
+      final rng = Random(5);
+      var left = List.of(bank.guessable(5));
+      for (var n = 0; n < 40; n++) {
+        final g = left.first;
+        final m = mastermindReply(left, g, rng);
+        left = filterEligible(left, g, m);
+        await typeWord(tester, g);
+        if (m.every((x) => x == Mark.correct)) break;
+      }
+      expect(find.textContaining('solved in'), findsOneWidget);
+      expect(find.textContaining('wiktionary'), findsWidgets);
+    });
+
     testWidgets('mastermind comes back as the word answered, not redrawn', (
       tester,
     ) async {

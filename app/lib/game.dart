@@ -581,6 +581,11 @@ class _GamePageState extends State<GamePage>
     if (_unscored) {
       // no scores, no review: only what the rules need
       if (mastermind) eligible = filterEligible(eligible, word, m);
+      // the word is known once one is left: look it up before it is guessed
+      if (mastermind && eligible.length == 1 && prefetchDefinitions) {
+        final lang = widget.bank.language;
+        Wiktionary.shared.prefetch(eligible.first, lang.code, lang.wikt);
+      }
       _analysis.add(null);
       return _afterGuess(word, m, restoring);
     }
