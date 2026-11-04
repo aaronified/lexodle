@@ -38,7 +38,7 @@ const shortcutGroups = <(String, List<(String, String)>)>[
       ('tap a tile', 'move the cursor there'),
       ('drag along the space key', 'move the cursor, a tile at a time'),
       ('double tap a tile', 'lock or unlock its letter'),
-      ('double tap the guesses', 'lock every green found so far'),
+      ('double tap the guesses', 'lock every green found so far, gaps too'),
       ('swipe right to left on the row', 'erase the row being typed'),
       ('blind: tap a guess letter', 'pencil a colour: green, yellow, grey'),
       ('blind: double tap the counts', 'lock the pencilled greens'),

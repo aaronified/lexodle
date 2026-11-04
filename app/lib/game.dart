@@ -948,6 +948,49 @@ class _GamePageState extends State<GamePage>
                         gap * (length - 1)) /
                     length,
               );
+        Widget rowAt(int r) => Padding(
+          padding: const EdgeInsets.only(bottom: gap),
+          child: _withTrailing(
+            r,
+            tile,
+            _swipeClear(
+              r == guesses.length && !over,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < length; i++) ...[
+                    if (i > 0) const SizedBox(width: gap),
+                    _tile(
+                      c,
+                      tile,
+                      r < guesses.length
+                          ? guesses[r][i]
+                          : (r == guesses.length ? input.slot(i) : ''),
+                      r < marks.length
+                          ? (blind
+                                ? (_assist
+                                      ? pencil.shown(guesses[r][i], i, deduced)
+                                      : notes[r][i])
+                                : marks[r][i])
+                          : null,
+                      active: r == guesses.length && !over,
+                      cursor: r == guesses.length && !over && i == input.cursor,
+                      key: ValueKey('tile-$r-$i'),
+                      locked: r == guesses.length && input.isLocked(i),
+                      fixed: r == guesses.length && input.isFixed(i),
+                      onTap: r == guesses.length && !over
+                          ? () => _select(i)
+                          : blind && r < guesses.length && !over
+                          ? () => _pencil(r, i)
+                          : null,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+
         return SingleChildScrollView(
           key: const ValueKey('boards-scroll'),
           controller: _scroll,
@@ -963,63 +1006,25 @@ class _GamePageState extends State<GamePage>
           child: Center(
             child: Column(
               children: [
-                for (var r = 0; r < _boardRows; r++)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: gap),
-                    child: _withTrailing(
-                      r,
-                      tile,
-                      _swipeClear(
-                        r == guesses.length && !over,
-                        _greensTap(
-                          r < guesses.length,
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              for (var i = 0; i < length; i++) ...[
-                                if (i > 0) const SizedBox(width: gap),
-                                _tile(
-                                  c,
-                                  tile,
-                                  r < guesses.length
-                                      ? guesses[r][i]
-                                      : (r == guesses.length
-                                            ? input.slot(i)
-                                            : ''),
-                                  r < marks.length
-                                      ? (blind
-                                            ? (_assist
-                                                  ? pencil.shown(
-                                                      guesses[r][i],
-                                                      i,
-                                                      deduced,
-                                                    )
-                                                  : notes[r][i])
-                                            : marks[r][i])
-                                      : null,
-                                  active: r == guesses.length && !over,
-                                  cursor:
-                                      r == guesses.length &&
-                                      !over &&
-                                      i == input.cursor,
-                                  key: ValueKey('tile-$r-$i'),
-                                  locked:
-                                      r == guesses.length && input.isLocked(i),
-                                  fixed:
-                                      r == guesses.length && input.isFixed(i),
-                                  onTap: r == guesses.length && !over
-                                      ? () => _select(i)
-                                      : blind && r < guesses.length && !over
-                                      ? () => _pencil(r, i)
-                                      : null,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
+                // the submitted guesses, gaps between the rows included, are
+                // one place to double tap for the greens
+                if (!blind && !over && guesses.isNotEmpty)
+                  GestureDetector(
+                    key: const ValueKey('greens-area'),
+                    behavior: HitTestBehavior.opaque,
+                    onDoubleTap: _lockGreens,
+                    child: Column(
+                      children: [
+                        for (var r = 0; r < guesses.length; r++) rowAt(r),
+                      ],
                     ),
                   ),
+                for (
+                  var r = !blind && !over ? guesses.length : 0;
+                  r < _boardRows;
+                  r++
+                )
+                  rowAt(r),
               ],
             ),
           ),
@@ -1032,15 +1037,6 @@ class _GamePageState extends State<GamePage>
   /// ([typing]), erases it.
   Widget _swipeClear(bool typing, Widget row) =>
       typing ? SwipeClear(onClear: _clearRow, child: row) : row;
-
-  /// [row], a submitted guess, locks the greens on a double tap.
-  Widget _greensTap(bool submitted, Widget row) => submitted && !blind && !over
-      ? GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onDoubleTap: _lockGreens,
-          child: row,
-        )
-      : row;
 
   /// A tap on tile [i] of submitted guess [r] in a blind game. With the colour
   /// logic off the tile takes the next colour of none, green, yellow, grey;

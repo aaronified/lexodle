@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- double tap for the greens works over the gaps too
+  Over the submitted guesses as one area: on a tile, in the gap between tiles or
+  between rows, or one tap on a row and the next on another. A quartet or relay
+  does it per board.
+- the space key moves the cursor on every keyboard that has one
+  The solvers, the learn page and the three-words page too, as in the games.
+
 - equations: the number pad is laid out like a keypad
   = ÷ × − along the top, 7 8 9, 4 5 6 and 1 2 3 with a tall + and a tall enter
   on the right, then a small 0 and a wide backspace, and the space under it all.

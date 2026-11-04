@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -6,9 +7,16 @@ import 'ui.dart';
 
 /// The small round "i" to the right of a guess of the themed wordle: it opens
 /// what the place is.
-class PlaceDot extends StatelessWidget {
+class PlaceDot extends StatefulWidget {
   const PlaceDot(this.place, {super.key});
   final Place place;
+
+  @override
+  State<PlaceDot> createState() => _PlaceDotState();
+}
+
+class _PlaceDotState extends State<PlaceDot> {
+  Offset? _down;
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +24,21 @@ class PlaceDot extends StatelessWidget {
     final dim = c.onSurface.withValues(alpha: dimAlpha);
     return Semantics(
       button: true,
-      label: 'about ${place.name}',
-      child: GestureDetector(
-        onTap: () => showPlaceInfo(context, place),
+      label: 'about ${widget.place.name}',
+      // a Listener, not a tap recognizer: the dot sits inside the area where a
+      // double tap locks the greens, and a recognizer there would wait out the
+      // double tap's time before it fired
+      child: Listener(
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: (e) => _down = e.position,
+        onPointerUp: (e) {
+          final d = _down;
+          _down = null;
+          if (d != null && (e.position - d).distance <= kTouchSlop) {
+            showPlaceInfo(context, widget.place);
+          }
+        },
+        onPointerCancel: (_) => _down = null,
         child: Container(
           width: 20,
           height: 20,
