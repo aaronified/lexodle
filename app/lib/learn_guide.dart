@@ -188,9 +188,20 @@ class ModeGuidePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text(
-        'learn · ${mode.label}',
-        style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TablerIcon(
+            'school',
+            size: headerIconSize,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'learn · ${mode.label}',
+            style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+          ),
+        ],
       ),
     ),
     body: SafeArea(

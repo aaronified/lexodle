@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- learn has the graduation hat
+  On its button in the game modes and in the title of every learn screen.
+
 - mastermind: skill, luck and a review after the game
   Each guess is scored against the words still possible, and the game is
   reviewed against the word it settled on, which fits every reply. The random

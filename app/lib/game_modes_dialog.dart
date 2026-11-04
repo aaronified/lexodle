@@ -486,13 +486,18 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         const SizedBox(height: 8),
                         SizedBox(
                           width: double.infinity,
-                          child: OutlinedButton(
+                          child: OutlinedButton.icon(
                             key: const ValueKey('settings-learn'),
+                            icon: TablerIcon(
+                              'school',
+                              size: 18,
+                              color: c.primary,
+                            ),
                             onPressed: () => Navigator.pushReplacementNamed(
                               context,
                               Routes.learn,
                             ),
-                            child: const Text('learn: get better at guessing'),
+                            label: const Text('learn: get better at guessing'),
                           ),
                         ),
                         const SizedBox(height: 8),
