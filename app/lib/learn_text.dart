@@ -161,9 +161,12 @@ String learnHint(int level, List<String> bestWords, GuessReport? bestSplit) {
   if (level == 2) return 'the best guess: $w';
   final s = bestSplit;
   if (s == null) return 'the best guess: $w';
+  // nothing to split: say so in a few words, not with a table of ones
+  if (s.before <= 1) return 'only $w fits: nothing is left to split.';
   return 'the best guess: $w. it splits ${_words(s.before)} into '
-      '${s.bestGroups} groups, the biggest ${_words(s.bestLargest)}; about '
-      '${_words(s.bestExpected)} left (${_bits(s.bestGain)} bits expected).';
+      '${s.bestGroups} ${s.bestGroups == 1 ? 'group' : 'groups'}, the biggest '
+      '${_words(s.bestLargest)}; about ${_words(s.bestExpected)} left '
+      '(${_bits(s.bestGain)} bits expected).';
 }
 
 /// The report for [guess] made when [before] words fitted and [after] did,

@@ -7,6 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- practise a word takes everything the game takes
+  Its keyboard takes the colours of the guesses; delete, shift and backspace,
+  and shift to lock work; a swipe clears the row; a tap moves the cursor and a
+  second tap locks a letter; a double tap on the guesses locks the greens. The
+  three words page and the solver take the same keys. A mouse now drags lists
+  as a finger does.
+- the hint with one word left is one line
+  It said it split 1 equation into 1 groups; it now says only that word fits.
 - a workflow that precomputes the openings
   Run by hand, it works out the opening of every list ahead, with the app's own
   scoring, and publishes it to the `precomputed` branch (the web app and the
