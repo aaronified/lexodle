@@ -89,12 +89,15 @@ class _GamePageState extends State<GamePage>
   bool get themed => mode == GameMode.themed;
   bool get blind => mode == GameMode.blind;
 
-  /// The equations (the tiles are digits and signs) and the mastermind (a word
-  /// that dodges, so there is no answer to measure the guesses against): neither
-  /// has skill and luck scores or a review.
+  /// The equations: the tiles are digits and signs, scored and reviewed as
+  /// words are. The mastermind is a word that dodges, so there is no answer to
+  /// measure the guesses against: no skill and luck scores, no review.
   bool get equations => mode == GameMode.equations;
   bool get mastermind => mode == GameMode.mastermind;
-  bool get _unscored => equations || mastermind;
+  bool get _unscored => mastermind;
+
+  /// Neither has a word of the language to look up.
+  bool get _noDictionary => equations || mastermind;
 
   /// The mastermind that always keeps the largest pool, as chosen when it began.
   late final bool largest = mastermind && appState.mastermindLargest;
@@ -248,7 +251,7 @@ class _GamePageState extends State<GamePage>
       } else {
         if (a is! String || a.length != length) return;
         answer = a;
-        if (prefetchDefinitions && !_unscored) {
+        if (prefetchDefinitions && !_noDictionary) {
           final lang = widget.bank.language;
           Wiktionary.shared.prefetch(answer, lang.code, lang.wikt);
         }
@@ -378,7 +381,7 @@ class _GamePageState extends State<GamePage>
       );
     }
     // look the answer up now, so the end screen has it
-    if (prefetchDefinitions && !_unscored) {
+    if (prefetchDefinitions && !_noDictionary) {
       final lang = widget.bank.language;
       Wiktionary.shared.prefetch(answer, lang.code, lang.wikt);
     }
@@ -818,7 +821,7 @@ class _GamePageState extends State<GamePage>
         appBar: AppBar(
           actions: [
             // the daily is not shared: anyone can open the app and play it
-            if ((_daily == null || _daily.date.isEmpty) && !_unscored)
+            if ((_daily == null || _daily.date.isEmpty) && !_noDictionary)
               SharePuzzleButton(
                 (withGuesses) => Puzzle.hashed(
                   widget.bank.language.code,
@@ -1234,7 +1237,9 @@ class _GamePageState extends State<GamePage>
     }
     if (over) return const SizedBox();
     // the daily never shows the helper: only the tries left
-    final h = _daily != null || blind || themed ? Helper.off : appState.helper;
+    final h = _daily != null || blind || themed || equations
+        ? Helper.off
+        : appState.helper;
     if (mastermind) {
       return Caption(
         guesses.isEmpty

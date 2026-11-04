@@ -1,3 +1,5 @@
+import 'equations.dart' show faceOf;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -346,7 +348,7 @@ class MarkTile extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               Text(
-                isBlank ? '_' : ch,
+                isBlank ? '_' : faceOf(ch),
                 style: TextStyle(
                   fontSize: size * .5,
                   fontWeight: FontWeight.bold,
