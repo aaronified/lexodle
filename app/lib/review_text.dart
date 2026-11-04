@@ -94,6 +94,13 @@ enum DrawKind {
 
   /// A made wordle: a word a friend chose, not drawn.
   chosen,
+
+  /// The equations: every equation of the length, equally likely.
+  equations,
+
+  /// The mastermind: no word is drawn, each reply is as one of the words still
+  /// possible would give.
+  dodging,
 }
 
 /// The [DrawKind] of a game drawn under [draw]; a daily ([daily] is its date)
@@ -105,6 +112,10 @@ DrawKind drawKindOf(
   bool chosen = false,
 }) => chosen
     ? DrawKind.chosen
+    : mode == GameMode.mastermind
+    ? DrawKind.dodging
+    : mode == GameMode.equations
+    ? DrawKind.equations
     : mode == GameMode.themed
     ? (draw == Draw.equal ? DrawKind.placesEqual : DrawKind.placesCurve)
     : daily.isNotEmpty
@@ -140,6 +151,11 @@ String drawPhrase(DrawKind kind) {
       return 'every place of the length equally likely';
     case DrawKind.chosen:
       return 'a word a friend chose, as likely as any word of the list';
+    case DrawKind.equations:
+      return 'every equation of the length equally likely';
+    case DrawKind.dodging:
+      return 'no word is drawn: each reply is as one of the words still '
+          'possible would give, each as likely as the next';
   }
 }
 

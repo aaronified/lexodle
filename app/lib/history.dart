@@ -29,7 +29,12 @@ class GameRow {
     this.daily = '',
     this.version = metricsVersion,
     this.draw = Draw.frequency,
+    this.largest = false,
   });
+
+  /// A mastermind game that always kept the largest pool: its replies had no
+  /// chance in them, so its guesses have no luck.
+  final bool largest;
 
   /// Its key in the guesses table; counts up, and is never reused.
   final int id;
@@ -83,6 +88,7 @@ class GameRow {
     daily: daily,
     version: v,
     draw: draw,
+    largest: largest,
   );
 
   /// The row as saved: a list, in this order, which is a good deal smaller than
@@ -100,14 +106,17 @@ class GameRow {
     daily,
     version,
     draw.code,
+    // (a thirteenth for the mastermind that kept the largest pool)
+    if (largest) 1,
   ];
 
   /// Reads a row as [toRow] wrote it, or the map of named fields an earlier
   /// version wrote; a [FormatException] for anything else.
   static GameRow fromAny(Object? raw) {
     if (raw is Map) return fromJson(raw.cast<String, dynamic>());
-    // (twelve now; eleven before the law the answer was drawn under was kept)
-    if (raw is! List || (raw.length != 11 && raw.length != 12)) {
+    // (twelve, or thirteen with the largest-pool flag; eleven before the law the
+    // answer was drawn under was kept)
+    if (raw is! List || raw.length < 11 || raw.length > 13) {
       throw const FormatException('game');
     }
     return fromJson({
@@ -126,7 +135,8 @@ class GameRow {
           : throw const FormatException('won'),
       'daily': raw[9],
       'v': raw[10],
-      if (raw.length == 12) 'draw': raw[11],
+      if (raw.length >= 12) 'draw': raw[11],
+      if (raw.length == 13) 'lg': raw[12],
     });
   }
 
@@ -143,6 +153,7 @@ class GameRow {
     if (daily.isNotEmpty) 'daily': daily,
     'v': version,
     'draw': draw.code,
+    if (largest) 'lg': 1,
   };
 
   static GameRow fromJson(Map<String, dynamic> j) {
@@ -184,6 +195,7 @@ class GameRow {
           : j['freq'] == false
           ? Draw.equal
           : Draw.frequency,
+      largest: j['lg'] == 1,
     );
   }
 }
@@ -447,6 +459,7 @@ class History {
     required List<GuessRow> guesses,
     String daily = '',
     Draw draw = Draw.frequency,
+    bool largest = false,
   }) {
     final row = GameRow(
       id: _next++,
@@ -460,6 +473,7 @@ class History {
       won: won,
       daily: daily,
       draw: draw,
+      largest: largest,
     );
     games.add(row);
     dirtyMonths.add(row.month);
@@ -498,7 +512,7 @@ class History {
   /// Games whose cached numbers are from an older [metricsVersion].
   List<GameRow> stale() => [
     for (final g in games)
-      if (g.version != metricsVersion && g.mode.scored) g,
+      if (g.version != metricsVersion) g,
   ];
 
   /// Replaces the numbers of game [id] with [rows] (worked out afresh), under

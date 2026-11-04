@@ -70,23 +70,25 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     final word = rows[i].word;
     final m = evaluate(answer, word, blind: blind);
     final after = filterEligible(eligible, word, m, blind: blind);
-    metrics.add(
-      scoreGuess(
-        eligible,
-        word,
-        after.length,
-        finalTry: i + 1 >= g.tries,
-        solved: word == answer,
-        triesLeft: g.tries - i,
-        weights: law,
-        afterWords: after,
-        provisional: true,
-        fresh: freshLetters(word, guesses),
-        // the places of a blind game's greens are not shown
-        greens: blind ? 0 : knownGreens(marks),
-        blind: blind,
-      ),
+    final mastermind = g.mode == GameMode.mastermind;
+    final measured = scoreGuess(
+      eligible,
+      word,
+      after.length,
+      // (the mastermind has no tries to run out of)
+      finalTry: !mastermind && i + 1 >= g.tries,
+      solved: word == answer,
+      triesLeft: mastermind ? 99 : g.tries - i,
+      weights: law,
+      afterWords: after,
+      provisional: true,
+      fresh: freshLetters(word, guesses),
+      // the places of a blind game's greens are not shown
+      greens: blind ? 0 : knownGreens(marks),
+      blind: blind,
     );
+    // a reply with no chance in it has no luck
+    metrics.add(g.largest ? measured.withoutLuck() : measured);
     befores.add(eligible);
     eligible = after;
     guesses.add(word);
@@ -109,6 +111,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     daily: g.daily.isNotEmpty,
     blind: blind,
     lockdown: g.mode == GameMode.lockdown,
+    luckless: g.largest,
   );
 }
 
@@ -162,6 +165,7 @@ Future<List<GuessRow>> rescoreClassic(
     final key = i == 0
         ? '${bank.language.code}:${g.length}:${lawOfGame(bank, g).key}'
               '${g.mode == GameMode.blind ? 'b' : ''}${g.mode == GameMode.themed ? 't' : ''}'
+              '${g.mode == GameMode.equations ? 'e' : ''}'
         : null;
     var land = key == null ? null : opening?[key];
     land ??= await analyseOffThread(

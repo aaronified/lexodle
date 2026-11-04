@@ -38,10 +38,6 @@ enum GameMode {
   /// Whether the mode has a daily: every mode but themed and mastermind.
   bool get hasDaily => this != themed && this != mastermind;
 
-  /// Whether the guesses have skill and luck scores, and so a review: not the
-  /// mastermind (there is no answer to measure against).
-  bool get scored => this != mastermind;
-
   /// Whether the answers are equations, not words.
   bool get isEquations => this == equations;
 

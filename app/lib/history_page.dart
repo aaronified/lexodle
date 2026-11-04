@@ -8,7 +8,6 @@ import 'analysis.dart';
 import 'daily.dart';
 import 'geography.dart';
 import 'history.dart';
-import 'plain_replay_page.dart';
 import 'logic.dart';
 import 'language_picker.dart';
 import 'main.dart';
@@ -95,19 +94,6 @@ class _HistoryPageState extends State<HistoryPage> {
   Future<void> _open(GameRow g) async {
     final lang = _langs[g.lang];
     if (lang == null || _opening) return;
-    // a mastermind game has no review: its board is shown as it was played
-    if (!g.mode.scored) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute<void>(
-          builder: (_) => PlainReplayPage(
-            game: g,
-            guesses: [for (final r in appState.history.guessesOf(g.id)) r.word],
-          ),
-        ),
-      );
-      return;
-    }
     setState(() {
       _opening = true;
       _error = '';
@@ -643,7 +629,7 @@ class _GameTile extends StatelessWidget {
     // a classic guess with one word left has no skill to speak of
     final scored = [
       for (final r in rows)
-        if (game.mode.scored && (!game.isClassic || r.before > 1)) r.skill,
+        if (!game.isClassic || r.before > 1) r.skill,
     ];
     final skill = scored.isEmpty
         ? '–'
@@ -704,7 +690,7 @@ class _GameTile extends StatelessWidget {
             ),
             // a past game can be shared as a puzzle, hashed or with its guesses;
             // the daily is not shared, as anyone can open the app and play it
-            if (!game.isDaily && game.mode.scored)
+            if (!game.isDaily)
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: SharePuzzleButton(

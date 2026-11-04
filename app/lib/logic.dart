@@ -182,6 +182,7 @@ class GuessMetrics {
 
   GuessMetrics _with({
     double? skill,
+    double? luck,
     double? best,
     bool? ready,
     double? risk,
@@ -189,7 +190,7 @@ class GuessMetrics {
   }) => GuessMetrics(
     guess: guess,
     skill: skill ?? this.skill,
-    luck: luck,
+    luck: luck ?? this.luck,
     before: before,
     after: after,
     expected: expected,
@@ -209,6 +210,10 @@ class GuessMetrics {
     fresh: fresh,
     greens: greens,
   );
+
+  /// The same metrics with no luck: for a game whose replies had no chance in
+  /// them (the mastermind that always keeps the largest pool).
+  GuessMetrics withoutLuck() => _with(luck: 0);
 
   /// The same metrics with skill measured against [best] (H*).
   GuessMetrics withBest(double best) => _with(

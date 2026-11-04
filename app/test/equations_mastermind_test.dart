@@ -50,9 +50,6 @@ void main() {
       expect(GameMode.mastermind.hasDaily, isFalse);
       expect(GameMode.themed.hasDaily, isFalse);
       expect(GameMode.mastermind.endless, isTrue);
-      expect(GameMode.equations.scored, isTrue);
-      expect(GameMode.mastermind.scored, isFalse);
-      expect(GameMode.classic.scored, isTrue);
     });
   });
 
@@ -397,6 +394,59 @@ void main() {
       expect(find.textContaining('solved in'), findsOneWidget);
       expect(find.textContaining('wiktionary'), findsWidgets);
     });
+
+    for (final largest in [false, true]) {
+      testWidgets(
+        'a won mastermind game (${largest ? 'largest pool' : 'random'}) is '
+        'scored and reviewable${largest ? ', with skill only' : ''}',
+        (tester) async {
+          await tester.binding.setSurfaceSize(const Size(420, 1700));
+          await appState.load();
+          appState.setup(
+            lang: 'en',
+            length: 5,
+            mode: GameMode.mastermind,
+            mastermindLargest: largest,
+          );
+          final bank = (await tester.runAsync(
+            () async => WordBank.load(
+              (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+            ),
+          ))!;
+          await tester.pumpWidget(
+            MaterialApp(
+              home: GamePage(
+                bank: bank,
+                random: Random(5),
+                mode: GameMode.mastermind,
+                practice: true,
+              ),
+              onGenerateRoute: onGenerateRoute,
+            ),
+          );
+          await tester.pump();
+          final rng = Random(5);
+          var left = List.of(bank.guessable(5));
+          for (var n = 0; n < 40; n++) {
+            final g = left.first;
+            final m = largest
+                ? mastermindLargest(left, g)
+                : mastermindReply(left, g, rng);
+            left = filterEligible(left, g, m);
+            await typeWord(tester, g);
+            if (m.every((x) => x == Mark.correct)) break;
+          }
+          await tester.pumpAndSettle();
+          expect(find.textContaining('solved in'), findsOneWidget);
+          expect(find.text('review'), findsOneWidget);
+          expect(find.textContaining('skill'), findsWidgets);
+          expect(
+            find.textContaining('luck'),
+            largest ? findsNothing : findsWidgets,
+          );
+        },
+      );
+    }
 
     testWidgets('mastermind comes back as the word answered, not redrawn', (
       tester,
