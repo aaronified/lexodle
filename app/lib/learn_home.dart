@@ -129,6 +129,13 @@ class LearnHomePage extends StatelessWidget {
                         Routes.learnStyles,
                         key: 'learn-card-styles',
                       ),
+                      _lesson(
+                        context,
+                        'read the clue',
+                        'a guess and its clues, four words: which one fits',
+                        Routes.learnClue,
+                        key: 'learn-card-clue',
+                      ),
                       _card(
                         context,
                         LearnKind.free,
