@@ -770,7 +770,7 @@ Future<Landscape> analyseGuesses(
       : candidates.toList();
   // the opening of a game scores every word against every word and is the same
   // for every game on that list, so the last one is kept
-  final key = words.length * eligible.length >= _openingCells
+  final key = words.length * eligible.length >= openingCells
       ? _openingKey(eligible, words, weights, blind)
       : null;
   final scored = <(String, SplitStats)>[];
@@ -984,7 +984,7 @@ Uint8List _encodeOpening(List<(String, SplitStats)> scored) {
 }
 
 /// Scoring this many (word, guess) pairs or more is kept for the next game.
-const _openingCells = 4000000;
+const openingCells = 4000000;
 String? _openingKeyHeld;
 List<(String, SplitStats)>? _openingHeld;
 
@@ -1011,6 +1011,15 @@ String _openingKey(
   }
   return '${eligible.length}/${guesses.length}/${weights == null}/$h';
 }
+
+/// The key an opening analysis is kept under (for the precomputed ones, which
+/// are named by it).
+String openingKeyOf(
+  List<String> eligible,
+  List<String> guesses,
+  Map<String, int>? weights,
+  bool blind,
+) => _openingKey(eligible, guesses, weights, blind);
 
 /// E, the expected pool, of [guess] against [eligible]: N * sum(q^2) with the
 /// chances q of the groups under [weights]; the plain sum(size^2) / N when they
