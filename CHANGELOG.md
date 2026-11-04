@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.7.1
+
 - the app looks for an update when it opens, and a toast says so
   Each time it starts (on Android), unless the check is switched off in
   settings. The toast has an underlined link that saves a backup and downloads
