@@ -24,7 +24,7 @@ class CluePage extends StatefulWidget {
 
 class _CluePageState extends State<CluePage> {
   late final _rng = Random(widget.seed);
-  late final int length = appState.length;
+  late final int length = appState.learnLength;
   late ClueQuestion? question = _next();
   int asked = 1;
   int right = 0;

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:lexodle/routes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/drill_page.dart';
+import 'package:lexodle/learn.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -124,7 +125,78 @@ void main() {
       ModalRoute.of(tester.element(find.byKey(const ValueKey('mode-guide'))))!
           .settings
           .name,
-      Routes.learnGuide,
+      '/blind${Routes.learnGuide}',
     );
+  });
+
+  testWidgets('practise an equation opens on the equations', (tester) async {
+    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    await tester.binding.setSurfaceSize(const Size(420, 1400));
+    await appState.load();
+    appState.setup(lang: 'en', length: 7, mode: GameMode.equations);
+    final bank = (await tester.runAsync(
+      () async => Equations.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+      ),
+    ))!;
+    await tester.pumpWidget(MaterialApp(home: LearnPage(bank: bank, seed: 2)));
+    await tester.pump(const Duration(seconds: 1));
+    expect(tester.takeException(), isNull);
+    expect(find.byType(LearnPage), findsOneWidget);
+  });
+
+  testWidgets('practise an equation, from learn, by its route', (tester) async {
+    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    await tester.binding.setSurfaceSize(const Size(420, 1400));
+    await appState.load();
+    appState.setup(
+      lang: 'en',
+      length: 5,
+      mode: GameMode.equations,
+      eqLength: 7,
+    );
+    await tester.runAsync(() async {
+      final langs = await WordBank.languages();
+      await Equations.load(langs.firstWhere((l) => l.code == 'en'));
+    });
+    await tester.pumpWidget(
+      const MaterialApp(
+        initialRoute: Routes.learn,
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.tap(find.byKey(const ValueKey('learn-card-free')));
+    for (var i = 0; i < 30; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(tester.takeException(), isNull);
+    expect(find.byType(LearnPage), findsOneWidget);
+    // the number pad of the equations, as in the game
+    expect(find.text('÷'), findsWidgets);
+    expect(find.text('q'), findsNothing);
+    // its address names the mode
+    expect(
+      ModalRoute.of(tester.element(find.byType(LearnPage)))!.settings.name,
+      '/equations/learn/free',
+    );
+    // and back
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(LearnPage), findsNothing);
+  });
+
+  test('a learn address with a mode opens that mode', () async {
+    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    await appState.load();
+    appState.setup(lang: 'en', length: 5, mode: GameMode.classic);
+    final routes = onGenerateInitialRoutes('/mastermind/learn/clue');
+    expect(appState.mode, GameMode.mastermind);
+    expect(routes.last.settings.name, '/mastermind/learn/clue');
+    // the plain address is the mode in view
+    final plain = onGenerateRoute(const RouteSettings(name: '/learn/free'));
+    expect(plain.settings.name, '/mastermind/learn/free');
   });
 }

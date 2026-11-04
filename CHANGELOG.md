@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- practise an equation no longer crashes
+  The learn pages worked at the word length (5) in the equations mode, where no
+  equation has that length, so the page broke. They now use the length of the
+  equations, and the number pad, as in the game.
+- learn addresses carry the mode
+  `#/equations/learn/free` instead of `#/learn/free`: each mode's learn pages
+  have addresses of their own, and opening one chooses that mode.
 - learn talks about equations and places in those modes
   The learn pages said "word" in every mode; the equations mode now says
   equations, the themed mode places.

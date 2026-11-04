@@ -35,7 +35,7 @@ class LearnPage extends StatefulWidget {
 class _LearnPageState extends State<LearnPage> {
   final _focus = FocusNode();
   late final _rng = Random(widget.seed);
-  late final int length = appState.length;
+  late final int length = appState.learnLength;
   late final List<String> _pool = widget.bank.answers(length);
   late final Set<String> _letters = widget.bank.letters(length);
   late final input = GuessInput(length);
@@ -455,6 +455,7 @@ class _LearnPageState extends State<LearnPage> {
                   ),
                   LetterKeyboard(
                     letters: _letters,
+                    numberPad: appState.mode == GameMode.equations,
                     onLetter: _type,
                     onBlank: () => _type(GuessInput.blank),
                     onCursor: _move,

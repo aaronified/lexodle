@@ -49,7 +49,7 @@ class DrillPage extends StatefulWidget {
 
 class _DrillPageState extends State<DrillPage> {
   late final _rng = Random(widget.seed);
-  late final int length = appState.length;
+  late final int length = appState.learnLength;
 
   final _answers = <DrillAnswer>[];
   DrillQuestion? question;
