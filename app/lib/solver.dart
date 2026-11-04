@@ -1,3 +1,5 @@
+import 'haptics.dart';
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -117,6 +119,7 @@ class _SolverPageState extends State<SolverPage> {
 
   void _add() {
     if (!input.complete) {
+      Haptics.fire(Haptic.reject);
       setState(
         () => message = input.hasBlank
             ? 'fill the blanks'

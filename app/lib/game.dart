@@ -400,7 +400,10 @@ class _GamePageState extends State<GamePage>
   void _clearRow() {
     if (over) return;
     setState(() {
-      if (input.clearTyped()) message = '';
+      if (input.clearTyped()) {
+        message = '';
+        Haptics.fire(Haptic.erase);
+      }
     });
     _save();
   }
@@ -420,6 +423,7 @@ class _GamePageState extends State<GamePage>
   void _toggleLockAtCursor() {
     if (over) return;
     setState(() => input.toggleLock(input.cursor));
+    Haptics.lockToggled(locked: input.isLocked(input.cursor));
     _save();
   }
 
@@ -428,6 +432,7 @@ class _GamePageState extends State<GamePage>
   /// slot empty the last guess's letter at it.
   void _cycleAtCursor() {
     if (!blind || over || guesses.isEmpty) return;
+    Haptics.fire(Haptic.tap);
     final i = input.cursor;
     if (i >= length) return;
     var r = guesses.length - 1;
@@ -442,7 +447,10 @@ class _GamePageState extends State<GamePage>
 
   void _select(int i) {
     if (over) return;
-    setState(() => input.tap(i));
+    setState(() {
+      // a second tap on a tile locks its letter, or lets it go
+      if (input.tap(i)) Haptics.lockToggled(locked: input.isLocked(i));
+    });
     _save();
   }
 
@@ -465,6 +473,7 @@ class _GamePageState extends State<GamePage>
             (i, guesses[r][i]),
     ];
     setState(() => input.lockAll(greens));
+    Haptics.fire(Haptic.lock);
     _save();
     showToast(context, 'all greens are locked');
   }
@@ -760,6 +769,11 @@ class _GamePageState extends State<GamePage>
           stylesHeld: appState.stylesHeldOf(code).length,
         ),
       );
+      // the end panel lists what was earned: a knock for each step of it
+      if (unlocked.isNotEmpty) {
+        // after the knocks of the win, or the buzz of the loss, are over
+        Haptics.fireLater(Haptic.reward, const Duration(milliseconds: 600));
+      }
     }
 
     final pending = _analysis.nonNulls.toList();

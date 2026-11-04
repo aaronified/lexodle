@@ -33,6 +33,12 @@ enum Haptic {
 
   /// A heart broken in lockdown: a rumble, three knocks one on the other.
   heartBreak,
+
+  /// A letter locked, or every green: a firm click, firmer than a tap.
+  lock,
+
+  /// An achievement earned: three knocks, each harder than the last.
+  reward,
 }
 
 /// Touch feedback through the phone's vibration motor. It is there on Android
@@ -61,7 +67,16 @@ class Haptics {
       case Haptic.tap:
         unawaited(HapticFeedback.selectionClick());
       case Haptic.submit:
+      case Haptic.lock:
         unawaited(HapticFeedback.mediumImpact());
+      case Haptic.reward:
+        unawaited(HapticFeedback.lightImpact());
+        _later(const Duration(milliseconds: 110), () {
+          unawaited(HapticFeedback.mediumImpact());
+        });
+        _later(const Duration(milliseconds: 230), () {
+          unawaited(HapticFeedback.heavyImpact());
+        });
       case Haptic.reject:
         unawaited(HapticFeedback.heavyImpact());
       case Haptic.win:
@@ -90,6 +105,17 @@ class Haptics {
   static void _later(Duration after, void Function() action) {
     Zone.root.createTimer(after, action);
   }
+
+  /// [fire]s [kind] after [after], in the root zone (see [_later]): for what
+  /// should follow another feel once it is over, such as the knocks of an
+  /// achievement after those of a win.
+  static void fireLater(Haptic kind, Duration after) =>
+      _later(after, () => fire(kind));
+
+  /// What toggling a lock feels like: the firm click of a lock going on, the
+  /// light one of it coming off.
+  static void lockToggled({required bool locked}) =>
+      fire(locked ? Haptic.lock : Haptic.tap);
 
   /// Whether one was fired in the last [within].
   static bool recently([Duration within = const Duration(milliseconds: 120)]) =>

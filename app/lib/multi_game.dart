@@ -264,12 +264,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
   void _toggleLockAtCursor() {
     if (game.over) return;
     setState(() => input.toggleLock(input.cursor));
+    Haptics.lockToggled(locked: input.isLocked(input.cursor));
     _save();
   }
 
   void _select(int i) {
     if (game.over) return;
-    setState(() => input.tap(i));
+    setState(() {
+      // a second tap on a tile locks its letter, or lets it go
+      if (input.tap(i)) Haptics.lockToggled(locked: input.isLocked(i));
+    });
     _save();
   }
 
@@ -284,6 +288,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
           if (marks[r][i] == Mark.correct) (i, game.guesses[r][i]),
     ];
     setState(() => input.lockAll(greens));
+    Haptics.fire(Haptic.lock);
     _save();
     showToast(context, 'all greens are locked');
   }
@@ -292,7 +297,9 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// and backspace).
   void _clearRow() {
     if (game.over) return;
-    setState(() => input.clearTyped());
+    setState(() {
+      if (input.clearTyped()) Haptics.fire(Haptic.erase);
+    });
     _save();
   }
 
@@ -458,6 +465,10 @@ class _MultiGamePageState extends State<MultiGamePage> {
           dailyStreak: streak,
         ),
       );
+      if (unlocked.isNotEmpty) {
+        // after the knocks of the win, or the buzz of the loss, are over
+        Haptics.fireLater(Haptic.reward, const Duration(milliseconds: 600));
+      }
     }
 
     final pending = _analysis.nonNulls.toList();

@@ -1,3 +1,5 @@
+import 'haptics.dart';
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -115,6 +117,8 @@ class _DrillPageState extends State<DrillPage> {
   void _pick(DrillOption o) {
     final q = question;
     if (q == null || picked != null) return;
+    // a right answer is a firm click, a wrong one the knock of a refused word
+    Haptics.fire(q.isRight(o) ? Haptic.submit : Haptic.reject);
     setState(() {
       picked = o;
       _answers.add(DrillAnswer(o.word, o.skill, q.isRight(o)));
