@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'achievements_page.dart';
+import 'clue_page.dart';
 import 'daily.dart';
 import 'diy.dart';
 import 'equations.dart';
@@ -52,6 +53,7 @@ class Routes {
   static const learnFree = '/learn/free';
   static const learnChoose = '/learn/choose';
   static const learnClosing = '/learn/closing';
+  static const learnClue = '/learn/clue';
   static const learnOpening = '/learn/opening';
   static const learnSequence = '/learn/sequence';
   static const learnStyles = '/learn/styles';
@@ -150,6 +152,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(learnGate(builder: (bank) => LearnPage(bank: bank)));
     case Routes.learnChoose:
       return page(learnGate(builder: (bank) => DrillPage(bank: bank)));
+    case Routes.learnClue:
+      return page(learnGate(builder: (bank) => CluePage(bank: bank)));
     case Routes.learnClosing:
       return page(
         learnGate(
@@ -229,6 +233,7 @@ const _known = {
   Routes.learnFree,
   Routes.learnChoose,
   Routes.learnClosing,
+  Routes.learnClue,
   Routes.learnOpening,
   Routes.learnSequence,
   Routes.learnStyles,
