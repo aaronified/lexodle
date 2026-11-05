@@ -320,7 +320,7 @@ void main() {
       expect(states['daily_streak']!.value, 15);
     });
 
-    test('a streak earned once is not earned again', () {
+    test('a streak run that reaches a level again earns it again', () {
       final states = <String, AchState>{};
       advanceAchievements(states, dailyResult(streak: 3), 'a');
       advanceAchievements(states, dailyResult(streak: 4), 'b');
@@ -328,8 +328,9 @@ void main() {
       advanceAchievements(states, dailyResult(won: false, streak: 0), 'c');
       expect(states['daily_streak']!.value, 4, reason: 'the best is kept');
       final again = advanceAchievements(states, dailyResult(streak: 3), 'd');
-      expect(again.map((a) => a.id), isNot(contains('daily_streak')));
-      expect(states['daily_streak']!.times, 1);
+      expect(again.map((a) => a.id), contains('daily_streak'));
+      expect(states['daily_streak']!.times, 1, reason: 'the medal stays');
+      expect(states['daily_streak']!.hits[0], 2, reason: 'two runs to 3');
     });
 
     test('an ordinary game does not touch the daily streak', () {

@@ -428,18 +428,27 @@ class Achievement {
   /// Whether it starts again once its top level is earned: the ones that count
   /// up do (the wins start from 0, the languages from those won so far), and
   /// every round is counted. The best-of ones count the games that do it
-  /// again, the streaks the runs that get there, and a few cannot go further.
+  /// again, the streaks the runs that get there; only what is capped by what
+  /// there is (the languages, the playstyles) cannot go further.
   bool get cycles =>
       track == Track.metric &&
       hit == null &&
       !separate &&
-      !const {
-        'completed',
-        'mastered',
-        'stylesWorn',
-        'modesWon',
-        'dailyDay',
-      }.contains(metric);
+      !const {'completed', 'mastered', 'stylesWorn'}.contains(metric);
+
+  /// The first win of each kind of game is earned once: its later rounds start
+  /// at the second level. (Every other level, in every achievement, is earned
+  /// again and again.)
+  bool get firstOnce => const {
+    'wins',
+    'quartet_wins',
+    'relay_wins',
+    'lockdown_wins',
+    'blind_wins',
+    'equation_wins',
+    'mastermind_wins',
+    'largest_wins',
+  }.contains(id);
 }
 
 /// The metrics that count up (they get a progress bar), and those that count
@@ -2040,8 +2049,11 @@ void _earnLevels(
   _ensureHits(a, st);
   while (st.cycle < a.count &&
       a.reached(st.cycle, st.value, languages: languages)) {
-    earned.add(a.atLevel(st.cycle));
-    st.hits[st.cycle]++;
+    // (the first win of a later round is not earned again)
+    if (!(a.firstOnce && st.cycle == 0 && st.rounds > 0)) {
+      earned.add(a.atLevel(st.cycle));
+      st.hits[st.cycle]++;
+    }
     if (st.cycle >= st.times) {
       st.times = st.cycle + 1;
       st.dates.add(today);
@@ -2246,16 +2258,21 @@ List<Achievement> advanceAchievements(
     // neither counts nor breaks a streak
     if (!m.modes.contains(r.mode)) continue;
     st.value = m.step(st, r);
+    final before = st.times;
     earnLevels(a, st);
-    // a game that does what a level asks counts again, once it is earned; a
-    // streak counts the runs that get to each level
+    // a game that does what a level asks counts again, once it is earned, and
+    // is an unlock again; a streak counts the runs that get to each level
     final hit = a.hit;
     final run = a.metric == 'streak';
     if (hit != null || run) {
       ensureHits(a, st);
       for (var i = 0; i < st.times && i < a.count; i++) {
         final t = a.levels[i].target;
-        if (run ? st.progress == t : hit!(r, t)) st.hits[i]++;
+        if (run ? st.progress == t : hit!(r, t)) {
+          st.hits[i]++;
+          // (a level earned for the first time was added by earnLevels)
+          if (i < before) earned.add(a.atLevel(i));
+        }
       }
     }
   }
