@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- a full set achievement, with four levels
+  Level 1 is earned once the first level of every other achievement has been
+  earned (in any language), level 2 once the second has, and so on to level 4.
 - achievements can be earned again
   Every level that counts up (and the days with every daily, the modes won in) starts
   again after its top level, and a repeat of a best-of level or a streak run is shown

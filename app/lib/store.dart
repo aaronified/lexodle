@@ -434,7 +434,12 @@ class Achievement {
       track == Track.metric &&
       hit == null &&
       !separate &&
-      !const {'completed', 'mastered', 'stylesWorn'}.contains(metric);
+      !const {
+        'completed',
+        'mastered',
+        'stylesWorn',
+        'fullSet',
+      }.contains(metric);
 
   /// The first win of each kind of game is earned once: its later rounds start
   /// at the second level. (Every other level, in every achievement, is earned
@@ -463,6 +468,7 @@ const _counted = {
   'langs',
   'mastered',
   'completed',
+  'fullSet',
   'dailies',
   'modesWon',
   'dailyFullDays',
@@ -504,7 +510,7 @@ const _counted = {
   'learnLengths',
   'learnAllThree',
 };
-const _globalMetrics = {'langs', 'mastered', 'completed'};
+const _globalMetrics = {'langs', 'mastered', 'completed', 'fullSet'};
 
 const _classicOnly = {GameMode.classic};
 const _anyMode = {
@@ -707,6 +713,14 @@ final achievements = <Achievement>[
       [1, 3, 6, 20],
       ['completionist', 'collector', 'archivist', 'tower of babel'],
     ),
+  ),
+  Achievement.leveled(
+    'full_set',
+    'trophy',
+    'full set',
+    (n) => 'earn level $n of every achievement',
+    'fullSet',
+    _lv([1, 2, 3, 4], ['bronze set', 'silver set', 'gold set', 'platinum set']),
   ),
   Achievement.leveled(
     'dailies',
@@ -2228,7 +2242,7 @@ List<Achievement> advanceAchievements(
   for (final a in allAchievements) {
     final st = states.putIfAbsent(a.id, AchState.new);
     // earned by the app itself, from everything kept: see AppState.recordGame
-    if (a.id == completionistId) continue;
+    if (a.id == completionistId || a.metric == 'fullSet') continue;
     if (a.track == Track.badges) {
       final fresh = mastered.difference(st.seen);
       if (fresh.isNotEmpty) {
@@ -2585,7 +2599,42 @@ class AppState extends ChangeNotifier {
         st.dates.add(today);
       }
     }
+    // the full set: a level is earned once that level of every other
+    // achievement has been, in any language
+    final set = achievements.firstWhere((a) => a.metric == 'fullSet');
+    final full = _globalAch.putIfAbsent(set.id, AchState.new);
+    final tiers = fullSetTiers();
+    full.value = tiers.toDouble();
+    while (full.times < set.count && tiers > full.times) {
+      earned.add(set.atLevel(full.times));
+      full.times++;
+      full.dates.add(today);
+    }
     return earned;
+  }
+
+  /// How many levels, from the first, of every other achievement have been
+  /// earned (one with fewer levels is not asked for the rest), each in the
+  /// language that has it furthest.
+  int fullSetTiers() {
+    int timesOf(Achievement a) {
+      if (a.global) return _globalAch[a.id]?.times ?? 0;
+      var best = 0;
+      for (final l in playedLanguages) {
+        final t = _langAch[l]?[a.id]?.times ?? 0;
+        if (t > best) best = t;
+      }
+      return best;
+    }
+
+    final others = achievements.where((a) => a.metric != 'fullSet').toList();
+    final top = others.fold(0, (m, a) => a.count > m ? a.count : m);
+    var tiers = 0;
+    while (tiers < top &&
+        others.every((a) => a.count <= tiers || timesOf(a) > tiers)) {
+      tiers++;
+    }
+    return tiers;
   }
 
   /// The languages mastered so far: every length at every difficulty won once.

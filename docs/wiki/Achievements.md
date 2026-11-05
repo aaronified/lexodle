@@ -13,6 +13,7 @@ the easy version to the platinum one.
 | lengths, languages | a 4-letter and an 8-letter win, every length; 2/3/6/9 languages |
 | every mode, every daily | **every way in** (win in 2/4/6/7 different modes); **a full day** (solve 2/3/4/6 different dailies in one day); **clean sweep** (solve every daily on the same day) 1/7/30/100 days |
 | mastery, completionist | master 1/3/6/all languages; complete 1/3/6/all |
+| full set | level 1/2/3/4 of every other achievement, in any language |
 | dailies | 5/25/100/365 solved; streaks of 3/14/60/365; double fires 1/10/50/200 |
 | quartet, relay race | wins, last-try wins, spare tries, free rides, daily streaks of their own; **domino** (a quartet) and **baton pass** (a relay race): win with one guess for each of the last 3 words, 1/5/15/40 |
 | lockdown | wins 1/10/50/200; **clean sheet** (win with every heart, 3 or more hearts) 1/5/20/50; **last heart** (win with one heart left, 3 or more hearts) 1/5/15/40; **sudden death** (win with a single heart) 1/5/15/40; daily streaks 3/10/30/100 |
@@ -32,6 +33,8 @@ They are earned per language ([Languages](Languages)), except the ones that coun
 language ([Solver and learn mode](Solver-and-learn-mode)). Completionist does not ask for them.
 Practice shows you the answer, so those count only what was well played: a word typed straight in
 does not count. A learn achievement wears the flags of the languages you learned in.
+
+**Full set** has four levels, one for each level of the achievements: level N is earned once level N of every other achievement has been earned, in whichever language has it furthest (the learn and language-count ones are kept once for you). It does not count itself.
 
 **Completionist** is earned in a language by earning every one of that language's own achievements
 (the ones that count languages and the mastery badges aside); it collects a badge for each language
