@@ -6,11 +6,9 @@ five	numbers	281838
 half	numbers	257039
 million	numbers	213796
 third	numbers	208929
-turn	geometry	208929
 average	statistics	144543
 seven	numbers	120226
 eight	numbers	104712
-grand	numbers	81283
 nine	numbers	74131
 square	geometry	69183
 count	numbers	67608
@@ -26,158 +24,72 @@ circle	geometry	35481
 constant	numbers	34673
 sample	statistics	33884
 formula		28183
-gross	numbers	28183
-belt	geometry	26302
 thirty	numbers	23988
 logic	logic_and_sets	22908
 dozen	numbers	22387
 twelve	numbers	22387
 operator		20892
-candy	numbers	19498
 estimate		19498
 fifty	numbers	19498
-loop	geometry,algebra,logic_and_sets	19498
-butt	numbers	19054
 counts	statistics	19054
 dual	geometry,algebra	19054
-filter		19054
-involve		19054
 odds	calculus_and_trigonometry	19054
 chaos		18620
 equality		18197
 segment	geometry,logic_and_sets	18197
 spectrum	geometry,algebra,calculus_and_trigonometry	18197
 alpha	statistics	17782
-pipe	numbers	17782
-screw		17782
-spider		17782
 accuracy		17378
 isolated	algebra	17378
-noble	geometry	17378
-palm	numbers	16982
-pole	geometry,calculus_and_trigonometry	16982
-snake		16982
 strict	logic_and_sets	16982
-batman	numbers	16595
-generate		16595
-leaf		16595
-outfit	statistics	16595
 unity	numbers	16595
-excess	geometry	16218
-forcing	logic_and_sets	16218
-sink	logic_and_sets	16218
 eighth	numbers	15848
-forty	numbers	15848
-blade		15488
-bulk	geometry	15488
 trace	geometry,algebra	15488
 bias	statistics	15135
 cancel		15135
 ceiling		15135
-cherry	logic_and_sets	15135
 compound		15135
-endless	logic_and_sets	15135
-grain	numbers	15135
-tropical		15135
-barrel	numbers	14791
-lens	geometry	14791
-partial	statistics	14791
-resolve		14791
 infinite	logic_and_sets	14454
 strictly		14454
-thou	numbers	14454
-yield		14454
-gray	statistics	14092
 math		14092
-accent		13803
 curve	geometry,algebra,logic_and_sets	13803
 fifteen	numbers	13803
-arrow	geometry,logic_and_sets	13489
-bend	geometry	13489
 boundary	logic_and_sets	13489
-cage	logic_and_sets	13489
-haven	logic_and_sets	13489
 delta	geometry	13182
 divide	numbers	13182
 linear		13182
-oriented	geometry,logic_and_sets	13182
 variable		13182
 closure	logic_and_sets	12882
-eternal	logic_and_sets	12882
-generic	geometry	12882
-locally	calculus_and_trigonometry	12882
 minimal		12882
-mixing	statistics	12882
-stamp	geometry	12882
-witch	geometry	12882
 array		12589
-faithful	algebra	12589
-lemon	geometry	12589
-matching	logic_and_sets	12589
-roster		12302
 diameter	geometry,logic_and_sets	12022
 rotation	geometry	12022
-tooth	geometry,algebra	12022
-bucket	numbers	11748
 matrix	logic_and_sets	11748
 quantity		11748
-quantum		11748
-rainbow	geometry	11748
 span	algebra	11748
 compact	logic_and_sets	11481
 hull	geometry	11481
-lifting		11481
-packing		11481
 rational	geometry,algebra,numbers	11481
-brass	numbers	11220
 graph	geometry,algebra,calculus_and_trigonometry,statistics,logic_and_sets	11220
 median	geometry,statistics	11220
-stack		11220
-thesis	logic_and_sets	11220
-collar		10964
-analyst	calculus_and_trigonometry	10715
-insist	geometry	10715
 orbit	geometry,algebra	10715
-arch	geometry	10471
 axis	geometry	10471
 equation	algebra	10471
-extract	numbers	10471
-gauge	calculus_and_trigonometry	10471
-mega		10471
 disk	geometry	10232
 evaluate		10232
 acute	geometry	10000
 borrow	numbers	10000
-crude	statistics	10000
-indirect		10000
 minus		10000
-slice		10000
-barn	numbers	9772
 cluster	statistics	9772
 cylinder	geometry	9772
 vector		9772
-atomic		9549
-cord	numbers	9549
-dense	logic_and_sets	9549
 oval	geometry	9549
-rounded		9549
-satisfy		9549
-sequel		9549
 circular	geometry	9120
 fraction	numbers	9120
 integral	geometry,algebra,calculus_and_trigonometry	9120
 polar	geometry	9120
 binary	numbers	8912
-marking	logic_and_sets	8912
-pencil	geometry	8912
 sixteen	numbers	8912
-float	numbers	8709
-leap	numbers	8709
-robust	statistics	8709
-trio	numbers	8709
-acre	numbers	8511
-bundle		8511
-descent	logic_and_sets	8511
 norm	geometry,algebra,calculus_and_trigonometry,statistics	8511
 sixty	numbers	8511
 triangle	geometry,calculus_and_trigonometry	8511
@@ -185,24 +97,15 @@ altitude	geometry,algebra	8317
 tenth	numbers	8317
 sphere	geometry	8128
 cardinal	numbers,logic_and_sets	7943
-rack	algebra	7943
 slope		7943
-stiff		7943
-wagon		7943
-embedded	algebra	7762
 module	algebra	7762
 thirteen	numbers	7762
 fourteen	numbers	7585
 geometry	geometry,algebra	7585
-leverage	statistics	7585
 mapping	geometry,algebra,calculus_and_trigonometry	7585
 metric	calculus_and_trigonometry	7585
 node	geometry,logic_and_sets	7585
-dominate	logic_and_sets	7413
-envelope	geometry	7244
 radius	geometry,logic_and_sets	7244
-scroll	geometry	7244
-niche	geometry	7079
 spiral	geometry	7079
 bracket	algebra	6918
 cone	geometry,logic_and_sets	6760
@@ -210,266 +113,124 @@ cube	geometry,numbers	6606
 dividend	numbers	6606
 infinity	calculus_and_trigonometry,logic_and_sets	6606
 premise	logic_and_sets	6606
-rooted	logic_and_sets	6606
-coding		6456
 eighteen	numbers	6456
 atlas	geometry,calculus_and_trigonometry,logic_and_sets	6309
-eternity	logic_and_sets	6309
-explode		6309
 ounce	numbers	6309
-restrict		6309
-skeleton	geometry	6309
-neglect		6165
-probable	calculus_and_trigonometry	6165
-notch	geometry	6025
 omega	logic_and_sets	6025
 seventy	numbers	6025
 abundant		5888
 algebra	algebra,calculus_and_trigonometry,logic_and_sets	5888
 digit	geometry,numbers	5888
 interval	logic_and_sets	5888
-worm		5888
 biased	statistics	5754
 foil		5754
-gram	numbers	5754
-fiber		5740
 eighty	numbers	5623
 finite	algebra	5623
-gallon	numbers	5623
 pyramid	geometry	5623
 sampling	statistics	5623
 compass	geometry	5495
-groove	geometry	5495
 singular	algebra,logic_and_sets	5495
-flex	geometry	5370
 genus	geometry,algebra,logic_and_sets	5370
 null	statistics	5370
-saddle	geometry	5370
 atom	logic_and_sets	5248
 ensemble		5248
 knot	numbers	5248
-pixel	numbers	5248
-analogy	geometry	5128
 apex	geometry	5128
 cubic	geometry,algebra	5128
 ninety	numbers	5128
 theorem	logic_and_sets	5128
 tore	geometry	5128
 gamma		5011
-overlap		5011
 pentagon	geometry	5011
-watt	numbers	4897
-defect		4786
 weighted	statistics,logic_and_sets	4786
 chaotic		4677
 focal	geometry	4677
-locality		4677
-mole	numbers	4677
-assassin	algebra	4570
-pint	numbers	4570
-spur	geometry	4570
 trivial	algebra	4570
 chord	geometry,logic_and_sets	4466
-evenly		4466
-torque	geometry	4466
-erosion		4365
-modeling		4354
-coherent	algebra,logic_and_sets	4265
-gill	numbers	4265
-morally		4265
 paradox	logic_and_sets	4265
 periodic		4265
 scaling		4265
-ambient		4168
 wedge	geometry	4168
-affinity	geometry	4073
-calculus	calculus_and_trigonometry	3981
 grad	geometry,calculus_and_trigonometry	3981
 nominal	statistics	3981
 claw	logic_and_sets	3890
 nineteen	numbers	3890
-surreal		3890
 improper		3801
 kernel	algebra,calculus_and_trigonometry,logic_and_sets	3801
 rotate	geometry	3801
 crescent	geometry	3715
 latitude	geometry	3715
 stokes	numbers	3715
-commute		3630
 discrete	logic_and_sets	3630
-tame		3630
-kite	geometry,numbers	3548
-uneven		3548
-quota	numbers	3388
 residue	calculus_and_trigonometry	3388
 subset	logic_and_sets	3388
-vulgar		3388
-comb	geometry,algebra	3311
-curl	calculus_and_trigonometry	3311
-dart	geometry	3311
-fluent		3311
 residual	statistics	3311
 angular	calculus_and_trigonometry	3235
 derive		3235
-descend		3235
 modular		3235
 sigma	statistics	3235
 symmetry		3235
 bounded	calculus_and_trigonometry,logic_and_sets	3162
 multiply	numbers	3162
 pivot	statistics	3162
-axle	geometry	3090
-flap	logic_and_sets	3090
-folklore		3090
-radiant	geometry	3090
-slab	geometry	3090
 converse	logic_and_sets	3019
 gradient	calculus_and_trigonometry	3019
-aperture		2951
-breadth	logic_and_sets	2951
-grading		2951
-rewrite		2951
-mold	geometry	2944
-manpower	numbers	2884
-peck	numbers	2884
-stalk		2884
 radial	geometry	2818
 variance	statistics	2818
 maths		2812
 prism	geometry	2754
 reflex	geometry	2754
 inverse	geometry	2630
-rotor	geometry,algebra	2630
-bouquet		2570
-carve	numbers	2570
-crook	geometry	2570
 parity		2570
-revolver	geometry	2570
-tumble	geometry	2570
-cohort	statistics	2511
-hartley	numbers	2511
-shear		2511
-traverse	geometry	2511
-hobbit	numbers	2454
 integer	numbers	2454
-roulette	geometry	2454
 rounding		2454
 squared	geometry	2454
 twain	numbers	2454
-vanish		2454
 meridian		2398
 crore	numbers	2344
-fibre		2338
-censor	statistics	2290
 diagonal	geometry	2290
-hump	geometry	2290
 lattice	algebra,logic_and_sets	2290
-sparse		2290
-spinner	geometry	2290
-mina	numbers	2238
-revert		2238
-fang		2187
-pebble	logic_and_sets	2187
 additive	algebra	2137
 harmonic	geometry,algebra,calculus_and_trigonometry	2137
-hinge	statistics	2089
 manifold	logic_and_sets	2089
-primal		2089
-volt	numbers	2089
 analytic	calculus_and_trigonometry	2041
-spat	numbers	1995
-teaspoon	numbers	1995
-sporadic		1949
 coloring	logic_and_sets	1945
-conveyor	geometry	1905
 decimal	numbers	1905
 entropy	statistics	1905
 quadrant	geometry	1905
 sinus	geometry,calculus_and_trigonometry	1905
-latent	statistics	1862
-potency		1862
-trident	geometry	1862
 convex	geometry,calculus_and_trigonometry	1819
-equator	geometry	1819
-groin	geometry	1819
 helix	geometry	1819
-fathom	numbers	1778
-hedgehog	geometry,calculus_and_trigonometry	1778
-braid	logic_and_sets	1737
-bulge	geometry	1737
 lakh	numbers	1737
 revolve	geometry	1737
 skewed	statistics	1737
 converge		1698
-domino	geometry	1698
-carousel	geometry	1621
-clutter		1621
-kink		1621
-medial		1621
-septic		1621
-tonne	numbers	1621
 vertex	geometry,logic_and_sets	1621
-diff		1584
 equate		1584
-germ		1584
 oblique	geometry	1584
 topology	logic_and_sets	1584
-litre	numbers	1581
 magma		1548
-perverse	geometry	1548
 tangent	geometry,calculus_and_trigonometry	1548
 facet		1513
 locus		1513
-nook	numbers	1513
-shelling	logic_and_sets	1513
-rectify		1479
 cyclic	geometry	1445
-squarely	geometry	1445
 theta		1445
-liter	numbers	1442
 axial	geometry	1412
-carat	numbers	1412
 clique	logic_and_sets	1412
-isotope	logic_and_sets	1412
-angelic	logic_and_sets	1348
 duality		1348
-kilo	numbers	1348
 modal	statistics	1348
-fraught	numbers	1318
-resolute		1318
-salient	geometry	1318
-tilting		1318
-wrinkle	geometry	1318
-hectare	numbers	1288
 logistic	statistics	1288
-spire	geometry	1288
 conical	geometry	1258
 sine	geometry,algebra,calculus_and_trigonometry	1258
-spindle	geometry	1258
-spoof		1258
 subtract	numbers	1258
-tangle		1258
-trope	geometry	1258
-capping		1202
-nascent		1202
-octave		1202
 subgroup	algebra,logic_and_sets	1202
 zeta		1202
-allegory		1174
 planar	logic_and_sets	1174
-tbsp	numbers	1174
-deviate	statistics	1148
-hoof	geometry	1148
 lambda		1148
 maximal		1148
-polarity	geometry	1148
 unitary	algebra,calculus_and_trigonometry	1148
 cusp	geometry,calculus_and_trigonometry	1122
-suffix		1122
-cleaver	geometry	1096
 obtuse	geometry	1096
-petal	geometry	1096
-poise	numbers	1096
 polygon	geometry	1096
 preorder	logic_and_sets	1071
 retract	algebra,logic_and_sets	1071
@@ -480,213 +241,78 @@ integers		1047
 numeric		1023
 skew	geometry,statistics	1023
 sieve	numbers	1000
-hoon	numbers	977
-coercive		954
 factored	statistics	954
-locale		954
-caustic		933
 fractal		933
 simplex	geometry,logic_and_sets	933
-swastika	geometry	933
-whirl	geometry	912
 exponent		891
 quotient	algebra,numbers	891
-cleft	geometry	870
-dram	numbers	870
-embed		870
-immerse		870
-palma	numbers	870
-echelon	algebra	851
 endpoint		851
-floored		851
 oblong	geometry	851
 scalar		851
-girth	logic_and_sets	831
-tableau		831
-clove	numbers	812
 octagon	geometry	812
 ordinate	geometry,statistics,numbers	812
-undying	logic_and_sets	812
 elliptic	geometry	794
-snub		794
-valence	geometry,algebra	794
-amenable		776
-repeater		776
 subspace	logic_and_sets	776
-tomahawk	geometry	776
 dilation		758
 epsilon		758
-splitter	geometry	758
-omer	numbers	741
-depress		724
 outlier	statistics	724
 tiling	geometry	724
-micron	numbers	707
 midpoint		707
 torsion	geometry	707
-waveform	geometry,algebra,calculus_and_trigonometry	707
-collider	logic_and_sets	691
 hexagon	geometry	691
-quiver		691
 diverge		676
-normalcy		676
-punctual		676
-isthmus	logic_and_sets	660
-mired	numbers	645
-furlong	numbers	630
-bushel	numbers	616
-coaxial	geometry	616
-plexus		616
-plough	numbers	615
-rotunda	geometry	602
 monotone		588
-wart	geometry	588
-posit	logic_and_sets	575
-denier	numbers	562
 modulus	numbers	562
-monotony		562
-meager	logic_and_sets	561
 lemma	logic_and_sets	549
-bounding	geometry	537
-excision	logic_and_sets	524
 homology	geometry,algebra,logic_and_sets	524
-oxymoron	logic_and_sets	524
-systolic		524
-absorber	logic_and_sets	512
 evens	calculus_and_trigonometry	512
-flabby		512
-stade	numbers	512
 binomial	algebra,statistics	501
-elation	geometry	501
-pulsar	geometry	501
-meander	geometry	489
-trapeze	geometry	489
-cupola	geometry	478
 ellipse	geometry	478
 trig	geometry,calculus_and_trigonometry	478
-chiral	geometry	467
-exegesis		467
 ordinal	numbers	467
-isotopic		457
 abacus	numbers	446
-confound	statistics	446
-recur		446
-rotator	geometry	446
-snark		446
-thermos	numbers	446
-amoeba		436
-proviso	logic_and_sets	436
-affix		426
-midline		426
-regress	statistics	426
-solidity	geometry	426
-crevice	geometry	416
-costal	numbers	398
-sheaf	numbers	398
-trellis	logic_and_sets	389
 demean	statistics	380
-gluing	logic_and_sets	380
 solvable	algebra	380
-spanner	logic_and_sets	380
 torus	geometry,logic_and_sets	371
-bramble	logic_and_sets	363
-catty	numbers	363
 cinque	numbers	363
-shackle	numbers	363
-whisker	statistics	363
-meagre	logic_and_sets	362
-decibel	numbers	354
 nonzero		354
-noggin	numbers	346
-cavan	numbers	338
 cubed		338
-gauche		338
 halving		338
-octavius	numbers	338
 pullback	geometry,calculus_and_trigonometry	331
 ternary	numbers	331
 cosine	geometry,calculus_and_trigonometry	323
-droop	geometry	323
 iterate		323
 lune	geometry	323
-pica	numbers	316
-canna	numbers	309
-trapdoor		309
 disjoint	algebra,logic_and_sets	301
-torr	numbers	301
-estadio	numbers	295
-estado	numbers	288
-pith		288
 spline		288
 trine	numbers	288
-boxcar		281
-ecliptic	geometry	281
 fourfold		275
-param		275
 tuple	logic_and_sets	275
-verging	geometry	275
 affine	geometry	269
-dative		269
 ellipsis	geometry	269
-livre	numbers	269
-matric		269
-mooch	numbers	269
 conic	geometry	263
 divisor	geometry,algebra,numbers	263
-milla	numbers	263
 ovoid	geometry	263
-flatness	statistics	257
-whiten	statistics	257
 abelian		251
 geodesic	geometry	251
-subnet	logic_and_sets	251
 aleph		245
 parabola	geometry,algebra,calculus_and_trigonometry	245
-punto	numbers	245
-smoot	numbers	245
-umbra		245
-wavelet		245
-flatiron	geometry	234
-linea	numbers	234
 quartile	statistics	234
-unicycle	logic_and_sets	234
-expander	logic_and_sets	229
-sawtooth	geometry	223
-medio	numbers	213
-mitre	geometry	213
 modulo		213
-crinkle	geometry	208
-grav	numbers	208
 adjoint	geometry,algebra,calculus_and_trigonometry	204
 lozenge	geometry	204
 niner	numbers	204
-yojana	numbers	204
-bahar	numbers	199
-binning	statistics	199
 dyad	numbers	199
-saco	numbers	199
-gree	geometry	194
-chek	numbers	190
 ergodic	statistics	190
-sextant	geometry	190
-checksum		186
 copula	statistics	186
-wythe	numbers	186
 annulus	geometry,logic_and_sets	181
 radix	numbers	177
 truncate	geometry	173
-confocal		169
-localize	algebra	169
 trefoil	logic_and_sets	169
-vara	numbers	169
 cofactor	algebra	165
-amphora	numbers	162
 nought	numbers	162
 bilinear	algebra,calculus_and_trigonometry	158
-figural		158
 quintile	statistics	158
-candela	numbers	154
-epigraph		154
 inscribe	geometry	154
 operand		154
 homotopy	logic_and_sets	151
@@ -694,315 +320,146 @@ centroid	geometry,calculus_and_trigonometry,statistics,logic_and_sets	147
 demeaned	statistics	147
 acyclic	logic_and_sets	144
 dyadic		144
-kayser	numbers	144
 bimodal		141
 functor	geometry,algebra,calculus_and_trigonometry	141
 subfield	algebra	141
 deltoid	geometry	134
-koku	numbers	134
 octal	numbers	134
 superset	logic_and_sets	134
-boxcars	numbers	131
-coring		131
-divot		131
-knotting		131
 radian	geometry,calculus_and_trigonometry	131
 rhombus	geometry	131
-twiddle		131
-beka	numbers	128
-dyne	numbers	128
-jigger	numbers	128
-unmixed	algebra	125
 dihedral		123
-kantar	numbers	120
-stellate	geometry	120
-cubit	numbers	117
 spheroid	geometry	117
-quintal	numbers	114
 tetrad	numbers	114
 cubical	geometry	112
-sixer	numbers	112
-coss	numbers	109
 sigmoid	geometry,algebra,calculus_and_trigonometry	109
 decile	statistics	107
 nullity		107
 cuboid	geometry	104
-dirham	numbers	104
-esca	numbers	104
-friable		104
 fano	geometry,algebra	102
-puncheon	numbers	102
 adic	algebra	100
-chunking		100
-connex	algebra,logic_and_sets	100
-coto	numbers	97
-kadam	numbers	97
-soliton		97
-kmph	numbers	95
 sinc		95
 adjoin	algebra,numbers	93
-angstrom	numbers	93
 catenary	geometry	93
-sverdrup	numbers	93
 nonempty		91
 hexagram	geometry	89
 subgraph	logic_and_sets	89
 subtree	logic_and_sets	89
 aliquot	numbers	87
 chordal	logic_and_sets	87
-quadrate	geometry	87
-stadion	numbers	87
 toric	geometry,algebra	87
-umbral		87
 normed	algebra,calculus_and_trigonometry,statistics	85
-pentacle	geometry	85
-ponto	numbers	85
-triadic		85
 unary		85
-impute	statistics	83
-phasor		83
 proba	statistics	83
 bisect	geometry	81
-markland	numbers	81
 rhomboid	geometry	81
 coplanar	geometry	79
-perturb		79
-sequent		79
-splicer	logic_and_sets	79
-dabba		77
 digraph	logic_and_sets	77
-hogshead	numbers	77
-klick	numbers	77
 logit	geometry,algebra,calculus_and_trigonometry	77
 morphism	geometry,algebra,calculus_and_trigonometry,logic_and_sets	77
-reniform	geometry	77
-scruple	numbers	77
 zeroth		75
-balayage		74
 quantile	statistics	74
-windle	numbers	74
 ceil		72
 secant	geometry,calculus_and_trigonometry	72
 monoid	algebra	70
-ogee		70
 signum		70
 trigon	geometry	70
-bicuspid	geometry	69
 extremal		69
-foliate	geometry	69
-gyrate	geometry	69
 skewness	statistics	69
-snit	numbers	69
-raphe	geometry	67
-valency	geometry,algebra,logic_and_sets	67
-buttload	numbers	66
 monadic		66
-dessin		64
 involute	geometry	64
-chupa	numbers	63
 mantissa	numbers	63
 quartic	numbers	63
-diopter	numbers	61
-fluting	geometry	60
 gnomon	geometry	60
-factum		58
-firkin	numbers	58
 kurtosis	statistics	58
-noid		58
-quantic		58
-systole		58
-biaxial		57
-gyration	geometry	57
-hoppus	numbers	57
-unlink		57
 cardioid	geometry	56
-cuarto	numbers	56
 probit	geometry,algebra,calculus_and_trigonometry,statistics	56
-relator	algebra	54
-blowdown		53
-deflator	numbers	53
-schober		53
 spinor	algebra	52
-svedberg	numbers	52
 cycloid	geometry	51
-triaxial		51
 conics	geometry	50
-farad	numbers	50
-grano	numbers	50
 variate	statistics	50
 syzygy	algebra	48
-timelike		48
 unimodal		48
-psig	numbers	47
-bunder	numbers	46
-daugh	numbers	45
-dedo	numbers	45
-entrain		45
-ganta	numbers	45
-quarta	numbers	45
-isochron		44
 quadric	geometry	44
-abac		43
 frustum	geometry	43
-maund	numbers	43
-monas	numbers	43
-sublevel		42
 toroid	geometry	42
 ogive	statistics	41
 scalene	geometry,calculus_and_trigonometry	41
-motivic		40
-seah	numbers	40
 isometry		39
 bisector	geometry	38
 conj		38
-kenning	numbers	38
 monomial	algebra	38
-tricorn		38
 arcsec		36
 arity	numbers,logic_and_sets	36
 isotropy	geometry	36
-nappe		36
-pingo	numbers	36
 polytope	geometry	36
-conjoin		35
-umbo	geometry	35
 abscissa	geometry,numbers	34
-antinomy	logic_and_sets	34
-gerbe		34
 googol	numbers	34
 monic		34
 milliard	numbers	33
 octant	geometry	33
-tierce	numbers	33
-cental	numbers	32
 coset	algebra	31
-rutty	numbers	31
 sagitta	geometry	31
 nonagon	geometry	30
 supremum	algebra,calculus_and_trigonometry,logic_and_sets	30
-urna	numbers	30
-halmos		29
-inviscid	calculus_and_trigonometry	29
-paraxial		29
 sinusoid	geometry,calculus_and_trigonometry	29
-tega	numbers	29
 ansatz		28
 ennead	numbers	28
 kriging		28
 matroid	logic_and_sets	28
-middie	numbers	28
 permute		28
-subequal		28
 surd	numbers	28
 vinculum	geometry,calculus_and_trigonometry,numbers	28
-viss	numbers	28
 cuboidal	geometry	27
 extremum		27
 pentad	numbers	27
 rhomb	geometry	27
 sextile	statistics	27
-tical	numbers	27
-biometry	statistics	26
-crisping	logic_and_sets	26
 evolute	geometry	26
 folium	geometry	26
 quintic		26
-socle	algebra	26
-lingula	numbers	25
 multiset	logic_and_sets	25
-rabbet	geometry	25
-saltus		25
-sise	numbers	25
-tomin	numbers	25
 astroid	geometry	24
 helicoid		24
-promax	statistics	24
-subbase		24
 arctan	calculus_and_trigonometry	23
-cartload	numbers	23
-nonius		23
-norming	calculus_and_trigonometry	23
 poset	logic_and_sets	23
-tetrakis		23
 polyline		22
 achiral	geometry	21
-carga	numbers	21
 groupoid	algebra	21
 heptagon	geometry	21
-pood	numbers	21
 summable		21
 summand		21
-tertian	numbers	21
-twistor		21
-bigha	numbers	20
-palmo	numbers	20
 quinary	numbers	20
 roundoff		20
-truncus	geometry	20
-verst	numbers	20
 conoid	geometry	19
-cordel	numbers	19
 epicycle	geometry	19
 holonomy	geometry,calculus_and_trigonometry	19
 infimum		19
-momme	numbers	19
-onza	numbers	19
 softmax	statistics	19
-versal		19
-ambigram	geometry	18
-arroba	numbers	18
 inlier	statistics	18
 mediant		18
-natality	statistics	18
 quantize		18
-bocs		17
-nomogram		17
-pous	numbers	17
 preimage		17
-scholium		17
-starlike	geometry	17
-teenth	numbers	17
 unknot		17
-virgate	numbers	17
-coline		16
 coprime	algebra,numbers	16
 cumulant		16
-neros	numbers	16
-subindex		16
 subring	algebra	16
 subtend		16
-uncus	geometry	16
 unital		16
 arccos	calculus_and_trigonometry	15
-chorded	logic_and_sets	15
-credal		15
-drachm	numbers	15
 fluxions	calculus_and_trigonometry	15
-groud		15
 isotopy		15
-maneh	numbers	15
-midplane		15
 premiss	logic_and_sets	15
-saeculum	numbers	15
-stere	numbers	15
-subrange		15
-variadic		15
 arcsin	calculus_and_trigonometry	14
 bicone	geometry	14
 codomain	calculus_and_trigonometry,logic_and_sets	14
-cuneus	geometry	14
 decagon	geometry	14
 nabla	calculus_and_trigonometry	14
-tercet	numbers	14
-carreau	numbers	13
 centile	statistics	13
 chiliad	numbers	13
-kemple	numbers	13
 orbifold	logic_and_sets	13
 overfit	statistics	13
 tertile	statistics	13
-uncia	algebra,numbers	13
-bandle	numbers	12
 bivector		12
 costate		12
 escribe	geometry	12
@@ -1010,28 +467,15 @@ finitary		12
 fixpoint	geometry,algebra,calculus_and_trigonometry	12
 lerp		12
 ogdoad	numbers	12
-quartal		12
-schlicht		12
 apolar	geometry	11
 arcsine	geometry,calculus_and_trigonometry	11
 biserial	statistics	11
-copin	numbers	11
 cosecant	geometry,calculus_and_trigonometry	11
-dendroid		11
-distich	numbers	11
-dunam	numbers	11
-entasis	geometry	11
 heptad	numbers	11
 maxent	statistics	11
-rigol	geometry	11
 tetragon	geometry	11
 addend	numbers	10
-chingon	geometry	10
 clopen	logic_and_sets	10
-cuarta	numbers	10
-eikonal		10
 gyroid		10
 nonprime		10
-nowcast	statistics	10
 semiring	algebra	10
-sesma	numbers	10

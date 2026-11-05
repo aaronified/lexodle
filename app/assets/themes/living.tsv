@@ -37,7 +37,6 @@ beef	animals,mammals	19498
 carrier	birds	19498
 sole	fish	19498
 bass	fish	19054
-butt	fish	19054
 globe	other_animals	19054
 knight	microbes_and_fungi	19054
 slip	birds	19054
@@ -49,13 +48,8 @@ nope	birds	18197
 warren	mammals	18197
 emperor	fish,insects_and_spiders,fruits	17782
 lion	animals,mammals,dogs_and_cats	17782
-spider	animals,insects_and_spiders	17782
 lazy	mammals	17378
 graphic	insects_and_spiders	16982
-palm	trees	16982
-snake	animals,reptiles_and_amphibians	16982
-batman	insects_and_spiders	16595
-bobby	plants,fruits	16595
 permit	fish	16595
 chips	vegetables	16218
 duck	animals,birds	16218
@@ -66,10 +60,7 @@ bacteria	microbes_and_fungi	15488
 corn	plants,vegetables	15488
 sheep	animals,mammals	15488
 turner	birds	15488
-carpet	insects_and_spiders	15135
-cherry	plants,trees,fruits	15135
 runner	fish	15135
-chuck	mammals,birds	14791
 creature	animals	14454
 cattle	animals,mammals	14125
 swift	reptiles_and_amphibians,insects_and_spiders	14125
@@ -82,8 +73,6 @@ drum	fish	12882
 potato	plants,vegetables	12882
 potter	reptiles_and_amphibians	12882
 sergeant	fish	12882
-witch	birds,fish,insects_and_spiders	12882
-lemon	plants,trees,fruits	12589
 pine	plants,trees	12589
 sang	plants	12589
 shark	animals,fish	12589
@@ -106,7 +95,6 @@ rabbit	animals,mammals	11220
 hart	mammals	10964
 shanghai	birds	10964
 trunk	mammals,plants,trees	10715
-vampire	mammals	10715
 bounce	fish	10471
 fisher	animals,mammals	10471
 goat	animals,mammals	10471
@@ -119,11 +107,9 @@ timber	trees	10232
 void	dogs_and_cats	10232
 wheat	plants	10232
 wipe	birds	10232
-admiral	animals,insects_and_spiders,trees,fruits	10000
 banana	plants,fruits	10000
 drone	animals,insects_and_spiders	10000
 puppy	animals,mammals,dogs_and_cats	10000
-dock	animals,plants	9772
 roller	insects_and_spiders	9772
 sore	birds	9772
 spark	insects_and_spiders	9772
@@ -148,7 +134,6 @@ lily	plants,flowers	8912
 hobby	birds	8709
 bloom	flowers	8511
 cows	animals,mammals	8511
-ginger	plants,vegetables	8511
 monk	birds,fish	8511
 painter	mammals	8511
 triangle	insects_and_spiders	8511
@@ -160,7 +145,6 @@ turtle	animals,birds,reptiles_and_amphibians	8128
 cardinal	birds,fish	7943
 griffin	birds	7943
 peanut	other_animals,plants,trees	7943
-rack	mammals	7943
 stern	birds	7943
 cocktail	insects_and_spiders	7762
 frog	animals,reptiles_and_amphibians	7762
@@ -175,16 +159,12 @@ spoon	plants,trees	7585
 bully	fish	7413
 heather	plants,trees	7413
 molly	animals,fish	7413
-swallow	birds	7413
 breeze	insects_and_spiders	7244
 coral	animals	7244
 greens	plants,vegetables	7244
 lime	plants,trees,fruits	7244
 maple	plants,trees,flowers	7244
-mickey	vegetables	7244
-ivory	mammals	7079
 tomato	plants,fruits,vegetables	7079
-envy	trees,fruits	6918
 goose	animals,birds	6918
 swan	animals,birds	6918
 vanilla	plants,flowers	6918
@@ -196,12 +176,10 @@ hatch	insects_and_spiders	6606
 fries	vegetables	6456
 hawk	animals,birds,insects_and_spiders	6456
 kindle	dogs_and_cats	6456
-pony	animals,mammals	6456
 crow	animals,birds	6309
 ounce	mammals	6309
 tick	animals,birds,insects_and_spiders,other_animals	6309
 raven	animals,birds	6165
-shrimp	other_animals	6165
 daisy	plants,flowers	6025
 jade	plants,trees	6025
 penguin	animals,birds	6025
@@ -209,15 +187,12 @@ python	animals,reptiles_and_amphibians	6025
 trout	animals,fish	6025
 dinosaur	animals,reptiles_and_amphibians	5888
 herb	plants	5888
-jelly	animals,plants,fruits	5888
 napoleon	fruits	5888
 peach	plants,trees,fruits	5888
 scar	fish	5888
-worm	animals,other_animals	5888
 cane	plants	5754
 cedar	plants,trees	5754
 crab	animals,other_animals,plants,trees	5754
-gram	trees	5754
 heath	insects_and_spiders,plants,trees	5754
 insect	animals,insects_and_spiders,other_animals	5754
 iris	plants,flowers	5754
@@ -244,18 +219,15 @@ squirrel	animals,mammals	4897
 troop	mammals	4897
 willow	plants,trees	4897
 drummer	fish	4786
-jewel	insects_and_spiders	4786
 pike	fish	4786
 piper	birds,fish	4786
 bunker	fish	4677
 dolphin	animals,mammals,fish	4677
 dove	animals,birds	4677
 gala	trees,fruits	4677
-mole	mammals	4677
 snail	animals,other_animals	4677
 yeast	microbes_and_fungi	4677
 hare	animals,mammals	4570
-spur	birds,microbes_and_fungi	4570
 basil	plants,trees	4466
 corporal	insects_and_spiders	4466
 crest	birds	4466
@@ -264,17 +236,14 @@ panda	animals,mammals	4466
 panther	animals,mammals,dogs_and_cats	4466
 camel	animals,mammals	4365
 charger	animals,mammals	4365
-coca	plants,trees	4365
 cocoa	trees	4365
 kitten	animals,mammals,insects_and_spiders,dogs_and_cats	4365
 sewer	insects_and_spiders	4365
 tuna	fish,plants,fruits	4365
-gill	mammals	4265
 laurel	plants,trees	4265
 lizard	animals,reptiles_and_amphibians	4265
 mushroom	microbes_and_fungi	4265
 squash	mammals,plants,vegetables	4265
-warden	trees,fruits	4265
 aquatic	plants	4168
 blossom	plants,flowers	4168
 carrot	plants,vegetables	4168
@@ -284,7 +253,6 @@ gorilla	animals,mammals	4168
 lotus	plants,trees,flowers,vegetables	4168
 pointer	dogs_and_cats	4168
 sweets	plants,flowers	4168
-beaver	mammals	4073
 jasmine	plants,trees,flowers	4073
 moose	animals,mammals	4073
 mosquito	animals,insects_and_spiders	4073
@@ -299,12 +267,10 @@ mare	animals,mammals	3981
 poke	plants,vegetables	3981
 weaver	animals,birds,insects_and_spiders	3981
 barker	animals,mammals,dogs_and_cats	3890
-buff	mammals	3890
 jasper	insects_and_spiders	3890
 leopard	animals,mammals,insects_and_spiders,dogs_and_cats	3890
 poppy	plants,flowers	3890
 sponge	animals	3890
-sucker	fish	3890
 citrus	plants,trees,fruits	3801
 clocks	plants	3801
 mustang	animals,mammals	3801
@@ -326,12 +292,10 @@ walnut	plants,trees	3630
 cabbage	plants,trees,vegetables	3548
 finch	animals,birds	3548
 kang	mammals	3548
-kite	birds,fish	3548
 mash	vegetables	3548
 plum	plants,trees,fruits	3548
 algae	microbes_and_fungi	3467
 hazel	plants,trees	3467
-nana	plants,fruits	3467
 oyster	animals,other_animals	3467
 poultry	animals,birds	3467
 sawyer	animals,fish,insects_and_spiders	3467
@@ -344,20 +308,15 @@ fungus	microbes_and_fungi	3388
 marrow	plants,vegetables	3388
 chuckle	birds	3311
 cruiser	insects_and_spiders	3311
-dart	fish,insects_and_spiders	3311
 mandarin	birds,plants,trees,fruits	3311
-mast	plants	3311
 cobra	animals,reptiles_and_amphibians	3235
 jaguar	animals,mammals,dogs_and_cats	3235
 ling	plants,trees	3235
 birch	plants,trees	3162
 broccoli	plants,vegetables	3162
-chilly	vegetables	3162
 hind	animals,mammals,fish	3162
 hive	insects_and_spiders	3162
 kangaroo	animals,mammals	3162
-moth	animals,insects_and_spiders,vegetables	3162
-cling	fruits	3090
 coco	plants,trees	3090
 loaf	dogs_and_cats	3090
 musk	mammals,plants,trees,flowers	3090
@@ -375,8 +334,6 @@ ambrose	plants	2951
 char	fish	2951
 ordeal	trees	2951
 pear	plants,trees,fruits	2951
-mold	microbes_and_fungi	2944
-chestnut	plants,trees	2884
 feeder	animals	2884
 octopus	animals,other_animals	2884
 serpent	animals,reptiles_and_amphibians	2884
@@ -408,7 +365,6 @@ corona	microbes_and_fungi	2630
 flea	animals,insects_and_spiders	2630
 muster	animals,birds	2630
 psyche	insects_and_spiders	2630
-bouquet	plants,flowers	2570
 cucumber	plants,fruits,vegetables	2570
 diver	birds,fish	2570
 hoop	birds	2570
@@ -417,8 +373,6 @@ mammoth	animals,mammals	2511
 thrift	plants,trees	2511
 zebra	animals,mammals,fish,insects_and_spiders	2511
 cocky	birds	2454
-hobbit	mammals	2454
-pinky	fish	2454
 spruce	plants,trees	2454
 barrow	mammals	2398
 bulldog	animals,mammals,dogs_and_cats	2398
@@ -432,14 +386,10 @@ clover	plants,trees	2290
 coyote	animals,mammals	2290
 hops	plants	2290
 mischief	mammals	2290
-steamer	birds,other_animals	2290
 azure	insects_and_spiders	2238
 catfish	animals,fish	2238
-mina	animals,birds	2238
 rattle	trees	2238
 wasp	animals,insects_and_spiders	2238
-cooker	trees,fruits	2187
-ebony	trees	2187
 jojo	vegetables	2187
 maize	plants,vegetables	2187
 myrtle	plants,trees	2187
@@ -481,7 +431,6 @@ maga	trees	1995
 orchid	plants,flowers	1995
 piggy	animals,mammals	1995
 reaper	insects_and_spiders	1995
-spat	animals,other_animals	1995
 surfer	birds	1995
 doodle	dogs_and_cats	1949
 husky	animals,mammals,dogs_and_cats	1949
@@ -491,7 +440,6 @@ boomer	mammals,birds	1905
 dreamer	fish	1905
 fishy	fish	1905
 goldfish	animals,fish	1905
-grizzly	animals,mammals	1905
 tinker	birds,fish	1905
 flyer	mammals	1900
 beech	plants,trees	1862
@@ -507,7 +455,6 @@ veggie	plants,vegetables	1819
 balm	trees	1778
 biennial	plants	1778
 cypress	plants,trees	1778
-hedgehog	animals,mammals,microbes_and_fungi,plants,trees	1778
 reptile	animals,reptiles_and_amphibians	1778
 stag	animals,mammals,birds,insects_and_spiders	1778
 grassy	fish	1737
@@ -518,8 +465,6 @@ toro	trees,flowers	1737
 clegg	animals,insects_and_spiders	1698
 hawthorn	plants,trees,fruits	1698
 newt	animals,reptiles_and_amphibians	1698
-pollard	animals,mammals,fish,plants,trees	1698
-redhead	animals,birds,other_animals	1698
 rudd	animals,fish	1698
 shaker	birds	1698
 clam	animals,other_animals	1659
@@ -550,7 +495,6 @@ watchdog	animals,mammals,dogs_and_cats	1548
 weasel	animals,mammals	1548
 zest	trees	1548
 carp	animals,fish	1513
-castor	insects_and_spiders	1513
 snowball	plants	1513
 tulip	plants,flowers	1513
 vulture	animals,birds	1513
@@ -569,7 +513,6 @@ hornet	animals,insects_and_spiders	1412
 juniper	plants,trees	1412
 mink	mammals	1412
 mulberry	plants,trees,fruits	1412
-pixie	insects_and_spiders,plants,trees	1412
 raptor	animals,birds	1412
 trumpets	plants,trees	1412
 avian	birds	1380
@@ -586,7 +529,6 @@ tung	plants,trees	1348
 adjutant	animals,birds	1318
 dobson	animals,insects_and_spiders	1318
 feline	animals,mammals	1318
-grapple	plants,fruits	1318
 grub	animals	1318
 hickory	plants,trees	1318
 pinto	animals,mammals	1318
@@ -600,9 +542,7 @@ bennet	plants,trees	1258
 dory	animals,fish	1258
 medusa	animals	1258
 rook	animals,birds	1258
-skunk	mammals	1258
 sloth	animals,mammals	1258
-spindle	insects_and_spiders,other_animals,plants	1258
 tort	reptiles_and_amphibians	1258
 angelica	plants	1230
 gilt	mammals	1230
@@ -623,7 +563,6 @@ blob	fish	1174
 equine	animals,mammals	1174
 fink	birds	1174
 horseman	fish	1174
-pelican	animals,birds	1174
 poplar	plants,trees	1174
 shank	birds	1174
 thyme	plants	1174
@@ -651,7 +590,6 @@ swede	plants,vegetables	1122
 twister	insects_and_spiders	1122
 bunting	animals,birds	1096
 friar	fish	1096
-goody	fish	1096
 horner	fish	1096
 koala	animals,mammals	1096
 nutmeg	insects_and_spiders,plants,trees	1096
@@ -668,7 +606,6 @@ fawn	animals,mammals	1047
 moray	animals,fish	1047
 poodle	animals,mammals,dogs_and_cats	1047
 seagull	animals,birds	1047
-shag	birds	1047
 speck	fish	1047
 tutu	plants	1047
 acacia	plants,trees	1023
@@ -718,7 +655,6 @@ chum	fish	933
 crumb	insects_and_spiders	933
 gummy	fish	933
 mako	animals,fish	933
-mullet	animals,fish	933
 pooch	animals,mammals,dogs_and_cats	933
 rhubarb	plants,fruits,vegetables	933
 sapiens	mammals	933
@@ -759,14 +695,12 @@ chug	dogs_and_cats	831
 recluse	insects_and_spiders	831
 stinger	animals	831
 bluebird	animals,birds	812
-clove	plants,trees	812
 gecko	animals,reptiles_and_amphibians	812
 larval	animals	812
 malia	birds	812
 primrose	plants,trees,flowers	812
 reeve	animals,birds	812
 sandal	plants	812
-scat	fish	812
 dowd	insects_and_spiders	794
 ganga	birds	794
 magpie	animals,birds	794
@@ -777,7 +711,6 @@ papyrus	plants	794
 telltale	birds	794
 doggo	dogs_and_cats	776
 gander	animals,birds	776
-lire	birds	776
 mangrove	plants,trees	776
 nene	birds	776
 osprey	animals,birds	776
@@ -838,7 +771,6 @@ upstart	plants	691
 buzzard	animals,birds	676
 corgi	animals,mammals,dogs_and_cats	676
 corsair	fish	676
-dipper	birds	676
 fiddler	birds,insects_and_spiders	676
 foal	animals,mammals	676
 ibis	animals,birds	676
@@ -860,7 +792,6 @@ glut	fish	645
 gripe	birds	645
 humpback	fish	645
 mallard	animals,birds	645
-moly	plants,flowers,vegetables	645
 monolith	plants,trees	645
 scaly	fish	645
 wiper	fish	645
@@ -906,7 +837,6 @@ lichen	microbes_and_fungi	588
 litmus	microbes_and_fungi	588
 miso	microbes_and_fungi	588
 pansy	insects_and_spiders,plants,flowers	588
-tawny	birds	588
 warbler	animals,birds	588
 wasabi	plants,vegetables	588
 beetroot	plants,vegetables	575
@@ -930,7 +860,6 @@ scallop	other_animals	562
 seedling	plants	562
 shrew	animals,mammals	562
 spidey	insects_and_spiders	562
-waver	plants,trees	562
 agave	plants,flowers	549
 chipmunk	animals,mammals	549
 iguana	animals,reptiles_and_amphibians	549
@@ -966,7 +895,6 @@ bacillus	microbes_and_fungi	501
 chub	animals,fish	501
 glyph	insects_and_spiders,other_animals	501
 harrier	animals,mammals,birds,dogs_and_cats	501
-kisser	fish	501
 absinthe	plants,trees	489
 adder	fish,reptiles_and_amphibians	489
 arran	insects_and_spiders	489
@@ -981,7 +909,6 @@ orang	animals,mammals	489
 platypus	animals,mammals	489
 spinster	insects_and_spiders	489
 spud	vegetables	489
-tassel	plants	489
 thicket	plants	489
 catnip	dogs_and_cats,plants	478
 grist	insects_and_spiders	478
@@ -1020,7 +947,6 @@ sunbeam	insects_and_spiders	446
 thrasher	animals,birds,fish	446
 tulsi	trees	446
 yucca	plants,trees,flowers	446
-amoeba	microbes_and_fungi	436
 burnet	insects_and_spiders	436
 collard	plants	436
 courtier	insects_and_spiders	436
@@ -1043,7 +969,6 @@ parasol	insects_and_spiders	426
 peele	mammals	426
 pinion	insects_and_spiders	426
 rattan	plants,trees	426
-shiner	fish,insects_and_spiders,other_animals	426
 zona	fish	426
 basset	animals,mammals,dogs_and_cats	416
 chippy	birds	416
@@ -1072,7 +997,6 @@ conifer	plants,trees	389
 floater	other_animals	389
 geranium	plants,flowers	389
 legume	plants,trees	389
-madder	plants	389
 mandrake	plants	389
 ombre	fish	389
 tamarind	plants,trees,fruits	389
@@ -1101,7 +1025,6 @@ staph	microbes_and_fungi	371
 wahoo	fish,plants,trees	371
 wisteria	plants,trees	371
 anemone	animals,plants,flowers	363
-bramble	plants,fruits	363
 daffodil	plants,flowers	363
 dogwood	plants,trees	363
 marl	mammals	363
@@ -1113,7 +1036,6 @@ scudder	insects_and_spiders	363
 walleye	animals,fish	363
 briar	plants,trees	362
 lupin	plants,trees	362
-meagre	fish	362
 barnacle	animals,birds,other_animals	354
 bevy	birds	354
 hammy	mammals	354
@@ -1167,13 +1089,11 @@ footman	insects_and_spiders	316
 harpy	birds	316
 looper	animals,insects_and_spiders	316
 mariposa	plants,flowers	316
-pica	birds	316
 seahorse	animals,mammals	316
 seraphim	insects_and_spiders	316
 toki	birds	316
 biota	trees	309
 budgie	animals,birds	309
-canna	plants,flowers	309
 capsicum	plants,trees,fruits,vegetables	309
 cicada	animals,insects_and_spiders	309
 cress	plants,vegetables	309
@@ -1185,7 +1105,6 @@ minx	mammals	309
 pimlico	birds	309
 warthog	animals,mammals	309
 whelp	animals	309
-ashen	trees	301
 balsa	plants,trees	301
 columbo	plants	301
 gundy	insects_and_spiders	301
@@ -1321,14 +1240,11 @@ jarrah	trees	223
 knocker	insects_and_spiders	223
 oriole	animals,birds	223
 phlox	plants,trees,flowers	223
-sawtooth	insects_and_spiders	223
 seahawk	birds	223
 sunfish	animals,fish	223
 titling	birds	223
 acai	plants,trees,fruits	218
 bullfrog	animals,reptiles_and_amphibians	218
-cockle	animals,other_animals	218
-gramma	plants,vegetables	218
 grice	mammals	218
 instar	animals	218
 ocelot	animals,mammals	218
@@ -1396,7 +1312,6 @@ calabash	plants,trees,flowers,fruits	186
 echidna	animals,mammals	186
 lapdog	animals,mammals,dogs_and_cats	186
 muskie	fish	186
-seedless	plants,fruits	186
 sett	mammals	186
 ammonite	other_animals	181
 birk	fish,trees	181
@@ -1426,7 +1341,6 @@ dudgeon	plants,trees	173
 formic	insects_and_spiders	173
 grama	plants	173
 khair	trees	173
-pinder	plants	173
 poulter	birds	173
 purl	birds	173
 racoon	animals,mammals	173
@@ -1461,7 +1375,6 @@ sparkler	insects_and_spiders	165
 surfeit	mammals	165
 tawa	trees	165
 willet	animals,birds	165
-bluey	dogs_and_cats	162
 bogue	fish	162
 caiman	animals,reptiles_and_amphibians	162
 chive	plants,flowers,vegetables	162
@@ -1498,7 +1411,6 @@ mamo	animals,birds	154
 sisal	plants,flowers	154
 smee	birds	154
 sweeting	trees,fruits	154
-tatty	plants,vegetables	154
 turbot	animals,fish	154
 vika	mammals	154
 appy	plants,fruits	151
@@ -1533,7 +1445,6 @@ gari	plants,trees	144
 matsu	trees	144
 plaice	animals,fish	144
 sallow	plants,trees	144
-souring	trees,fruits	144
 bullhead	animals,fish	141
 capybara	animals,mammals	141
 cero	animals,fish	141
@@ -1552,7 +1463,6 @@ arion	other_animals	138
 camas	plants,flowers	138
 gentian	plants	138
 giardia	microbes_and_fungi	138
-malic	plants,fruits	138
 owler	trees	138
 skink	animals,reptiles_and_amphibians	138
 amanita	microbes_and_fungi	134
@@ -1570,7 +1480,6 @@ bluefish	animals,fish	131
 civet	animals,mammals	131
 dace	animals,fish	131
 deadhead	trees	131
-duffer	birds,insects_and_spiders	131
 erne	animals,birds	131
 gadfly	animals,insects_and_spiders	131
 goby	animals,fish	131
@@ -1591,13 +1500,10 @@ eider	animals,birds	128
 foxglove	plants,trees,flowers	128
 gherkin	plants,vegetables	128
 herdsman	animals	128
-jigger	insects_and_spiders	128
 jocko	mammals	128
 kine	animals,mammals	128
 mikan	plants,trees,fruits	128
-mouser	animals,mammals,dogs_and_cats	128
 reseda	plants	128
-ruddock	birds,trees,fruits	128
 toller	dogs_and_cats	128
 arbutus	plants,trees	125
 binny	fish	125
@@ -1628,7 +1534,6 @@ durum	plants	120
 gapes	other_animals	120
 lobelia	plants	120
 marri	plants,trees	120
-popolo	vegetables	120
 raffia	trees	120
 sambar	animals,mammals	120
 skullcap	plants,trees	120
@@ -1661,7 +1566,6 @@ bichon	dogs_and_cats	112
 brach	animals,dogs_and_cats	112
 celeriac	plants,vegetables	112
 daikon	plants,vegetables	112
-garlicky	flowers,vegetables	112
 hominin	mammals	112
 kittle	dogs_and_cats	112
 mado	fish	112
@@ -1681,7 +1585,6 @@ dickies	insects_and_spiders	109
 egger	animals,insects_and_spiders	109
 henhouse	birds	109
 hookworm	animals,other_animals	109
-hurtle	fruits	109
 maddock	insects_and_spiders,other_animals	109
 saker	birds	109
 serval	animals,mammals	109
@@ -1691,7 +1594,6 @@ stoat	animals,mammals	109
 viburnum	plants,trees	109
 basa	fish	107
 blusher	microbes_and_fungi	107
-conker	plants,trees	107
 endive	plants,vegetables	107
 fennec	mammals	107
 hihi	birds	107
@@ -1716,7 +1618,6 @@ wagtail	animals,birds,fish	104
 zinnia	plants	104
 anthill	insects_and_spiders	102
 banksia	plants,trees	102
-beardy	fish,reptiles_and_amphibians,dogs_and_cats	102
 biped	animals	102
 botrytis	microbes_and_fungi	102
 braise	fish	102
@@ -1738,7 +1639,6 @@ allgood	plants	100
 courser	animals,mammals,birds	100
 emmer	plants	100
 furze	plants,trees	100
-lapin	animals,mammals	100
 moringa	plants	100
 nandu	animals,birds	100
 nuthatch	animals,birds	100
@@ -1750,8 +1650,6 @@ vinifera	plants	100
 buckhorn	trees,flowers	97
 cacique	animals,birds	97
 caracal	animals,mammals	97
-festoon	insects_and_spiders	97
-kadam	plants,trees	97
 kiang	animals,mammals	97
 longleaf	trees	97
 lowrider	dogs_and_cats	97
@@ -1796,7 +1694,6 @@ quist	birds	93
 soja	plants	93
 squab	birds	93
 tatu	animals,mammals	93
-topknot	fish	93
 boronia	trees	91
 crake	animals,birds	91
 doob	plants	91
@@ -1804,7 +1701,6 @@ fleabag	mammals	91
 garbanzo	plants,trees,vegetables	91
 heeler	dogs_and_cats	91
 mazer	trees	91
-minge	insects_and_spiders	91
 powis	birds	91
 redbird	animals,birds	91
 amia	fish	89
@@ -1885,13 +1781,11 @@ skil	fish	79
 theropod	animals,reptiles_and_amphibians	79
 whelk	animals,other_animals	79
 brahmi	trees,flowers	77
-conk	microbes_and_fungi	77
 flatfish	animals,fish	77
 kuri	dogs_and_cats	77
 lettice	mammals	77
 loblolly	plants,trees	77
 rooibos	plants,trees	77
-tiptop	plants,fruits	77
 tuckahoe	microbes_and_fungi,plants	77
 agouti	animals,mammals	75
 ashwood	trees	75
@@ -1925,7 +1819,6 @@ sugi	plants,trees	74
 tamarisk	plants,trees	74
 titmouse	animals,birds	74
 ungulate	animals,mammals	74
-windle	birds	74
 yate	trees	74
 bonefish	animals,fish	72
 gobo	vegetables	72
@@ -1937,7 +1830,6 @@ urus	animals,mammals	72
 barberry	plants,trees,fruits	70
 barling	mammals	70
 brize	insects_and_spiders	70
-capiz	animals,other_animals	70
 cattery	dogs_and_cats	70
 collards	vegetables	70
 fantail	birds,fish	70
@@ -1953,7 +1845,6 @@ sparling	animals,fish	70
 spurge	plants,trees	70
 teff	plants	70
 acara	fish	69
-benzoin	plants,trees	69
 biju	mammals	69
 birb	birds	69
 brinjal	plants,vegetables	69
@@ -1984,7 +1875,6 @@ marabou	animals,birds	67
 narra	trees	67
 owlet	animals,birds,insects_and_spiders	67
 sapwood	trees	67
-tombo	fish	67
 arethusa	plants,flowers	66
 budda	trees	66
 cattail	plants	66
@@ -2269,7 +2159,6 @@ livelong	plants,trees	43
 mocker	animals,birds	43
 ocotillo	plants,trees	43
 pewee	animals,birds	43
-quoin	trees,fruits	43
 seawolf	fish	43
 stipa	plants	43
 stirk	animals,mammals	43
@@ -2287,7 +2176,6 @@ fireweed	plants,trees,flowers	42
 geometer	insects_and_spiders	42
 henbane	plants	42
 huhu	insects_and_spiders	42
-milker	animals,mammals	42
 moki	fish	42
 patas	animals,mammals	42
 pepino	plants,fruits	42
@@ -2460,7 +2348,6 @@ sandworm	insects_and_spiders,other_animals	34
 smilax	plants	34
 snek	reptiles_and_amphibians	34
 teredo	animals,other_animals	34
-baldhead	birds	33
 barnie	birds	33
 blacktip	fish,insects_and_spiders	33
 coccus	microbes_and_fungi	33
@@ -2493,7 +2380,6 @@ kabocha	plants,vegetables	32
 karanja	plants,trees	32
 lorikeet	animals,birds	32
 oakmoss	microbes_and_fungi	32
-rattail	animals,fish	32
 redpoll	animals,birds	32
 saury	animals,fish	32
 towhee	animals,birds	32
@@ -2647,7 +2533,6 @@ reovirus	microbes_and_fungi	26
 salp	animals	26
 saun	mammals	26
 sharkie	fish	26
-skeg	trees,fruits	26
 snoek	animals,fish	26
 tippler	birds	26
 trochus	other_animals	26
@@ -2692,7 +2577,6 @@ whiptail	animals,mammals,reptiles_and_amphibians	25
 whipworm	other_animals	25
 yote	mammals	25
 bangun	vegetables	24
-bonza	trees,fruits	24
 dogface	insects_and_spiders	24
 goujon	animals,fish	24
 guga	birds	24
@@ -2848,7 +2732,6 @@ archil	microbes_and_fungi	19
 assegai	plants,trees	19
 ayaya	birds	19
 badian	plants	19
-baldie	birds,fish	19
 briard	animals,mammals,dogs_and_cats	19
 bushbuck	animals,mammals	19
 camelid	mammals	19
@@ -2869,7 +2752,6 @@ lingcod	animals,fish	19
 medfly	animals,insects_and_spiders	19
 mouflon	animals,mammals	19
 oestrus	insects_and_spiders	19
-onza	mammals	19
 ophrys	flowers	19
 owlish	birds	19
 pavonia	plants,trees	19
@@ -3400,7 +3282,6 @@ shortfin	fish	10
 sild	animals,fish	10
 soapwort	plants	10
 tamaraw	mammals	10
-tetter	vegetables	10
 thrip	animals,insects_and_spiders	10
 tinmouth	fish	10
 ugli	plants,trees,fruits	10
