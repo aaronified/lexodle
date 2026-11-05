@@ -256,9 +256,31 @@ rewarded. Bits add over boards: the gain of a step is the sum of its gains. In a
 race, a board opened later starts with every earlier guess applied; the review reports
 how many words were left then (its head start).
 
+\section{Other modes}\label{sec:modes}
+
+The same scores are used in the other single-word modes; only the set of groups or the
+set of guesses changes.
+
+\paragraph{Lockdown.} A green is locked in its place, so a guess must keep every locked
+letter where it is. The guesses a player could have made are only those words, and
+$H^*$ and $D^*$ are maxima over them, not over the whole list. Skill is thus measured
+against the best guess the player was allowed.
+
+\paragraph{Blind.} The feedback is two counts, the letters right and in place and the
+letters right elsewhere, with no tile colours. A group is the set of words that give the
+same pair of counts, and every score above is taken over those groups. Greens whose
+places are unknown are not counted as known greens when the phase of a guess is read.
+
+\paragraph{Themed and made lists.} The word list is smaller or drawn from a theme, with
+the chances $p_w$ set by the draw (for places, in proportion to how widely read each is);
+the scores are those of Section~\ref{sec:setting} under that law.
+
+A daily in any mode is scored under equal chances. Only classic games, a classic daily
+included, count towards a playstyle; the other modes are not read for habits.
+
 \section{Playstyles}\label{sec:styles}
 
-A player's style is read from their last 100 classic games, a daily being one. A guess
+A player's style is read from their last 100 classic games, a classic daily being one. A guess
 is counted in a phase by the words left $n$ and the greens known: \emph{early} for
 $n\ge64$, \emph{end} for $n\le16$ or three greens, otherwise the middle, which is not
 read. Each early guess is counted as the first that applies of:
@@ -342,7 +364,7 @@ the bound $\log_2 m$?
 The definitions are implemented in \texttt{app/lib/logic.dart} (gain, $H$, $D$, skill,
 luck, risk, the landscape of all guesses), \texttt{app/lib/playstyle.dart} (the
 behaviours and styles), \texttt{app/lib/review\_plots.dart} (the plot and the waterfall)
-and \texttt{app/lib/multi\_analysis.dart} (several boards), and tested in
+and \texttt{app/lib/multi\_analysis.dart} (several boards; lockdown and blind reuse the same functions with a narrowed guess set or count-based groups), and tested in
 \texttt{app/test}. The playstyle simulation is
 \texttt{docs/paper/experiments/styles}. The scripts of the earlier,
 pool-size version of the maths (\texttt{experiments/*.py}) are kept for the record;

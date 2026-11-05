@@ -5,9 +5,8 @@
 `main.tex` is a working paper on the maths behind the **skill**, **luck** and **risk**
 scores in Lexodle's reviews. `plain.tex` is the same in words and small sums. They are
 here so that you, or someone better at maths, can check, tighten and extend them. The
-PDFs in this folder were made before the bits maths and are out of date until the
-sources are compiled again (no LaTeX was available when they were rewritten;
-`python check_tex.py main.tex` checks the source statically).
+PDFs are built from the sources with `tectonic main.tex` and `tectonic plain.tex`;
+`python check_tex.py main.tex` checks a source statically when no LaTeX is installed.
 
 ## What it contains
 
@@ -23,7 +22,8 @@ sources are compiled again (no LaTeX was available when they were rewritten;
   gain. A property of the guess, not of its outcome.
 - **Bits over a game**: gains add to the bits needed to find the word, `-log2 p(answer)`
   (`log2 N` for equal chances): bits gained = bits expected + luck.
-- The last try, several boards, the one plot of skill, risk and luck.
+- The last try, several boards, the one plot of skill, risk and luck, and how lockdown
+  and blind change the set of guesses or the groups.
 - **Playstyles**: five behaviours (gambler, maximiser, eliminator early; closer, prober
   at the end), habits, and six styles, with simulated players
   (`experiments/styles`: `node sim2.js [games]`).
