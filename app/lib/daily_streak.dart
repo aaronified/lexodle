@@ -32,6 +32,9 @@ class DailyStreak extends StatelessWidget {
     final lit = c.tertiary;
     final unlit = c.outlineVariant;
     final solvedToday = (log[today] ?? dailyMissed) >= dailySolved;
+    // the themed wordle and the mastermind have no daily, so no streak: the
+    // card stays, greyed out
+    final noDaily = !mode.hasDaily;
 
     Widget flames(String date, int tier) {
       final on = tier >= dailySolved;
@@ -121,7 +124,7 @@ class DailyStreak extends StatelessWidget {
 
     // the streak on top and the week under it, each across the full width, so
     // seven days fit on the narrowest phone
-    return Container(
+    final card = Container(
       key: const ValueKey('daily-streak'),
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
       decoration: BoxDecoration(
@@ -133,7 +136,9 @@ class DailyStreak extends StatelessWidget {
           Semantics(
             container: true,
             excludeSemantics: true,
-            label: '${mode.label} daily streak: $streak days, best $best',
+            label: noDaily
+                ? '${mode.label} has no daily'
+                : '${mode.label} daily streak: $streak days, best $best',
             child: Row(
               children: [
                 TablerIcon(
@@ -176,7 +181,7 @@ class DailyStreak extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'best $best',
+                      noDaily ? 'no daily' : 'best $best',
                       key: const ValueKey('streak-best'),
                       style: TextStyle(
                         fontSize: 11,
@@ -197,6 +202,13 @@ class DailyStreak extends StatelessWidget {
         ],
       ),
     );
+    return noDaily
+        ? Opacity(
+            key: const ValueKey('daily-streak-greyed'),
+            opacity: .38,
+            child: card,
+          )
+        : card;
   }
 }
 
