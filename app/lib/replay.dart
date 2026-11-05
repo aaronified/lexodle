@@ -9,6 +9,7 @@ import 'multi_analysis.dart';
 import 'multi_review.dart';
 import 'review.dart';
 import 'review_text.dart';
+import 'store.dart' show earnedFrom;
 import 'words.dart';
 
 /// Rebuilding a finished game from the history, which keeps only its facts: the
@@ -112,6 +113,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     blind: blind,
     lockdown: g.mode == GameMode.lockdown,
     luckless: g.largest,
+    earned: earnedFrom(g.earned),
   );
 }
 
@@ -140,6 +142,7 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
     weights: game.weights,
     kind: drawKindOf(g.draw, daily: g.daily),
     daily: g.daily.isNotEmpty,
+    earned: earnedFrom(g.earned),
   );
 }
 

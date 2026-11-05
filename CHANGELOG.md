@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- a game in the history shows the achievements it earned
+  A strip of their icons on its row, and the full list on its review page, under
+  "earned in this game", for classic, quartet and relay games alike. They are kept
+  with the game and in the backup. Games from before show none.
 - the draw row above the mode button follows the mode, and each mode keeps its own
   The words of a mode: curve, every word, or by frequency, kept for that mode.
   The themed wordle: curve or every place. The equations: nothing to choose, and

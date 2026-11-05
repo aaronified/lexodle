@@ -416,6 +416,49 @@ void main() {
     expect(find.byType(ReviewPage), findsNothing);
   });
 
+  testWidgets('a game shows what it earned, on its row and on its page', (
+    tester,
+  ) async {
+    await load(tester);
+    final h = History();
+    final a = pool[10];
+    final g = addGame(h, at: ms(24), guesses: [pool[1], pool[2], a], won: true);
+    final plain = addGame(h, at: ms(23), guesses: [pool[3], a], won: true);
+    h.setEarned(g.id, ['wins:0', 'quick:1']);
+    await show(tester, h);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(seconds: 1)),
+    );
+    await tester.pump();
+    // a strip of medals on the game that earned, none on the one that did not
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey('game-${g.id}')),
+        matching: find.byKey(const ValueKey('earned-strip')),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey('game-${plain.id}')),
+        matching: find.byKey(const ValueKey('earned-strip')),
+      ),
+      findsNothing,
+    );
+    // its page lists them
+    await tester.tapAt(
+      tester.getTopLeft(find.byKey(ValueKey('game-${g.id}'))) +
+          const Offset(80, 20),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(ReviewPage), findsOneWidget);
+    expect(find.text('2 earned in this game'), findsOneWidget);
+    expect(
+      tester.widget<ReviewPage>(find.byType(ReviewPage)).record.earned,
+      hasLength(2),
+    );
+  });
+
   testWidgets('a game opens its review, rebuilt from its guesses', (
     tester,
   ) async {

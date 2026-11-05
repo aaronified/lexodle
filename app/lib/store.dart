@@ -1709,6 +1709,16 @@ const collectors = <Achievement>[
   ),
 ];
 
+/// The achievement levels a game row kept (`id:level`), as achievements: one
+/// that is no longer there is left out.
+List<Achievement> earnedFrom(List<String> kept) => [
+  for (final k in kept)
+    if (k.split(':') case [final id, final level])
+      if (achievementById(id) case final a?)
+        if (int.tryParse(level) case final i? when i >= 0 && i < a.count)
+          a.atLevel(i),
+];
+
 /// Every achievement there is, and the collectors.
 final allAchievements = <Achievement>[...achievements, ...collectors];
 
@@ -2814,8 +2824,8 @@ class AppState extends ChangeNotifier {
   /// Tells the screens to redraw (the clock they show a date from changed).
   void refresh() => notifyListeners();
 
-  /// Saves a finished game and its guesses to the [history].
-  void recordHistory({
+  /// Saves a finished game and its guesses to the [history]; returns its id.
+  int recordHistory({
     required String lang,
     required GameMode mode,
     required int length,
@@ -2834,7 +2844,7 @@ class AppState extends ChangeNotifier {
       'recorded: ${mode.name}, $length letters, $tries tries, '
           '${won ? 'won' : 'lost'}${daily.isEmpty ? '' : ', daily'}',
     );
-    history.add(
+    final row = history.add(
       at: (now ?? DateTime.now()).toUtc().millisecondsSinceEpoch,
       lang: lang,
       mode: mode,
@@ -2850,6 +2860,18 @@ class AppState extends ChangeNotifier {
     );
     saveHistory();
     notifyListeners();
+    return row.id;
+  }
+
+  /// Keeps with the game [gameId] the achievement levels it [earned] (they are
+  /// known after the game was saved), for the history to show.
+  void markEarned(int gameId, List<Achievement> earned) {
+    if (earned.isEmpty) return;
+    final ids = [for (final a in earned) '${a.id}:${a.level}'];
+    if (history.setEarned(gameId, ids)) {
+      saveHistory();
+      notifyListeners();
+    }
   }
 
   /// Where the history is kept: a list of the months that have games, and one

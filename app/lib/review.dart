@@ -6,11 +6,13 @@ import 'package:flutter/services.dart';
 
 import 'analysis_worker.dart';
 import 'behaviour_popup.dart';
+import 'earned_rows.dart';
 import 'history.dart';
 import 'logic.dart';
 import 'playstyle.dart';
 import 'review_maths.dart';
 import 'review_plots.dart';
+import 'store.dart' show Achievement;
 import 'review_text.dart';
 import 'ui.dart';
 import 'wiki_links.dart';
@@ -41,7 +43,12 @@ class GameRecord {
     this.blind = false,
     this.lockdown = false,
     this.luckless = false,
+    this.earned = const [],
   });
+
+  /// What the game earned, when it is a game from the history (the end panel
+  /// of a game just played lists it itself).
+  final List<Achievement> earned;
 
   /// Whether the replies had no chance in them (the mastermind that kept the
   /// largest pool): there is no luck to show.
@@ -274,6 +281,7 @@ class _ReviewPageState extends State<ReviewPage> {
                         const Caption('the whole game'),
                         const SizedBox(height: 6),
                         _pills(c),
+                        EarnedInGame(r.earned),
                         const SizedBox(height: 16),
                         _board(c),
                         const SizedBox(height: 18),

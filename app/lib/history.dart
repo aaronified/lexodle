@@ -30,7 +30,13 @@ class GameRow {
     this.version = metricsVersion,
     this.draw = Draw.frequency,
     this.largest = false,
+    this.earned = const [],
   });
+
+  /// The achievement levels this game earned, each `id:level` (the index of
+  /// the level, from 0): shown with the game in the history. A game from
+  /// before they were kept has none.
+  final List<String> earned;
 
   /// A mastermind game that always kept the largest pool: its replies had no
   /// chance in them, so its guesses have no luck.
@@ -89,6 +95,25 @@ class GameRow {
     version: v,
     draw: draw,
     largest: largest,
+    earned: earned,
+  );
+
+  /// This row with [earned] as what it earned.
+  GameRow withEarned(List<String> earned) => GameRow(
+    id: id,
+    at: at,
+    lang: lang,
+    mode: mode,
+    length: length,
+    tries: tries,
+    pool: pool,
+    answers: answers,
+    won: won,
+    daily: daily,
+    version: version,
+    draw: draw,
+    largest: largest,
+    earned: earned,
   );
 
   /// The row as saved: a list, in this order, which is a good deal smaller than
@@ -106,8 +131,10 @@ class GameRow {
     daily,
     version,
     draw.code,
-    // (a thirteenth for the mastermind that kept the largest pool)
-    if (largest) 1,
+    // (a thirteenth for the mastermind that kept the largest pool, and a
+    // fourteenth for what the game earned: the thirteenth is then 0 or 1)
+    if (largest || earned.isNotEmpty) largest ? 1 : 0,
+    if (earned.isNotEmpty) earned,
   ];
 
   /// Reads a row as [toRow] wrote it, or the map of named fields an earlier
@@ -116,7 +143,7 @@ class GameRow {
     if (raw is Map) return fromJson(raw.cast<String, dynamic>());
     // (twelve, or thirteen with the largest-pool flag; eleven before the law the
     // answer was drawn under was kept)
-    if (raw is! List || raw.length < 11 || raw.length > 13) {
+    if (raw is! List || raw.length < 11 || raw.length > 14) {
       throw const FormatException('game');
     }
     return fromJson({
@@ -136,7 +163,8 @@ class GameRow {
       'daily': raw[9],
       'v': raw[10],
       if (raw.length >= 12) 'draw': raw[11],
-      if (raw.length == 13) 'lg': raw[12],
+      if (raw.length >= 13) 'lg': raw[12],
+      if (raw.length == 14) 'earned': raw[13],
     });
   }
 
@@ -154,7 +182,21 @@ class GameRow {
     'v': version,
     'draw': draw.code,
     if (largest) 'lg': 1,
+    if (earned.isNotEmpty) 'earned': earned,
   };
+
+  /// The earned levels of a saved row: a list of `id:level`, kept as it is when
+  /// it is one, a [FormatException] for anything else.
+  static List<String> _earnedOf(Object? e) {
+    if (e == null) return const [];
+    if (e is! List || e.length > 60) throw const FormatException('earned');
+    for (final x in e) {
+      if (x is! String || !RegExp(r'^[a-z0-9_]{1,40}:[0-3]$').hasMatch(x)) {
+        throw const FormatException('earned');
+      }
+    }
+    return [for (final x in e) x as String];
+  }
 
   static GameRow fromJson(Map<String, dynamic> j) {
     final mode = _int(j['mode'], 0, GameMode.values.length - 1);
@@ -196,6 +238,7 @@ class GameRow {
           ? Draw.equal
           : Draw.frequency,
       largest: j['lg'] == 1,
+      earned: _earnedOf(j['earned']),
     );
   }
 }
@@ -482,6 +525,19 @@ class History {
     _byGame[row.id] = mine;
     if (games.length > historyCap) _trim();
     return row;
+  }
+
+  /// Records what the game [id] earned, once the achievements have been worked
+  /// out (after the game was saved): false when there is no such game.
+  bool setEarned(int id, List<String> earned) {
+    for (var i = games.length - 1; i >= 0; i--) {
+      if (games[i].id == id) {
+        games[i] = games[i].withEarned(earned);
+        dirtyMonths.add(games[i].month);
+        return true;
+      }
+    }
+    return false;
   }
 
   /// Drops the oldest games (and their guesses) down to [historyCap].

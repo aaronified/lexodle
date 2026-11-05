@@ -418,7 +418,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       );
       // a step's skill and luck are the means over the boards it was made for;
       // a quartet or relay race has no daring or pool sizes of its own
-      appState.recordHistory(
+      final savedId = appState.recordHistory(
         lang: widget.bank.language.code,
         mode: mode,
         length: length,
@@ -465,6 +465,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
           dailyStreak: streak,
         ),
       );
+      // what it earned stays with the game in the history
+      appState.markEarned(savedId, unlocked);
       if (unlocked.isNotEmpty) {
         // after the knocks of the win, or the buzz of the loss, are over
         Haptics.fireLater(Haptic.reward, const Duration(milliseconds: 600));
