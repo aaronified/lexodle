@@ -151,7 +151,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // the history table lists what was earned, how many levels, first and latest
-    expect(find.text('history'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('achievement-history')));
+    await tester.pumpAndSettle();
     expect(find.text('2026-10-01'), findsOneWidget);
     expect(find.text('2026-10-09'), findsWidgets);
   });
@@ -191,6 +192,8 @@ void main() {
     );
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('achievement-history')));
+    await tester.pumpAndSettle();
     expect(find.text('nothing earned yet.'), findsOneWidget);
   });
 
