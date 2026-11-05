@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+- the achievements history is a page of its own
+  A history button at the top right of the achievements screen opens it.
 - a full set achievement, with four levels
   Level 1 is earned once the first level of every other achievement has been
   earned (in any language), level 2 once the second has, and so on to level 4.

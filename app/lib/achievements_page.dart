@@ -167,9 +167,31 @@ class _AchievementsPageState extends State<AchievementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('achievements')),
+      appBar: AppBar(
+        title: const Text('achievements'),
+        actions: [
+          TextButton.icon(
+            key: const ValueKey('achievement-history'),
+            icon: TablerIcon(
+              'clock',
+              size: 18,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            label: const Text('history'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => _HistoryPage(
+                  () => _lang == allLanguages
+                      ? _merged(appState.playedLanguages.toList()..sort())
+                      : appState.achOf(_lang),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
@@ -258,10 +280,6 @@ class _AchievementsPageState extends State<AchievementsPage> {
                       showBar: !(all && !a.global),
                     ),
                   ],
-                  const SizedBox(height: 28),
-                  const Caption('history'),
-                  const SizedBox(height: 10),
-                  _History(c, mine),
                 ],
               );
             },
@@ -728,6 +746,32 @@ class _Bar extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The page of the history button: what was earned, and when.
+class _HistoryPage extends StatelessWidget {
+  const _HistoryPage(this.states);
+  final Map<String, AchState> Function() states;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(title: const Text('history')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: ListenableBuilder(
+            listenable: appState,
+            builder: (context, _) => ListView(
+              padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
+              children: [_History(c, states())],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
