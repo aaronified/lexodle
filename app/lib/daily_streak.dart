@@ -35,8 +35,14 @@ class DailyStreak extends StatelessWidget {
     // the themed wordle and the mastermind have no daily, so no streak: the
     // card stays, greyed out
     final noDaily = !mode.hasDaily;
+    // today's daily was played and lost: the streak is over, and says so
+    final lostToday = !noDaily && log[today] == dailyMissed;
 
     Widget flames(String date, int tier) {
+      // a daily played and lost: the campfire out, in red, with a cross
+      if (tier == dailyMissed) {
+        return LostFire(key: ValueKey('lost-$date'), size: 22);
+      }
       final on = tier >= dailySolved;
       final color = on ? lit : unlit;
       if (tier < dailyDouble) {
@@ -141,13 +147,16 @@ class DailyStreak extends StatelessWidget {
                 : '${mode.label} daily streak: $streak days, best $best',
             child: Row(
               children: [
-                TablerIcon(
-                  // the icon of the highest streak level the streak has reached
-                  _streakIcon(mode, streak),
-                  key: const ValueKey('streak-flame'),
-                  size: 34,
-                  color: solvedToday ? lit : unlit,
-                ),
+                lostToday
+                    ? const LostFire(key: ValueKey('streak-lost'), size: 34)
+                    : TablerIcon(
+                        // the icon of the highest streak level the streak has
+                        // reached
+                        _streakIcon(mode, streak),
+                        key: const ValueKey('streak-flame'),
+                        size: 34,
+                        color: solvedToday ? lit : unlit,
+                      ),
                 const SizedBox(width: 6),
                 Text(
                   '$streak',
@@ -232,4 +241,66 @@ String _streakIcon(GameMode mode, int streak) {
     if (streak >= a.levels[i].target) reached = i + 1;
   }
   return reached == 0 ? 'flame' : a.atLevel(reached - 1).icon;
+}
+
+/// A campfire gone out, in the error red, with a cross on it: a daily that was
+/// played and lost, in place of the flame.
+class LostFire extends StatelessWidget {
+  const LostFire({super.key, required this.size});
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final badge = size * .5;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          TablerIcon('campfire', size: size, color: c.error),
+          // a solid red disc with a cross cut out of it, at the corner
+          Positioned(
+            right: -badge * .15,
+            bottom: -badge * .15,
+            child: Container(
+              width: badge,
+              height: badge,
+              decoration: BoxDecoration(
+                color: c.error,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: c.surface,
+                  width: size > 30 ? 2 : 1.5,
+                ),
+              ),
+              child: CustomPaint(painter: _Cross(c.onError)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Two strokes, a cross, drawn in the disc of [LostFire].
+class _Cross extends CustomPainter {
+  const _Cross(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..strokeWidth = size.shortestSide * .16
+      ..strokeCap = StrokeCap.round;
+    final a = size.shortestSide * .28;
+    final w = size.width, h = size.height;
+    canvas.drawLine(Offset(a, a), Offset(w - a, h - a), p);
+    canvas.drawLine(Offset(w - a, a), Offset(a, h - a), p);
+  }
+
+  @override
+  bool shouldRepaint(_Cross old) => old.color != color;
 }

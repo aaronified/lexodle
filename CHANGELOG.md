@@ -7,6 +7,10 @@ it to the version.
 
 ## Unreleased
 
+- a lost daily is a red campfire with a cross
+  In place of the flame: on the day of the week where the daily was played and
+  lost, and as the big icon of the streak card when today's was lost. A day not
+  played keeps its unlit flame.
 - the streak card is greyed out where there is no daily
   The themed wordle and the mastermind have no daily and so no streak: the card
   stays on the home page, greyed out, and says no daily.
