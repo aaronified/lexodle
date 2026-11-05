@@ -52,8 +52,22 @@ each word is. Each mode keeps its own choice. The themed wordle has the curve an
 equations have nothing to choose (every equation is as likely as the next); in the mastermind the row is
 the pool of a reply, random or the largest. The daily always draws on the curve (see [Daily word](Daily-word)). Languages differ in size (English has about 12,000 words of five letters, Indonesian about 2,500); the game modes menu shows the real count.
 
+## Themed word lists
+
+The themed wordle's lists (living world, food, minerals and elements, anatomy, math; mythology and
+names follow) are in `app/assets/themes`. Each theme has subthemes: the answer is drawn from the
+one chosen and a guess may be any word of the theme. They are common English words only, made by
+`app/tools/build_themes.py` from WordNet and the English Wiktionary's topic categories, kept when
+the word is in the English list above (its count is the word's weight), and reviewed by hand: a
+word is left out when, in its common meaning, it does not belong (see `tools/themes/deny.txt`).
+To make them again: `python3 tools/wiktionary_topics.py` (one 1.7 GB streamed download), then
+`python3 tools/build_themes.py`.
+
 ## Credits and licences
 
+- Themed lists: [WordNet 3.0](https://wordnet.princeton.edu/) (Princeton University, its licence is
+  in `assets/themes/NOTICE.md`) and the topic categories of the English
+  [Wiktionary](https://en.wiktionary.org/) (CC BY-SA 4.0).
 - Word data: [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0), filtered with Hunspell
   dictionaries from [wooorm/dictionaries](https://github.com/wooorm/dictionaries) and
   [LibreOffice](https://github.com/LibreOffice/dictionaries)

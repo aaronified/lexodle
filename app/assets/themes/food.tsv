@@ -24,9 +24,7 @@ honey		23442
 juice		22908
 punch	drinks	20892
 sauce	spices_and_herbs,dishes	19952
-beef	meat_seafood_and_dairy	19498
 bitter	drinks	16218
-chips	vegetables	16218
 dish	dishes	16218
 corn	vegetables,grains_and_bread	15488
 liver	meat_seafood_and_dairy	15135
@@ -66,7 +64,6 @@ mint		8317
 danish	grains_and_bread,sweets_and_desserts	8128
 peanut		7943
 snack	dishes	7943
-cocktail	drinks	7762
 doubles	dishes	7762
 onion	vegetables	7762
 coconut	fruits	7585
@@ -81,21 +78,17 @@ pumpkin	fruits,vegetables	6760
 ramp	vegetables	6760
 sage	spices_and_herbs	6760
 vodka	drinks	6760
-fries	vegetables	6456
 picnic	meat_seafood_and_dairy,dishes	6309
 sausage	meat_seafood_and_dairy	6309
 turnover	sweets_and_desserts,dishes	6025
 herb	spices_and_herbs	5888
-napoleon	fruits,grains_and_bread,sweets_and_desserts,drinks	5888
 peach	fruits	5888
 crab	meat_seafood_and_dairy	5754
 syrup		5754
 cereal	grains_and_bread	5495
-cola	drinks	5495
 supper	dishes	5495
 popcorn	grains_and_bread	5370
 mayo	spices_and_herbs,dishes	5248
-roma	vegetables	5128
 grape	fruits	5011
 beverage	drinks	4897
 mustard	spices_and_herbs	4897
@@ -115,11 +108,9 @@ yogurt	meat_seafood_and_dairy	4265
 barbecue	dishes	4168
 carrot	vegetables	4168
 lotus	vegetables	4168
-sweets		4168
 pigeon	meat_seafood_and_dairy	4073
 pudding	sweets_and_desserts,dishes	4073
 bourbon	drinks	3981
-poke	vegetables,meat_seafood_and_dairy	3981
 banquet	dishes	3890
 baba	grains_and_bread,sweets_and_desserts	3801
 citrus	fruits	3801
@@ -128,7 +119,6 @@ lettuce	vegetables	3630
 mango	fruits	3630
 walnut		3630
 cabbage	vegetables	3548
-mash	vegetables	3548
 plum	fruits	3548
 buffet	dishes	3467
 hazel		3467
@@ -164,7 +154,6 @@ avocado	fruits	2818
 biscuit	grains_and_bread,sweets_and_desserts	2818
 cracker	grains_and_bread	2818
 divinity		2818
-stout	drinks	2818
 lavender		2754
 lemonade	drinks	2754
 mead	drinks,spices_and_herbs	2691
@@ -186,12 +175,10 @@ cupcake	grains_and_bread,sweets_and_desserts	2238
 muffin	grains_and_bread	2238
 pancake	sweets_and_desserts	2238
 ramen		2238
-jojo	vegetables	2187
 maize	vegetables,grains_and_bread	2187
 fudge	sweets_and_desserts	2137
 whisky	drinks	2132
 celery	vegetables	2089
-grinder	dishes	2089
 melon	fruits	2089
 relish	spices_and_herbs	2089
 donut	sweets_and_desserts	2041
@@ -212,7 +199,6 @@ bologna	meat_seafood_and_dairy	1778
 hawthorn	fruits	1698
 clam	meat_seafood_and_dairy	1659
 seaweed	meat_seafood_and_dairy	1659
-brownie	grains_and_bread,sweets_and_desserts	1621
 saffron	spices_and_herbs	1621
 slider	dishes	1621
 bubbly	drinks	1584
@@ -228,8 +214,6 @@ wiener	meat_seafood_and_dairy	1479
 lager	drinks	1445
 nugget		1445
 rundown		1445
-caviar	meat_seafood_and_dairy	1412
-grunt	sweets_and_desserts	1412
 lollipop	sweets_and_desserts	1412
 mulberry	fruits	1412
 chipotle	vegetables	1348
@@ -246,11 +230,8 @@ brie	meat_seafood_and_dairy	1202
 marge	spices_and_herbs	1202
 mulligan	dishes	1202
 veal	meat_seafood_and_dairy	1202
-shank	meat_seafood_and_dairy	1174
 thyme	spices_and_herbs	1174
-tortilla	vegetables,grains_and_bread,sweets_and_desserts	1148
 beet	vegetables	1122
-quark	meat_seafood_and_dairy	1122
 swede	vegetables	1122
 nutmeg	spices_and_herbs	1096
 kebab	dishes	1071
@@ -267,7 +248,6 @@ roux		1023
 yoghurt	meat_seafood_and_dairy	1023
 hummus	spices_and_herbs	1000
 molasses	drinks,spices_and_herbs	1000
-pita	grains_and_bread	1000
 snapper	vegetables,meat_seafood_and_dairy	1000
 slush	drinks	977
 chilli	vegetables	974
@@ -285,7 +265,6 @@ prune	fruits	912
 zucchini	fruits,vegetables	912
 cayenne	vegetables	891
 popper		891
-saba	fruits,spices_and_herbs	891
 damper	grains_and_bread	870
 takeout		870
 taro	vegetables	870
@@ -295,19 +274,15 @@ nachos		851
 pecan		851
 trifle	sweets_and_desserts	851
 cognac	drinks	831
-stinger	drinks	831
 trotter	meat_seafood_and_dairy	831
 woodruff		794
 cilantro	spices_and_herbs	776
 toffee	sweets_and_desserts	776
-venison	meat_seafood_and_dairy	776
 gyro	dishes	758
 pasty	grains_and_bread,sweets_and_desserts	758
 pesto	spices_and_herbs,dishes	758
 salami	meat_seafood_and_dairy	758
 screech	drinks	758
-wort	grains_and_bread,drinks	758
-spelt	grains_and_bread	756
 brisket	meat_seafood_and_dairy	741
 crepe	sweets_and_desserts	741
 kamikaze	drinks	741
@@ -325,11 +300,9 @@ crayfish	meat_seafood_and_dairy	707
 hock	meat_seafood_and_dairy,drinks	691
 kimchi		691
 meatloaf	grains_and_bread,dishes	691
-tuba	drinks	691
 turnip	vegetables	691
 sorghum	grains_and_bread	676
 baguette	grains_and_bread	660
-cobbler	grains_and_bread,sweets_and_desserts,drinks	660
 jello		660
 puri	grains_and_bread	660
 lasagna	grains_and_bread,dishes	659
@@ -345,11 +318,9 @@ meringue	sweets_and_desserts	616
 chowder	dishes	602
 gelato	sweets_and_desserts	602
 hazelnut		602
-pippin	fruits	602
 radish	vegetables	602
 draught	drinks	601
 chorizo	meat_seafood_and_dairy	588
-miso	spices_and_herbs	588
 vino	drinks	588
 wasabi	vegetables,spices_and_herbs	588
 beetroot	vegetables	575
@@ -368,19 +339,16 @@ chard	vegetables	512
 jeon		512
 slop		512
 taffy	sweets_and_desserts	512
-tripe	meat_seafood_and_dairy	512
 bento		501
 cuppa	drinks	501
 gumbo	dishes	501
 marquise	sweets_and_desserts	501
 rusk	grains_and_bread	501
-absinthe	drinks	489
 mimosa	drinks	489
 munchkin	grains_and_bread,sweets_and_desserts	489
 seltzer	drinks	489
 spud	vegetables	489
 farina		478
-grist	grains_and_bread	478
 panini	dishes	478
 ricotta	meat_seafood_and_dairy	478
 dumpling	grains_and_bread,sweets_and_desserts	467
@@ -394,7 +362,6 @@ homebrew	drinks	457
 lentil	vegetables	457
 milt	meat_seafood_and_dairy	457
 sardine	meat_seafood_and_dairy	457
-ambrosia	sweets_and_desserts	446
 grog	drinks	446
 burnet		436
 choc		436
@@ -426,7 +393,6 @@ naan	grains_and_bread	380
 nibbles		380
 sorrel	vegetables	380
 brioche	grains_and_bread	371
-calamari	meat_seafood_and_dairy	371
 fondant	sweets_and_desserts	371
 nougat	sweets_and_desserts	371
 toma	meat_seafood_and_dairy	371
@@ -473,9 +439,7 @@ spritz	drinks	288
 tiramisu	sweets_and_desserts	288
 bisque	dishes	281
 citron	fruits	281
-kirsch	fruits,drinks	281
 kombucha	drinks	281
-russet	fruits,vegetables	281
 tannin	drinks	281
 filo	grains_and_bread,sweets_and_desserts	275
 gruel	dishes	275
@@ -514,11 +478,9 @@ sumac		218
 omelet	dishes	213
 salo		213
 satsuma	fruits	213
-tare	spices_and_herbs	213
 vada		213
 capp	drinks	208
 dosa		208
-kipper	meat_seafood_and_dairy	208
 parm		208
 soju	drinks	208
 strudel	grains_and_bread,sweets_and_desserts	208
@@ -530,7 +492,6 @@ scouse	dishes	204
 tahini	spices_and_herbs	204
 shawarma		199
 acha	grains_and_bread	194
-arak	drinks	194
 blowfish	meat_seafood_and_dairy	194
 daiquiri	drinks	194
 nigella		194
@@ -556,7 +517,6 @@ lychee	fruits	177
 ribeye	meat_seafood_and_dairy	177
 bulla	grains_and_bread,sweets_and_desserts	173
 muesli		173
-purl	drinks	173
 robusta	drinks	173
 satay		173
 schnapps	drinks	173
@@ -571,13 +531,11 @@ basmati	grains_and_bread	162
 chive	vegetables	162
 haver	grains_and_bread	162
 julep	drinks	162
-mastic	drinks	162
 wurst	meat_seafood_and_dairy	162
 calzone		158
 gimlet	drinks	158
 iftar	dishes	158
 matzo	grains_and_bread	158
-mezcal	drinks	158
 pimento	vegetables	158
 schmaltz		158
 solanum	vegetables	158
@@ -585,7 +543,6 @@ tempeh		158
 gazpacho	dishes	154
 goulash	dishes	154
 nosh		154
-sweeting	fruits	154
 appy	fruits	151
 boeuf	meat_seafood_and_dairy	151
 churro	grains_and_bread,sweets_and_desserts	151
@@ -600,11 +557,9 @@ pils	drinks	147
 scampi	meat_seafood_and_dairy,dishes	147
 tansy		147
 chaya	vegetables	144
-gari		144
 pone	grains_and_bread	144
 bonbon	sweets_and_desserts	141
 calvados	drinks	141
-copra		141
 edamame		141
 sambal		141
 adobo	dishes	138
@@ -623,9 +578,7 @@ frap	drinks	131
 gose	drinks	131
 hoagie	dishes	131
 ocha	drinks	131
-tapa		131
 aloo	vegetables	128
-breve	drinks	128
 gherkin	vegetables,spices_and_herbs	128
 macaron	grains_and_bread,sweets_and_desserts	128
 mikan	fruits	128
@@ -656,7 +609,6 @@ daikon	vegetables	112
 kugel		112
 macaroon	sweets_and_desserts	112
 piti	dishes	112
-pomodoro	vegetables	112
 potlatch	dishes	112
 scallion	vegetables	112
 camomile	drinks	109
@@ -760,7 +712,6 @@ nigiri		74
 tarka		74
 asado		72
 catsup	spices_and_herbs	72
-gobo	vegetables	72
 kumquat	fruits	72
 onigiri		72
 ragout	dishes	72
@@ -792,7 +743,6 @@ takoyaki		66
 tapenade	spices_and_herbs	66
 ancho	vegetables	64
 biltong	meat_seafood_and_dairy	64
-bluenose	vegetables	64
 brookie	sweets_and_desserts	64
 helles	drinks	64
 poblano	vegetables	64
@@ -814,7 +764,6 @@ rambutan	fruits	58
 tostada	sweets_and_desserts,dishes	58
 bael	fruits	57
 estragon	spices_and_herbs	57
-hardtack	grains_and_bread	57
 scrapple	dishes	57
 injera	grains_and_bread	56
 mooncake	grains_and_bread,sweets_and_desserts	56
@@ -850,17 +799,13 @@ canape		48
 fusilli	grains_and_bread	48
 kuai		48
 phyllo	grains_and_bread,sweets_and_desserts	48
-ponzu	spices_and_herbs	48
 bindweed	vegetables	47
 cheeze	meat_seafood_and_dairy	47
-fatback	meat_seafood_and_dairy	47
 kofta		47
 zarzuela	dishes	47
 gilo	vegetables	46
 jalebi		46
 jicama	vegetables	46
-limeade	drinks	46
-noisette	meat_seafood_and_dairy	46
 nopal	vegetables	46
 panfish	meat_seafood_and_dairy	46
 raclette	meat_seafood_and_dairy	46
@@ -972,7 +917,6 @@ studen		30
 suya	meat_seafood_and_dairy	30
 taquito		30
 teacake	grains_and_bread,sweets_and_desserts,drinks	30
-bloater	meat_seafood_and_dairy	29
 funfetti	grains_and_bread,sweets_and_desserts	29
 kailan	vegetables	29
 methi		29
@@ -997,7 +941,6 @@ alcopop	drinks	27
 besan		27
 cassata	grains_and_bread,sweets_and_desserts	27
 farfalle	grains_and_bread	27
-latke	vegetables,sweets_and_desserts	27
 reinette	fruits	27
 donburi		26
 fougasse	grains_and_bread	26
@@ -1028,7 +971,6 @@ cotija	meat_seafood_and_dairy	24
 piccata		24
 pitaya	fruits	24
 tofurkey		24
-umeboshi	fruits	24
 cyder	drinks	23
 fishball	meat_seafood_and_dairy	23
 fraise	fruits	23
@@ -1053,7 +995,6 @@ stodge		22
 tangelo	fruits	22
 teosinte	grains_and_bread	22
 tinnie	drinks	22
-zaatar	spices_and_herbs	22
 bagoong	spices_and_herbs	21
 cruller	sweets_and_desserts	21
 escalope		21
@@ -1070,7 +1011,6 @@ shashlik		21
 vongole	spices_and_herbs	21
 artos	grains_and_bread	20
 beigel	grains_and_bread	20
-blackeye	drinks	20
 chapatti	grains_and_bread	20
 cuke	vegetables	20
 donair		20
@@ -1176,7 +1116,6 @@ peaberry	drinks	15
 piquette	drinks	15
 pitha		15
 rabri	sweets_and_desserts	15
-salep	vegetables	15
 stingo	drinks	15
 stuffie	meat_seafood_and_dairy	15
 burgoo	dishes	14
@@ -1226,12 +1165,9 @@ bottarga		12
 bouilli		12
 boxty		12
 feijoa	fruits	12
-freezie	fruits,sweets_and_desserts	12
 frogurt	sweets_and_desserts	12
 gluhwein	drinks	12
-jenever	drinks	12
 joconde	grains_and_bread,sweets_and_desserts	12
-machaca	meat_seafood_and_dairy	12
 nihari		12
 poteen	drinks	12
 ramsons	vegetables	12
