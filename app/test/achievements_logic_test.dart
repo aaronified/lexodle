@@ -405,9 +405,32 @@ void main() {
       expect(st.rounds, 1);
       expect(st.times, 4, reason: 'the medal stays');
       expect(st.hits[3], 1);
-      expect(st.hits[0], 2, reason: 'a win, and the first of the next round');
+      expect(st.hits[0], 1, reason: 'the first win is earned once');
       expect(st.value, 20);
-      expect(earned.where((id) => id == 'wins').length, 5);
+      expect(earned.where((id) => id == 'wins').length, 4);
+    });
+
+    test('a level other than the first win is earned again each round', () {
+      final states = <String, AchState>{};
+      final earned = <String>[];
+      for (var i = 0; i < 520; i++) {
+        earned.addAll([
+          for (final a in advanceAchievements(states, game(), 'd$i')) a.id,
+        ]);
+      }
+      // 1 (once), 25, 100, 500; then 1 again in round two is not re-earned,
+      // but 25 would be: here only 20 wins into round two
+      expect(earned.where((id) => id == 'wins').length, 4);
+      expect(byId('wins').firstOnce, isTrue);
+      expect(byId('dailies').firstOnce, isFalse);
+    });
+
+    test('mastered, completed and styles worn do not cycle', () {
+      for (final a in achievements) {
+        if (const {'completed', 'mastered', 'stylesWorn'}.contains(a.metric)) {
+          expect(a.cycles, isFalse, reason: a.id);
+        }
+      }
     });
 
     test('the languages count again from those already won', () {
@@ -889,7 +912,9 @@ void main() {
       final day3 = [for (final m in dailyModes) dailyOf(m, '2026-11-03')];
       final (st, earned) = play([...day1, ...day1, ...day2, ...day3]);
       expect(st['daily_full_days']!.value, 2, reason: 'days 1 and 3');
-      expect(st['daily_day']!.value, dailyModes.length);
+      // it counts up and starts again after its top level
+      final d = st['daily_day']!;
+      expect(d.times > 0 || d.rounds > 0, isTrue);
       expect(earned.expand((e) => e), contains('daily_full_days'));
     });
 

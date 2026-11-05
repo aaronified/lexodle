@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- achievements can be earned again
+  Every level that counts up (and the days with every daily, the modes won in) starts
+  again after its top level, and a repeat of a best-of level or a streak run is shown
+  as an unlock like the first. The first win of each mode is earned once. Language
+  mastery, the completionist and the styles worn stay once.
 - a game in the history shows the achievements it earned
   A strip of their icons on its row, and the full list on its review page, under
   "earned in this game", for classic, quartet and relay games alike. They are kept
