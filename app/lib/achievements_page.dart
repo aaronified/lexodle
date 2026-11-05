@@ -120,6 +120,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
           'langs',
           'mastered',
           'completed',
+          'fullSet',
           'dailies',
           'doubles',
           'modesWon',

@@ -326,6 +326,39 @@ void main() {
       },
     );
 
+    test(
+      'the full set earns a level once that level of all is earned',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final s = AppState();
+        await s.load();
+        void upTo(int n, {String? except}) {
+          for (final a in achievements.where((a) => a.metric != 'fullSet')) {
+            if (a.id == except) continue;
+            s.achOf('en')[a.id] = AchState(
+              times: n,
+              dates: List.filled(n, '2026-10-01', growable: true),
+            );
+          }
+        }
+
+        s.recordGame(won('en'));
+        expect(s.achOf('en')['full_set']!.times, 0);
+        // one short of the first level
+        upTo(1, except: 'wins');
+        s.achOf('en')['wins'] = AchState();
+        expect(s.fullSetTiers(), 0);
+        upTo(2);
+        var earned = s.recordGame(won('en'));
+        expect(earned.map((a) => a.id), contains('full_set'));
+        expect(s.achOf('en')['full_set']!.times, 2, reason: 'levels 1 and 2');
+        // not earned again, and it does not count itself
+        earned = s.recordGame(won('en'));
+        expect(earned.map((a) => a.id), isNot(contains('full_set')));
+        expect(s.fullSetTiers(), 2);
+      },
+    );
+
     test('the tower of babel waits for every language', () async {
       SharedPreferences.setMockInitialValues({});
       final s = AppState();

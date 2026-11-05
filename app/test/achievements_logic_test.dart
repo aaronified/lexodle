@@ -183,7 +183,12 @@ void main() {
         expect(
           metrics.containsKey(a.metric) ||
               learnMetrics.containsKey(a.metric) ||
-              const {'langs', 'mastered', 'completed'}.contains(a.metric),
+              const {
+                'langs',
+                'mastered',
+                'completed',
+                'fullSet',
+              }.contains(a.metric),
           isTrue,
           reason: '${a.id}: ${a.metric}',
         );
