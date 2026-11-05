@@ -703,10 +703,15 @@ void main() {
           ['s', 'm', 't', 'w', 't', 'f', 's'],
         );
         // one flame a day, two on a double fire (the 20th and the 24th)
-        for (final d in ['18', '19', '21', '22', '23']) {
+        for (final d in ['18', '19', '21', '23']) {
           expect(find.byKey(ValueKey('flame-2026-10-$d-0')), findsOneWidget);
           expect(find.byKey(ValueKey('flame-2026-10-$d-1')), findsNothing);
         }
+        // the 22nd was played and lost: a red campfire with a cross, no flame
+        expect(find.byKey(const ValueKey('lost-2026-10-22')), findsOneWidget);
+        expect(find.byKey(const ValueKey('flame-2026-10-22-0')), findsNothing);
+        // a day not played has an unlit flame, not the cross
+        expect(find.byKey(const ValueKey('lost-2026-10-18')), findsNothing);
         for (final d in ['20', '24']) {
           expect(find.byKey(ValueKey('flame-2026-10-$d-0')), findsOneWidget);
           expect(find.byKey(ValueKey('flame-2026-10-$d-1')), findsOneWidget);
@@ -786,5 +791,31 @@ void main() {
         expect(find.byKey(const ValueKey('daily-streak')), findsOneWidget);
       }
     });
+
+    testWidgets(
+      'a daily lost today puts the red campfire in place of the flame',
+      (tester) async {
+        await appState.load();
+        appState.setup(lang: 'en', mode: GameMode.classic);
+        dailyClock = () => DateTime(2026, 10, 24, 9);
+        appState.dailyLog = {
+          '2026-10-23': dailySolved,
+          '2026-10-24': dailyMissed,
+        };
+        await show(tester);
+        expect(find.byKey(const ValueKey('streak-lost')), findsOneWidget);
+        expect(find.byKey(const ValueKey('streak-flame')), findsNothing);
+        expect(
+          tester.widget<Text>(find.byKey(const ValueKey('streak-count'))).data,
+          '0',
+        );
+        // and the flame is back once a daily is solved
+        appState.dailyLog = {'2026-10-24': dailySolved};
+        await tester.pumpWidget(const SizedBox());
+        await show(tester);
+        expect(find.byKey(const ValueKey('streak-flame')), findsOneWidget);
+        expect(find.byKey(const ValueKey('streak-lost')), findsNothing);
+      },
+    );
   });
 }
