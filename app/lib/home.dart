@@ -177,31 +177,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// How the answer is drawn, just above the play row: what it is in a few
-  /// words. A tap goes on to the next of the three; the longer sentence is a
-  /// toast.
+  /// words, for the mode in view, and where it is among the choices (a dot for
+  /// each). A tap goes on to the next; the longer sentence is a toast. Each mode
+  /// keeps its own choice, and a daily is not affected by it.
+  ///
+  /// - the words of every mode but the next three: the curve, every word, or by
+  ///   frequency;
+  /// - the places: the curve, or every place;
+  /// - the equations: every one is as likely as the next, so nothing to choose;
+  /// - the mastermind: no word is drawn, the pool of a reply is random or the
+  ///   largest.
   Widget _frequencyRow(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final draw = appState.draw;
-    void next() {
-      final d = Draw.values[(draw.index + 1) % Draw.values.length];
-      appState.setup(draw: d);
+    final mode = appState.mode;
+    final (:label, :count, :at, :next) = _drawChoice(mode);
+    void tap() {
+      final t = next();
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
-            content: Text(switch (d) {
-              Draw.sigmoid =>
-                'the commonest words are about equally likely, then fewer '
-                    'and fewer. the daily always draws this way.',
-              Draw.equal =>
-                'every word of the length is equally likely. the daily '
-                    'draws by the curve.',
-              Draw.frequency =>
-                'common words come up more often. the daily draws by the '
-                    'curve.',
-            }),
+            content: Text(t),
           ),
         );
     }
@@ -209,32 +207,37 @@ class _HomePageState extends State<HomePage> {
     return InkWell(
       key: const ValueKey('frequency-row'),
       borderRadius: BorderRadius.circular(4),
-      onTap: next,
+      onTap: tap,
       child: Padding(
         padding: const EdgeInsets.only(left: 4),
         child: Row(
           children: [
             Expanded(
               child: Text(
-                'word draw · ${draw.label}',
+                label,
                 key: const ValueKey('frequency-label'),
-                style: TextStyle(fontSize: 13, color: c.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: count > 1
+                      ? c.onSurfaceVariant
+                      : c.onSurfaceVariant.withValues(alpha: dimAlpha),
+                ),
               ),
             ),
-            // where it is among the three, as on the steppers
+            // where it is among the choices, as on the steppers
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Row(
                 key: const ValueKey('frequency-dots'),
                 children: [
-                  for (final d in Draw.values)
+                  for (var i = 0; i < count; i++)
                     Container(
                       width: 6,
                       height: 6,
                       margin: const EdgeInsets.symmetric(horizontal: 3),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: d == draw ? c.primary : c.outlineVariant,
+                        color: i == at ? c.primary : c.outlineVariant,
                       ),
                     ),
                 ],
@@ -244,6 +247,75 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+    );
+  }
+
+  /// What the draw row of [mode] says and does: its label, how many choices
+  /// there are and which is in force, a function that goes on to the next (and
+  /// returns the sentence for the toast).
+  ({String label, int count, int at, String Function() next}) _drawChoice(
+    GameMode mode,
+  ) {
+    String sentence(Draw d, GameMode m) => switch (d) {
+      Draw.sigmoid =>
+        m == GameMode.themed
+            ? 'the best known places are about equally likely, then fewer and '
+                  'fewer.'
+            : 'the commonest words are about equally likely, then fewer and '
+                  'fewer. the daily always draws this way.',
+      Draw.equal =>
+        m == GameMode.themed
+            ? 'every place of the length is equally likely.'
+            : 'every word of the length is equally likely. the daily draws by '
+                  'the curve.',
+      Draw.frequency =>
+        'common words come up more often. the daily draws by the curve.',
+    };
+    if (mode == GameMode.equations) {
+      const t =
+          'every equation of the length is equally likely, daily or not: '
+          'there is nothing to choose.';
+      return (
+        label: 'equation draw · every equation',
+        count: 1,
+        at: 0,
+        next: () => t,
+      );
+    }
+    if (mode == GameMode.mastermind) {
+      final largest = appState.mastermindLargest;
+      String go() {
+        appState.setup(mastermindLargest: !largest);
+        return !largest
+            ? 'every reply keeps the most words, with no chance in it.'
+            : 'a reply is drawn at random, the pools with more words likelier.';
+      }
+
+      return (
+        label: 'pool · ${largest ? 'largest' : 'random'}',
+        count: 2,
+        at: largest ? 1 : 0,
+        next: go,
+      );
+    }
+    final options = mode == GameMode.themed
+        ? const [Draw.sigmoid, Draw.equal]
+        : Draw.values;
+    final draw = appState.draw;
+    final at = options.indexOf(draw).clamp(0, options.length - 1);
+    String go() {
+      final d = options[(at + 1) % options.length];
+      appState.setup(draw: d);
+      return sentence(d, mode);
+    }
+
+    return (
+      label:
+          '${mode == GameMode.themed ? 'place' : 'word'} draw · '
+          '${options[at].label.replaceAll('every word', mode == GameMode.themed ? 'every place' : 'every word')}',
+      count: options.length,
+      at: at,
+      next: go,
     );
   }
 

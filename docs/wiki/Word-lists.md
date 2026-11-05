@@ -46,9 +46,11 @@ word lists are shipped.
 ## The pool
 
 The difficulty grid has no word pool: the answer can be any word of the chosen length, drawn by
-the way the *word draw* swiper in the game modes says: on a sigmoid curve of how common each word is
-(the default), with every word of the length equally likely, or by how common each word is. The daily
-always draws on the curve (see [Daily word](Daily-word)). Languages differ in size (English has about 12,000 words of five letters, Indonesian about 2,500); the game modes menu shows the real count.
+the way the *word draw* row above the mode button says (a tap goes on to the next): on a sigmoid curve of
+how common each word is (the default), with every word of the length equally likely, or by how common
+each word is. Each mode keeps its own choice. The themed wordle has the curve and every place; the
+equations have nothing to choose (every equation is as likely as the next); in the mastermind the row is
+the pool of a reply, random or the largest. The daily always draws on the curve (see [Daily word](Daily-word)). Languages differ in size (English has about 12,000 words of five letters, Indonesian about 2,500); the game modes menu shows the real count.
 
 ## Credits and licences
 

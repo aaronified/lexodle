@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- the draw row above the mode button follows the mode, and each mode keeps its own
+  The words of a mode: curve, every word, or by frequency, kept for that mode.
+  The themed wordle: curve or every place. The equations: nothing to choose, and
+  it says so. The mastermind: the pool of a reply, random or the largest. A
+  backup carries the choice of every mode; the daily is not affected.
 - a lost daily is a red campfire with a cross
   In place of the flame: on the day of the week where the daily was played and
   lost, and as the big icon of the streak card when today's was lost. A day not

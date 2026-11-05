@@ -2313,8 +2313,39 @@ class AppState extends ChangeNotifier {
   int share = 10;
 
   /// How the answer of an ordinary game is drawn: see [Draw]. A daily has its
-  /// own rule (the sigmoid curve, from [dailyCurveFrom]).
-  Draw draw = Draw.sigmoid;
+  /// own rule (the sigmoid curve, from [dailyCurveFrom]). Each mode keeps its
+  /// own; one that has not been chosen yet has [_drawDefault], which is what
+  /// the single setting of an earlier version was.
+  Draw _drawDefault = Draw.sigmoid;
+  final Map<GameMode, Draw> _draws = {};
+
+  /// The draw of [m]. The themed wordle draws by the curve or every place
+  /// alike: there is no frequency of use for a place.
+  Draw drawOf(GameMode m) {
+    final d = _draws[m] ?? _drawDefault;
+    return m == GameMode.themed && d == Draw.frequency ? Draw.sigmoid : d;
+  }
+
+  /// The draw of the mode in view.
+  Draw get draw => drawOf(mode);
+  set draw(Draw d) => _draws[mode] = d;
+
+  /// The draws that were chosen, by mode name, as they are saved.
+  Map<String, int> get _drawsJson => {
+    for (final e in _draws.entries) e.key.name: e.value.index,
+  };
+
+  void _readDraws(Object? j) {
+    if (j is! Map) return;
+    for (final e in j.entries) {
+      final m = GameMode.values.where((x) => x.name == e.key).firstOrNull;
+      final i = e.value;
+      if (m != null && i is int && i >= 0 && i < Draw.values.length) {
+        _draws[m] = Draw.values[i];
+      }
+    }
+  }
+
   bool seenHowTo = false;
 
   /// Whether an update also saves its backup in the Downloads folder (it always
@@ -2977,10 +3008,16 @@ class AppState extends ChangeNotifier {
         tries = p.getInt('tries') ?? tries;
         final d = p.getInt('draw');
         if (d != null && d >= 0 && d < Draw.values.length) {
-          draw = Draw.values[d];
+          _drawDefault = Draw.values[d];
         } else if (p.getBool('useFrequency') case final f?) {
           // the old on / off switch: on was by frequency, off every word
-          draw = f ? Draw.frequency : Draw.equal;
+          _drawDefault = f ? Draw.frequency : Draw.equal;
+        }
+        final ds = p.getString('draws');
+        if (ds != null) {
+          try {
+            _readDraws(jsonDecode(ds));
+          } catch (_) {}
         }
         final h = p.getInt('helper');
         if (h != null && h >= 0 && h < Helper.values.length) {
@@ -3329,7 +3366,8 @@ class AppState extends ChangeNotifier {
     'lang': lang,
     'length': length,
     'tries': tries,
-    'draw': draw.index,
+    'draw': _drawDefault.index,
+    'draws': _drawsJson,
     'hearts': hearts,
     'blindTries': blindTries,
     'blindAssist': blindAssist,
@@ -3407,10 +3445,12 @@ class AppState extends ChangeNotifier {
     blindAssist = settings['blindAssist'] as bool? ?? blindAssist;
     final d = settings['draw'] as int?;
     if (d != null && d >= 0 && d < Draw.values.length) {
-      draw = Draw.values[d];
+      _drawDefault = Draw.values[d];
     } else if (settings['useFrequency'] case final bool f) {
-      draw = f ? Draw.frequency : Draw.equal;
+      _drawDefault = f ? Draw.frequency : Draw.equal;
     }
+    _draws.clear();
+    _readDraws(settings['draws']);
     final h = settings['helper'] as int?;
     if (h != null) helper = Helper.values[h];
     final m = settings['mode'] as int?;
@@ -3426,7 +3466,8 @@ class AppState extends ChangeNotifier {
         _w('lang', p.setString('lang', lang));
         _w('length', p.setInt('length', length));
         _w('tries', p.setInt('tries', tries));
-        _w('draw', p.setInt('draw', draw.index));
+        _w('draw', p.setInt('draw', _drawDefault.index));
+        _w('draws', p.setString('draws', jsonEncode(_drawsJson)));
         _w('hearts', p.setInt('hearts', hearts));
         _w('blindTries', p.setInt('blindTries', blindTries));
         _w('eqLength', p.setInt('eqLength', eqLength));
@@ -3477,7 +3518,6 @@ class AppState extends ChangeNotifier {
     this.lang = lang ?? this.lang;
     this.length = length ?? this.length;
     this.tries = tries ?? this.tries;
-    this.draw = draw ?? this.draw;
     if (hearts != null && lockdownHearts.any((h) => h.$2 == hearts)) {
       this.hearts = hearts;
     }
@@ -3495,6 +3535,8 @@ class AppState extends ChangeNotifier {
     if (this.lang != 'en' && this.mode == GameMode.themed) {
       this.mode = GameMode.classic;
     }
+    // (the draw is the mode's own, so it is set once the mode is)
+    if (draw != null) _draws[this.mode] = draw;
     this.themeMode = themeMode ?? this.themeMode;
     // choosing a mode on its own leaves black; black is only ever with dark
     blackTheme =
@@ -3505,7 +3547,8 @@ class AppState extends ChangeNotifier {
       _w('lang', _prefs?.setString('lang', this.lang));
       _w('length', _prefs?.setInt('length', this.length));
       _w('tries', _prefs?.setInt('tries', this.tries));
-      _w('draw', _prefs?.setInt('draw', this.draw.index));
+      _w('draw', _prefs?.setInt('draw', _drawDefault.index));
+      _w('draws', _prefs?.setString('draws', jsonEncode(_drawsJson)));
       _w('hearts', _prefs?.setInt('hearts', this.hearts));
       _w('blindTries', _prefs?.setInt('blindTries', this.blindTries));
       _w('eqLength', _prefs?.setInt('eqLength', this.eqLength));

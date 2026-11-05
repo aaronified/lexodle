@@ -258,6 +258,24 @@ Map<String, Object> _settings(Object? raw) {
   }
   final draw = integer('draw', 0, Draw.values.length - 1);
   if (draw != null) out['draw'] = draw;
+  // the draw of each mode: {mode name: draw}
+  final draws = raw['draws'];
+  if (draws != null) {
+    if (draws is! Map) _bad('draws');
+    final known = {for (final m in GameMode.values) m.name};
+    for (final e in draws.entries) {
+      final v = e.value;
+      if (!known.contains(e.key) ||
+          v is! int ||
+          v < 0 ||
+          v >= Draw.values.length) {
+        _bad('draws');
+      }
+    }
+    out['draws'] = {
+      for (final e in draws.entries) e.key as String: e.value as int,
+    };
+  }
   final hearts = integer('hearts', 1, 10);
   if (hearts != null) out['hearts'] = hearts;
   final blindTries = integer('blindTries', 1, 20);
