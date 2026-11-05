@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'earned_rows.dart';
 import 'logic.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
 import 'review_text.dart';
+import 'store.dart' show Achievement;
 import 'ui.dart';
 import 'wiki_links.dart';
 import 'words.dart';
@@ -24,7 +26,11 @@ class MultiRecord {
     this.analysis,
     this.kind,
     this.daily = false,
+    this.earned = const [],
   });
+
+  /// What the game earned (see [GameRecord.earned]).
+  final List<Achievement> earned;
 
   /// How the answers were drawn, and whether it was a daily.
   final DrawKind? kind;
@@ -161,6 +167,7 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 16),
                       children: [
                         _progress(c, n),
+                        EarnedInGame(widget.record.earned),
                         const SizedBox(height: 22),
                         Text(
                           'your ${ordinal(step + 1)} guess',

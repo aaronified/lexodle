@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'analysis.dart';
 import 'daily.dart';
+import 'earned_rows.dart';
 import 'geography.dart';
 import 'history.dart';
 import 'logic.dart';
@@ -18,6 +19,7 @@ import 'puzzle.dart';
 import 'replay.dart';
 import 'routes.dart';
 import 'share_puzzle.dart';
+import 'store.dart' show earnedFrom;
 import 'ui.dart';
 import 'words.dart';
 
@@ -686,6 +688,12 @@ class _GameTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 metricLine(context, 'skill $skill', 'skill', style: dim),
+                // the achievements the game earned
+                if (game.earned.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: EarnedStrip(earnedFrom(game.earned)),
+                  ),
               ],
             ),
             // a past game can be shared as a puzzle, hashed or with its guesses;

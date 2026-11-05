@@ -732,8 +732,9 @@ class _GamePageState extends State<GamePage>
       // log, so the streak and the style it leaves are known to the
       // achievements; skill is final here, so the double fire can be judged
       // (a lockdown game lost to bad words before any guess has nothing to review)
+      int? savedId;
       if (guesses.isNotEmpty) {
-        appState.recordHistory(
+        savedId = appState.recordHistory(
           lang: widget.bank.language.code,
           mode: mode,
           length: length,
@@ -767,6 +768,8 @@ class _GamePageState extends State<GamePage>
           stylesHeld: appState.stylesHeldOf(code).length,
         ),
       );
+      // what it earned stays with the game in the history
+      if (savedId != null) appState.markEarned(savedId, unlocked);
       // the end panel lists what was earned: a knock for each step of it
       if (unlocked.isNotEmpty) {
         // after the knocks of the win, or the buzz of the loss, are over

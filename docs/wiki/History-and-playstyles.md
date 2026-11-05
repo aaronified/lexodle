@@ -23,7 +23,10 @@ language. It has:
   you played. Luck is drawn about the middle
   line, which is a luck of 0; see [Skill, luck and risk](Skill-luck-and-risk);
 - the games, newest first: **the last ten, and "load 10 more" as you need them**. Each opens its
-  review, rebuilt from the guesses alone.
+  review, rebuilt from the guesses alone. A game that earned [achievements](Achievements) shows
+  a strip of their icons on its row (the first four and how many more), and its review lists them
+  under "earned in this game". They are kept with the game (in the backup too); a game from
+  before that was kept shows none.
 
 ## Playstyles
 
