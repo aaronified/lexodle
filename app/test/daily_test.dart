@@ -7,6 +7,7 @@ import 'package:lexodle/daily.dart';
 import 'package:lexodle/daily_streak.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
@@ -760,6 +761,30 @@ void main() {
         '0',
       );
       expect(find.byKey(const ValueKey('flame-2026-10-24-1')), findsNothing);
+    });
+
+    testWidgets('the themed wordle and the mastermind have no daily: greyed', (
+      tester,
+    ) async {
+      await appState.load();
+      dailyClock = () => DateTime(2026, 10, 24, 9);
+      for (final m in GameMode.values) {
+        appState.setup(lang: 'en', mode: m);
+        await show(tester);
+        expect(
+          find.byKey(const ValueKey('daily-streak-greyed')),
+          m.hasDaily ? findsNothing : findsOneWidget,
+          reason: '$m',
+        );
+        if (!m.hasDaily) {
+          expect(
+            tester.widget<Text>(find.byKey(const ValueKey('streak-best'))).data,
+            'no daily',
+          );
+        }
+        // the card is there in every mode
+        expect(find.byKey(const ValueKey('daily-streak')), findsOneWidget);
+      }
     });
   });
 }

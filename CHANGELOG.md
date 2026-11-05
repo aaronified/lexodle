@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- the streak card is greyed out where there is no daily
+  The themed wordle and the mastermind have no daily and so no streak: the card
+  stays on the home page, greyed out, and says no daily.
 ## 0.7.2
 
 - learn weighs the equations and the mastermind as the game does
