@@ -81,15 +81,17 @@ void main() {
     });
 
     test(
-      'earnedFrom turns them back into achievements, and skips the gone',
+      'earnedFrom turns them back into achievements, skips the gone, and keeps '
+      'only the top level of each',
       () {
         final a = earnedFrom([
           'wins:0',
           'wins:3',
           'nothing_like_it:1',
           'wins:9',
+          'wins:1',
         ]);
-        expect([for (final x in a) '${x.id}:${x.level}'], ['wins:0', 'wins:3']);
+        expect([for (final x in a) '${x.id}:${x.level}'], ['wins:3']);
       },
     );
   });

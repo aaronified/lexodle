@@ -107,8 +107,13 @@ class BlindPencil {
     return null;
   }
 
-  /// The colour of each letter on the keyboard.
-  Map<String, Mark> keyboard(Map<String, Mark> d) {
+  /// The colour of each letter on the keyboard. Once as many letters are found
+  /// (green, yellow, or settled by the counts) as the word has, every other
+  /// letter of [letters] is grey.
+  Map<String, Mark> keyboard(
+    Map<String, Mark> d, [
+    Iterable<String> letters = const [],
+  ]) {
     final out = <String, Mark>{};
     for (final ch in {...green.keys, ...yellow.keys, ...grey, ...d.keys}) {
       final x = d[ch];
@@ -120,6 +125,14 @@ class BlindPencil {
         out[ch] = Mark.present;
       } else if (grey.contains(ch)) {
         out[ch] = Mark.absent;
+      }
+    }
+    final found = {...green.keys, ...yellow.keys, ...d.keys}
+        .where((ch) => _present(ch, d))
+        .length;
+    if (found >= length) {
+      for (final ch in letters) {
+        if (!_present(ch, d)) out[ch] = Mark.absent;
       }
     }
     return out;

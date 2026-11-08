@@ -15,6 +15,19 @@ void main() {
     expect(p.keyboard(none)['a'], Mark.correct);
   });
 
+  test('once every letter is found the rest of the keyboard is grey', () {
+    final p = BlindPencil(2);
+    final rows = [const BlindRow('ab', 1, 0), const BlindRow('cd', 0, 1)];
+    const letters = ['a', 'b', 'c', 'd', 'e'];
+    p.tap('a', 0, rows, none);
+    expect(p.keyboard(none, letters)['e'], isNull);
+    p.tap('c', 0, rows, none);
+    final k = p.keyboard(none, letters);
+    expect(k['e'], Mark.absent);
+    expect(k['b'], Mark.absent);
+    expect(k['a'], Mark.correct);
+  });
+
   test('no more letters than the length are in the word', () {
     final p = BlindPencil(2);
     final rows = [const BlindRow('ab', 2, 0), const BlindRow('cx', 2, 0)];

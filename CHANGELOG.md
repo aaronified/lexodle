@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- blind greys the keyboard once every letter is found
+  With the colour logic on, when as many letters are green, yellow or settled by
+  the counts as the word has, every other key turns grey.
+- a game shows only the top level of each achievement
+  The end panel and the history list, and count, only the highest level of an
+  achievement a game earned, not every level passed on the way.
+
 ## 0.7.3
 
 - the achievements history is a page of its own

@@ -760,12 +760,14 @@ class _GamePageState extends State<GamePage>
               lang: code,
               mode: mode,
             );
-      unlocked = appState.recordGame(
-        result(
-          streak: streak,
-          style: rated.style?.id,
-          styleChanged: rated.changed,
-          stylesHeld: appState.stylesHeldOf(code).length,
+      unlocked = topLevels(
+        appState.recordGame(
+          result(
+            streak: streak,
+            style: rated.style?.id,
+            styleChanged: rated.changed,
+            stylesHeld: appState.stylesHeldOf(code).length,
+          ),
         ),
       );
       // what it earned stays with the game in the history
@@ -1442,7 +1444,7 @@ class _GamePageState extends State<GamePage>
     letters: _letters,
     numberPad: equations,
     onCursor: _move,
-    marks: blind ? (_assist ? pencil.keyboard(_deduced) : const {}) : keyMarks,
+    marks: blind ? (_assist ? pencil.keyboard(_deduced, _letters) : const {}) : keyMarks,
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,
