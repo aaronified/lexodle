@@ -13,6 +13,9 @@ it to the version.
 - a game shows only the top level of each achievement
   The end panel and the history list, and count, only the highest level of an
   achievement a game earned, not every level passed on the way.
+
+## 0.7.3
+
 - the achievements history is a page of its own
   A history button at the top right of the achievements screen opens it.
 - a full set achievement, with four levels
