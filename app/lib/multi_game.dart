@@ -447,22 +447,24 @@ class _MultiGamePageState extends State<MultiGamePage> {
               lang: code,
               mode: mode,
             );
-      unlocked = appState.recordGame(
-        GameResult(
-          lang: code,
-          length: length,
-          tries: tries,
-          used: game.guesses.length,
-          won: game.won,
-          pool: pool,
-          mode: mode,
-          skills: [for (final s in game.steps) s.skill],
-          luck: _luck,
-          freeRides: game.freeRides,
-          lateSingles: game.lateSingles,
-          daily: d != null,
-          date: d?.date ?? '',
-          dailyStreak: streak,
+      unlocked = topLevels(
+        appState.recordGame(
+          GameResult(
+            lang: code,
+            length: length,
+            tries: tries,
+            used: game.guesses.length,
+            won: game.won,
+            pool: pool,
+            mode: mode,
+            skills: [for (final s in game.steps) s.skill],
+            luck: _luck,
+            freeRides: game.freeRides,
+            lateSingles: game.lateSingles,
+            daily: d != null,
+            date: d?.date ?? '',
+            dailyStreak: streak,
+          ),
         ),
       );
       // what it earned stays with the game in the history

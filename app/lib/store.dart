@@ -1734,13 +1734,24 @@ const collectors = <Achievement>[
 
 /// The achievement levels a game row kept (`id:level`), as achievements: one
 /// that is no longer there is left out.
-List<Achievement> earnedFrom(List<String> kept) => [
+List<Achievement> earnedFrom(List<String> kept) => topLevels([
   for (final k in kept)
     if (k.split(':') case [final id, final level])
       if (achievementById(id) case final a?)
         if (int.tryParse(level) case final i? when i >= 0 && i < a.count)
           a.atLevel(i),
-];
+]);
+
+/// Of the levels of one achievement a game earned, only the highest, in the
+/// order the achievements first appear.
+List<Achievement> topLevels(List<Achievement> earned) {
+  final top = <String, Achievement>{};
+  for (final a in earned) {
+    final t = top[a.id];
+    if (t == null || a.level > t.level) top[a.id] = a;
+  }
+  return top.values.toList();
+}
 
 /// Every achievement there is, and the collectors.
 final allAchievements = <Achievement>[...achievements, ...collectors];
