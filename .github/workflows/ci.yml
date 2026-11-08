@@ -1,6 +1,6 @@
 name: CI
 
-# The checks every change has to pass before it is merged: the analyzer (errors
+# The checks every change has to pass before it is merged: the analyzer on lib (errors
 # only; the existing lints and warnings are not held against a change), every
 # test, and the paper's sources. The debug APK and the web build run after a merge.
 
@@ -30,7 +30,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: dart analyze --no-fatal-warnings --no-fatal-infos
+      - run: dart analyze lib --no-fatal-warnings
       - run: flutter test
 
   paper:

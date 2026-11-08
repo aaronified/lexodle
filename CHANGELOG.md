@@ -8,7 +8,7 @@ it to the version.
 ## Unreleased
 
 - the tests run on every pull request
-  A CI workflow runs the analyzer (errors only), every test and the paper check
+  A CI workflow runs the analyzer on lib (errors only), every test and the paper check
   on each pull request and each push to main.
 - blind greys the keyboard once every letter is found
   With the colour logic on, when as many letters are green, yellow or settled by
