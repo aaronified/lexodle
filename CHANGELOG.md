@@ -9,7 +9,8 @@ it to the version.
 
 - the tests run on every pull request
   A CI workflow runs the analyzer on lib (errors only), every test and the paper check
-  on each pull request and each push to main.
+  on each pull request and each push to main, and the debug APK is built on pull
+  requests that touch the app.
 - blind greys the keyboard once every letter is found
   With the colour logic on, when as many letters are green, yellow or settled by
   the counts as the word has, every other key turns grey.
