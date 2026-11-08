@@ -14,6 +14,7 @@ import 'package:lexodle/period_chart.dart';
 import 'package:lexodle/playstyle.dart';
 import 'package:lexodle/review.dart';
 import 'package:lexodle/routes.dart';
+import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -202,6 +203,65 @@ void main() {
     // the answer is there to look back on
     expect(find.text(a), findsNWidgets(2));
     expect(find.text(pool.skip(40).take(4).join(' ')), findsOneWidget);
+  });
+
+  testWidgets('the history can be limited to one mode, or all of them', (
+    tester,
+  ) async {
+    await load(tester);
+    final h = History();
+    final a = addGame(h, at: ms(22), guesses: [pool[1], pool[10]], won: true);
+    final b = addGame(h, at: ms(23), guesses: [pool[2], pool[3]], won: false);
+    final q = addGame(
+      h,
+      at: ms(24),
+      guesses: [pool[100], pool[101]],
+      won: false,
+      mode: GameMode.quartet,
+      answers: pool.skip(40).take(4).toList(),
+    );
+    await show(tester, h);
+    String games() => textOf(
+      tester.widget<Text>(find.byKey(const ValueKey('overall-games'))),
+    )!;
+    expect(games(), '3');
+    expect(find.text('overall'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('mode-quartet')));
+    await tester.pump();
+    expect(games(), '1');
+    expect(find.text('overall · quartet'), findsOneWidget);
+    expect(find.byKey(ValueKey('game-${q.id}')), findsOneWidget);
+    expect(find.byKey(ValueKey('game-${a.id}')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('mode-classic')));
+    await tester.pump();
+    expect(games(), '2');
+    expect(find.byKey(ValueKey('game-${b.id}')), findsOneWidget);
+    expect(find.byKey(ValueKey('game-${q.id}')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('mode-all')));
+    await tester.pump();
+    expect(games(), '3');
+  });
+
+  testWidgets('the playstyle card says its mode, and has an all option', (
+    tester,
+  ) async {
+    await load(tester);
+    await showCard(tester, History());
+    String title() =>
+        tester.widget<Caption>(find.byKey(const ValueKey('profile-mode'))).text;
+    expect(title(), 'playstyle · classic');
+    // only the modes that have a playstyle are offered
+    expect(find.byKey(const ValueKey('mode-blind')), findsOneWidget);
+    expect(find.byKey(const ValueKey('mode-quartet')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('mode-blind')));
+    await tester.pump();
+    expect(title(), 'playstyle · blind');
+    await tester.tap(find.byKey(const ValueKey('mode-all')));
+    await tester.pump();
+    expect(title(), 'playstyle · all modes');
   });
 
   testWidgets('a guess with one word left is not part of a game\'s skill', (

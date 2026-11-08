@@ -554,12 +554,15 @@ class History {
   }
 
   /// The last [n] games of [mode], oldest first (those in [lang] when given):
-  /// the ones a playstyle is read from.
-  List<GameRow> recent(GameMode mode, [int n = 100, String? lang]) {
+  /// the ones a playstyle is read from. With no [mode], the games of every mode
+  /// with a single board, mixed.
+  List<GameRow> recent(GameMode? mode, [int n = 100, String? lang]) {
     final out = <GameRow>[];
     for (var i = games.length - 1; i >= 0 && out.length < n; i--) {
-      if (games[i].mode == mode && (lang == null || games[i].lang == lang)) {
-        out.add(games[i]);
+      final g = games[i];
+      if ((mode == null ? g.mode.boards == 1 : g.mode == mode) &&
+          (lang == null || g.lang == lang)) {
+        out.add(g);
       }
     }
     return out.reversed.toList();

@@ -140,6 +140,16 @@ void main() {
       expect(h.recent(GameMode.equations), isEmpty);
     });
 
+    test('with no mode, the recent games are those of every single board', () {
+      final h = History();
+      addGame(h, at: 1);
+      addGame(h, mode: GameMode.blind, at: 2);
+      addGame(h, mode: GameMode.quartet, at: 3);
+      addGame(h, mode: GameMode.relay, at: 4);
+      addGame(h, mode: GameMode.equations, at: 5);
+      expect([for (final g in h.recent(null)) g.at], [1, 2, 5]);
+    });
+
     test('a daily is a classic game, so it counts', () {
       final h = History();
       addGame(h, daily: '2026-10-24');

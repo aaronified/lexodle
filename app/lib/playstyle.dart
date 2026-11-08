@@ -264,7 +264,7 @@ class Traits {
 /// guess with a choice in them at all.
 Traits? traitsOf(
   History h, {
-  GameMode mode = GameMode.classic,
+  GameMode? mode = GameMode.classic,
   int n = styleWindow,
   String? lang,
 }) => traitsOfGames(h, h.recent(mode, n, lang));
@@ -337,10 +337,11 @@ class Habits {
   }
 }
 
-/// The habits over the last [n] games of [mode] of [h] in [lang].
+/// The habits over the last [n] games of [mode] of [h] in [lang] (of every mode
+/// with a playstyle when [mode] is null).
 Habits habitsOf(
   History h, {
-  GameMode mode = GameMode.classic,
+  GameMode? mode = GameMode.classic,
   int n = styleWindow,
   String? lang,
 }) => habitsOfGames(h, h.recent(mode, n, lang));

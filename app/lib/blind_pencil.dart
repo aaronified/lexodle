@@ -127,9 +127,11 @@ class BlindPencil {
         out[ch] = Mark.absent;
       }
     }
-    final found = {...green.keys, ...yellow.keys, ...d.keys}
-        .where((ch) => _present(ch, d))
-        .length;
+    final found = {
+      ...green.keys,
+      ...yellow.keys,
+      ...d.keys,
+    }.where((ch) => _present(ch, d)).length;
     if (found >= length) {
       for (final ch in letters) {
         if (!_present(ch, d)) out[ch] = Mark.absent;
