@@ -1,6 +1,6 @@
 name: Android build
 
-# Builds a debug APK on every push that touches the app, so a mistake in the
+# Builds a debug APK on every pull request and push that touches the app, so a mistake in the
 # Android side (the Kotlin in MainActivity, the manifest, Gradle) is found now and
 # not when a release is cut. Nothing is published.
 
@@ -8,14 +8,16 @@ on:
   push:
     branches: [main]
     paths: ['app/**', '.github/workflows/android.yml']
+  pull_request:
+    paths: ['app/**', '.github/workflows/android.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: android-build
-  cancel-in-progress: true
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   apk:

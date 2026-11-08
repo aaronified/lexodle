@@ -1,0 +1,48 @@
+name: CI
+
+# The checks every change has to pass before it is merged: the analyzer on lib (errors
+# only; the existing lints and warnings are not held against a change), every
+# test, and the paper's sources. The debug APK and the web build run after a merge.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to a PR cancels its older run; main's runs are never cancelled.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FLUTTER_VERSION: "3.47.9"
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart analyze lib --no-fatal-warnings
+      - run: flutter test
+
+  paper:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs/paper
+    steps:
+      - uses: actions/checkout@v4
+      - run: python check_tex.py
