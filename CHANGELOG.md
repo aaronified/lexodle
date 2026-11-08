@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.8.0
+
 - every mode with one board has its own playstyle
   Classic, lockdown, blind, equations, mastermind and themed each read a
   playstyle from their own last 100 games, in each language. The playstyle card
