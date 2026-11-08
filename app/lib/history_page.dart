@@ -87,7 +87,9 @@ class _HistoryPageState extends State<HistoryPage> {
     // the numbers moved, so each language's playstyle is read again from them
     appState.saveHistory();
     for (final l in appState.playedLanguages) {
-      appState.updateStyle(lang: l);
+      for (final m in GameMode.values) {
+        appState.updateStyle(lang: l, mode: m);
+      }
     }
     appState.refresh();
     if (mounted) setState(() => _total = 0);

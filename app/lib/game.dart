@@ -751,7 +751,7 @@ class _GamePageState extends State<GamePage>
         );
       }
       final code = widget.bank.language.code;
-      final rated = appState.updateStyle(lang: code);
+      final rated = appState.updateStyle(lang: code, mode: mode);
       final streak = d == null
           ? 0
           : appState.recordDaily(
@@ -766,7 +766,7 @@ class _GamePageState extends State<GamePage>
             streak: streak,
             style: rated.style?.id,
             styleChanged: rated.changed,
-            stylesHeld: appState.stylesHeldOf(code).length,
+            stylesHeld: appState.stylesHeldOf(code, mode).length,
           ),
         ),
       );
@@ -1444,7 +1444,9 @@ class _GamePageState extends State<GamePage>
     letters: _letters,
     numberPad: equations,
     onCursor: _move,
-    marks: blind ? (_assist ? pencil.keyboard(_deduced, _letters) : const {}) : keyMarks,
+    marks: blind
+        ? (_assist ? pencil.keyboard(_deduced, _letters) : const {})
+        : keyMarks,
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,

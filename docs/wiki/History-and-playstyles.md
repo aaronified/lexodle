@@ -30,8 +30,11 @@ language. It has:
 
 ## Playstyles
 
-Your **playstyle** is read, **per language**, from your last 100 classic games in it (a daily is
-one). It is two habits: what you do early, and what you do at the end.
+Your **playstyle** is read, **per language and per mode**, from your last 100 games of the mode in
+that language (a daily is one). Every mode with a single board has its own: classic, lockdown,
+blind, equations, mastermind and themed. The quartet and the relay race have none, as they play
+several boards at once. The playstyle card and the glyph on the home page follow the mode you are
+in. It is two habits: what you do early, and what you do at the end.
 
 Each guess is counted as one thing, the first that applies.
 

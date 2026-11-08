@@ -89,6 +89,17 @@ String backupToText(AppState state, {DateTime? now}) {
             'current': state.styleIdOf(l),
             'held': state.stylesHeldOf(l).toList()..sort(),
             'changes': state.styleChangesOf(l),
+            // the other modes with playstyles have one of their own
+            'modes': {
+              for (final m in GameMode.values.where(
+                (m) => m != GameMode.classic && hasPlaystyle(m),
+              ))
+                m.name: {
+                  'current': state.styleIdOf(l, m),
+                  'held': state.stylesHeldOf(l, m).toList()..sort(),
+                  'changes': state.styleChangesOf(l, m),
+                },
+            },
           },
           'daily': {
             'log': state.dailyLogOf(l),
@@ -178,6 +189,7 @@ Backup parseBackup(String text) {
           style: play?.style,
           held: play?.held,
           changes: play?.changes,
+          styleModes: _playstyleModes(v['playstyle']),
           dailyLog: daily?.$1,
           dailyBest: daily?.$2,
           dailyModes: _dailyModes(v['daily']),
@@ -354,6 +366,25 @@ Map<String, AchState> _achievements(Object? raw) {
     },
     changes: changes,
   );
+}
+
+/// The playstyles of the modes beside classic, by mode name; a mode this version
+/// has no playstyles for is left out.
+Map<String, ({String? style, Set<String> held, int changes})> _playstyleModes(
+  Object? raw,
+) {
+  if (raw is! Map || raw['modes'] == null) return const {};
+  final modes = raw['modes'];
+  if (modes is! Map) _bad('playstyle modes');
+  final out = <String, ({String? style, Set<String> held, int changes})>{};
+  for (final m in GameMode.values) {
+    if (m == GameMode.classic || !hasPlaystyle(m) || modes[m.name] == null) {
+      continue;
+    }
+    final one = _playstyle(modes[m.name]);
+    if (one != null) out[m.name] = one;
+  }
+  return out;
 }
 
 /// The history, or null when the file has none. It is a line of JSON inside the

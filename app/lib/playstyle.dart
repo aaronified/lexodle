@@ -1,7 +1,8 @@
 import 'history.dart';
+import 'modes.dart';
 
-/// How a player plays, read from their last 100 classic games (a daily is a
-/// classic game) and shown on the home page. It moves as they play.
+/// How a player plays, read from their last 100 games of the mode (a daily is a
+/// game of its mode) and shown on the home page. It moves as they play.
 ///
 /// A style is two habits: what the player does in the early game, and what they
 /// do at the end. Each guess in those phases is counted as one of five things,
@@ -23,6 +24,11 @@ import 'history.dart';
 /// through the real word list (docs/paper, the playstyle section); they are not
 /// measured on people, so they are the first thing to revisit once there is real
 /// play to look at.
+
+/// Whether [mode] has playstyles: the ones with a single board, whose guesses
+/// are scored against the words still possible. A quartet or relay race plays
+/// several boards at once and has no such number.
+bool hasPlaystyle(GameMode mode) => mode.boards == 1;
 
 /// The phases a guess is counted in.
 enum Phase { early, middle, end }
@@ -254,10 +260,14 @@ class Traits {
   final int guesses;
 }
 
-/// The means over the last [n] classic games of [h]; null when there is no guess
-/// with a choice in them at all.
-Traits? traitsOf(History h, {int n = styleWindow, String? lang}) =>
-    traitsOfGames(h, h.recentClassic(n, lang));
+/// The means over the last [n] games of [mode] of [h]; null when there is no
+/// guess with a choice in them at all.
+Traits? traitsOf(
+  History h, {
+  GameMode mode = GameMode.classic,
+  int n = styleWindow,
+  String? lang,
+}) => traitsOfGames(h, h.recent(mode, n, lang));
 
 /// The means over [games] of [h] (classic ones: the others have no risk).
 Traits? traitsOfGames(History h, List<GameRow> games) {
@@ -327,9 +337,13 @@ class Habits {
   }
 }
 
-/// The habits over the last [n] classic games of [h] in [lang].
-Habits habitsOf(History h, {int n = styleWindow, String? lang}) =>
-    habitsOfGames(h, h.recentClassic(n, lang));
+/// The habits over the last [n] games of [mode] of [h] in [lang].
+Habits habitsOf(
+  History h, {
+  GameMode mode = GameMode.classic,
+  int n = styleWindow,
+  String? lang,
+}) => habitsOfGames(h, h.recent(mode, n, lang));
 
 /// The habits over [games] of [h] (classic ones, scored with the current maths).
 Habits habitsOfGames(History h, List<GameRow> games) {

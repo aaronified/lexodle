@@ -51,7 +51,7 @@ final howStyleIsRead =
     '$topRank% and 3 or more words are left). Your habit in a phase is what '
     'most of its guesses were, if that is ${(habitShare * 100).round()}% or '
     'more. The two habits make the style. It is read from your last '
-    '$styleWindow classic games, and needs $minRatedGames games and '
+    '$styleWindow games of the mode, and needs $minRatedGames games and '
     '$minPhaseGuesses guesses in each phase.';
 
 class _PlaystyleCardState extends State<PlaystyleCard> {
@@ -115,17 +115,28 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final lang = widget.lang;
-    final p = appState.styleOf(lang);
-    final t = traitsOf(appState.history, lang: lang);
-    final h = habitsOf(appState.history, lang: lang);
-    final games = appState.history.recentClassic(100, lang).length;
+    final mode = appState.mode;
     final dim = TextStyle(
       fontSize: 12,
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
+    if (!hasPlaystyle(mode)) {
+      // a mode that plays several boards at once has no single guess to rate
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          '${mode.label} has no playstyle: it plays several boards at once',
+          style: dim,
+        ),
+      );
+    }
+    final p = appState.styleOf(lang, mode);
+    final t = traitsOf(appState.history, mode: mode, lang: lang);
+    final h = habitsOf(appState.history, mode: mode, lang: lang);
+    final games = appState.history.recent(mode, 100, lang).length;
     String why() {
       if (games < minRatedGames) {
-        return 'play ${minRatedGames - games} more classic '
+        return 'play ${minRatedGames - games} more ${mode.label} '
             '${minRatedGames - games == 1 ? 'game' : 'games'} to be given a '
             'playstyle';
       }
@@ -204,7 +215,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
           ),
           const SizedBox(height: 4),
           Text(
-            'the means over your last ${t.games} classic '
+            'the means over your last ${t.games} ${mode.label} '
             '${t.games == 1 ? 'game' : 'games'}, up to $styleWindow',
             style: dim.copyWith(fontSize: 11),
           ),
@@ -237,7 +248,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
               Expanded(
                 child: _StyleDot(
                   s,
-                  held: appState.stylesHeldOf(lang).contains(s.id),
+                  held: appState.stylesHeldOf(lang, mode).contains(s.id),
                   current: s.id == p?.id,
                   picked: s.id == _picked?.id,
                   onTap: () =>
@@ -249,7 +260,8 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
         const SizedBox(height: 6),
         // what the tapped style is, in the card, so it fits any width
         if (_picked case final s?
-            when !(s.id == p?.id || appState.stylesHeldOf(lang).contains(s.id)))
+            when !(s.id == p?.id ||
+                appState.stylesHeldOf(lang, mode).contains(s.id)))
           // a style not unlocked yet stays hidden: no name, no description
           Text(
             'a playstyle you have not been yet. it shows once you are rated it.',
@@ -261,7 +273,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
             '${s.name}: ${s.blurb}'
             '${s.id == p?.id
                 ? ' (your style now)'
-                : appState.stylesHeldOf(lang).contains(s.id)
+                : appState.stylesHeldOf(lang, mode).contains(s.id)
                 ? ' (you have been this)'
                 : ' (not yet)'}',
             key: const ValueKey('style-detail'),
@@ -295,12 +307,12 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
           ),
         ] else
           Text(
-            appState.styleChangesOf(lang) == 0
+            appState.styleChangesOf(lang, mode) == 0
                 ? 'tap a style to see what it is. it moves with the way you '
                       'play'
                 : 'tap a style to see what it is. changed '
-                      '${appState.styleChangesOf(lang)} '
-                      '${appState.styleChangesOf(lang) == 1 ? 'time' : 'times'}',
+                      '${appState.styleChangesOf(lang, mode)} '
+                      '${appState.styleChangesOf(lang, mode) == 1 ? 'time' : 'times'}',
             style: dim.copyWith(fontSize: 11),
           ),
       ],

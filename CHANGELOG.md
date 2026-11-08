@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- every mode with one board has its own playstyle
+  Classic, lockdown, blind, equations, mastermind and themed each read a
+  playstyle from their own last 100 games, in each language. The playstyle card
+  and the glyph on the home page follow the mode. The backup carries them all.
+  The quartet and the relay race, which play several boards, have none.
 - blind greys the keyboard once every letter is found
   With the colour logic on, when as many letters are green, yellow or settled by
   the counts as the word has, every other key turns grey.
