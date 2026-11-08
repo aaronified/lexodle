@@ -2559,7 +2559,7 @@ class AppState extends ChangeNotifier {
   Set<String> get playedLanguages => {
     for (final g in history.games) g.lang,
     ..._langAch.keys,
-    ..._styles.keys,
+    ..._styles.keys.where((k) => !k.contains('|')),
     ..._dailyLogs.keys.where((k) => !k.contains('|')),
     lang,
   };
@@ -2833,42 +2833,62 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  /// The playstyle in each language (a [Playstyle.id]; none until rated),
-  /// every one the player has been rated there, and how many times it has
-  /// changed. See playstyle.dart.
+  /// The playstyle in each language and mode (a [Playstyle.id]; none until
+  /// rated), every one the player has been rated there, and how many times it
+  /// has changed. Keyed by [styleKey]. See playstyle.dart.
   final Map<String, String> _styles = {};
   final Map<String, Set<String>> _stylesHeld = {};
   final Map<String, int> _styleChanges = {};
 
-  String? styleIdOf(String l) => _styles[l];
-  Playstyle? styleOf(String l) => playstyleById(_styles[l]);
-  Set<String> stylesHeldOf(String l) => _stylesHeld[l] ??= {};
-  int styleChangesOf(String l) => _styleChanges[l] ?? 0;
+  /// The key of a language's playstyle in [mode]: the language itself for a
+  /// classic game, `language|mode` for the others.
+  static String styleKey(String l, [GameMode mode = GameMode.classic]) =>
+      mode == GameMode.classic ? l : '$l|${mode.name}';
 
-  /// The playstyle, and those held, of the language being played.
-  String? get styleId => styleIdOf(lang);
-  set styleId(String? v) =>
-      v == null ? _styles.remove(lang) : _styles[lang] = v;
-  Set<String> get stylesHeld => stylesHeldOf(lang);
-  set stylesHeld(Set<String> v) => _stylesHeld[lang] = v;
-  int get styleChanges => styleChangesOf(lang);
-  set styleChanges(int v) => _styleChanges[lang] = v;
-  Playstyle? get style => styleOf(lang);
+  String? styleIdOf(String l, [GameMode mode = GameMode.classic]) =>
+      _styles[styleKey(l, mode)];
+  Playstyle? styleOf(String l, [GameMode mode = GameMode.classic]) =>
+      playstyleById(styleIdOf(l, mode));
+  Set<String> stylesHeldOf(String l, [GameMode mode = GameMode.classic]) =>
+      _stylesHeld[styleKey(l, mode)] ??= {};
+  int styleChangesOf(String l, [GameMode mode = GameMode.classic]) =>
+      _styleChanges[styleKey(l, mode)] ?? 0;
 
-  /// Reads the playstyle in [l] (the language being played when not given)
-  /// again from its last 100 games, after a game was saved to the [history]. A
-  /// player not yet rated keeps none; one who has been rated keeps their style
-  /// while the numbers stay near it (see [classify]). Returns the style and
-  /// whether this moved them from one to another.
-  ({Playstyle? style, bool changed}) updateStyle({String? lang}) {
+  /// The playstyle, and those held, of the language and mode being played.
+  String? get styleId => styleIdOf(lang, mode);
+  set styleId(String? v) => v == null
+      ? _styles.remove(styleKey(lang, mode))
+      : _styles[styleKey(lang, mode)] = v;
+  Set<String> get stylesHeld => stylesHeldOf(lang, mode);
+  set stylesHeld(Set<String> v) => _stylesHeld[styleKey(lang, mode)] = v;
+  int get styleChanges => styleChangesOf(lang, mode);
+  set styleChanges(int v) => _styleChanges[styleKey(lang, mode)] = v;
+  Playstyle? get style => styleOf(lang, mode);
+
+  /// Reads the playstyle in [lang] (the language being played when not given)
+  /// and [mode] (the mode being played) again from its last 100 games, after a
+  /// game was saved to the [history]. A player not yet rated keeps none; one who
+  /// has been rated keeps their style while the numbers stay near it (see
+  /// [classify]). Returns the style and whether this moved them from one to
+  /// another.
+  ({Playstyle? style, bool changed}) updateStyle({
+    String? lang,
+    GameMode? mode,
+  }) {
     final l = lang ?? this.lang;
-    final current = styleOf(l);
-    final next = classify(habitsOf(history, lang: l), current: current);
+    final m = mode ?? this.mode;
+    if (!hasPlaystyle(m)) return (style: null, changed: false);
+    final k = styleKey(l, m);
+    final current = styleOf(l, m);
+    final next = classify(
+      habitsOf(history, mode: m, lang: l),
+      current: current,
+    );
     if (next == null) return (style: current, changed: false);
-    final changed = _styles[l] != null && _styles[l] != next.id;
-    if (changed) _styleChanges[l] = styleChangesOf(l) + 1;
-    _styles[l] = next.id;
-    stylesHeldOf(l).add(next.id);
+    final changed = _styles[k] != null && _styles[k] != next.id;
+    if (changed) _styleChanges[k] = styleChangesOf(l, m) + 1;
+    _styles[k] = next.id;
+    stylesHeldOf(l, m).add(next.id);
     _saveStyle();
     notifyListeners();
     return (style: next, changed: changed);
@@ -3396,8 +3416,8 @@ class AppState extends ChangeNotifier {
         daily: g.daily.isNotEmpty,
         date: g.daily,
         dailyStreak: streak,
-        style: last ? styleIdOf(g.lang) : null,
-        stylesHeld: last ? stylesHeldOf(g.lang).length : 0,
+        style: last ? styleIdOf(g.lang, g.mode) : null,
+        stylesHeld: last ? stylesHeldOf(g.lang, g.mode).length : 0,
       );
       var played = result();
       if (g.daily.isNotEmpty) {
@@ -3513,6 +3533,12 @@ class AppState extends ChangeNotifier {
         if (k.style != null) _styles[e.key] = k.style!;
         if (k.held != null) _stylesHeld[e.key] = Set.of(k.held!);
         if (k.changes != null) _styleChanges[e.key] = k.changes!;
+        for (final m in k.styleModes.entries) {
+          final key = '${e.key}|${m.key}';
+          if (m.value.style != null) _styles[key] = m.value.style!;
+          _stylesHeld[key] = Set.of(m.value.held);
+          _styleChanges[key] = m.value.changes;
+        }
         if (k.dailyLog != null) _dailyLogs[e.key] = Map.of(k.dailyLog!);
         if (k.dailyBest != null) _dailyBests[e.key] = k.dailyBest!;
         for (final m in k.dailyModes.entries) {
@@ -3761,6 +3787,7 @@ class LanguageKept {
     this.style,
     this.held,
     this.changes,
+    this.styleModes = const {},
     this.dailyLog,
     this.dailyBest,
     this.dailyModes = const {},
@@ -3769,6 +3796,10 @@ class LanguageKept {
   final String? style;
   final Set<String>? held;
   final int? changes;
+
+  /// The same for the modes beside classic, by mode name.
+  final Map<String, ({String? style, Set<String> held, int changes})>
+  styleModes;
   final Map<String, int>? dailyLog;
   final int? dailyBest;
 

@@ -11,6 +11,7 @@ import 'geography.dart';
 import 'history.dart';
 import 'logic.dart';
 import 'language_picker.dart';
+import 'mode_filter.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'period_chart.dart';
@@ -52,6 +53,9 @@ class _HistoryPageState extends State<HistoryPage> {
   /// calendar. The one being played to begin with.
   String _lang = appState.lang;
 
+  /// The mode the page is limited to (null: all of them).
+  GameMode? _mode;
+
   @override
   void initState() {
     super.initState();
@@ -87,7 +91,9 @@ class _HistoryPageState extends State<HistoryPage> {
     // the numbers moved, so each language's playstyle is read again from them
     appState.saveHistory();
     for (final l in appState.playedLanguages) {
-      appState.updateStyle(lang: l);
+      for (final m in GameMode.values) {
+        appState.updateStyle(lang: l, mode: m);
+      }
     }
     appState.refresh();
     if (mounted) setState(() => _total = 0);
@@ -135,7 +141,8 @@ class _HistoryPageState extends State<HistoryPage> {
                 // the games of the language in view, oldest first
                 final mine = [
                   for (final g in h.games)
-                    if (g.lang == _lang) g,
+                    if (g.lang == _lang && (_mode == null || g.mode == _mode))
+                      g,
                 ];
                 final total = mine.length;
                 final shown = min(_shown, total);
@@ -157,22 +164,40 @@ class _HistoryPageState extends State<HistoryPage> {
                         // ignore: prefer_const_constructors
                         if (i == 0) {
                           return _Block(
-                            LanguagePicker(
-                              codes: appState.playedLanguages.toList()..sort(),
-                              languages: _langs,
-                              selected: _lang,
-                              onSelect: (code) => setState(() {
-                                _lang = code;
-                                _shown = historyPageSize;
-                              }),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                LanguagePicker(
+                                  codes: appState.playedLanguages.toList()
+                                    ..sort(),
+                                  languages: _langs,
+                                  selected: _lang,
+                                  onSelect: (code) => setState(() {
+                                    _lang = code;
+                                    _shown = historyPageSize;
+                                  }),
+                                ),
+                                const SizedBox(height: 10),
+                                ModeFilter(
+                                  selected: _mode,
+                                  onSelect: (m) => setState(() {
+                                    _mode = m;
+                                    _shown = historyPageSize;
+                                  }),
+                                ),
+                              ],
                             ),
                           );
                         }
                         // ignore: prefer_const_constructors
-                        if (i == 2) return _Block(_Overall(_lang));
+                        if (i == 2) return _Block(_Overall(_lang, _mode));
                         if (i == 3) {
                           return _Block(
-                            _Trend(_lang, key: ValueKey('trend-$_lang')),
+                            _Trend(
+                              _lang,
+                              _mode,
+                              key: ValueKey('trend-$_lang-${_mode?.name}'),
+                            ),
                           );
                         }
                         if (i == 4) {
@@ -268,10 +293,11 @@ class _Block extends StatelessWidget {
 
 /// Every game kept, added up: always there, however many there are.
 class _Overall extends StatelessWidget {
-  const _Overall(this.lang);
+  const _Overall(this.lang, this.mode);
 
-  /// The language it adds up.
+  /// The language it adds up, and the mode (null: all of them).
   final String lang;
+  final GameMode? mode;
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +305,7 @@ class _Overall extends StatelessWidget {
     final h = appState.history;
     final s = summarise(h, [
       for (final g in h.games)
-        if (g.lang == lang) g,
+        if (g.lang == lang && (mode == null || g.mode == mode)) g,
     ]);
     final dim = TextStyle(
       fontSize: 11,
@@ -292,7 +318,7 @@ class _Overall extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Caption('overall'),
+          Caption(mode == null ? 'overall' : 'overall · ${mode!.label}'),
           const SizedBox(height: 10),
           Wrap(
             spacing: 24,
@@ -319,7 +345,8 @@ class _Overall extends StatelessWidget {
                 ? 'nothing to add up yet'
                 : 'luck ${s.scored == 0 ? '–' : luckText(s.luck)} · '
                       '${s.meanTries == null ? '–' : s.meanTries!.toStringAsFixed(1)} '
-                      'guesses to win · ${s.classic} of ${s.games} classic',
+                      'guesses to win'
+                      '${mode == null ? ' · ${s.classic} of ${s.games} classic' : ''}',
             'luck',
             key: const ValueKey('overall-line'),
             style: dim,
@@ -343,10 +370,11 @@ class _Overall extends StatelessWidget {
 /// How play changed over time: a bar for each of the last 50 weeks or months,
 /// for skill, risk, share won or games, and what was in the one picked.
 class _Trend extends StatefulWidget {
-  const _Trend(this.lang, {super.key});
+  const _Trend(this.lang, this.mode, {super.key});
 
-  /// The language whose periods it draws.
+  /// The language whose periods it draws, and the mode (null: all of them).
   final String lang;
+  final GameMode? mode;
 
   @override
   State<_Trend> createState() => _TrendState();
@@ -376,11 +404,12 @@ class _TrendState extends State<_Trend> {
       _weekly,
       today,
       widget.lang,
+      widget.mode,
     );
     if (_periods == null || _key != key) {
       _periods = _weekly
-          ? weeklyPeriods(h, today, lang: widget.lang)
-          : monthlyPeriods(h, today, lang: widget.lang);
+          ? weeklyPeriods(h, today, lang: widget.lang, mode: widget.mode)
+          : monthlyPeriods(h, today, lang: widget.lang, mode: widget.mode);
       _key = key;
     }
     return _periods!;

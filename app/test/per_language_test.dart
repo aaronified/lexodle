@@ -16,12 +16,13 @@ void play(
   int n, {
   Behaviour early = Behaviour.maximiser,
   Behaviour end = Behaviour.prober,
+  GameMode mode = GameMode.classic,
 }) {
   for (var i = 0; i < n; i++) {
     s.history.add(
       at: i,
       lang: lang,
-      mode: GameMode.classic,
+      mode: mode,
       length: 5,
       tries: 6,
       pool: 3000,
@@ -68,6 +69,56 @@ void main() {
     expect(s.style, wildcard);
     expect(s.stylesHeldOf('en'), {'analyst'});
     expect(s.stylesHeldOf('fr'), {'wildcard'});
+  });
+
+  test('each mode with one board has its own playstyle', () async {
+    final s = AppState();
+    await s.load();
+    play(s, 'en', 20);
+    play(s, 'en', 20, early: Behaviour.gambler, mode: GameMode.blind);
+    s.updateStyle(lang: 'en', mode: GameMode.classic);
+    s.updateStyle(lang: 'en', mode: GameMode.blind);
+    expect(s.styleOf('en'), analyst);
+    expect(s.styleOf('en', GameMode.blind), wildcard);
+    expect(s.styleOf('en', GameMode.equations), isNull);
+    // the one in view follows the mode being played
+    s.mode = GameMode.blind;
+    expect(s.style, wildcard);
+    s.mode = GameMode.classic;
+    expect(s.style, analyst);
+    expect(s.stylesHeldOf('en', GameMode.blind), {'wildcard'});
+    expect(s.stylesHeldOf('en'), {'analyst'});
+  });
+
+  test('a quartet or relay race has no playstyle', () async {
+    final s = AppState();
+    await s.load();
+    play(s, 'en', 20, mode: GameMode.quartet);
+    expect(hasPlaystyle(GameMode.quartet), isFalse);
+    expect(hasPlaystyle(GameMode.relay), isFalse);
+    expect(hasPlaystyle(GameMode.mastermind), isTrue);
+    expect(s.updateStyle(lang: 'en', mode: GameMode.quartet).style, isNull);
+  });
+
+  test('the playstyle of each mode is backed up and restored', () async {
+    final s = AppState();
+    await s.load();
+    play(s, 'en', 20);
+    play(s, 'en', 20, early: Behaviour.gambler, mode: GameMode.blind);
+    s.updateStyle(lang: 'en', mode: GameMode.classic);
+    s.updateStyle(lang: 'en', mode: GameMode.blind);
+    final b = parseBackup(backupToText(s));
+    final fresh = AppState();
+    await fresh.load();
+    fresh.restore(
+      settings: b.settings,
+      stats: b.stats,
+      ach: b.achievements,
+      languages: b.languages,
+    );
+    expect(fresh.styleOf('en'), analyst);
+    expect(fresh.styleOf('en', GameMode.blind), wildcard);
+    expect(fresh.stylesHeldOf('en', GameMode.blind), {'wildcard'});
   });
 
   test('one language\'s games do not move another\'s style', () async {

@@ -27,11 +27,14 @@ class StyleChip extends StatelessWidget {
 
   Widget _build(BuildContext context, Widget? _) {
     final c = Theme.of(context).colorScheme;
+    final mode = appState.mode;
     final p = appState.style;
-    final games = appState.history.recentClassic(100, appState.lang).length;
+    final games = appState.history.recent(mode, 100, appState.lang).length;
     final progress = '$games/$minRatedGames';
-    final tip = p == null
-        ? 'playstyle: play $minRatedGames classic games to be given one '
+    final tip = !hasPlaystyle(mode)
+        ? 'playstyle: ${mode.label} has none'
+        : p == null
+        ? 'playstyle: play $minRatedGames ${mode.label} games to be given one '
               '($progress)'
         : 'playstyle: ${p.name}. ${p.blurb}';
     return Tooltip(

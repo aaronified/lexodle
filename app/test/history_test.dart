@@ -118,19 +118,42 @@ void main() {
         addGame(h, at: i);
         if (i % 10 == 0) addGame(h, mode: GameMode.quartet, at: i);
       }
-      final recent = h.recentClassic();
+      final recent = h.recent(GameMode.classic);
       expect(recent.length, 100);
       expect(recent.every((g) => g.isClassic), isTrue);
       expect(recent.last.at, 129, reason: 'newest last');
       expect(recent.first.at, 30);
-      expect(h.recentClassic(5).length, 5);
-      expect(History().recentClassic(), isEmpty);
+      expect(h.recent(GameMode.classic, 5).length, 5);
+      expect(History().recent(GameMode.classic), isEmpty);
+    });
+
+    test('the recent games of a mode are those of that mode only', () {
+      final h = History();
+      for (var i = 0; i < 12; i++) {
+        addGame(h, mode: i.isEven ? GameMode.blind : GameMode.classic, at: i);
+      }
+      expect(h.recent(GameMode.blind).length, 6);
+      expect(
+        h.recent(GameMode.blind).every((g) => g.mode == GameMode.blind),
+        isTrue,
+      );
+      expect(h.recent(GameMode.equations), isEmpty);
+    });
+
+    test('with no mode, the recent games are those of every single board', () {
+      final h = History();
+      addGame(h, at: 1);
+      addGame(h, mode: GameMode.blind, at: 2);
+      addGame(h, mode: GameMode.quartet, at: 3);
+      addGame(h, mode: GameMode.relay, at: 4);
+      addGame(h, mode: GameMode.equations, at: 5);
+      expect([for (final g in h.recent(null)) g.at], [1, 2, 5]);
     });
 
     test('a daily is a classic game, so it counts', () {
       final h = History();
       addGame(h, daily: '2026-10-24');
-      expect(h.recentClassic().length, 1);
+      expect(h.recent(GameMode.classic).length, 1);
     });
   });
 
@@ -811,7 +834,7 @@ void main() {
       await again.load();
       expect(again.history.games.length, 3000);
       expect(again.history.guesses.length, 9000);
-      expect(again.history.recentClassic().length, 100);
+      expect(again.history.recent(GameMode.classic).length, 100);
       expect(started.elapsed, lessThan(const Duration(seconds: 20)));
     });
 

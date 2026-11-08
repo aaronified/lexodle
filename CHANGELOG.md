@@ -7,6 +7,16 @@ it to the version.
 
 ## Unreleased
 
+- every mode with one board has its own playstyle
+  Classic, lockdown, blind, equations, mastermind and themed each read a
+  playstyle from their own last 100 games, in each language. The playstyle card
+  and the glyph on the home page follow the mode, and the card says which mode
+  it is for. The card has a mode filter with an "all" option (every mode with a
+  playstyle, read together). The backup carries them all. The quartet and the
+  relay race, which play several boards, have none.
+- the history can be limited to one mode
+  A mode filter under the languages (with "all", the default) limits the overall
+  card, the trend and the list of games to that mode.
 - the tests run on every pull request
   A CI workflow runs the analyzer on lib (errors only), every test and the paper check
   on each pull request and each push to main, and the debug APK is built on pull

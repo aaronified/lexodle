@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'logic.dart' show luckText;
 import 'main.dart';
+import 'mode_filter.dart';
+import 'modes.dart';
 import 'playstyle.dart';
 import 'routes.dart';
 import 'ui.dart';
@@ -51,13 +53,17 @@ final howStyleIsRead =
     '$topRank% and 3 or more words are left). Your habit in a phase is what '
     'most of its guesses were, if that is ${(habitShare * 100).round()}% or '
     'more. The two habits make the style. It is read from your last '
-    '$styleWindow classic games, and needs $minRatedGames games and '
+    '$styleWindow games of the mode, and needs $minRatedGames games and '
     '$minPhaseGuesses guesses in each phase.';
 
 class _PlaystyleCardState extends State<PlaystyleCard> {
   /// The style whose description is open: tapped, since a tooltip needs a hover
   /// or a long press, which a phone does not give.
   Playstyle? _picked;
+
+  /// The mode the card is about (null: all of them): the one being played to
+  /// begin with, if it has playstyles.
+  GameMode? _mode = hasPlaystyle(appState.mode) ? appState.mode : null;
 
   Widget _behaviour(
     ColorScheme c,
@@ -115,17 +121,33 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final lang = widget.lang;
-    final p = appState.styleOf(lang);
-    final t = traitsOf(appState.history, lang: lang);
-    final h = habitsOf(appState.history, lang: lang);
-    final games = appState.history.recentClassic(100, lang).length;
+    final mode = _mode;
     final dim = TextStyle(
       fontSize: 12,
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
+    // with no mode picked it is all of them: read from their games together,
+    // and not kept, as each mode keeps its own
+    final modes = [
+      for (final m in GameMode.values)
+        if (hasPlaystyle(m)) m,
+    ];
+    final p = mode == null
+        ? classify(habitsOf(appState.history, mode: null, lang: lang))
+        : appState.styleOf(lang, mode);
+    final held = mode == null
+        ? {for (final m in modes) ...appState.stylesHeldOf(lang, m)}
+        : appState.stylesHeldOf(lang, mode);
+    final changes = mode == null
+        ? modes.fold(0, (n, m) => n + appState.styleChangesOf(lang, m))
+        : appState.styleChangesOf(lang, mode);
+    final t = traitsOf(appState.history, mode: mode, lang: lang);
+    final h = habitsOf(appState.history, mode: mode, lang: lang);
+    final label = mode == null ? 'all modes' : mode.label;
+    final games = appState.history.recent(mode, 100, lang).length;
     String why() {
       if (games < minRatedGames) {
-        return 'play ${minRatedGames - games} more classic '
+        return 'play ${minRatedGames - games} more ${mode == null ? '' : '$label '}'
             '${minRatedGames - games == 1 ? 'game' : 'games'} to be given a '
             'playstyle';
       }
@@ -156,6 +178,17 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Caption('playstyle · $label', key: const ValueKey('profile-mode')),
+        const SizedBox(height: 8),
+        ModeFilter(
+          modes: modes,
+          selected: mode,
+          onSelect: (m) => setState(() {
+            _mode = m;
+            _picked = null;
+          }),
+        ),
+        const SizedBox(height: 14),
         Row(
           children: [
             TablerIcon(
@@ -204,7 +237,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
           ),
           const SizedBox(height: 4),
           Text(
-            'the means over your last ${t.games} classic '
+            'the means over your last ${t.games} ${mode == null ? '' : '$label '}'
             '${t.games == 1 ? 'game' : 'games'}, up to $styleWindow',
             style: dim.copyWith(fontSize: 11),
           ),
@@ -237,7 +270,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
               Expanded(
                 child: _StyleDot(
                   s,
-                  held: appState.stylesHeldOf(lang).contains(s.id),
+                  held: held.contains(s.id),
                   current: s.id == p?.id,
                   picked: s.id == _picked?.id,
                   onTap: () =>
@@ -248,8 +281,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
         ),
         const SizedBox(height: 6),
         // what the tapped style is, in the card, so it fits any width
-        if (_picked case final s?
-            when !(s.id == p?.id || appState.stylesHeldOf(lang).contains(s.id)))
+        if (_picked case final s? when !(s.id == p?.id || held.contains(s.id)))
           // a style not unlocked yet stays hidden: no name, no description
           Text(
             'a playstyle you have not been yet. it shows once you are rated it.',
@@ -261,7 +293,7 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
             '${s.name}: ${s.blurb}'
             '${s.id == p?.id
                 ? ' (your style now)'
-                : appState.stylesHeldOf(lang).contains(s.id)
+                : held.contains(s.id)
                 ? ' (you have been this)'
                 : ' (not yet)'}',
             key: const ValueKey('style-detail'),
@@ -295,12 +327,12 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
           ),
         ] else
           Text(
-            appState.styleChangesOf(lang) == 0
+            changes == 0
                 ? 'tap a style to see what it is. it moves with the way you '
                       'play'
                 : 'tap a style to see what it is. changed '
-                      '${appState.styleChangesOf(lang)} '
-                      '${appState.styleChangesOf(lang) == 1 ? 'time' : 'times'}',
+                      '$changes '
+                      '${changes == 1 ? 'time' : 'times'}',
             style: dim.copyWith(fontSize: 11),
           ),
       ],

@@ -1,5 +1,6 @@
 import 'daily.dart';
 import 'history.dart';
+import 'modes.dart';
 import 'playstyle.dart';
 
 /// What a set of games adds up to. The means of skill, luck and risk are over
@@ -128,6 +129,7 @@ Period _period(
   String start,
   String end,
   List<GameRow> games,
+  GameMode? mode,
 ) => Period(
   label: label,
   start: start,
@@ -136,7 +138,7 @@ Period _period(
   style: classify(
     habitsOfGames(h, [
       for (final g in games)
-        if (g.isClassic) g,
+        if (mode == null ? hasPlaystyle(g.mode) : g.mode == mode) g,
     ]),
   ),
 );
@@ -151,11 +153,13 @@ List<Period> weeklyPeriods(
   String today, {
   int count = 50,
   String? lang,
+  GameMode? mode,
 }) {
   final todayN = _dayNumber(today);
   final buckets = List.generate(count, (_) => <GameRow>[]);
   for (final g in h.games) {
     if (lang != null && g.lang != lang) continue;
+    if (mode != null && g.mode != mode) continue;
     final ago = todayN - _dayNumber(_localDate(g.at));
     final i = (ago < 0 ? 0 : ago) ~/ 7;
     if (i < count) buckets[i].add(g);
@@ -168,6 +172,7 @@ List<Period> weeklyPeriods(
         dailyShift(today, -(i * 7 + 6)),
         dailyShift(today, -i * 7),
         buckets[i],
+        mode,
       ),
   ];
 }
@@ -179,12 +184,14 @@ List<Period> monthlyPeriods(
   String today, {
   int count = 50,
   String? lang,
+  GameMode? mode,
 }) {
   final t = DateTime.parse(today);
   final todayKey = t.year * 12 + t.month - 1;
   final buckets = List.generate(count, (_) => <GameRow>[]);
   for (final g in h.games) {
     if (lang != null && g.lang != lang) continue;
+    if (mode != null && g.mode != mode) continue;
     final d = DateTime.parse(_localDate(g.at));
     final ago = todayKey - (d.year * 12 + d.month - 1);
     final i = ago < 0 ? 0 : ago;
@@ -204,6 +211,7 @@ List<Period> monthlyPeriods(
           '$label-01',
           '$label-${two(last)}',
           buckets[i],
+          mode,
         );
       }(),
   ];
