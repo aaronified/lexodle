@@ -13,6 +13,7 @@ import 'daily.dart';
 import 'difficulty.dart';
 import 'history.dart';
 import 'clue.dart' show clueRoundLength;
+import 'collection.dart';
 import 'learn_log.dart';
 import 'medal.dart';
 import 'equations.dart' show equationLengths;
@@ -401,7 +402,10 @@ class Achievement {
   /// language at a time.
   bool get global =>
       track == Track.badges ||
-      (track == Track.metric && (_globalMetrics.contains(metric) || learn));
+      (track == Track.metric &&
+          (_globalMetrics.contains(metric) ||
+              _globalCounts.contains(metric) ||
+              learn));
 
   /// Whether it is earned by learn mode (see [learnMetrics]). These are kept
   /// once for the player, like the ones that count languages, but their
@@ -410,16 +414,18 @@ class Achievement {
 
   /// The target of level [i], with "every language" as [languages] when it asks
   /// for more than there are.
-  int targetAt(int i, {int languages = 0}) {
+  int targetAt(int i, {int languages = 0, int words = 0}) {
     final t = levels[i].target;
+    // "every word of the language" is the number of words it has
+    if (metric == 'collected' && t >= allWords) return words > 0 ? words : t;
     return _globalMetrics.contains(metric) && languages > 0 && t > languages
         ? languages
         : t;
   }
 
   /// Whether [v] of its metric reaches level [i].
-  bool reached(int i, double v, {int languages = 0}) {
-    final t = targetAt(i, languages: languages).toDouble();
+  bool reached(int i, double v, {int languages = 0, int words = 0}) {
+    final t = targetAt(i, languages: languages, words: words).toDouble();
     if (smaller) return v > 0 && v <= t;
     return strict ? v > t : v >= t;
   }
@@ -441,6 +447,9 @@ class Achievement {
         'mastered',
         'stylesWorn',
         'fullSet',
+        'collected',
+        'saved',
+        'noted',
       }.contains(metric);
 
   /// The first win of each kind of game is earned once: its later rounds start
@@ -461,6 +470,9 @@ class Achievement {
 /// The metrics that count up (they get a progress bar), and those that count
 /// languages (kept once for the player, not per language).
 const _counted = {
+  'collected',
+  'saved',
+  'noted',
   'wins',
   'played',
   'streak',
@@ -513,6 +525,18 @@ const _counted = {
   'learnAllThree',
 };
 const _globalMetrics = {'langs', 'mastered', 'completed', 'fullSet'};
+
+/// The counts the app keeps for the player, whatever the language, which the
+/// achievements read as they stand: the words saved, and the notes written.
+const _globalCounts = {'saved', 'noted'};
+
+/// The counts the personal dictionary moves ([advanceCounted]); the first is
+/// the player's own in each language.
+const _dictionaryCounts = {'collected', 'saved', 'noted'};
+
+/// The target of the top level of "word collector": every word of the language
+/// (see [Achievement.targetAt]).
+const allWords = 1 << 30;
 
 const _classicOnly = {GameMode.classic};
 const _anyMode = {
@@ -746,6 +770,43 @@ final achievements = <Achievement>[
     _lv(
       [1, 10, 50, 200],
       ['double fire', 'twice as hot', 'blazing', 'inferno'],
+    ),
+  ),
+  Achievement.leveled(
+    'collected',
+    'cards',
+    'word collector',
+    (n) => n >= allWords
+        ? 'collect every word of the language'
+        : 'collect $n different words',
+    'collected',
+    _lv(
+      [10, 50, 250, allWords],
+      ['first trophies', 'a shelf of words', 'a cabinet of words', 'every word'],
+    ),
+  ),
+  Achievement.leveled(
+    'saved_words',
+    'bookmark-filled',
+    'word keeper',
+    (n) => 'save $n words to my words',
+    'saved',
+    _lv(
+      [5, 25, 100, 500],
+      ['first entries', 'a small shelf', 'a library', 'an archive'],
+    ),
+  ),
+  Achievement.leveled(
+    'noted_words',
+    'bulb',
+    'annotator',
+    (n) => n == 1
+        ? 'write a note on a saved word'
+        : 'write a note on $n saved words',
+    'noted',
+    _lv(
+      [1, 10, 50, 200],
+      ['a note to self', 'marginalia', 'annotator', 'scribe'],
     ),
   ),
   Achievement.leveled(
@@ -2063,10 +2124,11 @@ void _earnLevels(
   String today,
   int languages, {
   double? count,
+  int words = 0,
 }) {
   if (!a.cycles) {
     while (st.times < a.count &&
-        a.reached(st.times, st.value, languages: languages)) {
+        a.reached(st.times, st.value, languages: languages, words: words)) {
       earned.add(a.atLevel(st.times));
       st.times++;
       st.cycle = st.times;
@@ -2078,7 +2140,7 @@ void _earnLevels(
   // medal stays once earned
   _ensureHits(a, st);
   while (st.cycle < a.count &&
-      a.reached(st.cycle, st.value, languages: languages)) {
+      a.reached(st.cycle, st.value, languages: languages, words: words)) {
     // (the first win of a later round is not earned again)
     if (!(a.firstOnce && st.cycle == 0 && st.rounds > 0)) {
       earned.add(a.atLevel(st.cycle));
@@ -2235,6 +2297,26 @@ List<Achievement> advanceLearnAchievements(
   return earned;
 }
 
+/// Moves the achievements that read a count the personal dictionary keeps (see
+/// [_dictionaryCounts]) to [counts], and returns the levels that earned. [words]
+/// is how many words the language has, for "every word". Pure, like
+/// [advanceAchievements].
+List<Achievement> advanceCounted(
+  Map<String, AchState> states,
+  String today, {
+  required Map<String, int> counts,
+  int words = 0,
+}) {
+  final earned = <Achievement>[];
+  for (final a in achievements) {
+    if (!_dictionaryCounts.contains(a.metric)) continue;
+    final st = states.putIfAbsent(a.id, AchState.new);
+    st.value = (counts[a.metric] ?? 0).toDouble();
+    _earnLevels(earned, a, st, today, 0, words: words);
+  }
+  return earned;
+}
+
 /// Applies one finished game to every achievement's state and returns the
 /// ones it earned. Pure, so it is tested without any storage.
 ///
@@ -2249,11 +2331,19 @@ List<Achievement> advanceAchievements(
   Set<String> mastered = const {},
   Map<String, int> counts = const {},
   int languages = 0,
+  int words = 0,
 }) {
   final earned = <Achievement>[];
   void ensureHits(Achievement a, AchState st) => _ensureHits(a, st);
-  void earnLevels(Achievement a, AchState st, {double? count}) =>
-      _earnLevels(earned, a, st, today, languages, count: count);
+  void earnLevels(Achievement a, AchState st, {double? count}) => _earnLevels(
+    earned,
+    a,
+    st,
+    today,
+    languages,
+    count: count,
+    words: words,
+  );
 
   for (final a in allAchievements) {
     final st = states.putIfAbsent(a.id, AchState.new);
@@ -2846,26 +2936,114 @@ class AppState extends ChangeNotifier {
   bool isWordSaved(String lang, String word) => savedWords.contains(lang, word);
 
   /// Saves [word] of [lang] with a copy of its [info] (null when it could not
-  /// be had); [today] is the day to record, the local date by default.
-  void saveWord(String lang, String word, WordInfo? info, {String? today}) {
-    if (savedWords.contains(lang, word)) return;
+  /// be had); [today] is the day to record, the local date by default. Returns
+  /// the achievement levels it earned.
+  List<Achievement> saveWord(
+    String lang,
+    String word,
+    WordInfo? info, {
+    String? today,
+  }) {
+    if (savedWords.contains(lang, word)) return const [];
     final d = today ?? DateTime.now().toIso8601String().substring(0, 10);
     savedWords.add(SavedWord(lang: lang, word: word, date: d, info: info));
     _saveWords();
+    final earned = refreshCounted(today: d);
     notifyListeners();
+    return earned;
   }
 
   /// Removes a saved word.
   void unsaveWord(String lang, String word) {
     if (!savedWords.remove(lang, word)) return;
     _saveWords();
+    refreshCounted();
     notifyListeners();
   }
 
   /// Sets the note of a saved word. It does not notify: the page that types it
-  /// is the one showing it.
-  void setWordNote(String lang, String word, String note) {
-    if (savedWords.setNote(lang, word, note)) _saveWords();
+  /// is the one showing it. Returns the achievement levels it earned (the first
+  /// note on a word, and so on).
+  List<Achievement> setWordNote(String lang, String word, String note) {
+    final before = savedWords.notedCount;
+    if (!savedWords.setNote(lang, word, note)) return const [];
+    _saveWords();
+    return savedWords.notedCount == before ? const [] : refreshCounted();
+  }
+
+  /// The words won, kept like trophies (see collection.dart): every answer of
+  /// a won game, and the places of won geography games.
+  Collection collection = Collection();
+
+  /// Collects the answers of a won game of [mode] in [lang]: words, or places
+  /// for geography; an equation is not a word. True when one was new.
+  bool _collect(String lang, GameMode mode, Iterable<String> answers) {
+    if (mode.isEquations) return false;
+    var fresh = false;
+    for (final a in answers) {
+      final isNew = mode == GameMode.themed
+          ? collection.addPlace(a)
+          : collection.addWord(lang, a);
+      fresh = fresh || isNew;
+    }
+    return fresh;
+  }
+
+  void _saveCollection() {
+    try {
+      _w(
+        'collection',
+        _prefs?.setString('collection', jsonEncode(collection.toJson())),
+      );
+    } catch (_) {}
+  }
+
+  void _readCollection(SharedPreferences p) {
+    final raw = p.getString('collection');
+    if (raw == null) return;
+    try {
+      collection = Collection.fromJson(jsonDecode(raw));
+    } catch (e) {
+      appLog.w('store', 'the collection could not be read: ${e.runtimeType}');
+    }
+  }
+
+  /// How many words [lang] has, in every length: what "every word" asks for. 0
+  /// when the languages are not loaded.
+  int wordsOf(String lang) {
+    for (final l in WordBank.loadedLanguages ?? const <Language>[]) {
+      if (l.code == lang) return l.counts.values.fold(0, (n, c) => n + c);
+    }
+    return 0;
+  }
+
+  /// The counts the personal dictionary moves, for [lang].
+  Map<String, int> _dictionaryCountsOf(String lang) => {
+    'collected': collection.countOf(lang),
+    'saved': savedWords.length,
+    'noted': savedWords.notedCount,
+  };
+
+  /// Moves the achievements that read the personal dictionary's counts (words
+  /// collected in each language, saved, noted), after one of them changed, and
+  /// the completion that depends on them. Returns the levels it earned.
+  List<Achievement> refreshCounted({String? today}) {
+    final d = today ?? DateTime.now().toIso8601String().substring(0, 10);
+    final earned = <Achievement>[];
+    final langs = {...collection.languages, ...playedLanguages, lang};
+    for (final l in langs) {
+      earned.addAll(
+        advanceCounted(
+          achOf(l),
+          d,
+          counts: _dictionaryCountsOf(l),
+          words: wordsOf(l),
+        ),
+      );
+    }
+    earned.addAll(_grantCompletion(d));
+    _saveAchievements();
+    return earned;
   }
 
   void _saveWords() {
@@ -3010,6 +3188,8 @@ class AppState extends ChangeNotifier {
       largest: largest,
     );
     saveHistory();
+    // a won game's words are collected like trophies
+    if (won && _collect(lang, mode, answers)) _saveCollection();
     notifyListeners();
     return row.id;
   }
@@ -3293,6 +3473,7 @@ class AppState extends ChangeNotifier {
       _readAchievements(p);
       _readLearn(p);
       _readWords(p);
+      _readCollection(p);
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
       // first start of this version, or it was lost) it is done again.
@@ -3426,7 +3607,7 @@ class AppState extends ChangeNotifier {
 
   /// The version of the achievements kept: when it is older than this, they are
   /// worked out again from the games kept (see [rebuildAchievements]).
-  static const achievementsVersion = 3;
+  static const achievementsVersion = 4;
 
   /// Works every achievement out again from the games kept, oldest first, as
   /// if each had just been played: what was earned, on which day, and how far
@@ -3440,15 +3621,21 @@ class AppState extends ChangeNotifier {
     final logs = <String, Map<String, int>>{};
     final langs = WordBank.loadedLanguages ?? const <Language>[];
     final lastOf = {for (final g in games) g.lang: g.id};
+    // the words won are collected again from the games kept, as they go
+    final held = collection;
+    collection = Collection();
     for (final g in games) {
+      if (g.won) _collect(g.lang, g.mode, g.answers);
       final rows = history.guessesOf(g.id);
       var luck = 0.0, risk = 0.0, n = 0, rn = 0, bits = 0.0;
       for (final r in rows) {
         if (r.gain > bits) bits = r.gain;
-        // a quartet or relay race keeps no word counts: every step counts
-        if (r.before <= 1 && !g.mode.multi) continue;
+        // luck is the mean of every guess (as the end screen shows it); a guess
+        // with one word left has no risk, and a quartet or relay race keeps no
+        // word counts, so every step counts
         luck += r.luck;
         n++;
+        if (r.before <= 1 && !g.mode.multi) continue;
         final k = r.risk;
         if (k != null) {
           risk += k;
@@ -3501,13 +3688,25 @@ class AppState extends ChangeNotifier {
           'langs': temp.langsWon.length,
           'mastered': mastered.length,
           'completed': 0,
+          ..._dictionaryCountsOf(g.lang),
         },
         languages: langs.length,
+        words: wordsOf(g.lang),
       );
     }
+    // a collection with more than the games kept (a backup, a history that was
+    // trimmed) keeps what it has
+    for (final l in held.languages) {
+      for (final w in held.wordsOf(l).reversed) {
+        collection.addWord(l, w);
+      }
+    }
+    for (final p in held.places.reversed) {
+      collection.addPlace(p);
+    }
+    _saveCollection();
     _replayLearn();
-    _grantCompletion(DateTime.now().toIso8601String().substring(0, 10));
-    _saveAchievements();
+    refreshCounted();
   }
 
   /// The achievements as they are saved: the global ones, then each language's.
@@ -3563,6 +3762,7 @@ class AppState extends ChangeNotifier {
     History? history,
     LearnLog? learn,
     SavedWords? words,
+    Collection? collected,
   }) {
     appLog.i(
       'restore',
@@ -3613,6 +3813,17 @@ class AppState extends ChangeNotifier {
       savedWords = words;
       _saveWords();
     }
+    // the words won come with the backup; from before they did, they are
+    // collected again from the games it kept
+    if (collected != null) {
+      collection = collected;
+    } else {
+      collection = Collection();
+      for (final g in this.history.games) {
+        if (g.won) _collect(g.lang, g.mode, g.answers);
+      }
+    }
+    _saveCollection();
     if (learn != null) {
       // its achievements came with the backup's own
       learnLog = learn;
@@ -3768,8 +3979,10 @@ class AppState extends ChangeNotifier {
         'langs': stats.langsWon.length,
         'mastered': masteredLanguages().length,
         'completed': completedLanguages().length,
+        ..._dictionaryCountsOf(r.lang),
       },
       languages: (WordBank.loadedLanguages ?? const <Language>[]).length,
+      words: wordsOf(r.lang),
     );
     final ids = {for (final a in allAchievements.where((a) => a.global)) a.id};
     for (final e in view.entries) {

@@ -77,6 +77,9 @@ class SavedWords {
   int get length => _words.length;
   bool get isEmpty => _words.isEmpty;
 
+  /// How many saved words have a note.
+  int get notedCount => _words.where((w) => w.note.trim().isNotEmpty).length;
+
   bool contains(String lang, String word) =>
       _words.any((w) => w.lang == lang && w.word == word);
 
