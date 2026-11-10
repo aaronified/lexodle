@@ -20,6 +20,9 @@ import 'package:lexodle/store.dart';
 const gemOf = [1, 2, 3, 5]; // bronze, silver, gold, platinum
 const languages = 20;
 
+/// How many lex a repeat earns less than the first time (0: the same).
+const repeatLess = 0;
+
 final rnd = Random(7);
 double gauss(double m, double s) {
   final u = 1 - rnd.nextDouble(), v = rnd.nextDouble();
@@ -144,14 +147,17 @@ GameResult game(
 /// v1 only the top level of each achievement a game earned,
 /// v2 only the first time each level is ever earned,
 /// v3 first time, plus one repeat (the best) per achievement per day,
+/// v5 top level per achievement per game, each achievement once a day,
+/// v6 as v5, but once a day in each language (the app keeps one set each),
 /// v4 first time, plus repeats of the counting achievements only (the
 ///    best-of ones, which pay on every good game, pay nothing again).
 class Tally {
-  static const rules = ['v0', 'v1', 'v2', 'v3', 'v4'];
+  static const rules = ['v0', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6'];
   final units = {for (final r in rules) r: <int>[]}; // gems of each game
   final bySource = <String, int>{};
   final seen = <String>{};
   final paidToday = <String>{};
+  final paidDay = <String>{};
   int first = 0, repeat = 0, events = 0;
 
   int total(String r) => units[r]!.fold(0, (x, y) => x + y);
@@ -160,8 +166,8 @@ class Tally {
   int get v2 => total('v2');
   List<int> get perUnit => units['v0']!;
 
-  void add(List<Achievement> earned, [String date = '']) {
-    int g0 = 0, g2 = 0, g3 = 0, g4 = 0;
+  void add(List<Achievement> earned, [String date = '', String lang = 'en']) {
+    int g0 = 0, g2 = 0, g3 = 0, g4 = 0, g5 = 0, g6 = 0;
     final bestRepeat = <String, int>{};
     final firstKeys = <String>{};
     for (final a in earned) {
@@ -169,7 +175,7 @@ class Tally {
       final full = gemOf[a.medal.index];
       final isFirst = seen.add('${a.id}:${a.level}');
       // a repeat earns one less than the first time (bronze nothing)
-      final g = isFirst ? full : max(0, full - 1);
+      final g = isFirst ? full : max(0, full - repeatLess);
       if (isFirst) firstKeys.add('${a.id}:${a.level}');
       g0 += g;
       bySource[a.id] = (bySource[a.id] ?? 0) + g;
@@ -191,9 +197,11 @@ class Tally {
     for (final a in topLevels(earned)) {
       if (a.track == Track.badges) continue;
       final full = gemOf[a.medal.index];
-      g1 += firstKeys.contains('${a.id}:${a.level}') ? full : max(0, full - 1);
+      if (paidDay.add('${a.id}@$date')) g5 += full;
+      if (paidDay.add('${a.id}@$date@$lang')) g6 += full;
+      g1 += firstKeys.contains('${a.id}:${a.level}') ? full : max(0, full - repeatLess);
     }
-    for (final (r, g) in [('v0', g0), ('v1', g1), ('v2', g2), ('v3', g3), ('v4', g4)]) {
+    for (final (r, g) in [('v0', g0), ('v1', g1), ('v2', g2), ('v3', g3), ('v4', g4), ('v5', g5), ('v6', g6)]) {
       units[r]!.add(g);
     }
     events++;
@@ -244,6 +252,32 @@ Tally runFarm(Profile p, GameMode m, int games) {
   for (var i = 0; i < games; i++) {
     final r = game(p, m, stylesHeld: 6);
     t.add(advanceAchievements(states, r, dateOf(i ~/ 50), counts: _counts, languages: languages), dateOf(i ~/ 50));
+  }
+  return t;
+}
+
+
+/// A farmer who plays [perDay] solver games a day over [days] days, rotating
+/// the six daily modes and [langs] languages (each language has its own set
+/// of achievements, as in the app).
+Tally runFarmDays(int perDay, int days, int langs) {
+  final states = [for (var l = 0; l < langs; l++) <String, AchState>{}];
+  final t = Tally();
+  const modes = [
+    GameMode.classic, GameMode.quartet, GameMode.relay,
+    GameMode.lockdown, GameMode.blind, GameMode.equations,
+  ];
+  for (var d = 0; d < days; d++) {
+    for (var i = 0; i < perDay; i++) {
+      final l = i % langs, m = modes[(i ~/ langs) % modes.length];
+      final date = dateOf(d);
+      final r = game(solver, m, stylesHeld: 6);
+      t.add(
+        advanceAchievements(states[l], r, date, counts: _counts, languages: languages),
+        date,
+        'l$l',
+      );
+    }
   }
   return t;
 }
@@ -420,6 +454,25 @@ void main() {
         String y(int a, int b) => (u.sublist(a * 6, b * 6).fold(0, (x, y) => x + y) / (b - a)).toStringAsFixed(1);
         return '$r ${y(0, 365)}/${y(365, 730)}/${y(1460, 1825)}';
       }).join(', ')}');
+    }
+    // 4. once a day per achievement, top level only, full pay
+    p('## 4. once a day per achievement, top level per game, repeats full');
+    p('v5 once a day across languages, v6 once a day in each language');
+    p('| player | v5 lex/day | v6 lex/day |');
+    p('|---|---|---|');
+    for (final s in [70.0, 78.0, 84.0]) {
+      final t = runDailies(
+        Profile('s$s', skill: s, skillSd: 9, winP: .95, usedDelta: 0,
+            usedSd: 1.0, luckSd: 28, risk: 30, bits: 6.0, flawlessHearts: .55),
+        1000,
+      );
+      p('| daily player, skill ${s.toInt()} | ${(t.total('v5') / days).toStringAsFixed(1)} | '
+          '${(t.total('v6') / days).toStringAsFixed(1)} |');
+    }
+    for (final (n, langs) in [('1 language', 1), ('5 languages', 5), ('20 languages', 20)]) {
+      final t = runFarmDays(120, 30, langs);
+      p('| farmer, 120 solver games a day, $n | ${(t.total('v5') / 30).toStringAsFixed(1)} | '
+          '${(t.total('v6') / 30).toStringAsFixed(1)} |');
     }
     p('');
     // ignore: avoid_print
