@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.9.0
+
 - my words: save words, and collect every word you win
   A bookmark beside the answer on the end screen (lost games too, and on each
   word of a quartet or relay race) saves the word with a copy of its Wiktionary
