@@ -31,7 +31,10 @@ import 'solver.dart';
 import 'ui.dart';
 import 'geography.dart';
 import 'modes.dart';
+import 'saved_words.dart';
+import 'word_page.dart';
 import 'words.dart';
+import 'words_page.dart';
 
 /// Every screen has an address, so the browser's refresh and back buttons work
 /// as they do on any site. The web build uses the hash strategy
@@ -67,6 +70,11 @@ class Routes {
   static const diy = '/diy';
   static const playstyle = '/playstyle';
   static const about = '/about';
+  static const words = '/words';
+
+  /// One saved word; it travels as the route's argument, so an address alone
+  /// shows the list instead.
+  static const word = '/words/entry';
 }
 
 /// The argument that tells the how-to page it is the first-visit onboarding.
@@ -157,6 +165,13 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       );
     case Routes.history:
       return page(const HistoryPage());
+    case Routes.words:
+      return page(const WordsPage());
+    case Routes.word:
+      final entry = settings.arguments;
+      return page(
+        entry is SavedWord ? WordPage(entry: entry) : const WordsPage(),
+      );
     case Routes.review:
       final record = settings.arguments;
       // a finished game cannot be rebuilt from an address
@@ -304,6 +319,7 @@ const _known = {
   Routes.gameModes,
   Routes.playstyle,
   Routes.about,
+  Routes.words,
 };
 
 /// A popup as a route. The scrim is tinted from the theme (no colour is

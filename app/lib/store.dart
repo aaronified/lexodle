@@ -18,7 +18,9 @@ import 'medal.dart';
 import 'equations.dart' show equationLengths;
 import 'modes.dart';
 import 'playstyle.dart';
+import 'saved_words.dart';
 import 'words.dart';
+import 'wiktionary.dart' show WordInfo;
 
 /// How much the game tells you while you play. Whatever the level, a finished
 /// game reveals everything (as in the original).
@@ -2836,6 +2838,55 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// The player's personal dictionary: the words saved from the end of a game,
+  /// with the entry as it was and a note of their own (see saved_words.dart).
+  SavedWords savedWords = SavedWords();
+
+  /// Whether [word] of [lang] is saved.
+  bool isWordSaved(String lang, String word) => savedWords.contains(lang, word);
+
+  /// Saves [word] of [lang] with a copy of its [info] (null when it could not
+  /// be had); [today] is the day to record, the local date by default.
+  void saveWord(String lang, String word, WordInfo? info, {String? today}) {
+    if (savedWords.contains(lang, word)) return;
+    final d = today ?? DateTime.now().toIso8601String().substring(0, 10);
+    savedWords.add(SavedWord(lang: lang, word: word, date: d, info: info));
+    _saveWords();
+    notifyListeners();
+  }
+
+  /// Removes a saved word.
+  void unsaveWord(String lang, String word) {
+    if (!savedWords.remove(lang, word)) return;
+    _saveWords();
+    notifyListeners();
+  }
+
+  /// Sets the note of a saved word. It does not notify: the page that types it
+  /// is the one showing it.
+  void setWordNote(String lang, String word, String note) {
+    if (savedWords.setNote(lang, word, note)) _saveWords();
+  }
+
+  void _saveWords() {
+    try {
+      _w(
+        'savedWords',
+        _prefs?.setString('savedWords', jsonEncode(savedWords.toJson())),
+      );
+    } catch (_) {}
+  }
+
+  void _readWords(SharedPreferences p) {
+    final raw = p.getString('savedWords');
+    if (raw == null) return;
+    try {
+      savedWords = SavedWords.fromJson(jsonDecode(raw));
+    } catch (e) {
+      appLog.w('store', 'the saved words could not be read: $e');
+    }
+  }
+
   /// The playstyle in each language and mode (a [Playstyle.id]; none until
   /// rated), every one the player has been rated there, and how many times it
   /// has changed. Keyed by [styleKey]. See playstyle.dart.
@@ -3241,6 +3292,7 @@ class AppState extends ChangeNotifier {
       }
       _readAchievements(p);
       _readLearn(p);
+      _readWords(p);
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
       // first start of this version, or it was lost) it is done again.
@@ -3510,6 +3562,7 @@ class AppState extends ChangeNotifier {
     Map<String, LanguageKept>? languages,
     History? history,
     LearnLog? learn,
+    SavedWords? words,
   }) {
     appLog.i(
       'restore',
@@ -3555,6 +3608,11 @@ class AppState extends ChangeNotifier {
     _saveDailyLog();
     // likewise a backup from before the history
     if (history != null) _replaceHistory(history);
+    // a backup from before the saved words leaves what is saved alone
+    if (words != null) {
+      savedWords = words;
+      _saveWords();
+    }
     if (learn != null) {
       // its achievements came with the backup's own
       learnLog = learn;

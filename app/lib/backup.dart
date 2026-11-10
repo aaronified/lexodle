@@ -9,6 +9,7 @@ import 'history.dart';
 import 'learn_log.dart';
 import 'modes.dart';
 import 'playstyle.dart';
+import 'saved_words.dart';
 import 'store.dart';
 
 /// The version of the backup file; a file from a later one is refused rather
@@ -31,6 +32,7 @@ class Backup {
     this.languages,
     this.history,
     this.learn,
+    this.words,
   });
 
   final DateTime exported;
@@ -48,6 +50,10 @@ class Backup {
   /// What learn mode has done; null in a backup from before it, which leaves
   /// what is saved alone.
   final LearnLog? learn;
+
+  /// The saved words (the personal dictionary); null in a backup from before
+  /// it, which leaves what is saved alone.
+  final SavedWords? words;
 
   /// The settings present in the file (a missing one keeps its current value).
   final Map<String, Object> settings;
@@ -121,6 +127,7 @@ String backupToText(AppState state, {DateTime? now}) {
     // one compact line: indented, a few hundred games would swamp the file
     'history': jsonEncode(state.history.toJson()),
     'learn': jsonEncode(state.learnLog.toJson()),
+    'words': jsonEncode(state.savedWords.toJson()),
   });
 }
 
@@ -228,6 +235,7 @@ Backup parseBackup(String text) {
       languages: languages,
       history: history,
       learn: _learn(raw['learn']),
+      words: _words(raw['words']),
     );
   } on FormatException {
     rethrow;
@@ -406,6 +414,17 @@ LearnLog? _learn(Object? raw) {
     return LearnLog.fromJson(raw is String ? jsonDecode(raw) : raw);
   } on FormatException {
     _bad('learn');
+  }
+}
+
+/// The saved words, or null when the file has none. Entries that are not words
+/// are left out rather than refusing the file.
+SavedWords? _words(Object? raw) {
+  if (raw == null) return null;
+  try {
+    return SavedWords.fromJson(raw is String ? jsonDecode(raw) : raw);
+  } on FormatException {
+    _bad('words');
   }
 }
 
