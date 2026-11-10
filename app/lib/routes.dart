@@ -31,6 +31,8 @@ import 'solver.dart';
 import 'ui.dart';
 import 'geography.dart';
 import 'modes.dart';
+import 'collected_word_page.dart';
+import 'collection.dart';
 import 'saved_words.dart';
 import 'word_page.dart';
 import 'words.dart';
@@ -75,6 +77,9 @@ class Routes {
   /// One saved word; it travels as the route's argument, so an address alone
   /// shows the list instead.
   static const word = '/words/entry';
+
+  /// One collected word, which travels as a [CollectedRef].
+  static const collected = '/words/collected';
 }
 
 /// The argument that tells the how-to page it is the first-visit onboarding.
@@ -167,6 +172,11 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(const HistoryPage());
     case Routes.words:
       return page(const WordsPage());
+    case Routes.collected:
+      final ref = settings.arguments;
+      return page(
+        ref is CollectedRef ? CollectedWordPage(ref: ref) : const WordsPage(),
+      );
     case Routes.word:
       final entry = settings.arguments;
       return page(
