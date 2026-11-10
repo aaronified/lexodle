@@ -469,7 +469,7 @@ void main() {
       p('| daily player, skill ${s.toInt()} | ${(t.total('v5') / days).toStringAsFixed(1)} | '
           '${(t.total('v6') / days).toStringAsFixed(1)} |');
     }
-    for (final (n, langs) in [('1 language', 1), ('5 languages', 5), ('20 languages', 20)]) {
+    for (final (n, langs) in [('1 language', 1), ('3 languages', 3), ('5 languages', 5), ('20 languages', 20)]) {
       final t = runFarmDays(120, 30, langs);
       p('| farmer, 120 solver games a day, $n | ${(t.total('v5') / 30).toStringAsFixed(1)} | '
           '${(t.total('v6') / 30).toStringAsFixed(1)} |');
