@@ -24,6 +24,40 @@ class _WordInfoViewState extends State<WordInfoView> {
     widget.language.code,
     widget.language.wikt,
   );
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<WordInfo?>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Caption('looking up in wiktionary…');
+        }
+        final info = snap.data;
+        if (snap.hasError) {
+          return const Caption('could not reach wiktionary');
+        }
+        if (info == null || info.isEmpty) {
+          return const Caption('no wiktionary entry for this word');
+        }
+        return WordInfoBody(info: info);
+      },
+    );
+  }
+}
+
+/// An entry already in hand: the pronunciation, the meanings by part of speech
+/// with their examples, the origin, synonyms and antonyms. The end screen shows
+/// it for the answer ([WordInfoView]), and a saved word shows its own copy.
+class WordInfoBody extends StatefulWidget {
+  const WordInfoBody({super.key, required this.info});
+  final WordInfo info;
+
+  @override
+  State<WordInfoBody> createState() => _WordInfoBodyState();
+}
+
+class _WordInfoBodyState extends State<WordInfoBody> {
   AudioPlayer? _player;
 
   @override
@@ -43,87 +77,73 @@ class _WordInfoViewState extends State<WordInfoView> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return FutureBuilder<WordInfo?>(
-      future: _future,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Caption('looking up in wiktionary…');
-        }
-        final info = snap.data;
-        if (snap.hasError) {
-          return const Caption('could not reach wiktionary');
-        }
-        if (info == null || info.isEmpty) {
-          return const Caption('no wiktionary entry for this word');
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (info.ipa.isNotEmpty || info.audio != null)
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      info.ipa.join('   '),
-                      style: TextStyle(color: c.primary, fontSize: 15),
-                    ),
-                  ),
-                  if (info.audio != null)
-                    IconButton(
-                      tooltip: 'listen',
-                      visualDensity: VisualDensity.compact,
-                      color: c.primary,
-                      icon: const Icon(Icons.volume_up_outlined, size: 20),
-                      onPressed: () => _play(info.audio!),
-                    ),
-                ],
-              ),
-            for (final b in info.blocks) ...[
-              const SizedBox(height: 12),
-              _heading(c, b),
-              const SizedBox(height: 6),
-              for (var i = 0; i < b.senses.length; i++)
-                _sense(c, i + 1, b.senses[i]),
-            ],
-            if (info.etymology.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _label('origin', yellowOf(c)),
-              const SizedBox(height: 2),
-              Text(
-                info.etymology,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                  color: c.onSurface.withValues(alpha: .75),
+    final info = widget.info;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (info.ipa.isNotEmpty || info.audio != null)
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  info.ipa.join('   '),
+                  style: TextStyle(color: c.primary, fontSize: 15),
                 ),
               ),
+              if (info.audio != null)
+                IconButton(
+                  tooltip: 'listen',
+                  visualDensity: VisualDensity.compact,
+                  color: c.primary,
+                  icon: const Icon(Icons.volume_up_outlined, size: 20),
+                  onPressed: () => _play(info.audio!),
+                ),
             ],
-            if (info.synonyms.isNotEmpty)
-              _nyms(
-                'synonyms',
-                info.synonyms,
-                c.secondaryContainer,
-                c.onSecondaryContainer,
-              ),
-            if (info.antonyms.isNotEmpty)
-              _nyms(
-                'antonyms',
-                info.antonyms,
-                c.errorContainer,
-                c.onErrorContainer,
-              ),
-            const SizedBox(height: 4),
-            TextButton(
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 36),
-              ),
-              onPressed: () => launchUrl(Uri.parse(info.url)),
-              child: Text('wiktionary ↗', style: TextStyle(color: c.primary)),
+          ),
+        for (final b in info.blocks) ...[
+          const SizedBox(height: 12),
+          _heading(c, b),
+          const SizedBox(height: 6),
+          for (var i = 0; i < b.senses.length; i++)
+            _sense(c, i + 1, b.senses[i]),
+        ],
+        if (info.etymology.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _label('origin', yellowOf(c)),
+          const SizedBox(height: 2),
+          Text(
+            info.etymology,
+            style: TextStyle(
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+              color: c.onSurface.withValues(alpha: .75),
             ),
-          ],
-        );
-      },
+          ),
+        ],
+        if (info.synonyms.isNotEmpty)
+          _nyms(
+            'synonyms',
+            info.synonyms,
+            c.secondaryContainer,
+            c.onSecondaryContainer,
+          ),
+        if (info.antonyms.isNotEmpty)
+          _nyms(
+            'antonyms',
+            info.antonyms,
+            c.errorContainer,
+            c.onErrorContainer,
+          ),
+        const SizedBox(height: 4),
+        TextButton(
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 36),
+          ),
+          onPressed: () => launchUrl(Uri.parse(info.url)),
+          child: Text('wiktionary ↗', style: TextStyle(color: c.primary)),
+        ),
+      ],
     );
   }
 
