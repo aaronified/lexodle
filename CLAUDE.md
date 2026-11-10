@@ -11,3 +11,17 @@
 
 - Dart and Flutter are not installed in the cloud session, but they can be: download the Flutter SDK from storage.googleapis.com into `/home/user/sdk` (pub.dev is reachable; the GitHub flutter repo is not), then `flutter pub get`, `dart analyze` and `flutter test` in `app`. Design in a mockup first, then build and test.
 - No LaTeX is installed: check `docs/paper/*.tex` with `python docs/paper/check_tex.py`, and say the PDFs are stale.
+
+## Delegation
+
+- For simple, straightforward coding jobs, use Haiku subagents.
+- The lead acts as the Lead Mobile Architect: it produces the system architecture, writes the core state management, and breaks UI features down into small, isolated tasks for Haiku subagents to code.
+- Break complex problems into byte-size pieces a Haiku can deal with.
+- Haiku subagents never improvise. If something in the task is unclear, missing or does not fit, they stop and report the issue. The lead solves it and messages them back with the altered parameters.
+- The lead reviews their work, fixes what is needed, and merges the PRs once they are green.
+- Every Haiku-written piece of code that can fail (network lookups, storage, JSON, async callbacks, navigation) is wrapped in try/catch, and every caught issue is reported to the app log (`appLog.w` or `appLog.e` from `lib/app_log.dart`, with a short tag and the error), never swallowed silently. The app keeps working: it degrades, and logs. The log never records words or guesses, so log the error's type (`${e.runtimeType}`), not its text, which can carry a word or a URL.
+
+## Testing and merging
+
+- Do not run the full test suite locally: CI runs it on every pull request, so work goes through a PR on the working branch and the lead reads the CI result. Locally, run only what is needed to get a change compiling (`dart analyze` and the one test file being written), never the whole suite.
+- Always use PRs: every change, however small (code, docs, `CLAUDE.md` itself), goes through a pull request. Nothing is pushed or merged to `main` directly, and nothing is left on a branch without a PR open for it. The lead opens the PR, reads the CI result, fixes it if it is red, and merges once it is green.

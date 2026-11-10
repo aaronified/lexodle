@@ -286,6 +286,8 @@ class _BackupSectionState extends State<_BackupSection> {
       languages: b.languages,
       history: b.history,
       learn: b.learn,
+      words: b.words,
+      collected: b.collected,
     );
     setState(() {
       _pending = null;

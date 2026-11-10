@@ -10,7 +10,7 @@ enum GameMode {
   quartet('quartet', 'four words at once', 4, 3),
   relay('relay race', 'four words, one after the other', 4, 4),
   lockdown('lockdown', 'greens lock · bad words cost hearts', 1, 0),
-  themed('themed', 'words of a theme only · english', 1, 0),
+  themed('geography', 'place names only · english', 1, 0),
   blind('blind', 'only counts, no tile colours', 1, 0),
   // the two last were added after the others: a saved game or setting keeps its
   // mode by position, so the order here must not change
@@ -35,8 +35,8 @@ enum GameMode {
       if (m != themed || lang == 'en') m,
   ];
 
-  /// Whether the mode has a daily: every mode but themed and mastermind.
-  bool get hasDaily => this != themed && this != mastermind;
+  /// Whether the mode has a daily: every mode has one.
+  bool get hasDaily => true;
 
   /// Whether the answers are equations, not words.
   bool get isEquations => this == equations;

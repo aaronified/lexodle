@@ -7,6 +7,35 @@ it to the version.
 
 ## Unreleased
 
+- my words: save words, and collect every word you win
+  A bookmark beside the answer on the end screen (lost games too, and on each
+  word of a quartet or relay race) saves the word with a copy of its Wiktionary
+  entry, so it opens without a connection. My words, next to how to play on the
+  home page and as a card in learn, lists them with a language filter, search
+  and sort, a note of your own on each (shown cut short in the list). Every
+  answer of a won game is also collected like a trophy, by language (and places
+  for geography), in a second tab; its entry is fetched when you open it, and
+  the bookmark keeps a copy. Three achievements: word collector (the top level
+  is every word of the language), word keeper and annotator. Wins already in
+  the history are collected when the achievements are rebuilt. The backup
+  carries it all.
+
+- themed is now called geography
+  The themed wordle is renamed geography, and the other themes (mythology,
+  history, mathematics) are hidden for now; their code stays. Saved games and
+  settings keep their place.
+- luck achievements average every guess
+  A guess made with one word left has no chance in it, so scores 0 luck, and the
+  achievements now count it, as the luck on the end screen does. Before, the
+  achievement skipped it, so +16% on screen could earn a +20 achievement.
+- mastermind and geography have a daily
+  Both modes get a daily button on the home page, a streak and a calendar, like
+  the other modes. The mastermind daily has no word and no limit on guesses:
+  what it says to each guess is drawn from the date, so everyone who makes the
+  same guesses gets the same replies (always random pools). The geography daily
+  is one five-letter place, English only. A clean sweep counts the dailies a
+  language offers, so the geography one is not asked of other languages.
+
 ## 0.8.0
 
 - every mode with one board has its own playstyle

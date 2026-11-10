@@ -2,6 +2,7 @@ import 'dart:math' show min;
 
 import 'clock.dart';
 import 'equations.dart';
+import 'logic.dart' show Mark, evaluate;
 import 'modes.dart';
 import 'words.dart';
 
@@ -229,6 +230,25 @@ int dailyCurveIndex(String key, String date, List<int> weights) {
   return picks[day];
 }
 
+/// What the mastermind daily of [lang] on [date] answers to [guess], the
+/// [index]th of the day: the marks one of the [words] still possible would give.
+/// The word is drawn by a hash of the date, the language, the number of the guess
+/// and the guess itself, so every device that has the same word list gets the
+/// same replies, and a game left half played gives back what it said. The draw
+/// is the one of the mastermind's random pools: each word equally likely, so a
+/// reply is as likely as its pool is large.
+List<Mark> mastermindDailyReply(
+  List<String> words,
+  String guess,
+  String lang,
+  String date,
+  int index,
+) {
+  if (words.isEmpty) return evaluate(guess, guess);
+  final h = dailyHash('lexodle-daily-mastermind|$lang|$date|$index|$guess');
+  return evaluate(words[h % words.length], guess);
+}
+
 /// Today's (or [date]'s) daily: the date and its answer.
 class Daily {
   const Daily(
@@ -266,6 +286,9 @@ class Daily {
     }
     final all = bank.answers(dailyLength);
     if (all.isEmpty) return null;
+    // the mastermind's word is not chosen: what it says to each guess is drawn
+    // from the date (see [mastermindDailyReply]), with no limit on guesses
+    if (mode == GameMode.mastermind) return Daily(d, '', tries: 0);
     final code = bank.language.code;
     final key = mode == GameMode.classic ? code : '$code|${mode.name}';
     if (dailyUsesCurve(d)) {
@@ -284,6 +307,7 @@ class Daily {
 /// The tries of a daily in [mode]: the fixed daily difficulty, with the extra
 /// tries the mode has (9 for a quartet, 10 for a relay race).
 int dailyTriesOf(GameMode mode) => switch (mode) {
+  GameMode.mastermind => 0,
   GameMode.blind => blindDailyTries,
   GameMode.equations => equationDailyTries,
   _ => triesFor(mode, dailyTries),

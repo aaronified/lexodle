@@ -77,7 +77,7 @@ void main() {
 
     test('blind has a daily of its own: one word, ten tries', () {
       expect(GameMode.blind.hasDaily, isTrue);
-      expect(GameMode.themed.hasDaily, isFalse);
+      expect(GameMode.themed.hasDaily, isTrue);
       expect(dailyTriesOf(GameMode.blind), 10);
       var differs = 0;
       for (var day = 0; day < 20; day++) {

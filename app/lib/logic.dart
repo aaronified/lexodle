@@ -1348,9 +1348,10 @@ String chooseWord(List<String> words, List<int> weights, Random rng) {
   return words.last;
 }
 
-/// What a finished game says about how it was played: the mean luck and risk of
-/// the guesses that had a choice (null when none had), and the most bits one
-/// guess gained.
+/// What a finished game says about how it was played: the mean luck of every
+/// guess (one made with a single word left has no chance in it, so scores 0 and
+/// counts, as in the summary the player sees), the mean risk of the guesses that
+/// had a choice (null when none had), and the most bits one guess gained.
 ({double? luck, double? risk, double maxBits}) gameTraits(
   List<GuessMetrics> ms,
 ) {
@@ -1358,9 +1359,10 @@ String chooseWord(List<String> words, List<int> weights, Random rng) {
   var bits = 0.0;
   for (final m in ms) {
     if (m.gain > bits) bits = m.gain;
-    if (m.before <= 1) continue;
     luck += m.luck;
     n++;
+    // (a guess with one word left is not a gamble: it has no risk)
+    if (m.before <= 1) continue;
     final k = m.risk;
     if (k != null) {
       risk += k;

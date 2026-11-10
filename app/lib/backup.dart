@@ -4,11 +4,13 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+import 'collection.dart';
 import 'daily.dart';
 import 'history.dart';
 import 'learn_log.dart';
 import 'modes.dart';
 import 'playstyle.dart';
+import 'saved_words.dart';
 import 'store.dart';
 
 /// The version of the backup file; a file from a later one is refused rather
@@ -31,6 +33,8 @@ class Backup {
     this.languages,
     this.history,
     this.learn,
+    this.words,
+    this.collected,
   });
 
   final DateTime exported;
@@ -48,6 +52,14 @@ class Backup {
   /// What learn mode has done; null in a backup from before it, which leaves
   /// what is saved alone.
   final LearnLog? learn;
+
+  /// The saved words (the personal dictionary); null in a backup from before
+  /// it, which leaves what is saved alone.
+  final SavedWords? words;
+
+  /// The words won, kept like trophies; null in a backup from before them, which
+  /// collects them again from the games it holds.
+  final Collection? collected;
 
   /// The settings present in the file (a missing one keeps its current value).
   final Map<String, Object> settings;
@@ -121,6 +133,8 @@ String backupToText(AppState state, {DateTime? now}) {
     // one compact line: indented, a few hundred games would swamp the file
     'history': jsonEncode(state.history.toJson()),
     'learn': jsonEncode(state.learnLog.toJson()),
+    'words': jsonEncode(state.savedWords.toJson()),
+    'collection': jsonEncode(state.collection.toJson()),
   });
 }
 
@@ -228,6 +242,8 @@ Backup parseBackup(String text) {
       languages: languages,
       history: history,
       learn: _learn(raw['learn']),
+      words: _words(raw['words']),
+      collected: _collected(raw['collection']),
     );
   } on FormatException {
     rethrow;
@@ -406,6 +422,27 @@ LearnLog? _learn(Object? raw) {
     return LearnLog.fromJson(raw is String ? jsonDecode(raw) : raw);
   } on FormatException {
     _bad('learn');
+  }
+}
+
+/// The saved words, or null when the file has none. Entries that are not words
+/// are left out rather than refusing the file.
+SavedWords? _words(Object? raw) {
+  if (raw == null) return null;
+  try {
+    return SavedWords.fromJson(raw is String ? jsonDecode(raw) : raw);
+  } on FormatException {
+    _bad('words');
+  }
+}
+
+/// The collected words, or null when the file has none.
+Collection? _collected(Object? raw) {
+  if (raw == null) return null;
+  try {
+    return Collection.fromJson(raw is String ? jsonDecode(raw) : raw);
+  } on FormatException {
+    _bad('collection');
   }
 }
 

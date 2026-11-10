@@ -110,40 +110,33 @@ void main() {
     expect(find.byKey(const ValueKey('share-stepper')), findsNothing);
   });
 
-  testWidgets('game modes: themed has swipers for the theme and the draw', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(420, 2400));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    await appState.load();
-    appState.setup(lang: 'en', length: 5, mode: GameMode.themed);
-    await tester.pumpWidget(const LexodleApp());
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('game modes'));
-    await tester.pumpAndSettle();
-    // the word draw swiper takes the places' values; no answers chips
-    expect(find.byKey(const ValueKey('draw-stepper-themed')), findsOneWidget);
-    expect(find.text('well known'), findsWidgets);
-    expect(find.text('answers'), findsNothing);
-    expect(find.text('shared letters'), findsNothing);
-    // the theme is a swiper; the mythologies appear only for mythology
-    expect(find.byKey(const ValueKey('theme-stepper')), findsOneWidget);
-    expect(find.byKey(const ValueKey('mythology-stepper')), findsNothing);
-    final next = find.descendant(
-      of: find.byKey(const ValueKey('theme-stepper')),
-      matching: find.byTooltip('next'),
-    );
-    for (var i = 0; i < 3; i++) {
-      await tester.tap(next);
+  testWidgets(
+    'game modes: geography (themed) has a swiper for the draw, no theme choice',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(420, 2400));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await appState.load();
+      appState.setup(lang: 'en', length: 5, mode: GameMode.themed);
+      await tester.pumpWidget(const LexodleApp());
       await tester.pumpAndSettle();
-    }
-    expect(find.byKey(const ValueKey('mythology-stepper')), findsOneWidget);
-    expect(find.text('upcoming feature'), findsWidgets);
-    expect(
-      tester
-          .widget<FilledButton>(find.byKey(const ValueKey('settings-play')))
-          .onPressed,
-      isNull,
-    );
-  });
+      await tester.tap(find.byTooltip('game modes'));
+      await tester.pumpAndSettle();
+      // the word draw swiper takes the places' values; no answers chips
+      expect(find.byKey(const ValueKey('draw-stepper-themed')), findsOneWidget);
+      expect(find.text('well known'), findsWidgets);
+      expect(find.text('answers'), findsNothing);
+      expect(find.text('shared letters'), findsNothing);
+      // the themes are hidden for now: geography is the only one, and it plays
+      expect(find.byKey(const ValueKey('theme-stepper')), findsNothing);
+      expect(find.byKey(const ValueKey('mythology-stepper')), findsNothing);
+      expect(find.text('upcoming feature'), findsNothing);
+      expect(find.text('geography'), findsWidgets);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('settings-play')))
+            .onPressed,
+        isNotNull,
+      );
+    },
+  );
 }

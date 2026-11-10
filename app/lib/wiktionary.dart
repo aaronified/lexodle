@@ -9,6 +9,14 @@ class Example {
   const Example(this.text, [this.translation = '']);
   final String text;
   final String translation;
+
+  Map<String, dynamic> toJson() => {
+    'text': text,
+    if (translation.isNotEmpty) 'tr': translation,
+  };
+
+  static Example fromJson(Map<String, dynamic> j) =>
+      Example(j['text'] as String? ?? '', j['tr'] as String? ?? '');
 }
 
 /// One numbered sense: its register labels ("informal", "transitive"), the
@@ -18,6 +26,21 @@ class Sense {
   final String text;
   final List<String> labels;
   final List<Example> examples;
+
+  Map<String, dynamic> toJson() => {
+    'text': text,
+    if (labels.isNotEmpty) 'labels': labels,
+    if (examples.isNotEmpty) 'examples': [for (final e in examples) e.toJson()],
+  };
+
+  static Sense fromJson(Map<String, dynamic> j) => Sense(
+    j['text'] as String? ?? '',
+    labels: [for (final l in j['labels'] ?? []) l as String],
+    examples: [
+      for (final e in j['examples'] ?? [])
+        Example.fromJson((e as Map).cast<String, dynamic>()),
+    ],
+  );
 }
 
 class PosBlock {
@@ -32,6 +55,25 @@ class PosBlock {
   final List<Sense> senses = [];
 
   List<String> get definitions => [for (final s in senses) s.text];
+
+  Map<String, dynamic> toJson() => {
+    'pos': pos,
+    if (gender.isNotEmpty) 'gender': gender,
+    if (forms.isNotEmpty) 'forms': forms,
+    'senses': [for (final s in senses) s.toJson()],
+  };
+
+  static PosBlock fromJson(Map<String, dynamic> j) {
+    final b = PosBlock(
+      j['pos'] as String? ?? '',
+      gender: j['gender'] as String? ?? '',
+      forms: j['forms'] as String? ?? '',
+    );
+    for (final s in j['senses'] ?? []) {
+      b.senses.add(Sense.fromJson((s as Map).cast<String, dynamic>()));
+    }
+    return b;
+  }
 }
 
 class WordInfo {
@@ -55,6 +97,30 @@ class WordInfo {
   final String etymology;
 
   bool get isEmpty => blocks.isEmpty && ipa.isEmpty;
+
+  /// The entry as it is kept in a saved word: everything that is shown.
+  Map<String, dynamic> toJson() => {
+    'url': url,
+    if (ipa.isNotEmpty) 'ipa': ipa,
+    if (audio != null) 'audio': audio,
+    'blocks': [for (final b in blocks) b.toJson()],
+    if (synonyms.isNotEmpty) 'syn': synonyms,
+    if (antonyms.isNotEmpty) 'ant': antonyms,
+    if (etymology.isNotEmpty) 'etym': etymology,
+  };
+
+  static WordInfo fromJson(Map<String, dynamic> j) => WordInfo(
+    url: j['url'] as String? ?? '',
+    ipa: [for (final i in j['ipa'] ?? []) i as String],
+    audio: j['audio'] as String?,
+    blocks: [
+      for (final b in j['blocks'] ?? [])
+        PosBlock.fromJson((b as Map).cast<String, dynamic>()),
+    ],
+    synonyms: [for (final s in j['syn'] ?? []) s as String],
+    antonyms: [for (final s in j['ant'] ?? []) s as String],
+    etymology: j['etym'] as String? ?? '',
+  );
 }
 
 const _posIds = {

@@ -169,7 +169,12 @@ void main() {
           find.byKey(const ValueKey('daily-streak')),
         );
         expect(tester.getSize(achievements).width, content.width);
-        expect(tester.getSize(howTo).width, content.width);
+        // how to play shares its row with my words, half each and a gap of 8
+        final words = find.byKey(const ValueKey('words-button'));
+        expect(
+          tester.getSize(howTo).width + 8 + tester.getSize(words).width,
+          closeTo(content.width, 0.5),
+        );
         // the unlocked and total count stays
         expect(
           find.descendant(

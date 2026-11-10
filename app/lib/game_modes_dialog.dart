@@ -153,13 +153,15 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         const SizedBox(height: 8),
                         Text(
                           mode == GameMode.mastermind
-                              ? 'no daily in this mode. the word is not chosen: '
-                                    'it answers each guess as one of the words still '
-                                    'possible would. you win by guessing the one '
-                                    'left. there is no limit on guesses.'
-                              : !mode.hasDaily
-                              ? 'no daily in this mode. themed wordles accept only '
-                                    'the words of the theme, in english: no ordinary words.'
+                              ? 'the word is not chosen: it answers each guess '
+                                    'as one of the words still possible would. you '
+                                    'win by guessing the one left. there is no '
+                                    'limit on guesses.'
+                              : mode == GameMode.themed
+                              ? 'geography accepts only place names, in english: '
+                                    'no ordinary words. countries, cities, rivers, '
+                                    'mountains, lakes, bays. every guess has an '
+                                    'info dot that tells about the word.'
                               : mode == GameMode.equations
                               ? 'the daily of equations always uses fixed settings: '
                                     '$equationDailyLength tiles, $equationDailyTries tries. '
@@ -175,7 +177,8 @@ class _GameModesDialogState extends State<GameModesDialog> {
                             color: c.onSurface.withValues(alpha: dimAlpha),
                           ),
                         ),
-                        if (mode == GameMode.themed) ..._themedChoices(c),
+                        if (mode == GameMode.themed && _showThemes)
+                          ..._themedChoices(c),
                         // only the modes with several words have words that can
                         // share letters
                         if (mode.multi) ...[
@@ -542,6 +545,10 @@ class _GameModesDialogState extends State<GameModesDialog> {
       ),
     );
   }
+
+  /// Whether the theme choice is shown. Only geography can be played, so for now
+  /// the themes (and the ones to come) are hidden; the code stays.
+  static const _showThemes = false;
 
   static bool _themedOrBlind(GameMode m) =>
       m == GameMode.blind || m == GameMode.themed || m == GameMode.equations;

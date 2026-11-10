@@ -58,12 +58,12 @@ applied. Quartet and relay race get extra tries (3 and 4), and the *shared lette
 how often their words may share a letter. The helper shows in classic only, so it is greyed out
 for the others. The *shared letters* swiper appears only for quartet and relay race.
 
-Three more modes live in the game modes screen (the home swipe keeps the four above). **Themed** is
-a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
+Three more modes live in the game modes screen (the home swipe keeps the four above). **Geography** (called themed
+before) is a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
 lakes, bays and the like, with spaces left out (`riodejaneiro`). Only place names are valid guesses,
 and every guess has a small *i* that says what the place is and links to its Wikipedia page. The
 *answers* switch chooses between well known places (drawn on a curve by how much their Wikipedia page
-is read) and all places. Mythology, history and mathematics are planned. **Blind** tells only how
+is read) and all places. Other themes (mythology, history, mathematics) are planned and hidden for now. **Blind** tells only how
 many letters are right and in place (green) and how many are right elsewhere (yellow), never which;
 it has 10 tries by default (14, 10, 8 or 6) and works in every language. The two counts are as big as
 the tiles, and a tap on a letter of a guess you have made pencils a colour on it (green, yellow, grey,
@@ -76,6 +76,23 @@ on Android. None of the three has a daily.
 
 In **blind**, a double tap on the counts locks every green you have pencilled into the row you
 are typing (the guesses themselves cannot lock: a tap on them cycles their colour).
+
+**My words** is a personal dictionary. On the end screen of a game, the bookmark beside the answer
+saves the word with a copy of its Wiktionary entry (meanings, examples, pronunciation, origin,
+synonyms), kept on the device and in the backup, so it opens without a connection (listening needs
+one). My words, beside *how to play* on the home page and in learn, lists them newest first, with a
+language filter, a search over the word, its note and its first meaning, and an a-to-z sort. Open a
+word to read its entry, write a note of your own (kept as you type, shown cut short in the list) or
+remove it. Lost games show the bookmark too. Geography and equations answers cannot be saved.
+
+Every answer of a **won** game is also *collected*, like a trophy, in the *collected* tab of My words:
+each word by language (every word of a won quartet or relay race), and the places of geography in
+their own *places* pill; equations are not collected. A collected word keeps no Wiktionary copy, so
+its entry is looked up as you open it; the bookmark on it saves a copy to the dictionary. Wins
+already in the history are collected when the achievements are rebuilt. Three achievements follow
+the dictionary: **word collector** (collect 10, 50, 250 different words, and at the top every word of
+the language, per language), **word keeper** (save 5, 25, 100, 500 words) and **annotator** (write a
+note on 1, 10, 50, 200 saved words).
 
 The home swipe goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
 (English only) themed, and round again.
@@ -93,7 +110,7 @@ language and the length you chose, and there are no tries to run out of, so the 
 score. The *pool choice* decides the reply: *random* draws one of the words still possible, so the
 reply that keeps the most words is the likeliest; *largest* always gives the reply that keeps the
 most words, with no chance in it, so it can be worked out (ties go to the fewest greens, then the
-fewest yellows, and all green only when nothing else is left). There is no daily or helper. Each guess is scored for skill against the words still possible, and
+fewest yellows, and all green only when nothing else is left). There is no helper. Each guess is scored for skill against the words still possible, and
 for luck in the random pool (the largest pool's replies have no chance in them, so it has skill only);
 the game is reviewed against the word it settled on, which fits every reply.
 

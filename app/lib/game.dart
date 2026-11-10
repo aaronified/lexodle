@@ -26,6 +26,7 @@ import 'review.dart';
 import 'review_text.dart';
 import 'routes.dart';
 import 'main.dart';
+import 'save_word_button.dart';
 import 'sounds.dart';
 import 'swipe_clear.dart';
 import 'store.dart';
@@ -105,7 +106,8 @@ class _GamePageState extends State<GamePage>
   bool get _noDictionary => equations || mastermind;
 
   /// The mastermind that always keeps the largest pool, as chosen when it began.
-  late final bool largest = mastermind && appState.mastermindLargest;
+  late final bool largest =
+      mastermind && _daily == null && appState.mastermindLargest;
 
   /// The noun of what is hidden.
   String get _noun => equations ? 'equation' : 'word';
@@ -582,6 +584,15 @@ class _GamePageState extends State<GamePage>
           given ??
           (largest
               ? mastermindLargest(eligible, word)
+              : _daily != null && _daily.date.isNotEmpty
+              // a daily draws its replies from the date: the same for everyone
+              ? mastermindDailyReply(
+                  eligible,
+                  word,
+                  widget.bank.language.code,
+                  _daily.date,
+                  guesses.length,
+                )
               : mastermindReply(eligible, word, _rng));
       if (m.every((x) => x == Mark.correct)) answer = word;
     } else {
@@ -1404,9 +1415,18 @@ class _GamePageState extends State<GamePage>
                         'the next word comes at midnight, your time',
             ),
           // the answer, said as such (a win used to show it bare)
-          if (won)
-            Caption(
-              'the $_noun was ${equations ? answer.split('').map(faceOf).join() : answer}',
+          // (a lost game names its word here too, for the bookmark)
+          if (won || (!equations && !themed))
+            Row(
+              children: [
+                Expanded(
+                  child: Caption(
+                    'the $_noun was ${equations ? answer.split('').map(faceOf).join() : answer}',
+                  ),
+                ),
+                if (!equations && !themed)
+                  SaveWordButton(word: answer, language: widget.bank.language),
+              ],
             ),
           const SizedBox(height: 10),
           for (final a in unlocked)

@@ -32,11 +32,8 @@ class DailyStreak extends StatelessWidget {
     final lit = c.tertiary;
     final unlit = c.outlineVariant;
     final solvedToday = (log[today] ?? dailyMissed) >= dailySolved;
-    // the themed wordle and the mastermind have no daily, so no streak: the
-    // card stays, greyed out
-    final noDaily = !mode.hasDaily;
     // today's daily was played and lost: the streak is over, and says so
-    final lostToday = !noDaily && log[today] == dailyMissed;
+    final lostToday = log[today] == dailyMissed;
 
     Widget flames(String date, int tier) {
       // a daily played and lost: the campfire out, in red, with a cross
@@ -142,9 +139,7 @@ class DailyStreak extends StatelessWidget {
           Semantics(
             container: true,
             excludeSemantics: true,
-            label: noDaily
-                ? '${mode.label} has no daily'
-                : '${mode.label} daily streak: $streak days, best $best',
+            label: '${mode.label} daily streak: $streak days, best $best',
             child: Row(
               children: [
                 lostToday
@@ -190,7 +185,7 @@ class DailyStreak extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      noDaily ? 'no daily' : 'best $best',
+                      'best $best',
                       key: const ValueKey('streak-best'),
                       style: TextStyle(
                         fontSize: 11,
@@ -211,13 +206,7 @@ class DailyStreak extends StatelessWidget {
         ],
       ),
     );
-    return noDaily
-        ? Opacity(
-            key: const ValueKey('daily-streak-greyed'),
-            opacity: .38,
-            child: card,
-          )
-        : card;
+    return card;
   }
 }
 
