@@ -1415,7 +1415,8 @@ class _GamePageState extends State<GamePage>
                         'the next word comes at midnight, your time',
             ),
           // the answer, said as such (a win used to show it bare)
-          if (won)
+          // (a lost game names its word here too, for the bookmark)
+          if (won || (!equations && !themed))
             Row(
               children: [
                 Expanded(

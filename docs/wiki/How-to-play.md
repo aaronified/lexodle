@@ -83,7 +83,16 @@ synonyms), kept on the device and in the backup, so it opens without a connectio
 one). My words, beside *how to play* on the home page and in learn, lists them newest first, with a
 language filter, a search over the word, its note and its first meaning, and an a-to-z sort. Open a
 word to read its entry, write a note of your own (kept as you type, shown cut short in the list) or
-remove it. Geography and equations answers cannot be saved.
+remove it. Lost games show the bookmark too. Geography and equations answers cannot be saved.
+
+Every answer of a **won** game is also *collected*, like a trophy, in the *collected* tab of My words:
+each word by language (every word of a won quartet or relay race), and the places of geography in
+their own *places* pill; equations are not collected. A collected word keeps no Wiktionary copy, so
+its entry is looked up as you open it; the bookmark on it saves a copy to the dictionary. Wins
+already in the history are collected when the achievements are rebuilt. Three achievements follow
+the dictionary: **word collector** (collect 10, 50, 250 different words, and at the top every word of
+the language, per language), **word keeper** (save 5, 25, 100, 500 words) and **annotator** (write a
+note on 1, 10, 50, 200 saved words).
 
 The home swipe goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
 (English only) themed, and round again.

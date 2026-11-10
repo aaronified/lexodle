@@ -9,6 +9,7 @@ the easy version to the platinum one.
 | wins, games played, win streak | 1/25/100/500 wins; 10/50/250/1,000 games; 3/7/15/30 in a row |
 | fastest win, last-try wins | in 4, 3, 2, 1 guesses; a win on the last try 1/10/30/100 times |
 | skill | average skill 70/80/90/95; every guess above 60/75/90; 10 wins above 95 |
+| word collector, word keeper, annotator | collect 10 / 50 / 250 different words, then every word of the language (per language); save 5 / 25 / 100 / 500 words to my words; write a note on 1 / 10 / 50 / 200 saved words |
 | luck, risk, bits | average luck +20/40/60/80 (over every guess of the game, one made with a single word left counting as 0); average risk 25/40/55/70; 6/8/10/12 bits in one guess |
 | lengths, languages | a 4-letter and an 8-letter win, every length; 2/3/6/9 languages |
 | every mode, every daily | **every way in** (win in 2/4/6/7 different modes); **a full day** (solve 2/3/4/6 different dailies in one day); **clean sweep** (solve every daily on the same day) 1/7/30/100 days |

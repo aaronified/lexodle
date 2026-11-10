@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'main.dart';
+import 'store.dart' show topLevels;
 import 'ui.dart';
 import 'wiktionary.dart';
 import 'words.dart';
@@ -59,9 +60,14 @@ class _SaveWordButtonState extends State<SaveWordButton> {
         info = null;
       }
       if (info != null && info.isEmpty) info = null;
-      appState.saveWord(code, word, info);
+      final earned = topLevels(appState.saveWord(code, word, info));
       if (!mounted) return;
-      _snack('saved to my words');
+      // what saving earned (the keeper's levels, say) is told with it
+      _snack(
+        earned.isEmpty
+            ? 'saved to my words'
+            : 'saved to my words · ${earned.map((a) => a.title).join(', ')}',
+      );
     } catch (e) {
       appLog.w('saveword', 'could not save a word: ${e.runtimeType}');
     } finally {

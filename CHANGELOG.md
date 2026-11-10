@@ -7,13 +7,18 @@ it to the version.
 
 ## Unreleased
 
-- my words: save words from a finished game
-  A bookmark beside the answer on the end screen (and on each word of a quartet
-  or relay race) saves the word with a copy of its Wiktionary entry, so it opens
-  without a connection. My words, next to how to play on the home page and as a
-  card in learn, lists them with a language filter, search and sort, a note of
-  your own on each, and the note shown cut short in the list. The backup carries
-  them.
+- my words: save words, and collect every word you win
+  A bookmark beside the answer on the end screen (lost games too, and on each
+  word of a quartet or relay race) saves the word with a copy of its Wiktionary
+  entry, so it opens without a connection. My words, next to how to play on the
+  home page and as a card in learn, lists them with a language filter, search
+  and sort, a note of your own on each (shown cut short in the list). Every
+  answer of a won game is also collected like a trophy, by language (and places
+  for geography), in a second tab; its entry is fetched when you open it, and
+  the bookmark keeps a copy. Three achievements: word collector (the top level
+  is every word of the language), word keeper and annotator. Wins already in
+  the history are collected when the achievements are rebuilt. The backup
+  carries it all.
 
 - themed is now called geography
   The themed wordle is renamed geography, and the other themes (mythology,

@@ -127,6 +127,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
           'dailyDay',
           'dailyFullDays',
           'stylesWorn',
+          'collected',
+          'saved',
+          'noted',
         }.contains(a.metric)
         ? 'milestones'
         : 'general';
@@ -259,6 +262,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                       a,
                       mine[a.id] ?? AchState(),
                       languages: _langs.length,
+                      words: all ? 0 : appState.wordsOf(_lang),
                       // one language's own wears its flag; one that counts
                       // languages wears theirs
                       badges: a.learn
@@ -301,12 +305,15 @@ class _Row extends StatelessWidget {
     this.dimmed = const {},
     this.showBar = true,
     this.languages = 0,
+    this.words = 0,
   });
   final Achievement a;
   final AchState st;
 
-  /// How many languages there are, for the targets that count them.
+  /// How many languages there are, for the targets that count them, and how many
+  /// words the language in view has, for "every word".
   final int languages;
+  final int words;
 
   /// Of those, the ones drawn dim (where it has not been earned), and whether
   /// the progress bar is shown.
@@ -395,7 +402,7 @@ class _Row extends StatelessWidget {
           ),
       ],
     );
-    final target = a.targetAt(next.level, languages: languages);
+    final target = a.targetAt(next.level, languages: languages, words: words);
 
     Widget pips() => Row(
       key: ValueKey('levels-${a.id}'),
