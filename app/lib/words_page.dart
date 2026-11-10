@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
 import 'app_log.dart';
+import 'collection.dart';
+import 'geography.dart';
 import 'main.dart';
 import 'routes.dart';
+import 'save_word_button.dart';
 import 'saved_words.dart';
 import 'ui.dart';
+import 'words.dart';
 
 /// "my words": the personal dictionary, newest first, with a language filter,
 /// a sort toggle and a search over the word, the note and the first meaning.
+/// A second tab shows the words and places won (see collection.dart).
 class WordsPage extends StatefulWidget {
   const WordsPage({super.key});
 
@@ -25,9 +30,54 @@ class _WordsPageState extends State<WordsPage> {
   final _search = TextEditingController();
   String _query = '';
 
+  /// False is the saved tab, true the collected one.
+  bool _collected = false;
+
+  /// The selected pill of the collected tab: a language code or 'places'; null
+  /// is the default (the app's language, else the first pill).
+  String? _cLang;
+
+  final _cSearch = TextEditingController();
+  String _cQuery = '';
+
+  /// The languages by code, for the save buttons; null until they are known.
+  Map<String, Language>? _langByCode;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLanguages();
+  }
+
+  /// Fills [_langByCode]: at once when the languages are loaded already, else
+  /// when they are. A failure is logged; the rows then show no save button.
+  void _loadLanguages() {
+    try {
+      final hit = WordBank.loadedLanguages;
+      if (hit != null) {
+        _langByCode = _indexLanguages(hit);
+        return;
+      }
+      WordBank.languages()
+          .then((ls) {
+            if (mounted) setState(() => _langByCode = _indexLanguages(ls));
+          })
+          .catchError((Object e) {
+            appLog.w('words', 'could not load the languages: ${e.runtimeType}');
+          });
+    } catch (e) {
+      appLog.w('words', 'could not load the languages: ${e.runtimeType}');
+    }
+  }
+
+  Map<String, Language> _indexLanguages(List<Language> ls) {
+    return {for (final l in ls) l.code: l};
+  }
+
   @override
   void dispose() {
     _search.dispose();
+    _cSearch.dispose();
     super.dispose();
   }
 
@@ -49,16 +99,80 @@ class _WordsPageState extends State<WordsPage> {
 
   Widget _body(BuildContext context) {
     final c = Theme.of(context).colorScheme;
+    final children = _collected
+        ? _collectedBody(context, c)
+        : _savedBody(context, c);
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
+      children: [_tabs(c), const SizedBox(height: 14), ...children],
+    );
+  }
+
+  Widget _tabs(ColorScheme c) {
+    return Row(
+      children: [
+        Expanded(
+          child: _tab(
+            c,
+            key: const ValueKey('words-tab-saved'),
+            label: 'saved',
+            selected: !_collected,
+            onTap: () => setState(() => _collected = false),
+          ),
+        ),
+        Expanded(
+          child: _tab(
+            c,
+            key: const ValueKey('words-tab-collected'),
+            label: 'collected',
+            selected: _collected,
+            onTap: () => setState(() => _collected = true),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tab(
+    ColorScheme c, {
+    required Key key,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      key: key,
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: selected ? c.primary : c.outlineVariant,
+              width: selected ? 2 : 1,
+            ),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: selected ? c.primary : c.onSurface,
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _savedBody(BuildContext context, ColorScheme c) {
     final all = _all();
     if (all.isEmpty) {
-      return ListView(
-        padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
-        children: const [
-          Caption(
-            'no words saved yet. tap the bookmark on the end screen of a game.',
-          ),
-        ],
-      );
+      return const [
+        Caption(
+          'no words saved yet. tap the bookmark on the end screen of a game.',
+        ),
+      ];
     }
 
     // a filter whose language has no saved word left is no filter
@@ -68,90 +182,173 @@ class _WordsPageState extends State<WordsPage> {
     final rows = _filter(all, lang, _query.trim().toLowerCase());
     if (_az) _sortByWord(rows);
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
-      children: [
-        Caption('${all.length} saved · tap a word for its entry'),
-        const SizedBox(height: 14),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
+    return [
+      Caption('${all.length} saved · tap a word for its entry'),
+      const SizedBox(height: 14),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          _pill(
+            c,
+            key: const ValueKey('words-lang-all'),
+            selected: lang == null,
+            onTap: () => setState(() => _lang = null),
+            child: const Text('all', style: TextStyle(fontSize: 12)),
+          ),
+          for (final code in langs)
             _pill(
               c,
-              key: const ValueKey('words-lang-all'),
-              selected: lang == null,
-              onTap: () => setState(() => _lang = null),
-              child: const Text('all', style: TextStyle(fontSize: 12)),
-            ),
-            for (final code in langs)
-              _pill(
-                c,
-                key: ValueKey('words-lang-$code'),
-                selected: lang == code,
-                onTap: () => setState(() => _lang = code),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    languageBadge(code, size: 13),
-                    const SizedBox(width: 6),
-                    Text(code, style: const TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ),
-            _pill(
-              c,
-              key: const ValueKey('words-sort'),
-              selected: _az,
-              onTap: () => setState(() => _az = !_az),
-              child: Text(
-                _az ? 'a to z' : 'newest first',
-                style: const TextStyle(fontSize: 12),
+              key: ValueKey('words-lang-$code'),
+              selected: lang == code,
+              onTap: () => setState(() => _lang = code),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  languageBadge(code, size: 13),
+                  const SizedBox(width: 6),
+                  Text(code, style: const TextStyle(fontSize: 12)),
+                ],
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Semantics(
-          label: 'search words and notes',
-          textField: true,
-          child: TextField(
-            key: const ValueKey('words-search'),
-            controller: _search,
-            onChanged: (v) => setState(() => _query = v),
-            style: const TextStyle(fontSize: 14),
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: 'search words and notes',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-                borderSide: BorderSide(color: c.outlineVariant),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-                borderSide: BorderSide(color: c.outlineVariant),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-                borderSide: BorderSide(color: c.primary),
-              ),
+          _pill(
+            c,
+            key: const ValueKey('words-sort'),
+            selected: _az,
+            onTap: () => setState(() => _az = !_az),
+            child: Text(
+              _az ? 'a to z' : 'newest first',
+              style: const TextStyle(fontSize: 12),
             ),
           ),
+        ],
+      ),
+      const SizedBox(height: 14),
+      Semantics(
+        label: 'search words and notes',
+        textField: true,
+        child: TextField(
+          key: const ValueKey('words-search'),
+          controller: _search,
+          onChanged: (v) => setState(() => _query = v),
+          style: const TextStyle(fontSize: 14),
+          decoration: _searchDecoration(c, 'search words and notes'),
         ),
-        const SizedBox(height: 8),
-        if (rows.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(top: 16),
-            child: Caption('no saved word matches.'),
-          )
-        else
-          for (var i = 0; i < rows.length; i++) ...[
-            if (i > 0)
-              Divider(height: 1, thickness: 1, color: c.outlineVariant),
-            _row(context, c, rows[i]),
-          ],
-      ],
+      ),
+      const SizedBox(height: 8),
+      if (rows.isEmpty)
+        const Padding(
+          padding: EdgeInsets.only(top: 16),
+          child: Caption('no saved word matches.'),
+        )
+      else
+        for (var i = 0; i < rows.length; i++) ...[
+          if (i > 0) Divider(height: 1, thickness: 1, color: c.outlineVariant),
+          _row(context, c, rows[i]),
+        ],
+    ];
+  }
+
+  List<Widget> _collectedBody(BuildContext context, ColorScheme c) {
+    final col = _collection();
+    if (col == null || col.total == 0) {
+      return const [
+        Caption(
+          'no words collected yet. every word you win is collected here.',
+        ),
+      ];
+    }
+
+    final langs = col.languages;
+    final pills = [...langs, if (col.placeCount > 0) 'places'];
+    final last = _cLang;
+    final sel = last != null && pills.contains(last)
+        ? last
+        : pills.contains(appState.lang)
+        ? appState.lang
+        : pills.first;
+
+    final keys = _cMatches(col, sel, _cQuery.trim().toLowerCase());
+
+    return [
+      Caption('${col.total} collected · tap a word for its entry'),
+      const SizedBox(height: 14),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          for (final code in langs)
+            _pill(
+              c,
+              key: ValueKey('collected-lang-$code'),
+              selected: sel == code,
+              onTap: () => setState(() => _cLang = code),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  languageBadge(code, size: 13),
+                  const SizedBox(width: 6),
+                  Text(code, style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+          if (col.placeCount > 0)
+            _pill(
+              c,
+              key: const ValueKey('collected-lang-places'),
+              selected: sel == 'places',
+              onTap: () => setState(() => _cLang = 'places'),
+              child: const Text('places', style: TextStyle(fontSize: 12)),
+            ),
+        ],
+      ),
+      const SizedBox(height: 14),
+      Semantics(
+        label: 'search collected words',
+        textField: true,
+        child: TextField(
+          key: const ValueKey('collected-search'),
+          controller: _cSearch,
+          onChanged: (v) => setState(() => _cQuery = v),
+          style: const TextStyle(fontSize: 14),
+          decoration: _searchDecoration(c, 'search collected words'),
+        ),
+      ),
+      const SizedBox(height: 8),
+      if (keys.isEmpty)
+        const Padding(
+          padding: EdgeInsets.only(top: 16),
+          child: Caption('no collected word matches.'),
+        )
+      else
+        for (var i = 0; i < keys.length; i++) ...[
+          if (i > 0) Divider(height: 1, thickness: 1, color: c.outlineVariant),
+          if (sel == 'places')
+            _placeRow(c, keys[i])
+          else
+            _collectedRow(context, c, sel, keys[i]),
+        ],
+    ];
+  }
+
+  InputDecoration _searchDecoration(ColorScheme c, String hint) {
+    return InputDecoration(
+      isDense: true,
+      hintText: hint,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(3),
+        borderSide: BorderSide(color: c.outlineVariant),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(3),
+        borderSide: BorderSide(color: c.outlineVariant),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(3),
+        borderSide: BorderSide(color: c.primary),
+      ),
     );
   }
 
@@ -213,6 +410,84 @@ class _WordsPageState extends State<WordsPage> {
       });
     } catch (e) {
       appLog.w('words', 'could not open a saved word: ${e.runtimeType}');
+    }
+  }
+
+  /// Opens a collected word's entry; a failed navigation is logged, not thrown.
+  void _openCollected(BuildContext context, String lang, String word) {
+    try {
+      Navigator.pushNamed(
+        context,
+        Routes.collected,
+        arguments: CollectedRef(lang, word),
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
+    } catch (e) {
+      appLog.w('words', 'could not open a collected word: ${e.runtimeType}');
+    }
+  }
+
+  /// The collection, or null when it cannot be read.
+  Collection? _collection() {
+    try {
+      return appState.collection;
+    } catch (e) {
+      appLog.w('words', 'could not read the collected words: ${e.runtimeType}');
+      return null;
+    }
+  }
+
+  /// Whether the word is in the personal dictionary; false when that cannot
+  /// be read.
+  bool _saved(String lang, String word) {
+    try {
+      return appState.isWordSaved(lang, word);
+    } catch (e) {
+      appLog.w('words', 'could not read a saved word: ${e.runtimeType}');
+      return false;
+    }
+  }
+
+  /// The place a key names, once the places are loaded; null when not.
+  Place? _placeOf(String key) {
+    try {
+      return Geography.placeOf(key);
+    } catch (e) {
+      appLog.w('words', 'could not read a place: ${e.runtimeType}');
+      return null;
+    }
+  }
+
+  /// The words of [sel] (or the place keys for 'places'), newest first; none
+  /// when they cannot be listed.
+  List<String> _cKeys(Collection col, String sel) {
+    try {
+      return sel == 'places' ? col.places : col.wordsOf(sel);
+    } catch (e) {
+      appLog.w('words', 'could not list the collected words: ${e.runtimeType}');
+      return const [];
+    }
+  }
+
+  /// The keys of [sel] that match [q] in the word (or in the place key and
+  /// name). Falls back to every key, unfiltered, on an error.
+  List<String> _cMatches(Collection col, String sel, String q) {
+    final places = sel == 'places';
+    try {
+      return [
+        for (final k in _cKeys(col, sel))
+          if (q.isEmpty ||
+              k.toLowerCase().contains(q) ||
+              (places && (_placeOf(k)?.name ?? '').toLowerCase().contains(q)))
+            k,
+      ];
+    } catch (e) {
+      appLog.w(
+        'words',
+        'could not filter the collected words: ${e.runtimeType}',
+      );
+      return _cKeys(col, sel);
     }
   }
 
@@ -299,6 +574,68 @@ class _WordsPageState extends State<WordsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _collectedRow(
+    BuildContext context,
+    ColorScheme c,
+    String lang,
+    String word,
+  ) {
+    return InkWell(
+      key: ValueKey('collected-row-$lang-$word'),
+      onTap: () => _openCollected(context, lang, word),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                word,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: c.primary,
+                ),
+              ),
+            ),
+            if (_langByCode?[lang] case final language?)
+              SaveWordButton(word: word, language: language)
+            else if (_saved(lang, word))
+              TablerIcon('bookmark-filled', size: 16, color: c.primary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// A place of the collection: not tappable, its name and, when the places
+  /// are loaded, what it is and where.
+  Widget _placeRow(ColorScheme c, String key) {
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    final place = _placeOf(key);
+    return Padding(
+      key: ValueKey('collected-place-$key'),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            place?.name ?? key,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: c.primary,
+            ),
+          ),
+          if (place != null)
+            Text(
+              '${place.kind} · ${place.country}',
+              style: TextStyle(fontSize: 11, color: dim),
+            ),
+        ],
       ),
     );
   }

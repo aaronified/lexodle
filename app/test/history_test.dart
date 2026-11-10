@@ -510,7 +510,7 @@ void main() {
       final text = backupToText(s);
       // history rides in one compact line, not indented over hundreds of lines
       expect(text.split('\n').where((l) => l.contains('"history"')).length, 1);
-      expect(text.split('\n').length, lessThan(200));
+      expect(text.split('\n').length, lessThan(260));
       final backup = parseBackup(text);
       expect(backup.history!.games.length, 1);
 

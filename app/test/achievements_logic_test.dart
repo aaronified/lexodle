@@ -188,6 +188,10 @@ void main() {
                 'mastered',
                 'completed',
                 'fullSet',
+                // counts the personal dictionary keeps (see advanceCounted)
+                'collected',
+                'saved',
+                'noted',
               }.contains(a.metric),
           isTrue,
           reason: '${a.id}: ${a.metric}',
