@@ -24,4 +24,4 @@
 ## Testing and merging
 
 - Do not run the full test suite locally: CI runs it on every pull request, so work goes through a PR on the working branch and the lead reads the CI result. Locally, run only what is needed to get a change compiling (`dart analyze` and the one test file being written), never the whole suite.
-- A PR is opened for the work, reviewed, fixed if CI is red, and merged by the lead once it is green.
+- Always use PRs: every change, however small (code, docs, `CLAUDE.md` itself), goes through a pull request. Nothing is pushed or merged to `main` directly, and nothing is left on a branch without a PR open for it. The lead opens the PR, reads the CI result, fixes it if it is red, and merges once it is green.
