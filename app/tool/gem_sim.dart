@@ -163,12 +163,17 @@ class Tally {
   void add(List<Achievement> earned, [String date = '']) {
     int g0 = 0, g2 = 0, g3 = 0, g4 = 0;
     final bestRepeat = <String, int>{};
+    final firstKeys = <String>{};
     for (final a in earned) {
       if (a.track == Track.badges) continue;
-      final g = gemOf[a.medal.index];
+      final full = gemOf[a.medal.index];
+      final isFirst = seen.add('${a.id}:${a.level}');
+      // a repeat earns one less than the first time (bronze nothing)
+      final g = isFirst ? full : max(0, full - 1);
+      if (isFirst) firstKeys.add('${a.id}:${a.level}');
       g0 += g;
       bySource[a.id] = (bySource[a.id] ?? 0) + g;
-      if (seen.add('${a.id}:${a.level}')) {
+      if (isFirst) {
         g2 += g;
         g3 += g;
         g4 += g;
@@ -185,7 +190,8 @@ class Tally {
     var g1 = 0;
     for (final a in topLevels(earned)) {
       if (a.track == Track.badges) continue;
-      g1 += gemOf[a.medal.index];
+      final full = gemOf[a.medal.index];
+      g1 += firstKeys.contains('${a.id}:${a.level}') ? full : max(0, full - 1);
     }
     for (final (r, g) in [('v0', g0), ('v1', g1), ('v2', g2), ('v3', g3), ('v4', g4)]) {
       units[r]!.add(g);
