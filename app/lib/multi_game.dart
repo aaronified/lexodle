@@ -21,6 +21,7 @@ import 'puzzle.dart';
 import 'resizable_panel.dart';
 import 'review_text.dart';
 import 'routes.dart';
+import 'save_word_button.dart';
 import 'share_puzzle.dart';
 import 'store.dart';
 import 'ui.dart';
@@ -928,6 +929,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
                   ),
                 ),
                 children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SaveWordButton(
+                      word: b.answer,
+                      language: widget.bank.language,
+                    ),
+                  ),
                   WordInfoView(word: b.answer, language: widget.bank.language),
                 ],
               ),

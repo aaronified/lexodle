@@ -26,6 +26,7 @@ import 'review.dart';
 import 'review_text.dart';
 import 'routes.dart';
 import 'main.dart';
+import 'save_word_button.dart';
 import 'sounds.dart';
 import 'swipe_clear.dart';
 import 'store.dart';
@@ -1415,8 +1416,16 @@ class _GamePageState extends State<GamePage>
             ),
           // the answer, said as such (a win used to show it bare)
           if (won)
-            Caption(
-              'the $_noun was ${equations ? answer.split('').map(faceOf).join() : answer}',
+            Row(
+              children: [
+                Expanded(
+                  child: Caption(
+                    'the $_noun was ${equations ? answer.split('').map(faceOf).join() : answer}',
+                  ),
+                ),
+                if (!equations && !themed)
+                  SaveWordButton(word: answer, language: widget.bank.language),
+              ],
             ),
           const SizedBox(height: 10),
           for (final a in unlocked)

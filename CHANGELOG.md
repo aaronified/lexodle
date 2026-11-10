@@ -7,6 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- my words: save words from a finished game
+  A bookmark beside the answer on the end screen (and on each word of a quartet
+  or relay race) saves the word with a copy of its Wiktionary entry, so it opens
+  without a connection. My words, next to how to play on the home page and as a
+  card in learn, lists them with a language filter, search and sort, a note of
+  your own on each, and the note shown cut short in the list. The backup carries
+  them.
+
 - themed is now called geography
   The themed wordle is renamed geography, and the other themes (mythology,
   history, mathematics) are hidden for now; their code stays. Saved games and

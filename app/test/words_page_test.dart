@@ -158,12 +158,13 @@ void main() {
       await tester.tap(row('en', 'alpha'));
       await tester.pumpAndSettle();
       expect(find.byType(WordsPage), findsOneWidget);
-      expect(
-        appLog
-            .tail(200)
-            .any((l) => l.contains(' W words: could not open en alpha')),
-        isTrue,
-      );
+      final line = appLog
+          .tail(200)
+          .firstWhere(
+            (l) => l.contains(' W words: could not open a saved word'),
+          );
+      // the log never records words
+      expect(line.contains('alpha'), isFalse);
     });
   });
 }

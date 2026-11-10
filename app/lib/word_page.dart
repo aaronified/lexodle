@@ -34,7 +34,7 @@ class _WordPageState extends State<WordPage> {
       appState.unsaveWord(widget.entry.lang, widget.entry.word);
       Navigator.pop(context);
     } catch (e) {
-      appLog.w('word', 'the word could not be removed: $e');
+      appLog.w('word', 'the word could not be removed: ${e.runtimeType}');
     }
   }
 
@@ -42,7 +42,7 @@ class _WordPageState extends State<WordPage> {
     try {
       appState.setWordNote(widget.entry.lang, widget.entry.word, value);
     } catch (e) {
-      appLog.w('word', 'the note could not be saved: $e');
+      appLog.w('word', 'the note could not be saved: ${e.runtimeType}');
     }
   }
 
@@ -51,7 +51,7 @@ class _WordPageState extends State<WordPage> {
     try {
       return WordInfoBody(info: info);
     } catch (e) {
-      appLog.w('word', 'the entry could not be shown: $e');
+      appLog.w('word', 'the entry could not be shown: ${e.runtimeType}');
       return const Caption('could not show this entry');
     }
   }

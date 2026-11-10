@@ -160,7 +160,7 @@ class _WordsPageState extends State<WordsPage> {
     try {
       return appState.savedWords.words;
     } catch (e) {
-      appLog.w('words', 'could not read the saved words: $e');
+      appLog.w('words', 'could not read the saved words: ${e.runtimeType}');
       return const [];
     }
   }
@@ -170,7 +170,7 @@ class _WordsPageState extends State<WordsPage> {
     try {
       return ({for (final w in all) w.lang}).toList()..sort();
     } catch (e) {
-      appLog.w('words', 'could not list the languages: $e');
+      appLog.w('words', 'could not list the languages: ${e.runtimeType}');
       return const [];
     }
   }
@@ -189,7 +189,7 @@ class _WordsPageState extends State<WordsPage> {
               w,
       ];
     } catch (e) {
-      appLog.w('words', 'could not filter the saved words: $e');
+      appLog.w('words', 'could not filter the saved words: ${e.runtimeType}');
       return List.of(all);
     }
   }
@@ -199,7 +199,7 @@ class _WordsPageState extends State<WordsPage> {
     try {
       rows.sort((a, b) => a.word.toLowerCase().compareTo(b.word.toLowerCase()));
     } catch (e) {
-      appLog.w('words', 'could not sort the saved words: $e');
+      appLog.w('words', 'could not sort the saved words: ${e.runtimeType}');
     }
   }
 
@@ -212,7 +212,7 @@ class _WordsPageState extends State<WordsPage> {
         if (mounted) setState(() {});
       });
     } catch (e) {
-      appLog.w('words', 'could not open ${w.lang} ${w.word}: $e');
+      appLog.w('words', 'could not open a saved word: ${e.runtimeType}');
     }
   }
 

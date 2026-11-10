@@ -77,6 +77,14 @@ on Android. None of the three has a daily.
 In **blind**, a double tap on the counts locks every green you have pencilled into the row you
 are typing (the guesses themselves cannot lock: a tap on them cycles their colour).
 
+**My words** is a personal dictionary. On the end screen of a game, the bookmark beside the answer
+saves the word with a copy of its Wiktionary entry (meanings, examples, pronunciation, origin,
+synonyms), kept on the device and in the backup, so it opens without a connection (listening needs
+one). My words, beside *how to play* on the home page and in learn, lists them newest first, with a
+language filter, a search over the word, its note and its first meaning, and an a-to-z sort. Open a
+word to read its entry, write a note of your own (kept as you type, shown cut short in the list) or
+remove it. Geography and equations answers cannot be saved.
+
 The home swipe goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
 (English only) themed, and round again.
 

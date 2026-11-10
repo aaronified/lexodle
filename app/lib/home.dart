@@ -422,7 +422,7 @@ class _HomePageState extends State<HomePage> {
     try {
       Navigator.pushNamed(context, Routes.words);
     } catch (e) {
-      appLog.w('home', 'could not open my words: $e');
+      appLog.w('home', 'could not open my words: ${e.runtimeType}');
     }
   }
 
@@ -433,7 +433,7 @@ class _HomePageState extends State<HomePage> {
       final n = appState.savedWords.length;
       return n > 0 ? 'my words  $n' : 'my words';
     } catch (e) {
-      appLog.w('home', 'could not count my words: $e');
+      appLog.w('home', 'could not count my words: ${e.runtimeType}');
       return 'my words';
     }
   }
