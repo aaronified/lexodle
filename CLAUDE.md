@@ -20,3 +20,8 @@
 - Haiku subagents never improvise. If something in the task is unclear, missing or does not fit, they stop and report the issue. The lead solves it and messages them back with the altered parameters.
 - The lead reviews their work, fixes what is needed, and merges the PRs once they are green.
 - Every Haiku-written piece of code that can fail (network lookups, storage, JSON, async callbacks, navigation) is wrapped in try/catch, and every caught issue is reported to the app log (`appLog.w` or `appLog.e` from `lib/app_log.dart`, with a short tag and the error), never swallowed silently. The app keeps working: it degrades, and logs. The log never records words or guesses, so log the error's type (`${e.runtimeType}`), not its text, which can carry a word or a URL.
+
+## Testing and merging
+
+- Do not run the full test suite locally: CI runs it on every pull request, so work goes through a PR on the working branch and the lead reads the CI result. Locally, run only what is needed to get a change compiling (`dart analyze` and the one test file being written), never the whole suite.
+- A PR is opened for the work, reviewed, fixed if CI is red, and merged by the lead once it is green.
