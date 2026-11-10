@@ -11,3 +11,11 @@
 
 - Dart and Flutter are not installed in the cloud session, but they can be: download the Flutter SDK from storage.googleapis.com into `/home/user/sdk` (pub.dev is reachable; the GitHub flutter repo is not), then `flutter pub get`, `dart analyze` and `flutter test` in `app`. Design in a mockup first, then build and test.
 - No LaTeX is installed: check `docs/paper/*.tex` with `python docs/paper/check_tex.py`, and say the PDFs are stale.
+
+## Delegation
+
+- For simple, straightforward coding jobs, use Haiku subagents.
+- The lead acts as the Lead Mobile Architect: it produces the system architecture, writes the core state management, and breaks UI features down into small, isolated tasks for Haiku subagents to code.
+- Break complex problems into byte-size pieces a Haiku can deal with.
+- Haiku subagents never improvise. If something in the task is unclear, missing or does not fit, they stop and report the issue. The lead solves it and messages them back with the altered parameters.
+- The lead reviews their work, fixes what is needed, and merges the PRs once they are green.
