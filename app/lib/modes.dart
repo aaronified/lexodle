@@ -35,8 +35,8 @@ enum GameMode {
       if (m != themed || lang == 'en') m,
   ];
 
-  /// Whether the mode has a daily: every mode but themed and mastermind.
-  bool get hasDaily => this != themed && this != mastermind;
+  /// Whether the mode has a daily: every mode has one.
+  bool get hasDaily => true;
 
   /// Whether the answers are equations, not words.
   bool get isEquations => this == equations;

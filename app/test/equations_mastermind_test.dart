@@ -45,10 +45,10 @@ void main() {
       expect(GameMode.mastermind.index, 7);
     });
 
-    test('equations has a daily, mastermind and themed have none', () {
-      expect(GameMode.equations.hasDaily, isTrue);
-      expect(GameMode.mastermind.hasDaily, isFalse);
-      expect(GameMode.themed.hasDaily, isFalse);
+    test('every mode has a daily, the mastermind and themed ones too', () {
+      for (final m in GameMode.values) {
+        expect(m.hasDaily, isTrue, reason: '$m');
+      }
       expect(GameMode.mastermind.endless, isTrue);
     });
   });
@@ -497,6 +497,62 @@ void main() {
       final after = [
         for (var r = 0; r < 2; r++)
           for (var i = 0; i < 4; i++) fill(r, i),
+      ];
+      expect(after, before);
+    });
+
+    testWidgets('the mastermind daily says the same on a second visit, and '
+        'to any seed', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1700));
+      await appState.load();
+      appState.setup(lang: 'fr', mode: GameMode.mastermind);
+      final bank = await frBank(tester);
+      const daily = Daily('2026-11-12', '', length: 5, tries: 0);
+      Widget page(int seed) => MaterialApp(
+        home: GamePage(
+          bank: bank,
+          random: Random(seed),
+          daily: daily,
+          mode: GameMode.mastermind,
+        ),
+        onGenerateRoute: onGenerateRoute,
+      );
+      Color? fill(int r, int i) =>
+          (tester
+                      .widget<Container>(
+                        find
+                            .descendant(
+                              of: find.byKey(ValueKey('tile-$r-$i')),
+                              matching: find.byType(Container),
+                            )
+                            .first,
+                      )
+                      .decoration
+                  as BoxDecoration)
+              .color;
+      await tester.pumpWidget(page(1));
+      await tester.pump();
+      final plain = bank
+          .guessable(5)
+          .where((w) => RegExp(r'^[a-z]+$').hasMatch(w))
+          .take(3)
+          .toList();
+      for (final w in plain) {
+        await typeWord(tester, w);
+      }
+      final before = [
+        for (var r = 0; r < 3; r++)
+          for (var i = 0; i < 5; i++) fill(r, i),
+      ];
+      // leave and come back with another seed: the replies come from the date,
+      // so they are the same, though only the guesses were kept
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(page(99));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('tile-3-0')), findsOneWidget);
+      final after = [
+        for (var r = 0; r < 3; r++)
+          for (var i = 0; i < 5; i++) fill(r, i),
       ];
       expect(after, before);
     });

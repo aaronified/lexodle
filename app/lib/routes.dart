@@ -127,6 +127,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       // today's word for the saved language, at the fixed daily difficulty
       return page(
         BankGate(
+          places: appState.mode == GameMode.themed,
           equations: appState.mode == GameMode.equations,
           builder: (bank) {
             // each mode has a daily of its own: the mode in view decides

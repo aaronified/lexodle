@@ -769,7 +769,7 @@ void main() {
       expect(find.byKey(const ValueKey('flame-2026-10-24-1')), findsNothing);
     });
 
-    testWidgets('the themed wordle and the mastermind have no daily: greyed', (
+    testWidgets('every mode has a streak card, none greyed out', (
       tester,
     ) async {
       await appState.load();
@@ -779,15 +779,9 @@ void main() {
         await show(tester);
         expect(
           find.byKey(const ValueKey('daily-streak-greyed')),
-          m.hasDaily ? findsNothing : findsOneWidget,
+          findsNothing,
           reason: '$m',
         );
-        if (!m.hasDaily) {
-          expect(
-            tester.widget<Text>(find.byKey(const ValueKey('streak-best'))).data,
-            'no daily',
-          );
-        }
         // the card is there in every mode
         expect(find.byKey(const ValueKey('daily-streak')), findsOneWidget);
       }

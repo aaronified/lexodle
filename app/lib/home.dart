@@ -102,7 +102,12 @@ class _HomePageState extends State<HomePage> {
     final mode = appState.mode;
     final e = appState.dailyFor(lang, dailyDate(), mode);
     if (e == null) return null;
-    if (!e.over) return '${e.guesses.length}/${dailyTriesOf(mode)}';
+    // (the mastermind has no tries to count down)
+    if (!e.over) {
+      return mode.endless
+          ? '${e.guesses.length} guesses'
+          : '${e.guesses.length}/${dailyTriesOf(mode)}';
+    }
     return e.won! ? 'solved in ${e.guesses.length}' : 'missed';
   }
 

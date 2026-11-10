@@ -23,8 +23,12 @@ with an earlier one with a 10% chance, and a word with a letter twice counts as 
 2026-11-01 the words shared none, which favoured words with a letter twice). The **lockdown** daily
 is a single word with 6 tries and 5 hearts. The **blind** daily is a single word with 10 tries,
 played by the counts alone. The **equations** daily is one 8-tile equation with 6 tries, the same in
-every language. Mastermind and themed have no daily. The mode in view on the
-home page, which you change with its chevrons or by swiping, decides which daily the daily button
+every language. The **mastermind** daily has no word and no limit on guesses: what it says to each
+guess is drawn from the date, the language, the number of the guess and the guess itself (from the
+pool of words still possible, as in the random pool), so everyone who makes the same guesses gets
+the same replies, and the daily always uses random pools. The **themed** daily (English only) is
+one five-letter place name with 6 tries, drawn on the places' own curve by the date. The mode in
+view on the home page, which you change with its chevrons or by swiping, decides which daily the daily button
 plays. Each mode has its own streak, calendar and best. It is saved as you go, so closing the page
 cannot reroll it, and it is played once a day.
 

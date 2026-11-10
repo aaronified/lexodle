@@ -7,6 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- mastermind and themed have a daily
+  Both modes get a daily button on the home page, a streak and a calendar, like
+  the other modes. The mastermind daily has no word and no limit on guesses:
+  what it says to each guess is drawn from the date, so everyone who makes the
+  same guesses gets the same replies (always random pools). The themed daily is
+  one five-letter place, English only. A clean sweep counts the dailies a
+  language offers, so the themed one is not asked of other languages.
+
 ## 0.8.0
 
 - every mode with one board has its own playstyle

@@ -153,13 +153,13 @@ class _GameModesDialogState extends State<GameModesDialog> {
                         const SizedBox(height: 8),
                         Text(
                           mode == GameMode.mastermind
-                              ? 'no daily in this mode. the word is not chosen: '
-                                    'it answers each guess as one of the words still '
-                                    'possible would. you win by guessing the one '
-                                    'left. there is no limit on guesses.'
-                              : !mode.hasDaily
-                              ? 'no daily in this mode. themed wordles accept only '
-                                    'the words of the theme, in english: no ordinary words.'
+                              ? 'the word is not chosen: it answers each guess '
+                                    'as one of the words still possible would. you '
+                                    'win by guessing the one left. there is no '
+                                    'limit on guesses.'
+                              : mode == GameMode.themed
+                              ? 'themed wordles accept only the words of the '
+                                    'theme, in english: no ordinary words.'
                               : mode == GameMode.equations
                               ? 'the daily of equations always uses fixed settings: '
                                     '$equationDailyLength tiles, $equationDailyTries tries. '

@@ -105,7 +105,8 @@ class _GamePageState extends State<GamePage>
   bool get _noDictionary => equations || mastermind;
 
   /// The mastermind that always keeps the largest pool, as chosen when it began.
-  late final bool largest = mastermind && appState.mastermindLargest;
+  late final bool largest =
+      mastermind && _daily == null && appState.mastermindLargest;
 
   /// The noun of what is hidden.
   String get _noun => equations ? 'equation' : 'word';
@@ -582,6 +583,15 @@ class _GamePageState extends State<GamePage>
           given ??
           (largest
               ? mastermindLargest(eligible, word)
+              : _daily != null && _daily.date.isNotEmpty
+              // a daily draws its replies from the date: the same for everyone
+              ? mastermindDailyReply(
+                  eligible,
+                  word,
+                  widget.bank.language.code,
+                  _daily.date,
+                  guesses.length,
+                )
               : mastermindReply(eligible, word, _rng));
       if (m.every((x) => x == Mark.correct)) answer = word;
     } else {

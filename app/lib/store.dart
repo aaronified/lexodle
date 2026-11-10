@@ -1929,8 +1929,11 @@ final metrics = <String, Metric>{
   // the days on which every daily was solved ('done' marks the day counted)
   'dailyFullDays': Metric(_dailyModes, (st, r) {
     if (!_dailyDaySeen(st, r)) return st.value;
+    // (the themed wordle is English only: elsewhere it is not one to solve)
     if (st.seen.contains('done') ||
-        !_dailyModes.every((m) => st.seen.contains(m.name))) {
+        !GameMode.loopFor(r.lang)
+            .where((m) => m.hasDaily)
+            .every((m) => st.seen.contains(m.name))) {
       return st.value;
     }
     st.seen.add('done');

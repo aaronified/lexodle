@@ -125,7 +125,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.lockdown);
-      // blind and equations have a daily; mastermind and themed (last) none
+      // every mode has a daily, mastermind and themed (last) too
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.blind);
@@ -137,11 +137,11 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.mastermind);
-      expect(find.byKey(const ValueKey('daily-button')), findsNothing);
+      expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.themed);
-      expect(find.byKey(const ValueKey('daily-button')), findsNothing);
+      expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('mode-next')));
       await tester.pumpAndSettle();
       expect(appState.mode, GameMode.classic);
