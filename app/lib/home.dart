@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
+import 'app_log.dart';
 import 'changelog.dart';
 import 'clock.dart';
 import 'daily.dart';
@@ -416,6 +417,27 @@ class _HomePageState extends State<HomePage> {
     ),
   );
 
+  /// Opens my words. A failure is logged, not thrown.
+  void _openWords(BuildContext context) {
+    try {
+      Navigator.pushNamed(context, Routes.words);
+    } catch (e) {
+      appLog.w('home', 'could not open my words: $e');
+    }
+  }
+
+  /// The my words label, with the count of saved words when there are some.
+  /// A failure to read the count is logged, and the label is plain.
+  String _wordsLabel() {
+    try {
+      final n = appState.savedWords.length;
+      return n > 0 ? 'my words  $n' : 'my words';
+    } catch (e) {
+      appLog.w('home', 'could not count my words: $e');
+      return 'my words';
+    }
+  }
+
   /// The glyphs of the latest achievements, newest first, or null for none.
   Widget? _recentGlyphs(BuildContext context) {
     final c = Theme.of(context).colorScheme;
@@ -587,10 +609,42 @@ class _HomePageState extends State<HomePage> {
                                       const SizedBox(height: 8),
                                       _styleRow(context),
                                       const SizedBox(height: 8),
-                                      _menuButton(
-                                        'how to play',
-                                        Routes.howTo,
-                                        key: const ValueKey('how-to-button'),
+                                      // how to play and my words side by side
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: SizedBox(
+                                              height: _buttonHeight,
+                                              child: OutlinedButton(
+                                                key: const ValueKey(
+                                                  'how-to-button',
+                                                ),
+                                                onPressed: () =>
+                                                    Navigator.pushNamed(
+                                                      context,
+                                                      Routes.howTo,
+                                                    ),
+                                                child: const Text(
+                                                  'how to play',
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: SizedBox(
+                                              height: _buttonHeight,
+                                              child: OutlinedButton(
+                                                key: const ValueKey(
+                                                  'words-button',
+                                                ),
+                                                onPressed: () =>
+                                                    _openWords(context),
+                                                child: Text(_wordsLabel()),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       // on a desktop the row floats: the last row
                                       if (!phone) ...[

@@ -166,6 +166,13 @@ class LearnHomePage extends StatelessWidget {
                         Routes.learnSequence,
                         log,
                       ),
+                      _lesson(
+                        context,
+                        'my words',
+                        'the words you saved from finished games, with their meanings and your notes',
+                        Routes.words,
+                        key: 'learn-card-words',
+                      ),
                     ],
                   ],
                 ),
