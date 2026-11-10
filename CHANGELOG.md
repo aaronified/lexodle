@@ -7,13 +7,21 @@ it to the version.
 
 ## Unreleased
 
-- mastermind and themed have a daily
+- themed is now called geography
+  The themed wordle is renamed geography, and the other themes (mythology,
+  history, mathematics) are hidden for now; their code stays. Saved games and
+  settings keep their place.
+- luck achievements average every guess
+  A guess made with one word left has no chance in it, so scores 0 luck, and the
+  achievements now count it, as the luck on the end screen does. Before, the
+  achievement skipped it, so +16% on screen could earn a +20 achievement.
+- mastermind and geography have a daily
   Both modes get a daily button on the home page, a streak and a calendar, like
   the other modes. The mastermind daily has no word and no limit on guesses:
   what it says to each guess is drawn from the date, so everyone who makes the
-  same guesses gets the same replies (always random pools). The themed daily is
-  one five-letter place, English only. A clean sweep counts the dailies a
-  language offers, so the themed one is not asked of other languages.
+  same guesses gets the same replies (always random pools). The geography daily
+  is one five-letter place, English only. A clean sweep counts the dailies a
+  language offers, so the geography one is not asked of other languages.
 
 ## 0.8.0
 

@@ -58,12 +58,12 @@ applied. Quartet and relay race get extra tries (3 and 4), and the *shared lette
 how often their words may share a letter. The helper shows in classic only, so it is greyed out
 for the others. The *shared letters* swiper appears only for quartet and relay race.
 
-Three more modes live in the game modes screen (the home swipe keeps the four above). **Themed** is
-a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
+Three more modes live in the game modes screen (the home swipe keeps the four above). **Geography** (called themed
+before) is a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
 lakes, bays and the like, with spaces left out (`riodejaneiro`). Only place names are valid guesses,
 and every guess has a small *i* that says what the place is and links to its Wikipedia page. The
 *answers* switch chooses between well known places (drawn on a curve by how much their Wikipedia page
-is read) and all places. Mythology, history and mathematics are planned. **Blind** tells only how
+is read) and all places. Other themes (mythology, history, mathematics) are planned and hidden for now. **Blind** tells only how
 many letters are right and in place (green) and how many are right elsewhere (yellow), never which;
 it has 10 tries by default (14, 10, 8 or 6) and works in every language. The two counts are as big as
 the tiles, and a tap on a letter of a guess you have made pencils a colour on it (green, yellow, grey,

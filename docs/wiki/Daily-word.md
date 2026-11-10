@@ -26,7 +26,7 @@ played by the counts alone. The **equations** daily is one 8-tile equation with 
 every language. The **mastermind** daily has no word and no limit on guesses: what it says to each
 guess is drawn from the date, the language, the number of the guess and the guess itself (from the
 pool of words still possible, as in the random pool), so everyone who makes the same guesses gets
-the same replies, and the daily always uses random pools. The **themed** daily (English only) is
+the same replies, and the daily always uses random pools. The **geography** (themed) daily (English only) is
 one five-letter place name with 6 tries, drawn on the places' own curve by the date. The mode in
 view on the home page, which you change with its chevrons or by swiping, decides which daily the daily button
 plays. Each mode has its own streak, calendar and best. It is saved as you go, so closing the page
