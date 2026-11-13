@@ -46,15 +46,34 @@ class YouPage extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
-                        child: Text(
-                          'you',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
+                      InkWell(
+                        key: const ValueKey('you-chip'),
+                        borderRadius: BorderRadius.circular(6),
+                        onTap: () => showProfileSheet(context),
+                        child: Container(
+                          height: 44,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: c.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ProfileAvatar(appState.profile, size: 28),
+                              const SizedBox(width: 8),
+                              Text(appState.profile.name),
+                              const SizedBox(width: 2),
+                              Icon(
+                                Icons.chevron_right,
+                                size: 20,
+                                color: c.onSurface.withValues(alpha: dimAlpha),
+                              ),
+                            ],
                           ),
                         ),
                       ),
+                      const Spacer(),
                       IconButton(
                         key: const ValueKey('you-help'),
                         tooltip: 'help: play your first game again',
@@ -66,30 +85,6 @@ class YouPage extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: InkWell(
-                      key: const ValueKey('you-chip'),
-                      onTap: () => showProfileSheet(context),
-                      child: SizedBox(
-                        height: 44,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ProfileAvatar(appState.profile, size: 28),
-                            const SizedBox(width: 8),
-                            Text(appState.profile.name),
-                            const SizedBox(width: 2),
-                            Icon(
-                              Icons.chevron_right,
-                              size: 20,
-                              color: c.onSurface.withValues(alpha: dimAlpha),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 12),
                   const StreakWeek(),
@@ -171,24 +166,28 @@ class YouPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (_from(3))
+                  if (appState.lexUnlocked || _from(3))
                     _row(
                       context,
                       'achievements',
                       'achievements',
-                      '${appState.unlockedCount} of ${achievementCount()} earned',
+                      '${appState.unlockedCount} of ${achievementCount()} earned'
+                          '${appState.lexUnlocked ? ' · lex and hints' : ''}',
                       icon: 'trophy',
+                      trailing: appState.lexUnlocked
+                          ? '${appState.lexBalance}'
+                          : null,
                       onTap: () => _push(context, Routes.achievements),
                     ),
-                  if (appState.lexUnlocked)
+                  if (_from(5))
                     _row(
                       context,
-                      'lex',
-                      'lex',
-                      'hint currency · how it works',
-                      icon: 'bulb',
-                      trailing: '${appState.lexBalance}',
-                      onTap: () => _push(context, Routes.lex),
+                      'friends',
+                      'friends and social',
+                      'coming in an upcoming release',
+                      icon: 'bubble-text',
+                      onTap: () =>
+                          showToast(context, 'coming in an upcoming release'),
                     ),
                   if (_from(2))
                     _row(
@@ -196,7 +195,19 @@ class YouPage extends StatelessWidget {
                       'reminders',
                       'reminders',
                       'a ping when your dailies open',
+                      icon: 'clock',
                       onTap: () => showToast(context, 'reminders are next'),
+                    ),
+                  if (_from(5))
+                    _row(
+                      context,
+                      'history',
+                      'history',
+                      style == null
+                          ? 'and your playstyle'
+                          : 'your playstyle: ${style.name}',
+                      icon: 'hourglass',
+                      onTap: () => _push(context, Routes.history),
                     ),
                   if (_from(3))
                     _row(
@@ -204,6 +215,7 @@ class YouPage extends StatelessWidget {
                       'backup',
                       'backup',
                       'save your data, or restore it',
+                      icon: 'shield-check',
                       onTap: () => _push(context, Routes.settings),
                     ),
                   if (_from(7))
@@ -212,34 +224,8 @@ class YouPage extends StatelessWidget {
                       'support',
                       'support lexodle',
                       'keep it going',
+                      icon: 'gift',
                       onTap: () => _push(context, Routes.settings),
-                    ),
-                  if (_from(5))
-                    _row(
-                      context,
-                      'playstyle',
-                      'playstyle',
-                      style == null
-                          ? 'from your last 100 games'
-                          : '${style.name} · from your last 100 games',
-                      onTap: () => _push(context, Routes.playstyle),
-                    ),
-                  if (_from(5))
-                    _row(
-                      context,
-                      'history',
-                      'history',
-                      null,
-                      onTap: () => _push(context, Routes.history),
-                    ),
-                  if (_from(5))
-                    _row(
-                      context,
-                      'friends',
-                      'friends and social',
-                      'coming in an upcoming release',
-                      onTap: () =>
-                          showToast(context, 'coming in an upcoming release'),
                     ),
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'language_picker.dart';
+import 'lex_page.dart' show LexSection;
 import 'main.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart' show GameMode;
@@ -235,6 +236,10 @@ class _AchievementsPageState extends State<AchievementsPage> {
               return ListView(
                 padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                 children: [
+                  if (appState.lexUnlocked) ...[
+                    const LexSection(),
+                    const SizedBox(height: 24),
+                  ],
                   LanguagePicker(
                     codes: codes,
                     languages: _langs,

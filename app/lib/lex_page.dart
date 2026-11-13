@@ -18,14 +18,26 @@ class LexPage extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
-          child: ListenableBuilder(
-            listenable: appState,
-            builder: (context, _) => _body(context, appState.lex),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
+            children: const [LexSection()],
           ),
         ),
       ),
     );
   }
+}
+
+/// The lex content, a column that sits on its own page and at the top of the
+/// achievements page, which is where lex is earned.
+class LexSection extends StatelessWidget {
+  const LexSection({super.key});
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: appState,
+    builder: (context, _) => _body(context, appState.lex),
+  );
 
   /// The achievements shown as examples: (id, level index).
   static const _examples = [
@@ -50,8 +62,8 @@ class LexPage extends StatelessWidget {
         today += e.delta;
       }
     }
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _card(
           c,

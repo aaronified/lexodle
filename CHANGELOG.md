@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- you: the chip is the header; lex joins achievements
+  The you page opens with your username chip. Every row has an icon. The order
+  is achievements (lex and hints sit at the top of that page, the balance on
+  the row), friends and social, reminders, history (with your playstyle),
+  backup, support.
 - lex: the hint currency, kept and backed up
   Achievements pay lex: bronze 1, silver 2, gold 3, platinum 5. Only the
   highest level a game earns pays, an achievement pays once a day in each
