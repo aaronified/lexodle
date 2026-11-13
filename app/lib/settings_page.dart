@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import 'app_log.dart';
 import 'auto_backup.dart';
 import 'backup.dart';
+import 'changelog.dart';
 import 'donate.dart';
 import 'haptics.dart';
 import 'sounds.dart';
@@ -16,46 +18,81 @@ import 'update_section.dart';
 import 'ui.dart';
 import 'wiki_links.dart';
 
-/// What the settings page shows: everything, or one section on its own.
-enum SettingsPart { all, backup, support }
-
-/// The settings page: theme, touch, backup, updates, log, support, and the way
-/// to about and licences. Each section has its caption, its controls and at
-/// most one short line. Changes apply
-/// and are saved as they are made. It is a route of its own ([Routes.settings]),
-/// so it has an address like every other screen. The game options are in
-/// [Routes.gameModes].
+/// The settings page: theme, touch, reminders, backup, updates, log, support,
+/// what's new, and the way to about and licences. Each section has its caption,
+/// its controls and at most one short line, and opens with its step of the
+/// ladder. Changes apply and are saved as they are made. It is a route of its
+/// own ([Routes.settings]), so it has an address like every other screen. The
+/// game options are in [Routes.gameModes].
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key, this.part = SettingsPart.all});
+  const SettingsPage({super.key});
 
-  /// Which part of the settings is shown: all of it, or one section alone.
-  final SettingsPart part;
+  /// The changelog again, whatever was seen.
+  Future<void> _showChanges(BuildContext context) async {
+    try {
+      final lines = await loadChangelog();
+      if (lines.isEmpty || !context.mounted) return;
+      showChangelog(context, lines);
+    } catch (e) {
+      appLog.w('changelog', 'whats new failed ${e.runtimeType}');
+    }
+  }
+
+  void _push(BuildContext context, String route) {
+    try {
+      Navigator.pushNamed(context, route);
+    } catch (e) {
+      appLog.w('settings', 'open failed ${e.runtimeType}');
+    }
+  }
+
+  Widget _row(
+    BuildContext context,
+    String id,
+    String title,
+    String sub,
+    VoidCallback onTap,
+  ) {
+    final c = Theme.of(context).colorScheme;
+    return InkWell(
+      key: ValueKey('settings-row-$id'),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.outlineVariant)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title),
+                  Text(
+                    sub,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: c.onSurface.withValues(alpha: dimAlpha),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: c.onSurface.withValues(alpha: dimAlpha),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    if (part != SettingsPart.all) {
-      final backup = part == SettingsPart.backup;
-      final title = backup ? 'backup' : 'support lexodle';
-      return Scaffold(
-        appBar: AppBar(title: Text(title)),
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
-                children: [
-                  Caption(title),
-                  const SizedBox(height: 10),
-                  if (backup) const _BackupSection() else const DonateSection(),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
     return Scaffold(
       appBar: AppBar(title: const Text('settings')),
       body: SafeArea(
@@ -65,9 +102,77 @@ class SettingsPage extends StatelessWidget {
             child: ListenableBuilder(
               listenable: appState,
               builder: (context, _) {
+                final dark = appState.themeMode == ThemeMode.dark;
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                   children: [
+                    if (appState.stepOpen('theme')) ...[
+                      const Caption('theme'),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          for (final (m, label) in const [
+                            (ThemeMode.light, 'light'),
+                            (ThemeMode.dark, 'dark'),
+                            (ThemeMode.system, 'system'),
+                          ])
+                            Expanded(
+                              child: InkWell(
+                                key: ValueKey('theme-$label'),
+                                onTap: () => appState.setup(
+                                  themeMode: m,
+                                  black:
+                                      m == ThemeMode.dark &&
+                                      appState.blackTheme,
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: appState.themeMode == m
+                                        ? c.secondaryContainer
+                                        : c.surfaceContainerHighest,
+                                  ),
+                                  child: Text(
+                                    label,
+                                    style: TextStyle(
+                                      fontWeight: appState.themeMode == m
+                                          ? FontWeight.bold
+                                          : null,
+                                      color: appState.themeMode == m
+                                          ? c.onSecondaryContainer
+                                          : c.onSurface,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      SwitchListTile(
+                        key: const ValueKey('black-switch'),
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        title: const Text('true black'),
+                        subtitle: Text(
+                          'for OLED screens: pure #000000 when dark',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
+                          ),
+                        ),
+                        value: appState.blackTheme,
+                        onChanged: dark
+                            ? (on) => appState.setup(
+                                themeMode: ThemeMode.dark,
+                                black: on,
+                              )
+                            : null,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                     const Caption('touch'),
                     const SizedBox(height: 6),
                     SwitchListTile(
@@ -108,6 +213,22 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 24),
+                    if (appState.stepOpen('reminders')) ...[
+                      _row(
+                        context,
+                        'reminders',
+                        'reminders',
+                        'a ping when your dailies open',
+                        () => _push(context, Routes.reminders),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                    if (appState.stepOpen('backup')) ...[
+                      const Caption('backup'),
+                      const SizedBox(height: 10),
+                      const _BackupSection(),
+                      const SizedBox(height: 24),
+                    ],
                     if (updatesSupported) ...[
                       const Caption('updates'),
                       const SizedBox(height: 10),
@@ -124,6 +245,22 @@ class SettingsPage extends StatelessWidget {
                     const SizedBox(height: 10),
                     const LogSection(),
                     const SizedBox(height: 24),
+                    if (appState.stepOpen('support')) ...[
+                      const Caption('support lexodle'),
+                      const SizedBox(height: 10),
+                      const DonateSection(),
+                      const SizedBox(height: 24),
+                    ],
+                    if (appState.stepOpen("what's new")) ...[
+                      _row(
+                        context,
+                        'whatsnew',
+                        "what's new",
+                        'what changed in this version',
+                        () => _showChanges(context),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                     const Caption('about'),
                     const SizedBox(height: 10),
                     SizedBox(

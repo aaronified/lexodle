@@ -9,6 +9,7 @@ import 'main.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
 import 'typing_keys.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -327,6 +328,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
               ),
             ],
           ),
+          actions: [const SettingsButton()],
         ),
         body: SafeArea(
           child: Center(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'help.dart';
 import 'modes.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 
 /// The strategy guide of [mode]: headed paragraphs on how to play it well.
@@ -166,6 +167,7 @@ class ModeGuidePage extends StatelessWidget {
             ),
           ],
         ),
+        actions: [const SettingsButton()],
       ),
       body: SafeArea(
         child: Center(

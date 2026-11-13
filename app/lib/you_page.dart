@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
-import 'changelog.dart';
 import 'home.dart' show LanguagePopup;
 import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
 import 'mode_settings_page.dart' show knownModes;
 import 'profile_sheet.dart';
 import 'routes.dart';
-import 'settings_page.dart' show SettingsPart;
+import 'settings_button.dart';
 import 'streak_week.dart';
 import 'ui.dart';
 import 'words.dart';
 
-/// The fourth tab: the week's streak, the theme, and the doors to the
-/// achievements, lex, reminders, playstyle, history and friends. A new player
+/// The fourth tab: the week's streak, the settings button, and the doors to the
+/// achievements, lex, playstyle, history and friends. A new player
 /// sees a door once enough games are played.
 class YouPage extends StatefulWidget {
   const YouPage({super.key});
@@ -39,17 +38,6 @@ class _YouPageState extends State<YouPage> {
       if (mounted) setState(() => _langs = l);
     } catch (e) {
       appLog.w('you', 'languages failed ${e.runtimeType}');
-    }
-  }
-
-  /// The changelog again, whatever was seen.
-  Future<void> _showChanges() async {
-    try {
-      final lines = await loadChangelog();
-      if (lines.isEmpty || !mounted) return;
-      showChangelog(context, lines);
-    } catch (e) {
-      appLog.w('changelog', 'whats new failed ${e.runtimeType}');
     }
   }
 
@@ -99,7 +87,6 @@ class _YouPageState extends State<YouPage> {
     return ListenableBuilder(
       listenable: appState,
       builder: (context, _) {
-        final dark = appState.themeMode == ThemeMode.dark;
         final style = appState.style;
         return SafeArea(
           child: Center(
@@ -137,95 +124,13 @@ class _YouPageState extends State<YouPage> {
                           ),
                         ),
                       ),
+                      const Spacer(),
+                      const SettingsButton(),
                     ],
                   ),
                   const SizedBox(height: 12),
                   const StreakWeek(),
                   const SizedBox(height: 20),
-                  if (appState.stepOpen('theme')) ...[
-                    Material(
-                      color: c.surfaceContainerHighest,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(3),
-                        side: hairline(c),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Caption('theme'),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                for (final (m, label) in const [
-                                  (ThemeMode.light, 'light'),
-                                  (ThemeMode.dark, 'dark'),
-                                  (ThemeMode.system, 'system'),
-                                ])
-                                  Expanded(
-                                    child: InkWell(
-                                      key: ValueKey('theme-$label'),
-                                      onTap: () => appState.setup(
-                                        themeMode: m,
-                                        black:
-                                            m == ThemeMode.dark &&
-                                            appState.blackTheme,
-                                      ),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 10,
-                                        ),
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          color: appState.themeMode == m
-                                              ? c.secondaryContainer
-                                              : c.surfaceContainerHighest,
-                                        ),
-                                        child: Text(
-                                          label,
-                                          style: TextStyle(
-                                            fontWeight: appState.themeMode == m
-                                                ? FontWeight.bold
-                                                : null,
-                                            color: appState.themeMode == m
-                                                ? c.onSecondaryContainer
-                                                : c.onSurface,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            SwitchListTile(
-                              key: const ValueKey('black-switch'),
-                              contentPadding: EdgeInsets.zero,
-                              dense: true,
-                              title: const Text('true black'),
-                              subtitle: Text(
-                                'for OLED screens: pure #000000 when dark',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: c.onSurface.withValues(
-                                    alpha: dimAlpha,
-                                  ),
-                                ),
-                              ),
-                              value: appState.blackTheme,
-                              onChanged: dark
-                                  ? (on) => appState.setup(
-                                      themeMode: ThemeMode.dark,
-                                      black: on,
-                                    )
-                                  : null,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
                   if (appState.stepOpen('achievements'))
                     _row(
                       context,
@@ -248,15 +153,6 @@ class _YouPageState extends State<YouPage> {
                       icon: 'bubble-text',
                       onTap: () =>
                           showToast(context, 'coming in an upcoming release'),
-                    ),
-                  if (appState.stepOpen('reminders'))
-                    _row(
-                      context,
-                      'reminders',
-                      'reminders',
-                      'a ping when your dailies open',
-                      icon: 'clock',
-                      onTap: () => _push(context, Routes.reminders),
                     ),
                   if (appState.stepOpen('mode settings') &&
                       knownModes().isNotEmpty)
@@ -306,50 +202,6 @@ class _YouPageState extends State<YouPage> {
                       null,
                       icon: 'puzzle',
                       onTap: () => _push(context, Routes.diy),
-                    ),
-                  if (appState.stepOpen('settings'))
-                    _row(
-                      context,
-                      'settings',
-                      'settings',
-                      'sound, haptics, updates, licences',
-                      icon: 'settings',
-                      onTap: () => _push(context, Routes.settings),
-                    ),
-                  if (appState.stepOpen("what's new"))
-                    _row(
-                      context,
-                      'whatsnew',
-                      "what's new",
-                      'what changed in this version',
-                      icon: 'sparkles',
-                      onTap: _showChanges,
-                    ),
-                  if (appState.stepOpen('backup'))
-                    _row(
-                      context,
-                      'backup',
-                      'backup',
-                      'save your data, or restore it',
-                      icon: 'shield-check',
-                      onTap: () => _push(
-                        context,
-                        Routes.settings,
-                        arguments: SettingsPart.backup,
-                      ),
-                    ),
-                  if (appState.stepOpen('support'))
-                    _row(
-                      context,
-                      'support',
-                      'support lexodle',
-                      'keep it going',
-                      icon: 'gift',
-                      onTap: () => _push(
-                        context,
-                        Routes.settings,
-                        arguments: SettingsPart.support,
-                      ),
                     ),
                 ],
               ),

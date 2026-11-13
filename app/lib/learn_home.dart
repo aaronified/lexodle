@@ -8,6 +8,7 @@ import 'mode_filter.dart';
 import 'modes.dart';
 import 'main.dart';
 import 'routes.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -61,6 +62,7 @@ class LearnHomePage extends StatelessWidget {
                 ),
               ],
             ),
+            actions: [const SettingsButton()],
           ),
           body: SafeArea(
             child: Center(

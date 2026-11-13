@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_log.dart';
 import 'collection.dart';
 import 'save_word_button.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'word_info.dart';
 import 'words.dart';
@@ -48,6 +49,7 @@ class _CollectedWordPageState extends State<CollectedWordPage> {
             const Text('my words'),
           ],
         ),
+        actions: [const SettingsButton()],
       ),
       body: Center(
         child: ConstrainedBox(

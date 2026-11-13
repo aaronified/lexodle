@@ -7,6 +7,7 @@ import 'main.dart';
 import 'routes.dart';
 import 'save_word_button.dart';
 import 'saved_words.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 import 'words_banner.dart';
@@ -90,7 +91,9 @@ class _WordsPageState extends State<WordsPage> {
     return Scaffold(
       // no title: the two lists are the header. A bar stays only to go back
       // when the page was opened on top of another.
-      appBar: Navigator.of(context).canPop() ? AppBar() : null,
+      appBar: Navigator.of(context).canPop()
+          ? AppBar(actions: [const SettingsButton()])
+          : null,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -113,7 +116,12 @@ class _WordsPageState extends State<WordsPage> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(19, 8, 19, 14),
-              child: _tabs(c),
+              child: Row(
+                children: [
+                  Expanded(child: _tabs(c)),
+                  if (!Navigator.of(context).canPop()) const SettingsButton(),
+                ],
+              ),
             ),
             Expanded(
               child: PageView(

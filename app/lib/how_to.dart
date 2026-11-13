@@ -5,6 +5,7 @@ import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'routes.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'wiki_links.dart';
 
@@ -101,7 +102,7 @@ class HowToPage extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(actions: [const SettingsButton()]),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
