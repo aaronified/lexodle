@@ -44,7 +44,11 @@ class GameRecord {
     this.lockdown = false,
     this.luckless = false,
     this.earned = const [],
+    this.ms,
   });
+
+  /// How long the game took in milliseconds of play; null when not known.
+  final int? ms;
 
   /// What the game earned, when it is a game from the history (the end panel
   /// of a game just played lists it itself).

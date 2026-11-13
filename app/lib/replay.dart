@@ -114,6 +114,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     lockdown: g.mode == GameMode.lockdown,
     luckless: g.largest,
     earned: earnedFrom(g.earned),
+    ms: g.ms,
   );
 }
 
@@ -143,6 +144,7 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
     kind: drawKindOf(g.draw, daily: g.daily),
     daily: g.daily.isNotEmpty,
     earned: earnedFrom(g.earned),
+    ms: g.ms,
   );
 }
 

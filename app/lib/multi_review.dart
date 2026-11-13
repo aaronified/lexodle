@@ -27,7 +27,11 @@ class MultiRecord {
     this.kind,
     this.daily = false,
     this.earned = const [],
+    this.ms,
   });
+
+  /// How long the game took in milliseconds of play; null when not known.
+  final int? ms;
 
   /// What the game earned (see [GameRecord.earned]).
   final List<Achievement> earned;

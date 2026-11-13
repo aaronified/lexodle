@@ -52,6 +52,7 @@ void main() {
     String daily = '',
     double skill = 70,
     int version = metricsVersion,
+    int? ms,
   }) {
     final row = h.add(
       at: at,
@@ -76,6 +77,7 @@ void main() {
           ),
       ],
       daily: daily,
+      ms: ms,
     );
     if (version != metricsVersion) {
       h.games[h.games.indexWhere((g) => g.id == row.id)] = row.withVersion(
@@ -203,6 +205,18 @@ void main() {
     // the answer is there to look back on
     expect(find.text(a), findsNWidgets(2));
     expect(find.text(pool.skip(40).take(4).join(' ')), findsOneWidget);
+  });
+
+  testWidgets('a game shows the time it took, when it was kept', (
+    tester,
+  ) async {
+    await load(tester);
+    final h = History();
+    addGame(h, at: ms(22), guesses: [pool[1], pool[10]], won: true, ms: 83000);
+    addGame(h, at: ms(23), guesses: [pool[1], pool[2]], won: false);
+    await show(tester, h);
+    expect(find.text('solved in 2/6 · 1:23'), findsOneWidget);
+    expect(find.text('missed'), findsOneWidget);
   });
 
   testWidgets('the history can be limited to one mode, or all of them', (
