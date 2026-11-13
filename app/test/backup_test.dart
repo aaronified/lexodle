@@ -86,6 +86,7 @@ void main() {
           'share',
           'theme',
           'seenHowTo',
+          'reminders',
         ]),
       );
       expect((m['stats'] as Map)['played'], 12);
@@ -284,6 +285,7 @@ void main() {
         ('theme', 'dark'),
         ('seenHowTo', 1),
         ('seenHowTo', 'yes'),
+        ('reminders', 'on'),
         ('lang', 5),
         ('lang', ''),
         ('lang', 'a'),

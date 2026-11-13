@@ -12,6 +12,7 @@ import 'learn_log.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'saved_words.dart';
+import 'reminders.dart' show ReminderSettings;
 import 'store.dart';
 
 /// The version of the backup file; a file from a later one is refused rather
@@ -333,6 +334,12 @@ Map<String, Object> _settings(Object? raw) {
   if (seen != null) {
     if (seen is! bool) _bad('seenHowTo');
     out['seenHowTo'] = seen;
+  }
+  // the reminders: read as the settings read them (anything off falls back)
+  final reminders = raw['reminders'];
+  if (reminders != null) {
+    if (reminders is! Map) _bad('reminders');
+    out['reminders'] = ReminderSettings.fromJson(reminders).toJson();
   }
   return out;
 }

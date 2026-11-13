@@ -12,6 +12,7 @@ import 'licences.dart';
 import 'modes.dart' show GameMode;
 import 'words.dart' show WordBank;
 import 'routes.dart';
+import 'reminders.dart';
 import 'shortcuts_overlay.dart';
 import 'store.dart';
 import 'update_check.dart';
@@ -167,6 +168,9 @@ final appState = AppState();
 /// screen (the one that says a newer version is out).
 final appMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
+/// The navigator of the whole app, so a tapped notification can open a daily.
+final appNavigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   registerLicences();
@@ -178,6 +182,12 @@ void main() {
         // a new version keeps a copy of what it found, then looks for a newer one
         unawaited(AutoBackup.afterUpgrade(appState));
         _watchEquations();
+        // reminders: a tapped notification opens that mode's daily; the plan is rebuilt now and on every change
+        Reminders.onOpen = (m) {
+          appState.setup(mode: m);
+          appNavigatorKey.currentState?.pushNamed(Routes.daily);
+        };
+        Reminders.start();
         return checkForUpdateAtLaunch();
       })
       .then(_toastIfNewer);
@@ -253,6 +263,7 @@ class LexodleApp extends StatelessWidget {
       builder: (context, _) => MaterialApp(
         title: 'lexodle',
         scaffoldMessengerKey: appMessengerKey,
+        navigatorKey: appNavigatorKey,
         debugShowCheckedModeBanner: false,
         theme: buildTheme(Brightness.light),
         darkTheme: buildTheme(Brightness.dark, black: appState.blackTheme),
