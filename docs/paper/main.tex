@@ -271,16 +271,23 @@ letters right elsewhere, with no tile colours. A group is the set of words that 
 same pair of counts, and every score above is taken over those groups. Greens whose
 places are unknown are not counted as known greens when the phase of a guess is read.
 
-\paragraph{Themed and made lists.} The word list is smaller or drawn from a theme, with
+\paragraph{Geography and made lists.} The word list is smaller or drawn from a theme, with
 the chances $p_w$ set by the draw (for places, in proportion to how widely read each is);
 the scores are those of Section~\ref{sec:setting} under that law.
 
-A daily in any mode is scored under equal chances. Only classic games, a classic daily
-included, count towards a playstyle; the other modes are not read for habits.
+\paragraph{Equations and mastermind.} The equations (the tiles are digits and signs) are
+scored and reviewed like words, with the same measures. In the mastermind each guess is scored
+against the words still possible, and the review is against the word the game settled on, which
+fits every reply it gave. The paper's experiments and simulations are on word games only; these
+two modes use the same code but are outside what the paper tests.
+
+A daily in any mode is scored under equal chances. A playstyle is read separately for each
+single-board mode (classic, lockdown, blind, equations, mastermind and geography); the quartet and
+the relay race play several boards and have none.
 
 \section{Playstyles}\label{sec:styles}
 
-A player's style is read from their last 100 classic games, a classic daily being one. A guess
+A player's style is read from their last 100 games of a mode, a daily being one. A guess
 is counted in a phase by the words left $n$ and the greens known: \emph{early} for
 $n\ge64$, \emph{end} for $n\le16$ or three greens, otherwise the middle, which is not
 read. Each early guess is counted as the first that applies of:

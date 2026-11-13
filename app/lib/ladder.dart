@@ -48,7 +48,7 @@ const ladder = <LadderStep>[
     6,
     StepKind.feature,
     'every mode',
-    'all eight modes are open to read about and try',
+    'the game modes screen names all eight modes',
   ),
   LadderStep(
     7,

@@ -11,15 +11,14 @@ finishing a game rewrites one month, not the whole record. The history is in the
 
 ## The history page
 
-Tap the history button on the playstyle card (the playstyle button on the home screen opens
-it). A row of flags picks the language (see [Languages](Languages)); the page is about that
+Open **history** from the you tab (it opens at game 5; its line shows your playstyle). A row of flags picks the language (see [Languages](Languages)); the page is about that
 language. Under it, a row of modes limits everything below to one mode (**all**, the default,
 adds up every mode). It has:
 
 - an **overall** analysis of every game, however many (games, won, skill, risk, luck, guesses
   to win);
-- **how play changed**: a line each for skill, luck and risk over the last 50 weeks (rolling
-  seven-day windows ending today) or the last 50 months, with a gap where nothing was played. Tap
+- **how play changed**: a line each for skill, luck and risk over the last 50 days, 50 weeks (rolling
+  seven-day windows ending today) or 50 months, with a gap where nothing was played. Tap
   or drag along it to pick a period and see its games, its numbers, the change on the last period
   you played. Luck is drawn about the middle
   line, which is a luck of 0; see [Skill, luck and risk](Skill-luck-and-risk);
@@ -33,9 +32,8 @@ adds up every mode). It has:
 
 Your **playstyle** is read, **per language and per mode**, from your last 100 games of the mode in
 that language (a daily is one). Every mode with a single board has its own: classic, lockdown,
-blind, equations, mastermind and themed. The quartet and the relay race have none, as they play
-several boards at once. The playstyle card and the glyph on the home page follow the mode you are
-in, and the card says which mode it is for. The card has a mode filter too: "all" reads your last
+blind, equations, mastermind and geography. The quartet and the relay race have none, as they play
+several boards at once. The playstyle card on the history page, under the chart, follows the mode filter, and says which mode it is for; tap it to open the playstyle page. The card has a mode filter too: "all" reads your last
 100 games of every mode with a playstyle together. It is two habits: what you do early, and what you do at the end.
 
 Each guess is counted as one thing, the first that applies.

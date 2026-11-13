@@ -69,7 +69,7 @@ Double tap a tile to lock its letter, and double tap it again to unlock it. On a
 tile (click it, or use the arrow keys) and tap the shift key: it locks the letter, and tapping shift
 again unlocks it. Shift held to type a capital does nothing. The next guess starts with the locked
 letters in place, and a locked letter is skipped when you type or press backspace. The how to play
-screen (on the old home page, and in the first game's lessons) has one live row of tiles to try the blanks, the cursor and the locks on.
+screen (on the old home page) has one live row of tiles to try the blanks, the cursor and the locks on.
 
 ## Modes
 
