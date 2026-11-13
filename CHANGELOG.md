@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- words: every language looks a word up in its own Wiktionary
+  Meanings, pronunciation, origin and synonyms of the answer and of saved words come from the Wiktionary of the word's language: French, Spanish, Italian, Portuguese, Catalan, Romanian, German, Dutch, Swedish, Danish, Norwegian, Polish, Czech, Hungarian, Turkish and Indonesian. English stays on the English one. A word can always be saved, with your own notes, if the lookup fails.
+
 - words: saved and collected are the header, and swipe
   The two lists are the page's header and swipe sideways. A banner floats at the bottom on both lists with the count and the next trophy, and can be dismissed. It comes back for the next trophy.
 - you: the streak card swipes between modes

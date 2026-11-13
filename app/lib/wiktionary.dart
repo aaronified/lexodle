@@ -5,6 +5,12 @@ import 'package:html/dom.dart' show Element, Text;
 import 'package:html/parser.dart' as html;
 import 'package:http/http.dart' as http;
 
+import 'wikt/ca.dart';
+import 'wikt/es.dart';
+import 'wikt/it.dart';
+import 'wikt/pt.dart';
+import 'wikt/ro.dart';
+
 import 'wikt/cs.dart';
 import 'wikt/da.dart';
 import 'wikt/de.dart';
@@ -368,6 +374,11 @@ const _english = Edition('en.wiktionary.org', 'wiktionary ↗');
 /// own language. A language that is not here uses the English edition.
 const editions = <String, Edition>{
   'fr': Edition('fr.wiktionary.org', 'wiktionnaire ↗', parseFrench),
+  'es': Edition('es.wiktionary.org', 'wikcionario ↗', parseSpanish),
+  'it': Edition('it.wiktionary.org', 'wikizionario ↗', parseItalian),
+  'pt': Edition('pt.wiktionary.org', 'wikcionário ↗', parsePortuguese),
+  'ca': Edition('ca.wiktionary.org', 'viccionari ↗', parseCatalan),
+  'ro': Edition('ro.wiktionary.org', 'wikționar ↗', parseRomanian),
   'de': Edition('de.wiktionary.org', 'wiktionary ↗', parseGerman),
   'nl': Edition('nl.wiktionary.org', 'wikiwoordenboek ↗', parseDutch),
   'sv': Edition('sv.wiktionary.org', 'wiktionary ↗', parseSwedish),

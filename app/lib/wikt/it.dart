@@ -31,7 +31,7 @@ const _itPos = [
 /// Parses an it.wiktionary page: the Italian section (h2 "Italiano"), with
 /// its pronunciation, parts of speech (h3), senses (`ol`), etymology,
 /// synonyms and antonyms (Sinonimi and Contrari sections). Null when the
-/// page has no Italian section. Italian entries have no recordings.
+/// page has no Italian section. The recording, when there is one, is the `audio` element of the pronunciation.
 WordInfo? parseItalian(
   String markup,
   String url, {
@@ -44,6 +44,7 @@ WordInfo? parseItalian(
   final top = root.querySelector('.mw-parser-output') ?? root;
 
   final ipa = <String>[];
+  String? audio;
   final blocks = <PosBlock>[];
   final syn = <String>[], ant = <String>[];
   var etymology = '';
@@ -78,6 +79,8 @@ WordInfo? parseItalian(
         headed = false;
         blocks.add(current);
         mode = 'pos';
+      } else if (mode == 'pos' && h.localName == 'h4') {
+        // Transitivo, Ausiliare...: still the same part of speech
       } else {
         mode = '';
       }
@@ -89,6 +92,15 @@ WordInfo? parseItalian(
       for (final e in node.querySelectorAll('span.IPA')) {
         final t = squash(e.text);
         if (t.isNotEmpty && !ipa.contains(t) && ipa.length < 3) ipa.add(t);
+      }
+      if (audio == null) {
+        final sources = node.querySelectorAll('audio source');
+        final mp3 = sources.where((x) => x.attributes['type'] == 'audio/mpeg');
+        final src = (mp3.isNotEmpty ? mp3 : sources)
+            .map((x) => x.attributes['src'])
+            .whereType<String>()
+            .firstOrNull;
+        if (src != null) audio = absoluteUrl(src);
       }
     } else if (mode == 'ety' && etymology.isEmpty && node.localName == 'p') {
       final t = squash(plainCopy(node).text);
@@ -125,7 +137,7 @@ WordInfo? parseItalian(
           for (final ex in li.querySelectorAll('ul > li')) {
             final t = squash(plainCopy(ex, 'small').text);
             if (t.isNotEmpty && examples.length < maxExamples) {
-              examples.add(Example(t));
+              examples.add(Example(shorten(t, 200)));
             }
           }
           // the labels lead the sense: "(religione)" in small italics
@@ -149,6 +161,7 @@ WordInfo? parseItalian(
   return WordInfo(
     url: url,
     ipa: ipa,
+    audio: audio,
     blocks: [
       for (final b in blocks)
         if (b.senses.isNotEmpty) b,
