@@ -822,15 +822,15 @@ void main() {
     await shot(t, key, 'learn-tab');
   }, skip: skip != null);
 
-  testWidgets('how to play, from learn', (t) async {
+  testWidgets('how to play it well, the guide of learn', (t) async {
     await prepare(t);
-    t.view.physicalSize = const Size(412, 1900) * 2;
+    t.view.physicalSize = const Size(412, 1000) * 2;
     final key = GlobalKey();
     await t.pumpWidget(
       framed(key, const ModeGuidePage(mode: GameMode.classic)),
     );
     await t.pump();
-    await shot(t, key, 'how-to-play');
+    await shot(t, key, 'learn-guide');
   }, skip: skip != null);
 
   testWidgets('the language list', (t) async {
