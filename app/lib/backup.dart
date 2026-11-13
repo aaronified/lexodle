@@ -317,6 +317,8 @@ Map<String, Object> _settings(Object? raw) {
   if (hearts != null) out['hearts'] = hearts;
   final blindTries = integer('blindTries', 1, 20);
   if (blindTries != null) out['blindTries'] = blindTries;
+  final eqTries = integer('eqTries', 1, 12);
+  if (eqTries != null) out['eqTries'] = eqTries;
   final blindAssist = raw['blindAssist'];
   if (blindAssist != null) {
     if (blindAssist is! bool) _bad('blindAssist');

@@ -176,7 +176,7 @@ class _DiyPageState extends State<DiyPage> {
     GameMode.quartet => 9,
     GameMode.relay => 10,
     GameMode.lockdown => lockdownTries,
-    GameMode.equations => appState.tries,
+    GameMode.equations => appState.eqTries,
     _ => 6,
   };
   int _hearts = appState.hearts;

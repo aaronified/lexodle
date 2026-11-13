@@ -252,7 +252,7 @@ class _GameModesDialogState extends State<GameModesDialog> {
                             DifficultyMatrix(
                               key: const ValueKey('equations-matrix'),
                               levels: equationTriesLevels,
-                              tries: appState.tries,
+                              tries: appState.eqTries,
                               length: appState.eqLength,
                               lengths: equationLengths,
                               lengthUnit: 'tiles',
@@ -260,7 +260,7 @@ class _GameModesDialogState extends State<GameModesDialog> {
                               nounOne: 'equation',
                               available: Equations.counts[appState.eqLength],
                               onChanged: (t, n) =>
-                                  appState.setup(tries: t, eqLength: n),
+                                  appState.setup(eqTries: t, eqLength: n),
                             )
                           else if (mode == GameMode.mastermind)
                             DifficultyMatrix(

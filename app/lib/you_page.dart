@@ -317,14 +317,6 @@ class _YouPageState extends State<YouPage> {
                       icon: 'puzzle',
                       onTap: () => _push(context, Routes.diy),
                     ),
-                  _row(
-                    context,
-                    'settings',
-                    'settings',
-                    'sound, haptics, updates, licences',
-                    icon: 'settings',
-                    onTap: () => _push(context, Routes.settings),
-                  ),
                   if (_from(3))
                     _row(
                       context,

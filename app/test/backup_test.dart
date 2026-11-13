@@ -18,6 +18,7 @@ AppState sample() {
     ..lang = 'fr'
     ..length = 6
     ..tries = 4
+    ..eqTries = 3
     ..draw = Draw.equal
     ..hearts = 3
     ..helper = Helper.skill
@@ -82,6 +83,7 @@ void main() {
           'draw',
           'hearts',
           'blindTries',
+          'eqTries',
           'helper',
           'mode',
           'share',
@@ -100,6 +102,12 @@ void main() {
       final en = (m['languages'] as Map)[(m['settings'] as Map)['lang']] as Map;
       expect((en['achievements'] as Map).keys, contains('dailies'));
       expect(en.keys, containsAll(['playstyle', 'daily', 'achievements']));
+    });
+
+    test('the equations tries round trip and stay apart from tries', () {
+      final b = parseBackup(backupToText(sample()));
+      expect(b.settings['eqTries'], 3);
+      expect(b.settings['tries'], 4);
     });
 
     test('two reminders and the open notification round trip', () {
@@ -307,6 +315,8 @@ void main() {
         ('mode', 8),
         ('blindTries', 0),
         ('blindTries', 21),
+        ('eqTries', 0),
+        ('eqTries', 13),
         ('mode', -1),
         ('mode', true),
         ('share', 31),
