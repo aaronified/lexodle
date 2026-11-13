@@ -476,7 +476,10 @@ void main() {
       tester,
     ) async {
       await open(tester);
-      expect(find.text('backup'), findsOneWidget);
+      expect(
+        find.text('backup'),
+        findsNWidgets(2),
+      ); // app bar title and caption
       await tester.tap(byKey('backup-download'));
       await tester.pumpAndSettle();
       expect(io.saved.length, 1);
