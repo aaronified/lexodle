@@ -14,6 +14,7 @@ import 'difficulty.dart';
 import 'history.dart';
 import 'clue.dart' show clueRoundLength;
 import 'collection.dart';
+import 'lex.dart';
 import 'learn_log.dart';
 import 'medal.dart';
 import 'equations.dart' show equationLengths;
@@ -76,7 +77,13 @@ class GameResult {
     this.heartsLeft = 0,
     this.largest = false,
     this.date = '',
+    this.hints = const [],
   });
+
+  /// The hints used in the game, by kind; a game with any pays no lex (see
+  /// lex.dart) but counts for streaks and achievements as ever.
+  final List<HintKind> hints;
+  bool get hinted => hints.isNotEmpty;
 
   /// The date of the daily (`2026-11-04`), empty for any other game.
   final String date;
@@ -3097,6 +3104,88 @@ class AppState extends ChangeNotifier {
   set styleChanges(int v) => _styleChanges[styleKey(lang, mode)] = v;
   Playstyle? get style => styleOf(lang, mode);
 
+  /// The lex, the hint currency (see lex.dart).
+  Lex lex = Lex();
+
+  /// What the last recorded game paid in lex, for the end screen.
+  int lastLex = 0;
+
+  int get lexBalance => lex.balance;
+  int get freeHints => lex.freeHints;
+
+  /// Whether the player sees lex: a veteran from the start, a new player from
+  /// their [lexUnlockGames]th game.
+  bool get lexUnlocked => lex.veteran || stats.played >= lexUnlockGames;
+
+  /// Once, at the first start with lex: the veteran's starting grant from the
+  /// achievements already held (see [veteranGrant]; history is never replayed).
+  void _activateLex() {
+    if (lex.activated) return;
+    try {
+      lex.activate(
+        veteranGrant([_globalAch, ..._langAch.values]),
+        veteran: stats.played >= lexUnlockGames,
+      );
+      _saveLex();
+    } catch (e) {
+      appLog.w('lex', 'could not give the starting grant: ${e.runtimeType}');
+    }
+  }
+
+  /// Takes a hint of [kind] into [game] (with a free hint when [free]); null
+  /// when the player cannot pay. [guesses] is how many the game has made.
+  HintPurchase? buyHint(
+    GameHints game,
+    HintKind kind, {
+    required int guesses,
+    bool free = false,
+  }) {
+    try {
+      final p = lex.spend(game, kind, guesses: guesses, free: free);
+      if (p != null) {
+        _saveLex();
+        notifyListeners();
+      }
+      return p;
+    } catch (e) {
+      appLog.w('lex', 'could not take a hint: ${e.runtimeType}');
+      return null;
+    }
+  }
+
+  /// Undoes the last hint of [game], only before its next guess.
+  bool undoHint(GameHints game, {required int guesses}) {
+    try {
+      final done = lex.refund(game, guesses: guesses);
+      if (done) {
+        _saveLex();
+        notifyListeners();
+      }
+      return done;
+    } catch (e) {
+      appLog.w('lex', 'could not undo a hint: ${e.runtimeType}');
+      return false;
+    }
+  }
+
+  void _saveLex() {
+    try {
+      _w('lex', _prefs?.setString('lex', jsonEncode(lex.toJson())));
+    } catch (e) {
+      appLog.w('lex', 'could not save the lex: ${e.runtimeType}');
+    }
+  }
+
+  void _readLex(SharedPreferences p) {
+    final raw = p.getString('lex');
+    if (raw == null) return;
+    try {
+      lex = Lex.fromJson(jsonDecode(raw));
+    } catch (e) {
+      appLog.w('lex', 'the lex could not be read: ${e.runtimeType}');
+    }
+  }
+
   /// Reads the playstyle in [lang] (the language being played when not given)
   /// and [mode] (the mode being played) again from its last 100 games, after a
   /// game was saved to the [history]. A player not yet rated keeps none; one who
@@ -3474,6 +3563,7 @@ class AppState extends ChangeNotifier {
       _readLearn(p);
       _readWords(p);
       _readCollection(p);
+      _readLex(p);
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
       // first start of this version, or it was lost) it is done again.
@@ -3488,6 +3578,7 @@ class AppState extends ChangeNotifier {
           appLog.w('store', 'could not rebuild the achievements: $e');
         }
       }
+      _activateLex();
       appLog.i(
         'store',
         'load ends: version ${p.getString('lastRunVersion')}, '
@@ -3763,6 +3854,7 @@ class AppState extends ChangeNotifier {
     LearnLog? learn,
     SavedWords? words,
     Collection? collected,
+    Lex? lex,
   }) {
     appLog.i(
       'restore',
@@ -3824,6 +3916,10 @@ class AppState extends ChangeNotifier {
       }
     }
     _saveCollection();
+    // a backup from before lex gets the veterans' starting grant, once, from
+    // the achievements it holds (and the others in it keep their own)
+    this.lex = lex ?? Lex();
+    _saveLex();
     if (learn != null) {
       // its achievements came with the backup's own
       learnLog = learn;
@@ -3885,6 +3981,7 @@ class AppState extends ChangeNotifier {
         ); // the earlier format, now replaced
       }
     } catch (_) {}
+    _activateLex(); // (a no-op when the backup brought its own lex)
     _saveAchievements();
     notifyListeners();
   }
@@ -3993,6 +4090,13 @@ class AppState extends ChangeNotifier {
       }
     }
     earned.addAll(_grantCompletion(today));
+    try {
+      lastLex = lex.earn(earned, lang: r.lang, today: today, hinted: r.hinted);
+      if (lastLex > 0) _saveLex();
+    } catch (e) {
+      lastLex = 0;
+      appLog.w('lex', 'could not pay the lex: ${e.runtimeType}');
+    }
     final fresh = (_globalAch['mastery_badges']?.seen ?? const <String>{})
         .difference(had);
     lastMastered = [
