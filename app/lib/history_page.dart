@@ -16,6 +16,7 @@ import 'mode_filter.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'period_chart.dart';
+import 'edge_fade.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'playstyle.dart' show classify, habitsOfGames, hasPlaystyle;
 import 'playstyle_card.dart' show StatTile, hairlineCard, shadeUp;
@@ -169,15 +170,18 @@ class _HistoryPageState extends State<HistoryPage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                LanguagePicker(
-                                  codes: appState.playedLanguages.toList()
-                                    ..sort(),
-                                  languages: _langs,
-                                  selected: _lang,
-                                  onSelect: (code) => setState(() {
-                                    _lang = code;
-                                    _shown = historyPageSize;
-                                  }),
+                                EdgeFade(
+                                  key: const ValueKey('lang-fade'),
+                                  child: LanguagePicker(
+                                    codes: appState.playedLanguages.toList()
+                                      ..sort(),
+                                    languages: _langs,
+                                    selected: _lang,
+                                    onSelect: (code) => setState(() {
+                                      _lang = code;
+                                      _shown = historyPageSize;
+                                    }),
+                                  ),
                                 ),
                                 const SizedBox(height: 10),
                                 ModeFilter(

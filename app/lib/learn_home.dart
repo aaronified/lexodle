@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'first_run/mode_lesson_page.dart';
+import 'ladder.dart';
 import 'learn_log.dart';
+import 'mode_filter.dart';
 import 'modes.dart';
 import 'main.dart';
 import 'routes.dart';
@@ -64,6 +66,30 @@ class LearnHomePage extends StatelessWidget {
                     Caption(
                       'get better at the first guesses, and at seeing '
                       'which ${thingOf(mode, plural: false)} splits the rest best',
+                    ),
+                    const SizedBox(height: 10),
+                    ModeFilter(
+                      key: const ValueKey('learn-modes'),
+                      showAll: false,
+                      selected: mode,
+                      modes: [
+                        for (final m in openModes(
+                          appState.stats.played,
+                          veteran: appState.lex.veteran,
+                        ))
+                          if (GameMode.loopFor(appState.lang).contains(m)) m,
+                      ],
+                      onSelect: (m) {
+                        if (m == null) return;
+                        try {
+                          appState.setup(mode: m);
+                        } catch (e) {
+                          appLog.w(
+                            'learn',
+                            'could not switch mode: ${e.runtimeType}',
+                          );
+                        }
+                      },
                     ),
                     if (streak > 0) ...[
                       const SizedBox(height: 10),

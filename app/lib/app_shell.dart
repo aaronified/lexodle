@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_log.dart';
+import 'changelog.dart';
 import 'choose_dailies_sheet.dart';
 import 'first_run/first_run_flow.dart';
 import 'first_run/first_run_state.dart';
@@ -8,6 +9,7 @@ import 'main.dart' show appState;
 import 'home.dart';
 import 'learn_home.dart';
 import 'routes.dart' show learnGate;
+import 'update_check.dart' show appVersion;
 import 'today_page.dart';
 import 'words_page.dart';
 import 'you_page.dart';
@@ -29,12 +31,28 @@ class _HomeSwitchState extends State<HomeSwitch> {
   // when the first game makes them a player with history
   late bool _firstRun = appState.newUi && firstRunDue();
 
+  /// A new player has no past version to read about: mark this one seen.
+  void _skipChangelog() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        if (appState.loaded &&
+            appState.canRemember &&
+            appState.changelogSeen != appVersion) {
+          appState.noteChangelogSeen(appVersion);
+        }
+      } catch (e) {
+        appLog.w('changelog', 'mark seen failed ${e.runtimeType}');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: appState,
     builder: (context, _) {
       if (_firstRun && appState.firstRunDone) _firstRun = false;
       if (!appState.newUi) return const HomePage();
+      if (_firstRun) _skipChangelog();
       if (_firstRun) return FirstRunFlow(screens: widget.screens);
       return AppShell(screens: widget.screens);
     },
@@ -56,9 +74,37 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   String _tab = 'today';
 
+  bool _changesChecked = false;
+
+  /// First start of a new version, for someone who has played before: lists
+  /// what changed in it, once (as the old home does).
+  Future<void> _maybeShowChanges() async {
+    try {
+      if (_changesChecked || !appState.loaded || !appState.canRemember) return;
+      _changesChecked = true;
+      final returning = appState.seenHowTo || appState.stats.played > 0;
+      if (appState.changelogSeen == appVersion) return;
+      appState.noteChangelogSeen(appVersion);
+      if (!returning || !showWhatsNew) return;
+      final lines = await loadChangelog();
+      if (lines.isEmpty || !mounted) return;
+      showChangelog(context, lines);
+    } catch (e) {
+      appLog.w('changelog', 'whats new failed ${e.runtimeType}');
+    }
+  }
+
+  @override
+  void dispose() {
+    appState.removeListener(_maybeShowChanges);
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
+    appState.addListener(_maybeShowChanges);
+    _maybeShowChanges();
     // the first run ended with "i know how lexodle works": pick the dailies once
     if (FirstRunSignals.takeChooseDailies()) {
       WidgetsBinding.instance.addPostFrameCallback((_) {

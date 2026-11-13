@@ -20,7 +20,6 @@ import 'opening_page.dart';
 import 'sequence_page.dart';
 import 'styles_page.dart';
 import 'licences_page.dart';
-import 'home.dart';
 import 'how_to.dart';
 import 'main.dart';
 import 'multi_game.dart';
@@ -157,12 +156,12 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
             if (mode.multi) {
               final m = DailyMulti.of(bank, mode);
               return m == null
-                  ? const HomePage()
+                  ? const HomeSwitch()
                   : MultiGamePage(bank: bank, daily: m);
             }
             final d = Daily.of(bank, null, mode);
             return d == null
-                ? const HomePage()
+                ? const HomeSwitch()
                 : GamePage(bank: bank, daily: d, mode: mode);
           },
         ),
@@ -175,7 +174,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       // a daily puzzle named by a link: played as practice
       final puzzle = Puzzle.parse(Uri.tryParse(settings.name ?? '') ?? Uri());
       return page(
-        puzzle == null ? const HomePage() : PuzzleGate(puzzle: puzzle),
+        puzzle == null ? const HomeSwitch() : PuzzleGate(puzzle: puzzle),
       );
     case Routes.history:
       return page(const HistoryPage());
@@ -198,7 +197,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           ? page(ReviewPage(record: record))
           : record is MultiRecord
           ? page(MultiReviewPage(record: record))
-          : page(const HomePage());
+          : page(const HomeSwitch());
     case Routes.learn:
       return page(learnGate(builder: (bank) => LearnHomePage(bank: bank)));
     case Routes.learnFree:
@@ -270,7 +269,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         HowToPage(onboarding: settings.arguments == onboardingArgument),
       );
     case Routes.settings:
-      return page(const SettingsPage());
+      final part = settings.arguments;
+      return page(
+        SettingsPage(part: part is SettingsPart ? part : SettingsPart.all),
+      );
     case Routes.modeSettings:
       return page(const ModeSettingsPage());
     case Routes.gameModes:
@@ -496,10 +498,10 @@ class _PuzzleGateState extends State<PuzzleGate> {
           return _waiting('loading…');
         }
         final bank = snap.data;
-        if (bank == null) return const HomePage();
+        if (bank == null) return const HomeSwitch();
         final p = widget.puzzle;
         final answers = p.answersIn(bank);
-        if (answers == null || answers.isEmpty) return const HomePage();
+        if (answers == null || answers.isEmpty) return const HomeSwitch();
         if (p.mode.multi) {
           return MultiGamePage(
             bank: bank,

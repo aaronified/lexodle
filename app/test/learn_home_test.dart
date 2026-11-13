@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/first_run/mode_lesson_page.dart';
+import 'package:lexodle/ladder.dart';
 import 'package:lexodle/learn_home.dart';
 import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/main.dart';
@@ -170,5 +171,35 @@ void main() {
       'last round: 10 of 10 right · skill 80',
     );
     expect(find.byKey(const ValueKey('learn-streak')), findsOneWidget);
+  });
+
+  testWidgets('mode pills: the open modes, a tap changes the mode', (
+    tester,
+  ) async {
+    await open(tester);
+    appState.setup(mode: GameMode.classic);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('learn-modes')), findsOneWidget);
+    expect(find.byKey(const ValueKey('mode-all')), findsNothing);
+    final open_ = openModes(
+      appState.stats.played,
+      veteran: appState.lex.veteran,
+    ).where((m) => GameMode.loopFor(appState.lang).contains(m));
+    for (final m in GameMode.values) {
+      expect(
+        find.byKey(ValueKey('mode-${m.name}')),
+        open_.contains(m) ? findsOneWidget : findsNothing,
+      );
+    }
+    final other = open_.firstWhere(
+      (m) => m != GameMode.classic,
+      orElse: () => GameMode.classic,
+    );
+    if (other != GameMode.classic) {
+      await tester.tap(find.byKey(ValueKey('mode-${other.name}')));
+      await tester.pump();
+      expect(appState.mode, other);
+      appState.setup(mode: GameMode.classic);
+    }
   });
 }

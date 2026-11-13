@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
+import 'home.dart' show LanguagePopup;
+import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
 import 'mode_settings_page.dart' show knownModes;
 import 'profile_sheet.dart';
 import 'routes.dart';
+import 'settings_page.dart' show SettingsPart;
 import 'streak_week.dart';
 import 'ui.dart';
+import 'words.dart';
 
 /// The fourth tab: the week's streak, the theme, and the doors to the
 /// achievements, lex, reminders, playstyle, history and friends. A new player
 /// sees a door once enough games are played.
-class YouPage extends StatelessWidget {
+class YouPage extends StatefulWidget {
   const YouPage({super.key, required this.onReplayFirstGame});
 
   /// The help button: play the first game again.
@@ -22,9 +26,65 @@ class YouPage extends StatelessWidget {
   static bool _from(int games) =>
       appState.lex.veteran || appState.stats.played >= games;
 
-  void _push(BuildContext context, String route) {
+  @override
+  State<YouPage> createState() => _YouPageState();
+}
+
+class _YouPageState extends State<YouPage> {
+  List<Language>? _langs;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLangs();
+  }
+
+  Future<void> _loadLangs() async {
     try {
-      Navigator.pushNamed(context, route);
+      final l = await WordBank.languages();
+      if (mounted) setState(() => _langs = l);
+    } catch (e) {
+      appLog.w('you', 'languages failed ${e.runtimeType}');
+    }
+  }
+
+  static bool _from(int games) => YouPage._from(games);
+
+  Future<void> _pickLanguage() async {
+    try {
+      final langs = _langs ?? await WordBank.languages();
+      if (!mounted || langs.isEmpty) return;
+      final lang = langs.firstWhere(
+        (l) => l.code == appState.lang,
+        orElse: () => langs.first,
+      );
+      final code = await showDialog<String>(
+        context: context,
+        builder: (context) => LanguagePopup(langs: langs, current: lang.code),
+      );
+      if (code == null || code == lang.code) return;
+      final next = langs.firstWhere((l) => l.code == code);
+      final length = appState.length;
+      appState.setup(
+        lang: code,
+        length: next.lengths.contains(length) ? length : next.lengths.first,
+      );
+    } catch (e) {
+      appLog.w('you', 'language failed ${e.runtimeType}');
+    }
+  }
+
+  String? get _langName {
+    final langs = _langs;
+    if (langs == null || langs.isEmpty) return null;
+    return langs
+        .firstWhere((l) => l.code == appState.lang, orElse: () => langs.first)
+        .name;
+  }
+
+  void _push(BuildContext context, String route, {Object? arguments}) {
+    try {
+      Navigator.pushNamed(context, route, arguments: arguments);
     } catch (e) {
       appLog.w('you', 'open failed ${e.runtimeType}');
     }
@@ -78,7 +138,7 @@ class YouPage extends StatelessWidget {
                       IconButton(
                         key: const ValueKey('you-help'),
                         tooltip: 'help: play your first game again',
-                        onPressed: onReplayFirstGame,
+                        onPressed: widget.onReplayFirstGame,
                         icon: TablerIcon(
                           'info-circle',
                           size: 26,
@@ -178,8 +238,8 @@ class YouPage extends StatelessWidget {
                       '${appState.unlockedCount} of ${achievementCount()} earned'
                           '${appState.lexUnlocked ? ' · lex and hints' : ''}',
                       icon: 'trophy',
-                      trailing: appState.lexUnlocked
-                          ? '${appState.lexBalance}'
+                      trailingWidget: appState.lexUnlocked
+                          ? LexChip(appState.lexBalance)
                           : null,
                       onTap: () => _push(context, Routes.achievements),
                     ),
@@ -223,6 +283,48 @@ class YouPage extends StatelessWidget {
                       icon: 'hourglass',
                       onTap: () => _push(context, Routes.history),
                     ),
+                  _row(
+                    context,
+                    'language',
+                    'language',
+                    _langName,
+                    icon: 'world',
+                    onTap: _pickLanguage,
+                  ),
+                  _row(
+                    context,
+                    'howto',
+                    'how to play',
+                    null,
+                    icon: 'zoom-question',
+                    onTap: () => _push(context, Routes.howTo),
+                  ),
+                  if (_from(6))
+                    _row(
+                      context,
+                      'solver',
+                      'solver',
+                      null,
+                      icon: 'calculator',
+                      onTap: () => _push(context, Routes.solver),
+                    ),
+                  if (_from(6))
+                    _row(
+                      context,
+                      'diy',
+                      'diy',
+                      null,
+                      icon: 'puzzle',
+                      onTap: () => _push(context, Routes.diy),
+                    ),
+                  _row(
+                    context,
+                    'settings',
+                    'settings',
+                    'sound, haptics, updates, licences',
+                    icon: 'settings',
+                    onTap: () => _push(context, Routes.settings),
+                  ),
                   if (_from(3))
                     _row(
                       context,
@@ -230,7 +332,11 @@ class YouPage extends StatelessWidget {
                       'backup',
                       'save your data, or restore it',
                       icon: 'shield-check',
-                      onTap: () => _push(context, Routes.settings),
+                      onTap: () => _push(
+                        context,
+                        Routes.settings,
+                        arguments: SettingsPart.backup,
+                      ),
                     ),
                   if (_from(7))
                     _row(
@@ -239,7 +345,11 @@ class YouPage extends StatelessWidget {
                       'support lexodle',
                       'keep it going',
                       icon: 'gift',
-                      onTap: () => _push(context, Routes.settings),
+                      onTap: () => _push(
+                        context,
+                        Routes.settings,
+                        arguments: SettingsPart.support,
+                      ),
                     ),
                 ],
               ),
@@ -258,6 +368,7 @@ class YouPage extends StatelessWidget {
     required VoidCallback onTap,
     String? icon,
     String? trailing,
+    Widget? trailingWidget,
   }) {
     final c = Theme.of(context).colorScheme;
     return InkWell(
@@ -292,7 +403,12 @@ class YouPage extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null)
+            if (trailingWidget != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: trailingWidget,
+              )
+            else if (trailing != null)
               Padding(
                 padding: const EdgeInsets.only(right: 6),
                 child: Text(trailing, style: TextStyle(color: c.primary)),

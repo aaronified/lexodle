@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/app_shell.dart';
 import 'package:lexodle/licences_page.dart';
 import 'package:lexodle/logo.dart';
 import 'package:lexodle/main.dart';
@@ -113,6 +114,11 @@ void main() {
       expect(nav(tester).canPop(), isFalse, reason: '$route is just home');
       await tester.pumpWidget(const SizedBox());
     }
+  });
+
+  testWidgets('the review fallback is the home switch', (tester) async {
+    await open(tester, Routes.review);
+    expect(find.byType(HomeSwitch), findsOneWidget);
   });
 
   testWidgets('moving about names each screen, as the address bar needs', (
