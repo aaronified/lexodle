@@ -10,8 +10,7 @@ flutter run -d chrome
 ```
 
 `flutter build apk` also works; the `android/` platform is scaffolded (`compileSdk` 37, Java 17;
-`app/android/app/build.gradle.kts`). The new look (today, words, learn and you as four tabs) is the
-default for everyone who never chose; it can be switched off in the settings.
+`app/android/app/build.gradle.kts`). The app is always the four-tab look (today, words, learn and you); there is no switch for an older look.
 
 Packages (`app/pubspec.yaml`): audioplayers (pronunciation), file_picker (backups),
 flutter_local_notifications, flutter_timezone and timezone (reminders), flutter_svg, html
@@ -41,7 +40,7 @@ path_provider, shared_preferences (storage) and url_launcher.
 | `app/lib/lex.dart`, `collection.dart` | The lex balance and the collected words |
 | `app/lib/precomputed*.dart`, `opening_disk.dart` | The published openings, and the cache of openings kept on the device |
 | `app/lib/update_check.dart`, `update_section.dart`, `auto_backup.dart`, `app_log.dart` | The update check and install, the automatic backups, the log |
-| `app/lib/today_page.dart`, `you_page.dart`, `first_run/` | The new look's tabs, and the first-run flow |
+| `app/lib/today_page.dart`, `you_page.dart`, `first_run/` | The tabs, the settings button, and the first-run flow |
 | `app/tools/` | Generators for the word lists, themes, geography, equations and icons, the glyph check, the donate-QR maker, and `live_check.dart` (a live Wiktionary check) |
 | `docs/paper/` | The maths of skill, luck and risk in bits, with the simulations |
 | `docs/wiki/` | These pages |
@@ -53,8 +52,8 @@ unit tests use saved responses and need no network.
 ## Screenshots
 
 The pictures in the README are taken from the real screens, rendered at phone size in a dark theme
-with the app's own fonts and seeded state (a player a few weeks in, with a streak, a playstyle and
-some games), so they can be taken again whenever the interface changes. It is a test that only
+with the app's own fonts and seeded state (a veteran: every tab and mode open, a streak, a playstyle,
+many games, and each game's timer reading 1:23), so they can be taken again whenever the interface changes. It is a test that only
 runs when asked:
 
 ```

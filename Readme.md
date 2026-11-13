@@ -35,16 +35,35 @@
 
 <table>
   <tr>
-    <td align="center"><img src="docs/screenshots/today.png" alt="The today tab: four chosen dailies each with its state and streak, a free play button and a pink play button pinned above the tab bar" width="230"></td>
-    <td align="center"><img src="docs/screenshots/you.png" alt="The you tab: a profile chip, the classic streak card with a week of fires, the theme card, and rows for achievements with the lex balance, reminders, mode settings, history and backup" width="230"></td>
+    <td align="center"><img src="docs/screenshots/today.png" alt="The today tab: four chosen dailies, each with its mode icon in a square (yellow in progress, green solved, a red icon missed), its state and streak, and one free play button above the tab bar" width="230"></td>
+    <td align="center"><img src="docs/screenshots/you.png" alt="The you tab: a profile chip and the settings button, the classic streak card with a week of fires, and rows for achievements with the lex balance, friends, mode settings, history, language, solver and diy" width="230"></td>
     <td align="center"><img src="docs/screenshots/words.png" alt="The words tab: saved and collected counts, a list of saved words with notes, and a trophy banner with a bar towards the next trophy" width="230"></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/screenshots/game.png" alt="A daily in play, with a blank pencilled into the third tile of the next guess" width="230"></td>
-    <td align="center"><img src="docs/screenshots/quartet.png" alt="A quartet: four boards sharing every guess, with split keys on the keyboard" width="230"></td>
+    <td align="center"><img src="docs/screenshots/game.png" alt="A daily in play, with a blank pencilled into the third tile of the next guess, the timer pill and the hint pill above the keyboard" width="230"></td>
+    <td align="center"><img src="docs/screenshots/quartet.png" alt="A quartet: four boards sharing every guess, with split keys on the keyboard and the timer pill" width="230"></td>
     <td align="center"><img src="docs/screenshots/hints.png" alt="A game with the hint tray open: three hold-to-buy hint rows with their free-hint prices and a link back to the keyboard" width="230"></td>
   </tr>
 </table>
+
+
+<details>
+<summary>More screens</summary>
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/learn-tab.png" alt="The learn tab: the mode pills, the strategy guide, the opening, the styles and the drills" width="230"></td>
+    <td align="center"><img src="docs/screenshots/learn-guide.png" alt="A strategy guide of learn: how to play classic well" width="230"></td>
+    <td align="center"><img src="docs/screenshots/history.png" alt="The history: overall numbers, the chart, the playstyle row and the games, each with its time" width="230"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/achievements.png" alt="The achievements page with the lex pill, recent medals and the list" width="230"></td>
+    <td align="center"><img src="docs/screenshots/learn.png" alt="Learn mode: the answer shown and the words that still fit" width="230"></td>
+    <td align="center"><img src="docs/screenshots/solver.png" alt="The solver: a guess with its colours, the words left and the next guess" width="230"></td>
+  </tr>
+</table>
+
+</details>
 
 ## What it does
 
@@ -107,8 +126,10 @@
     <td width="60%">
       <h3>🌱 A first game that teaches</h3>
       A new player starts in a guided game, not a lesson: no step counter, one quiet line under the
-      board only when it applies, and a hint to try. The tabs open as you play: words after nine
-      games, learn after twenty-four. It can be replayed from the you tab.
+      board only when it applies, and a hint to try. The tabs open as you play: learn after the first
+      game (only a how to play for each open mode until game 24), words after nine games. The rest
+      opens one thing at a time too: quartet at game 4, lockdown at 7, relay race at 12, blind at 14,
+      equations at 16, mastermind at 19, geography at 22. It can be replayed from the you tab.
     </td>
     <td width="40%"><img src="docs/screenshots/first-game.png" width="100%" alt="The first game mid-play: two coloured guesses, a third being typed, and the coloured keyboard"></td>
   </tr>
@@ -120,9 +141,33 @@
     <td width="60%">
       <h3>⏰ Reminders</h3>
       On the phone app, a nudge when a daily you chose is still waiting (up to two a day, on the
-      weekdays you pick), and optionally one notification when the dailies open. The messages never
-      carry a word.
+      weekdays you pick), and optionally one notification when the dailies open. It is in the
+      settings. The messages never carry a word.
     </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="40%"><img src="docs/screenshots/choose-dailies.png" width="100%" alt="The choose your dailies sheet over today: one row per mode with its icon, its streak and a switch"></td>
+    <td width="60%">
+      <h3>📅 Your dailies, your choice</h3>
+      Every mode has a daily of its own, with its own streak. The choose dailies sheet (from today)
+      has a switch for each mode: the ones you add are on today and in your reminders, and a daily
+      you drop keeps no streak. Today has one button, free play, and swiping it changes the mode.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="60%">
+      <h3>⚙ Settings</h3>
+      One button, top right of every tab and secondary page. It holds the theme (first), vibrate and
+      sound, reminders, backup, updates, faster openings, the log, support, what's new and about.
+      Each opens at its step of the slow introduction.
+    </td>
+    <td width="40%"><img src="docs/screenshots/settings.png" width="100%" alt="The settings page: the theme switch and true black, vibrate and sound, reminders, backup, updates and the rest"></td>
   </tr>
 </table>
 
@@ -294,7 +339,7 @@
   </tr>
 </table>
 
-**And also:** an in-app update check for the Android app, a UPI donation button, blanks you can pencil in, a backup file for everything, system, light, dark and true-black themes, and nothing
+**And also:** a timer in every game, shown in the history, one settings button on every tab, an in-app update check for the Android app, a UPI donation button, blanks you can pencil in, a backup file for everything, system, light, dark and true-black themes, and nothing
 fetched to draw: fonts, flags and icons are in the app
 ([offline and privacy](https://github.com/aaronified/lexodle/wiki/Offline-and-privacy)).
 

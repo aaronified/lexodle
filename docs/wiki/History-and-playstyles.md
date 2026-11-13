@@ -11,10 +11,11 @@ finishing a game rewrites one month, not the whole record. The history is in the
 
 ## The history page
 
-Open **history** from the you tab (it opens at game 5; its line shows your playstyle). A row of flags picks the language (see [Languages](Languages)); the page is about that
+Open **history** from the you tab (it opens at game 5; its line shows your playstyle; a settings button is top right). A row of flags picks the language (see [Languages](Languages)); the page is about that
 language. Under it, a row of modes limits everything below to one mode (**all**, the default,
 adds up every mode). It has:
 
+- the time of each game, beside its result in the list of games (games played before the timer have none);
 - an **overall** analysis of every game, however many (games, won, skill, risk, luck, guesses
   to win);
 - **how play changed**: a line each for skill, luck and risk over the last 50 days, 50 weeks (rolling

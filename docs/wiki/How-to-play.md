@@ -8,15 +8,27 @@ Guess the hidden word. After each guess every letter is marked:
 
 ## Game modes and settings
 
-The app has four tabs: **today**, **words**, **learn** and **you**. Today lists your dailies, each
-with its state and streak, and a **free play** button that opens the **game modes** screen. You
-holds your username chip, the streak week, the theme and the doors to achievements (with lex and
-hints), reminders, mode settings, history (with your playstyle), backup and support. Game modes
-holds the mode, the difficulty, shared letters, word draw and the helper, with play, the solver,
-learn and diy. Settings (opened from the backup and support rows of you) hold the new look switch,
-theme, touch (vibrate on press, sound), backup, updates (Android), faster openings, log, support
-and about. Anyone can switch the old home page back on in the settings, under **new look**; it
-has the gear, the daily button and the mode swipe.
+The app has up to four tabs: **today**, **words**, **learn** and **you**. Which are shown depends on
+how many games you have played (see below). A settings button sits top right of every tab and of
+the pages they open (not of a game or a lesson).
+
+- **Today** lists your dailies, each with its mode icon in a square (green when solved, yellow in
+  progress, a red icon when missed), its state and its streak, and **choose dailies**. At the
+  bottom one button, **free play · mode**, starts a free game of the mode shown; swipe it or use
+  its arrows to change the mode when more than one is open. A new player sees one intro card at a
+  time for what just opened.
+- **Words** is [my words](#modes) (from game 9).
+- **Learn** holds a how to play for each open mode; from game 24 it holds the strategy guides,
+  drills and the opening too (see [Solver and learn mode](Solver-and-learn-mode)).
+- **You** has your profile chip, the streak week (swipe between modes), **achievements** (with the
+  lex balance), **friends** (not built yet), **mode settings**, **history** (with your playstyle),
+  **language**, the **solver** and **diy**.
+- **Settings** has theme (light, dark or system, and true black), touch (vibrate on press, sound),
+  reminders, backup, updates (Android), faster openings (phone), the log, support, what's new and
+  about and licences. Each opens at its step (see below).
+
+Free play uses the settings of **mode settings** (difficulty, shared letters, word draw, helper and
+each mode's own), which you change per mode without switching to it. The daily never changes.
 
 ## Getting started
 
@@ -26,24 +38,26 @@ it from the start):
 
 | Games | What opens |
 | ----- | ---------- |
-| 2 | skill, luck and risk on the review screen |
+| 0 | theme, language, settings, backup, what's new |
+| 1 | lex and hints; how to play for each open mode, and the **learn** tab (with only the how to plays until game 24) |
+| 2 | skill, luck and risk after a game; reminders |
 | 3 | achievements (in you) |
 | 4 | quartet |
-| 5 | your numbers: history and your playstyle (in you) |
-| 6 | every mode is named (all eight are there to read about and try) |
-| 7 | lockdown |
+| 5 | your numbers: history and your playstyle (in you); friends |
+| 6 | every mode is named in **choose dailies**; solver, diy, mode settings (in you) |
+| 7 | lockdown; support |
 | 9 | my words, and the **words** tab |
 | 12 | relay race |
 | 14 | blind |
 | 16 | equations |
 | 19 | mastermind |
 | 22 | geography |
-| 24 | learn, and the **learn** tab |
+| 24 | learn in full: drills for every mode |
 
 Today shows what just opened as a **new** card (a mode's card offers its lesson) and what is next.
-You pick which dailies are yours with **choose dailies** (from game 4); the rest sit under **more
-dailies**. The language is chosen on the first launch; the new look has no other place to change it
-yet (the old home page has the flag button).
+You pick which dailies are yours with **choose dailies** (from game 4), a sheet with a switch for
+each mode; the rest sit under **more dailies**. The language is chosen on the first launch and
+changed in the **language** row of you.
 
 | Setting    | Options |
 | ---------- | ------- |
@@ -69,7 +83,7 @@ Double tap a tile to lock its letter, and double tap it again to unlock it. On a
 tile (click it, or use the arrow keys) and tap the shift key: it locks the letter, and tapping shift
 again unlocks it. Shift held to type a capital does nothing. The next guess starts with the locked
 letters in place, and a locked letter is skipped when you type or press backspace. The how to play
-screen (on the old home page) has one live row of tiles to try the blanks, the cursor and the locks on.
+of each mode (in learn, and the help button of a game) shows how they work.
 
 ## Modes
 
@@ -88,7 +102,7 @@ applied. Quartet and relay race get extra tries (3 and 4), and the *shared lette
 how often their words may share a letter. The helper shows in classic and lockdown, so it is greyed out
 for quartet, relay race, blind and geography (equations and mastermind have none). The *shared letters* swiper appears only for quartet and relay race.
 
-Every mode is one stop on the mode slider of the game modes screen: classic, quartet, relay race, lockdown, blind, equations, mastermind and (English only) geography. **Geography** is a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
+Every mode is one stop on the mode switch of today's free play button and of mode settings: classic, quartet, relay race, lockdown, blind, equations, mastermind and (English only) geography. **Geography** is a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
 lakes, bays and the like, with spaces left out (`riodejaneiro`). Only place names are valid guesses,
 and every guess has a small *i* that says what the place is and links to its Wikipedia page. The
 *word draw* chooses between *well known* places (drawn on a curve by how much their Wikipedia page
@@ -96,8 +110,8 @@ is read) and all places. Other themes (mythology, history, mathematics) are plan
 many letters are right and in place (green) and how many are right elsewhere (yellow), never which;
 it has 10 tries by default (14, 10, 8 or 6) and works in every language. A **colour logic** setting (on by default) marks what the counts settle, and greys the keyboard once every letter is found; off, you mark everything. The two counts are as big as
 the tiles, and a tap on a letter of a guess you have made pencils a colour on it (green, yellow, grey,
-then none) to keep track of what you have worked out; nothing scores by those notes. **Make your own** (the **diy** button
-in the game modes screen, in every mode but mastermind) lets you type a word (four words for a quartet or a
+then none) to keep track of what you have worked out; nothing scores by those notes. **Make your own** (the **diy** row
+in you, in every mode but mastermind) lets you type a word (four words for a quartet or a
 relay race, an equation, a place), choose the language, the tries or the hearts, and gives a link
 that anyone can open to play your word as practice; nothing is saved or counted. The word is only
 lightly disguised in the link (four digits a letter), not secret. The app opens these links itself
@@ -123,7 +137,7 @@ the dictionary: **word collector** (collect 10, 50, 250 different words, and at 
 the language, per language), **word keeper** (save 5, 25, 100, 500 words) and **annotator** (write a
 note on 1, 10, 50, 200 saved words).
 
-The mode slider goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
+The mode switch goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
 (English only) geography, and round again.
 
 **Equations**: the tiles are digits and signs, `0`-`9` and `+ − × ÷ =`, and a guess has to be a
@@ -146,8 +160,9 @@ the game is reviewed against the word it settled on, which fits every reply.
 ## The helper and the review
 
 The **helper** setting chooses what the game tells you while you play: *off*, *skill only*,
-*skill + luck*, or *full help* (which adds how many possible words remain). When a game ends, the
-**review** steps through your guesses one at a time (buttons, the progress bar, or the arrow
+*skill + luck*, or *full help* (which adds how many possible words remain). When a game ends, from your second game on, the game over screen gives
+**skill**, **luck** and **risk** with a line on each; once every mode is open it adds the full
+maths and a **review** button. The **review** steps through your guesses one at a time (buttons, the progress bar, or the arrow
 keys). Each step shows the board with a table of skill, luck, words left and info gained; your
 guess beside the best picks at that point; how the guess divided the pool of possible words,
 against the pool you landed in; and a short reading of the step. Your guess can be a valid word
@@ -157,7 +172,7 @@ The **daily** never shows the helper, whatever the setting is: only the tries le
 
 ## Hints and lex
 
-**Lex** is the hint currency. A lamp above the keyboard opens three hints: *rule one out* (a letter
+**Lex** is the hint currency. The hint pill beside the keyboard (with your lex balance) opens three hints: *rule one out* (a letter
 that is not in the word) costs 10 lex, *a letter that is in* 25, and *a letter in its place* 50.
 Hold a row until its bar fills to buy it; undo works until your next guess. The hint shows above
 the keyboard. You start with one free hint. A game in which you used a hint pays no lex, and your
@@ -167,9 +182,17 @@ first game.
 
 ## Mode settings and reminders
 
-In you, **mode settings** changes the free play settings of a mode you have played three times,
-without switching to it (a daily always uses fixed settings). **Reminders** (phone app only) pings
-you when the dailies open, and up to two nudges a day while a daily you chose is still waiting.
+In you, **mode settings** changes the free play settings of any open mode (from game 6), without
+switching to it (a daily always uses fixed settings). **Reminders**, in the settings (from game 2,
+phone app only), pings you when the dailies open, and up to two nudges a day while a daily you
+chose is still waiting.
+
+## The timer
+
+Every game has a timer, a pill with a clock left of the keyboard (`m:ss`). It starts at the first
+key you press and stops when the game ends. It does not count the time the app is in the
+background, and a game you resume keeps its time. The history shows the time of each game beside
+its result. Games played before have no time.
 
 ## Touch
 
