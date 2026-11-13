@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- today: a finished daily opens its game over screen
+  Tapping a solved or missed daily on today showed a placeholder message instead of the game. It opens the finished game, with its game over and review screens, again.
+
 - lex chip: readable in dark and black
   The gem and number sit on a deeper green with a lighter yellow, so they no longer wash out. Light is unchanged.
 

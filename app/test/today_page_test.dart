@@ -90,12 +90,6 @@ void main() {
     await show(tester);
     expect(find.text('missed'), findsOneWidget);
     expect(find.text(' · streak ended'), findsOneWidget);
-    await tester.tap(row(GameMode.relay));
-    await tester.pump();
-    expect(
-      find.text('the game over and review screens remain as they are'),
-      findsOneWidget,
-    );
   });
 
   testWidgets('free play is one line on a narrow phone', (tester) async {
@@ -318,6 +312,17 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('today-free-play')));
     await tester.pumpAndSettle();
     expect(pushed, contains(Routes.play));
+  });
+
+  testWidgets('a finished daily opens its game, with no placeholder', (
+    tester,
+  ) async {
+    veteran();
+    final pushed = await showRouted(tester);
+    await tester.tap(row(GameMode.relay));
+    await tester.pumpAndSettle();
+    expect(pushed, contains(Routes.daily));
+    expect(find.textContaining('remain as they are'), findsNothing);
   });
 
   testWidgets('a daily row still starts the daily', (tester) async {
