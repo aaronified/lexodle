@@ -35,9 +35,14 @@
 
 <table>
   <tr>
-    <td align="center"><img src="docs/screenshots/home.png" alt="The old home screen (settings > new look off; the default is now the today, words, learn and you tabs): language, daily streak with a week of fires, letters, difficulty grid, and the player's playstyle at the top right" width="230"></td>
+    <td align="center"><img src="docs/screenshots/today.png" alt="The today tab: four chosen dailies each with its state and streak, a free play button and a pink play button pinned above the tab bar" width="230"></td>
+    <td align="center"><img src="docs/screenshots/you.png" alt="The you tab: a profile chip, the classic streak card with a week of fires, the theme card, and rows for achievements with the lex balance, reminders, mode settings, history and backup" width="230"></td>
+    <td align="center"><img src="docs/screenshots/words.png" alt="The words tab: saved and collected counts, a list of saved words with notes, and a trophy banner with a bar towards the next trophy" width="230"></td>
+  </tr>
+  <tr>
     <td align="center"><img src="docs/screenshots/game.png" alt="A daily in play, with a blank pencilled into the third tile of the next guess" width="230"></td>
     <td align="center"><img src="docs/screenshots/quartet.png" alt="A quartet: four boards sharing every guess, with split keys on the keyboard" width="230"></td>
+    <td align="center"><img src="docs/screenshots/hints.png" alt="A game with the hint tray open: three hold-to-buy hint rows with their free-hint prices and a link back to the keyboard" width="230"></td>
   </tr>
 </table>
 
@@ -66,6 +71,70 @@
       length (4 to 8), the tries and how common the answers are.
       <a href="https://github.com/aaronified/lexodle/wiki/How-to-play">The rules</a>.
     </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="60%">
+      <h3>💡 Lex and hints</h3>
+      Lex is the currency of hints. Open the hint tray in any game and hold a row to buy a hint: rule
+      a letter out, name a letter that is in the word, or place one. A free hint goes first, and
+      undo takes it back. A game with a hint in it pays no lex, and your streak stays safe. Medals
+      on achievements pay lex (bronze 1, silver 2, gold 3, platinum 5), and the chip on the
+      achievements page opens what you have earned in total. Classic, lockdown, geography, quartet and
+      relay have hints; blind, equations and mastermind do not.
+    </td>
+    <td width="20%"><img src="docs/screenshots/hints.png" width="100%" alt="The hint tray: a lamp on each of three rows, rule one out, a letter that is in, a letter in its place"></td>
+    <td width="20%"><img src="docs/screenshots/lex-dropdown.png" width="100%" alt="The achievements header with the lex chip, opened to the total earned and what each medal pays"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="40%"><img src="docs/screenshots/words.png" width="100%" alt="My words: the saved list with a note on one word, and the banner counting towards the next trophy"></td>
+    <td width="60%">
+      <h3>📖 My words</h3>
+      The words tab keeps two lists: the words you chose to save, each with a note of your own and a
+      copy of its Wiktionary entry that opens offline, and every word you have won, collected like
+      trophies. Filter by language, search, sort, and watch the banner count towards the next trophy.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="60%">
+      <h3>🌱 A first game that teaches</h3>
+      A new player starts in a guided game, not a lesson: no step counter, one quiet line under the
+      board only when it applies, and a hint to try. The tabs open as you play: words after nine
+      games, learn after twenty-four. It can be replayed from the you tab.
+    </td>
+    <td width="40%"><img src="docs/screenshots/first-game.png" width="100%" alt="The first game mid-play: two coloured guesses, a third being typed, and the coloured keyboard"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="40%"><img src="docs/screenshots/reminders.png" width="100%" alt="The reminders page: a switch, the dailies it reminds about, two nudge times with their weekdays, and a sample message"></td>
+    <td width="60%">
+      <h3>⏰ Reminders</h3>
+      On the phone app, a nudge when a daily you chose is still waiting (up to two a day, on the
+      weekdays you pick), and optionally one notification when the dailies open. The messages never
+      carry a word.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="60%">
+      <h3>🎛 Mode settings</h3>
+      Free play is yours to change for every mode: the word length and tries, how common the answers
+      are, the helper, and each mode's own settings such as hearts. The daily never changes, so it
+      is the same for everyone.
+    </td>
+    <td width="40%"><img src="docs/screenshots/mode-settings.png" width="100%" alt="The mode settings page: the daily rules for each mode, the mode pills, and the difficulty grid with word draw and helper choices"></td>
   </tr>
 </table>
 
@@ -151,11 +220,11 @@
 
 <table>
   <tr>
-    <td width="40%"><img src="docs/screenshots/features/history.png" width="100%" alt="The overall numbers and a line chart of skill, luck and risk over 50 weeks (the app also shows days and months)"></td>
+    <td width="40%"><img src="docs/screenshots/features/history.png" width="100%" alt="The overall numbers, a line chart of skill, luck and risk over 50 weeks, and the playstyle card under it"></td>
     <td width="60%">
       <h3>📈 A history that explains your play</h3>
       Every game is kept, however many, with a chart over the last 50 days, weeks or months of skill,
-      luck and risk.
+      luck and risk, and your playstyle card under it.
       <a href="https://github.com/aaronified/lexodle/wiki/History-and-playstyles">History</a>.
     </td>
   </tr>
@@ -202,7 +271,7 @@
 
 <table>
   <tr>
-    <td width="40%"><img src="docs/screenshots/features/achievements.png" width="100%" alt="Achievements in English, each with its flag; bilingual shows three flags"></td>
+    <td width="40%"><img src="docs/screenshots/features/achievements.png" width="100%" alt="Achievements in English with the lex chip: tiered medals, each with its flag and a bar to the next level"></td>
     <td width="60%">
       <h3>🏅 Achievements, by language</h3>
       173 achievements, each with four levels (bronze to platinum), each earned in a language and wearing its flag, with an all-languages
@@ -220,29 +289,7 @@
       <h3>➗ Equations and 🎯 Mastermind</h3>
       <b>Equations</b>: find the true equation, whose tiles are digits and signs, with fewer tries than a word
       (7, 5, 4 or 3). <b>Mastermind</b>: the word dodges you, with no limit on guesses; each guess is scored against
-      the words still possible. Both are opened by playing, as the other modes are, and both have a daily.
-    </td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <td width="100%">
-      <h3>💡 Lex and hints</h3>
-      Achievements pay <b>lex</b> (bronze 1, silver 2, gold 3, platinum 5; once a day in each language). Spend it on a
-      hint above the keyboard: a letter that is not in the word (10), one that is (25) or one in its place (50). A
-      game with a hint pays no lex and keeps the streak. Classic, lockdown, geography, quartet and relay have hints.
-    </td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <td width="100%">
-      <h3>📖 My words, and a daily in every mode</h3>
-      Save the answer with your own note (its Wiktionary entry is kept, so it opens offline), and every word you win is
-      collected like a trophy, by language. Every mode has its own daily, streak and calendar. The app opens on
-      today, words, learn and you as four tabs, which open as you play.
+      the words still possible. Both are opened by playing, as the other modes are, and both have a daily. Every mode has its own daily, streak and calendar.
     </td>
   </tr>
 </table>

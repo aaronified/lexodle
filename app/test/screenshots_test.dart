@@ -5,7 +5,9 @@
 //   LEXODLE_SCREENSHOTS=1 flutter test test/screenshots_test.dart
 //
 // (PowerShell: $env:LEXODLE_SCREENSHOTS = 1.) The PNGs are written to
-// docs/screenshots/ at the top of the repository.
+// docs/screenshots/ at the top of the repository. The tests that show the new
+// shell (today, words, you) switch `appState.newUi` on: the tests' default is the
+// old home.
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -17,6 +19,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/background.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/achievements_page.dart';
+import 'package:lexodle/first_run/first_game_page.dart';
+import 'package:lexodle/lex.dart' show LexEntry;
+import 'package:lexodle/lex_widgets.dart';
+import 'package:lexodle/reminders.dart';
+import 'package:lexodle/saved_words.dart';
+import 'package:lexodle/collection.dart';
 import 'package:lexodle/geography.dart';
 import 'package:lexodle/game_modes_dialog.dart';
 import 'package:lexodle/how_to.dart';
@@ -40,7 +48,8 @@ import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'support/fonts.dart';
+Future<ByteData> _bytes(String path) async =>
+    ByteData.view((await File(path).readAsBytes()).buffer);
 
 /// A phone, in logical pixels; the pictures are twice that.
 const phone = Size(412, 860);
@@ -87,7 +96,26 @@ List<String> plain(List<String> words) => [
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(loadAppFonts);
+  setUpAll(() async {
+    // the app's font, and the Flutter SDK's full icon font (the tests' own is cut
+    // down to a few icons, and the tab bar draws others)
+    await (FontLoader('JetBrainsMono')
+          ..addFont(_bytes('assets/fonts/JetBrainsMono-Regular.ttf'))
+          ..addFont(_bytes('assets/fonts/JetBrainsMono-Bold.ttf')))
+        .load();
+    final root =
+        Platform.environment['FLUTTER_ROOT'] ??
+        File(Platform.resolvedExecutable).parent.parent.parent.path;
+    final full = File(
+      '$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+    );
+    await (FontLoader('MaterialIcons')..addFont(
+          full.existsSync()
+              ? _bytes(full.path)
+              : _bytes('test/fonts/MaterialIcons-Regular.otf'),
+        ))
+        .load();
+  });
   tearDown(() {
     analyseWhilePlaying = false;
     dailyClock = DateTime.now;
@@ -194,6 +222,44 @@ void main() {
     appState.styleId = 'maverick';
     appState.stylesHeld = {'steady', 'analyst', 'maverick'};
     appState.styleChanges = 2;
+    appState.setAch(language, {
+      'wins': AchState(times: 1, dates: ['2026-09-02'], value: 12),
+      'quick': AchState(
+        times: 3,
+        dates: ['2026-09-20', '2026-10-11', '2026-10-18'],
+        value: 2,
+      ),
+      'last_try': AchState(times: 1, dates: ['2026-10-03'], value: 1),
+      'dailies': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
+      'played': AchState(
+        times: 2,
+        dates: ['2026-09-10', '2026-10-01'],
+        value: 113,
+      ),
+      'daily_streak': AchState(times: 1, dates: ['2026-10-05'], progress: 6),
+      'languages': AchState(times: 1, dates: ['2026-10-02']),
+    });
+    appState.stats.langsWon = {'en', 'fr', 'de'};
+    // a veteran: lex is shown from the start, with a balance and free hints
+    appState.stats.played = 113;
+    for (final m in [GameMode.quartet, GameMode.lockdown, GameMode.blind]) {
+      appState.myDailies.add(language, m);
+    }
+    appState.lex
+      ..activated = true
+      ..veteran = true
+      ..balance = 184
+      ..freeHints = 2;
+    final at = today.millisecondsSinceEpoch;
+    appState.lex.ledger.addAll([
+      LexEntry(at - 40 * 864e5.round(), 120, 'grant'),
+      LexEntry(at - 26 * 864e5.round(), 3, 'earn:quick:2', language),
+      LexEntry(at - 18 * 864e5.round(), 2, 'earn:played:1', language),
+      LexEntry(at - 9 * 864e5.round(), 5, 'earn:quick:3', language),
+      LexEntry(at - 5 * 864e5.round(), -10, 'hint:grey', language),
+      LexEntry(at - 2 * 864e5.round(), 4, 'earn:wins:1', language),
+      LexEntry(at - 864e5.round(), -20, 'hint:green', language),
+    ]);
     return bank;
   }
 
@@ -264,24 +330,57 @@ void main() {
     }
   }
 
-  testWidgets('home, in blind mode and in Hungarian', (t) async {
-    await prepare(t, mode: GameMode.blind, language: 'hu');
+  /// The new shell, on the tab [tab] (today when null).
+  Future<GlobalKey> shell(WidgetTester t, [String? tab]) async {
+    appState.newUi = true;
     final key = GlobalKey();
     await t.pumpWidget(RepaintBoundary(key: key, child: const LexodleApp()));
     await t.pumpAndSettle();
-    await shot(t, key, 'home');
-    // the feature picture: the mode swiper and play, as the home shows them
-    await shot(
-      t,
-      key,
-      'features/blind',
-      crop: Rect.fromLTRB(
-        0,
-        t.getRect(find.byKey(const ValueKey('mode-button'))).top - 60,
-        412,
-        t.getRect(find.byKey(const ValueKey('play-button'))).bottom + 12,
-      ),
-    );
+    if (tab != null) {
+      await t.tap(
+        find.descendant(
+          of: find.byKey(const ValueKey('tabs')),
+          matching: find.text(tab),
+        ),
+      );
+      await t.pumpAndSettle();
+    }
+    return key;
+  }
+
+  testWidgets('the today tab', (t) async {
+    await prepare(t);
+    final key = await shell(t);
+    await shot(t, key, 'today');
+  }, skip: skip != null);
+
+  testWidgets('the you tab', (t) async {
+    await prepare(t);
+    t.view.physicalSize = const Size(412, 1000) * 2;
+    final key = await shell(t, 'you');
+    await shot(t, key, 'you');
+  }, skip: skip != null);
+
+  testWidgets('the words tab', (t) async {
+    final bank = await prepare(t);
+    final won = plain(bank.answers(5)).take(260).toList();
+    appState.collection = Collection();
+    for (final w in won.skip(20).take(137)) {
+      appState.collection.addWord(lang, w);
+    }
+    appState.savedWords = SavedWords();
+    for (final (i, w) in won.take(12).indexed) {
+      appState.savedWords.add(
+        SavedWord(
+          lang: lang,
+          word: w,
+          date: '2026-10-${10 + i % 14}',
+          note: i % 4 == 0 ? 'one to remember' : '',
+        ),
+      );
+    }
+    final key = await shell(t, 'words');
+    await shot(t, key, 'words');
   }, skip: skip != null);
 
   testWidgets('a daily in play, with a blank pencilled in', (t) async {
@@ -423,6 +522,9 @@ void main() {
     final key = GlobalKey();
     await t.pumpWidget(framed(key, const HistoryPage()));
     await t.pumpAndSettle();
+    // classic, whose playstyle is the one held
+    await t.tap(find.text('classic').first);
+    await t.pumpAndSettle();
     await shot(t, key, 'history');
     // the games of the list, each with its link button
     final tiles = find.byWidgetPredicate(
@@ -449,7 +551,7 @@ void main() {
         0,
         card('overall').top - 12,
         412,
-        card('trend').bottom + 14,
+        t.getRect(find.byKey(const ValueKey('playstyle-row'))).bottom + 14,
       ),
     );
     final style = GlobalKey();
@@ -549,24 +651,6 @@ void main() {
 
   testWidgets('the achievements, with their flags', (t) async {
     await prepare(t);
-    appState.setAch(lang, {
-      'wins': AchState(times: 1, dates: ['2026-09-02'], value: 12),
-      'quick': AchState(
-        times: 3,
-        dates: ['2026-09-20', '2026-10-11', '2026-10-18'],
-        value: 2,
-      ),
-      'last_try': AchState(times: 1, dates: ['2026-10-03'], value: 1),
-      'dailies': AchState(times: 1, dates: ['2026-09-30'], progress: 4),
-      'played': AchState(
-        times: 2,
-        dates: ['2026-09-10', '2026-10-01'],
-        value: 113,
-      ),
-      'daily_streak': AchState(times: 1, dates: ['2026-10-05'], progress: 6),
-      'languages': AchState(times: 1, dates: ['2026-10-02']),
-    });
-    appState.stats.langsWon = {'en', 'fr', 'de'};
     final key = GlobalKey();
     t.view.physicalSize = const Size(412, 1500) * 2;
     await t.pumpWidget(framed(key, const AchievementsPage()));
@@ -582,6 +666,20 @@ void main() {
         0,
         412,
         t.getRect(find.byKey(const ValueKey('quick-row'))).bottom + 10,
+      ),
+    );
+    // the lex chip opens what lex is earned from
+    await t.tap(find.byKey(const ValueKey('lex-chip')));
+    await t.pumpAndSettle();
+    await shot(
+      t,
+      key,
+      'lex-dropdown',
+      crop: Rect.fromLTRB(
+        0,
+        0,
+        412,
+        t.getRect(find.byKey(const ValueKey('lex-drop'))).bottom + 24,
       ),
     );
   }, skip: skip != null);
@@ -736,4 +834,91 @@ void main() {
       crop: const Rect.fromLTRB(0, 0, 412, 330),
     );
   }, skip: skip != null);
+
+  testWidgets('a game with the hint tray open', (t) async {
+    final bank = await prepare(t);
+    final key = GlobalKey();
+    await t.pumpWidget(framed(key, GamePage(bank: bank, random: Random(5))));
+    await t.pump();
+    final words = plain(bank.answers(5));
+    for (final w in [words[8], words[120]]) {
+      await type(t, w);
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+    }
+    await t.tap(find.byType(HintBar));
+    await t.pumpAndSettle();
+    await shot(t, key, 'hints');
+  }, skip: skip != null);
+
+  testWidgets('the first game, mid-play', (t) async {
+    final bank = await prepare(t);
+    final key = GlobalKey();
+    await t.pumpWidget(
+      framed(key, FirstGamePage(onDone: () {}, onClose: () {})),
+    );
+    await t.pump();
+    await t.pump();
+    final words = plain(bank.guessable(5));
+    for (final w in [words[30], words[400]]) {
+      await type(t, w);
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+      await t.pump(const Duration(seconds: 2));
+    }
+    if (find.text('got it').evaluate().isNotEmpty) {
+      await t.tap(find.text('got it'));
+      await t.pump();
+    }
+    await type(t, words[900].substring(0, 3));
+    await t.pump();
+    await shot(t, key, 'first-game');
+  }, skip: skip != null);
+
+  testWidgets('the mode settings', (t) async {
+    await prepare(t);
+    t.view.physicalSize = const Size(412, 1300) * 2;
+    final key = GlobalKey();
+    await t.pumpWidget(
+      RepaintBoundary(
+        key: key,
+        child: const LexodleApp(initialRoute: Routes.modeSettings),
+      ),
+    );
+    await t.pumpAndSettle();
+    await shot(t, key, 'mode-settings');
+  }, skip: skip != null);
+
+  testWidgets('the reminders', (t) async {
+    await prepare(t);
+    Reminders.scheduler = _Phone();
+    addTearDown(() => Reminders.scheduler = const NoopScheduler());
+    appState.setReminders(
+      const ReminderSettings(
+        on: true,
+        available: true,
+        reminders: [ReminderTime(), ReminderTime(minutes: 20 * 60 + 30)],
+      ),
+    );
+    t.view.physicalSize = const Size(412, 1000) * 2;
+    final key = GlobalKey();
+    await t.pumpWidget(
+      RepaintBoundary(
+        key: key,
+        child: const LexodleApp(initialRoute: Routes.reminders),
+      ),
+    );
+    await t.pumpAndSettle();
+    await shot(t, key, 'reminders');
+  }, skip: skip != null);
+}
+
+/// A phone that can schedule notifications, so the reminders page is shown on.
+class _Phone implements NotificationScheduler {
+  @override
+  bool get supported => true;
+  @override
+  Future<bool> requestPermission() async => true;
+  @override
+  Future<void> replaceAll(List<PlannedNudge> plan) async {}
 }
