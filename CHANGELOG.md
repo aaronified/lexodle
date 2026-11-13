@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.11.0
+
 - every game has a timer, and the time is in history
   A pill left of the keyboard counts your play time from the first key you press until the game ends. It pauses when the app is in the background and keeps its time when a saved game resumes. History shows the time next to the result. Games from before have no time.
 
