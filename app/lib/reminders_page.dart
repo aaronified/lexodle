@@ -380,6 +380,7 @@ class _RemindersPageState extends State<RemindersPage> {
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: c.surfaceContainerHighest,
+      border: Border.fromBorderSide(hairline(c)),
       borderRadius: BorderRadius.circular(6),
     ),
     child: child,

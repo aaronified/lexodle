@@ -270,6 +270,7 @@ class _OpeningPageState extends State<OpeningPage> {
           padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
           decoration: BoxDecoration(
             color: c.surfaceContainerHighest,
+            border: Border.fromBorderSide(hairline(c)),
             borderRadius: BorderRadius.circular(3),
           ),
           child: Column(

@@ -9,6 +9,18 @@ import 'words.dart';
 
 export 'medal.dart' show Medal;
 
+/// The one soft line of the app: [outlineVariant], about 1.5 to 2 : 1 against
+/// the ground and lighter than the shade of a card, so it shows on both sides
+/// (a line between the two would vanish), and far quieter than [ColorScheme.outline].
+Color hairlineColor(ColorScheme c) => c.outlineVariant;
+
+/// Width of [hairline].
+const hairlineWidth = 0.75;
+
+/// The border of a card, an outlined control, a dialog or a sheet.
+BorderSide hairline(ColorScheme c) =>
+    BorderSide(color: hairlineColor(c), width: hairlineWidth);
+
 /// A floating one-line toast, replacing any that is showing.
 void showToast(BuildContext context, String text) {
   ScaffoldMessenger.of(context)
@@ -431,7 +443,10 @@ Future<T?> showHairlineDialog<T>(
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(3),
+        side: hairline(c),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: Column(

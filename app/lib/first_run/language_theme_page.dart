@@ -162,7 +162,10 @@ class _LanguageThemePageState extends State<LanguageThemePage> {
                     const SizedBox(height: 12),
                     Material(
                       color: c.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        side: hairline(c),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(14),
                         child: Column(

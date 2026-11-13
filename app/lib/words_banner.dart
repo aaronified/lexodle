@@ -51,6 +51,7 @@ class WordsBanner extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
       decoration: BoxDecoration(
         color: c.surfaceContainerHighest,
+        border: Border.fromBorderSide(hairline(c)),
         borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(

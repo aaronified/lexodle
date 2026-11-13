@@ -6,6 +6,7 @@ import 'package:lexodle/history_page.dart';
 import 'package:lexodle/playstyle_card.dart';
 import 'package:lexodle/home.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/ui.dart' show hairline;
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -352,7 +353,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('language-button')));
       await tester.pumpAndSettle();
       final dialog = tester.widget<Dialog>(find.byType(Dialog));
-      // a flat fill one step above the page, no outline
+      // a flat fill one step above the page, with the soft line
       final scaffold = Theme.of(tester.element(find.byType(Dialog)))
           .colorScheme
           .surfaceContainerHigh;
@@ -360,7 +361,10 @@ void main() {
       expect(dialog.surfaceTintColor, Colors.transparent);
       final shape = dialog.shape! as RoundedRectangleBorder;
       expect(shape.borderRadius, BorderRadius.circular(3));
-      expect(shape.side, BorderSide.none);
+      expect(
+        shape.side,
+        hairline(Theme.of(tester.element(find.byType(Dialog))).colorScheme),
+      );
       // what is drawn is that colour too
       final material = tester.widget<Material>(
         find

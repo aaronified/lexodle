@@ -72,7 +72,10 @@ class _GameModesDialogState extends State<GameModesDialog> {
     final langs = _langs;
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(3),
+        side: hairline(c),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: ListenableBuilder(

@@ -131,7 +131,10 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                   children: [
-                    if (_showNote) ...[_firstNote(c), const SizedBox(height: 12)],
+                    if (_showNote) ...[
+                      _firstNote(c),
+                      const SizedBox(height: 12),
+                    ],
                     _card(c, opened),
                     const SizedBox(height: 12),
                     if (mode == null)
@@ -187,7 +190,10 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
   Widget _card(ColorScheme c, List<GameMode> opened) {
     return Material(
       color: c.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: hairline(c),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -292,7 +298,10 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
     final draw = appState.drawOf(mode);
     return Material(
       color: c.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: hairline(c),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
