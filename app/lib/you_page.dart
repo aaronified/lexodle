@@ -186,7 +186,7 @@ class YouPage extends StatelessWidget {
                       'hint currency · how it works',
                       icon: 'bulb',
                       trailing: '${appState.lexBalance}',
-                      onTap: () => showToast(context, 'the lex page is next'),
+                      onTap: () => _push(context, Routes.lex),
                     ),
                   _row(
                     context,

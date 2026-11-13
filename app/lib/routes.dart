@@ -1,3 +1,4 @@
+import 'lex_page.dart';
 import 'app_shell.dart';
 
 import 'package:flutter/material.dart';
@@ -75,6 +76,7 @@ class Routes {
   static const playstyle = '/playstyle';
   static const about = '/about';
   static const words = '/words';
+  static const lex = '/lex';
 
   /// One saved word; it travels as the route's argument, so an address alone
   /// shows the list instead.
@@ -174,6 +176,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(const HistoryPage());
     case Routes.words:
       return page(const WordsPage());
+    case Routes.lex:
+      return page(const LexPage());
     case Routes.collected:
       final ref = settings.arguments;
       return page(

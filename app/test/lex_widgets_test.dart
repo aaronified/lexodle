@@ -85,6 +85,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       expect(bought, 0);
       await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400));
       expect(bought, 1);
       await g.up();
       await tester.pump(const Duration(seconds: 1));
