@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- every game has a timer, and the time is in history
+  A pill left of the keyboard counts your play time from the first key you press until the game ends. It pauses when the app is in the background and keeps its time when a saved game resumes. History shows the time next to the result. Games from before have no time.
+
 - settings: one button on every page, and everything in it
   A settings button sits top right on the tabs and the secondary pages. Theme (first), reminders, backup, support, what's new, sound, haptics, updates, the log and about all live there, each opening at its step. The you tab no longer carries them.
 - learn opens after the first game, with how to play

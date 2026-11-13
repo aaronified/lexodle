@@ -2879,8 +2879,17 @@ class AppState extends ChangeNotifier {
   /// `p|language|mode|length|tries`.
   Map<String, dynamic>? progressFor(String key) => progress[key];
 
-  void saveProgress(String key, Map<String, dynamic> state) {
-    progress[key] = state;
+  /// The time already played of the game kept under [key], in milliseconds
+  /// (0 when none was kept, as in a game saved before the time was).
+  int savedElapsedMs(String key) {
+    final v = progress[key]?['ms'];
+    return v is int && v > 0 ? v : 0;
+  }
+
+  /// Keeps [state] under [key]; [ms] is the time played so far, kept with it
+  /// (read back by [savedElapsedMs]).
+  void saveProgress(String key, Map<String, dynamic> state, {int? ms}) {
+    progress[key] = ms == null ? state : {...state, 'ms': ms};
     if (key.startsWith('d|')) {
       final oldest = dailyShift(dailyDate(), -7);
       progress.removeWhere(
@@ -3648,6 +3657,7 @@ class AppState extends ChangeNotifier {
     String daily = '',
     Draw draw = Draw.frequency,
     bool largest = false,
+    int? ms,
     DateTime? now,
   }) {
     appLog.i(
@@ -3668,6 +3678,7 @@ class AppState extends ChangeNotifier {
       daily: daily,
       draw: draw,
       largest: largest,
+      ms: ms,
     );
     saveHistory();
     // a won game's words are collected like trophies

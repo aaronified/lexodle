@@ -9,6 +9,7 @@ import 'app_log.dart';
 import 'daily.dart';
 import 'earned_rows.dart';
 import 'geography.dart';
+import 'game_timer.dart' show formatElapsed;
 import 'history.dart';
 import 'logic.dart';
 import 'language_picker.dart';
@@ -911,9 +912,12 @@ class _GameTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      game.won
-                          ? 'solved in ${rows.length}/${game.tries}'
-                          : 'missed',
+                      [
+                        game.won
+                            ? 'solved in ${rows.length}/${game.tries}'
+                            : 'missed',
+                        if (game.ms != null) formatElapsed(game.ms!),
+                      ].join(' · '),
                       style: TextStyle(
                         fontSize: 13,
                         color: game.won ? c.secondary : c.error,

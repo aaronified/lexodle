@@ -31,7 +31,12 @@ class GameRow {
     this.draw = Draw.frequency,
     this.largest = false,
     this.earned = const [],
+    this.ms,
   });
+
+  /// How long the game took, in milliseconds of active play; null for a game
+  /// from before the time was kept.
+  final int? ms;
 
   /// The achievement levels this game earned, each `id:level` (the index of
   /// the level, from 0): shown with the game in the history. A game from
@@ -97,6 +102,7 @@ class GameRow {
     draw: draw,
     largest: largest,
     earned: earned,
+    ms: ms,
   );
 
   /// This row with [earned] as what it earned.
@@ -115,6 +121,7 @@ class GameRow {
     draw: draw,
     largest: largest,
     earned: earned,
+    ms: ms,
   );
 
   /// The row as saved: a list, in this order, which is a good deal smaller than
@@ -134,8 +141,10 @@ class GameRow {
     draw.code,
     // (a thirteenth for the mastermind that kept the largest pool, and a
     // fourteenth for what the game earned: the thirteenth is then 0 or 1)
-    if (largest || earned.isNotEmpty) largest ? 1 : 0,
-    if (earned.isNotEmpty) earned,
+    if (largest || earned.isNotEmpty || ms != null) largest ? 1 : 0,
+    if (earned.isNotEmpty || ms != null) earned,
+    // (a fifteenth for the time, which then has the two before it)
+    ?ms,
   ];
 
   /// Reads a row as [toRow] wrote it, or the map of named fields an earlier
@@ -144,7 +153,7 @@ class GameRow {
     if (raw is Map) return fromJson(raw.cast<String, dynamic>());
     // (twelve, or thirteen with the largest-pool flag; eleven before the law the
     // answer was drawn under was kept)
-    if (raw is! List || raw.length < 11 || raw.length > 14) {
+    if (raw is! List || raw.length < 11 || raw.length > 15) {
       throw const FormatException('game');
     }
     return fromJson({
@@ -165,7 +174,8 @@ class GameRow {
       'v': raw[10],
       if (raw.length >= 12) 'draw': raw[11],
       if (raw.length >= 13) 'lg': raw[12],
-      if (raw.length == 14) 'earned': raw[13],
+      if (raw.length >= 14) 'earned': raw[13],
+      if (raw.length == 15) 'ms': raw[14],
     });
   }
 
@@ -184,6 +194,7 @@ class GameRow {
     'draw': draw.code,
     if (largest) 'lg': 1,
     if (earned.isNotEmpty) 'earned': earned,
+    'ms': ?ms,
   };
 
   /// The earned levels of a saved row: a list of `id:level`, kept as it is when
@@ -240,6 +251,7 @@ class GameRow {
           : Draw.frequency,
       largest: j['lg'] == 1,
       earned: _earnedOf(j['earned']),
+      ms: j['ms'] == null ? null : _int(j['ms'], 0, _maxMs),
     );
   }
 }
@@ -504,6 +516,7 @@ class History {
     String daily = '',
     Draw draw = Draw.frequency,
     bool largest = false,
+    int? ms,
   }) {
     final row = GameRow(
       id: _next++,
@@ -518,6 +531,7 @@ class History {
       daily: daily,
       draw: draw,
       largest: largest,
+      ms: ms,
     );
     games.add(row);
     dirtyMonths.add(row.month);

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'app_log.dart';
+import 'game_timer.dart';
 import 'lex.dart';
 import 'logic.dart';
 import 'ui.dart';
@@ -167,6 +168,52 @@ class HintBar extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The time of the game as a pill, the hint pill's mirror on the left of the
+/// keyboard: a clock and `m:ss`, on the same surface. 28px to look at, 44px
+/// high like the [HintBar]. It ticks with the [timer].
+class TimerPill extends StatelessWidget {
+  const TimerPill(this.timer, {super.key = const ValueKey('timer-pill')});
+  final GameTimer timer;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return ListenableBuilder(
+      listenable: timer,
+      builder: (context, _) {
+        final text = formatElapsed(timer.elapsedMs);
+        return Semantics(
+          label: 'time $text',
+          excludeSemantics: true,
+          child: SizedBox(
+            height: 44,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              widthFactor: 1,
+              child: Container(
+                height: 28,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: c.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TablerIcon('clock', size: 16, color: c.onSurface),
+                    const SizedBox(width: 6),
+                    Text(text, style: const TextStyle(fontSize: 13, height: 1)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
