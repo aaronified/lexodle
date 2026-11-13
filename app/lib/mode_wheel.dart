@@ -45,9 +45,14 @@ class ModeSwitch extends StatefulWidget {
     this.lang = 'en',
     required this.onChanged,
     required this.onOpen,
-    required this.below,
+    this.below = const SizedBox.shrink(),
     this.pending = const {},
     this.height = 52,
+    this.modes,
+    this.plain = false,
+    this.facePrefix,
+    this.showChevrons = true,
+    this.buttonKey = const ValueKey('mode-button'),
   });
 
   final GameMode mode;
@@ -64,6 +69,20 @@ class ModeSwitch extends StatefulWidget {
   final Widget below;
   final double height;
 
+  /// The loop the switch goes through, when it is not all of the language's
+  /// modes (the open ones, on the Today tab).
+  final List<GameMode>? modes;
+
+  /// A quiet face: the icon in the text colour, one line, no pager dots.
+  final bool plain;
+
+  /// Written before the mode's name on a plain face: "free play · classic".
+  final String? facePrefix;
+
+  /// Without the chevrons the switch cannot be dragged either.
+  final bool showChevrons;
+  final Key buttonKey;
+
   /// Which chevrons have a pending daily nearer in their direction, from [from]:
   /// each pending mode is on the side it is fewer steps away by (the next one
   /// when it is as far both ways).
@@ -71,8 +90,9 @@ class ModeSwitch extends StatefulWidget {
     GameMode from,
     Set<GameMode> pending, {
     String lang = 'en',
+    List<GameMode>? modes,
   }) {
-    final all = GameMode.loopFor(lang);
+    final all = modes ?? GameMode.loopFor(lang);
     final i = all.indexOf(from);
     var prev = false, next = false;
     if (i < 0) return (prev: prev, next: next);
@@ -90,8 +110,13 @@ class ModeSwitch extends StatefulWidget {
   }
 
   /// The mode [steps] along the loop from [from] (negative goes back).
-  static GameMode step(GameMode from, int steps, {String lang = 'en'}) {
-    final all = GameMode.loopFor(lang);
+  static GameMode step(
+    GameMode from,
+    int steps, {
+    String lang = 'en',
+    List<GameMode>? modes,
+  }) {
+    final all = modes ?? GameMode.loopFor(lang);
     final i = all.indexOf(from);
     // a mode the language does not have goes back into the loop
     if (i < 0) return steps > 0 ? all.first : all.last;
@@ -126,8 +151,12 @@ class _ModeSwitchState extends State<ModeSwitch>
 
   /// The mode the ratchet is on now: the one it was on, moved by the detents
   /// passed.
-  GameMode get _shown =>
-      ModeSwitch.step(widget.mode, _pos.round(), lang: widget.lang);
+  GameMode get _shown => ModeSwitch.step(
+    widget.mode,
+    _pos.round(),
+    lang: widget.lang,
+    modes: widget.modes,
+  );
 
   @override
   void initState() {
@@ -170,7 +199,12 @@ class _ModeSwitchState extends State<ModeSwitch>
       });
       if (target != 0) {
         widget.onChanged(
-          ModeSwitch.step(widget.mode, target, lang: widget.lang),
+          ModeSwitch.step(
+            widget.mode,
+            target,
+            lang: widget.lang,
+            modes: widget.modes,
+          ),
         );
       }
     });
@@ -202,37 +236,54 @@ class _ModeSwitchState extends State<ModeSwitch>
   }
 
   Widget _face(ColorScheme c, GameMode m) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 44),
+    padding: EdgeInsets.symmetric(horizontal: widget.showChevrons ? 44 : 16),
     child: FittedBox(
       fit: BoxFit.scaleDown,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TablerIcon(modeIconName(m), size: chooserIconSize, color: c.primary),
-          const SizedBox(width: 12),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                m.label,
-                key: ValueKey('mode-name-${m.name}'),
-                style: const TextStyle(
-                  fontSize: chooserLabelSize,
-                  fontWeight: FontWeight.bold,
-                  height: 1.1,
-                ),
-              ),
-              Text(
-                modeSub(m),
-                style: TextStyle(
-                  fontSize: chooserSubSize,
-                  height: 1.1,
-                  color: c.onSurface.withValues(alpha: dimAlpha),
-                ),
-              ),
-            ],
+          TablerIcon(
+            modeIconName(m),
+            size: chooserIconSize,
+            color: widget.plain ? c.onSurface : c.primary,
           ),
+          const SizedBox(width: 12),
+          if (widget.plain)
+            Text(
+              '${widget.facePrefix ?? ''}${m.label}',
+              key: ValueKey('mode-name-${m.name}'),
+              maxLines: 1,
+              softWrap: false,
+              style: const TextStyle(
+                fontSize: chooserLabelSize,
+                fontWeight: FontWeight.bold,
+                height: 1.1,
+              ),
+            )
+          else
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  m.label,
+                  key: ValueKey('mode-name-${m.name}'),
+                  style: const TextStyle(
+                    fontSize: chooserLabelSize,
+                    fontWeight: FontWeight.bold,
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  modeSub(m),
+                  style: TextStyle(
+                    fontSize: chooserSubSize,
+                    height: 1.1,
+                    color: c.onSurface.withValues(alpha: dimAlpha),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     ),
@@ -269,7 +320,14 @@ class _ModeSwitchState extends State<ModeSwitch>
         onPressed: () => _step(by),
       ),
     );
-    final dots = ModeSwitch.dotsFor(_shown, widget.pending, lang: widget.lang);
+    final dots = widget.showChevrons
+        ? ModeSwitch.dotsFor(
+            _shown,
+            widget.pending,
+            lang: widget.lang,
+            modes: widget.modes,
+          )
+        : (prev: false, next: false);
     // the yellow of a letter that is in the word elsewhere
     final yellow = markColors(c, Mark.present).$1;
     Widget dot(String key) => Container(
@@ -283,9 +341,11 @@ class _ModeSwitchState extends State<ModeSwitch>
       behavior: HitTestBehavior.translucent,
       // the drag is tracked from where the finger went down, so it follows it 1:1
       dragStartBehavior: DragStartBehavior.down,
-      onHorizontalDragUpdate: _update,
-      onHorizontalDragEnd: _end,
-      onHorizontalDragCancel: () => _end(DragEndDetails()),
+      onHorizontalDragUpdate: widget.showChevrons ? _update : null,
+      onHorizontalDragEnd: widget.showChevrons ? _end : null,
+      onHorizontalDragCancel: widget.showChevrons
+          ? () => _end(DragEndDetails())
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -296,9 +356,9 @@ class _ModeSwitchState extends State<ModeSwitch>
                 width: double.infinity,
                 height: widget.height,
                 child: Tooltip(
-                  message: 'game modes',
+                  message: widget.plain ? 'free play' : 'game modes',
                   child: OutlinedButton(
-                    key: const ValueKey('mode-button'),
+                    key: widget.buttonKey,
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -328,19 +388,26 @@ class _ModeSwitchState extends State<ModeSwitch>
                   ),
                 ),
               ),
-              Positioned(
-                left: 1,
-                child: arrow(
-                  'mode-prev',
-                  Icons.chevron_left,
-                  'previous mode',
-                  -1,
+              if (widget.showChevrons)
+                Positioned(
+                  left: 1,
+                  child: arrow(
+                    'mode-prev',
+                    Icons.chevron_left,
+                    'previous mode',
+                    -1,
+                  ),
                 ),
-              ),
-              Positioned(
-                right: 1,
-                child: arrow('mode-next', Icons.chevron_right, 'next mode', 1),
-              ),
+              if (widget.showChevrons)
+                Positioned(
+                  right: 1,
+                  child: arrow(
+                    'mode-next',
+                    Icons.chevron_right,
+                    'next mode',
+                    1,
+                  ),
+                ),
               // a yellow dot above a chevron: a daily is pending that way
               if (dots.prev)
                 Positioned(
@@ -356,25 +423,27 @@ class _ModeSwitchState extends State<ModeSwitch>
                 ),
             ],
           ),
-          const SizedBox(height: 6),
-          Row(
-            key: const ValueKey('mode-dots'),
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (final m in GameMode.loopFor(widget.lang))
-                Container(
-                  key: ValueKey('mode-dot-${m.name}'),
-                  width: 6,
-                  height: 6,
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: m == _shown ? c.primary : c.outlineVariant,
+          if (!widget.plain) ...[
+            const SizedBox(height: 6),
+            Row(
+              key: const ValueKey('mode-dots'),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (final m in GameMode.loopFor(widget.lang))
+                  Container(
+                    key: ValueKey('mode-dot-${m.name}'),
+                    width: 6,
+                    height: 6,
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: m == _shown ? c.primary : c.outlineVariant,
+                    ),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
+              ],
+            ),
+            const SizedBox(height: 6),
+          ],
           widget.below,
         ],
       ),

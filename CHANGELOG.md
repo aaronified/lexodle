@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- today: one button for free play and the mode
+  The bottom of today is one plain button, free play and the mode name. With one mode open a tap starts it. With more, swipe or use the arrows to change the mode, tap to play it. The daily is started from its row.
+
 - free play plays the mode in view
   Free play on today no longer opens the mode menu: it starts a free game of the mode you are on. The mode menus come later, from the you tab. The every mode card now just dismisses.
 

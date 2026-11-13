@@ -515,6 +515,52 @@ class TodayPage extends StatelessWidget {
     return [const SizedBox(height: 16), _newCard(context, c, dim, opened.last)];
   }
 
+  /// The one button of the bar: free play of the mode in view, which turns
+  /// through the open modes when there is more than one.
+  Widget _modeButton(BuildContext context) {
+    final lang = appState.lang;
+    final loop = GameMode.loopFor(lang);
+    var open = [
+      for (final m in openModes(
+        appState.stats.played,
+        veteran: appState.lex.veteran,
+      ))
+        if (loop.contains(m)) m,
+    ];
+    if (open.isEmpty) open = [GameMode.classic];
+    final shown = open.contains(appState.mode) ? appState.mode : open.first;
+    final today = dailyDate();
+    final pending = {
+      for (final r in _rows(lang, today))
+        if (r.state != _State.solved && r.state != _State.lost) r.mode,
+    };
+    return ModeSwitch(
+      mode: shown,
+      lang: lang,
+      modes: open,
+      plain: true,
+      facePrefix: 'free play · ',
+      showChevrons: open.length > 1,
+      pending: pending,
+      buttonKey: const ValueKey('today-free-play'),
+      onChanged: (m) {
+        try {
+          appState.setup(mode: m);
+        } catch (e) {
+          appLog.w('today', 'could not change the mode: ${e.runtimeType}');
+        }
+      },
+      onOpen: () {
+        try {
+          if (shown != appState.mode) appState.setup(mode: shown);
+        } catch (e) {
+          appLog.w('today', 'could not set the mode: ${e.runtimeType}');
+        }
+        _freePlay(context);
+      },
+    );
+  }
+
   Widget _bottomBar(BuildContext context, ColorScheme c, _Row? next) {
     final allDone = next == null;
     return Container(
@@ -538,42 +584,7 @@ class TodayPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
           ],
-          Row(
-            children: [
-              if (!allDone) ...[
-                Expanded(
-                  child: OutlinedButton(
-                    key: const ValueKey('today-free-play'),
-                    onPressed: () => _freePlay(context),
-                    // one line on any phone: less side padding, never wraps
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                    ),
-                    child: const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text('free play', maxLines: 1, softWrap: false),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
-              Expanded(
-                flex: allDone ? 1 : 2,
-                child: FilledButton(
-                  key: const ValueKey('today-primary'),
-                  onPressed: () =>
-                      allDone ? _freePlay(context) : _play(context, next.mode),
-                  child: Text(
-                    allDone
-                        ? 'free play'
-                        : '${next.state == _State.progress ? 'continue' : 'play'}'
-                              ' ${next.mode.label}',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          _modeButton(context),
         ],
       ),
     );
