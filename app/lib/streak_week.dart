@@ -1,3 +1,5 @@
+import 'edge_fade.dart';
+
 import 'package:flutter/material.dart';
 
 import 'app_log.dart';
@@ -325,23 +327,10 @@ class _StreakWeekState extends State<StreakWeek> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (modes.isNotEmpty)
-            ShaderMask(
-              blendMode: BlendMode.dstIn,
-              shaderCallback: (r) => const LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  Colors.white,
-                  Colors.white,
-                  Colors.transparent,
-                ],
-                stops: [0, .05, .95, 1],
-              ).createShader(r),
-              child: SingleChildScrollView(
-                key: const ValueKey('streak-pills'),
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(children: [for (final m in modes) pill(m)]),
-              ),
+            EdgeFade(
+              scrollKey: const ValueKey('streak-pills'),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(children: [for (final m in modes) pill(m)]),
             ),
           const SizedBox(height: 12),
           Semantics(
