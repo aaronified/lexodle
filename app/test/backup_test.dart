@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/reminders.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/saved_words.dart';
@@ -18,6 +19,7 @@ AppState sample() {
     ..lang = 'fr'
     ..length = 6
     ..tries = 4
+    ..eqTries = 3
     ..draw = Draw.equal
     ..hearts = 3
     ..helper = Helper.skill
@@ -82,6 +84,7 @@ void main() {
           'draw',
           'hearts',
           'blindTries',
+          'eqTries',
           'helper',
           'mode',
           'share',
@@ -100,6 +103,12 @@ void main() {
       final en = (m['languages'] as Map)[(m['settings'] as Map)['lang']] as Map;
       expect((en['achievements'] as Map).keys, contains('dailies'));
       expect(en.keys, containsAll(['playstyle', 'daily', 'achievements']));
+    });
+
+    test('the equations tries round trip and stay apart from tries', () {
+      final b = parseBackup(backupToText(sample()));
+      expect(b.settings['eqTries'], 3);
+      expect(b.settings['tries'], 4);
     });
 
     test('two reminders and the open notification round trip', () {
@@ -307,6 +316,8 @@ void main() {
         ('mode', 8),
         ('blindTries', 0),
         ('blindTries', 21),
+        ('eqTries', 0),
+        ('eqTries', 13),
         ('mode', -1),
         ('mode', true),
         ('share', 31),
@@ -453,7 +464,9 @@ void main() {
 
     Future<void> open(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 3000));
-      await tester.pumpWidget(const LexodleApp(initialRoute: '/settings'));
+      await tester.pumpWidget(
+        const MaterialApp(home: SettingsPage(part: SettingsPart.backup)),
+      );
       await tester.pumpAndSettle();
     }
 
@@ -463,7 +476,10 @@ void main() {
       tester,
     ) async {
       await open(tester);
-      expect(find.text('backup'), findsOneWidget);
+      expect(
+        find.text('backup'),
+        findsNWidgets(2),
+      ); // app bar title and caption
       await tester.tap(byKey('backup-download'));
       await tester.pumpAndSettle();
       expect(io.saved.length, 1);

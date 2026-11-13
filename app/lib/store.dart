@@ -20,7 +20,7 @@ import 'profile.dart';
 import 'reminders.dart' show ReminderSettings;
 import 'learn_log.dart';
 import 'medal.dart';
-import 'equations.dart' show equationLengths;
+import 'equations.dart' show equationLengths, equationTriesLevels;
 import 'modes.dart';
 import 'playstyle.dart';
 import 'saved_words.dart';
@@ -2578,6 +2578,10 @@ class AppState extends ChangeNotifier {
   /// The length of an equation, in tiles: one of [equationLengths].
   int eqLength = 8;
 
+  /// The tries of a free-play equations game: one of [equationTriesLevels]. Its
+  /// own setting, so it never moves [tries], which the word modes share.
+  int eqTries = 5;
+
   /// The chances the learn pages weigh the words by: as the game does, every
   /// equation and every word of the mastermind is as likely as the next.
   Draw get learnDraw =>
@@ -3874,6 +3878,10 @@ class AppState extends ChangeNotifier {
           blindTries = bt;
         final el = p.getInt('eqLength');
         if (el != null && equationLengths.contains(el)) eqLength = el;
+        final et = p.getInt('eqTries');
+        if (et != null && equationTriesLevels.any((e) => e.$2 == et)) {
+          eqTries = et;
+        }
         mastermindLargest = p.getBool('mastermindLargest') ?? false;
         blindAssist = p.getBool('blindAssist') ?? true;
         downloadsBackup = p.getBool('downloadsBackup') ?? true;
@@ -4244,6 +4252,7 @@ class AppState extends ChangeNotifier {
     'draws': _drawsJson,
     'hearts': hearts,
     'blindTries': blindTries,
+    'eqTries': eqTries,
     'blindAssist': blindAssist,
     'helper': helper.index,
     'mode': mode.index,
@@ -4349,6 +4358,8 @@ class AppState extends ChangeNotifier {
     if (hs != null && lockdownHearts.any((h) => h.$2 == hs)) hearts = hs;
     final bt = settings['blindTries'] as int?;
     if (bt != null && blindTriesLevels.any((b) => b.$2 == bt)) blindTries = bt;
+    final et = settings['eqTries'] as int?;
+    if (et != null && equationTriesLevels.any((e) => e.$2 == et)) eqTries = et;
     blindAssist = settings['blindAssist'] as bool? ?? blindAssist;
     final d = settings['draw'] as int?;
     if (d != null && d >= 0 && d < Draw.values.length) {
@@ -4403,6 +4414,7 @@ class AppState extends ChangeNotifier {
         _w('hearts', p.setInt('hearts', hearts));
         _w('blindTries', p.setInt('blindTries', blindTries));
         _w('eqLength', p.setInt('eqLength', eqLength));
+        _w('eqTries', p.setInt('eqTries', eqTries));
         _w(
           'mastermindLargest',
           p.setBool('mastermindLargest', mastermindLargest),
@@ -4454,6 +4466,7 @@ class AppState extends ChangeNotifier {
     int? hearts,
     int? blindTries,
     int? eqLength,
+    int? eqTries,
     bool? mastermindLargest,
     bool? blindAssist,
     Helper? helper,
@@ -4473,6 +4486,9 @@ class AppState extends ChangeNotifier {
     }
     if (eqLength != null && equationLengths.contains(eqLength)) {
       this.eqLength = eqLength;
+    }
+    if (eqTries != null && equationTriesLevels.any((e) => e.$2 == eqTries)) {
+      this.eqTries = eqTries;
     }
     this.mastermindLargest = mastermindLargest ?? this.mastermindLargest;
     this.blindAssist = blindAssist ?? this.blindAssist;
@@ -4499,6 +4515,7 @@ class AppState extends ChangeNotifier {
       _w('hearts', _prefs?.setInt('hearts', this.hearts));
       _w('blindTries', _prefs?.setInt('blindTries', this.blindTries));
       _w('eqLength', _prefs?.setInt('eqLength', this.eqLength));
+      _w('eqTries', _prefs?.setInt('eqTries', this.eqTries));
       _w(
         'mastermindLargest',
         _prefs?.setBool('mastermindLargest', this.mastermindLargest),

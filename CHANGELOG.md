@@ -7,8 +7,14 @@ it to the version.
 
 ## Unreleased
 
+- settings: only what has no other home
+  The settings page no longer repeats the theme, backup and support, which are rows on you. It keeps vibrate, sound, the new look switch, updates, faster openings, the log, and about and licences.
+
+- equations keep their own tries
+  Choosing an equations difficulty (brutal is 3 tries) also changed the tries of classic, quartet and relay. Equations now have a setting of their own. If classic free play was stuck on fewer tries, set it again in mode settings.
+
 - you: language, how to play, solver, diy and settings are back
-  The new look had dropped them. You has a row for each: language and how to play always, solver and diy from game 6, settings always. A failed screen falls back to the right home, and what's new shows once after an update.
+  The new look had dropped them. You has a row for each: language, how to play and settings always, solver and diy from game 6. A failed screen falls back to the right home, and what's new shows once after an update.
 - you: backup and support open only their own section
   They no longer open the whole settings page. The achievements row shows the lex pill.
 - learn, history and playstyle: mode pills in one scrolling row

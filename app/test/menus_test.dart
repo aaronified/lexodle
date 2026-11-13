@@ -291,14 +291,17 @@ void main() {
 
   group('settings', () {
     testWidgets(
-      'keeps only theme, backup, and support (updates only on Android)',
+      'keeps only what has no other home (updates only on Android)',
       (tester) async {
         await home(tester);
         await tester.tap(find.byTooltip('settings'));
         await tester.pumpAndSettle();
-        expect(find.text('theme'), findsOneWidget);
-        expect(find.text('backup'), findsOneWidget);
-        expect(find.text('support lexodle'), findsOneWidget);
+        expect(find.text('touch'), findsOneWidget);
+        expect(find.text('log'), findsOneWidget);
+        expect(find.text('about'), findsOneWidget);
+        expect(find.text('theme'), findsNothing);
+        expect(find.text('backup'), findsNothing);
+        expect(find.text('support lexodle'), findsNothing);
         // what moved to game modes is not here
         for (final gone in [
           'mode',
@@ -323,7 +326,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('about-text')), findsNothing);
       expect(find.text('updates'), findsOneWidget, reason: 'built, not lazy');
-      expect(find.byKey(const ValueKey('donate-pay')), findsOneWidget);
       // not prose: the buttons, the captions, the live status lines and the
       // values (the version, the UPI id)
       const notProse = {
@@ -365,7 +367,7 @@ void main() {
         seen++;
         if (text.length > 70) long.add('${text.length}: $text');
       }
-      expect(seen, greaterThan(8), reason: 'the prose lines were found');
+      expect(seen, greaterThan(3), reason: 'the prose lines were found');
       // (reset inside the test: the framework checks it before teardowns)
       debugDefaultTargetPlatformOverride = null;
       expect(long, isEmpty, reason: 'prose of 70 characters at most');

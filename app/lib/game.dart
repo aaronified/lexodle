@@ -225,6 +225,8 @@ class _GamePageState extends State<GamePage>
             ? lockdownTries
             : blind
             ? appState.blindTries
+            : equations
+            ? appState.eqTries
             : appState.tries);
     _pool = widget.bank.answers(length);
     _letters = widget.bank.letters(length);

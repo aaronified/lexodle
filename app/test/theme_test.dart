@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/you_page.dart';
 import 'package:lexodle/ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -161,16 +162,19 @@ void main() {
       );
     });
 
-    testWidgets('it is chosen in the settings popup and kept', (tester) async {
+    testWidgets('it is chosen on the you tab and kept', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 2200));
-      await tester.pumpWidget(const LexodleApp(initialRoute: '/settings'));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(find.text('theme'), findsOneWidget);
       expect(find.text('system'), findsOneWidget);
-      // step to the next value with the arrow key, as the other choices do
-      appState.setup(themeMode: ThemeMode.light);
+      await tester.tap(find.byKey(const ValueKey('theme-light')));
       await tester.pumpAndSettle();
-      expect(find.text('light'), findsOneWidget);
+      expect(appState.themeMode, ThemeMode.light);
       final p = await SharedPreferences.getInstance();
       expect(p.getInt('theme'), ThemeMode.light.index);
     });

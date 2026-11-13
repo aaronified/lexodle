@@ -566,7 +566,7 @@ void main() {
         'guess says why', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
-      appState.setup(mode: GameMode.equations, tries: 6);
+      appState.setup(mode: GameMode.equations, eqTries: 7);
       final bank = (await tester.runAsync(
         () async => Equations.load(
           (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
@@ -645,7 +645,7 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
-      appState.setup(mode: GameMode.equations, tries: 6, eqLength: 6);
+      appState.setup(mode: GameMode.equations, eqTries: 7, eqLength: 6);
       final bank = (await tester.runAsync(
         () async => Equations.load(
           (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
@@ -686,7 +686,7 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
-      appState.setup(mode: GameMode.equations, tries: 6);
+      appState.setup(mode: GameMode.equations, eqTries: 7);
       final bank = (await tester.runAsync(
         () async => Equations.load(
           (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
