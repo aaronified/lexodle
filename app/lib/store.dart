@@ -14,6 +14,7 @@ import 'difficulty.dart';
 import 'history.dart';
 import 'clue.dart' show clueRoundLength;
 import 'collection.dart';
+import 'ladder.dart' as ladder show stepOpen, openModes, gamesToOpen;
 import 'lex.dart';
 import 'my_dailies.dart';
 import 'profile.dart';
@@ -3198,7 +3199,28 @@ class AppState extends ChangeNotifier {
   /// Whether the player sees lex: a veteran from the start, a new player once
   /// the first game has taught it. It is earned from the first achievement
   /// either way.
-  bool get lexUnlocked => lex.veteran || stats.played >= 1;
+  bool get lexUnlocked => stepOpen('lex and hints');
+
+  /// The teaching level: the games played, or the step of the furthest mode the
+  /// player was taught early, whichever is larger. A veteran has everything.
+  int get level {
+    if (lex.veteran) return 1 << 20;
+    var l = stats.played;
+    for (final m in modesTaught) {
+      final g = ladder.gamesToOpen(m);
+      if (g > l) l = g;
+    }
+    return l;
+  }
+
+  /// Whether the ladder step [name] is open at the teaching [level].
+  bool stepOpen(String name) => ladder.stepOpen(name, level);
+
+  /// Whether every mode of the language in play is open.
+  bool get allModesOpen {
+    final open = ladder.openModes(level);
+    return GameMode.loopFor(lang).every(open.contains);
+  }
 
   /// Once, at the first start with lex: the veteran's starting grant from the
   /// achievements already held (see [veteranGrant]; history is never replayed).
@@ -3269,23 +3291,13 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  /// The new look: today, words, learn and you as four tabs. On unless the
-  /// player turned it off.
+  /// The new look: today, words, learn and you as four tabs. Always on in the
+  /// app; the tests turn it off to drive the old home.
   bool newUi = newUiDefault;
 
   /// What a player who never chose gets: the new look. The tests set it to false
   /// (test/flutter_test_config.dart) so that they drive the old home unless one asks.
   static bool newUiDefault = true;
-
-  void setNewUi(bool on) {
-    newUi = on;
-    try {
-      _w('newUi', _prefs?.setBool('newUi', on));
-    } catch (e) {
-      appLog.w('store', 'could not save the new look: ${e.runtimeType}');
-    }
-    notifyListeners();
-  }
 
   // ---- the first run ----
 
@@ -3972,7 +3984,6 @@ class AppState extends ChangeNotifier {
       _readDailyIntro(p);
       _readMyDailies(p);
       _readProfile(p);
-      newUi = p.getBool('newUi') ?? newUiDefault;
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
       // first start of this version, or it was lost) it is done again.
@@ -4439,6 +4450,18 @@ class AppState extends ChangeNotifier {
     }
     _activateLex(); // (a no-op when the backup brought its own lex)
     _saveAchievements();
+    try {
+      // the restored history may hold dailies: start the choice as load does
+      if (!dailyIntroSeen &&
+          (this.history.games.any((g) => g.isDaily) ||
+              _dailyLogs.values.any((l) => l.isNotEmpty))) {
+        dailyIntroSeen = true;
+        _saveDailyIntro();
+      }
+      _startMyDailies();
+    } catch (e) {
+      appLog.w('store', 'could not start the dailies: ${e.runtimeType}');
+    }
     // someone who restores a backup knows the game: no first run
     firstRunStage = firstRunDoneStage;
     try {

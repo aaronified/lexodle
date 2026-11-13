@@ -5,7 +5,14 @@ import 'modes.dart';
 enum StepKind { mode, feature }
 
 class LadderStep {
-  const LadderStep(this.games, this.kind, this.name, this.note, {this.mode});
+  const LadderStep(
+    this.games,
+    this.kind,
+    this.name,
+    this.note, {
+    this.mode,
+    this.card = true,
+  });
 
   /// The number of games played when it opens.
   final int games;
@@ -15,15 +22,74 @@ class LadderStep {
 
   /// The mode it opens, for a [StepKind.mode].
   final GameMode? mode;
+
+  /// Whether a Today card may introduce it.
+  final bool card;
 }
 
 /// In order of [LadderStep.games]. The copy is a draft.
 const ladder = <LadderStep>[
   LadderStep(
+    0,
+    StepKind.feature,
+    'theme',
+    'light, dark or the system',
+    card: false,
+  ),
+  LadderStep(
+    0,
+    StepKind.feature,
+    'language',
+    'the language of the words',
+    card: false,
+  ),
+  LadderStep(
+    0,
+    StepKind.feature,
+    'how to play',
+    'the rules, in you',
+    card: false,
+  ),
+  LadderStep(
+    0,
+    StepKind.feature,
+    'settings',
+    'the app settings, in you',
+    card: false,
+  ),
+  LadderStep(
+    0,
+    StepKind.feature,
+    'backup',
+    'save and restore your data',
+    card: false,
+  ),
+  LadderStep(
+    0,
+    StepKind.feature,
+    "what's new",
+    'what changed in this version',
+    card: false,
+  ),
+  LadderStep(
+    1,
+    StepKind.feature,
+    'lex and hints',
+    'lex, and a hint for a lex',
+    card: false,
+  ),
+  LadderStep(
     2,
     StepKind.feature,
     'skill, luck and risk',
     'a score for each game, on the review screen after it',
+  ),
+  LadderStep(
+    2,
+    StepKind.feature,
+    'reminders',
+    'a daily nudge, in you',
+    card: false,
   ),
   LadderStep(
     3,
@@ -45,10 +111,32 @@ const ladder = <LadderStep>[
     'history and your playstyle, in you',
   ),
   LadderStep(
+    5,
+    StepKind.feature,
+    'friends',
+    'play the same daily as a friend',
+    card: false,
+  ),
+  LadderStep(
     6,
     StepKind.feature,
     'every mode',
-    'the game modes screen names all eight modes',
+    'choose dailies names all the modes',
+  ),
+  LadderStep(
+    6,
+    StepKind.feature,
+    'solver',
+    'find the word that fits',
+    card: false,
+  ),
+  LadderStep(6, StepKind.feature, 'diy', 'make your own daily', card: false),
+  LadderStep(
+    6,
+    StepKind.feature,
+    'mode settings',
+    'free play settings of each mode',
+    card: false,
   ),
   LadderStep(
     7,
@@ -57,6 +145,7 @@ const ladder = <LadderStep>[
     'greens lock, bad words cost hearts',
     mode: GameMode.lockdown,
   ),
+  LadderStep(7, StepKind.feature, 'support', 'support the app', card: false),
   LadderStep(
     9,
     StepKind.feature,
@@ -115,14 +204,30 @@ bool isOpen(GameMode m, int games, {bool veteran = false}) =>
 
 /// The modes open to a player with [games] played, in the app's own order.
 List<GameMode> openModes(int games, {bool veteran = false}) => [
-  for (final m in GameMode.values)
+  for (final m in GameMode.loopFor('en'))
     if (isOpen(m, games, veteran: veteran)) m,
 ];
 
-/// What opens on exactly game [games]: the "new" cards of Today.
-List<LadderStep> justOpened(int games) => [
+/// The games at which the step [name] opens.
+int gamesOf(String name) {
+  for (final s in ladder) {
+    if (s.name == name) return s.games;
+  }
+  assert(() {
+    throw StateError('no ladder step named $name');
+  }());
+  return 1 << 30;
+}
+
+/// Whether the step [name] is open at teaching [level] ([veteran]: everything).
+bool stepOpen(String name, int level, {bool veteran = false}) =>
+    veteran || level >= gamesOf(name);
+
+/// The steps with a card that a player at [level] has reached: those that opened
+/// at a game, not at the start.
+List<LadderStep> reached(int level, {bool veteran = false}) => [
   for (final s in ladder)
-    if (s.games == games) s,
+    if (s.card && s.games > 0 && (veteran || s.games <= level)) s,
 ];
 
 /// What opens next after [games] played, or null when everything is open.

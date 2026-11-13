@@ -36,8 +36,9 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     final text = Theme.of(context).textTheme;
     final lang = appState.lang;
     final chosen = appState.dailiesOf(lang);
-    final played = appState.stats.played;
-    final veteran = appState.lex.veteran;
+    final level = appState.level;
+    // until the step opens, no locked mode is named
+    final everyMode = appState.stepOpen('every mode');
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -80,15 +81,9 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (final m in GameMode.values)
-                    if (m.hasDaily)
-                      _row(
-                        context,
-                        m,
-                        chosen: chosen,
-                        played: played,
-                        veteran: veteran,
-                      ),
+                  for (final m in GameMode.loopFor(lang))
+                    if (m.hasDaily && (everyMode || isOpen(m, level)))
+                      _row(context, m, chosen: chosen, level: level),
                 ],
               ),
             ),
@@ -102,14 +97,13 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     BuildContext context,
     GameMode m, {
     required List<GameMode> chosen,
-    required int played,
-    required bool veteran,
+    required int level,
   }) {
     final c = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final lang = appState.lang;
     final streak = appState.dailyStreakFor(lang, m);
-    final open = isOpen(m, played, veteran: veteran);
+    final open = isOpen(m, level);
     final dim = c.onSurface.withValues(alpha: dimAlpha);
 
     Widget body;
@@ -143,7 +137,7 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     } else {
       final on = chosen.contains(m);
       final sub = !open
-          ? '${m.sub} · opens in ${gamesToOpen(m) - played} more games'
+          ? '${m.sub} · not open yet'
           : streak > 0
           ? '${m.sub} · streak $streak'
           : m.sub;

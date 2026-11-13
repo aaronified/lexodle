@@ -7,7 +7,9 @@ import 'game.dart';
 import 'geography.dart';
 import 'home.dart' show HomePage, LanguagePopup;
 import 'keyboard.dart';
+import 'ladder.dart' show openModes;
 import 'main.dart';
+import 'mode_filter.dart';
 import 'modes.dart';
 import 'multi_game.dart';
 import 'puzzle.dart';
@@ -152,9 +154,9 @@ class DiyPuzzle {
   }
 }
 
-/// The screen where a puzzle is made, in the mode in view: its language, its
-/// word (or four, or an equation, or a place), its tries, then the link to
-/// copy.
+/// The screen where a puzzle is made: a row to pick its mode (among the open
+/// ones that can be made up; it starts at the mode in view, which it does not
+/// change), then [_DiyMaker].
 class DiyPage extends StatefulWidget {
   const DiyPage({super.key});
 
@@ -163,10 +165,47 @@ class DiyPage extends StatefulWidget {
 }
 
 class _DiyPageState extends State<DiyPage> {
+  GameMode _mode = diyApplies(appState.mode) ? appState.mode : GameMode.classic;
+
+  @override
+  Widget build(BuildContext context) {
+    final open = openModes(appState.level).toSet();
+    final modes = [
+      for (final m in GameMode.loopFor(appState.lang))
+        if (open.contains(m) && diyApplies(m)) m,
+    ];
+    return _DiyMaker(
+      // another mode starts the page afresh: its words, tries and keys differ
+      key: ValueKey(_mode),
+      mode: _mode,
+      modes: ModeFilter(
+        selected: _mode,
+        showAll: false,
+        modes: modes,
+        onSelect: (m) {
+          if (m != null) setState(() => _mode = m);
+        },
+      ),
+    );
+  }
+}
+
+/// The page that makes a puzzle in [mode]: its language, its word (or four, or
+/// an equation, or a place), its tries, then the link to copy.
+class _DiyMaker extends StatefulWidget {
+  const _DiyMaker({super.key, required this.mode, required this.modes});
+  final GameMode mode;
+
+  /// The row that picks the mode.
+  final Widget modes;
+
+  @override
+  State<_DiyMaker> createState() => _DiyMakerState();
+}
+
+class _DiyMakerState extends State<_DiyMaker> {
   List<Language> _langs = WordBank.loadedLanguages ?? const [];
-  late final GameMode _mode = diyApplies(appState.mode)
-      ? appState.mode
-      : GameMode.classic;
+  GameMode get _mode => widget.mode;
   // places are English
   late String _lang = _mode == GameMode.themed ? 'en' : appState.lang;
   late final List<String> _words = List.filled(_mode.boards, '');
@@ -434,6 +473,8 @@ class _DiyPageState extends State<DiyPage> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(19, 8, 19, 16),
                   children: [
+                    widget.modes,
+                    const SizedBox(height: 18),
                     if (!_equations && !_places) ...[
                       const Caption('language'),
                       const SizedBox(height: 8),

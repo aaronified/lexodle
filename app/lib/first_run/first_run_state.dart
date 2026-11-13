@@ -1,4 +1,6 @@
+import '../ladder.dart' show openModes;
 import '../main.dart' show appState;
+import '../modes.dart';
 
 /// Small facts the first run shares with the rest of the app.
 class FirstRunSignals {
@@ -14,6 +16,12 @@ class FirstRunSignals {
     chooseDailiesPending = false;
     return was;
   }
+}
+
+/// Whether choosing dailies means anything yet: at least two modes are open.
+bool twoModesOpen() {
+  final loop = GameMode.loopFor(appState.lang);
+  return openModes(appState.level).where(loop.contains).length >= 2;
 }
 
 /// Whether the first run is still to be shown: it is not finished, and the

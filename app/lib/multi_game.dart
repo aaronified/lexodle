@@ -24,6 +24,7 @@ import 'multi_analysis.dart';
 import 'multi_review.dart';
 import 'puzzle.dart';
 import 'resizable_panel.dart';
+import 'review_maths.dart' show MeasureBasics;
 import 'review_text.dart';
 import 'routes.dart';
 import 'save_word_button.dart';
@@ -1120,36 +1121,46 @@ class _MultiGamePageState extends State<MultiGamePage> {
     onBack: _back,
   );
 
-  /// One line with the review button: the average skill and luck of the
-  /// guesses (see multi_analysis.dart for how a guess is scored).
+  /// Whether the game over panel says how the game was played: from the step
+  /// of skill, luck and risk.
+  bool get _showSummary =>
+      game.steps.isNotEmpty && appState.stepOpen('skill, luck and risk');
+
+  /// The average skill and luck of the guesses (see multi_analysis.dart for how
+  /// a guess is scored), each with a line on what it is; a quartet or a relay
+  /// race has no risk. Once every mode is open, they open their maths and the
+  /// review button comes with them.
   Widget _summary() {
-    if (game.steps.isEmpty) return const SizedBox();
+    if (!_showSummary) return const SizedBox();
     double avg(double Function(MultiStep s) f) =>
         game.steps.map(f).reduce((a, b) => a + b) / game.steps.length;
-    return Row(
+    final full = appState.allModesOpen;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: Caption.rich(
-            metricParts(Theme.of(context).colorScheme, [
-              ('average ', null),
-              (
-                'skill ${game.steps.every((s) => s.ready) ? avg((s) => s.skill).round() : '…'}',
-                'skill',
+        MeasureBasics(
+          skill: game.steps.every((s) => s.ready)
+              ? avg((s) => s.skill).round().toString()
+              : '…',
+          luck: luckText(avg((s) => s.luck)),
+          explain: full,
+        ),
+        if (full)
+          Align(
+            alignment: Alignment.centerRight,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
               ),
-              (' · ', null),
-              ('luck ${luckText(avg((s) => s.luck))}', 'luck'),
-            ]),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                Routes.review,
+                arguments: _record(),
+              ),
+              child: const Text('review'),
+            ),
           ),
-        ),
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size(0, 36),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-          ),
-          onPressed: () =>
-              Navigator.pushNamed(context, Routes.review, arguments: _record()),
-          child: const Text('review'),
-        ),
       ],
     );
   }
@@ -1193,27 +1204,30 @@ class _MultiGamePageState extends State<MultiGamePage> {
                           'the next words come at midnight in India',
               ),
             const SizedBox(height: 10),
-            for (final a in unlocked)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    TablerIcon(a.icon, size: 30, color: c.primary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        '${a.title}  —  ${a.description}',
-                        style: TextStyle(color: c.primary, fontSize: 13),
+            if (appState.stepOpen('achievements'))
+              for (final a in unlocked)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      TablerIcon(a.icon, size: 30, color: c.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '${a.title}  —  ${a.description}',
+                          style: TextStyle(color: c.primary, fontSize: 13),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
             const Divider(),
-            const SizedBox(height: 10),
-            _summary(),
-            const SizedBox(height: 10),
-            const Divider(),
+            if (_showSummary) ...[
+              const SizedBox(height: 10),
+              _summary(),
+              const SizedBox(height: 10),
+              const Divider(),
+            ],
             for (final b in game.boards)
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
@@ -1229,13 +1243,14 @@ class _MultiGamePageState extends State<MultiGamePage> {
                   ),
                 ),
                 children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: SaveWordButton(
-                      word: b.answer,
-                      language: widget.bank.language,
+                  if (appState.stepOpen('my words'))
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: SaveWordButton(
+                        word: b.answer,
+                        language: widget.bank.language,
+                      ),
                     ),
-                  ),
                   WordInfoView(word: b.answer, language: widget.bank.language),
                 ],
               ),

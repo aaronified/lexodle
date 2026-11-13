@@ -189,6 +189,8 @@ void main() {
   testWidgets('lose a game, then review it step by step', (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
+    // the review comes with every mode open
+    appState.lex.veteran = true;
     appState.setup(lang: 'fr', length: 4, tries: 3);
     final bank = (await tester.runAsync(
       () async => WordBank.load(
@@ -226,7 +228,8 @@ void main() {
 
     // the end of a game offers a step-by-step review...
     expect(find.text('review'), findsOneWidget);
-    expect(find.textContaining('average skill'), findsOneWidget);
+    expect(find.byKey(const ValueKey('measure-skill')), findsOneWidget);
+    await tester.ensureVisible(find.text('review'));
     await tester.tap(find.text('review'));
     await tester.pumpAndSettle();
     expect(find.text('your first guess'), findsOneWidget);

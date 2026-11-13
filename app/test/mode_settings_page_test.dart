@@ -59,11 +59,14 @@ void main() {
     expect(prefs.getString('draws'), contains('blind'));
   });
 
-  testWidgets('a mode played under three times is not offered', (tester) async {
+  testWidgets('an opened mode is offered at once, a locked one is not', (
+    tester,
+  ) async {
     appState.lex.veteran = false;
     appState.stats.played = 0;
     await show(tester);
-    expect(find.byKey(const ValueKey('pill-classic')), findsNothing);
-    expect(find.textContaining('times to change'), findsOneWidget);
+    expect(find.byKey(const ValueKey('pill-classic')), findsOneWidget);
+    expect(find.byKey(const ValueKey('pill-quartet')), findsNothing);
+    expect(find.textContaining('times to change'), findsNothing);
   });
 }

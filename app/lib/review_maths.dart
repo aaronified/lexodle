@@ -151,6 +151,68 @@ void showMeasureHelp(BuildContext context, String which) {
   );
 }
 
+/// The basic form of skill, luck and risk on a game over panel: each number
+/// with one line saying what it stands for. [luck] and [risk] are null when the
+/// game has none (a largest-pool mastermind has no luck, a quartet or a relay
+/// race no risk), and the row is left out. With
+/// [explain] a row opens the maths of its measure.
+class MeasureBasics extends StatelessWidget {
+  const MeasureBasics({
+    super.key,
+    required this.skill,
+    this.luck,
+    this.risk,
+    this.explain = false,
+  });
+  final String skill;
+  final String? luck;
+  final String? risk;
+  final bool explain;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    Widget row(String which, String value, String line) => InkWell(
+      key: ValueKey('measure-$which'),
+      onTap: explain ? () => showMeasureHelp(context, which) : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            SizedBox(
+              width: 96,
+              child: Text(
+                '$which $value',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: metricColor(c, which),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(line, style: TextStyle(fontSize: 11, color: dim)),
+            ),
+          ],
+        ),
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        row('skill', skill, 'how close your guesses were to the best possible'),
+        if (luck != null)
+          row('luck', luck!, 'how much the answer helped or hurt you'),
+        if (risk != null)
+          row('risk', risk!, 'how often you gambled instead of playing safe'),
+      ],
+    );
+  }
+}
+
 /// One calculation on the step page: a heading with its info dot, the lines
 /// that go into the number, a rule, and the result in the measure's colour.
 class MeasureBlock extends StatelessWidget {

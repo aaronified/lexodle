@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/first_run/gateway_page.dart';
 import 'package:lexodle/first_run/modes_offer_page.dart';
 import 'package:lexodle/first_run/modes_tour_page.dart';
+import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 
 Widget _wrap(Widget w) => MaterialApp(home: w);
@@ -26,6 +27,25 @@ void main() {
     await t.tap(find.text('yes'));
     await t.tap(find.text('not now'));
     expect([yes, no], [1, 1]);
+  });
+
+  testWidgets('the offer counts the modes of the language', (t) async {
+    appState.lang = 'en';
+    await t.pumpWidget(_wrap(ModesOfferPage(onLearn: () {}, onNotNow: () {})));
+    expect(find.textContaining('lexodle has eight modes'), findsOneWidget);
+    appState.lang = 'fr';
+    await t.pumpWidget(_wrap(ModesOfferPage(onLearn: () {}, onNotNow: () {})));
+    expect(find.textContaining('lexodle has seven modes'), findsOneWidget);
+    expect(find.textContaining('eight'), findsNothing);
+    appState.lang = 'en';
+  });
+
+  testWidgets('the tour has no geography without english', (t) async {
+    appState.lang = 'fr';
+    await t.pumpWidget(_wrap(ModesTourPage(onLearn: (_) {}, onDone: () {})));
+    expect(find.byKey(const ValueKey('tour-dot-5')), findsOneWidget);
+    expect(find.byKey(const ValueKey('tour-dot-6')), findsNothing);
+    appState.lang = 'en';
   });
 
   testWidgets('tour: seven modes, swipe, learn, close, finish', (t) async {
@@ -54,7 +74,7 @@ void main() {
       );
       await t.pumpAndSettle();
     }
-    expect(find.text('mastermind'), findsOneWidget);
+    expect(find.text('geography'), findsOneWidget);
     await t.tap(find.byKey(const ValueKey('tour-close')));
     await t.tap(find.byKey(const ValueKey('tour-finish')));
     expect(done, 2);

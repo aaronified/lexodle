@@ -290,32 +290,31 @@ void main() {
   });
 
   group('settings', () {
-    testWidgets(
-      'keeps only what has no other home (updates only on Android)',
-      (tester) async {
-        await home(tester);
-        await tester.tap(find.byTooltip('settings'));
-        await tester.pumpAndSettle();
-        expect(find.text('touch'), findsOneWidget);
-        expect(find.text('log'), findsOneWidget);
-        expect(find.text('about'), findsOneWidget);
-        expect(find.text('theme'), findsNothing);
-        expect(find.text('backup'), findsNothing);
-        expect(find.text('support lexodle'), findsNothing);
-        // what moved to game modes is not here
-        for (final gone in [
-          'mode',
-          'letters',
-          'difficulty',
-          'helper',
-          'shared letters',
-        ]) {
-          expect(find.text(gone), findsNothing, reason: gone);
-        }
-        expect(find.text('open the solver'), findsNothing);
-        expect(find.byKey(const ValueKey('settings-play')), findsNothing);
-      },
-    );
+    testWidgets('keeps only what has no other home (updates only on Android)', (
+      tester,
+    ) async {
+      await home(tester);
+      await tester.tap(find.byTooltip('settings'));
+      await tester.pumpAndSettle();
+      expect(find.text('touch'), findsOneWidget);
+      expect(find.text('log'), findsOneWidget);
+      expect(find.text('about'), findsOneWidget);
+      expect(find.text('theme'), findsNothing);
+      expect(find.text('backup'), findsNothing);
+      expect(find.text('support lexodle'), findsNothing);
+      // what moved to game modes is not here
+      for (final gone in [
+        'mode',
+        'letters',
+        'difficulty',
+        'helper',
+        'shared letters',
+      ]) {
+        expect(find.text(gone), findsNothing, reason: gone);
+      }
+      expect(find.text('open the solver'), findsNothing);
+      expect(find.byKey(const ValueKey('settings-play')), findsNothing);
+    });
 
     testWidgets('the prose on the page is short, and the about text is not '
         'on it', (tester) async {

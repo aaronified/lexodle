@@ -14,37 +14,14 @@ import 'store.dart' show Helper;
 import 'ui.dart';
 import 'words.dart';
 
-/// Plays of a mode after which it is "known" and its settings can be changed
-/// here.
-const modeSettingsPlays = 3;
-
 /// The modes the player has opened, in the swipe's order.
-List<GameMode> openedModes() {
-  final vet = appState.lex.veteran;
-  return [
-    for (final m in GameMode.loopFor(appState.lang))
-      if (isOpen(m, appState.stats.played, veteran: vet)) m,
-  ];
-}
+List<GameMode> openedModes() => [
+  for (final m in GameMode.loopFor(appState.lang))
+    if (isOpen(m, appState.level)) m,
+];
 
-/// The modes whose free play settings can be changed here: open, and played
-/// [modeSettingsPlays] times (a veteran: open is enough).
-List<GameMode> knownModes() {
-  final vet = appState.lex.veteran;
-  var counts = const <GameMode, int>{};
-  try {
-    counts = {
-      for (final m in GameMode.values)
-        m: appState.history.games.where((g) => g.mode == m).length,
-    };
-  } catch (e) {
-    appLog.w('modeset', 'could not count the plays ${e.runtimeType}');
-  }
-  return [
-    for (final m in openedModes())
-      if (vet || (counts[m] ?? 0) >= modeSettingsPlays) m,
-  ];
-}
+/// The modes whose free play settings can be changed here: every opened mode.
+List<GameMode> knownModes() => openedModes();
 
 /// What the daily of [m] always uses, from the daily's own constants.
 String dailySettingsOf(GameMode m) {
@@ -62,6 +39,17 @@ String dailySettingsOf(GameMode m) {
     default:
       return '$dailyLength letters, ${dailyTriesOf(m)} tries';
   }
+}
+
+/// The open modes that share the letters and the length, as a sentence part:
+/// "classic and quartet". It never names a locked mode.
+String _sharers() {
+  final names = [
+    for (final m in openedModes())
+      if (m == GameMode.classic || m.multi || m == GameMode.themed) m.label,
+  ];
+  if (names.length < 2) return names.join();
+  return '${names.sublist(0, names.length - 1).join(', ')} and ${names.last}';
 }
 
 /// Free play settings of one mode at a time, chosen by a row of pills. It edits
@@ -139,8 +127,7 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
                     const SizedBox(height: 12),
                     if (mode == null)
                       Text(
-                        'play a mode $modeSettingsPlays times to change its '
-                        'settings here',
+                        'open a mode to change its settings here',
                         style: _note(c),
                       )
                     else ...[
@@ -315,7 +302,7 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
                   mode == GameMode.classic ||
                           mode.multi ||
                           mode == GameMode.themed
-                      ? 'shared by classic, quartet, relay and geography'
+                      ? 'shared by ${_sharers()}'
                       : 'the word length is shared with the other modes',
                   key: const ValueKey('shared-note'),
                   style: _note(c),

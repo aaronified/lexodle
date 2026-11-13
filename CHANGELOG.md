@@ -7,6 +7,16 @@ it to the version.
 
 ## Unreleased
 
+- one ladder: every row, tab and card opens at its step
+  What a player sees now opens by the games played, from one list. A mode taught early in the first run opens at once, and what is scheduled up to its step opens with it. An intro card waits until it is handled, one at a time, and no mode is named before its step. The new look is the only look: its switch is gone.
+- game over: skill, luck and risk in two steps
+  From the second game the panel shows the three numbers with a line each. The full maths and the detailed analysis come once every mode is open. The medals list comes with achievements and the save-word bookmark with my words.
+- diy has a mode row, and the solver follows the mode
+  Make a puzzle in any open mode without switching today first. The solver row says which mode it solves.
+- mode settings open for every open mode, and what's new has a row
+  A mode's free play settings no longer wait for three plays of it. You has a "what's new" row.
+- today: pending dailies show on the mode button for every open mode
+
 - settings: only what has no other home
   The settings page no longer repeats the theme, backup and support, which are rows on you. It keeps vibrate, sound, the new look switch, updates, faster openings, the log, and about and licences.
 

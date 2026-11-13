@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../app_log.dart';
+import '../main.dart' show appState;
+import '../modes.dart';
 
 /// The one question asked right after the first game: learn about the
 /// different modes? [onLearn] opens the tour, [onNotNow] goes on.
@@ -13,6 +15,23 @@ class ModesOfferPage extends StatelessWidget {
 
   final VoidCallback onLearn;
   final VoidCallback onNotNow;
+
+  /// The modes of the language in play, as a word.
+  static String _count() {
+    const words = [
+      'zero',
+      'one',
+      'two',
+      'three',
+      'four',
+      'five',
+      'six',
+      'seven',
+      'eight',
+    ];
+    final n = GameMode.loopFor(appState.lang).length;
+    return n < words.length ? words[n] : '$n';
+  }
 
   void _run(VoidCallback f, String tag) {
     try {
@@ -39,7 +58,7 @@ class ModesOfferPage extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Text(
-                'lexodle has eight modes. want to learn about the different ones?',
+                'lexodle has ${_count()} modes. want to learn about the different ones?',
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.7,

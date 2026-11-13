@@ -81,14 +81,34 @@ void main() {
     expect(appState.dailiesOf('en'), [GameMode.classic]);
   });
 
-  testWidgets('a mode not yet open has no switch and says when it opens', (
+  testWidgets('before every mode opens, only open modes are listed', (
     tester,
   ) async {
-    // quartet opens at four games: at one game played it has three to go
-    appState.stats.played = 1;
+    appState.stats.played = 5;
     await _open(tester);
-    expect(find.byKey(const ValueKey('daily-switch-quartet')), findsNothing);
-    expect(find.byKey(const ValueKey('daily-switch-classic')), findsOneWidget);
-    expect(find.textContaining('opens in 3 more games'), findsOneWidget);
+    expect(find.byKey(const ValueKey('daily-switch-quartet')), findsOneWidget);
+    expect(find.text('lockdown'), findsNothing);
+    expect(find.text('geography'), findsNothing);
+    expect(find.textContaining('not open yet'), findsNothing);
+    expect(find.textContaining('more games'), findsNothing);
+  });
+
+  testWidgets('from every mode on, locked modes are greyed, no count', (
+    tester,
+  ) async {
+    appState.stats.played = 6;
+    await _open(tester);
+    expect(find.byKey(const ValueKey('daily-switch-lockdown')), findsNothing);
+    expect(find.text('lockdown'), findsOneWidget);
+    expect(find.textContaining('not open yet'), findsWidgets);
+    expect(find.textContaining('more games'), findsNothing);
+  });
+
+  testWidgets('geography is not listed for another language', (tester) async {
+    appState.stats.played = 40;
+    appState.lang = 'fr';
+    await _open(tester);
+    expect(find.text('geography'), findsNothing);
+    appState.lang = 'en';
   });
 }

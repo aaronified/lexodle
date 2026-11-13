@@ -20,16 +20,14 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('settings has only what has no other home', (
-    tester,
-  ) async {
+  testWidgets('settings has only what has no other home', (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     await show(tester, newUi: true);
     expect(find.text('touch'), findsOneWidget);
     expect(find.text('updates'), findsOneWidget);
     expect(find.text('log'), findsOneWidget);
     expect(find.text('about'), findsOneWidget);
-    expect(find.byKey(const ValueKey('new-look')), findsOneWidget);
+    expect(find.byKey(const ValueKey('new-look')), findsNothing);
     expect(find.text('theme'), findsNothing);
     expect(find.text('backup'), findsNothing);
     expect(find.text('support lexodle'), findsNothing);

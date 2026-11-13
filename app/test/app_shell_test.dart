@@ -25,7 +25,7 @@ void main() {
   }
 
   testWidgets('the old home stays until the preview is on', (tester) async {
-    appState.setNewUi(false);
+    appState.newUi = false;
     await show(tester);
     expect(find.byType(HomePage), findsOneWidget);
     expect(find.byType(AppShell), findsNothing);
@@ -34,8 +34,8 @@ void main() {
   testWidgets('a new player has today and you; the rest come as taught', (
     tester,
   ) async {
-    appState.setNewUi(true);
-    addTearDown(() => appState.setNewUi(false));
+    appState.newUi = true;
+    addTearDown(() => appState.newUi = false);
     appState.lex.veteran = false;
     appState.stats.played = 1;
     await show(tester);
@@ -60,8 +60,8 @@ void main() {
   });
 
   testWidgets('a veteran has all four tabs', (tester) async {
-    appState.setNewUi(true);
-    addTearDown(() => appState.setNewUi(false));
+    appState.newUi = true;
+    addTearDown(() => appState.newUi = false);
     appState.lex.veteran = true;
     await show(tester);
     for (final t in ['today', 'words', 'learn', 'you']) {
@@ -70,8 +70,8 @@ void main() {
   });
 
   testWidgets('the tab bar casts a soft upward shadow', (tester) async {
-    appState.setNewUi(true);
-    addTearDown(() => appState.setNewUi(false));
+    appState.newUi = true;
+    addTearDown(() => appState.newUi = false);
     await show(tester);
     final box = tester.widget<DecoratedBox>(
       find.byKey(const ValueKey('tabs-shadow')),

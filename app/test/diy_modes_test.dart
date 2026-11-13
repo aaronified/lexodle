@@ -92,9 +92,14 @@ void main() {
   });
 
   group('the screen', () {
-    Future<void> open(WidgetTester tester, GameMode mode) async {
+    Future<void> open(
+      WidgetTester tester,
+      GameMode mode, {
+      bool veteran = false,
+    }) async {
       await tester.binding.setSurfaceSize(const Size(420, 2000));
       await appState.load();
+      appState.lex.veteran = veteran;
       appState.setup(lang: 'en', mode: mode);
       // the screen reads the word list as it opens: have it read before, in real
       // time, or the read is left waiting on the test's clock for every test
@@ -108,6 +113,33 @@ void main() {
       );
       await tester.pump();
     }
+
+    testWidgets('the pills pick the mode, and leave the mode in view alone', (
+      tester,
+    ) async {
+      await open(tester, GameMode.classic, veteran: true);
+      expect(find.text('make your own · classic'), findsOneWidget);
+      expect(find.byKey(const ValueKey('mode-quartet')), findsOneWidget);
+      expect(find.byKey(const ValueKey('mode-mastermind')), findsNothing);
+      // a quartet puzzle, with no switch of Today's mode first
+      await tester.tap(find.byKey(const ValueKey('mode-quartet')));
+      await tester.pump();
+      expect(find.text('make your own · quartet'), findsOneWidget);
+      expect(find.byKey(const ValueKey('diy-word-3')), findsOneWidget);
+      expect(appState.mode, GameMode.classic);
+    });
+
+    testWidgets('only the open modes are offered', (tester) async {
+      await open(tester, GameMode.classic);
+      appState.lex.veteran = false;
+      appState.stats.played = 0;
+      await tester.pumpWidget(
+        MaterialApp(home: const DiyPage(), onGenerateRoute: onGenerateRoute),
+      );
+      await tester.pump();
+      expect(find.byKey(const ValueKey('mode-classic')), findsOneWidget);
+      expect(find.byKey(const ValueKey('mode-quartet')), findsNothing);
+    });
 
     testWidgets('equations: a number pad, and an untrue one is told so', (
       tester,

@@ -44,7 +44,7 @@ void main() {
     await appState.load();
     appState.stats.played = 0;
     appState.lex.veteran = false;
-    appState.setNewUi(true);
+    appState.newUi = true;
     FirstRunSignals.chooseDailiesPending = false;
   }
 
@@ -60,7 +60,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  tearDown(() => appState.setNewUi(false));
+  tearDown(() => appState.newUi = false);
 
   testWidgets('a new player lands on the language page', (tester) async {
     await fresh();
@@ -118,10 +118,24 @@ void main() {
     expect(find.byType(AppShell), findsOneWidget);
   });
 
+  testWidgets('i know how lexodle works with one mode open: no sheet', (
+    tester,
+  ) async {
+    await fresh();
+    await show(tester, HomeSwitch(screens: _screens()));
+    await tap(tester, 'language_skip');
+    expect(appState.firstRunDone, isTrue);
+    expect(find.text('choose your dailies'), findsNothing);
+    expect(FirstRunSignals.chooseDailiesPending, isFalse);
+  });
+
   testWidgets('i know how lexodle works skips to today, dailies sheet once', (
     tester,
   ) async {
     await fresh();
+    // a mode taught early opens at once: two modes are open
+    appState.modesTaught.add(GameMode.quartet);
+    addTearDown(appState.modesTaught.clear);
     await show(tester, HomeSwitch(screens: _screens()));
     await tap(tester, 'language_skip');
     expect(appState.firstRunDone, isTrue);
@@ -174,7 +188,7 @@ void main() {
 
   testWidgets('practice replay from you returns to you', (tester) async {
     await fresh({'firstRunStage': 2});
-    appState.setNewUi(true);
+    appState.newUi = true;
     await show(tester, AppShell(screens: _screens()));
     await tap(tester, 'you');
     expect(find.byType(YouPage), findsOneWidget);

@@ -22,7 +22,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true, 'dailyIntroSeen': true}));
+  setUp(
+    () => SharedPreferences.setMockInitialValues({
+      'seenHowTo': true,
+      'dailyIntroSeen': true,
+    }),
+  );
 
   late WordBank bank;
 

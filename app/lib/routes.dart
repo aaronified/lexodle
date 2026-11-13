@@ -90,6 +90,13 @@ class Routes {
   static const collected = '/words/collected';
 }
 
+/// The mode a solver opens for when [m] is in view: the blind, themed and
+/// equations modes have no solver of their own, so theirs is the classic one.
+GameMode solverModeOf(GameMode m) =>
+    m == GameMode.blind || m == GameMode.themed || m == GameMode.equations
+    ? GameMode.classic
+    : m;
+
 /// The argument that tells the how-to page it is the first-visit onboarding.
 const onboardingArgument = 'onboarding';
 
@@ -252,10 +259,11 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         ),
       );
     case Routes.solver:
-      // the solver follows the mode: one board, or four that share the guesses
+      // the solver follows the mode: one board, or four that share the guesses;
+      // a mode with no solver opens the classic one (see solverModeOf)
       return page(
         BankGate(
-          builder: (bank) => appState.mode.multi
+          builder: (bank) => solverModeOf(appState.mode).multi
               ? MultiSolverPage(bank: bank)
               : SolverPage(bank: bank),
         ),

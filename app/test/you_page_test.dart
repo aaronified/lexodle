@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/donate.dart';
 import 'package:lexodle/lex_widgets.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/you_page.dart';
@@ -60,16 +61,10 @@ void main() {
     expect(find.text('theme'), findsOneWidget);
   }
 
+  testWidgets('game 1 sees none of them', (t) => gated(t, 1, {}));
+  testWidgets('game 2 adds reminders', (t) => gated(t, 2, {'reminders'}));
   testWidgets(
-    'game 1 sees achievements and lex',
-    (t) => gated(t, 1, {'achievements'}),
-  );
-  testWidgets(
-    'game 2 adds reminders',
-    (t) => gated(t, 2, {'achievements', 'reminders'}),
-  );
-  testWidgets(
-    'game 3 adds backup',
+    'game 3 adds achievements',
     (t) => gated(t, 3, {'reminders', 'achievements'}),
   );
   testWidgets(
@@ -97,17 +92,18 @@ void main() {
     expect(appState.blackTheme, isFalse);
   });
 
-  testWidgets('language, how to play and settings are always there', (
-    tester,
-  ) async {
-    player(played: 0, veteran: false);
-    await show(tester);
-    for (final id in ['language', 'howto', 'settings']) {
-      expect(row(id), findsOneWidget, reason: id);
-    }
-    expect(row('solver'), findsNothing);
-    expect(row('diy'), findsNothing);
-  });
+  testWidgets(
+    'language, how to play, settings and what is new are always there',
+    (tester) async {
+      player(played: 0, veteran: false);
+      await show(tester);
+      for (final id in ['language', 'howto', 'settings', 'whatsnew']) {
+        expect(row(id), findsOneWidget, reason: id);
+      }
+      expect(row('solver'), findsNothing);
+      expect(row('diy'), findsNothing);
+    },
+  );
 
   testWidgets('solver and diy come at game 6', (tester) async {
     player(played: 5, veteran: false);
@@ -118,6 +114,24 @@ void main() {
     await tester.pump();
     expect(row('solver'), findsOneWidget);
     expect(row('diy'), findsOneWidget);
+  });
+
+  testWidgets('the solver row says which mode it solves', (tester) async {
+    player(played: 500, veteran: true);
+    String sub() => (tester.widget<Text>(
+      find.descendant(of: row('solver'), matching: find.byType(Text)).last,
+    )).data!;
+    appState.setup(mode: GameMode.quartet);
+    await show(tester);
+    expect(sub(), 'for quartet');
+    // no solver for these modes: the classic one opens
+    for (final m in [GameMode.blind, GameMode.equations, GameMode.themed]) {
+      appState.setup(mode: m);
+      await show(tester);
+      expect(sub(), 'for classic', reason: '$m');
+    }
+    expect(solverModeOf(GameMode.lockdown), GameMode.lockdown);
+    expect(solverModeOf(GameMode.equations), GameMode.classic);
   });
 
   testWidgets('how to play and settings push their routes', (tester) async {

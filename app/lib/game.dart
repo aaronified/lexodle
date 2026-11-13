@@ -28,6 +28,7 @@ import 'lex_widgets.dart';
 import 'logic.dart';
 import 'resizable_panel.dart';
 import 'review.dart';
+import 'review_maths.dart' show MeasureBasics;
 import 'review_text.dart';
 import 'routes.dart';
 import 'main.dart';
@@ -1414,34 +1415,42 @@ class _GamePageState extends State<GamePage>
     luckless: largest,
   );
 
-  /// A one-line summary with the review button; the helper's step-by-step
-  /// analysis is in the review.
+  /// Whether the game over panel says how the game was played: from the step
+  /// of skill, luck and risk.
+  bool get _showSummary =>
+      metrics.isNotEmpty && appState.stepOpen('skill, luck and risk');
+
+  /// The three numbers, each with a line on what it is; once every mode is
+  /// open, they open their maths and the review button comes with them.
   Widget _summary(ColorScheme c) {
-    if (metrics.isEmpty) return const SizedBox();
+    if (!_showSummary) return const SizedBox();
     double avg(Iterable<double> v) => v.reduce((a, b) => a + b) / v.length;
-    return Row(
+    final full = appState.allModesOpen;
+    final risk = gameTraits(metrics).risk;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: Caption.rich(
-            metricParts(c, [
-              ('average ', null),
-              (
-                'skill ${metrics.every((m) => m.ready) ? avg(metrics.map((m) => m.skill)).round() : '…'}',
-                'skill',
+        MeasureBasics(
+          skill: metrics.every((m) => m.ready)
+              ? avg(metrics.map((m) => m.skill)).round().toString()
+              : '…',
+          // (a reply with no chance in it has no luck)
+          luck: largest ? null : luckText(avg(metrics.map((m) => m.luck))),
+          risk: risk == null ? '–' : risk.round().toString(),
+          explain: full,
+        ),
+        if (full)
+          Align(
+            alignment: Alignment.centerRight,
+            child: _smallButton(
+              'review',
+              () => Navigator.pushNamed(
+                context,
+                Routes.review,
+                arguments: _record(),
               ),
-              // (a reply with no chance in it has no luck)
-              if (!largest) ...[
-                (' · ', null),
-                ('luck ${luckText(avg(metrics.map((m) => m.luck)))}', 'luck'),
-              ],
-            ]),
+            ),
           ),
-        ),
-        _smallButton(
-          'review',
-          () =>
-              Navigator.pushNamed(context, Routes.review, arguments: _record()),
-        ),
       ],
     );
   }
@@ -1494,34 +1503,37 @@ class _GamePageState extends State<GamePage>
                     'the $_noun was ${equations ? answer.split('').map(faceOf).join() : answer}',
                   ),
                 ),
-                if (!equations && !themed)
+                if (!equations && !themed && appState.stepOpen('my words'))
                   SaveWordButton(word: answer, language: widget.bank.language),
               ],
             ),
           const SizedBox(height: 10),
-          for (final a in unlocked)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                children: [
-                  TablerIcon(a.icon, size: 30, color: c.primary),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '${a.title}  —  ${a.description}',
-                      style: TextStyle(color: c.primary, fontSize: 13),
+          if (appState.stepOpen('achievements'))
+            for (final a in unlocked)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    TablerIcon(a.icon, size: 30, color: c.primary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '${a.title}  —  ${a.description}',
+                        style: TextStyle(color: c.primary, fontSize: 13),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
           const SizedBox(height: 10),
           const Divider(),
           const SizedBox(height: 10),
-          _summary(c),
-          const SizedBox(height: 10),
-          const Divider(),
-          const SizedBox(height: 10),
+          if (_showSummary) ...[
+            _summary(c),
+            const SizedBox(height: 10),
+            const Divider(),
+            const SizedBox(height: 10),
+          ],
           if (!equations)
             WordInfoView(word: answer, language: widget.bank.language),
           const SizedBox(height: 12),

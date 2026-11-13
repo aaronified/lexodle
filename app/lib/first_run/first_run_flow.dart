@@ -109,7 +109,7 @@ class _FirstRunFlowState extends State<FirstRunFlow> {
 
   void _finish({bool chooseDailies = false}) {
     try {
-      FirstRunSignals.chooseDailiesPending = chooseDailies;
+      FirstRunSignals.chooseDailiesPending = chooseDailies && twoModesOpen();
       appState.setFirstRunStage(2);
       widget.onFinished?.call();
     } catch (e) {

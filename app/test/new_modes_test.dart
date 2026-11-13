@@ -175,6 +175,7 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
+      appState.lex.veteran = true; // every step is open
       appState.setup(lang: 'en', length: 5, mode: mode);
       await tester.pumpWidget(
         MaterialApp(
@@ -275,7 +276,7 @@ void main() {
       final board = find.byType(GestureDetector).first;
       final firstTile = tester.getTopLeft(find.text('p').first);
       expect(height(), screen * .5);
-      final text = find.text('review');
+      final text = find.byKey(const ValueKey('measure-skill'));
       // the text up: the panel rises first, and stops at 75% of the screen
       await tester.drag(text, const Offset(0, -100));
       await tester.pump();
