@@ -790,7 +790,12 @@ final achievements = <Achievement>[
     'collected',
     _lv(
       [10, 50, 250, allWords],
-      ['first trophies', 'a shelf of words', 'a cabinet of words', 'every word'],
+      [
+        'first trophies',
+        'a shelf of words',
+        'a cabinet of words',
+        'every word',
+      ],
     ),
   ),
   Achievement.leveled(
@@ -2343,15 +2348,8 @@ List<Achievement> advanceAchievements(
 }) {
   final earned = <Achievement>[];
   void ensureHits(Achievement a, AchState st) => _ensureHits(a, st);
-  void earnLevels(Achievement a, AchState st, {double? count}) => _earnLevels(
-    earned,
-    a,
-    st,
-    today,
-    languages,
-    count: count,
-    words: words,
-  );
+  void earnLevels(Achievement a, AchState st, {double? count}) =>
+      _earnLevels(earned, a, st, today, languages, count: count, words: words);
 
   for (final a in allAchievements) {
     final st = states.putIfAbsent(a.id, AchState.new);
@@ -3187,6 +3185,20 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// The new look (preview): today, words, learn and you as four tabs. Off until
+  /// the screens are finished.
+  bool newUi = false;
+
+  void setNewUi(bool on) {
+    newUi = on;
+    try {
+      _w('newUi', _prefs?.setBool('newUi', on));
+    } catch (e) {
+      appLog.w('store', 'could not save the new look: ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
   /// The dailies the player chose to play, per language (see my_dailies.dart):
   /// Today shows these, and "done for the day" means all of them.
   MyDailies myDailies = MyDailies();
@@ -3629,6 +3641,7 @@ class AppState extends ChangeNotifier {
       _readCollection(p);
       _readLex(p);
       _readMyDailies(p);
+      newUi = p.getBool('newUi') ?? false;
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
       // first start of this version, or it was lost) it is done again.

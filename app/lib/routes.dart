@@ -1,3 +1,5 @@
+import 'app_shell.dart';
+
 import 'package:flutter/material.dart';
 
 import 'achievements_page.dart';
@@ -269,7 +271,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case Routes.about:
       return page(const LicencesPage(about: aboutText));
     default:
-      return page(const HomePage());
+      return page(const HomeSwitch());
   }
 }
 
