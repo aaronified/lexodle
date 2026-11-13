@@ -626,7 +626,7 @@ void main() {
 
   testWidgets('the settings, from the theme down', (t) async {
     await prepare(t);
-    t.view.physicalSize = const Size(412, 1400) * 2;
+    t.view.physicalSize = const Size(412, 2000) * 2;
     final key = GlobalKey();
     await t.pumpWidget(
       RepaintBoundary(
