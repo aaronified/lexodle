@@ -436,7 +436,10 @@ class _PlaystyleRow extends StatelessWidget {
         : null;
     return Material(
       color: c.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: hairline(c),
+      ),
       child: InkWell(
         key: const ValueKey('playstyle-row'),
         borderRadius: BorderRadius.circular(6),
@@ -860,7 +863,10 @@ class _GameTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Material(
         color: c.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(6),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+          side: hairline(c),
+        ),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(6),

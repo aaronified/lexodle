@@ -593,6 +593,7 @@ class _LexDrop extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: c.surfaceContainerHighest,
+        border: Border.fromBorderSide(hairline(c)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(

@@ -542,6 +542,7 @@ class _DiyPageState extends State<DiyPage> {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: c.surfaceContainerHighest,
+                          border: Border.fromBorderSide(hairline(c)),
                           borderRadius: BorderRadius.circular(3),
                         ),
                         child: SelectableText(

@@ -92,7 +92,10 @@ class YouPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   Material(
                     color: c.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(3),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3),
+                      side: hairline(c),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(14),
                       child: Column(
