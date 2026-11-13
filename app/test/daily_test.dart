@@ -43,7 +43,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    SharedPreferences.setMockInitialValues({
+      'seenHowTo': true,
+      'dailyIntroSeen': true,
+    });
     dailyClock = DateTime.now;
   });
   tearDown(() => dailyClock = DateTime.now);

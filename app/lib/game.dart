@@ -8,6 +8,7 @@ import 'app_log.dart';
 import 'background.dart';
 import 'blind_pencil.dart';
 import 'daily.dart';
+import 'daily_intro.dart';
 import 'equations.dart';
 import 'game_header.dart';
 import 'hearts.dart';
@@ -230,6 +231,28 @@ class _GamePageState extends State<GamePage>
     _reset();
     _resume();
     _replay();
+    _introduce();
+  }
+
+  /// The one-time introduction to the daily, on the first daily opened.
+  void _introduce() {
+    final d = _daily;
+    if (d == null || d.date.isEmpty || widget.practice || over) return;
+    if (appState.dailyIntroSeen) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      maybeShowDailyIntro(
+        context,
+        mode,
+        onClosed: () {
+          try {
+            if (mounted) _focus.requestFocus();
+          } catch (e) {
+            appLog.w('game', 'could not refocus: ${e.runtimeType}');
+          }
+        },
+      );
+    });
   }
 
   /// The guesses a link carried are played at once, as if the page had been

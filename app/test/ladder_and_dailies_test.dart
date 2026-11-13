@@ -48,13 +48,6 @@ void main() {
       expect(isOpen(GameMode.lockdown, 6), isFalse);
       expect(openModes(6), openModes(5));
     });
-
-    test('the bar runs from the last step to the next', () {
-      expect(progressToNext(4), 0);
-      expect(progressToNext(8), closeTo(.5, .001));
-      expect(progressToNext(23), closeTo(.5, .001));
-      expect(progressToNext(30), 1);
-    });
   });
 
   group('my dailies', () {

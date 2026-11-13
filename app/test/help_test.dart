@@ -13,7 +13,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
+  setUp(
+    () => SharedPreferences.setMockInitialValues({
+      'seenHowTo': true,
+      'dailyIntroSeen': true,
+    }),
+  );
 
   group('the help text', () {
     List<String> heads(GameMode m, {bool daily = false}) => [

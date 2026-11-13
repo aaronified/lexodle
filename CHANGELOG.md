@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- your first daily says how a daily differs
+  The first time a daily opens, a short sheet says: one word a day, the same for everyone, new at midnight in india, the number of tries, it is logged for your streak and history, and free play is for practice. It shows once.
+- today shows one card at a time, and it opens the feature
+  The next-up card is gone. A card for what just opened (a mode, achievements, history, my words, learn) is tappable and takes you into it; once handled, it does not come back.
+
 - a quiet border where a page needs one
   Cards on the page, outlined buttons, text fields, dialogs and sheets have a thin, faint border again (0.75 px, about 1.5 to 2:1 against the page); a focused field has a clear line. Shades still separate everything inside a card.
 

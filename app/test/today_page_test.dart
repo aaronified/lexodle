@@ -5,6 +5,7 @@ import 'package:lexodle/first_run/mode_lesson_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/my_dailies.dart';
+import 'package:lexodle/routes.dart';
 import 'package:lexodle/today_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +22,7 @@ void main() {
     // appState is global: start each test with nothing chosen, logged or saved
     appState.myDailies = MyDailies();
     appState.daily.clear();
+    appState.introCardsDone.clear();
     for (final m in GameMode.values) {
       appState.dailyLogOf('en', m).clear();
     }
@@ -131,7 +133,7 @@ void main() {
     );
   });
 
-  testWidgets('a new player gets the new card and the next-up bar', (
+  testWidgets('a new player gets the new card and no next-up card', (
     tester,
   ) async {
     appState.stats.played = 4;
@@ -139,9 +141,20 @@ void main() {
     await show(tester);
     expect(find.byKey(const ValueKey('today-new-quartet')), findsOneWidget);
     expect(find.text('four words at once'), findsOneWidget);
-    expect(find.byKey(const ValueKey('today-next-up')), findsOneWidget);
-    expect(find.text('your numbers'), findsOneWidget);
-    expect(find.byKey(const ValueKey('today-next-bar')), findsOneWidget);
+    expect(find.byKey(const ValueKey('today-next-up')), findsNothing);
+    expect(find.text('your numbers'), findsNothing);
+    expect(find.byKey(const ValueKey('today-next-bar')), findsNothing);
+    // at most one introduction card
+    expect(
+      find.byWidgetPredicate(
+        (w) =>
+            w.key is ValueKey &&
+            ((w.key as ValueKey).value as Object).toString().startsWith(
+              'today-new-',
+            ),
+      ),
+      findsOneWidget,
+    );
     // quartet is open at 4, so the choice is there
     expect(find.byKey(const ValueKey('today-choose')), findsOneWidget);
   });
@@ -154,7 +167,7 @@ void main() {
     appState.modesTaught.clear();
     await show(tester);
     expect(find.text('how it works ›'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('today-lesson-quartet')));
+    await tester.tap(find.byKey(const ValueKey('today-new-quartet')));
     await tester.pumpAndSettle();
     expect(find.byType(ModeLessonPage), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('lesson-close')));
@@ -172,5 +185,77 @@ void main() {
     await show(tester);
     expect(find.byKey(const ValueKey('today-choose')), findsNothing);
     expect(find.byKey(const ValueKey('today-more')), findsNothing);
+  });
+
+  Future<List<String>> showRouted(WidgetTester tester) async {
+    final pushed = <String>[];
+    await tester.binding.setSurfaceSize(const Size(420, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: const Scaffold(body: TodayPage()),
+        onGenerateRoute: (r) {
+          pushed.add(r.name ?? '');
+          return MaterialPageRoute<void>(
+            settings: r,
+            builder: (_) => const Scaffold(body: Text('elsewhere')),
+          );
+        },
+      ),
+    );
+    await tester.pump();
+    return pushed;
+  }
+
+  testWidgets('a feature card opens its page and is handled for good', (
+    tester,
+  ) async {
+    appState.stats.played = 3;
+    appState.lex.veteran = false;
+    final pushed = await showRouted(tester);
+    final card = find.byKey(const ValueKey('today-new-achievements'));
+    expect(card, findsOneWidget);
+    expect(find.text('see them ›'), findsOneWidget);
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+    expect(pushed, contains(Routes.achievements));
+    expect(appState.introCardsDone, contains('achievements'));
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+    expect(card, findsNothing);
+  });
+
+  testWidgets('each feature card goes to its page', (tester) async {
+    final want = {
+      5: Routes.history,
+      6: Routes.gameModes,
+      9: Routes.words,
+      24: Routes.learn,
+    };
+    for (final e in want.entries) {
+      await tester.pumpWidget(const SizedBox());
+      appState.introCardsDone.clear();
+      appState.stats.played = e.key;
+      appState.lex.veteran = false;
+      final pushed = await showRouted(tester);
+      await tester.tap(
+        find.byWidgetPredicate(
+          (w) =>
+              w.key is ValueKey &&
+              ((w.key as ValueKey).value as Object).toString().startsWith(
+                'today-new-',
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(pushed, contains(e.value), reason: 'game ${e.key}');
+    }
+  });
+
+  testWidgets('a veteran sees no card', (tester) async {
+    veteran();
+    await show(tester);
+    expect(find.textContaining('today-new-'), findsNothing);
+    expect(find.text('new'), findsNothing);
   });
 }
