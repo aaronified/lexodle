@@ -120,10 +120,12 @@ WordInfo? parseCatalan(
       final c = current;
       if (node.localName == 'p' && !headed) {
         headed = true;
+        // span.gender also carries "trans.", "pron." on a verb and "inv." on an
+        // adjective: only m, f and n are a gender
         final gender = [
           for (final g in node.querySelectorAll('span.gender abbr'))
             squash(g.text).replaceAll('.', '').toLowerCase(),
-        ].join('/');
+        ].where((g) => g == 'm' || g == 'f' || g == 'n').join('/');
         final copy = plainCopy(node, '.headword,.gender');
         var forms = squash(copy.text.replaceAll(RegExp('[\u200e\u200f]'), ''));
         forms = forms.replaceAll(RegExp(r'^\(|\)$'), '').trim();
@@ -140,7 +142,7 @@ WordInfo? parseCatalan(
           if (c.senses.length >= maxDefs) break;
           final examples = <Example>[];
           for (final ex in li.querySelectorAll('dl dd, ul li')) {
-            final t = unquote(squash(plainCopy(ex).text));
+            final t = shorten(unquote(squash(plainCopy(ex).text)), 200);
             if (t.isNotEmpty && examples.length < maxExamples) {
               examples.add(Example(t));
             }

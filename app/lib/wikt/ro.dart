@@ -99,33 +99,41 @@ WordInfo? parseRomanian(
     } else if (mode == 'ety' && etymology.isEmpty && node.localName == 'p') {
       final t = squash(plainCopy(node).text);
       if (t.isNotEmpty) etymology = shorten(t, 220);
-    } else if ((mode == 'syn' || mode == 'ant') &&
-        (node.localName == 'p' || node.localName == 'ul')) {
-      addNyms(mode == 'syn' ? syn : ant, squash(plainCopy(node).text));
+    } else if ((mode == 'syn' || mode == 'ant') && node.localName == 'ul') {
+      // one item per sense, led by its number in bold ("1:") or, for an
+      // antonym, by the use it is for ("a vedea:")
+      for (final li in node.children.where((x) => x.localName == 'li')) {
+        addNyms(mode == 'syn' ? syn : ant, squash(plainCopy(li, 'b').text));
+      }
     } else if (mode == 'pos' && current != null) {
       final c = current;
       if (node.localName == 'table' &&
-          node.classes.any((x) => x.endsWith('-ron')) &&
+          squash(node.text).startsWith('Declinarea') &&
           c.senses.isEmpty) {
-        // the declension table: "f." in its first cell, the plural of the
-        // nominative-accusative row
-        final g = RegExp(
-          r'^([mfn])\.?$',
-        ).firstMatch(squash(node.querySelector('i')?.text ?? ''));
-        var plural = '';
+        // the declension table. A noun: "f." in its first cell and the plural
+        // of the nominative-accusative row. An adjective: the masculine and
+        // feminine rows.
+        final g = RegExp(r'^([mfn])\.?$')
+            .firstMatch(squash(node.querySelector('i')?.text ?? ''));
+        final cells = <String, List<String>>{};
         for (final tr in node.querySelectorAll('tr')) {
           final tds = tr.children.where((x) => x.localName == 'td').toList();
-          if (tds.length >= 3 &&
-              squash(tds.first.text).toLowerCase().startsWith('nominativ')) {
-            plural = squash(tds.last.text);
-            break;
+          if (tds.length >= 3) {
+            final key = squash(tds.first.text).toLowerCase();
+            cells.putIfAbsent(key, () => [for (final x in tds) squash(x.text)]);
           }
         }
-        final filled = PosBlock(
-          c.pos,
-          gender: g?.group(1) ?? '',
-          forms: plural.isEmpty ? '' : 'plural $plural',
-        );
+        var forms = '';
+        final nom = cells.entries
+            .where((e) => e.key.startsWith('nominativ'))
+            .firstOrNull;
+        final masc = cells['masculin'], fem = cells['feminin'];
+        if (nom != null) {
+          forms = 'plural ${nom.value.last}';
+        } else if (masc != null && fem != null) {
+          forms = 'feminin ${fem[1]}, plural ${masc.last}';
+        }
+        final filled = PosBlock(c.pos, gender: g?.group(1) ?? '', forms: forms);
         final i = blocks.indexOf(c);
         if (i >= 0) blocks[i] = filled;
         current = filled;
@@ -136,7 +144,7 @@ WordInfo? parseRomanian(
           for (final ex in li.querySelectorAll('dl dd, ul li')) {
             final t = squash(plainCopy(ex).text);
             if (t.isNotEmpty && examples.length < maxExamples) {
-              examples.add(Example(t));
+              examples.add(Example(shorten(t, 200)));
             }
           }
           var t = squash(plainCopy(li, 'ul,ol,dl,div').text);

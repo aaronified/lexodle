@@ -122,7 +122,10 @@ WordInfo? parsePortuguese(
         for (final tr in node.querySelectorAll('tr.forma')) {
           final tds = tr.children.where((x) => x.localName == 'td').toList();
           if (tds.length < 2) continue;
-          rows.add((squash(tds.first.text).toLowerCase(), squash(tds.last.text)));
+          rows.add((
+            squash(tds.first.text).toLowerCase(),
+            squash(tds.last.text),
+          ));
         }
       } else if (node.localName == 'p' && !headed) {
         headed = true;
@@ -161,7 +164,7 @@ WordInfo? parsePortuguese(
           for (final ex in li.querySelectorAll('ul > li')) {
             final t = squash(plainCopy(ex).text);
             if (t.isNotEmpty && examples.length < maxExamples) {
-              examples.add(Example(t));
+              examples.add(Example(shorten(t, 200)));
             }
           }
           var t = squash(plainCopy(li, 'ul,ol,dl,div').text);
@@ -196,4 +199,3 @@ WordInfo? parsePortuguese(
     etymology: etymology,
   );
 }
-

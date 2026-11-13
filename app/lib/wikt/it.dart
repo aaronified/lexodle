@@ -137,7 +137,7 @@ WordInfo? parseItalian(
           for (final ex in li.querySelectorAll('ul > li')) {
             final t = squash(plainCopy(ex, 'small').text);
             if (t.isNotEmpty && examples.length < maxExamples) {
-              examples.add(Example(t));
+              examples.add(Example(shorten(t, 200)));
             }
           }
           // the labels lead the sense: "(religione)" in small italics

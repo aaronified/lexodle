@@ -99,8 +99,7 @@ WordInfo? parseSpanish(
 
     // the pronunciation table and the recording sit near the top
     final tables = [
-      if (node.localName == 'table' && node.classes.contains('pron-graf'))
-        node,
+      if (node.localName == 'table' && node.classes.contains('pron-graf')) node,
       ...node.querySelectorAll('table.pron-graf'),
     ];
     for (final t in tables) {
@@ -184,7 +183,7 @@ WordInfo? parseSpanish(
               last.examples.length < maxExamples) {
             final cita = li.querySelector('span.cita');
             final t = cita != null ? squash(plainCopy(cita).text) : body;
-            if (t.isNotEmpty) last.examples.add(Example(t));
+            if (t.isNotEmpty) last.examples.add(Example(shorten(t, 200)));
           }
         }
       }
