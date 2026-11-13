@@ -226,20 +226,15 @@ class TodayPage extends StatelessWidget {
     final yellow = yellowOf(c);
     final lost = r.state == _State.lost;
 
+    // the mode's icon sits in the square; the state is its colour: green when
+    // solved, yellow in progress, a red icon when missed
+    TablerIcon icon(Color color) =>
+        TablerIcon(modeIconName(m), size: 26, color: color);
     final (Color fill, Widget mark) = switch (r.state) {
-      _State.solved => (
-        c.secondary,
-        Text('✓', style: TextStyle(fontSize: 18, color: c.onSecondary)),
-      ),
-      _State.progress => (
-        yellow,
-        Text('…', style: TextStyle(fontSize: 18, color: onColor(c, yellow))),
-      ),
-      _State.lost => (
-        c.surfaceContainerHighest,
-        TablerIcon('skull', size: 22, color: heartColor(c)),
-      ),
-      _State.fresh => (c.surfaceContainerHighest, const SizedBox()),
+      _State.solved => (c.secondary, icon(c.onSecondary)),
+      _State.progress => (yellow, icon(onColor(c, yellow))),
+      _State.lost => (c.surfaceContainerHighest, icon(heartColor(c))),
+      _State.fresh => (c.surfaceContainerHighest, icon(c.onSurface)),
     };
 
     final String stateText = switch (r.state) {
@@ -290,21 +285,13 @@ class TodayPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      TablerIcon(modeIconName(m), size: 18, color: c.onSurface),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          m.label,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    m.label,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Wrap(
@@ -527,13 +514,6 @@ class TodayPage extends StatelessWidget {
     ];
     if (open.isEmpty) open = [GameMode.classic];
     final shown = open.contains(appState.mode) ? appState.mode : open.first;
-    final today = dailyDate();
-    final pending = {
-      for (final m in open)
-        if (m.hasDaily)
-          if (_rowOf(lang, today, m).state case _State.fresh || _State.progress)
-            m,
-    };
     return ModeSwitch(
       mode: shown,
       lang: lang,
@@ -541,7 +521,6 @@ class TodayPage extends StatelessWidget {
       plain: true,
       facePrefix: 'free play · ',
       showChevrons: open.length > 1,
-      pending: pending,
       buttonKey: const ValueKey('today-free-play'),
       onChanged: (m) {
         try {

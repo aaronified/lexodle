@@ -11,6 +11,8 @@ it to the version.
   A settings button sits top right on the tabs and the secondary pages. Theme (first), reminders, backup, support, what's new, sound, haptics, updates, the log and about all live there, each opening at its step. The you tab no longer carries them.
 - learn opens after the first game, with how to play
   Until game 24 learn shows only a how to play for each open mode, and a mode is added as it opens. The how to play button and row are gone from you.
+- today: the mode icon is in the square, and free play has no dots
+  Each daily's icon now sits in its square: green when solved, yellow in progress, a red icon when missed (the skull is only in the streak calendar). The free play button no longer shows pending-daily dots.
 
 ## 0.10.2
 
