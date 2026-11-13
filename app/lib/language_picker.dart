@@ -54,11 +54,9 @@ class LanguagePicker extends StatelessWidget {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: selected == allLanguages
-                        ? c.primary
-                        : c.outlineVariant,
-                  ),
+                  color: selected == allLanguages
+                      ? c.secondaryContainer
+                      : c.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(3),
                 ),
                 child: Text(
@@ -86,9 +84,9 @@ class LanguagePicker extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: code == selected ? c.primary : c.outlineVariant,
-                  ),
+                  color: code == selected
+                      ? c.secondaryContainer
+                      : c.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(3),
                 ),
                 child: Row(

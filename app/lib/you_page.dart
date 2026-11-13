@@ -65,7 +65,7 @@ class YouPage extends StatelessWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: c.onSurface),
+                            color: c.surfaceContainerHighest,
                           ),
                           child: Text(
                             '?',
@@ -115,7 +115,8 @@ class YouPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      border: Border.all(color: c.outlineVariant),
+                      color: c.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(3),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,17 +145,18 @@ class YouPage extends StatelessWidget {
                                     ),
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: appState.themeMode == m
-                                            ? c.primary
-                                            : c.outlineVariant,
-                                      ),
+                                      color: appState.themeMode == m
+                                          ? c.secondaryContainer
+                                          : c.surfaceContainerHighest,
                                     ),
                                     child: Text(
                                       label,
                                       style: TextStyle(
+                                        fontWeight: appState.themeMode == m
+                                            ? FontWeight.bold
+                                            : null,
                                         color: appState.themeMode == m
-                                            ? c.primary
+                                            ? c.onSecondaryContainer
                                             : c.onSurface,
                                       ),
                                     ),

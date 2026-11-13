@@ -161,11 +161,7 @@ class _StreakWeekState extends State<StreakWeek> {
           margin: const EdgeInsets.all(1),
           padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: isToday
-                  ? c.onSurface.withValues(alpha: .5)
-                  : Colors.transparent,
-            ),
+            color: isToday ? c.secondaryContainer : null,
             borderRadius: BorderRadius.circular(3),
           ),
           child: Column(
@@ -285,8 +281,7 @@ class _StreakWeekState extends State<StreakWeek> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: on ? c.primary.withValues(alpha: .14) : null,
-                border: Border.all(color: on ? c.primary : c.outlineVariant),
+                color: on ? c.secondaryContainer : c.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Row(
@@ -301,7 +296,8 @@ class _StreakWeekState extends State<StreakWeek> {
                     m.label,
                     style: TextStyle(
                       fontSize: 12,
-                      color: on ? c.primary : c.onSurface,
+                      fontWeight: on ? FontWeight.bold : null,
+                      color: on ? c.onSecondaryContainer : c.onSurface,
                     ),
                   ),
                 ],
@@ -320,7 +316,7 @@ class _StreakWeekState extends State<StreakWeek> {
       key: const ValueKey('streak-week'),
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       decoration: BoxDecoration(
-        border: Border.all(color: c.outlineVariant),
+        color: c.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(3),
       ),
       child: Column(

@@ -63,10 +63,7 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
     scaffoldBackgroundColor: scheme.surface,
     canvasColor: scheme.surface,
     cardColor: scheme.surface,
-    dialogTheme: DialogThemeData(
-      backgroundColor: scheme.surface,
-      shape: shape,
-    ),
+    dialogTheme: DialogThemeData(backgroundColor: scheme.surface, shape: shape),
     fontFamily: _font,
     dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
     appBarTheme: AppBarTheme(

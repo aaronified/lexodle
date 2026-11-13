@@ -186,7 +186,10 @@ class _StylesPageState extends State<StylesPage> {
       padding: const EdgeInsets.only(bottom: 14),
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-        decoration: BoxDecoration(border: Border.all(color: c.outlineVariant)),
+        decoration: BoxDecoration(
+          color: c.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(3),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

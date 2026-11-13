@@ -202,12 +202,6 @@ class _Cell extends StatelessWidget {
             height: 46,
             decoration: BoxDecoration(
               color: selected ? color : color.withValues(alpha: .32),
-              border: Border.all(
-                color: selected
-                    ? onColor(c, color)
-                    : color.withValues(alpha: .7),
-                width: selected ? 2 : 1,
-              ),
               borderRadius: BorderRadius.circular(3),
             ),
             alignment: Alignment.center,

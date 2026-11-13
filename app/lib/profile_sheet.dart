@@ -138,9 +138,7 @@ class _ProfileSheetState extends State<_ProfileSheet> {
                         controller: _name,
                         maxLength: profileNameMax,
                         onChanged: (v) => _set(name: v),
-                        decoration: const InputDecoration(
-                          counterText: '',
-                        ),
+                        decoration: const InputDecoration(counterText: ''),
                       ),
                       const SizedBox(height: 16),
                       const Caption('pick an icon'),

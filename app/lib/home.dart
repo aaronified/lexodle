@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage> {
         height: 56,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: c.outline),
+          color: c.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
@@ -692,14 +692,11 @@ class LanguagePopup extends StatelessWidget {
     final c = Theme.of(context).colorScheme;
     // the app's own background, and a rectangular box like game modes
     return Dialog(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: c.surfaceContainerHigh,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(3),
-        side: BorderSide(color: c.outline),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Padding(
@@ -721,11 +718,8 @@ class LanguagePopup extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
                       color: l.code == current
-                          ? c.primary.withValues(alpha: .15)
-                          : null,
-                      border: Border.all(
-                        color: l.code == current ? c.primary : c.outlineVariant,
-                      ),
+                          ? c.secondaryContainer
+                          : c.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Row(

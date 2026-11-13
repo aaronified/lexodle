@@ -290,7 +290,6 @@ class _LicencesPageState extends State<LicencesPage> {
                               },
                             ),
                       isDense: true,
-                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (v) => setState(() => _query = v),
                   ),
