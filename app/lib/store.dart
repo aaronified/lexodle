@@ -2484,6 +2484,18 @@ class AppState extends ChangeNotifier {
   Draw get draw => drawOf(mode);
   set draw(Draw d) => _draws[mode] = d;
 
+  /// Sets the draw of [m] without changing the mode in view (the mode settings
+  /// page edits the free play settings of any mode).
+  void setDrawOf(GameMode m, Draw d) {
+    _draws[m] = d;
+    try {
+      _w('draws', _prefs?.setString('draws', jsonEncode(_drawsJson)));
+    } catch (e) {
+      appLog.w('store', 'could not save the draws: ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
   /// The draws that were chosen, by mode name, as they are saved.
   Map<String, int> get _drawsJson => {
     for (final e in _draws.entries) e.key.name: e.value.index,
@@ -2958,6 +2970,17 @@ class AppState extends ChangeNotifier {
     final earned = refreshCounted(today: d);
     notifyListeners();
     return earned;
+  }
+
+  /// Keeps [info] as the entry of a saved word that has none (or replaces it),
+  /// leaving its note. True when there was such a word.
+  bool setWordInfo(String lang, String word, WordInfo info) {
+    final w = savedWords.find(lang, word);
+    if (w == null) return false;
+    w.info = info;
+    _saveWords();
+    notifyListeners();
+    return true;
   }
 
   /// Removes a saved word.

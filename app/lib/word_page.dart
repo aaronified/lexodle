@@ -6,6 +6,7 @@ import 'saved_words.dart';
 import 'ui.dart';
 import 'word_info.dart';
 import 'wiktionary.dart';
+import 'words.dart';
 
 /// One saved word with its entry and note: the copy of the Wiktionary entry
 /// from the day it was saved, a note kept as the player types, and removal.
@@ -22,6 +23,41 @@ class _WordPageState extends State<WordPage> {
     text: widget.entry.note,
   );
   bool _confirming = false;
+  bool _retrying = false;
+  String _retryNote = '';
+
+  /// Looks the word up again, in the word's own language, and keeps the entry
+  /// on the saved word (its note is left as it is). Every failure is logged
+  /// and told in one line; the page keeps working.
+  Future<void> _retry() async {
+    if (_retrying) return;
+    final entry = widget.entry;
+    setState(() {
+      _retrying = true;
+      _retryNote = '';
+    });
+    var note = '';
+    try {
+      final langs = await WordBank.languages();
+      final lang = langs.firstWhere((l) => l.code == entry.lang);
+      final info = await Wiktionary.shared
+          .lookup(entry.word, lang.code, lang.wikt)
+          .timeout(const Duration(seconds: 12));
+      if (info == null || info.isEmpty) {
+        note = 'no entry found for this word';
+      } else {
+        appState.setWordInfo(entry.lang, entry.word, info);
+      }
+    } catch (e) {
+      appLog.w('word', 'the lookup failed again: ${e.runtimeType}');
+      note = 'could not look it up. try again later';
+    }
+    if (!mounted) return;
+    setState(() {
+      _retrying = false;
+      _retryNote = note;
+    });
+  }
 
   @override
   void dispose() {
@@ -100,8 +136,25 @@ class _WordPageState extends State<WordPage> {
               if (hasInfo) ...[
                 const SizedBox(height: 8),
                 _entryBody(info),
-              ] else
-                Caption('no entry was kept for this word'),
+              ] else ...[
+                const Caption('no entry was kept. add your own notes below.'),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    key: const ValueKey('word-retry'),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 36),
+                    ),
+                    onPressed: _retrying ? null : _retry,
+                    child: Text(
+                      _retrying ? 'looking it up…' : 'try the lookup again',
+                      style: TextStyle(color: c.primary),
+                    ),
+                  ),
+                ),
+                if (_retryNote.isNotEmpty) Caption(_retryNote),
+              ],
               const SizedBox(height: 18),
               Caption('your note'),
               const SizedBox(height: 6),

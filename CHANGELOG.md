@@ -7,6 +7,21 @@ it to the version.
 
 ## Unreleased
 
+- my words: a word with no entry has a retry
+  A word is saved even when the lookup fails. Its page says no entry was kept
+  and asks for your own notes, and "try the lookup again" fetches the entry
+  later and keeps it with your note.
+- you: mode settings for free play, one mode at a time
+  A new page in you changes the free play settings of a mode you have played
+  three times, without switching to it. It lists what each daily always uses.
+  The word draw, hearts, blind tries, equation length, colour logic and
+  mastermind pool are each mode's own. Tries, length, helper and shared letters
+  are one setting, shared by the modes that use them.
+- you: the chip is the header; lex joins achievements
+  The you page opens with your username chip. Every row has an icon. The order
+  is achievements (lex and hints sit at the top of that page, the balance on
+  the row), friends and social, reminders, history (with your playstyle),
+  backup, support.
 - lex: the hint currency, kept and backed up
   Achievements pay lex: bronze 1, silver 2, gold 3, platinum 5. Only the
   highest level a game earns pays, an achievement pays once a day in each

@@ -15,6 +15,7 @@ import 'learn.dart';
 import 'learn_guide.dart';
 import 'learn_home.dart';
 import 'learn_log.dart';
+import 'mode_settings_page.dart';
 import 'opening_page.dart';
 import 'sequence_page.dart';
 import 'styles_page.dart';
@@ -72,6 +73,7 @@ class Routes {
   static const howTo = '/how-to';
   static const settings = '/settings';
   static const gameModes = '/game-modes';
+  static const modeSettings = '/mode-settings';
   static const diy = '/diy';
   static const playstyle = '/playstyle';
   static const about = '/about';
@@ -268,6 +270,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       );
     case Routes.settings:
       return page(const SettingsPage());
+    case Routes.modeSettings:
+      return page(const ModeSettingsPage());
     case Routes.gameModes:
       return _dialog(s, const GameModesDialog());
     case Routes.playstyle:
@@ -333,6 +337,7 @@ const _known = {
   Routes.howTo,
   Routes.settings,
   Routes.gameModes,
+  Routes.modeSettings,
   Routes.playstyle,
   Routes.about,
   Routes.words,

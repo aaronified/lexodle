@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
+import 'package:lexodle/saved_words.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -123,6 +124,36 @@ void main() {
 
   group('restoring', () {
     setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test(
+      'a saved word with no entry survives a backup and a restore',
+      () async {
+        final source = sample();
+        source.savedWords.add(
+          SavedWord(
+            lang: 'fr',
+            word: 'cloche',
+            date: '2026-11-12',
+            note: 'ding',
+          ),
+        );
+        final b = parseBackup(backupToText(source));
+        final fresh = AppState();
+        await fresh.load();
+        fresh.restore(
+          settings: b.settings,
+          stats: b.stats,
+          ach: b.achievements,
+          words: b.words,
+        );
+        final w = fresh.savedWords.find('fr', 'cloche')!;
+        expect(w.info, isNull);
+        expect(w.note, 'ding');
+        final again = AppState();
+        await again.load();
+        expect(again.savedWords.find('fr', 'cloche')!.info, isNull);
+      },
+    );
 
     test('everything comes back, and is saved', () async {
       final source = sample();
