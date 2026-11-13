@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- settings: one button on every page, and everything in it
+  A settings button sits top right on the tabs and the secondary pages. Theme (first), reminders, backup, support, what's new, sound, haptics, updates, the log and about all live there, each opening at its step. The you tab no longer carries them.
+- learn opens after the first game, with how to play
+  Until game 24 learn shows only a how to play for each open mode, and a mode is added as it opens. The how to play button and row are gone from you.
+
 ## 0.10.2
 
 - one ladder: every row, tab and card opens at its step

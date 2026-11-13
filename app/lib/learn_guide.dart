@@ -161,9 +161,12 @@ class ModeGuidePage extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(width: 8),
-            Text(
-              'learn · ${mode.label}',
-              style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+            Flexible(
+              child: Text(
+                'learn · ${mode.label}',
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+              ),
             ),
           ],
         ),
