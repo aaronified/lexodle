@@ -52,32 +52,83 @@ class _RemindersPageState extends State<RemindersPage> {
     }
   }
 
-  Future<void> _time() async {
+  /// Picks a time; [i] is the reminder, or null for the "open" notification.
+  Future<void> _time(int? i) async {
     try {
       final r = appState.reminders;
+      final now = i == null ? r.availableMinutes : r.reminders[i].minutes;
       final t = await widget.pickTime(
         context,
-        TimeOfDay(hour: r.hour, minute: r.minute),
+        TimeOfDay(hour: now ~/ 60, minute: now % 60),
       );
       if (t == null) return;
-      appState.setReminders(r.copyWith(minutes: t.hour * 60 + t.minute));
+      final m = t.hour * 60 + t.minute;
+      appState.setReminders(
+        i == null
+            ? r.copyWith(availableMinutes: m)
+            : r.withReminder(i, r.reminders[i].copyWith(minutes: m)),
+      );
     } catch (e) {
       appLog.w('reminders', 'time failed ${e.runtimeType}');
     }
   }
 
-  void _day(int weekday) {
+  void _day(int i, int weekday) {
     try {
       final r = appState.reminders;
-      final days = {...r.days};
+      final days = {...r.reminders[i].days};
       if (!days.remove(weekday)) {
         days.add(weekday);
       } else if (days.isEmpty) {
         return; // one day stays
       }
-      appState.setReminders(r.copyWith(days: days));
+      appState.setReminders(
+        r.withReminder(i, r.reminders[i].copyWith(days: days)),
+      );
     } catch (e) {
       appLog.w('reminders', 'day failed ${e.runtimeType}');
+    }
+  }
+
+  void _add() {
+    try {
+      final r = appState.reminders;
+      if (r.reminders.length >= ReminderSettings.maxReminders) return;
+      appState.setReminders(
+        r.copyWith(
+          reminders: [
+            ...r.reminders,
+            const ReminderTime(minutes: 12 * 60),
+          ],
+        ),
+      );
+    } catch (e) {
+      appLog.w('reminders', 'add failed ${e.runtimeType}');
+    }
+  }
+
+  void _remove(int i) {
+    try {
+      final r = appState.reminders;
+      if (i == 0 || i >= r.reminders.length) return; // the first stays
+      appState.setReminders(
+        r.copyWith(
+          reminders: [
+            for (var k = 0; k < r.reminders.length; k++)
+              if (k != i) r.reminders[k],
+          ],
+        ),
+      );
+    } catch (e) {
+      appLog.w('reminders', 'remove failed ${e.runtimeType}');
+    }
+  }
+
+  void _available(bool on) {
+    try {
+      appState.setReminders(appState.reminders.copyWith(available: on));
+    } catch (e) {
+      appLog.w('reminders', 'switch failed ${e.runtimeType}');
     }
   }
 
@@ -150,9 +201,39 @@ class _RemindersPageState extends State<RemindersPage> {
       appState.dailyStreakFor(appState.lang, top),
       names.length - 1,
     );
-    final hh = r.hour.toString().padLeft(2, '0');
-    final mm = r.minute.toString().padLeft(2, '0');
     return [
+      SwitchListTile(
+        key: const ValueKey('reminders-available-switch'),
+        contentPadding: EdgeInsets.zero,
+        title: const Text('tell me when the dailies open'),
+        subtitle: const Text('one notification a day, no matter what is done'),
+        value: r.available,
+        onChanged: _available,
+      ),
+      if (r.available)
+        _card(
+          c,
+          Row(
+            children: [
+              Text(
+                _hhmm(r.availableMinutes),
+                key: const ValueKey('reminders-available-time'),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              _button(
+                c,
+                const ValueKey('reminders-available-change-time'),
+                'change time',
+                () => _time(null),
+              ),
+            ],
+          ),
+        ),
+      const SizedBox(height: 16),
       _card(
         c,
         Column(
@@ -180,44 +261,71 @@ class _RemindersPageState extends State<RemindersPage> {
         ),
       ),
       const SizedBox(height: 16),
-      const Caption('nudge me at'),
-      const SizedBox(height: 8),
-      _card(
-        c,
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Text(
-                  '$hh:$mm',
-                  key: const ValueKey('reminders-time'),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+      const Caption('nudge me if one is still waiting · up to two a day'),
+      for (var i = 0; i < r.reminders.length; i++) ...[
+        const SizedBox(height: 8),
+        _card(
+          c,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    _hhmm(r.reminders[i].minutes),
+                    key: ValueKey('reminders-time-$i'),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                _button(
-                  c,
-                  const ValueKey('reminders-change-time'),
-                  'change time',
-                  _time,
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                for (var i = 0; i < 7; i++) ...[
-                  if (i > 0) const SizedBox(width: 4),
-                  Expanded(child: _dayButton(c, i + 1, r.days.contains(i + 1))),
+                  const Spacer(),
+                  _button(
+                    c,
+                    ValueKey('reminders-change-time-$i'),
+                    'change time',
+                    () => _time(i),
+                  ),
+                  if (i > 0) ...[
+                    const SizedBox(width: 8),
+                    _button(
+                      c,
+                      ValueKey('reminders-remove-$i'),
+                      'remove',
+                      () => _remove(i),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  for (var d = 1; d <= 7; d++) ...[
+                    if (d > 1) const SizedBox(width: 4),
+                    Expanded(
+                      child: _dayButton(
+                        c,
+                        i,
+                        d,
+                        r.reminders[i].days.contains(d),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
+      if (r.reminders.length < ReminderSettings.maxReminders) ...[
+        const SizedBox(height: 8),
+        _button(
+          c,
+          const ValueKey('reminders-add'),
+          'add a second reminder',
+          _add,
+        ),
+      ],
       const SizedBox(height: 16),
       const Caption('what it might say'),
       const SizedBox(height: 8),
@@ -258,6 +366,9 @@ class _RemindersPageState extends State<RemindersPage> {
     ];
   }
 
+  String _hhmm(int m) =>
+      '${(m ~/ 60).toString().padLeft(2, '0')}:${(m % 60).toString().padLeft(2, '0')}';
+
   Widget _card(ColorScheme c, Widget child) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
@@ -285,32 +396,33 @@ class _RemindersPageState extends State<RemindersPage> {
         ),
       );
 
-  Widget _dayButton(ColorScheme c, int weekday, bool on) => Semantics(
-    button: true,
-    selected: on,
-    label: _days[weekday - 1],
-    excludeSemantics: true,
-    child: Material(
-      color: on ? c.secondaryContainer : c.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(6),
-      child: InkWell(
-        key: ValueKey('reminders-day-$weekday'),
-        borderRadius: BorderRadius.circular(6),
-        onTap: () => _day(weekday),
-        child: Container(
-          height: 44,
-          alignment: Alignment.center,
-          child: Text(
-            _days[weekday - 1].substring(0, 3),
-            maxLines: 1,
-            style: TextStyle(
-              fontSize: 12,
-              color: on ? c.onSecondaryContainer : c.onSurface,
-              fontWeight: on ? FontWeight.bold : null,
+  Widget _dayButton(ColorScheme c, int index, int weekday, bool on) =>
+      Semantics(
+        button: true,
+        selected: on,
+        label: _days[weekday - 1],
+        excludeSemantics: true,
+        child: Material(
+          color: on ? c.secondaryContainer : c.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(6),
+          child: InkWell(
+            key: ValueKey('reminders-day-$index-$weekday'),
+            borderRadius: BorderRadius.circular(6),
+            onTap: () => _day(index, weekday),
+            child: Container(
+              height: 44,
+              alignment: Alignment.center,
+              child: Text(
+                _days[weekday - 1].substring(0, 3),
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: on ? c.onSecondaryContainer : c.onSurface,
+                  fontWeight: on ? FontWeight.bold : null,
+                ),
+              ),
             ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }

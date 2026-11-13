@@ -6,6 +6,7 @@ import 'achievements_page.dart';
 import 'clue_page.dart';
 import 'daily.dart';
 import 'diy.dart';
+import 'first_run/first_run_flow.dart' show practiceRoute;
 import 'equations.dart';
 import 'drill_page.dart';
 import 'game.dart';
@@ -53,6 +54,8 @@ import 'words_page.dart';
 class Routes {
   const Routes._();
   static const home = '/';
+  // the first game played again from the you tab
+  static const firstGame = '/first-game';
   static const play = '/play';
   static const daily = '/daily';
   static const puzzle = '/puzzle';
@@ -278,6 +281,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(const RemindersPage());
     case Routes.about:
       return page(const LicencesPage(about: aboutText));
+    case Routes.firstGame:
+      return practiceRoute();
     default:
       return page(const HomeSwitch());
   }

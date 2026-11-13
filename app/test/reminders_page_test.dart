@@ -49,7 +49,7 @@ void main() {
   ) async {
     final fake = Reminders.scheduler = FakeScheduler();
     await show(tester);
-    expect(find.byKey(const ValueKey('reminders-time')), findsNothing);
+    expect(find.byKey(const ValueKey('reminders-time-0')), findsNothing);
     expect(fake.asked, 0);
     await tester.tap(find.byKey(const ValueKey('reminders-switch')));
     await tester.pump();
@@ -58,7 +58,7 @@ void main() {
     expect(find.text('19:30'), findsOneWidget);
     expect(find.byKey(const ValueKey('reminders-dailies')), findsOneWidget);
     for (var d = 1; d <= 7; d++) {
-      expect(find.byKey(ValueKey('reminders-day-$d')), findsOneWidget);
+      expect(find.byKey(ValueKey('reminders-day-0-$d')), findsOneWidget);
     }
     await tester.tap(find.byKey(const ValueKey('reminders-switch')));
     await tester.pump();
@@ -72,7 +72,7 @@ void main() {
     await tester.pump();
     expect(appState.reminders.on, isFalse);
     expect(find.byKey(const ValueKey('reminders-denied')), findsOneWidget);
-    expect(find.byKey(const ValueKey('reminders-time')), findsNothing);
+    expect(find.byKey(const ValueKey('reminders-time-0')), findsNothing);
   });
 
   testWidgets('the time is changed with the picker', (tester) async {
@@ -85,9 +85,9 @@ void main() {
         return const TimeOfDay(hour: 7, minute: 5);
       },
     );
-    await tester.tap(find.byKey(const ValueKey('reminders-change-time')));
+    await tester.tap(find.byKey(const ValueKey('reminders-change-time-0')));
     await tester.pump();
-    expect(appState.reminders.minutes, 7 * 60 + 5);
+    expect(appState.reminders.reminders.first.minutes, 7 * 60 + 5);
     expect(find.text('07:05'), findsOneWidget);
   });
 
@@ -95,29 +95,116 @@ void main() {
     Reminders.scheduler = FakeScheduler();
     appState.setReminders(const ReminderSettings(on: true));
     await show(tester, pick: (_, _) async => null);
-    await tester.tap(find.byKey(const ValueKey('reminders-change-time')));
+    await tester.tap(find.byKey(const ValueKey('reminders-change-time-0')));
     await tester.pump();
-    expect(appState.reminders.minutes, ReminderSettings.defaultMinutes);
+    expect(
+      appState.reminders.reminders.first.minutes,
+      ReminderTime.defaultMinutes,
+    );
   });
 
   testWidgets('weekdays toggle and one always stays', (tester) async {
     Reminders.scheduler = FakeScheduler();
     appState.setReminders(const ReminderSettings(on: true));
     await show(tester);
-    await tester.tap(find.byKey(const ValueKey('reminders-day-6')));
+    await tester.tap(find.byKey(const ValueKey('reminders-day-0-6')));
     await tester.pump();
-    expect(appState.reminders.days, {1, 2, 3, 4, 5, 7});
-    await tester.tap(find.byKey(const ValueKey('reminders-day-6')));
+    expect(appState.reminders.reminders.first.days, {1, 2, 3, 4, 5, 7});
+    await tester.tap(find.byKey(const ValueKey('reminders-day-0-6')));
     await tester.pump();
-    expect(appState.reminders.days.length, 7);
+    expect(appState.reminders.reminders.first.days.length, 7);
     for (var d = 1; d <= 6; d++) {
-      await tester.tap(find.byKey(ValueKey('reminders-day-$d')));
+      await tester.tap(find.byKey(ValueKey('reminders-day-0-$d')));
       await tester.pump();
     }
-    expect(appState.reminders.days, {7});
-    await tester.tap(find.byKey(const ValueKey('reminders-day-7')));
+    expect(appState.reminders.reminders.first.days, {7});
+    await tester.tap(find.byKey(const ValueKey('reminders-day-0-7')));
     await tester.pump();
-    expect(appState.reminders.days, {7});
+    expect(appState.reminders.reminders.first.days, {7});
+  });
+
+  testWidgets('a second reminder is added and removed', (tester) async {
+    Reminders.scheduler = FakeScheduler();
+    appState.setReminders(const ReminderSettings(on: true));
+    await show(tester);
+    expect(find.byKey(const ValueKey('reminders-remove-1')), findsNothing);
+    await tester.ensureVisible(find.byKey(const ValueKey('reminders-add')));
+    await tester.tap(find.byKey(const ValueKey('reminders-add')));
+    await tester.pump();
+    expect(appState.reminders.reminders.length, 2);
+    expect(find.byKey(const ValueKey('reminders-time-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('reminders-add')), findsNothing);
+    // the second has its own weekdays
+    await tester.ensureVisible(find.byKey(const ValueKey('reminders-day-1-3')));
+    await tester.tap(find.byKey(const ValueKey('reminders-day-1-3')));
+    await tester.pump();
+    expect(appState.reminders.reminders[1].days, {1, 2, 4, 5, 6, 7});
+    expect(appState.reminders.reminders[0].days.length, 7);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('reminders-remove-1')),
+    );
+    await tester.tap(find.byKey(const ValueKey('reminders-remove-1')));
+    await tester.pump();
+    expect(appState.reminders.reminders.length, 1);
+    expect(find.byKey(const ValueKey('reminders-add')), findsOneWidget);
+  });
+
+  testWidgets('the second reminder has its own time', (tester) async {
+    Reminders.scheduler = FakeScheduler();
+    appState.setReminders(
+      const ReminderSettings(
+        on: true,
+        reminders: [
+          ReminderTime(),
+          ReminderTime(minutes: 12 * 60),
+        ],
+      ),
+    );
+    await show(
+      tester,
+      pick: (_, _) async => const TimeOfDay(hour: 13, minute: 0),
+    );
+    await tester.tap(find.byKey(const ValueKey('reminders-change-time-1')));
+    await tester.pump();
+    expect(appState.reminders.reminders[1].minutes, 13 * 60);
+    expect(
+      appState.reminders.reminders[0].minutes,
+      ReminderTime.defaultMinutes,
+    );
+  });
+
+  testWidgets('the open notification has its own switch and time', (
+    tester,
+  ) async {
+    Reminders.scheduler = FakeScheduler();
+    appState.setReminders(const ReminderSettings(on: true));
+    await show(
+      tester,
+      pick: (_, initial) async {
+        expect(initial, const TimeOfDay(hour: 8, minute: 0));
+        return const TimeOfDay(hour: 6, minute: 45);
+      },
+    );
+    expect(find.text('tell me when the dailies open'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('reminders-available-time')),
+      findsNothing,
+    );
+    await tester.tap(find.byKey(const ValueKey('reminders-available-switch')));
+    await tester.pump();
+    expect(appState.reminders.available, isTrue);
+    expect(find.text('08:00'), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('reminders-available-change-time')),
+    );
+    await tester.pump();
+    expect(appState.reminders.availableMinutes, 6 * 60 + 45);
+    expect(find.text('06:45'), findsOneWidget);
+    // the reminders are untouched
+    expect(
+      appState.reminders.reminders.single.minutes,
+      ReminderTime.defaultMinutes,
+    );
   });
 
   testWidgets('another turns the sample line', (tester) async {

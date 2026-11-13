@@ -3249,6 +3249,41 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---- the first run ----
+
+  /// How far the player is through the first run: 0 not started, 1 the first
+  /// game is over (the gateway, the modes offer and the tour remain), 2 done.
+  /// Someone who already plays (history, or a veteran of lex) is done from the
+  /// start, and so is anyone who restores a backup.
+  int firstRunStage = 0;
+
+  /// The stage that means the first run is over.
+  static const firstRunDoneStage = 2;
+
+  bool get firstRunDone => firstRunStage >= firstRunDoneStage;
+
+  void setFirstRunStage(int stage) {
+    firstRunStage = stage.clamp(0, firstRunDoneStage);
+    try {
+      _w('firstRunStage', _prefs?.setInt('firstRunStage', firstRunStage));
+    } catch (e) {
+      appLog.w('store', 'could not save the first run: ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
+  void _readFirstRun(SharedPreferences p) {
+    try {
+      final s = p.getInt('firstRunStage');
+      firstRunStage = s != null && s >= 0 && s <= firstRunDoneStage
+          ? s
+          : (stats.played > 0 || lex.veteran ? firstRunDoneStage : 0);
+    } catch (e) {
+      appLog.w('store', 'could not read the first run: ${e.runtimeType}');
+      firstRunStage = firstRunDoneStage;
+    }
+  }
+
   /// The trophy banners of the words page the player dismissed, as
   /// `list:target` (`saved:5`): a banner hides for that target only.
   final Set<String> dismissedWordBanners = {};
@@ -3764,6 +3799,7 @@ class AppState extends ChangeNotifier {
         }
       }
       _activateLex();
+      _readFirstRun(p);
       _startMyDailies();
       appLog.i(
         'store',
@@ -4179,6 +4215,13 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
     _activateLex(); // (a no-op when the backup brought its own lex)
     _saveAchievements();
+    // someone who restores a backup knows the game: no first run
+    firstRunStage = firstRunDoneStage;
+    try {
+      _w('firstRunStage', _prefs?.setInt('firstRunStage', firstRunStage));
+    } catch (e) {
+      appLog.w('store', 'could not save the first run: ${e.runtimeType}');
+    }
     notifyListeners();
   }
 

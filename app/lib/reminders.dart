@@ -9,21 +9,14 @@ import 'daily.dart';
 import 'main.dart';
 import 'modes.dart';
 
-/// What the player chose for the reminders: on or off, the time of day, and the
-/// weekdays (1 is monday, 7 is sunday, as in [DateTime.weekday]). The dailies
-/// it is about are the ones the player chose on Today (`appState.myDailies`).
+/// One reminder: a time of day and the weekdays it comes on (1 is monday, 7 is
+/// sunday, as in [DateTime.weekday]).
 @immutable
-class ReminderSettings {
-  const ReminderSettings({
-    this.on = false,
-    this.minutes = defaultMinutes,
-    this.days = allDays,
-  });
+class ReminderTime {
+  const ReminderTime({this.minutes = defaultMinutes, this.days = allDays});
 
   static const defaultMinutes = 19 * 60 + 30;
   static const allDays = {1, 2, 3, 4, 5, 6, 7};
-
-  final bool on;
 
   /// The time of day, in minutes after midnight.
   final int minutes;
@@ -32,22 +25,17 @@ class ReminderSettings {
   int get hour => minutes ~/ 60;
   int get minute => minutes % 60;
 
-  ReminderSettings copyWith({bool? on, int? minutes, Set<int>? days}) =>
-      ReminderSettings(
-        on: on ?? this.on,
-        minutes: minutes ?? this.minutes,
-        days: days ?? this.days,
-      );
+  ReminderTime copyWith({int? minutes, Set<int>? days}) =>
+      ReminderTime(minutes: minutes ?? this.minutes, days: days ?? this.days);
 
   Map<String, Object> toJson() => {
-    'on': on,
     'minutes': minutes,
     'days': [...days]..sort(),
   };
 
   /// Reads what [toJson] wrote; anything unreadable keeps its default.
-  static ReminderSettings fromJson(Object? j) {
-    if (j is! Map) return const ReminderSettings();
+  static ReminderTime fromJson(Object? j) {
+    if (j is! Map) return const ReminderTime();
     final m = j['minutes'];
     final d = j['days'];
     final days = d is List
@@ -56,8 +44,7 @@ class ReminderSettings {
               if (x is int && x >= 1 && x <= 7) x,
           }
         : <int>{};
-    return ReminderSettings(
-      on: j['on'] == true,
+    return ReminderTime(
       minutes: m is int && m >= 0 && m < 24 * 60 ? m : defaultMinutes,
       days: days.isEmpty ? allDays : days,
     );
@@ -65,14 +52,103 @@ class ReminderSettings {
 
   @override
   bool operator ==(Object other) =>
-      other is ReminderSettings &&
-      other.on == on &&
+      other is ReminderTime &&
       other.minutes == minutes &&
       setEquals(other.days, days);
 
   @override
+  int get hashCode => Object.hash(minutes, Object.hashAll([...days]..sort()));
+}
+
+/// What the player chose for the reminders: the master switch, up to
+/// [maxReminders] reminders (each with its own time and weekdays), and the
+/// "the dailies are open" notification with its own switch and morning time.
+/// The dailies it is about are the ones chosen on Today (`appState.myDailies`).
+@immutable
+class ReminderSettings {
+  const ReminderSettings({
+    this.on = false,
+    this.reminders = const [ReminderTime()],
+    this.available = false,
+    this.availableMinutes = defaultAvailableMinutes,
+  });
+
+  static const maxReminders = 2;
+  static const defaultAvailableMinutes = 8 * 60;
+
+  final bool on;
+
+  /// One or two reminders.
+  final List<ReminderTime> reminders;
+
+  /// Whether a notification says the dailies are open, every day.
+  final bool available;
+  final int availableMinutes;
+
+  ReminderSettings copyWith({
+    bool? on,
+    List<ReminderTime>? reminders,
+    bool? available,
+    int? availableMinutes,
+  }) => ReminderSettings(
+    on: on ?? this.on,
+    reminders: reminders ?? this.reminders,
+    available: available ?? this.available,
+    availableMinutes: availableMinutes ?? this.availableMinutes,
+  );
+
+  /// This settings with reminder [i] replaced.
+  ReminderSettings withReminder(int i, ReminderTime r) => copyWith(
+    reminders: [
+      for (var k = 0; k < reminders.length; k++) k == i ? r : reminders[k],
+    ],
+  );
+
+  Map<String, Object> toJson() => {
+    'on': on,
+    'reminders': [for (final r in reminders) r.toJson()],
+    'available': available,
+    'availableMinutes': availableMinutes,
+  };
+
+  /// Reads what [toJson] wrote. Settings saved before there were two reminders
+  /// (one `minutes` and `days` at the top) become the first reminder; anything
+  /// unreadable keeps its default.
+  static ReminderSettings fromJson(Object? j) {
+    if (j is! Map) return const ReminderSettings();
+    final list = j['reminders'];
+    var reminders = list is List
+        ? [for (final r in list.take(maxReminders)) ReminderTime.fromJson(r)]
+        : <ReminderTime>[];
+    if (reminders.isEmpty) {
+      reminders = [
+        j.containsKey('minutes') || j.containsKey('days')
+            ? ReminderTime.fromJson(j)
+            : const ReminderTime(),
+      ];
+    }
+    final a = j['availableMinutes'];
+    return ReminderSettings(
+      on: j['on'] == true,
+      reminders: reminders,
+      available: j['available'] == true,
+      availableMinutes: a is int && a >= 0 && a < 24 * 60
+          ? a
+          : defaultAvailableMinutes,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is ReminderSettings &&
+      other.on == on &&
+      other.available == available &&
+      other.availableMinutes == availableMinutes &&
+      listEquals(other.reminders, reminders);
+
+  @override
   int get hashCode =>
-      Object.hash(on, minutes, Object.hashAll([...days]..sort()));
+      Object.hash(on, available, availableMinutes, Object.hashAll(reminders));
 }
 
 /// The lines a nudge says, picked in turn: a title and a body, with `{mode}`
@@ -125,7 +201,7 @@ class ReminderDaily {
 }
 
 /// One notification: it first shows at [first] (local time) and then every
-/// week at the same time.
+/// week at the same time ([daily]: every day).
 @immutable
 class PlannedNudge {
   const PlannedNudge({
@@ -134,6 +210,7 @@ class PlannedNudge {
     required this.title,
     required this.body,
     required this.mode,
+    this.daily = false,
   });
   final int id;
   final DateTime first;
@@ -142,6 +219,9 @@ class PlannedNudge {
 
   /// The daily the text names (the notification opens it).
   final GameMode mode;
+
+  /// Whether it repeats every day, not every week.
+  final bool daily;
 
   int get weekday => first.weekday;
 
@@ -152,24 +232,30 @@ class PlannedNudge {
       other.first == first &&
       other.title == title &&
       other.body == body &&
-      other.mode == mode;
+      other.mode == mode &&
+      other.daily == daily;
 
   @override
-  int get hashCode => Object.hash(id, first, title, body, mode);
+  int get hashCode => Object.hash(id, first, title, body, mode, daily);
 
   @override
-  String toString() => '$id $first $title | $body';
+  String toString() => '$id $first $daily $title | $body';
 }
 
-/// The notification id of a weekday.
-int reminderId(int weekday) => 9100 + weekday;
+/// The notification id of reminder number [index] (0 or 1) on a weekday.
+int reminderId(int weekday, [int index = 0]) => 9100 + index * 10 + weekday;
 
-/// The notifications to schedule: one for each selected weekday, at the chosen
-/// time. A phone cannot run code when a notification is due, so what is known
-/// when it is planned decides: a day whose chosen dailies are all finished (the
-/// day being the daily's own, see [dailyDate]) is left to the next week. The
-/// text names the waiting daily with the longest streak (the first in the
-/// app's order on a tie) and counts the others; [variant] turns the lines.
+/// The id of the "the dailies are open" notification.
+const availableId = 9200;
+
+/// The notifications to schedule: for each reminder, one for each of its
+/// weekdays, at its time; and the "open" notification when it is on. A phone
+/// cannot run code when a notification is due, so what is known when a reminder
+/// is planned decides: a day whose chosen dailies are all finished (the day
+/// being the daily's own, see [dailyDate]) is left to the next week. The text
+/// names the waiting daily with the longest streak (the first in the app's
+/// order on a tie) and counts the others; [variant] turns the lines. The "open"
+/// notification has no such check: it just fires.
 List<PlannedNudge> planReminders({
   required ReminderSettings settings,
   required DateTime now,
@@ -178,43 +264,61 @@ List<PlannedNudge> planReminders({
 }) {
   if (!settings.on || dailies.isEmpty) return const [];
   final plan = <PlannedNudge>[];
-  for (final weekday in [...settings.days]..sort()) {
-    if (weekday < 1 || weekday > 7) continue;
-    var first = DateTime(
-      now.year,
-      now.month,
-      now.day + (weekday - now.weekday) % 7,
-      settings.hour,
-      settings.minute,
-    );
-    if (!first.isAfter(now)) first = _plusDays(first, 7);
-    var date = dailyDate(first.toUtc());
-    var waiting = [
-      for (final d in dailies)
-        if (!d.doneOn(date)) d,
-    ];
-    if (waiting.isEmpty) {
-      // finished for that day: the first one is next week's
-      first = _plusDays(first, 7);
-      waiting = dailies;
+  for (var index = 0; index < settings.reminders.length; index++) {
+    if (index >= ReminderSettings.maxReminders) break;
+    final r = settings.reminders[index];
+    for (final weekday in [...r.days]..sort()) {
+      if (weekday < 1 || weekday > 7) continue;
+      var first = DateTime(
+        now.year,
+        now.month,
+        now.day + (weekday - now.weekday) % 7,
+        r.hour,
+        r.minute,
+      );
+      if (!first.isAfter(now)) first = _plusDays(first, 7);
+      var waiting = [
+        for (final d in dailies)
+          if (!d.doneOn(dailyDate(first.toUtc()))) d,
+      ];
+      if (waiting.isEmpty) {
+        // finished for that day: the first one is next week's
+        first = _plusDays(first, 7);
+        waiting = dailies;
+      }
+      var top = waiting.first;
+      for (final d in waiting) {
+        if (d.streak > top.streak) top = d;
+      }
+      final text = nudgeText(
+        variant + weekday + index,
+        top.mode.label.toLowerCase(),
+        top.streak,
+        waiting.length - 1,
+      );
+      plan.add(
+        PlannedNudge(
+          id: reminderId(weekday, index),
+          first: first,
+          title: text.$1,
+          body: text.$2,
+          mode: top.mode,
+        ),
+      );
     }
-    var top = waiting.first;
-    for (final d in waiting) {
-      if (d.streak > top.streak) top = d;
-    }
-    final text = nudgeText(
-      variant + weekday,
-      top.mode.label.toLowerCase(),
-      top.streak,
-      waiting.length - 1,
-    );
+  }
+  if (settings.available) {
+    final m = settings.availableMinutes;
+    var first = DateTime(now.year, now.month, now.day, m ~/ 60, m % 60);
+    if (!first.isAfter(now)) first = _plusDays(first, 1);
     plan.add(
       PlannedNudge(
-        id: reminderId(weekday),
+        id: availableId,
         first: first,
-        title: text.$1,
-        body: text.$2,
-        mode: top.mode,
+        title: 'your dailies are open',
+        body: dailies.map((d) => d.mode.label.toLowerCase()).join(', '),
+        mode: dailies.first.mode,
+        daily: true,
       ),
     );
   }
@@ -317,7 +421,9 @@ class LocalNotificationScheduler implements NotificationScheduler {
           ),
           // inexact: no exact-alarm permission is needed
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          matchDateTimeComponents: n.daily
+              ? DateTimeComponents.time
+              : DateTimeComponents.dayOfWeekAndTime,
         );
       }
     } catch (e) {
@@ -339,8 +445,12 @@ class Reminders {
   /// The clock the plan goes by; tests replace it.
   static DateTime Function() now = DateTime.now;
 
-  /// What a tap on a notification does with the daily it names.
+  /// What a tap on a notification does with the daily it names: chooses its
+  /// mode. Then [openDaily], when main sets it, opens the daily itself.
   static void Function(GameMode mode) onOpen = (m) => appState.setup(mode: m);
+
+  /// Set by main: opens the daily of the mode (pushes the daily's page).
+  static void Function(GameMode mode)? openDaily;
 
   static bool get supported => scheduler.supported;
 
@@ -413,7 +523,9 @@ class Reminders {
   static void opened(String? payload) {
     try {
       final m = GameMode.values.where((m) => m.name == payload).firstOrNull;
-      if (m != null) onOpen(m);
+      if (m == null) return;
+      onOpen(m);
+      openDaily?.call(m);
     } catch (e) {
       appLog.w('reminders', 'open failed ${e.runtimeType}');
     }
