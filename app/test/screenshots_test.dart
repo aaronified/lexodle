@@ -365,6 +365,8 @@ void main() {
 
   /// The shell, on the tab [tab] (today when null).
   Future<GlobalKey> shell(WidgetTester t, [String? tab]) async {
+    // the tests' config starts on the old home page; the app is always the shell
+    appState.newUi = true;
     final key = GlobalKey();
     await t.pumpWidget(RepaintBoundary(key: key, child: const LexodleApp()));
     await t.pumpAndSettle();
