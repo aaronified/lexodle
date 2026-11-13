@@ -22,7 +22,7 @@ everyone, with 9 tries (quartet) and 10 (relay). As in any other game, a word ma
 with an earlier one with a 10% chance, and a word with a letter twice counts as sharing one (before
 2026-11-01 the words shared none, which favoured words with a letter twice). The **lockdown** daily
 is a single word with 6 tries and 5 hearts. The **blind** daily is a single word with 10 tries,
-played by the counts alone. The **equations** daily is one 8-tile equation with 6 tries, the same in
+played by the counts alone. The **equations** daily is one 8-tile equation with 5 tries, the same in
 every language. The **mastermind** daily has no word and no limit on guesses: what it says to each
 guess is drawn from the date, the language, the number of the guess and the guess itself (from the
 pool of words still possible, as in the random pool), so everyone who makes the same guesses gets

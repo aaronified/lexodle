@@ -71,7 +71,16 @@ class DifficultyMatrix extends StatelessWidget {
     final cols = levels.length;
     String counted(int n) =>
         n == 0 ? 'no limit' : '$n ${n == 1 ? unit.$1 : unit.$2}';
-    final selCol = levels.indexWhere((l) => l.$2 == tries).clamp(0, cols - 1);
+    // the level nearest to the chosen tries (a tie goes to the fewer), as an
+    // equation game kept with 6 tries shows as normal
+    var selCol = 0;
+    for (var i = 1; i < cols; i++) {
+      final d = (levels[i].$2 - tries).abs(),
+          best = (levels[selCol].$2 - tries).abs();
+      if (d < best || (d == best && levels[i].$2 < levels[selCol].$2)) {
+        selCol = i;
+      }
+    }
     final selRow = rows.indexOf(length).clamp(0, rows.length - 1);
     final span = (rows.length - 1 + cols - 1).clamp(1, 100);
     final selected = difficultyColor(c, (selCol + selRow) / span);

@@ -22,6 +22,9 @@ it to the version.
   each in words and a streak; you choose which dailies are yours. The you tab
   has the streak week (with a month view), the theme, and your numbers.
   Unfinished: the old home page stays until the new screens are done.
+- equations get fewer tries: easy 7, normal 5, hard 4, brutal 3
+  A guess can test a lot of numbers at once, so the daily (normal) has 5 tries,
+  not 6, and the difficulty grid of the equations says 7, 5, 4 and 3.
 - history: a days range beside weeks and months
   The plot can show the last 50 days. Weeks and months are unchanged.
 - achievements: the recent ones first, and sorting
