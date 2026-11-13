@@ -110,7 +110,7 @@ int gamesToOpen(GameMode m) {
 
 /// Whether [m] is open to a player with [games] played ([veteran]: everything).
 bool isOpen(GameMode m, int games, {bool veteran = false}) =>
-    veteran || games >= gamesToOpen(m);
+    veteran || m == GameMode.classic || games >= gamesToOpen(m);
 
 /// The modes open to a player with [games] played, in the app's own order.
 List<GameMode> openModes(int games, {bool veteran = false}) => [

@@ -19,6 +19,7 @@ void main() {
     });
 
     test('classic is open from the first game, the others as scheduled', () {
+      expect(isOpen(GameMode.classic, 0), isTrue);
       expect(isOpen(GameMode.classic, 1), isTrue);
       expect(isOpen(GameMode.quartet, 3), isFalse);
       expect(isOpen(GameMode.quartet, 4), isTrue);
