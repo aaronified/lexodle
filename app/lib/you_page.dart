@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
 import 'main.dart';
+import 'mode_settings_page.dart' show knownModes;
 import 'profile_sheet.dart';
 import 'routes.dart';
 import 'streak_week.dart';
@@ -197,6 +198,16 @@ class YouPage extends StatelessWidget {
                       'a ping when your dailies open',
                       icon: 'clock',
                       onTap: () => showToast(context, 'reminders are next'),
+                    ),
+                  if (knownModes().isNotEmpty)
+                    _row(
+                      context,
+                      'modeset',
+                      'mode settings',
+                      'free play settings · '
+                          '${[for (final m in knownModes()) m.label].join(', ')}',
+                      icon: 'settings',
+                      onTap: () => _push(context, Routes.modeSettings),
                     ),
                   if (_from(5))
                     _row(
