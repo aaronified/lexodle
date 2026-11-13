@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
 import 'home.dart' show LanguagePopup;
+import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
 import 'mode_settings_page.dart' show knownModes;
 import 'profile_sheet.dart';
 import 'routes.dart';
+import 'settings_page.dart' show SettingsPart;
 import 'streak_week.dart';
 import 'ui.dart';
 import 'words.dart';
@@ -80,9 +82,9 @@ class _YouPageState extends State<YouPage> {
         .name;
   }
 
-  void _push(BuildContext context, String route) {
+  void _push(BuildContext context, String route, {Object? arguments}) {
     try {
-      Navigator.pushNamed(context, route);
+      Navigator.pushNamed(context, route, arguments: arguments);
     } catch (e) {
       appLog.w('you', 'open failed ${e.runtimeType}');
     }
@@ -236,8 +238,8 @@ class _YouPageState extends State<YouPage> {
                       '${appState.unlockedCount} of ${achievementCount()} earned'
                           '${appState.lexUnlocked ? ' · lex and hints' : ''}',
                       icon: 'trophy',
-                      trailing: appState.lexUnlocked
-                          ? '${appState.lexBalance}'
+                      trailingWidget: appState.lexUnlocked
+                          ? LexChip(appState.lexBalance)
                           : null,
                       onTap: () => _push(context, Routes.achievements),
                     ),
@@ -330,7 +332,11 @@ class _YouPageState extends State<YouPage> {
                       'backup',
                       'save your data, or restore it',
                       icon: 'shield-check',
-                      onTap: () => _push(context, Routes.settings),
+                      onTap: () => _push(
+                        context,
+                        Routes.settings,
+                        arguments: SettingsPart.backup,
+                      ),
                     ),
                   if (_from(7))
                     _row(
@@ -339,7 +345,11 @@ class _YouPageState extends State<YouPage> {
                       'support lexodle',
                       'keep it going',
                       icon: 'gift',
-                      onTap: () => _push(context, Routes.settings),
+                      onTap: () => _push(
+                        context,
+                        Routes.settings,
+                        arguments: SettingsPart.support,
+                      ),
                     ),
                 ],
               ),
@@ -358,6 +368,7 @@ class _YouPageState extends State<YouPage> {
     required VoidCallback onTap,
     String? icon,
     String? trailing,
+    Widget? trailingWidget,
   }) {
     final c = Theme.of(context).colorScheme;
     return InkWell(
@@ -392,7 +403,12 @@ class _YouPageState extends State<YouPage> {
                 ],
               ),
             ),
-            if (trailing != null)
+            if (trailingWidget != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: trailingWidget,
+              )
+            else if (trailing != null)
               Padding(
                 padding: const EdgeInsets.only(right: 6),
                 child: Text(trailing, style: TextStyle(color: c.primary)),

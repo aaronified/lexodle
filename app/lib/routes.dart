@@ -269,7 +269,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         HowToPage(onboarding: settings.arguments == onboardingArgument),
       );
     case Routes.settings:
-      return page(const SettingsPage());
+      final part = settings.arguments;
+      return page(
+        SettingsPage(part: part is SettingsPart ? part : SettingsPart.all),
+      );
     case Routes.modeSettings:
       return page(const ModeSettingsPage());
     case Routes.gameModes:

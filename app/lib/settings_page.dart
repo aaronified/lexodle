@@ -18,6 +18,9 @@ import 'update_section.dart';
 import 'ui.dart';
 import 'wiki_links.dart';
 
+/// What the settings page shows: everything, or one section on its own.
+enum SettingsPart { all, backup, support }
+
 /// The settings page: theme, touch, backup, updates, log, support, and the way
 /// to about and licences. Each section has its caption, its controls and at
 /// most one short line. Changes apply
@@ -25,11 +28,36 @@ import 'wiki_links.dart';
 /// so it has an address like every other screen. The game options are in
 /// [Routes.gameModes].
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({super.key, this.part = SettingsPart.all});
+
+  /// Which part of the settings is shown: all of it, or one section alone.
+  final SettingsPart part;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
+    if (part != SettingsPart.all) {
+      final backup = part == SettingsPart.backup;
+      final title = backup ? 'backup' : 'support lexodle';
+      return Scaffold(
+        appBar: AppBar(title: Text(title)),
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
+                children: [
+                  Caption(title),
+                  const SizedBox(height: 10),
+                  if (backup) const _BackupSection() else const DonateSection(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('settings')),
       body: SafeArea(

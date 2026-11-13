@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/donate.dart';
+import 'package:lexodle/lex_widgets.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/routes.dart';
+import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/you_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -142,6 +145,63 @@ void main() {
     await tester.tap(row('settings'));
     await tester.pumpAndSettle();
     expect(pushed, [Routes.howTo, Routes.settings]);
+  });
+
+  Future<RouteSettings> pushedBy(WidgetTester tester, String id) async {
+    player(played: 500, veteran: true);
+    RouteSettings? got;
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await tester.pumpWidget(
+      MaterialApp(
+        onGenerateRoute: (s) {
+          got = s;
+          return onGenerateRoute(s);
+        },
+        home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(row(id));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    return got!;
+  }
+
+  testWidgets('the support row opens only the support section', (t) async {
+    final s = await pushedBy(t, 'support');
+    expect(s.name, Routes.settings);
+    expect(s.arguments, SettingsPart.support);
+    expect(find.byType(DonateSection), findsOneWidget);
+    expect(find.text('touch'), findsNothing);
+    expect(find.text('about'), findsNothing);
+    expect(find.byType(BackButton), findsOneWidget);
+  });
+
+  testWidgets('the backup row opens only the backup section', (t) async {
+    final s = await pushedBy(t, 'backup');
+    expect(s.name, Routes.settings);
+    expect(s.arguments, SettingsPart.backup);
+    expect(find.byKey(const ValueKey('backup-download')), findsOneWidget);
+    expect(find.byType(DonateSection), findsNothing);
+    expect(find.text('touch'), findsNothing);
+    expect(find.text('about'), findsNothing);
+    expect(find.byType(BackButton), findsOneWidget);
+  });
+
+  testWidgets('the settings row opens all of the settings', (t) async {
+    final s = await pushedBy(t, 'settings');
+    expect(s.arguments, isNull);
+    expect(find.text('touch'), findsOneWidget);
+    expect(find.text('about', skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('the achievements row shows the lex chip', (tester) async {
+    player(played: 500, veteran: true);
+    await show(tester);
+    expect(
+      find.descendant(of: row('achievements'), matching: find.byType(LexChip)),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the help button calls back', (tester) async {
