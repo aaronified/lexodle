@@ -108,7 +108,7 @@ void main() {
     await tester.pump();
     final text = find.descendant(
       of: find.byKey(const ValueKey('today-free-play')),
-      matching: find.text('free play'),
+      matching: find.text('free play · classic'),
     );
     expect(text, findsOneWidget);
     // one line of 14 px text is well under two lines' height
@@ -126,10 +126,11 @@ void main() {
     expect(box.color, isNotNull);
     expect(box.color!.a, 1);
     expect(find.byKey(const ValueKey('today-free-play')), findsOneWidget);
+    expect(find.byKey(const ValueKey('today-primary')), findsNothing);
     expect(
       find.descendant(
-        of: find.byKey(const ValueKey('today-primary')),
-        matching: find.text('continue lockdown'),
+        of: find.byKey(const ValueKey('today-free-play')),
+        matching: find.text('free play · classic'),
       ),
       findsOneWidget,
     );
@@ -141,11 +142,11 @@ void main() {
     appState.recordDaily(today, dailySolved);
     await show(tester);
     expect(find.byKey(const ValueKey('today-all-done')), findsOneWidget);
-    expect(find.byKey(const ValueKey('today-free-play')), findsNothing);
+    expect(find.byKey(const ValueKey('today-primary')), findsNothing);
     expect(
       find.descendant(
-        of: find.byKey(const ValueKey('today-primary')),
-        matching: find.text('free play'),
+        of: find.byKey(const ValueKey('today-free-play')),
+        matching: find.text('free play · classic'),
       ),
       findsOneWidget,
     );
@@ -244,11 +245,7 @@ void main() {
   });
 
   testWidgets('each feature card goes to its page', (tester) async {
-    final want = {
-      5: Routes.history,
-      9: Routes.words,
-      24: Routes.learn,
-    };
+    final want = {5: Routes.history, 9: Routes.words, 24: Routes.learn};
     for (final e in want.entries) {
       await tester.pumpWidget(const SizedBox());
       appState.introCardsDone.clear();
@@ -281,6 +278,54 @@ void main() {
     expect(pushed, isNot(contains(Routes.gameModes)));
     expect(find.byType(GameModesDialog), findsNothing);
     expect(appState.mode, GameMode.quartet);
+  });
+
+  testWidgets('one open mode: no chevrons, a tap starts its free play', (
+    tester,
+  ) async {
+    appState.stats.played = 0;
+    appState.lex.veteran = false;
+    final pushed = await showRouted(tester);
+    expect(find.text('free play · classic'), findsOneWidget);
+    expect(find.byKey(const ValueKey('mode-prev')), findsNothing);
+    expect(find.byKey(const ValueKey('mode-next')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('today-free-play')));
+    await tester.pumpAndSettle();
+    expect(pushed, contains(Routes.play));
+    expect(appState.mode, GameMode.classic);
+  });
+
+  testWidgets('several open modes: the button turns through them', (
+    tester,
+  ) async {
+    veteran();
+    final pushed = await showRouted(tester);
+    expect(find.byKey(const ValueKey('mode-prev')), findsOneWidget);
+    expect(find.byKey(const ValueKey('mode-next')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('mode-next')));
+    await tester.pumpAndSettle();
+    expect(appState.mode, isNot(GameMode.classic));
+    final first = appState.mode;
+    expect(find.text('free play · ${first.label}'), findsOneWidget);
+    // a drag over the button turns it too
+    await tester.drag(
+      find.byKey(const ValueKey('today-free-play')),
+      const Offset(-160, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(appState.mode, isNot(first));
+    expect(find.text('free play · ${appState.mode.label}'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('today-free-play')));
+    await tester.pumpAndSettle();
+    expect(pushed, contains(Routes.play));
+  });
+
+  testWidgets('a daily row still starts the daily', (tester) async {
+    veteran();
+    final pushed = await showRouted(tester);
+    await tester.tap(row(GameMode.lockdown));
+    await tester.pumpAndSettle();
+    expect(pushed, contains(Routes.daily));
   });
 
   testWidgets('the every mode card only dismisses', (tester) async {
