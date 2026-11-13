@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.10.1
+
 - today: one button for free play and the mode
   The bottom of today is one plain button, free play and the mode name. With one mode open a tap starts it. With more, swipe or use the arrows to change the mode, tap to play it. The daily is started from its row.
 
