@@ -897,7 +897,10 @@ void main() {
       const ReminderSettings(
         on: true,
         available: true,
-        reminders: [ReminderTime(), ReminderTime(minutes: 20 * 60 + 30)],
+        reminders: [
+          ReminderTime(),
+          ReminderTime(minutes: 20 * 60 + 30),
+        ],
       ),
     );
     t.view.physicalSize = const Size(412, 1000) * 2;

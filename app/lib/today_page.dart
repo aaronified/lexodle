@@ -106,7 +106,7 @@ class TodayPage extends StatelessWidget {
           m,
     ];
     final canChoose = isOpen(GameMode.quartet, games, veteran: veteran);
-    final newPlayer = !veteran && nextStep(games) != null;
+    final newPlayer = !veteran;
     final dim = c.onSurface.withValues(alpha: dimAlpha);
 
     final pending = rows.where(
@@ -395,58 +395,84 @@ class TodayPage extends StatelessWidget {
     );
   }
 
-  /// The card of what just opened. A mode's card offers its lesson on a tap.
+  /// Where a tap on the card of [s] goes, and the verb it carries.
+  static String _verb(LadderStep s) => switch (s.name) {
+    'skill, luck and risk' => 'got it ›',
+    'achievements' => 'see them ›',
+    'your numbers' => 'see it ›',
+    'every mode' => 'see them ›',
+    'my words' => 'open it ›',
+    'learn' => 'try it ›',
+    _ => s.mode != null ? 'how it works ›' : 'try it ›',
+  };
+
+  void _go(BuildContext context, LadderStep s) {
+    try {
+      appState.markIntroCardDone(s.name);
+      final route = switch (s.name) {
+        'achievements' => Routes.achievements,
+        'your numbers' => Routes.history,
+        'every mode' => Routes.gameModes,
+        'my words' => Routes.words,
+        'learn' => Routes.learn,
+        _ => null,
+      };
+      if (s.mode != null) {
+        _openLesson(context, s.mode!);
+      } else if (route != null) {
+        Navigator.pushNamed(context, route);
+      }
+    } catch (e) {
+      appLog.w('today', 'could not open the card: ${e.runtimeType}');
+    }
+  }
+
+  /// The card of what just opened: a tap takes the player into it.
   Widget _newCard(
     BuildContext context,
     ColorScheme c,
     Color dim,
     LadderStep s,
   ) {
-    final mode = s.mode;
-    final card = Container(
-      key: ValueKey('today-new-${s.name}'),
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: c.secondaryContainer,
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: c.surface,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text('new', style: TextStyle(fontSize: 11)),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            s.name,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
-          Text(s.note, style: TextStyle(fontSize: 12, color: dim)),
-          if (mode != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'how it works ›',
-              style: TextStyle(fontSize: 12, color: c.primary),
-            ),
-          ],
-        ],
-      ),
-    );
-    if (mode == null) return card;
     return InkWell(
-      key: ValueKey('today-lesson-${mode.name}'),
+      key: ValueKey('today-new-${s.name}'),
       borderRadius: BorderRadius.circular(3),
-      onTap: () => _openLesson(context, mode),
+      onTap: () => _go(context, s),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 44),
-        child: card,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: c.secondaryContainer,
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: c.surface,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('new', style: TextStyle(fontSize: 11)),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                s.name,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(s.note, style: TextStyle(fontSize: 12, color: dim)),
+              const SizedBox(height: 8),
+              Text(_verb(s), style: TextStyle(fontSize: 12, color: c.primary)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -482,7 +508,9 @@ class TodayPage extends StatelessWidget {
     final dim = c.onSurface.withValues(alpha: dimAlpha);
     final opened = [
       for (final s in justOpened(games))
-        if (s.mode == null || !appState.isTaught(s.mode!)) s,
+        if (!appState.introCardsDone.contains(s.name) &&
+            (s.mode == null || !appState.isTaught(s.mode!)))
+          s,
     ];
     if (opened.isEmpty) return const [];
     return [const SizedBox(height: 16), _newCard(context, c, dim, opened.last)];

@@ -53,7 +53,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    SharedPreferences.setMockInitialValues({
+      'seenHowTo': true,
+      'dailyIntroSeen': true,
+    });
     appState
       ..haptics = true
       ..helper = Helper.full;
