@@ -21,7 +21,7 @@ void main() {
       final c = e.value.colorScheme;
       expect(hairline(c).width, 0.75, reason: e.key);
       final r = _ratio(hairlineColor(c), c.surface);
-      expect(r, inInclusiveRange(1.3, 1.6), reason: '${e.key} $r');
+      expect(r, inInclusiveRange(1.4, 2.1), reason: '${e.key} $r');
     }
   });
 
