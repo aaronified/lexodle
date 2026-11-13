@@ -25,7 +25,7 @@ import 'package:lexodle/reminders.dart';
 import 'package:lexodle/saved_words.dart';
 import 'package:lexodle/collection.dart';
 import 'package:lexodle/geography.dart';
-import 'package:lexodle/how_to.dart';
+import 'package:lexodle/learn_guide.dart' show ModeGuidePage;
 import 'package:lexodle/game.dart';
 import 'package:lexodle/keyboard.dart';
 import 'package:lexodle/home.dart' show LanguagePopup;
@@ -822,19 +822,15 @@ void main() {
     await shot(t, key, 'learn-tab');
   }, skip: skip != null);
 
-  testWidgets('how to play, with the live row', (t) async {
+  testWidgets('how to play, from learn', (t) async {
     await prepare(t);
-    t.view.physicalSize = const Size(412, 1300) * 2;
+    t.view.physicalSize = const Size(412, 1900) * 2;
     final key = GlobalKey();
-    await t.pumpWidget(framed(key, const HowToPage()));
+    await t.pumpWidget(
+      framed(key, const ModeGuidePage(mode: GameMode.classic)),
+    );
     await t.pump();
-    // lock the letter at the second tile of the row, as a player would
-    for (var k = 0; k < 2; k++) {
-      await t.tap(find.byKey(const ValueKey('try-0')));
-      await t.pump(const Duration(milliseconds: 50));
-    }
-    await t.pump(const Duration(milliseconds: 600));
-    await shot(t, key, 'howto');
+    await shot(t, key, 'how-to-play');
   }, skip: skip != null);
 
   testWidgets('the language list', (t) async {
