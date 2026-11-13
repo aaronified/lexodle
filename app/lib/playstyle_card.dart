@@ -9,7 +9,9 @@ import 'playstyle.dart';
 import 'routes.dart';
 import 'ui.dart';
 
-/// A shaded card, as those of the history page: no border, radius 6.
+/// A shaded card, as those of the history page: radius 6. On the page's ground
+/// (no [color]) it has the soft [hairline]; a card inside a card, one shade up
+/// (a [color] given), has none.
 Widget hairlineCard(
   BuildContext context, {
   Key? key,
@@ -23,6 +25,7 @@ Widget hairlineCard(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: color ?? c.surfaceContainerHighest,
+      border: color == null ? Border.fromBorderSide(hairline(c)) : null,
       borderRadius: BorderRadius.circular(6),
     ),
     child: child,

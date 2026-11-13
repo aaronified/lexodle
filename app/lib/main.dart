@@ -18,6 +18,7 @@ import 'store.dart';
 import 'update_check.dart';
 import 'update_section.dart';
 import 'app_log.dart';
+import 'ui.dart' show hairline;
 
 /// Dustland-style minimalism on Material 3: flat surfaces, hairline borders,
 /// near-square corners, lowercase monospace text. Every colour comes from the
@@ -58,13 +59,25 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
     );
   }
   const shape = RoundedRectangleBorder(borderRadius: _radius);
+  final line = hairline(scheme);
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
     canvasColor: scheme.surface,
     cardColor: scheme.surface,
-    dialogTheme: DialogThemeData(backgroundColor: scheme.surface, shape: shape),
+    dialogTheme: DialogThemeData(
+      backgroundColor: scheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: _radius, side: line),
+    ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: scheme.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+        side: line,
+      ),
+    ),
     fontFamily: _font,
     dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
     appBarTheme: AppBarTheme(
@@ -90,7 +103,7 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
       style: OutlinedButton.styleFrom(
         shape: shape,
         minimumSize: const Size(0, 48),
-        side: BorderSide.none,
+        side: line,
         backgroundColor: scheme.surfaceContainerHighest,
         foregroundColor: scheme.onSurface,
         textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1.2),
@@ -102,22 +115,15 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
         textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1.2),
       ),
     ),
-    // controls are flat fills, never outlines; a focused field gets a thicker
-    // bottom line instead
+    // a field is delimited by the soft line; focused, it is clearly thicker
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: scheme.surfaceContainerHighest,
-      border: const OutlineInputBorder(
+      border: OutlineInputBorder(borderRadius: _radius, borderSide: line),
+      enabledBorder: OutlineInputBorder(borderRadius: _radius, borderSide: line),
+      focusedBorder: OutlineInputBorder(
         borderRadius: _radius,
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: const OutlineInputBorder(
-        borderRadius: _radius,
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: const OutlineInputBorder(
-        borderRadius: _radius,
-        borderSide: BorderSide.none,
+        borderSide: BorderSide(color: scheme.primary, width: 1.5),
       ),
     ),
     cardTheme: CardThemeData(
