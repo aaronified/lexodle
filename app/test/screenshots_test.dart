@@ -5,9 +5,8 @@
 //   LEXODLE_SCREENSHOTS=1 flutter test test/screenshots_test.dart
 //
 // (PowerShell: $env:LEXODLE_SCREENSHOTS = 1.) The PNGs are written to
-// docs/screenshots/ at the top of the repository. The tests that show the new
-// shell (today, words, you) switch `appState.newUi` on: the tests' default is the
-// old home.
+// docs/screenshots/ at the top of the repository. The player is a veteran, so
+// every tab, mode and row is open; each game shows its timer at 1:23.
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -26,7 +25,6 @@ import 'package:lexodle/reminders.dart';
 import 'package:lexodle/saved_words.dart';
 import 'package:lexodle/collection.dart';
 import 'package:lexodle/geography.dart';
-import 'package:lexodle/game_modes_dialog.dart';
 import 'package:lexodle/how_to.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/keyboard.dart';
@@ -60,6 +58,11 @@ final skip = Platform.environment.containsKey('LEXODLE_SCREENSHOTS')
 
 /// The day the screenshots are of (a Saturday), so the week is the same each time.
 final today = DateTime(2026, 10, 24, 10);
+
+/// The clock of every game's timer, so a game shows the same time each run:
+/// [played] moves it to 1:23 after the first key.
+Duration _now = Duration.zero;
+Duration clock() => _now;
 
 /// The language the pictures are in. Its flag is an SVG like every other, so
 /// any language would draw.
@@ -143,6 +146,7 @@ void main() {
     t.view.physicalSize = phone * 2;
     t.view.devicePixelRatio = 2;
     addTearDown(t.view.reset);
+    _now = Duration.zero;
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await appState.load();
     appState.setup(
@@ -200,6 +204,7 @@ void main() {
         answers: [pool[rng.nextInt(400)]],
         won: i % 9 != 4,
         daily: i % 6 == 0 ? '2026-10-${(i % 20) + 1}' : '',
+        ms: 45000 + rng.nextInt(240000),
         guesses: [
           for (var k = 0; k < guesses.length; k++)
             GuessRow(
@@ -330,9 +335,36 @@ void main() {
     }
   }
 
-  /// The new shell, on the tab [tab] (today when null).
+  /// The game has been played for 1:23: its timer pill reads it.
+  Future<void> played(WidgetTester t) async {
+    _now = const Duration(seconds: 83);
+    await t.pump(const Duration(seconds: 1));
+  }
+
+  /// The dailies as they stand on the day: classic solved, the quartet half
+  /// played, lockdown missed and blind not started, each with a streak but the
+  /// lost one.
+  void seedToday() {
+    for (final m in [GameMode.quartet, GameMode.blind]) {
+      for (var d = 18; d <= 23; d++) {
+        appState.recordDaily('2026-10-$d', dailySolved, lang: lang, mode: m);
+      }
+    }
+    appState.recordDaily('2026-10-24', dailySolved);
+    appState.recordDaily(
+      '2026-10-24',
+      dailyMissed,
+      lang: lang,
+      mode: GameMode.lockdown,
+    );
+    appState.saveDaily(lang, '2026-10-24', [
+      'crane',
+      'sloth',
+    ], mode: GameMode.quartet);
+  }
+
+  /// The shell, on the tab [tab] (today when null).
   Future<GlobalKey> shell(WidgetTester t, [String? tab]) async {
-    appState.newUi = true;
     final key = GlobalKey();
     await t.pumpWidget(RepaintBoundary(key: key, child: const LexodleApp()));
     await t.pumpAndSettle();
@@ -350,12 +382,14 @@ void main() {
 
   testWidgets('the today tab', (t) async {
     await prepare(t);
+    seedToday();
     final key = await shell(t);
     await shot(t, key, 'today');
   }, skip: skip != null);
 
   testWidgets('the you tab', (t) async {
     await prepare(t);
+    seedToday();
     t.view.physicalSize = const Size(412, 1000) * 2;
     final key = await shell(t, 'you');
     await shot(t, key, 'you');
@@ -389,7 +423,9 @@ void main() {
     final key = GlobalKey();
     final (answer, first, second) = demo(bank.answers(5));
     final daily = Daily('2026-10-24', answer);
-    await t.pumpWidget(framed(key, GamePage(bank: bank, daily: daily)));
+    await t.pumpWidget(
+      framed(key, GamePage(bank: bank, daily: daily, clock: clock)),
+    );
     await t.pump();
     for (final w in [first, second]) {
       await type(t, w);
@@ -400,7 +436,7 @@ void main() {
     await t.pump(const Duration(seconds: 20));
     // the answer, with the third letter not worked out yet
     await type(t, '${answer.substring(0, 2)} ${answer.substring(3)}');
-    await t.pump();
+    await played(t);
     await shot(t, key, 'game');
     // the feature list shows the board, not the keyboard
     await shot(t, key, 'features/game', crop: aboveKeyboard(t));
@@ -410,7 +446,7 @@ void main() {
     final bank = await prepare(t, mode: GameMode.quartet, language: 'fr');
     final key = GlobalKey();
     await t.pumpWidget(
-      framed(key, MultiGamePage(bank: bank, random: Random(11))),
+      framed(key, MultiGamePage(bank: bank, random: Random(11), clock: clock)),
     );
     await t.pump();
     final words = plain(bank.answers(5));
@@ -419,6 +455,7 @@ void main() {
       await t.sendKeyEvent(LogicalKeyboardKey.enter);
       await t.pump();
     }
+    await played(t);
     await shot(t, key, 'quartet');
     await shot(t, key, 'features/quartet', crop: aboveKeyboard(t));
   }, skip: skip != null);
@@ -430,7 +467,12 @@ void main() {
     await t.pumpWidget(
       framed(
         key,
-        GamePage(bank: bank, random: Random(11), mode: GameMode.lockdown),
+        GamePage(
+          bank: bank,
+          random: Random(11),
+          mode: GameMode.lockdown,
+          clock: clock,
+        ),
       ),
     );
     await t.pump();
@@ -481,7 +523,7 @@ void main() {
       }
       await t.pump();
     }
-    await t.pump(const Duration(milliseconds: 300));
+    await played(t);
     await shot(t, key, 'lockdown', crop: aboveKeyboard(t));
   }, skip: skip != null);
 
@@ -580,8 +622,9 @@ void main() {
     );
   }, skip: skip != null);
 
-  testWidgets('the settings', (t) async {
+  testWidgets('the settings, from the theme down', (t) async {
     await prepare(t);
+    t.view.physicalSize = const Size(412, 1400) * 2;
     final key = GlobalKey();
     await t.pumpWidget(
       RepaintBoundary(
@@ -698,6 +741,7 @@ void main() {
           bank: bank,
           mode: GameMode.blind,
           practice: true,
+          clock: clock,
           daily: Daily('', answer, length: 5, tries: 10),
         ),
       ),
@@ -723,7 +767,7 @@ void main() {
       }
     }
     await type(t, words[300].substring(0, 2));
-    await t.pump();
+    await played(t);
     await shot(t, key, 'blind', crop: aboveKeyboard(t));
   }, skip: skip != null);
 
@@ -741,6 +785,7 @@ void main() {
           bank: places,
           mode: GameMode.themed,
           practice: true,
+          clock: clock,
           daily: Daily('', 'egypt', length: 5, tries: 6),
         ),
       ),
@@ -753,17 +798,26 @@ void main() {
     }
     await type(t, 'trick');
     await t.sendKeyEvent(LogicalKeyboardKey.enter);
-    await t.pump();
+    await played(t);
     await shot(t, key, 'themed', crop: aboveKeyboard(t));
   }, skip: skip != null);
 
-  testWidgets('the game modes, themed', (t) async {
-    await prepare(t, mode: GameMode.themed);
-    t.view.physicalSize = const Size(412, 1500) * 2;
-    final key = GlobalKey();
-    await t.pumpWidget(framed(key, const Scaffold(body: GameModesDialog())));
-    await t.pump(const Duration(seconds: 1));
-    await shot(t, key, 'modes');
+  testWidgets('the choose dailies sheet, every mode open', (t) async {
+    await prepare(t);
+    seedToday();
+    t.view.physicalSize = const Size(412, 1100) * 2;
+    final key = await shell(t);
+    await t.tap(find.byKey(const ValueKey('today-choose')));
+    await t.pumpAndSettle();
+    expect(find.byType(Switch), findsWidgets);
+    await shot(t, key, 'choose-dailies');
+  }, skip: skip != null);
+
+  testWidgets('the learn tab', (t) async {
+    await prepare(t);
+    t.view.physicalSize = const Size(412, 1400) * 2;
+    final key = await shell(t, 'learn');
+    await shot(t, key, 'learn-tab');
   }, skip: skip != null);
 
   testWidgets('how to play, with the live row', (t) async {
@@ -817,7 +871,9 @@ void main() {
     final bank = await prepare(t);
     final key = GlobalKey();
     t.view.physicalSize = const Size(412, 700) * 2;
-    await t.pumpWidget(framed(key, GamePage(bank: bank, random: Random(5))));
+    await t.pumpWidget(
+      framed(key, GamePage(bank: bank, random: Random(5), clock: clock)),
+    );
     await t.pump();
     final words = plain(bank.answers(5));
     for (final w in [words[8], words[120]]) {
@@ -838,7 +894,9 @@ void main() {
   testWidgets('a game with the hint tray open', (t) async {
     final bank = await prepare(t);
     final key = GlobalKey();
-    await t.pumpWidget(framed(key, GamePage(bank: bank, random: Random(5))));
+    await t.pumpWidget(
+      framed(key, GamePage(bank: bank, random: Random(5), clock: clock)),
+    );
     await t.pump();
     final words = plain(bank.answers(5));
     for (final w in [words[8], words[120]]) {
@@ -846,6 +904,7 @@ void main() {
       await t.sendKeyEvent(LogicalKeyboardKey.enter);
       await t.pump();
     }
+    await played(t);
     await t.tap(find.byType(HintBar));
     await t.pumpAndSettle();
     await shot(t, key, 'hints');
