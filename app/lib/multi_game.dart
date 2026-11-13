@@ -199,7 +199,12 @@ class _MultiGamePageState extends State<MultiGamePage> {
     try {
       final inp = extra['in'];
       if (inp is Map) input.restore(inp.cast<String, dynamic>());
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'multi',
+        'the saved input could not be restored: ${e.runtimeType}',
+      );
+    }
   }
 
   /// Where this game is kept while it is played, or null when it is not kept (a
@@ -1162,7 +1167,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
                     ? 'practice${_daily.date.isEmpty ? '' : ' ${_daily.date}'} · not counted'
                     : 'daily ${_daily.date} · streak '
                           '${appState.dailyStreakFor(widget.bank.language.code, mode)} · '
-                          'the next words come at midnight, your time',
+                          'the next words come at midnight in India',
               ),
             const SizedBox(height: 10),
             for (final a in unlocked)

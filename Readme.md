@@ -35,7 +35,7 @@
 
 <table>
   <tr>
-    <td align="center"><img src="docs/screenshots/home.png" alt="The home screen: language, daily streak with a week of fires, letters, difficulty grid, and the player's playstyle at the top right" width="230"></td>
+    <td align="center"><img src="docs/screenshots/home.png" alt="The old home screen (settings > new look off; the default is now the today, words, learn and you tabs): language, daily streak with a week of fires, letters, difficulty grid, and the player's playstyle at the top right" width="230"></td>
     <td align="center"><img src="docs/screenshots/game.png" alt="A daily in play, with a blank pencilled into the third tile of the next guess" width="230"></td>
     <td align="center"><img src="docs/screenshots/quartet.png" alt="A quartet: four boards sharing every guess, with split keys on the keyboard" width="230"></td>
   </tr>
@@ -151,10 +151,10 @@
 
 <table>
   <tr>
-    <td width="40%"><img src="docs/screenshots/features/history.png" width="100%" alt="The overall numbers and a line chart of skill, luck and risk over 50 weeks"></td>
+    <td width="40%"><img src="docs/screenshots/features/history.png" width="100%" alt="The overall numbers and a line chart of skill, luck and risk over 50 weeks (the app also shows days and months)"></td>
     <td width="60%">
       <h3>📈 A history that explains your play</h3>
-      Every game is kept, however many, with a chart over the last 50 weeks or months of skill,
+      Every game is kept, however many, with a chart over the last 50 days, weeks or months of skill,
       luck and risk.
       <a href="https://github.com/aaronified/lexodle/wiki/History-and-playstyles">History</a>.
     </td>
@@ -166,7 +166,7 @@
     <td width="60%">
       <h3>🎭 Six playstyles</h3>
       From analyst to gambler: an early habit (maximiser, eliminator or gambler) and an end habit
-      (prober or closer), read from how each guess scored. It moves as you play, and each language has its own.
+      (prober or closer), read from how each guess scored. It moves as you play, and each language, and each single-board mode, has its own.
       <a href="https://github.com/aaronified/lexodle/wiki/History-and-playstyles#playstyles">The six</a>.
     </td>
     <td width="40%"><img src="docs/screenshots/features/playstyle.png" width="100%" alt="The playstyle card: a maverick, its habits, and the six styles with those held marked"></td>
@@ -205,7 +205,7 @@
     <td width="40%"><img src="docs/screenshots/features/achievements.png" width="100%" alt="Achievements in English, each with its flag; bilingual shows three flags"></td>
     <td width="60%">
       <h3>🏅 Achievements, by language</h3>
-      49 achievements, each earned in a language and wearing its flag, with an all-languages
+      173 achievements, each with four levels (bronze to platinum), each earned in a language and wearing its flag, with an all-languages
       view and a tower of babel for completing every language; the ones that count
       languages wear theirs. Playstyle, streak and history are kept per language too.
       <a href="https://github.com/aaronified/lexodle/wiki/Languages">Languages</a> ·
@@ -214,7 +214,40 @@
   </tr>
 </table>
 
-**And also:** an in-app update check for the Android app, a UPI donation button, blanks you can pencil in, a backup file for everything, light and dark themes, and nothing
+<table>
+  <tr>
+    <td width="100%">
+      <h3>➗ Equations and 🎯 Mastermind</h3>
+      <b>Equations</b>: find the true equation, whose tiles are digits and signs, with fewer tries than a word
+      (7, 5, 4 or 3). <b>Mastermind</b>: the word dodges you, with no limit on guesses; each guess is scored against
+      the words still possible. Both are opened by playing, as the other modes are, and both have a daily.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="100%">
+      <h3>💡 Lex and hints</h3>
+      Achievements pay <b>lex</b> (bronze 1, silver 2, gold 3, platinum 5; once a day in each language). Spend it on a
+      hint above the keyboard: a letter that is not in the word (10), one that is (25) or one in its place (50). A
+      game with a hint pays no lex and keeps the streak. Classic, lockdown, geography, quartet and relay have hints.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="100%">
+      <h3>📖 My words, and a daily in every mode</h3>
+      Save the answer with your own note (its Wiktionary entry is kept, so it opens offline), and every word you win is
+      collected like a trophy, by language. Every mode has its own daily, streak and calendar. The app opens on
+      today, words, learn and you as four tabs, which open as you play.
+    </td>
+  </tr>
+</table>
+
+**And also:** an in-app update check for the Android app, a UPI donation button, blanks you can pencil in, a backup file for everything, system, light, dark and true-black themes, and nothing
 fetched to draw: fonts, flags and icons are in the app
 ([offline and privacy](https://github.com/aaronified/lexodle/wiki/Offline-and-privacy)).
 
@@ -235,6 +268,6 @@ deploy ([developing](https://github.com/aaronified/lexodle/wiki/Developing)); th
 ## Credits
 
 Words from [wordfreq](https://github.com/rspeer/wordfreq) filtered with Hunspell dictionaries;
-meanings from [Wiktionary](https://en.wiktionary.org); JetBrains Mono; [Tabler](https://tabler.io/icons)
+meanings, pronunciation, origins and synonyms from the [Wiktionary](https://www.wiktionary.org) of each language (CC BY-SA 4.0; saved copies too) and pronunciation recordings from Wikimedia Commons under their own licences; place names from [GeoNames](https://www.geonames.org/) (CC BY 4.0); JetBrains Mono; [Tabler](https://tabler.io/icons)
 icons; [Twemoji](https://github.com/jdecked/twemoji) flags. Licences are in
 [the wiki](https://github.com/aaronified/lexodle/wiki/Word-lists#credits-and-licences) and the code is under [LICENSE](LICENSE).

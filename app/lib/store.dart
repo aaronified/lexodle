@@ -2523,7 +2523,12 @@ class AppState extends ChangeNotifier {
     downloadsBackup = on;
     try {
       _w('downloadsBackup', _prefs?.setBool('downloadsBackup', on));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'store',
+        'could not save downloads backup setting: ${e.runtimeType}',
+      );
+    }
     notifyListeners();
   }
 
@@ -2534,7 +2539,9 @@ class AppState extends ChangeNotifier {
     lastRunVersion = v;
     try {
       _w('lastRunVersion', _prefs?.setString('lastRunVersion', v));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save run version: ${e.runtimeType}');
+    }
   }
 
   /// The version whose changes the player has been shown (see changelog.dart).
@@ -2544,7 +2551,9 @@ class AppState extends ChangeNotifier {
     changelogSeen = v;
     try {
       _w('changelogSeen', _prefs?.setString('changelogSeen', v));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save changelog seen: ${e.runtimeType}');
+    }
   }
 
   /// Whether sounds play (the crack of a heart in lockdown). On until turned off.
@@ -2554,7 +2563,9 @@ class AppState extends ChangeNotifier {
     sound = on;
     try {
       _w('sound', _prefs?.setBool('sound', on));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save sound setting: ${e.runtimeType}');
+    }
     notifyListeners();
   }
 
@@ -2591,7 +2602,9 @@ class AppState extends ChangeNotifier {
     haptics = on;
     try {
       _w('haptics', _prefs?.setBool('haptics', on));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save haptics setting: ${e.runtimeType}');
+    }
     notifyListeners();
   }
 
@@ -2633,7 +2646,12 @@ class AppState extends ChangeNotifier {
     autoUpdateCheck = on;
     try {
       _w('autoUpdateCheck', _prefs?.setBool('autoUpdateCheck', on));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'store',
+        'could not save auto update check setting: ${e.runtimeType}',
+      );
+    }
     notifyListeners();
   }
 
@@ -2650,7 +2668,9 @@ class AppState extends ChangeNotifier {
         ),
       );
       _w('latestRelease', _prefs?.setString('latestRelease', latest ?? ''));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save latest release: ${e.runtimeType}');
+    }
     notifyListeners();
   }
 
@@ -2839,7 +2859,9 @@ class AppState extends ChangeNotifier {
           jsonEncode({for (final e in daily.entries) e.key: e.value.toJson()}),
         ),
       );
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save daily entries: ${e.runtimeType}');
+    }
     notifyListeners();
   }
 
@@ -2870,7 +2892,9 @@ class AppState extends ChangeNotifier {
   void _writeProgress() {
     try {
       _w('progress', _prefs?.setString('progress', jsonEncode(progress)));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save progress: ${e.runtimeType}');
+    }
   }
 
   /// How each day's daily went in a language (date -> [dailyMissed],
@@ -2959,7 +2983,9 @@ class AppState extends ChangeNotifier {
         'learnLog',
         _prefs?.setString('learnLog', jsonEncode(learnLog.toJson())),
       );
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save learn log: ${e.runtimeType}');
+    }
   }
 
   void _readLearn(SharedPreferences p) {
@@ -2968,7 +2994,7 @@ class AppState extends ChangeNotifier {
     try {
       learnLog = LearnLog.fromJson(jsonDecode(raw));
     } catch (e) {
-      appLog.w('store', 'the learn log could not be read: $e');
+      appLog.w('store', 'the learn log could not be read: ${e.runtimeType}');
     }
   }
 
@@ -3050,7 +3076,9 @@ class AppState extends ChangeNotifier {
         'collection',
         _prefs?.setString('collection', jsonEncode(collection.toJson())),
       );
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save collection: ${e.runtimeType}');
+    }
   }
 
   void _readCollection(SharedPreferences p) {
@@ -3107,7 +3135,9 @@ class AppState extends ChangeNotifier {
         'savedWords',
         _prefs?.setString('savedWords', jsonEncode(savedWords.toJson())),
       );
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save saved words: ${e.runtimeType}');
+    }
   }
 
   void _readWords(SharedPreferences p) {
@@ -3116,7 +3146,7 @@ class AppState extends ChangeNotifier {
     try {
       savedWords = SavedWords.fromJson(jsonDecode(raw));
     } catch (e) {
-      appLog.w('store', 'the saved words could not be read: $e');
+      appLog.w('store', 'the saved words could not be read: ${e.runtimeType}');
     }
   }
 
@@ -3520,7 +3550,9 @@ class AppState extends ChangeNotifier {
       _w('style', p.remove('style'));
       _w('stylesHeld', p.remove('stylesHeld'));
       _w('styleChanges', p.remove('styleChanges'));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not remove old style keys: ${e.runtimeType}');
+    }
   }
 
   /// Tells the screens to redraw (the clock they show a date from changed).
@@ -3605,7 +3637,9 @@ class AppState extends ChangeNotifier {
       _w(historyIndexKey, p.setStringList(historyIndexKey, history.months()));
       _w('history', p.remove('history')); // the one string of earlier versions
       history.dirtyMonths.clear();
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save history: ${e.runtimeType}');
+    }
   }
 
   /// Reads the history back: month by month, skipping one that is damaged
@@ -3661,7 +3695,9 @@ class AppState extends ChangeNotifier {
     try {
       final k = '$key:unread';
       if (p.getString(k) == null) p.setString(k, raw);
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not keep the unread copy: ${e.runtimeType}');
+    }
   }
 
   /// Replaces the history (a restored backup), removing the months that are no
@@ -3675,7 +3711,12 @@ class AppState extends ChangeNotifier {
       for (final m in before) {
         if (!h.months().contains(m)) p?.remove(historyChunkKey(m));
       }
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'store',
+        'could not remove old history chunks: ${e.runtimeType}',
+      );
+    }
     saveHistory();
   }
 
@@ -3688,7 +3729,9 @@ class AppState extends ChangeNotifier {
       );
       _w('dailyLog', _prefs?.remove('dailyLog'));
       _w('dailyBest', _prefs?.remove('dailyBest'));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save daily bests: ${e.runtimeType}');
+    }
   }
 
   SharedPreferences? _prefs;
@@ -3717,7 +3760,7 @@ class AppState extends ChangeNotifier {
       },
       onError: (Object e) {
         saveFailures++;
-        appLog.e('save', '$what failed: $e');
+        appLog.e('save', '$what failed: ${e.runtimeType}');
       },
     );
   }
@@ -3743,7 +3786,9 @@ class AppState extends ChangeNotifier {
         if (ds != null) {
           try {
             _readDraws(jsonDecode(ds));
-          } catch (_) {}
+          } catch (e) {
+            appLog.w('store', 'could not read the draws: ${e.runtimeType}');
+          }
         }
         final h = p.getInt('helper');
         if (h != null && h >= 0 && h < Helper.values.length) {
@@ -3782,7 +3827,7 @@ class AppState extends ChangeNotifier {
         final found = p.getString('latestRelease');
         latestRelease = found == null || found.isEmpty ? null : found;
       } catch (e) {
-        appLog.w('store', 'could not read a setting: $e');
+        appLog.w('store', 'could not read a setting: ${e.runtimeType}');
         // a setting of an unexpected kind must not stop the progress being read
       }
       final s = p.getString('stats');
@@ -3790,7 +3835,7 @@ class AppState extends ChangeNotifier {
         try {
           stats = Stats.fromJson(jsonDecode(s));
         } catch (e) {
-          appLog.w('store', 'could not read the statistics: $e');
+          appLog.w('store', 'could not read the statistics: ${e.runtimeType}');
           _keepUnread(p, 'stats', s); // the rest is still read
         }
       }
@@ -3804,7 +3849,10 @@ class AppState extends ChangeNotifier {
           };
         }
       } catch (e) {
-        appLog.w('store', 'could not read the games in progress: $e');
+        appLog.w(
+          'store',
+          'could not read the games in progress: ${e.runtimeType}',
+        );
         progress = {};
       }
       try {
@@ -3819,20 +3867,20 @@ class AppState extends ChangeNotifier {
           };
         }
       } catch (e) {
-        appLog.w('store', 'could not read the daily entries: $e');
+        appLog.w('store', 'could not read the daily entries: ${e.runtimeType}');
         daily = {};
       }
       try {
         history = _readHistory(p);
         if (history.dirtyMonths.isNotEmpty) saveHistory(); // from the old form
       } catch (e) {
-        appLog.w('store', 'could not read the history: $e');
+        appLog.w('store', 'could not read the history: ${e.runtimeType}');
         history = History(); // damaged: start the record again
       }
       try {
         _readStyles(p);
       } catch (e) {
-        appLog.w('store', 'could not read the playstyles: $e');
+        appLog.w('store', 'could not read the playstyles: ${e.runtimeType}');
         _styles.clear();
         _stylesHeld.clear();
         _styleChanges.clear();
@@ -3840,7 +3888,7 @@ class AppState extends ChangeNotifier {
       try {
         _readDaily(p);
       } catch (e) {
-        appLog.w('store', 'could not read the daily log: $e');
+        appLog.w('store', 'could not read the daily log: ${e.runtimeType}');
         _dailyLogs.clear();
         _dailyBests.clear();
       }
@@ -3866,7 +3914,10 @@ class AppState extends ChangeNotifier {
             p.setInt('achievementsVersion', achievementsVersion),
           );
         } catch (e) {
-          appLog.w('store', 'could not rebuild the achievements: $e');
+          appLog.w(
+            'store',
+            'could not rebuild the achievements: ${e.runtimeType}',
+          );
         }
       }
       _activateLex();
@@ -3879,7 +3930,7 @@ class AppState extends ChangeNotifier {
             '${stats.played} played, $skippedRows rows skipped',
       );
     } catch (e) {
-      appLog.e('store', 'storage could not be read at all: $e');
+      appLog.e('store', 'storage could not be read at all: ${e.runtimeType}');
     }
     loaded = true;
     notifyListeners();
@@ -3986,7 +4037,9 @@ class AppState extends ChangeNotifier {
           }
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'a migration step failed: ${e.runtimeType}');
+    }
   }
 
   /// The version of the achievements kept: when it is older than this, they are
@@ -4115,7 +4168,9 @@ class AppState extends ChangeNotifier {
           }),
         ),
       );
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save the daily log: ${e.runtimeType}');
+    }
   }
 
   /// The settings as they are saved (and as a backup keeps them).
@@ -4258,7 +4313,9 @@ class AppState extends ChangeNotifier {
           'reminders',
           _prefs?.setString('reminders', jsonEncode(reminders.toJson())),
         );
-      } catch (_) {}
+      } catch (e) {
+        appLog.w('store', 'could not save reminders: ${e.runtimeType}');
+      }
     }
     this.stats = stats;
     try {
@@ -4288,7 +4345,12 @@ class AppState extends ChangeNotifier {
           p.remove('unlocked'),
         ); // the earlier format, now replaced
       }
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'store',
+        'could not remove the old achievements format: ${e.runtimeType}',
+      );
+    }
     _activateLex(); // (a no-op when the backup brought its own lex)
     _saveAchievements();
     // someone who restores a backup knows the game: no first run
@@ -4305,7 +4367,9 @@ class AppState extends ChangeNotifier {
     seenHowTo = true;
     try {
       _w('seenHowTo', _prefs?.setBool('seenHowTo', true));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save the how-to flag: ${e.runtimeType}');
+    }
   }
 
   void setup({
@@ -4370,7 +4434,9 @@ class AppState extends ChangeNotifier {
       _w('mode', _prefs?.setInt('mode', this.mode.index));
       _w('share', _prefs?.setInt('share', this.share));
       _w('theme', _prefs?.setInt('theme', themeIndex));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save settings: ${e.runtimeType}');
+    }
     notifyListeners();
   }
 
@@ -4420,7 +4486,9 @@ class AppState extends ChangeNotifier {
     ];
     try {
       _w('stats', _prefs?.setString('stats', jsonEncode(stats.toJson())));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('store', 'could not save statistics: ${e.runtimeType}');
+    }
     _saveAchievements();
     notifyListeners();
     return earned;

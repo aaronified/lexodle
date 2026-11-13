@@ -1,6 +1,6 @@
 # Place names
 
-The place names of the themed wordle come from [GeoNames](https://www.geonames.org/)
+The place names of the geography mode come from [GeoNames](https://www.geonames.org/)
 (geonames.org), which is licensed under
 [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/). They are
 filtered to countries, regions, cities of 15,000 people or more, and named features of land and

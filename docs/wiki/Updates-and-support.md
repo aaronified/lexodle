@@ -30,10 +30,10 @@ build signed with a different key cannot be updated over one signed with another
 
 ## Backups around an update
 
-Before it installs, the update button saves a backup of everything by itself: a copy in the app's own
+Before it installs, the update button saves a backup of everything the backup holds (see [Offline and privacy](Offline-and-privacy)) by itself: a copy in the app's own
 memory (kept through an update, newest five kept) and, unless you turn it off with "also back up to
 downloads", a copy in your Downloads folder, which survives anything, even uninstalling. The files are
-named `lexodle-backup-update-v<version>-<date>-<time>.json`. If no copy at all could be saved, nothing
+named `lexodle-backup-update-v<version>-<date>-<hhmm>.json`. If no copy at all could be saved, nothing
 is installed until you press update a second time. The first start of a new version also keeps a copy
 of what it found, in the app's memory.
 

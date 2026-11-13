@@ -25,7 +25,8 @@ enum HintKind {
 /// trial; see the issue comments).
 const startingFreeHints = 1;
 
-/// A new player sees lex from this game on (the 10th); a veteran, at once.
+/// A player with this many games at activation is a veteran and sees lex at
+/// once; a new player sees it after the first game (see AppState.lexUnlocked).
 const lexUnlockGames = 10;
 
 /// The most ledger lines kept (the oldest go first), to bound what is saved.

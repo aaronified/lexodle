@@ -8,20 +8,50 @@ Guess the hidden word. After each guess every letter is marked:
 
 ## Game modes and settings
 
-The home screen has the language, the daily streak, **achievements** and **how to play**, and the
-last row: your **playstyle** (a box with its icon; it opens the history), **play**, **daily** and
-**game modes** (the grid). On a phone the last row sticks to the bottom of the screen; on a desktop it
-is the last row of the page. The gear at the top right is **settings**. Game modes holds the mode, the
-letters, the difficulty, shared letters and the helper, with play, the solver and learn. Settings holds
-the theme, backup, updates (Android), support and about.
+The app has four tabs: **today**, **words**, **learn** and **you**. Today lists your dailies, each
+with its state and streak, and a **free play** button that opens the **game modes** screen. You
+holds your username chip, the streak week, the theme and the doors to achievements (with lex and
+hints), reminders, mode settings, history (with your playstyle), backup and support. Game modes
+holds the mode, the difficulty, shared letters, word draw and the helper, with play, the solver,
+learn and diy. Settings (opened from the backup and support rows of you) hold the new look switch,
+theme, touch (vibrate on press, sound), backup, updates (Android), faster openings, log, support
+and about. Anyone can switch the old home page back on in the settings, under **new look**; it
+has the gear, the daily button and the mode swipe.
+
+## Getting started
+
+The first launch asks for a language and a theme, then plays a first game with lessons. After that
+the app opens up one thing at a time, by the number of games you have played (a veteran has all of
+it from the start):
+
+| Games | What opens |
+| ----- | ---------- |
+| 2 | skill, luck and risk on the review screen |
+| 3 | achievements (in you) |
+| 4 | quartet |
+| 5 | your numbers: history and your playstyle (in you) |
+| 6 | every mode is named (all eight are there to read about and try) |
+| 7 | lockdown |
+| 9 | my words, and the **words** tab |
+| 12 | relay race |
+| 14 | blind |
+| 16 | equations |
+| 19 | mastermind |
+| 22 | geography |
+| 24 | learn, and the **learn** tab |
+
+Today shows what just opened as a **new** card (a mode's card offers its lesson) and what is next.
+You pick which dailies are yours with **choose dailies** (from game 4); the rest sit under **more
+dailies**. The language is chosen on the first launch; the new look has no other place to change it
+yet (the old home page has the flag button).
 
 | Setting    | Options |
 | ---------- | ------- |
 | Language   | English (US and UK words together), Spanish, French, German, Italian, Portuguese (Brazil and Portugal words together), Dutch, Polish, Swedish, Danish, Norwegian, Turkish, Romanian, Czech, Indonesian, Hungarian, Catalan; each with its flag |
-| Letters    | 4 to 8 |
-| Difficulty | a grid: tries (easy 8, normal 6, hard 4, brutal 3) by word length, the longest the easiest. Answers can be any word of the length; a checkbox in the game modes picks them by how common each word is (on by default; never used for the daily). The modes menu shows how many words the length has |
+| Difficulty | a grid: tries across (easy 8, normal 6, hard 4, brutal 3) and the word length (4 to 8 letters) down, the longest the easiest. The grid shows how many words the length has |
+| Word draw | *sigmoid curve* (default: the commonest words about equally likely, then fewer and fewer, almost none past the 3,500th), *every word* (all equally likely) or *by frequency* (common words come up more). The daily always draws by the curve |
 
-The letters and the helper are sliders: use the arrows, swipe or drag (the value slides and fades
+The helper, shared letters, word draw, pool choice and colour logic are sliders (one value at a time): use the arrows, swipe or drag (the value slides and fades
 with your finger), scroll sideways or hold shift and scroll the wheel, or click one and use the
 arrow keys. Type on a keyboard or use the on-screen one, which adds each language's accented
 letters. The up and down arrow keys scroll whatever the mouse is over, as the wheel does.
@@ -39,7 +69,7 @@ Double tap a tile to lock its letter, and double tap it again to unlock it. On a
 tile (click it, or use the arrow keys) and tap the shift key: it locks the letter, and tapping shift
 again unlocks it. Shift held to type a capital does nothing. The next guess starts with the locked
 letters in place, and a locked letter is skipped when you type or press backspace. The how to play
-screen in the app has one live row of tiles to try the blanks, the cursor and the locks on.
+screen (on the old home page) has one live row of tiles to try the blanks, the cursor and the locks on.
 
 ## Modes
 
@@ -55,24 +85,23 @@ the last three throb. At no hearts the game is lost. In a **quartet** four words
 four boards at once (the keyboard splits each key in four, one part per board); a **relay race**
 plays the four boards one after the other, each starting with every earlier guess already
 applied. Quartet and relay race get extra tries (3 and 4), and the *shared letters* setting says
-how often their words may share a letter. The helper shows in classic only, so it is greyed out
-for the others. The *shared letters* swiper appears only for quartet and relay race.
+how often their words may share a letter. The helper shows in classic and lockdown, so it is greyed out
+for quartet, relay race, blind and geography (equations and mastermind have none). The *shared letters* swiper appears only for quartet and relay race.
 
-Three more modes live in the game modes screen (the home swipe keeps the four above). **Geography** (called themed
-before) is a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
+Every mode is one stop on the mode slider of the game modes screen: classic, quartet, relay race, lockdown, blind, equations, mastermind and (English only) geography. **Geography** is a classic game whose words are place names, in English only: countries, cities, rivers, mountains,
 lakes, bays and the like, with spaces left out (`riodejaneiro`). Only place names are valid guesses,
 and every guess has a small *i* that says what the place is and links to its Wikipedia page. The
-*answers* switch chooses between well known places (drawn on a curve by how much their Wikipedia page
+*word draw* chooses between *well known* places (drawn on a curve by how much their Wikipedia page
 is read) and all places. Other themes (mythology, history, mathematics) are planned and hidden for now. **Blind** tells only how
 many letters are right and in place (green) and how many are right elsewhere (yellow), never which;
-it has 10 tries by default (14, 10, 8 or 6) and works in every language. The two counts are as big as
+it has 10 tries by default (14, 10, 8 or 6) and works in every language. A **colour logic** setting (on by default) marks what the counts settle, and greys the keyboard once every letter is found; off, you mark everything. The two counts are as big as
 the tiles, and a tap on a letter of a guess you have made pencils a colour on it (green, yellow, grey,
-then none) to keep track of what you have worked out; nothing scores by those notes. **Make your own** (a button
+then none) to keep track of what you have worked out; nothing scores by those notes. **Make your own** (the **diy** button
 in the game modes screen, in every mode but mastermind) lets you type a word (four words for a quartet or a
 relay race, an equation, a place), choose the language, the tries or the hearts, and gives a link
 that anyone can open to play your word as practice; nothing is saved or counted. The word is only
 lightly disguised in the link (four digits a letter), not secret. The app opens these links itself
-on Android. None of the three has a daily.
+on Android. Blind and geography have a daily of their own (see [Daily word](Daily-word)); a diy game has none.
 
 In **blind**, a double tap on the counts locks every green you have pencilled into the row you
 are typing (the guesses themselves cannot lock: a tap on them cycles their colour).
@@ -80,10 +109,10 @@ are typing (the guesses themselves cannot lock: a tap on them cycles their colou
 **My words** is a personal dictionary. On the end screen of a game, the bookmark beside the answer
 saves the word with a copy of its Wiktionary entry (meanings, examples, pronunciation, origin,
 synonyms), kept on the device and in the backup, so it opens without a connection (listening needs
-one). My words, beside *how to play* on the home page and in learn, lists them newest first, with a
+one). My words is the **words** tab (it opens at game 9) and a card in learn. Saved and collected are its two lists: swipe sideways between them. A banner at the bottom shows the count and the next trophy; dismiss it and it comes back for the next trophy. It lists them newest first, with a
 language filter, a search over the word, its note and its first meaning, and an a-to-z sort. Open a
 word to read its entry, write a note of your own (kept as you type, shown cut short in the list) or
-remove it. Lost games show the bookmark too. Geography and equations answers cannot be saved.
+remove it. Lost games show the bookmark too. A word is saved even when the lookup fails: its page says no entry was kept and asks for your own notes, and *try the lookup again* fetches the entry later. Geography and equations answers cannot be saved.
 
 Every answer of a **won** game is also *collected*, like a trophy, in the *collected* tab of My words:
 each word by language (every word of a won quartet or relay race), and the places of geography in
@@ -94,14 +123,14 @@ the dictionary: **word collector** (collect 10, 50, 250 different words, and at 
 the language, per language), **word keeper** (save 5, 25, 100, 500 words) and **annotator** (write a
 note on 1, 10, 50, 200 saved words).
 
-The home swipe goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
-(English only) themed, and round again.
+The mode slider goes classic, quartet, relay race, lockdown, blind, equations, mastermind and
+(English only) geography, and round again.
 
 **Equations**: the tiles are digits and signs, `0`-`9` and `+ − × ÷ =`, and a guess has to be a
 true equation with one `=`, a sum on the left and one whole number on the right, read with the usual
 order of operations (no leading zeros, no sign in front of a number, and no lone 0, so `10` is fine).
-The colours work as in classic. It has 6, 7 or 8 tiles and the tries of the difficulty (6 by default),
-and no helper. Its guesses are scored for skill and luck and reviewed after the game, as words are (the first, slowest score is worked out on another thread when the game starts and kept for the next game). It has a **daily**: 8 tiles, 6 tries, the same equation in every
+The colours work as in classic. It has 6, 7 or 8 tiles and its own tries grid (easy 7, normal 5, hard 4, brutal 3; a fresh install plays 6 until you pick), fewer than a word because a guess can test many numbers at once,
+and no helper. Its guesses are scored for skill and luck and reviewed after the game, as words are (the first, slowest score is worked out on another thread when the game starts and kept for the next game). It has a **daily**: 8 tiles, 5 tries, the same equation in every
 language.
 
 **Mastermind**: no word is chosen. Each guess is answered as a word still possible
@@ -126,16 +155,32 @@ that the game never uses as an answer; the review says so, and nothing more.
 
 The **daily** never shows the helper, whatever the setting is: only the tries left. 
 
+## Hints and lex
+
+**Lex** is the hint currency. A lamp above the keyboard opens three hints: *rule one out* (a letter
+that is not in the word) costs 10 lex, *a letter that is in* 25, and *a letter in its place* 50.
+Hold a row until its bar fills to buy it; undo works until your next guess. The hint shows above
+the keyboard. You start with one free hint. A game in which you used a hint pays no lex, and your
+streak is safe. Hints are in classic, lockdown, geography, quartet and relay race (not blind,
+equations or mastermind). Medals pay lex: see [Achievements](Achievements). You see lex after your
+first game.
+
+## Mode settings and reminders
+
+In you, **mode settings** changes the free play settings of a mode you have played three times,
+without switching to it (a daily always uses fixed settings). **Reminders** (phone app only) pings
+you when the dailies open, and up to two nudges a day while a daily you chose is still waiting.
+
 ## Touch
 
 On a phone the on-screen keyboard has bigger keys, and every press gives a short vibration, each with
 its own feel: a light tap for a letter, a click for backspace, a medium tap for enter and for the
 buttons, a heavy knock for a word that is not allowed, a double knock for a win and a long buzz for a
 loss. A press that is only a scroll gives nothing. The settings have a switch ("vibrate on press") to turn
-it off. Phones only; it does nothing on a desktop or the web.
+it off, and one for sound. Phones only; it does nothing on a desktop or the web.
 
 When a game ends, the answer's pronunciation (IPA and audio), meaning, synonyms and antonyms are
-fetched from [Wiktionary](https://en.wiktionary.org), with a link to the full entry. If
+fetched from the [Wiktionary](https://www.wiktionary.org) of the word's language, with a link to the full entry. If
 Wiktionary has no entry or is unreachable, the game carries on without it.
 
 See [Skill, luck and risk](Skill-luck-and-risk) for what the numbers mean.

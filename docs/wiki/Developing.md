@@ -9,7 +9,14 @@ flutter test
 flutter run -d chrome
 ```
 
-`flutter build apk` also works; the `android/` platform is scaffolded.
+`flutter build apk` also works; the `android/` platform is scaffolded (`compileSdk` 37, Java 17;
+`app/android/app/build.gradle.kts`). The new look (today, words, learn and you as four tabs) is the
+default for everyone who never chose; it can be switched off in the settings.
+
+Packages (`app/pubspec.yaml`): audioplayers (pronunciation), file_picker (backups),
+flutter_local_notifications, flutter_timezone and timezone (reminders), flutter_svg, html
+(Wiktionary pages), http, image_picker (the optional profile photo), ota_update (self-update),
+path_provider, shared_preferences (storage) and url_launcher.
 
 ## File map
 
@@ -27,12 +34,20 @@ flutter run -d chrome
 | `app/lib/store.dart`, `backup.dart` | Settings, the per-language state, the achievement definitions; the backup file |
 | `app/lib/achievements_page.dart`, `language_picker.dart` | The achievements page and the flag picker |
 | `app/assets/words/` | Generated word lists, one file per language |
-| `app/tools/` | Word-list generator, a live Wiktionary check, `calibrate_styles.dart` (simulated players for the playstyle thresholds) and `predict_tries.dart` (tries against skill, luck and risk) |
+| `app/lib/wiktionary.dart`, `wikt/` | The Wiktionary client, the editions table (one parser per language edition) and the audio links |
+| `app/lib/reminders.dart`, `reminders_page.dart` | Reminders, as local notifications (Android) |
+| `app/lib/profile.dart`, `profile_sheet.dart` | The player's name, avatar and optional photo (the photo is not backed up) |
+| `app/lib/saved_words.dart`, `word_page.dart`, `words_page.dart` | The personal dictionary: saved words with a copy of their entry |
+| `app/lib/lex.dart`, `collection.dart` | The lex balance and the collected words |
+| `app/lib/precomputed*.dart`, `opening_disk.dart` | The published openings, and the cache of openings kept on the device |
+| `app/lib/update_check.dart`, `update_section.dart`, `auto_backup.dart`, `app_log.dart` | The update check and install, the automatic backups, the log |
+| `app/lib/today_page.dart`, `you_page.dart`, `first_run/` | The new look's tabs, and the first-run flow |
+| `app/tools/` | Generators for the word lists, themes, geography, equations and icons, the glyph check, the donate-QR maker, and `live_check.dart` (a live Wiktionary check) |
 | `docs/paper/` | The maths of skill, luck and risk in bits, with the simulations |
 | `docs/wiki/` | These pages |
 | `docs/screenshots/` | The pictures in the README |
 
-`app/tools/live_check.dart` calls the real Wiktionary API (`dart run tools/live_check.dart`); the
+`app/tools/live_check.dart` calls the real Wiktionary APIs of several editions (`dart run tools/live_check.dart`); the
 unit tests use saved responses and need no network.
 
 ## Screenshots
@@ -58,6 +73,13 @@ The `Deploy web app to GitHub Pages` workflow tests, builds and publishes `app/`
 Actions*. You can also run it by hand from the Actions tab. The `wiki` workflow publishes
 `docs/wiki` to this wiki.
 
+The **CI** workflow (every pull request and push to `main`, or by hand) runs `dart analyze lib
+--no-fatal-warnings`, `flutter test` and the paper's `check_tex.py`. CI and the Pages workflow pin
+Flutter 3.47.9 (`FLUTTER_VERSION` in `ci.yml`, `flutter-version` in `pages.yml`); keep them equal.
+The Android, Release and precompute workflows use the newest stable. The Android workflow builds a
+debug APK on pull requests and pushes to `main`. Pages and the release build take `DAILY_SALT` from
+a repository secret.
+
 ## Protecting main: the release deploy key
 
 The release workflow pushes one commit to `main` (the version it records after a release). A
@@ -81,13 +103,14 @@ forbids force-push and deletion, and add **Deploy keys** to its bypass list. Cre
 off, run one release to check the key works (the run's log should not show the "not set" warning),
 then switch it on. To undo, delete the key under Settings → Deploy keys.
 
-The push by key starts the workflows that listen to `main` (Pages, Android), as any push there
-does. The release workflow itself listens to tags, so it does not start again.
+The push by key starts the workflows that listen to `main` (CI, Pages, Android, and the wiki if
+`docs/wiki` changed), as any push there does. The release workflow itself listens to tags, so it does not start again.
 
 ## The experiments
 
-`app/tools/calibrate_styles.dart` and `predict_tries.dart` (run from `app`, see the head of each)
-write their results to `docs/paper/experiments/results`, where the paper reads them.
+The paper's simulations are the Python scripts in `docs/paper/experiments/` (see
+`docs/paper/README.md`). Their results are in `docs/paper/experiments/results`, where the paper
+reads them. Check the TeX with `python docs/paper/check_tex.py` (the CI `paper` job does).
 
 ## The release build does not shrink code
 
@@ -117,8 +140,8 @@ problem report. A failed save is counted and shown in the section's summary line
 The opening of a game scores every word of a list against every other, which takes seconds on a
 phone and about a minute on the web (no worker thread there). The **precompute** workflow
 (Actions > precompute > Run workflow, by hand only) works them out ahead for every language and
-length, for the three answer weightings (curve, equal, frequency), blind and not, for the equations
-and for the places, with the app's own scoring (`app/lib/logic.dart`) and the word lists as they are
+length, for the three answer weightings (curve, equal, frequency), blind and not; for the equations
+(equal weights); and for the places (curve and equal); with the app's own scoring (`app/lib/logic.dart`) and the word lists as they are
 at that commit. Its input `lists` limits a run to some languages (or `equations`, `places`); the
 lists left out keep their published files.
 
@@ -135,8 +158,9 @@ keep tens of megabytes of old copies:
 Luck is not precomputed: it depends on the answer, so it is worked out on the device.
 
 How the app uses them: **on the web** the analysis fetches `openings/<key>.bin` from
-`raw.githubusercontent.com/<owner>/<repo>/precomputed/` before scoring a list of 2,000 words or more
-(a minute of work there otherwise), and the opening page fetches the tree. A miss (offline, a changed
+`raw.githubusercontent.com/<owner>/<repo>/precomputed/` before scoring when the words times the guesses
+reach 4,000,000 (`openingCells` in `app/lib/logic.dart`; 2,000 words against themselves), which
+is a minute of work there otherwise, and the opening page fetches the tree. A miss (offline, a changed
 list, nothing published) just works it out. **On a phone** settings has a **faster openings** section:
 it reads `manifest.json`, shows what the language in use, the equations, the places and every list take
 (for example "english · download 3.4 MB"), and downloads the ones chosen to the app's own files

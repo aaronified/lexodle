@@ -5,9 +5,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'ui.dart';
 import 'words.dart';
 import 'wiktionary.dart';
+import 'app_log.dart';
 
 /// Meaning, pronunciation, synonyms and antonyms of the answer, from
-/// en.wiktionary.org. Shown after the game ends; every failure degrades to a
+/// the Wiktionary of the word's language. Shown after the game ends; every failure degrades to a
 /// one-line note, since the game itself never depends on the network.
 class WordInfoView extends StatefulWidget {
   const WordInfoView({super.key, required this.word, required this.language});
@@ -71,7 +72,12 @@ class _WordInfoBodyState extends State<WordInfoBody> {
       _player ??= AudioPlayer();
       await _player!.stop();
       await _player!.play(UrlSource(url));
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'word',
+        'the pronunciation could not be played: ${e.runtimeType}',
+      );
+    }
   }
 
   @override
@@ -141,7 +147,10 @@ class _WordInfoBodyState extends State<WordInfoBody> {
             minimumSize: const Size(0, 36),
           ),
           onPressed: () => launchUrl(Uri.parse(info.url)),
-          child: Text(linkLabelFor(info.url), style: TextStyle(color: c.primary)),
+          child: Text(
+            linkLabelFor(info.url),
+            style: TextStyle(color: c.primary),
+          ),
         ),
       ],
     );

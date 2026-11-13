@@ -9,8 +9,10 @@ licence, CC BY-SA 4.0. The licence covers these files, not the rest of the app.
 ## Changes made
 
 Each list is a subset of one language's wordfreq vocabulary: Latin letters only, 4 to 8 letters,
-filtered to the words a spelling dictionary accepts, at most 6,000 per length, in order of frequency, with each word's
-frequency kept as its weight. See `SOURCES.md` and `tools/build_words.py`.
+filtered to the words a spelling dictionary accepts, or that en.wiktionary.org has as a lemma or
+form of the language (not a name), without swear words and roman numerals, in order of frequency,
+with each word's frequency kept as its weight. A length is capped at 30,000 words; only Polish and
+Czech reach it. See `SOURCES.md` and `tools/build_words.py`.
 
 ## Credit
 
