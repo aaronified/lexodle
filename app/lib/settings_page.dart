@@ -45,9 +45,9 @@ class SettingsPage extends StatelessWidget {
                     SwitchListTile(
                       key: const ValueKey('new-look'),
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('new look (preview)'),
+                      title: const Text('new look'),
                       subtitle: const Text(
-                        'today, words, learn and you as tabs. unfinished.',
+                        'today, words, learn and you as tabs. turn it off for the old home.',
                       ),
                       value: appState.newUi,
                       onChanged: appState.setNewUi,
