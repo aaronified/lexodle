@@ -126,15 +126,13 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
-  /// The tabs the player has been taught: today and you from the end of the
-  /// first game, words with my words (game 9), and learn, the last piece, at
-  /// game 24. A veteran has all four.
+  /// The tabs the player has been taught: today and you always, words with
+  /// my words and learn with learn (see ladder.dart).
   List<String> _visible() {
-    final played = appState.stats.played, vet = appState.lex.veteran;
     return [
       'today',
-      if (vet || played >= 9) 'words',
-      if (vet || played >= 24) 'learn',
+      if (appState.stepOpen('my words')) 'words',
+      if (appState.stepOpen('learn')) 'learn',
       'you',
     ];
   }

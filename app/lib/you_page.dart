@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
+import 'changelog.dart';
 import 'home.dart' show LanguagePopup;
 import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
@@ -21,10 +22,6 @@ class YouPage extends StatefulWidget {
 
   /// The help button: play the first game again.
   final VoidCallback onReplayFirstGame;
-
-  /// Whether the player has played [games] games (a veteran sees all).
-  static bool _from(int games) =>
-      appState.lex.veteran || appState.stats.played >= games;
 
   @override
   State<YouPage> createState() => _YouPageState();
@@ -48,7 +45,16 @@ class _YouPageState extends State<YouPage> {
     }
   }
 
-  static bool _from(int games) => YouPage._from(games);
+  /// The changelog again, whatever was seen.
+  Future<void> _showChanges() async {
+    try {
+      final lines = await loadChangelog();
+      if (lines.isEmpty || !mounted) return;
+      showChangelog(context, lines);
+    } catch (e) {
+      appLog.w('changelog', 'whats new failed ${e.runtimeType}');
+    }
+  }
 
   Future<void> _pickLanguage() async {
     try {
@@ -150,87 +156,91 @@ class _YouPageState extends State<YouPage> {
                   const SizedBox(height: 12),
                   const StreakWeek(),
                   const SizedBox(height: 20),
-                  Material(
-                    color: c.surfaceContainerHighest,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(3),
-                      side: hairline(c),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Caption('theme'),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              for (final (m, label) in const [
-                                (ThemeMode.light, 'light'),
-                                (ThemeMode.dark, 'dark'),
-                                (ThemeMode.system, 'system'),
-                              ])
-                                Expanded(
-                                  child: InkWell(
-                                    key: ValueKey('theme-$label'),
-                                    onTap: () => appState.setup(
-                                      themeMode: m,
-                                      black:
-                                          m == ThemeMode.dark &&
-                                          appState.blackTheme,
-                                    ),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
+                  if (appState.stepOpen('theme')) ...[
+                    Material(
+                      color: c.surfaceContainerHighest,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                        side: hairline(c),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Caption('theme'),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                for (final (m, label) in const [
+                                  (ThemeMode.light, 'light'),
+                                  (ThemeMode.dark, 'dark'),
+                                  (ThemeMode.system, 'system'),
+                                ])
+                                  Expanded(
+                                    child: InkWell(
+                                      key: ValueKey('theme-$label'),
+                                      onTap: () => appState.setup(
+                                        themeMode: m,
+                                        black:
+                                            m == ThemeMode.dark &&
+                                            appState.blackTheme,
                                       ),
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: appState.themeMode == m
-                                            ? c.secondaryContainer
-                                            : c.surfaceContainerHighest,
-                                      ),
-                                      child: Text(
-                                        label,
-                                        style: TextStyle(
-                                          fontWeight: appState.themeMode == m
-                                              ? FontWeight.bold
-                                              : null,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                        ),
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
                                           color: appState.themeMode == m
-                                              ? c.onSecondaryContainer
-                                              : c.onSurface,
+                                              ? c.secondaryContainer
+                                              : c.surfaceContainerHighest,
+                                        ),
+                                        child: Text(
+                                          label,
+                                          style: TextStyle(
+                                            fontWeight: appState.themeMode == m
+                                                ? FontWeight.bold
+                                                : null,
+                                            color: appState.themeMode == m
+                                                ? c.onSecondaryContainer
+                                                : c.onSurface,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                            ],
-                          ),
-                          SwitchListTile(
-                            key: const ValueKey('black-switch'),
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                            title: const Text('true black'),
-                            subtitle: Text(
-                              'for OLED screens: pure #000000 when dark',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: c.onSurface.withValues(alpha: dimAlpha),
-                              ),
+                              ],
                             ),
-                            value: appState.blackTheme,
-                            onChanged: dark
-                                ? (on) => appState.setup(
-                                    themeMode: ThemeMode.dark,
-                                    black: on,
-                                  )
-                                : null,
-                          ),
-                        ],
+                            SwitchListTile(
+                              key: const ValueKey('black-switch'),
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              title: const Text('true black'),
+                              subtitle: Text(
+                                'for OLED screens: pure #000000 when dark',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: c.onSurface.withValues(
+                                    alpha: dimAlpha,
+                                  ),
+                                ),
+                              ),
+                              value: appState.blackTheme,
+                              onChanged: dark
+                                  ? (on) => appState.setup(
+                                      themeMode: ThemeMode.dark,
+                                      black: on,
+                                    )
+                                  : null,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (appState.lexUnlocked || _from(3))
+                    const SizedBox(height: 12),
+                  ],
+                  if (appState.stepOpen('achievements'))
                     _row(
                       context,
                       'achievements',
@@ -243,7 +253,7 @@ class _YouPageState extends State<YouPage> {
                           : null,
                       onTap: () => _push(context, Routes.achievements),
                     ),
-                  if (_from(5))
+                  if (appState.stepOpen('friends'))
                     _row(
                       context,
                       'friends',
@@ -253,7 +263,7 @@ class _YouPageState extends State<YouPage> {
                       onTap: () =>
                           showToast(context, 'coming in an upcoming release'),
                     ),
-                  if (_from(2))
+                  if (appState.stepOpen('reminders'))
                     _row(
                       context,
                       'reminders',
@@ -262,7 +272,8 @@ class _YouPageState extends State<YouPage> {
                       icon: 'clock',
                       onTap: () => _push(context, Routes.reminders),
                     ),
-                  if (knownModes().isNotEmpty)
+                  if (appState.stepOpen('mode settings') &&
+                      knownModes().isNotEmpty)
                     _row(
                       context,
                       'modeset',
@@ -272,7 +283,7 @@ class _YouPageState extends State<YouPage> {
                       icon: 'settings',
                       onTap: () => _push(context, Routes.modeSettings),
                     ),
-                  if (_from(5))
+                  if (appState.stepOpen('your numbers'))
                     _row(
                       context,
                       'history',
@@ -283,23 +294,25 @@ class _YouPageState extends State<YouPage> {
                       icon: 'hourglass',
                       onTap: () => _push(context, Routes.history),
                     ),
-                  _row(
-                    context,
-                    'language',
-                    'language',
-                    _langName,
-                    icon: 'world',
-                    onTap: _pickLanguage,
-                  ),
-                  _row(
-                    context,
-                    'howto',
-                    'how to play',
-                    null,
-                    icon: 'zoom-question',
-                    onTap: () => _push(context, Routes.howTo),
-                  ),
-                  if (_from(6))
+                  if (appState.stepOpen('language'))
+                    _row(
+                      context,
+                      'language',
+                      'language',
+                      _langName,
+                      icon: 'world',
+                      onTap: _pickLanguage,
+                    ),
+                  if (appState.stepOpen('how to play'))
+                    _row(
+                      context,
+                      'howto',
+                      'how to play',
+                      null,
+                      icon: 'zoom-question',
+                      onTap: () => _push(context, Routes.howTo),
+                    ),
+                  if (appState.stepOpen('solver'))
                     _row(
                       context,
                       'solver',
@@ -308,7 +321,7 @@ class _YouPageState extends State<YouPage> {
                       icon: 'calculator',
                       onTap: () => _push(context, Routes.solver),
                     ),
-                  if (_from(6))
+                  if (appState.stepOpen('diy'))
                     _row(
                       context,
                       'diy',
@@ -317,15 +330,25 @@ class _YouPageState extends State<YouPage> {
                       icon: 'puzzle',
                       onTap: () => _push(context, Routes.diy),
                     ),
-                  _row(
-                    context,
-                    'settings',
-                    'settings',
-                    'sound, haptics, updates, licences',
-                    icon: 'settings',
-                    onTap: () => _push(context, Routes.settings),
-                  ),
-                  if (_from(3))
+                  if (appState.stepOpen('settings'))
+                    _row(
+                      context,
+                      'settings',
+                      'settings',
+                      'sound, haptics, updates, licences',
+                      icon: 'settings',
+                      onTap: () => _push(context, Routes.settings),
+                    ),
+                  if (appState.stepOpen("what's new"))
+                    _row(
+                      context,
+                      'whatsnew',
+                      "what's new",
+                      'what changed in this version',
+                      icon: 'sparkles',
+                      onTap: _showChanges,
+                    ),
+                  if (appState.stepOpen('backup'))
                     _row(
                       context,
                       'backup',
@@ -338,7 +361,7 @@ class _YouPageState extends State<YouPage> {
                         arguments: SettingsPart.backup,
                       ),
                     ),
-                  if (_from(7))
+                  if (appState.stepOpen('support'))
                     _row(
                       context,
                       'support',

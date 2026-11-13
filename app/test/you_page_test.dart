@@ -60,16 +60,10 @@ void main() {
     expect(find.text('theme'), findsOneWidget);
   }
 
+  testWidgets('game 1 sees none of them', (t) => gated(t, 1, {}));
+  testWidgets('game 2 adds reminders', (t) => gated(t, 2, {'reminders'}));
   testWidgets(
-    'game 1 sees achievements and lex',
-    (t) => gated(t, 1, {'achievements'}),
-  );
-  testWidgets(
-    'game 2 adds reminders',
-    (t) => gated(t, 2, {'achievements', 'reminders'}),
-  );
-  testWidgets(
-    'game 3 adds backup',
+    'game 3 adds achievements',
     (t) => gated(t, 3, {'reminders', 'achievements'}),
   );
   testWidgets(
@@ -97,17 +91,18 @@ void main() {
     expect(appState.blackTheme, isFalse);
   });
 
-  testWidgets('language, how to play and settings are always there', (
-    tester,
-  ) async {
-    player(played: 0, veteran: false);
-    await show(tester);
-    for (final id in ['language', 'howto', 'settings']) {
-      expect(row(id), findsOneWidget, reason: id);
-    }
-    expect(row('solver'), findsNothing);
-    expect(row('diy'), findsNothing);
-  });
+  testWidgets(
+    'language, how to play, settings and what is new are always there',
+    (tester) async {
+      player(played: 0, veteran: false);
+      await show(tester);
+      for (final id in ['language', 'howto', 'settings', 'whatsnew']) {
+        expect(row(id), findsOneWidget, reason: id);
+      }
+      expect(row('solver'), findsNothing);
+      expect(row('diy'), findsNothing);
+    },
+  );
 
   testWidgets('solver and diy come at game 6', (tester) async {
     player(played: 5, veteran: false);

@@ -44,7 +44,7 @@ void main() {
     await appState.load();
     appState.stats.played = 0;
     appState.lex.veteran = false;
-    appState.setNewUi(true);
+    appState.newUi = true;
     FirstRunSignals.chooseDailiesPending = false;
   }
 
@@ -60,7 +60,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  tearDown(() => appState.setNewUi(false));
+  tearDown(() => appState.newUi = false);
 
   testWidgets('a new player lands on the language page', (tester) async {
     await fresh();
@@ -174,7 +174,7 @@ void main() {
 
   testWidgets('practice replay from you returns to you', (tester) async {
     await fresh({'firstRunStage': 2});
-    appState.setNewUi(true);
+    appState.newUi = true;
     await show(tester, AppShell(screens: _screens()));
     await tap(tester, 'you');
     expect(find.byType(YouPage), findsOneWidget);

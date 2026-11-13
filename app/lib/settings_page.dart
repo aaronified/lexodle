@@ -68,17 +68,6 @@ class SettingsPage extends StatelessWidget {
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                   children: [
-                    SwitchListTile(
-                      key: const ValueKey('new-look'),
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('new look'),
-                      subtitle: const Text(
-                        'today, words, learn and you as tabs. turn it off for the old home.',
-                      ),
-                      value: appState.newUi,
-                      onChanged: appState.setNewUi,
-                    ),
-                    const SizedBox(height: 10),
                     const Caption('touch'),
                     const SizedBox(height: 6),
                     SwitchListTile(

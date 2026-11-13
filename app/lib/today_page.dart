@@ -99,13 +99,13 @@ class TodayPage extends StatelessWidget {
     final veteran = appState.lex.veteran;
     final chosen = appState.dailiesOf(lang);
     final more = [
-      for (final m in openModes(games, veteran: veteran))
+      for (final m in openModes(appState.level))
         if (m.hasDaily &&
             GameMode.loopFor(lang).contains(m) &&
             !chosen.contains(m))
           m,
     ];
-    final canChoose = isOpen(GameMode.quartet, games, veteran: veteran);
+    final canChoose = isOpen(GameMode.quartet, appState.level);
     final newPlayer = !veteran;
     final dim = c.onSurface.withValues(alpha: dimAlpha);
 
@@ -513,10 +513,7 @@ class TodayPage extends StatelessWidget {
     final lang = appState.lang;
     final loop = GameMode.loopFor(lang);
     var open = [
-      for (final m in openModes(
-        appState.stats.played,
-        veteran: appState.lex.veteran,
-      ))
+      for (final m in openModes(appState.level))
         if (loop.contains(m)) m,
     ];
     if (open.isEmpty) open = [GameMode.classic];

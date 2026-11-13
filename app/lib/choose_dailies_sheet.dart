@@ -36,8 +36,7 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     final text = Theme.of(context).textTheme;
     final lang = appState.lang;
     final chosen = appState.dailiesOf(lang);
-    final played = appState.stats.played;
-    final veteran = appState.lex.veteran;
+    final played = appState.level;
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -82,13 +81,7 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
                 children: [
                   for (final m in GameMode.values)
                     if (m.hasDaily)
-                      _row(
-                        context,
-                        m,
-                        chosen: chosen,
-                        played: played,
-                        veteran: veteran,
-                      ),
+                      _row(context, m, chosen: chosen, played: played),
                 ],
               ),
             ),
@@ -103,13 +96,12 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     GameMode m, {
     required List<GameMode> chosen,
     required int played,
-    required bool veteran,
   }) {
     final c = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final lang = appState.lang;
     final streak = appState.dailyStreakFor(lang, m);
-    final open = isOpen(m, played, veteran: veteran);
+    final open = isOpen(m, played);
     final dim = c.onSurface.withValues(alpha: dimAlpha);
 
     Widget body;

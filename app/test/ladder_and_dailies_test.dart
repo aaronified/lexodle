@@ -1,13 +1,48 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lexodle/ladder.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/my_dailies.dart';
+import 'package:lexodle/store.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('the teaching level', () {
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test('is the games played, raised by a mode taught early', () async {
+      final s = AppState();
+      await s.load();
+      expect(s.level, 0);
+      expect(s.stepOpen('my words'), isFalse);
+      s.markTaught(GameMode.relay);
+      expect(s.level, 12);
+      expect(openModes(s.level), contains(GameMode.quartet));
+      expect(openModes(s.level), contains(GameMode.lockdown));
+      expect(openModes(s.level), contains(GameMode.relay));
+      expect(s.stepOpen('my words'), isTrue);
+      expect(s.stepOpen('learn'), isFalse);
+      expect(s.allModesOpen, isFalse);
+      s.stats.played = 30;
+      expect(s.level, 30);
+      expect(s.allModesOpen, isTrue);
+    });
+
+    test('a veteran has everything', () async {
+      final s = AppState();
+      await s.load();
+      s.lex.veteran = true;
+      expect(s.stepOpen('learn'), isTrue);
+      expect(s.stepOpen('support'), isTrue);
+      expect(s.allModesOpen, isTrue);
+    });
+  });
+
   group('the ladder', () {
     test('is in order, and every mode but classic opens once', () {
       for (var i = 1; i < ladder.length; i++) {
-        expect(ladder[i].games, greaterThan(ladder[i - 1].games));
+        expect(ladder[i].games, greaterThanOrEqualTo(ladder[i - 1].games));
       }
       final opened = [
         for (final s in ladder)
@@ -27,7 +62,7 @@ void main() {
     });
 
     test('a veteran has every mode open', () {
-      expect(openModes(1, veteran: true), GameMode.values);
+      expect(openModes(1, veteran: true), GameMode.loopFor('en'));
       expect(openModes(1), [GameMode.classic]);
     });
 
@@ -41,6 +76,50 @@ void main() {
       expect(nextStep(5)!.name, 'every mode');
       expect(nextStep(22)!.name, 'learn');
       expect(nextStep(24), isNull);
+    });
+
+    test('every step name is unique', () {
+      final names = [for (final s in ladder) s.name];
+      expect(names.toSet().length, names.length);
+    });
+
+    test('gamesOf and stepOpen', () {
+      expect(gamesOf('theme'), 0);
+      expect(gamesOf('lex and hints'), 1);
+      expect(gamesOf('my words'), 9);
+      expect(stepOpen('my words', 8), isFalse);
+      expect(stepOpen('my words', 9), isTrue);
+      expect(stepOpen('learn', 0, veteran: true), isTrue);
+      for (final n in [
+        'theme', 'language', 'how to play', 'settings', 'backup',
+        "what's new", //
+      ]) {
+        expect(stepOpen(n, 0), isTrue, reason: n);
+      }
+      expect(stepOpen('reminders', 1), isFalse);
+      expect(stepOpen('reminders', 2), isTrue);
+      expect(stepOpen('friends', 5), isTrue);
+      for (final n in ['solver', 'diy', 'mode settings']) {
+        expect(stepOpen(n, 5), isFalse, reason: n);
+        expect(stepOpen(n, 6), isTrue, reason: n);
+      }
+      expect(stepOpen('support', 6), isFalse);
+      expect(stepOpen('support', 7), isTrue);
+    });
+
+    test('reached leaves out games 0 and steps without a card', () {
+      final r = reached(7);
+      expect(r.every((s) => s.card && s.games > 0 && s.games <= 7), isTrue);
+      expect(r.map((s) => s.name), contains('lockdown'));
+      expect(r.map((s) => s.name), isNot(contains('theme')));
+      expect(r.map((s) => s.name), isNot(contains('solver')));
+      expect(r.map((s) => s.name), isNot(contains('my words')));
+      expect(reached(0), isEmpty);
+    });
+
+    test('openModes follow the loop order', () {
+      expect(openModes(100), GameMode.loopFor('en'));
+      expect(openModes(100).last, GameMode.themed);
     });
 
     test('the two feature steps open no mode', () {

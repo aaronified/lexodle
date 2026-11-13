@@ -73,10 +73,7 @@ class LearnHomePage extends StatelessWidget {
                       showAll: false,
                       selected: mode,
                       modes: [
-                        for (final m in openModes(
-                          appState.stats.played,
-                          veteran: appState.lex.veteran,
-                        ))
+                        for (final m in openModes(appState.level))
                           if (GameMode.loopFor(appState.lang).contains(m)) m,
                       ],
                       onSelect: (m) {
