@@ -337,18 +337,7 @@ class _WordsPageState extends State<WordsPage> {
     return InputDecoration(
       isDense: true,
       hintText: hint,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
-        borderSide: BorderSide(color: c.outlineVariant),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
-        borderSide: BorderSide(color: c.outlineVariant),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
-        borderSide: BorderSide(color: c.primary),
-      ),
+      // flat fill from the theme; no outline
     );
   }
 
@@ -506,10 +495,13 @@ class _WordsPageState extends State<WordsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: selected ? c.primary : c.outlineVariant),
+          color: selected ? c.secondaryContainer : c.surfaceContainerHighest,
         ),
         child: DefaultTextStyle.merge(
-          style: TextStyle(color: selected ? c.primary : c.onSurface),
+          style: TextStyle(
+            color: selected ? c.onSecondaryContainer : c.onSurface,
+            fontWeight: selected ? FontWeight.bold : null,
+          ),
           child: child,
         ),
       ),

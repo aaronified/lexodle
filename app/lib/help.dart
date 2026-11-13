@@ -191,7 +191,7 @@ class HelpCrop extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: c.outlineVariant),
+        color: c.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(3),
       ),
       child: Wrap(
@@ -321,10 +321,7 @@ class HelpCrop extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: c.onSurface.withValues(alpha: dimAlpha),
-                width: 1.5,
-              ),
+              color: c.surfaceContainerHighest,
             ),
             child: Text(
               'i',
@@ -422,16 +419,12 @@ Future<void> showModeHelp(
   GameMode mode, {
   bool daily = false,
 }) {
-  final c = Theme.of(context).colorScheme;
   return showDialog<void>(
     context: context,
     builder: (context) => Dialog(
       key: const ValueKey('help-dialog'),
       insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(3),
-        side: BorderSide(color: c.outline),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: Column(

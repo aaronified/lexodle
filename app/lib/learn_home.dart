@@ -77,7 +77,6 @@ class LearnHomePage extends StatelessWidget {
                       key: const ValueKey('learn-card-guide'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                        side: BorderSide(color: c.outline),
                         shape: const RoundedRectangleBorder(),
                         alignment: Alignment.centerLeft,
                       ),
@@ -203,7 +202,6 @@ class LearnHomePage extends StatelessWidget {
         key: ValueKey(key),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          side: BorderSide(color: c.outline),
           shape: const RoundedRectangleBorder(),
           alignment: Alignment.centerLeft,
         ),
@@ -276,7 +274,6 @@ class LearnHomePage extends StatelessWidget {
         key: ValueKey('learn-card-${kind.name}'),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          side: BorderSide(color: c.outline),
           shape: const RoundedRectangleBorder(),
           alignment: Alignment.centerLeft,
         ),

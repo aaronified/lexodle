@@ -224,23 +224,20 @@ class TodayPage extends StatelessWidget {
     final yellow = yellowOf(c);
     final lost = r.state == _State.lost;
 
-    final (Color fill, Color? edge, Widget mark) = switch (r.state) {
+    final (Color fill, Widget mark) = switch (r.state) {
       _State.solved => (
         c.secondary,
-        null,
         Text('✓', style: TextStyle(fontSize: 18, color: c.onSecondary)),
       ),
       _State.progress => (
         yellow,
-        null,
         Text('…', style: TextStyle(fontSize: 18, color: onColor(c, yellow))),
       ),
       _State.lost => (
-        Colors.transparent,
-        heartColor(c),
+        c.surfaceContainerHighest,
         TablerIcon('skull', size: 22, color: heartColor(c)),
       ),
-      _State.fresh => (Colors.transparent, c.outlineVariant, const SizedBox()),
+      _State.fresh => (c.surfaceContainerHighest, const SizedBox()),
     };
 
     final String stateText = switch (r.state) {
@@ -290,7 +287,6 @@ class TodayPage extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: fill,
-                border: edge == null ? null : Border.all(color: edge),
                 borderRadius: BorderRadius.circular(3),
               ),
               child: mark,
@@ -411,7 +407,7 @@ class TodayPage extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            border: Border.all(color: c.onSurface, width: 2),
+            color: c.secondaryContainer,
             borderRadius: BorderRadius.circular(3),
           ),
           child: Column(
@@ -420,7 +416,7 @@ class TodayPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  border: Border.all(color: c.onSurface),
+                  color: c.surface,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text('new', style: TextStyle(fontSize: 11)),
@@ -443,7 +439,7 @@ class TodayPage extends StatelessWidget {
           key: const ValueKey('today-next-up'),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            border: Border.all(color: c.outlineVariant),
+            color: c.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(3),
           ),
           child: Column(

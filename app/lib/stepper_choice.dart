@@ -236,7 +236,7 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
             Container(
               height: 64,
               decoration: BoxDecoration(
-                border: Border.all(color: c.outline),
+                color: c.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Row(

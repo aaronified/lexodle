@@ -45,7 +45,7 @@ class _PlaceDotState extends State<PlaceDot> {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: dim, width: 1.5),
+            color: c.surfaceContainerHighest,
           ),
           child: Text(
             'i',

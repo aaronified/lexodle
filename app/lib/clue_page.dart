@@ -150,16 +150,18 @@ class _CluePageState extends State<CluePage> {
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
               shape: const RoundedRectangleBorder(),
               alignment: Alignment.centerLeft,
-              side: BorderSide(
-                width: p != null && (i == q.fit || i == p) ? 2 : 1,
-                color: p == null
-                    ? c.outline
-                    : i == q.fit
-                    ? c.primary
-                    : i == p
-                    ? c.error
-                    : c.outline,
-              ),
+              backgroundColor: p != null && i == q.fit
+                  ? c.secondaryContainer
+                  : p != null && i == p
+                  ? c.errorContainer
+                  : c.surfaceContainerHighest,
+              disabledBackgroundColor: p != null && i == q.fit
+                  ? c.secondaryContainer
+                  : p != null && i == p
+                  ? c.errorContainer
+                  : c.surfaceContainerHighest,
+              foregroundColor: c.onSurface,
+              disabledForegroundColor: c.onSurface,
             ),
             onPressed: p == null ? () => _pick(i) : null,
             child: SizedBox(

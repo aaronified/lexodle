@@ -661,7 +661,7 @@ class _Choice extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            border: Border.all(color: selected ? c.primary : c.outlineVariant),
+            color: selected ? c.secondaryContainer : c.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(3),
           ),
           child: Row(
@@ -681,7 +681,7 @@ class _Choice extends StatelessWidget {
                   fontSize: 11,
                   fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                   color: selected
-                      ? (color ?? c.primary)
+                      ? c.onSecondaryContainer
                       : c.onSurface.withValues(alpha: dimAlpha),
                 ),
               ),

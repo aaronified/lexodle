@@ -112,7 +112,6 @@ class _WordPageState extends State<WordPage> {
                 maxLines: 6,
                 decoration: const InputDecoration(
                   hintText: 'a line to remember it by',
-                  border: OutlineInputBorder(),
                 ),
                 onChanged: _onNoteChanged,
               ),

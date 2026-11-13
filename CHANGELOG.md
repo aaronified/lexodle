@@ -17,14 +17,19 @@ it to the version.
   hold (formula awaiting confirmation); new players see lex once they have
   played a game. The backup carries the balance and the ledger.
 
+- no more borders on buttons, cards, chips and fields
+  Controls are flat fills now. The letter tiles, the keys and the thin lines
+  between list rows keep theirs. The black theme has two more fill shades so
+  cards and dialogs stay visible on true black.
 - hints: spend lex on a clue, with one free hint to start
   A lamp above the keyboard opens three hints: a letter that is not in the
   word (10 lex), a letter that is in it (25) and a letter in its place (50).
   Hold a hint until its bar fills to buy it; undo works until your next guess.
   The hint shows above the keyboard. A game with a hint pays no lex, and the
   streak is safe. Classic, lockdown and geography have it.
-- new look (preview): today, words, learn and you as tabs
-  Switch it on in the settings. Today lists your dailies, with the state of
+- new look (preview): today, words, learn and you as tabs, as they are taught
+  Switch it on in the settings. The bar shows today and you first; words joins
+  at game 9 and learn, the last piece, at game 24. Today lists your dailies, with the state of
   each in words and a streak; you choose which dailies are yours. The you tab
   has the streak week (with a month view), the theme, a username chip with an
   icon in the logo's colours, and your numbers.

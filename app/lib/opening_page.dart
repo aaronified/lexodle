@@ -269,7 +269,8 @@ class _OpeningPageState extends State<OpeningPage> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
           decoration: BoxDecoration(
-            border: Border.all(color: c.outlineVariant),
+            color: c.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(3),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

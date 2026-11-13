@@ -31,9 +31,9 @@ class ModeFilter extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: mode == selected ? c.primary : c.outlineVariant,
-            ),
+            color: mode == selected
+                ? c.secondaryContainer
+                : c.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(3),
           ),
           child: Text(
@@ -41,6 +41,7 @@ class ModeFilter extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: mode == selected ? FontWeight.bold : null,
+              color: mode == selected ? c.onSecondaryContainer : null,
             ),
           ),
         ),

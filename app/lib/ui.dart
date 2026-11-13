@@ -427,14 +427,11 @@ Future<T?> showHairlineDialog<T>(
   builder: (context) {
     final c = Theme.of(context).colorScheme;
     return Dialog(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: c.surfaceContainerHigh,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(3),
-        side: BorderSide(color: c.outline),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: Column(
@@ -521,7 +518,7 @@ class InfoDot extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: dim, width: 1.5),
+            color: c.surfaceContainerHighest,
           ),
           child: Text(
             'i',

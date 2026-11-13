@@ -16,7 +16,7 @@ Widget hairlineCard(BuildContext context, {Key? key, required Widget child}) {
     width: double.infinity,
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      border: Border.all(color: c.outlineVariant),
+      color: c.surfaceContainerHighest,
       borderRadius: BorderRadius.circular(3),
     ),
     child: child,
@@ -394,14 +394,11 @@ class PlaystyleDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     return Dialog(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: c.surfaceContainerHigh,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(3),
-        side: BorderSide(color: c.outline),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: Column(
@@ -502,13 +499,11 @@ class _StyleDot extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 1),
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: current
-                  ? c.primary
-                  : picked
-                  ? c.outline
-                  : c.outlineVariant.withValues(alpha: 0),
-            ),
+            color: current
+                ? c.secondaryContainer
+                : picked
+                ? c.surfaceContainerHighest
+                : null,
             borderRadius: BorderRadius.circular(3),
           ),
           child: Column(

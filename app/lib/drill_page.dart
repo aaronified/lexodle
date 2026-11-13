@@ -436,13 +436,11 @@ class _DrillPageState extends State<DrillPage> {
     final p = picked;
     final isPicked = identical(p, o);
     final isBest = p != null && q.isRight(o);
-    final border = p == null
-        ? c.outline
-        : isBest
-        ? c.secondary
+    final fill = isBest
+        ? c.secondaryContainer
         : isPicked
-        ? c.error
-        : c.outlineVariant;
+        ? c.errorContainer
+        : c.surfaceContainerHighest;
     final faded = p != null && !isPicked && !isBest;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -450,7 +448,8 @@ class _DrillPageState extends State<DrillPage> {
         key: ValueKey('drill-option-$i'),
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          side: BorderSide(color: border, width: isPicked || isBest ? 2 : 1),
+          backgroundColor: fill,
+          disabledBackgroundColor: fill,
           shape: const RoundedRectangleBorder(),
           alignment: Alignment.centerLeft,
         ),
@@ -478,7 +477,8 @@ class _DrillPageState extends State<DrillPage> {
                     : 'skill ${o.skill.round()}',
                 style: TextStyle(
                   fontSize: 12,
-                  color: isBest ? c.secondary : c.onSurface,
+                  fontWeight: isBest ? FontWeight.bold : null,
+                  color: isBest ? c.onSecondaryContainer : c.onSurface,
                 ),
               ),
           ],

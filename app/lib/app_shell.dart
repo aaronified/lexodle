@@ -32,57 +32,76 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  int _tab = 0;
+  String _tab = 'today';
 
-  static const _tabs = [
-    (Icons.today_outlined, Icons.today, 'today'),
-    (Icons.menu_book_outlined, Icons.menu_book, 'words'),
-    (Icons.school_outlined, Icons.school, 'learn'),
-    (Icons.person_outline, Icons.person, 'you'),
-  ];
+  /// The tabs the player has been taught: today and you from the end of the
+  /// first game, words with my words (game 9), and learn, the last piece, at
+  /// game 24. A veteran has all four.
+  List<String> _visible() {
+    final played = appState.stats.played, vet = appState.lex.veteran;
+    return [
+      'today',
+      if (vet || played >= 9) 'words',
+      if (vet || played >= 24) 'learn',
+      'you',
+    ];
+  }
+
+  static const _icons = {
+    'today': (Icons.today_outlined, Icons.today),
+    'words': (Icons.menu_book_outlined, Icons.menu_book),
+    'learn': (Icons.school_outlined, Icons.school),
+    'you': (Icons.person_outline, Icons.person),
+  };
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: IndexedStack(
-          index: _tab,
-          children: [
-            const TodayPage(),
-            const WordsPage(),
-            learnGate(builder: (bank) => LearnHomePage(bank: bank)),
-            YouPage(
-              onReplayFirstGame: () =>
-                  showToast(context, 'your first game is next'),
+    return ListenableBuilder(
+      listenable: appState,
+      builder: (context, _) {
+        final tabs = _visible();
+        final at = tabs.contains(_tab) ? tabs.indexOf(_tab) : 0;
+        Widget page(String id) => switch (id) {
+          'today' => const TodayPage(),
+          'words' => const WordsPage(),
+          'learn' => learnGate(builder: (bank) => LearnHomePage(bank: bank)),
+          _ => YouPage(
+            onReplayFirstGame: () =>
+                showToast(context, 'your first game is next'),
+          ),
+        };
+        return Scaffold(
+          body: SafeArea(
+            bottom: false,
+            child: IndexedStack(
+              index: at,
+              children: [for (final id in tabs) page(id)],
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: c.outlineVariant)),
-        ),
-        child: NavigationBar(
-          key: const ValueKey('tabs'),
-          height: 60,
-          elevation: 0,
-          backgroundColor: c.surface,
-          surfaceTintColor: Colors.transparent,
-          selectedIndex: _tab,
-          onDestinationSelected: (i) => setState(() => _tab = i),
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: [
-            for (final (off, on, label) in _tabs)
-              NavigationDestination(
-                icon: Icon(off),
-                selectedIcon: Icon(on),
-                label: label,
-              ),
-          ],
-        ),
-      ),
+          ),
+          bottomNavigationBar: DecoratedBox(
+            decoration: BoxDecoration(color: c.surfaceContainerHighest),
+            child: NavigationBar(
+              key: const ValueKey('tabs'),
+              height: 60,
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              selectedIndex: at,
+              onDestinationSelected: (i) => setState(() => _tab = tabs[i]),
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+              destinations: [
+                for (final id in tabs)
+                  NavigationDestination(
+                    icon: Icon(_icons[id]!.$1),
+                    selectedIcon: Icon(_icons[id]!.$2),
+                    label: id,
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
