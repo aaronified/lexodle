@@ -399,7 +399,7 @@ void main() {
       expect(contrast(c.outlineVariant, c.surface), greaterThanOrEqualTo(1.5));
     });
 
-    testWidgets('a dialog and a card on it are black', (tester) async {
+    testWidgets('a dialog is black and a card on it a shade above', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: buildTheme(Brightness.light),
@@ -426,7 +426,8 @@ void main() {
                   .first,
             )
             .color,
-        black,
+        // no borders, so a card is a shade above the black ground
+        const Color(0xFF1C1C1C),
       );
       showDialog<void>(
         context: ctx,
