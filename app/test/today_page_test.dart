@@ -457,14 +457,11 @@ void main() {
     expect(anyCard(), findsNothing);
   });
 
-  testWidgets('every open mode with an unfinished daily has a dot', (
-    tester,
-  ) async {
+  testWidgets('the free play button has no pending dots', (tester) async {
     appState.stats.played = 4;
     await show(tester);
-    // quartet is open but not chosen: its unfinished daily still counts
     final switcher = tester.widget<ModeSwitch>(find.byType(ModeSwitch));
-    expect(switcher.pending, {GameMode.classic, GameMode.quartet});
+    expect(switcher.pending, isEmpty);
   });
 
   testWidgets('a veteran sees no card', (tester) async {
