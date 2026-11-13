@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- equations keep their own tries
+  Choosing an equations difficulty (brutal is 3 tries) also changed the tries of classic, quartet and relay. Equations now have a setting of their own. If classic free play was stuck on fewer tries, set it again in mode settings.
+
 - you: language, how to play, solver and diy are back
   The new look had dropped them. You has a row for each: language and how to play always, solver and diy from game 6. A failed screen falls back to the right home, and what's new shows once after an update.
 - you: backup and support open only their own section
