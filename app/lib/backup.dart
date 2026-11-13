@@ -12,6 +12,7 @@ import 'learn_log.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'saved_words.dart';
+import 'reminders.dart' show ReminderSettings;
 import 'store.dart';
 
 /// The version of the backup file; a file from a later one is refused rather
@@ -333,6 +334,22 @@ Map<String, Object> _settings(Object? raw) {
   if (seen != null) {
     if (seen is! bool) _bad('seenHowTo');
     out['seenHowTo'] = seen;
+  }
+  // the modes whose lesson was finished: a list of mode names
+  final taught = raw['modesTaught'];
+  if (taught != null) {
+    final known = {for (final m in GameMode.values) m.name};
+    if (taught is! List ||
+        taught.any((n) => n is! String || !known.contains(n))) {
+      _bad('modesTaught');
+    }
+    out['modesTaught'] = [for (final n in taught) n as String];
+  }
+  // the reminders: read as the settings read them (anything off falls back)
+  final reminders = raw['reminders'];
+  if (reminders != null) {
+    if (reminders is! Map) _bad('reminders');
+    out['reminders'] = ReminderSettings.fromJson(reminders).toJson();
   }
   return out;
 }

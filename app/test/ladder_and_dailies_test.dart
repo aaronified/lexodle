@@ -33,14 +33,26 @@ void main() {
 
     test('what opens now and what comes next', () {
       expect(justOpened(4).single.mode, GameMode.quartet);
-      expect(justOpened(6), isEmpty);
+      expect(justOpened(6).single.name, 'every mode');
+      expect(justOpened(6).single.mode, isNull);
+      expect(justOpened(8), isEmpty);
+      expect(justOpened(24).single.name, 'learn');
       expect(nextStep(4)!.games, 5);
-      expect(nextStep(22), isNull);
+      expect(nextStep(5)!.name, 'every mode');
+      expect(nextStep(22)!.name, 'learn');
+      expect(nextStep(24), isNull);
+    });
+
+    test('the two feature steps open no mode', () {
+      expect(gamesToOpen(GameMode.lockdown), 7);
+      expect(isOpen(GameMode.lockdown, 6), isFalse);
+      expect(openModes(6), openModes(5));
     });
 
     test('the bar runs from the last step to the next', () {
       expect(progressToNext(4), 0);
-      expect(progressToNext(6), closeTo(.5, .001));
+      expect(progressToNext(8), closeTo(.5, .001));
+      expect(progressToNext(23), closeTo(.5, .001));
       expect(progressToNext(30), 1);
     });
   });

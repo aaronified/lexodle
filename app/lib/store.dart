@@ -17,6 +17,7 @@ import 'collection.dart';
 import 'lex.dart';
 import 'my_dailies.dart';
 import 'profile.dart';
+import 'reminders.dart' show ReminderSettings;
 import 'learn_log.dart';
 import 'medal.dart';
 import 'equations.dart' show equationLengths;
@@ -2594,6 +2595,30 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The reminders: on or off, the time and the weekdays (see reminders.dart).
+  ReminderSettings reminders = const ReminderSettings();
+
+  void setReminders(ReminderSettings r) {
+    if (r == reminders) return;
+    reminders = r;
+    try {
+      _w('reminders', _prefs?.setString('reminders', jsonEncode(r.toJson())));
+    } catch (e) {
+      appLog.w('store', 'reminders not saved ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
+  void _readReminders(Object? raw) {
+    try {
+      reminders = ReminderSettings.fromJson(
+        raw is String ? jsonDecode(raw) : raw,
+      );
+    } catch (e) {
+      appLog.w('store', 'reminders not read ${e.runtimeType}');
+    }
+  }
+
   /// Whether the app looks for a newer version by itself each time it opens,
   /// and says so in a toast when there is one. On unless switched off: each
   /// check is one request to GitHub.
@@ -3224,6 +3249,133 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---- the first run ----
+
+  /// How far the player is through the first run: 0 not started, 1 the first
+  /// game is over (the gateway, the modes offer and the tour remain), 2 done.
+  /// Someone who already plays (history, or a veteran of lex) is done from the
+  /// start, and so is anyone who restores a backup.
+  int firstRunStage = 0;
+
+  /// The stage that means the first run is over.
+  static const firstRunDoneStage = 2;
+
+  bool get firstRunDone => firstRunStage >= firstRunDoneStage;
+
+  void setFirstRunStage(int stage) {
+    firstRunStage = stage.clamp(0, firstRunDoneStage);
+    try {
+      _w('firstRunStage', _prefs?.setInt('firstRunStage', firstRunStage));
+    } catch (e) {
+      appLog.w('store', 'could not save the first run: ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
+  void _readFirstRun(SharedPreferences p) {
+    try {
+      final s = p.getInt('firstRunStage');
+      firstRunStage = s != null && s >= 0 && s <= firstRunDoneStage
+          ? s
+          : (stats.played > 0 || lex.veteran ? firstRunDoneStage : 0);
+    } catch (e) {
+      appLog.w('store', 'could not read the first run: ${e.runtimeType}');
+      firstRunStage = firstRunDoneStage;
+    }
+  }
+
+  // ---- the mode lessons ----
+
+  /// The modes whose lesson the player finished (see
+  /// first_run/mode_lesson_page.dart): a taught mode skips its intro card.
+  final Set<GameMode> modesTaught = {};
+
+  bool isTaught(GameMode m) => modesTaught.contains(m);
+
+  void markTaught(GameMode m) {
+    if (!modesTaught.add(m)) return;
+    _saveTaught();
+    notifyListeners();
+  }
+
+  void _saveTaught() {
+    try {
+      _w(
+        'modesTaught',
+        _prefs?.setStringList('modesTaught', [
+          for (final m in modesTaught) m.name,
+        ]),
+      );
+    } catch (e) {
+      appLog.w('store', 'could not save the lessons: ${e.runtimeType}');
+    }
+  }
+
+  void _readTaught(SharedPreferences p) {
+    try {
+      _setTaught(p.getStringList('modesTaught') ?? const []);
+    } catch (e) {
+      appLog.w('store', 'could not read the lessons: ${e.runtimeType}');
+    }
+  }
+
+  void _setTaught(Iterable<Object?> names) {
+    modesTaught
+      ..clear()
+      ..addAll([
+        for (final m in GameMode.values)
+          if (names.contains(m.name)) m,
+      ]);
+  }
+
+  /// Whether the one-time note at the top of the mode settings was shown.
+  bool modeSettingsNoteSeen = false;
+
+  void markModeSettingsNoteSeen() {
+    if (modeSettingsNoteSeen) return;
+    modeSettingsNoteSeen = true;
+    try {
+      _w('modeSettingsNote', _prefs?.setBool('modeSettingsNote', true));
+    } catch (e) {
+      appLog.w('store', 'could not save the note: ${e.runtimeType}');
+    }
+  }
+
+  void _readModeSettingsNote(SharedPreferences p) {
+    try {
+      modeSettingsNoteSeen = p.getBool('modeSettingsNote') ?? false;
+    } catch (e) {
+      appLog.w('store', 'could not read the note: ${e.runtimeType}');
+    }
+  }
+
+  /// The trophy banners of the words page the player dismissed, as
+  /// `list:target` (`saved:5`): a banner hides for that target only.
+  final Set<String> dismissedWordBanners = {};
+
+  void dismissWordBanner(String list, int target) {
+    dismissedWordBanners.add('$list:$target');
+    try {
+      _w(
+        'wordBanners',
+        _prefs?.setStringList('wordBanners', dismissedWordBanners.toList()),
+      );
+    } catch (e) {
+      appLog.w('store', 'could not save the banners: ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
+  void _readWordBanners(SharedPreferences p) {
+    try {
+      dismissedWordBanners
+        ..clear()
+        ..addAll(p.getStringList('wordBanners') ?? const []);
+    } catch (e) {
+      appLog.w('store', 'could not read the banners: ${e.runtimeType}');
+    }
+  }
+
   /// The dailies the player chose to play, per language (see my_dailies.dart):
   /// Today shows these, and "done for the day" means all of them.
   MyDailies myDailies = MyDailies();
@@ -3618,6 +3770,7 @@ class AppState extends ChangeNotifier {
         lastRunVersion = p.getString('lastRunVersion');
         changelogSeen = p.getString('changelogSeen');
         autoUpdateCheck = p.getBool('autoUpdateCheck') ?? true;
+        _readReminders(p.getString('reminders'));
         final last = p.getInt('lastUpdateCheck');
         if (last != null) {
           lastUpdateCheck = DateTime.fromMillisecondsSinceEpoch(last);
@@ -3690,6 +3843,9 @@ class AppState extends ChangeNotifier {
       _readAchievements(p);
       _readLearn(p);
       _readWords(p);
+      _readWordBanners(p);
+      _readTaught(p);
+      _readModeSettingsNote(p);
       _readCollection(p);
       _readLex(p);
       _readMyDailies(p);
@@ -3710,6 +3866,7 @@ class AppState extends ChangeNotifier {
         }
       }
       _activateLex();
+      _readFirstRun(p);
       _startMyDailies();
       appLog.i(
         'store',
@@ -3972,6 +4129,8 @@ class AppState extends ChangeNotifier {
     'share': share,
     'theme': themeIndex,
     'seenHowTo': seenHowTo,
+    'reminders': reminders.toJson(),
+    'modesTaught': [for (final m in modesTaught) m.name],
   };
 
   /// Replaces what is kept with a checked backup (see backup.dart): the
@@ -4084,6 +4243,19 @@ class AppState extends ChangeNotifier {
     final t = settings['theme'] as int?;
     if (t != null && t >= 0 && t <= maxThemeIndex) _setThemeIndex(t);
     seenHowTo = settings['seenHowTo'] as bool? ?? seenHowTo;
+    if (settings['modesTaught'] case final List l) {
+      _setTaught(l);
+      _saveTaught();
+    }
+    if (settings['reminders'] != null) {
+      _readReminders(settings['reminders']);
+      try {
+        _w(
+          'reminders',
+          _prefs?.setString('reminders', jsonEncode(reminders.toJson())),
+        );
+      } catch (_) {}
+    }
     this.stats = stats;
     try {
       final p = _prefs;
@@ -4115,6 +4287,13 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
     _activateLex(); // (a no-op when the backup brought its own lex)
     _saveAchievements();
+    // someone who restores a backup knows the game: no first run
+    firstRunStage = firstRunDoneStage;
+    try {
+      _w('firstRunStage', _prefs?.setInt('firstRunStage', firstRunStage));
+    } catch (e) {
+      appLog.w('store', 'could not save the first run: ${e.runtimeType}');
+    }
     notifyListeners();
   }
 

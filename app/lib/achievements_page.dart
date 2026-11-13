@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'language_picker.dart';
-import 'lex_page.dart' show LexSection;
+import 'lex.dart';
+import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart' show GameMode;
@@ -30,6 +31,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
   String _lang = appState.lang;
   Map<String, Language> _langs = {};
   Medal? _medal;
+
+  /// Whether the lex dropdown at the top of the list is open.
+  bool _lexOpen = false;
 
   /// The sort of the list: one of [_sorts], or null for the page's own order.
   String? _sort;
@@ -193,6 +197,22 @@ class _AchievementsPageState extends State<AchievementsPage> {
       appBar: AppBar(
         title: const Text('achievements'),
         actions: [
+          ListenableBuilder(
+            listenable: appState,
+            builder: (context, _) => appState.lexUnlocked
+                ? InkResponse(
+                    key: const ValueKey('lex-chip'),
+                    onTap: () => setState(() => _lexOpen = !_lexOpen),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: 44,
+                        minHeight: 44,
+                      ),
+                      child: Center(child: LexChip(appState.lexBalance)),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
           TextButton.icon(
             key: const ValueKey('achievement-history'),
             icon: TablerIcon(
@@ -236,9 +256,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
               return ListView(
                 padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                 children: [
-                  if (appState.lexUnlocked) ...[
-                    const LexSection(),
-                    const SizedBox(height: 24),
+                  if (appState.lexUnlocked && _lexOpen) ...[
+                    const _LexDrop(),
+                    const SizedBox(height: 16),
                   ],
                   LanguagePicker(
                     codes: codes,
@@ -247,7 +267,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     showAll: true,
                     onSelect: (code) => setState(() => _lang = code),
                   ),
-                  _Recent(mine, DateTime.now()),
+                  _Recent(mine, DateTime.now(), all ? null : _lang),
                   const SizedBox(height: 12),
                   Caption(
                     '${achievements.fold(0, (n, a) => n + (mine[a.id]?.times ?? 0))} of '
@@ -398,9 +418,28 @@ String daysAgo(String day, DateTime now) {
 /// The three achievements earned most recently, each with its icon in the
 /// medal of the level reached; nothing when none is earned yet.
 class _Recent extends StatelessWidget {
-  const _Recent(this.mine, this.now);
+  const _Recent(this.mine, this.now, this.lang);
   final Map<String, AchState> mine;
   final DateTime now;
+
+  /// The language shown, or null for all of them.
+  final String? lang;
+
+  /// What [a] (at the level [level]) paid on [day]: its lex when the ledger
+  /// holds that payout, 0 when the achievement paid that day at another level
+  /// (the daily payout was already given), null when nothing is known.
+  int? _paid(Achievement a, int level, String day) {
+    if (!appState.lexUnlocked) return null;
+    int? other;
+    for (final e in appState.lex.ledger) {
+      if (!e.why.startsWith('earn:${a.id}:')) continue;
+      if (lang != null && e.lang != lang) continue;
+      if (_dayOf(e.at) != day) continue;
+      if (e.why == 'earn:${a.id}:$level') return e.delta;
+      other = 0;
+    }
+    return other;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -429,6 +468,7 @@ class _Recent extends StatelessWidget {
             builder: (context) {
               final lvl = a.atLevel(st.times.clamp(1, a.count) - 1);
               final color = medalColor(c, lvl.medal);
+              final paid = _paid(a, lvl.level, st.latest!);
               return Padding(
                 key: ValueKey('recent-${a.id}'),
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -466,9 +506,25 @@ class _Recent extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Caption(
-                      daysAgo(st.latest!, now),
-                      key: ValueKey('recent-when-${a.id}'),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (paid != null) ...[
+                          paid > 0
+                              ? LexChip(
+                                  paid,
+                                  key: ValueKey('recent-lex-${a.id}'),
+                                )
+                              : _PaidEarlier(
+                                  key: ValueKey('recent-paid-${a.id}'),
+                                ),
+                          const SizedBox(height: 4),
+                        ],
+                        Caption(
+                          daysAgo(st.latest!, now),
+                          key: ValueKey('recent-when-${a.id}'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -477,6 +533,99 @@ class _Recent extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// The local day of a ledger time, as the achievements keep their days.
+String _dayOf(int at) {
+  final d = DateTime.fromMillisecondsSinceEpoch(at);
+  String t(int n) => n.toString().padLeft(2, '0');
+  return '${d.year}-${t(d.month)}-${t(d.day)}';
+}
+
+/// A small chip: that level's lex for the day was already paid.
+class _PaidEarlier extends StatelessWidget {
+  const _PaidEarlier({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return Container(
+      height: 28,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: c.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Text(
+        'paid earlier',
+        style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
+      ),
+    );
+  }
+}
+
+/// The lifetime lex earned: the positive earnings and the starting grant in the
+/// ledger. The ledger keeps the last [lexLedgerCap] lines, so past that the
+/// total is only what it still holds.
+int lexEarnedTotal(Lex lex) {
+  var n = 0;
+  for (final e in lex.ledger) {
+    if (e.delta > 0 && (e.why.startsWith('earn:') || e.why == 'grant')) {
+      n += e.delta;
+    }
+  }
+  return n;
+}
+
+/// The dropdown under the lex chip: the total earned and the rule.
+class _LexDrop extends StatelessWidget {
+  const _LexDrop();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final sub = TextStyle(fontSize: 13, color: c.onSurfaceVariant, height: 1.5);
+    return Container(
+      key: const ValueKey('lex-drop'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: c.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'earned in total',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              LexChip(lexEarnedTotal(appState.lex)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'earn a medal on any achievement and it pays lex: '
+            'bronze ${medalValue(Medal.bronze)} · '
+            'silver ${medalValue(Medal.silver)} · '
+            'gold ${medalValue(Medal.gold)} · '
+            'platinum ${medalValue(Medal.platinum)}.',
+            style: sub,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'each achievement pays once a day in each language, and only in a '
+            'game where you used no hint. your streak stays safe either way.',
+            style: sub,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ import 'save_word_button.dart';
 import 'saved_words.dart';
 import 'ui.dart';
 import 'words.dart';
+import 'words_banner.dart';
 
 /// "my words": the personal dictionary, newest first, with a language filter,
 /// a sort toggle and a search over the word, the note and the first meaning.
@@ -30,8 +31,10 @@ class _WordsPageState extends State<WordsPage> {
   final _search = TextEditingController();
   String _query = '';
 
-  /// False is the saved tab, true the collected one.
-  bool _collected = false;
+  /// The two lists are pages: 0 is the saved list, 1 the collected one.
+  final _pages = PageController();
+  int _page = 0;
+  bool get _collected => _page == 1;
 
   /// The selected pill of the collected tab: a language code or 'places'; null
   /// is the default (the app's language, else the first pill).
@@ -78,19 +81,24 @@ class _WordsPageState extends State<WordsPage> {
   void dispose() {
     _search.dispose();
     _cSearch.dispose();
+    _pages.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('my words')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: ListenableBuilder(
-            listenable: appState,
-            builder: (context, _) => _body(context),
+      // no title: the two lists are the header. A bar stays only to go back
+      // when the page was opened on top of another.
+      appBar: Navigator.of(context).canPop() ? AppBar() : null,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: ListenableBuilder(
+              listenable: appState,
+              builder: (context, _) => _body(context),
+            ),
           ),
         ),
       ),
@@ -99,13 +107,79 @@ class _WordsPageState extends State<WordsPage> {
 
   Widget _body(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final children = _collected
-        ? _collectedBody(context, c)
-        : _savedBody(context, c);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
-      children: [_tabs(c), const SizedBox(height: 14), ...children],
+    return Stack(
+      children: [
+        Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(19, 8, 19, 14),
+              child: _tabs(c),
+            ),
+            Expanded(
+              child: PageView(
+                key: const ValueKey('words-pages'),
+                controller: _pages,
+                onPageChanged: (i) => setState(() => _page = i),
+                children: [
+                  _list(_savedBody(context, c)),
+                  _list(_collectedBody(context, c)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        Positioned(
+          left: 19,
+          right: 19,
+          bottom: 12,
+          child: _banner(),
+        ),
+      ],
     );
+  }
+
+  /// One page: its content, with room under it for the floating banner.
+  Widget _list(List<Widget> children) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(19, 0, 19, 140),
+      children: children,
+    );
+  }
+
+  /// The saved words, and the collected words and places, counted.
+  int _savedCount() => _all().length;
+  int _collectedCount() => _collection()?.total ?? 0;
+
+  /// The banner of the list on show; none when its trophies are all earned or
+  /// this target was dismissed.
+  Widget _banner() {
+    try {
+      final saved = !_collected;
+      final list = saved ? 'saved' : 'collected';
+      final n = saved ? _savedCount() : _collectedCount();
+      final target = nextTrophy(saved ? 'saved_words' : 'collected', n);
+      if (target == null ||
+          appState.dismissedWordBanners.contains('$list:$target')) {
+        return const SizedBox.shrink();
+      }
+      return WordsBanner(list: list, n: n, target: target);
+    } catch (e) {
+      appLog.w('words', 'could not show the banner: ${e.runtimeType}');
+      return const SizedBox.shrink();
+    }
+  }
+
+  void _goTo(int i) {
+    try {
+      _pages.animateToPage(
+        i,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    } catch (e) {
+      appLog.w('words', 'could not change the list: ${e.runtimeType}');
+      setState(() => _page = i);
+    }
   }
 
   Widget _tabs(ColorScheme c) {
@@ -115,18 +189,19 @@ class _WordsPageState extends State<WordsPage> {
           child: _tab(
             c,
             key: const ValueKey('words-tab-saved'),
-            label: 'saved',
+            label: 'saved ${_savedCount()}',
             selected: !_collected,
-            onTap: () => setState(() => _collected = false),
+            onTap: () => _goTo(0),
           ),
         ),
+        const SizedBox(width: 4),
         Expanded(
           child: _tab(
             c,
             key: const ValueKey('words-tab-collected'),
-            label: 'collected',
+            label: 'collected ${_collectedCount()}',
             selected: _collected,
-            onTap: () => setState(() => _collected = true),
+            onTap: () => _goTo(1),
           ),
         ),
       ],
@@ -143,22 +218,20 @@ class _WordsPageState extends State<WordsPage> {
     return InkWell(
       key: key,
       onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
       child: Container(
+        height: 52,
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: selected ? c.primary : c.outlineVariant,
-              width: selected ? 2 : 1,
-            ),
-          ),
+          borderRadius: BorderRadius.circular(6),
+          color: selected ? c.secondaryContainer : c.surfaceContainerHighest,
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 14,
-            color: selected ? c.primary : c.onSurface,
+            fontSize: 16,
+            fontWeight: selected ? FontWeight.bold : null,
+            color: selected ? c.onSecondaryContainer : c.onSurface,
           ),
         ),
       ),
@@ -272,8 +345,6 @@ class _WordsPageState extends State<WordsPage> {
     final keys = _cMatches(col, sel, _cQuery.trim().toLowerCase());
 
     return [
-      Caption('${col.total} collected · tap a word for its entry'),
-      const SizedBox(height: 14),
       Wrap(
         spacing: 8,
         runSpacing: 8,

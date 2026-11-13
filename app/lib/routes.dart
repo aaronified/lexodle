@@ -1,4 +1,3 @@
-import 'lex_page.dart';
 import 'app_shell.dart';
 
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'achievements_page.dart';
 import 'clue_page.dart';
 import 'daily.dart';
 import 'diy.dart';
+import 'first_run/first_run_flow.dart' show practiceRoute;
 import 'equations.dart';
 import 'drill_page.dart';
 import 'game.dart';
@@ -30,6 +30,7 @@ import 'review.dart';
 import 'game_modes_dialog.dart';
 import 'playstyle_card.dart';
 import 'puzzle.dart';
+import 'reminders_page.dart';
 import 'settings_page.dart';
 import 'solver.dart';
 import 'ui.dart';
@@ -53,6 +54,8 @@ import 'words_page.dart';
 class Routes {
   const Routes._();
   static const home = '/';
+  // the first game played again from the you tab
+  static const firstGame = '/first-game';
   static const play = '/play';
   static const daily = '/daily';
   static const puzzle = '/puzzle';
@@ -78,7 +81,7 @@ class Routes {
   static const playstyle = '/playstyle';
   static const about = '/about';
   static const words = '/words';
-  static const lex = '/lex';
+  static const reminders = '/reminders';
 
   /// One saved word; it travels as the route's argument, so an address alone
   /// shows the list instead.
@@ -178,8 +181,6 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return page(const HistoryPage());
     case Routes.words:
       return page(const WordsPage());
-    case Routes.lex:
-      return page(const LexPage());
     case Routes.collected:
       final ref = settings.arguments;
       return page(
@@ -275,9 +276,13 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case Routes.gameModes:
       return _dialog(s, const GameModesDialog());
     case Routes.playstyle:
-      return _dialog(s, const PlaystyleDialog());
+      return page(const PlaystylePage());
+    case Routes.reminders:
+      return page(const RemindersPage());
     case Routes.about:
       return page(const LicencesPage(about: aboutText));
+    case Routes.firstGame:
+      return practiceRoute();
     default:
       return page(const HomeSwitch());
   }
@@ -341,6 +346,7 @@ const _known = {
   Routes.playstyle,
   Routes.about,
   Routes.words,
+  Routes.reminders,
 };
 
 /// A popup as a route. The scrim is tinted from the theme (no colour is

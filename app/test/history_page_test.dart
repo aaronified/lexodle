@@ -787,6 +787,45 @@ void main() {
     expect(find.byType(HistoryPage), findsNothing);
   });
 
+  testWidgets(
+    'the playstyle is a card under the plot, which opens its screen',
+    (tester) async {
+      await load(tester);
+      final h = History();
+      addGame(h, at: ms(1), guesses: [pool[1]], won: true);
+      await show(tester, h);
+      await tester.pumpAndSettle();
+      final row = find.byKey(const ValueKey('playstyle-row'));
+      expect(row, findsOneWidget);
+      expect(find.text('your playstyle'), findsOneWidget);
+      expect(
+        tester.getTopLeft(row).dy,
+        greaterThan(
+          tester.getBottomLeft(find.byKey(const ValueKey('trend'))).dy,
+        ),
+        reason: 'below the chart card',
+      );
+      expect(
+        tester.getTopLeft(row).dy,
+        lessThan(
+          tester
+              .getTopLeft(find.byKey(ValueKey('game-${h.games.single.id}')))
+              .dy,
+        ),
+        reason: 'above the list of games',
+      );
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(find.byType(PlaystylePage), findsOneWidget);
+      expect(find.byKey(const ValueKey('profile')), findsOneWidget);
+      expect(find.byType(BackButton), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(PlaystylePage), findsNothing);
+      expect(find.byType(HistoryPage), findsOneWidget);
+    },
+  );
+
   testWidgets('it has an address of its own', (tester) async {
     await load(tester);
     await tester.binding.setSurfaceSize(const Size(420, 1700));
@@ -894,7 +933,17 @@ void main() {
       );
       expect(
         textOf(tester.widget<Text>(find.byKey(const ValueKey('overall-line')))),
-        contains('2.0 guesses to win'),
+        // the icon of the mode is a placeholder in the text
+        allOf(contains('2.0 guesses · '), endsWith(' 45/45')),
+      );
+      expect(
+        find.byKey(const ValueKey('overall-mode-icon')),
+        findsOneWidget,
+        reason: 'the mode with the most games, as an icon',
+      );
+      expect(
+        textOf(tester.widget<Text>(find.byKey(const ValueKey('overall-line')))),
+        isNot(anyOf(contains('to win'), contains(' of '))),
       );
     });
 

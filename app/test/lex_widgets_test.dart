@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/lex.dart';
-import 'package:lexodle/lex_page.dart';
 import 'package:lexodle/lex_widgets.dart';
 import 'package:lexodle/logic.dart' show Mark;
 import 'package:lexodle/main.dart';
-import 'package:lexodle/store.dart';
 import 'package:lexodle/ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -230,49 +228,6 @@ void main() {
       await show(tester, const HintMiniRow(kind: HintKind.grey, letter: 'z'));
       expect(find.byType(MarkTile), findsOneWidget);
       expect(find.text('is not in the word'), findsOneWidget);
-    });
-  });
-
-  group('page', () {
-    Future<void> page(WidgetTester tester) async {
-      await tester.binding.setSurfaceSize(const Size(420, 2000));
-      await tester.pumpWidget(const MaterialApp(home: LexPage()));
-      await tester.pumpAndSettle();
-    }
-
-    testWidgets('an empty ledger', (tester) async {
-      await page(tester);
-      expect(find.text('lex'), findsOneWidget);
-      expect(find.text('earned today: 0'), findsOneWidget);
-      expect(find.text('how to earn it'), findsOneWidget);
-      expect(find.text('hints cost'), findsOneWidget);
-      expect(find.text('50'), findsOneWidget);
-      expect(find.text('buy lex'), findsOneWidget);
-      expect(find.textContaining('soon'), findsOneWidget);
-      await tester.tap(find.text('the details'));
-      await tester.pumpAndSettle();
-      expect(find.text('nothing yet'), findsOneWidget);
-    });
-
-    testWidgets('a filled ledger', (tester) async {
-      final lex = appState.lex;
-      lex.activate(10, veteran: true);
-      lex.earn(
-        [achievementById('wins')!.atLevel(1)],
-        lang: 'en',
-        today: '2026-11-13',
-        hinted: false,
-      );
-      final game = GameHints();
-      lex.spend(game, HintKind.grey, guesses: 1);
-      await page(tester);
-      expect(find.text('earned today: 2'), findsOneWidget);
-      await tester.tap(find.text('the details'));
-      await tester.pumpAndSettle();
-      expect(find.text('regular'), findsWidgets);
-      expect(find.text('starting grant'), findsOneWidget);
-      expect(find.text('hint · rule one out'), findsOneWidget);
-      expect(find.text('-10'), findsOneWidget);
     });
   });
 }

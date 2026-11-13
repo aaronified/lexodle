@@ -42,6 +42,128 @@ void main() {
     }
   });
 
+  group('french edition', () {
+    WordInfo fr(String w) => parseFrench(
+      File('test/fixtures/fr-wikt-$w.html').readAsStringSync(),
+      'u',
+    )!;
+
+    test('cloche: ipa, audio, pos, gender, forms, sense, example, labels', () {
+      final i = fr('cloche');
+      expect(i.ipa.first, r'\klɔʃ\');
+      expect(i.audio, startsWith('https://upload.wikimedia.org/'));
+      final b = i.blocks.first;
+      expect(b.pos, 'nom commun');
+      expect(b.gender, 'f');
+      expect(b.forms, 'pluriel cloches');
+      expect(b.senses.first.text, startsWith('Instrument fait de métal'));
+      expect(b.senses.first.examples.first.text, contains('cloches'));
+      expect(b.senses[1].labels, ['par analogie']);
+      expect(b.senses[2].labels, ['cuisine']);
+      expect(b.senses[2].text, isNot(contains('(Cuisine)')));
+      expect(i.blocks.length, 3);
+      expect(i.blocks.last.gender, 'm');
+      expect(i.etymology, startsWith('Du moyen français cloche'));
+      expect(i.etymology, isNot(contains('Nom commun 1')));
+    });
+
+    test('mot: synonyms and antonyms, other languages left out', () {
+      final i = fr('mot');
+      expect(i.blocks.first.gender, 'm');
+      expect(i.synonyms, containsAll(['écrit', 'parole']));
+      expect(i.antonyms, ['borborygme']);
+    });
+
+    test('manger: verb group, no gender, intransitive label', () {
+      final i = fr('manger');
+      final v = i.blocks.first;
+      expect(v.pos, 'verbe');
+      expect(v.gender, '');
+      expect(v.forms, '1er groupe');
+      expect(v.senses[1].labels, contains('intransitif'));
+      expect(i.antonyms, contains('jeûner'));
+      expect(i.etymology, isNot(contains('référence nécessaire')));
+    });
+
+    test('a page with no french section gives nothing', () {
+      expect(
+        parseFrench(
+          '<div class="mw-parser-output"><div class="mw-heading mw-heading2"><h2 id="Anglais"><span class="sectionlangue" id="en">Anglais</span></h2></div></div>',
+          'u',
+        ),
+        isNull,
+      );
+    });
+
+    test('link labels follow the edition', () {
+      expect(
+        linkLabelFor('https://fr.wiktionary.org/wiki/mot#fr'),
+        'wiktionnaire ↗',
+      );
+      expect(
+        linkLabelFor('https://en.wiktionary.org/wiki/mot#French'),
+        'wiktionary ↗',
+      );
+      expect(editionOf('fr').host, 'fr.wiktionary.org');
+      expect(editionOf('de').host, 'de.wiktionary.org');
+      expect(editionOf('nb').host, 'no.wiktionary.org');
+      // a language with no edition of its own keeps the English one
+      expect(editionOf('xx').host, 'en.wiktionary.org');
+      expect(editionOf('en').host, 'en.wiktionary.org');
+    });
+
+    test('en goes to en.wiktionary.org, fr to fr.wiktionary.org', () async {
+      Wiktionary.reset();
+      final hosts = <String>[];
+      final frHtml = File('test/fixtures/fr-wikt-mot.html').readAsStringSync();
+      final enHtml = File('test/fixtures/en-about.html').readAsStringSync();
+      final w = Wiktionary(
+        client: MockClient((req) async {
+          hosts.add(req.url.host);
+          if (req.url.host == 'fr.wiktionary.org') {
+            return http.Response.bytes(
+              utf8.encode(
+                jsonEncode({
+                  'parse': {'text': frHtml},
+                }),
+              ),
+              200,
+            );
+          }
+          if (req.url.queryParameters['prop'] == 'sections') {
+            return http.Response(
+              jsonEncode({
+                'parse': {
+                  'sections': [
+                    {'line': 'English', 'toclevel': 1, 'index': '1'},
+                  ],
+                },
+              }),
+              200,
+            );
+          }
+          return http.Response.bytes(
+            utf8.encode(
+              jsonEncode({
+                'parse': {'text': enHtml},
+              }),
+            ),
+            200,
+          );
+        }),
+      );
+      final f = await w.lookup('mot', 'fr', 'French');
+      final e = await w.lookup('mot', 'en', 'English');
+      expect(f!.url, 'https://fr.wiktionary.org/wiki/mot#fr');
+      expect(f.blocks.first.pos, 'nom commun');
+      expect(e!.url, startsWith('https://en.wiktionary.org/wiki/mot'));
+      expect(e.blocks.first.pos, isNot('nom commun'));
+      expect(hosts.where((h) => h == 'fr.wiktionary.org'), isNotEmpty);
+      expect(hosts.where((h) => h == 'en.wiktionary.org'), isNotEmpty);
+      Wiktionary.reset();
+    });
+  });
+
   test('english: definitions plus synonyms from headings and inline spans', () {
     final i = parse('en-about');
     expect(i.blocks.map((b) => b.pos), containsAll(['preposition', 'adverb']));
@@ -111,14 +233,14 @@ void main() {
       'asking again, even while it is under way, shares one lookup',
       () async {
         final (w, log, _) = fake();
-        final early = w.lookup('maisonA', 'fr', 'French'); // during the game
-        final late = w.lookup('maisonA', 'fr', 'French'); // the end screen
+        final early = w.lookup('maisonA', 'en', 'French'); // during the game
+        final late = w.lookup('maisonA', 'en', 'French'); // the end screen
         expect(identical(early, late), isTrue);
         final info = await late;
         expect(info, isNotNull);
         expect(info!.blocks.first.pos, 'noun');
         final requests = log.length;
-        await w.lookup('maisonA', 'fr', 'French');
+        await w.lookup('maisonA', 'en', 'French');
         expect(log.length, requests, reason: 'nothing more was asked');
       },
     );
@@ -126,28 +248,28 @@ void main() {
     test('lookups of different words never overlap', () async {
       final (w, _, peak) = fake();
       await Future.wait([
-        w.lookup('maisonB', 'fr', 'French'),
-        w.lookup('maisonC', 'fr', 'French'),
-        w.lookup('maisonD', 'fr', 'French'),
+        w.lookup('maisonB', 'en', 'French'),
+        w.lookup('maisonC', 'en', 'French'),
+        w.lookup('maisonD', 'en', 'French'),
       ]);
       expect(peak(), 1, reason: 'one request at a time');
     });
 
     test('a failure is not remembered: asking again tries again', () async {
       final (w, _, _) = fake(failFirst: true);
-      await expectLater(w.lookup('maisonE', 'fr', 'French'), throwsA(anything));
-      final again = await w.lookup('maisonE', 'fr', 'French');
+      await expectLater(w.lookup('maisonE', 'en', 'French'), throwsA(anything));
+      final again = await w.lookup('maisonE', 'en', 'French');
       expect(again, isNotNull);
     });
 
     test('prefetch never throws, and its result is there for later', () async {
       final (w, log, _) = fake(failFirst: true);
-      w.prefetch('maisonF', 'fr', 'French'); // fails quietly
+      w.prefetch('maisonF', 'en', 'French'); // fails quietly
       await Future<void>.delayed(const Duration(milliseconds: 50));
       expect(log, isNotEmpty);
       final info = await w.lookup(
         'maisonF',
-        'fr',
+        'en',
         'French',
       ); // second try works
       expect(info, isNotNull);

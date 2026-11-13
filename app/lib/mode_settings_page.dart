@@ -79,9 +79,18 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
   List<Language>? _langs = WordBank.loadedLanguages;
   GameMode? _picked;
 
+  /// The one-time line at the top: shown the first time this page opens.
+  bool _showNote = false;
+
   @override
   void initState() {
     super.initState();
+    try {
+      _showNote = !appState.modeSettingsNoteSeen;
+      appState.markModeSettingsNoteSeen();
+    } catch (e) {
+      appLog.w('modeset', 'could not read the note ${e.runtimeType}');
+    }
     if (_langs == null) {
       try {
         WordBank.languages().then(
@@ -122,6 +131,7 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                   children: [
+                    if (_showNote) ...[_firstNote(c), const SizedBox(height: 12)],
                     _card(c, opened),
                     const SizedBox(height: 12),
                     if (mode == null)
@@ -144,6 +154,32 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
       ),
     );
   }
+
+  Widget _firstNote(ColorScheme c) => Material(
+    key: const ValueKey('mode-settings-first-note'),
+    color: c.secondaryContainer,
+    borderRadius: BorderRadius.circular(6),
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'these change free play only: the daily never changes',
+              style: TextStyle(fontSize: 13, color: c.onSecondaryContainer),
+            ),
+          ),
+          IconButton(
+            key: const ValueKey('mode-settings-note-close'),
+            tooltip: 'dismiss',
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            onPressed: () => setState(() => _showNote = false),
+            icon: Icon(Icons.close, size: 18, color: c.onSecondaryContainer),
+          ),
+        ],
+      ),
+    ),
+  );
 
   TextStyle _note(ColorScheme c) =>
       TextStyle(fontSize: 11, color: c.onSurface.withValues(alpha: dimAlpha));

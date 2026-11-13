@@ -5,6 +5,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/achievements_page.dart';
 import 'package:lexodle/learn_log.dart';
+import 'package:lexodle/lex.dart';
+import 'package:lexodle/lex_widgets.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/medal.dart';
 import 'package:lexodle/routes.dart';
@@ -427,5 +429,71 @@ void main() {
       );
     }
     appState.learnLog = LearnLog();
+  });
+
+  testWidgets('the lex chip opens the dropdown; recent rows show the payout', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 60000));
+    final n = DateTime.now();
+    String t(int v) => v.toString().padLeft(2, '0');
+    final today = '${n.year}-${t(n.month)}-${t(n.day)}';
+    final lex = Lex()..activate(7, veteran: true);
+    lex.earn(
+      [achievementById('quick')!.atLevel(1)],
+      lang: appState.lang,
+      today: today,
+      hinted: false,
+    );
+    appState.lex = lex;
+    appState.ach = {
+      'quick': AchState(times: 2, dates: [today, today], value: 2),
+      'wins': AchState(times: 1, dates: [today], value: 30),
+    };
+    // wins paid today at another level: its daily payout is already given
+    lex.earn(
+      [achievementById('wins')!.atLevel(0)],
+      lang: appState.lang,
+      today: today,
+      hinted: false,
+    );
+    appState.ach['wins']!.times = 2;
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AchievementsPage(),
+        onGenerateRoute: onGenerateRoute,
+      ),
+    );
+    await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('lex-drop')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('lex-chip')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('lex-drop')), findsOneWidget);
+    expect(find.text('earned in total'), findsOneWidget);
+    expect(lexEarnedTotal(lex), 7 + medalValue(Medal.silver) + 1);
+    expect(
+      find.textContaining('bronze 1 · silver 2 · gold 3 · platinum 5.'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('each achievement pays once a day in each language'),
+      findsOneWidget,
+    );
+
+    // recent: quick paid its silver, wins had paid that day already
+    final q = find.descendant(
+      of: find.byKey(const ValueKey('recent-quick')),
+      matching: find.byType(LexChip),
+    );
+    expect(q, findsOneWidget);
+    expect(find.byKey(const ValueKey('recent-lex-quick')), findsOneWidget);
+    expect(find.byKey(const ValueKey('recent-paid-wins')), findsOneWidget);
+    expect(find.text('paid earlier'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('lex-chip')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('lex-drop')), findsNothing);
   });
 }

@@ -272,7 +272,7 @@ void main() {
       await home(tester);
       await tester.tap(find.byKey(const ValueKey('style-chip')));
       await tester.pumpAndSettle();
-      expect(find.byType(PlaystyleDialog), findsOneWidget);
+      expect(find.byType(PlaystylePage), findsOneWidget);
       expect(find.byType(HistoryPage), findsNothing);
       expect(find.byKey(const ValueKey('profile-name')), findsOneWidget);
     });

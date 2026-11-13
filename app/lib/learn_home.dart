@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_log.dart';
+import 'first_run/mode_lesson_page.dart';
 import 'learn_log.dart';
 import 'modes.dart';
 import 'main.dart';
@@ -107,6 +109,7 @@ class LearnHomePage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
+                    _howToPlay(context, mode),
                     ...[
                       _lesson(
                         context,
@@ -180,6 +183,69 @@ class LearnHomePage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// The row that opens the lesson of [mode]: its rules and its screen, as a
+  /// short game.
+  Widget _howToPlay(BuildContext context, GameMode mode) {
+    final c = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: OutlinedButton(
+        key: const ValueKey('learn-card-how-to-play'),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          shape: const RoundedRectangleBorder(),
+          alignment: Alignment.centerLeft,
+        ),
+        onPressed: () {
+          try {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (ctx) => ModeLessonPage(
+                  mode: mode,
+                  onDone: () {
+                    try {
+                      Navigator.of(ctx).pop();
+                    } catch (e) {
+                      appLog.w(
+                        'learn',
+                        'could not leave the lesson: ${e.runtimeType}',
+                      );
+                    }
+                  },
+                ),
+              ),
+            );
+          } catch (e) {
+            appLog.w('learn', 'could not open the lesson: ${e.runtimeType}');
+          }
+        },
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'how to play ${mode.label}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'the rules and the screen, as a short game',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: c.onSurface.withValues(alpha: dimAlpha),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'analysis.dart';
+import 'app_log.dart';
 import 'daily.dart';
 import 'earned_rows.dart';
 import 'geography.dart';
@@ -15,8 +16,9 @@ import 'mode_filter.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'period_chart.dart';
+import 'mode_wheel.dart' show modeIconName;
 import 'playstyle.dart' show classify, habitsOfGames, hasPlaystyle;
-import 'playstyle_card.dart' show StatTile, hairlineCard;
+import 'playstyle_card.dart' show StatTile, hairlineCard, shadeUp;
 import 'puzzle.dart';
 import 'replay.dart';
 import 'routes.dart';
@@ -150,15 +152,14 @@ class _HistoryPageState extends State<HistoryPage> {
                 final more = total - shown;
                 // the cards, the note about the games, then the games (built
                 // as they scroll into view), then the button for more
-                const fixed = 4;
+                const fixed = 5;
                 return Stack(
                   children: [
                     ListView.builder(
                       padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                       itemCount: fixed + shown + (more > 0 ? 1 : 0),
                       itemBuilder: (context, row) {
-                        // the playstyle is not on this page: it has its own
-                        final i = row == 0 ? 0 : row + 1;
+                        final i = row;
                         // (these are not const: a const widget is not rebuilt
                         // when this builder runs, and they must follow the
                         // history as it changes, after games are scored again)
@@ -191,8 +192,11 @@ class _HistoryPageState extends State<HistoryPage> {
                           );
                         }
                         // ignore: prefer_const_constructors
-                        if (i == 2) return _Block(_Overall(_lang, _mode));
+                        if (i == 1) return _Block(_Overall(_lang, _mode));
                         if (i == 3) {
+                          return _Block(_PlaystyleRow(_lang, _mode));
+                        }
+                        if (i == 2) {
                           return _Block(
                             _Trend(
                               _lang,
@@ -257,12 +261,23 @@ class _HistoryPageState extends State<HistoryPage> {
                         }
                         final next = min(historyPageSize, more);
                         return Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: OutlinedButton(
-                            key: const ValueKey('load-more'),
-                            onPressed: () =>
-                                setState(() => _shown += historyPageSize),
-                            child: Text('load $next more · $more left'),
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Material(
+                            color: shadeUp(c),
+                            borderRadius: BorderRadius.circular(6),
+                            child: InkWell(
+                              key: const ValueKey('load-more'),
+                              borderRadius: BorderRadius.circular(6),
+                              onTap: () =>
+                                  setState(() => _shown += historyPageSize),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: Center(
+                                  child: Text('load $next more · $more left'),
+                                ),
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -313,6 +328,19 @@ class _Overall extends StatelessWidget {
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
     String whole(double? v) => v == null ? '–' : v.round().toString();
+    // the mode with the most games, and how many of the games are in it
+    final games = [
+      for (final g in h.games)
+        if (g.lang == lang && (mode == null || g.mode == mode)) g,
+    ];
+    final counts = <GameMode, int>{};
+    for (final g in games) {
+      counts[g.mode] = (counts[g.mode] ?? 0) + 1;
+    }
+    GameMode? top;
+    for (final e in counts.entries) {
+      if (top == null || e.value > counts[top]!) top = e.key;
+    }
     return hairlineCard(
       context,
       key: const ValueKey('overall'),
@@ -340,18 +368,40 @@ class _Overall extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          metricLine(
-            context,
-            s.games == 0
-                ? 'nothing to add up yet'
-                : 'luck ${s.scored == 0 ? '–' : luckText(s.luck)} · '
-                      '${s.meanTries == null ? '–' : s.meanTries!.toStringAsFixed(1)} '
-                      'guesses to win'
-                      '${mode == null ? ' · ${s.classic} of ${s.games} classic' : ''}',
-            'luck',
-            key: const ValueKey('overall-line'),
-            style: dim,
-          ),
+          s.games == 0 || top == null
+              ? Text(
+                  'nothing to add up yet',
+                  key: const ValueKey('overall-line'),
+                  style: dim,
+                )
+              : Text.rich(
+                  TextSpan(
+                    children: [
+                      metricSpan(
+                        c,
+                        'luck ${s.scored == 0 ? '–' : luckText(s.luck)}',
+                        'luck',
+                      ),
+                      TextSpan(
+                        text:
+                            ' · ${s.meanTries == null ? '–' : s.meanTries!.toStringAsFixed(1)}'
+                            ' guesses · ',
+                      ),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: TablerIcon(
+                          modeIconName(top),
+                          key: const ValueKey('overall-mode-icon'),
+                          size: 14,
+                          color: c.onSurface.withValues(alpha: dimAlpha),
+                        ),
+                      ),
+                      TextSpan(text: ' ${counts[top]}/${s.games}'),
+                    ],
+                  ),
+                  key: const ValueKey('overall-line'),
+                  style: dim,
+                ),
           if (s.stale > 0) ...[
             const SizedBox(height: 4),
             Text(
@@ -363,6 +413,81 @@ class _Overall extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// The playstyle of the language and mode in view, as a card of its own under
+/// the plot: its icon, name and a chevron. It opens the playstyle screen.
+class _PlaystyleRow extends StatelessWidget {
+  const _PlaystyleRow(this.lang, this.mode);
+  final String lang;
+  final GameMode? mode;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final h = appState.history;
+    final p = mode == null
+        ? classify(habitsOfGames(h, h.recent(null, 100, lang)))
+        : hasPlaystyle(mode!)
+        ? appState.styleOf(lang, mode!)
+        : null;
+    return Material(
+      color: c.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(6),
+      child: InkWell(
+        key: const ValueKey('playstyle-row'),
+        borderRadius: BorderRadius.circular(6),
+        onTap: () {
+          try {
+            Navigator.pushNamed(context, Routes.playstyle);
+          } catch (e) {
+            appLog.w('history', 'playstyle: ${e.runtimeType}');
+          }
+        },
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 72),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                TablerIcon(
+                  p?.icon ?? 'puzzle',
+                  size: 44,
+                  color: p == null
+                      ? c.onSurface.withValues(alpha: dimAlpha)
+                      : behaviourColor(c, p.early.label),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        p?.name ?? 'not rated yet',
+                        key: const ValueKey('playstyle-row-name'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'your playstyle',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: c.onSurface.withValues(alpha: dimAlpha),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -731,79 +856,88 @@ class _GameTile extends StatelessWidget {
       fontSize: 11,
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(3),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          children: [
-            FlagBadge(language?.flag ?? '', size: 16),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    tag.isEmpty ? _date(game.at) : '${_date(game.at)} · $tag',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    game.answers.join(' '),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: dim,
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: c.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(6),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            child: Row(
               children: [
-                Text(
-                  game.won
-                      ? 'solved in ${rows.length}/${game.tries}'
-                      : 'missed',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: game.won ? c.secondary : c.error,
+                FlagBadge(language?.flag ?? '', size: 16),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tag.isEmpty
+                            ? _date(game.at)
+                            : '${_date(game.at)} · $tag',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        game.answers.join(' '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: dim,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 2),
-                metricLine(context, 'skill $skill', 'skill', style: dim),
-                // the achievements the game earned
-                if (game.earned.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      game.won
+                          ? 'solved in ${rows.length}/${game.tries}'
+                          : 'missed',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: game.won ? c.secondary : c.error,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    metricLine(context, 'skill $skill', 'skill', style: dim),
+                    // the achievements the game earned
+                    if (game.earned.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: EarnedStrip(earnedFrom(game.earned)),
+                      ),
+                  ],
+                ),
+                // a past game can be shared as a puzzle, hashed or with its guesses;
+                // the daily is not shared, as anyone can open the app and play it
+                if (!game.isDaily)
                   Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: EarnedStrip(earnedFrom(game.earned)),
+                    padding: const EdgeInsets.only(left: 4),
+                    child: SharePuzzleButton(
+                      key: ValueKey('share-${game.id}'),
+                      compact: true,
+                      (withGuesses) => Puzzle.hashed(
+                        game.lang,
+                        game.mode,
+                        length: game.length,
+                        tries: game.tries,
+                        answers: game.answers,
+                        guesses: withGuesses
+                            ? [for (final r in rows) r.word]
+                            : const [],
+                      ),
+                    ),
                   ),
               ],
             ),
-            // a past game can be shared as a puzzle, hashed or with its guesses;
-            // the daily is not shared, as anyone can open the app and play it
-            if (!game.isDaily)
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: SharePuzzleButton(
-                  key: ValueKey('share-${game.id}'),
-                  compact: true,
-                  (withGuesses) => Puzzle.hashed(
-                    game.lang,
-                    game.mode,
-                    length: game.length,
-                    tries: game.tries,
-                    answers: game.answers,
-                    guesses: withGuesses
-                        ? [for (final r in rows) r.word]
-                        : const [],
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );

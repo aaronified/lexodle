@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/reminders.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/saved_words.dart';
 import 'package:lexodle/store.dart';
@@ -86,6 +87,8 @@ void main() {
           'share',
           'theme',
           'seenHowTo',
+          'reminders',
+          'modesTaught',
         ]),
       );
       expect((m['stats'] as Map)['played'], 12);
@@ -95,6 +98,34 @@ void main() {
       final en = (m['languages'] as Map)[(m['settings'] as Map)['lang']] as Map;
       expect((en['achievements'] as Map).keys, contains('dailies'));
       expect(en.keys, containsAll(['playstyle', 'daily', 'achievements']));
+    });
+
+    test('two reminders and the open notification round trip', () {
+      final st = sample()
+        ..reminders = const ReminderSettings(
+          on: true,
+          reminders: [
+            ReminderTime(minutes: 600, days: {1, 2}),
+            ReminderTime(minutes: 1200, days: {6}),
+          ],
+          available: true,
+          availableMinutes: 450,
+        );
+      final b = parseBackup(backupToText(st));
+      expect(ReminderSettings.fromJson(b.settings['reminders']), st.reminders);
+    });
+
+    test('a backup with the old single time becomes the first reminder', () {
+      final m = valid();
+      (m['settings'] as Map)['reminders'] = {
+        'on': true,
+        'minutes': 480,
+        'days': [3],
+      };
+      final b = parseBackup(text(m));
+      final r = ReminderSettings.fromJson(b.settings['reminders']);
+      expect(r.on, isTrue);
+      expect(r.reminders.single, const ReminderTime(minutes: 480, days: {3}));
     });
 
     test('the name carries the day', () {
@@ -284,6 +315,7 @@ void main() {
         ('theme', 'dark'),
         ('seenHowTo', 1),
         ('seenHowTo', 'yes'),
+        ('reminders', 'on'),
         ('lang', 5),
         ('lang', ''),
         ('lang', 'a'),

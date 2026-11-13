@@ -141,7 +141,7 @@ class _WordInfoBodyState extends State<WordInfoBody> {
             minimumSize: const Size(0, 36),
           ),
           onPressed: () => launchUrl(Uri.parse(info.url)),
-          child: Text('wiktionary ↗', style: TextStyle(color: c.primary)),
+          child: Text(linkLabelFor(info.url), style: TextStyle(color: c.primary)),
         ),
       ],
     );
