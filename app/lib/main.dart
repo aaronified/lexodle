@@ -63,7 +63,10 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
     scaffoldBackgroundColor: scheme.surface,
     canvasColor: scheme.surface,
     cardColor: scheme.surface,
-    dialogTheme: DialogThemeData(backgroundColor: scheme.surface),
+    dialogTheme: DialogThemeData(
+      backgroundColor: scheme.surface,
+      shape: shape,
+    ),
     fontFamily: _font,
     dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
     appBarTheme: AppBarTheme(
@@ -89,7 +92,9 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
       style: OutlinedButton.styleFrom(
         shape: shape,
         minimumSize: const Size(0, 48),
-        side: BorderSide(color: scheme.outline),
+        side: BorderSide.none,
+        backgroundColor: scheme.surfaceContainerHighest,
+        foregroundColor: scheme.onSurface,
         textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1.2),
       ),
     ),
@@ -99,10 +104,42 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
         textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1.2),
       ),
     ),
+    // controls are flat fills, never outlines; a focused field gets a thicker
+    // bottom line instead
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
+      filled: true,
+      fillColor: scheme.surfaceContainerHighest,
+      border: const OutlineInputBorder(
         borderRadius: _radius,
-        borderSide: BorderSide(color: scheme.outline),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderRadius: _radius,
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderRadius: _radius,
+        borderSide: BorderSide.none,
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: scheme.surfaceContainerHighest,
+      elevation: 0,
+      shape: shape,
+    ),
+    chipTheme: ChipThemeData(
+      shape: shape,
+      side: BorderSide.none,
+      backgroundColor: scheme.surfaceContainerHighest,
+      selectedColor: scheme.secondaryContainer,
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(
+        shape: shape,
+        side: BorderSide.none,
+        backgroundColor: scheme.surfaceContainerHighest,
+        selectedBackgroundColor: scheme.secondaryContainer,
+        selectedForegroundColor: scheme.onSecondaryContainer,
       ),
     ),
   );

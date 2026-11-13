@@ -100,11 +100,7 @@ class DailyStreak extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 1),
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: isToday
-                  ? c.onSurface.withValues(alpha: .5)
-                  : Colors.transparent,
-            ),
+            color: isToday ? c.secondaryContainer : null,
             borderRadius: BorderRadius.circular(3),
           ),
           child: Column(
@@ -131,7 +127,7 @@ class DailyStreak extends StatelessWidget {
       key: const ValueKey('daily-streak'),
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
       decoration: BoxDecoration(
-        border: Border.all(color: c.outlineVariant),
+        color: c.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(3),
       ),
       child: Column(

@@ -377,7 +377,7 @@ class _ReviewPageState extends State<ReviewPage> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            border: Border.all(color: c.outlineVariant),
+            color: c.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -1368,8 +1368,7 @@ class _FrequencyPlotState extends State<_FrequencyPlot> {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: c.surface,
-                              border: Border.all(color: c.outline),
+                              color: c.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: Text(

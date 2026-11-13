@@ -84,10 +84,7 @@ class _ProfileSheetState extends State<_ProfileSheet> {
     padding: const EdgeInsets.all(3),
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      border: Border.all(
-        color: on ? c.primary : c.primary.withValues(alpha: 0),
-        width: 2,
-      ),
+      color: on ? c.secondaryContainer : null,
     ),
     child: child,
   );
@@ -142,7 +139,6 @@ class _ProfileSheetState extends State<_ProfileSheet> {
                         maxLength: profileNameMax,
                         onChanged: (v) => _set(name: v),
                         decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
                           counterText: '',
                         ),
                       ),

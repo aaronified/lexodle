@@ -132,7 +132,7 @@ class LexPage extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
     decoration: BoxDecoration(
-      border: Border.all(color: c.outlineVariant),
+      color: c.surfaceContainerHighest,
       borderRadius: BorderRadius.circular(3),
     ),
     child: child,

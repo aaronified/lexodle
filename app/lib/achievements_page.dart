@@ -493,12 +493,16 @@ class _SortPill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          border: Border.all(color: on ? c.primary : c.outlineVariant),
+          color: on ? c.secondaryContainer : c.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Text(
           label,
-          style: TextStyle(fontSize: 12, color: on ? c.primary : c.onSurface),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: on ? FontWeight.bold : null,
+            color: on ? c.onSecondaryContainer : c.onSurface,
+          ),
         ),
       ),
     );
@@ -816,12 +820,16 @@ class _MedalPill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          border: Border.all(color: on ? color : c.outlineVariant),
+          color: on ? c.secondaryContainer : c.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Text(
           '${medal?.name ?? 'all'} $earned/$total',
-          style: TextStyle(fontSize: 12, color: color),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: on ? FontWeight.bold : null,
+            color: color,
+          ),
         ),
       ),
     );
