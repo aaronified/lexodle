@@ -173,13 +173,11 @@ void main() {
   });
 
   group('unlock', () {
-    test('a new player sees lex from their 10th game', () async {
+    test('a new player sees lex once the first game has taught it', () async {
       final s = AppState();
       await s.load();
       expect(s.lexUnlocked, isFalse);
-      s.stats.played = 9;
-      expect(s.lexUnlocked, isFalse);
-      s.stats.played = 10;
+      s.stats.played = 1;
       expect(s.lexUnlocked, isTrue);
     });
   });

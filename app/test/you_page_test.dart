@@ -54,19 +54,19 @@ void main() {
       expect(row('achievements'), findsNothing);
       expect(row('playstyle'), findsNothing);
       expect(row('history'), findsNothing);
-      expect(row('lex'), findsNothing);
+      expect(row('lex'), findsOneWidget);
       expect(row('reminders'), findsOneWidget);
       expect(row('friends'), findsOneWidget);
     },
   );
 
-  testWidgets('a new player at game 5 sees them, but not lex', (tester) async {
+  testWidgets('a new player at game 5 sees them, and lex', (tester) async {
     player(played: 5, veteran: false);
     await show(tester);
     expect(row('achievements'), findsOneWidget);
     expect(row('playstyle'), findsOneWidget);
     expect(row('history'), findsOneWidget);
-    expect(row('lex'), findsNothing);
+    expect(row('lex'), findsOneWidget);
   });
 
   testWidgets('the theme choice calls setup, and black needs dark', (

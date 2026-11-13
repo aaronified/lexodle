@@ -3112,9 +3112,10 @@ class AppState extends ChangeNotifier {
   int get lexBalance => lex.balance;
   int get freeHints => lex.freeHints;
 
-  /// Whether the player sees lex: a veteran from the start, a new player from
-  /// their [lexUnlockGames]th game.
-  bool get lexUnlocked => lex.veteran || stats.played >= lexUnlockGames;
+  /// Whether the player sees lex: a veteran from the start, a new player once
+  /// the first game has taught it. It is earned from the first achievement
+  /// either way.
+  bool get lexUnlocked => lex.veteran || stats.played >= 1;
 
   /// Once, at the first start with lex: the veteran's starting grant from the
   /// achievements already held (see [veteranGrant]; history is never replayed).

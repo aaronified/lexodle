@@ -58,12 +58,6 @@ const ladder = <LadderStep>[
     'save and collect the words you meet',
   ),
   LadderStep(
-    10,
-    StepKind.feature,
-    'hints and lex',
-    'the lamp opens on the board',
-  ),
-  LadderStep(
     12,
     StepKind.mode,
     'relay race',
