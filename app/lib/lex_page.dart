@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'lex.dart';
 import 'lex_widgets.dart';
+import 'main.dart' show appState;
 import 'store.dart';
 import 'ui.dart';
 
@@ -75,9 +76,8 @@ class LexPage extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          [
-            for (final m in Medal.values) '${m.name} ${medalValue(m)}',
-          ].join(' · '),
+          [for (final m in Medal.values) '${m.name} ${medalValue(m)}']
+              .join(' · '),
           style: TextStyle(fontSize: 12, color: dim),
         ),
         const SizedBox(height: 6),
@@ -100,7 +100,10 @@ class LexPage extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(hintTitle(k), style: const TextStyle(fontSize: 14)),
+                  child: Text(
+                    hintTitle(k),
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ),
                 LexChip(k.price),
               ],
@@ -214,9 +217,8 @@ class LexPage extends StatelessWidget {
         ),
         children: [
           line(
-            [
-              for (final m in Medal.values) '${m.name} ${medalValue(m)}',
-            ].join(' · '),
+            [for (final m in Medal.values) '${m.name} ${medalValue(m)}']
+                .join(' · '),
           ),
           line(
             'an achievement pays once a day per language. example: silver at '

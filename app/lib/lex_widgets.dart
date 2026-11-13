@@ -125,7 +125,9 @@ class HintBar extends StatelessWidget {
                     color: c.surfaceContainerHigh,
                     borderRadius: BorderRadius.horizontal(
                       left: const Radius.circular(14),
-                      right: n == null ? const Radius.circular(14) : Radius.zero,
+                      right: n == null
+                          ? const Radius.circular(14)
+                          : Radius.zero,
                     ),
                   ),
                   child: Row(
