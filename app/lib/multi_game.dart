@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'background.dart';
 import 'daily.dart';
+import 'daily_intro.dart';
 import 'game_header.dart';
 import 'guess_input.dart';
 import 'help.dart';
@@ -136,6 +137,28 @@ class _MultiGamePageState extends State<MultiGamePage> {
     _reset();
     _resume();
     _replay();
+    _introduce();
+  }
+
+  /// The one-time introduction to the daily, on the first daily opened.
+  void _introduce() {
+    final d = _daily;
+    if (d == null || d.date.isEmpty || widget.practice || game.over) return;
+    if (appState.dailyIntroSeen) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      maybeShowDailyIntro(
+        context,
+        d.mode,
+        onClosed: () {
+          try {
+            if (mounted) _focus.requestFocus();
+          } catch (e) {
+            appLog.w('game', 'could not refocus: ${e.runtimeType}');
+          }
+        },
+      );
+    });
   }
 
   /// The guesses a link carried are played at once, as if the page had been

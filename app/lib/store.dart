@@ -3362,6 +3362,67 @@ class AppState extends ChangeNotifier {
       ]);
   }
 
+  // ---- the daily introduction ----
+
+  /// Whether the one-time introduction to the daily was seen (or is not needed:
+  /// a veteran, or anyone who already finished a daily, never sees it).
+  bool dailyIntroSeen = false;
+
+  /// The introduction cards of Today the player handled (by step name): a
+  /// handled card never comes back.
+  final Set<String> introCardsDone = {};
+
+  void markIntroCardDone(String name) {
+    if (!introCardsDone.add(name)) return;
+    _saveIntroCards();
+    notifyListeners();
+  }
+
+  void _saveIntroCards() {
+    try {
+      _w(
+        'introCardsDone',
+        _prefs?.setStringList('introCardsDone', introCardsDone.toList()),
+      );
+    } catch (e) {
+      appLog.w('store', 'could not save the cards: ${e.runtimeType}');
+    }
+  }
+
+  void markDailyIntroSeen() {
+    if (dailyIntroSeen) return;
+    dailyIntroSeen = true;
+    _saveDailyIntro();
+  }
+
+  void _saveDailyIntro() {
+    try {
+      _w('dailyIntroSeen', _prefs?.setBool('dailyIntroSeen', dailyIntroSeen));
+    } catch (e) {
+      appLog.w('store', 'could not save the intro: ${e.runtimeType}');
+    }
+  }
+
+  void _readDailyIntro(SharedPreferences p) {
+    try {
+      introCardsDone
+        ..clear()
+        ..addAll(p.getStringList('introCardsDone') ?? const []);
+    } catch (e) {
+      appLog.w('store', 'could not read the cards: ${e.runtimeType}');
+    }
+    try {
+      dailyIntroSeen =
+          p.getBool('dailyIntroSeen') ??
+          (lex.veteran ||
+              history.games.any((g) => g.isDaily) ||
+              _dailyLogs.values.any((l) => l.isNotEmpty));
+    } catch (e) {
+      appLog.w('store', 'could not read the intro: ${e.runtimeType}');
+      dailyIntroSeen = true;
+    }
+  }
+
   /// Whether the one-time note at the top of the mode settings was shown.
   bool modeSettingsNoteSeen = false;
 
@@ -3900,6 +3961,7 @@ class AppState extends ChangeNotifier {
       _readModeSettingsNote(p);
       _readCollection(p);
       _readLex(p);
+      _readDailyIntro(p);
       _readMyDailies(p);
       _readProfile(p);
       newUi = p.getBool('newUi') ?? newUiDefault;
@@ -4190,6 +4252,8 @@ class AppState extends ChangeNotifier {
     'seenHowTo': seenHowTo,
     'reminders': reminders.toJson(),
     'modesTaught': [for (final m in modesTaught) m.name],
+    'dailyIntroSeen': dailyIntroSeen,
+    'introCardsDone': introCardsDone.toList(),
   };
 
   /// Replaces what is kept with a checked backup (see backup.dart): the
@@ -4305,6 +4369,16 @@ class AppState extends ChangeNotifier {
     if (settings['modesTaught'] case final List l) {
       _setTaught(l);
       _saveTaught();
+    }
+    if (settings['dailyIntroSeen'] case final bool b) {
+      dailyIntroSeen = b;
+      _saveDailyIntro();
+    }
+    if (settings['introCardsDone'] case final List l) {
+      introCardsDone
+        ..clear()
+        ..addAll(l.whereType<String>());
+      _saveIntroCards();
     }
     if (settings['reminders'] != null) {
       _readReminders(settings['reminders']);

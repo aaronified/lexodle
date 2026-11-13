@@ -132,15 +132,3 @@ LadderStep? nextStep(int games) {
   }
   return null;
 }
-
-/// The share of the way from the last step to [next], 0 to 1, for the bar.
-double progressToNext(int games) {
-  final next = nextStep(games);
-  if (next == null) return 1;
-  var from = 1;
-  for (final s in ladder) {
-    if (s.games <= games) from = s.games;
-  }
-  final span = next.games - from;
-  return span <= 0 ? 1 : ((games - from) / span).clamp(0.0, 1.0);
-}

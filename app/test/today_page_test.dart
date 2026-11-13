@@ -131,7 +131,7 @@ void main() {
     );
   });
 
-  testWidgets('a new player gets the new card and the next-up bar', (
+  testWidgets('a new player gets the new card and no next-up card', (
     tester,
   ) async {
     appState.stats.played = 4;
@@ -139,9 +139,20 @@ void main() {
     await show(tester);
     expect(find.byKey(const ValueKey('today-new-quartet')), findsOneWidget);
     expect(find.text('four words at once'), findsOneWidget);
-    expect(find.byKey(const ValueKey('today-next-up')), findsOneWidget);
-    expect(find.text('your numbers'), findsOneWidget);
-    expect(find.byKey(const ValueKey('today-next-bar')), findsOneWidget);
+    expect(find.byKey(const ValueKey('today-next-up')), findsNothing);
+    expect(find.text('your numbers'), findsNothing);
+    expect(find.byKey(const ValueKey('today-next-bar')), findsNothing);
+    // at most one introduction card
+    expect(
+      find.byWidgetPredicate(
+        (w) =>
+            w.key is ValueKey &&
+            ((w.key as ValueKey).value as Object).toString().startsWith(
+              'today-new-',
+            ),
+      ),
+      findsOneWidget,
+    );
     // quartet is open at 4, so the choice is there
     expect(find.byKey(const ValueKey('today-choose')), findsOneWidget);
   });

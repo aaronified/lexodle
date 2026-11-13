@@ -475,63 +475,17 @@ class TodayPage extends StatelessWidget {
     }
   }
 
-  /// The slow-introduction cards: what just opened, and what comes next.
+  /// The slow-introduction card: what just opened on exactly this game, at most
+  /// one (the most recent), so that the page is never crowded.
   List<Widget> _cards(BuildContext context, int games) {
     final c = Theme.of(context).colorScheme;
     final dim = c.onSurface.withValues(alpha: dimAlpha);
-    final next = nextStep(games);
-    return [
-      const SizedBox(height: 16),
+    final opened = [
       for (final s in justOpened(games))
-        if (s.mode == null || !appState.isTaught(s.mode!))
-          _newCard(context, c, dim, s),
-      if (next != null)
-        Container(
-          key: const ValueKey('today-next-up'),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: c.surfaceContainerHighest,
-            border: Border.fromBorderSide(hairline(c)),
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Expanded(child: Caption('next up')),
-                  Text(
-                    'in ${next.games - games} '
-                    '${next.games - games == 1 ? 'game' : 'games'}',
-                    style: TextStyle(fontSize: 12, color: dim),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                next.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(next.note, style: TextStyle(fontSize: 12, color: dim)),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  key: const ValueKey('today-next-bar'),
-                  value: progressToNext(games),
-                  minHeight: 3,
-                  color: c.primary,
-                  backgroundColor: c.outlineVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
+        if (s.mode == null || !appState.isTaught(s.mode!)) s,
     ];
+    if (opened.isEmpty) return const [];
+    return [const SizedBox(height: 16), _newCard(context, c, dim, opened.last)];
   }
 
   Widget _bottomBar(BuildContext context, ColorScheme c, _Row? next) {

@@ -345,6 +345,18 @@ Map<String, Object> _settings(Object? raw) {
     }
     out['modesTaught'] = [for (final n in taught) n as String];
   }
+  final introSeen = raw['dailyIntroSeen'];
+  if (introSeen != null) {
+    if (introSeen is! bool) _bad('dailyIntroSeen');
+    out['dailyIntroSeen'] = introSeen;
+  }
+  final cards = raw['introCardsDone'];
+  if (cards != null) {
+    if (cards is! List || cards.any((n) => n is! String)) {
+      _bad('introCardsDone');
+    }
+    out['introCardsDone'] = [for (final n in cards) n as String];
+  }
   // the reminders: read as the settings read them (anything off falls back)
   final reminders = raw['reminders'];
   if (reminders != null) {
