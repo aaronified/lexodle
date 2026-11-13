@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/you_page.dart';
+import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -162,12 +162,10 @@ void main() {
       );
     });
 
-    testWidgets('it is chosen on the you tab and kept', (tester) async {
+    testWidgets('it is chosen on the settings page and kept', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 2200));
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
-        ),
+        const MaterialApp(home: SettingsPage()),
       );
       await tester.pumpAndSettle();
       expect(find.text('theme'), findsOneWidget);

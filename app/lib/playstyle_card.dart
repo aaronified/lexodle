@@ -7,6 +7,7 @@ import 'mode_filter.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'routes.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 
 /// A shaded card, as those of the history page: radius 6. On the page's ground
@@ -429,7 +430,10 @@ class PlaystylePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('playstyle')),
+      appBar: AppBar(
+        title: const Text('playstyle'),
+        actions: [const SettingsButton()],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

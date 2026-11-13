@@ -16,6 +16,7 @@ import 'puzzle.dart';
 import 'routes.dart';
 import 'stepper_choice.dart';
 import 'typing_keys.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -465,7 +466,10 @@ class _DiyMakerState extends State<_DiyMaker> {
       autofocus: true,
       onKeyEvent: (_, e) => _keys.handle(e),
       child: Scaffold(
-        appBar: AppBar(title: Text('make your own · ${_mode.label}')),
+        appBar: AppBar(
+          title: Text('make your own · ${_mode.label}'),
+          actions: [const SettingsButton()],
+        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -671,7 +675,7 @@ class _DiyGateState extends State<DiyGate> {
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
           return Scaffold(
-            appBar: AppBar(),
+            appBar: AppBar(actions: [const SettingsButton()]),
             body: const Center(child: Caption('loading…')),
           );
         }

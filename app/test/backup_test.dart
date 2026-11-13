@@ -465,7 +465,7 @@ void main() {
     Future<void> open(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 3000));
       await tester.pumpWidget(
-        const MaterialApp(home: SettingsPage(part: SettingsPart.backup)),
+        const MaterialApp(home: SettingsPage()),
       );
       await tester.pumpAndSettle();
     }
@@ -476,10 +476,7 @@ void main() {
       tester,
     ) async {
       await open(tester);
-      expect(
-        find.text('backup'),
-        findsNWidgets(2),
-      ); // app bar title and caption
+      expect(find.text('backup'), findsOneWidget); // the caption
       await tester.tap(byKey('backup-download'));
       await tester.pumpAndSettle();
       expect(io.saved.length, 1);

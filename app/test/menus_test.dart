@@ -299,8 +299,9 @@ void main() {
       expect(find.text('touch'), findsOneWidget);
       expect(find.text('log'), findsOneWidget);
       expect(find.text('about'), findsOneWidget);
-      expect(find.text('theme'), findsNothing);
-      expect(find.text('backup'), findsNothing);
+      // theme and backup are open from the first game, support is not
+      expect(find.text('theme'), findsOneWidget);
+      expect(find.text('backup'), findsOneWidget);
       expect(find.text('support lexodle'), findsNothing);
       // what moved to game modes is not here
       for (final gone in [

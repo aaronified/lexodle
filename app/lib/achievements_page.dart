@@ -8,6 +8,7 @@ import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart' show GameMode;
 import 'routes.dart';
 import 'store.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -231,6 +232,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
               ),
             ),
           ),
+          const SettingsButton(),
           const SizedBox(width: 8),
         ],
       ),
@@ -999,7 +1001,10 @@ class MasteryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('language mastery')),
+      appBar: AppBar(
+        title: const Text('language mastery'),
+        actions: [const SettingsButton()],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
@@ -1140,7 +1145,10 @@ class _HistoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('history')),
+      appBar: AppBar(
+        title: const Text('history'),
+        actions: [const SettingsButton()],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),

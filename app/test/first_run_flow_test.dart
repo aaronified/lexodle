@@ -7,7 +7,6 @@ import 'package:lexodle/first_run/language_theme_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/words.dart';
-import 'package:lexodle/you_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Widget _fake(String name, Map<String, VoidCallback> buttons) => Scaffold(
@@ -184,24 +183,6 @@ void main() {
     await show(tester, HomeSwitch(screens: _screens()));
     expect(find.text('gateway'), findsOneWidget);
     expect(find.text('game'), findsNothing);
-  });
-
-  testWidgets('practice replay from you returns to you', (tester) async {
-    await fresh({'firstRunStage': 2});
-    appState.newUi = true;
-    await show(tester, AppShell(screens: _screens()));
-    await tap(tester, 'you');
-    expect(find.byType(YouPage), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('you-help')));
-    await tester.pumpAndSettle();
-    expect(find.text('practice'), findsOneWidget);
-    await tap(tester, 'practice_done');
-    expect(find.byType(YouPage), findsOneWidget);
-    expect(find.text('practice'), findsNothing);
-    await tester.tap(find.byKey(const ValueKey('you-help')));
-    await tester.pumpAndSettle();
-    await tap(tester, 'practice_close');
-    expect(find.byType(YouPage), findsOneWidget);
   });
 
   testWidgets('the language page lists languages and sets the theme', (

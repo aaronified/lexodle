@@ -7,6 +7,7 @@ import 'logic.dart' hide freshLetters;
 import 'main.dart';
 import 'playstyle.dart';
 import 'styles_lesson.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'modes.dart';
 import 'words.dart';
@@ -124,6 +125,7 @@ class _StylesPageState extends State<StylesPage> {
             ),
           ],
         ),
+        actions: [const SettingsButton()],
       ),
       body: SafeArea(
         child: Center(

@@ -18,6 +18,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     appState.learnLog = LearnLog();
     appState.achOf('').clear();
+    appState.lex.veteran = true;
+    appState.stats.played = 0;
+    appState.setup(mode: GameMode.classic);
   });
 
   String today() => DateTime.now().toIso8601String().substring(0, 10);
@@ -66,6 +69,46 @@ void main() {
 
   String text(WidgetTester tester, String key) =>
       textOf(tester.widget<Text>(find.byKey(ValueKey(key))))!;
+
+  testWidgets('at one game learn shows only the classic how to play', (
+    tester,
+  ) async {
+    appState.lex.veteran = false;
+    appState.stats.played = 1;
+    await open(tester);
+    expect(
+      find.byKey(const ValueKey('learn-card-how-to-play')),
+      findsOneWidget,
+    );
+    expect(find.text('how to play classic'), findsOneWidget);
+    expect(find.byKey(const ValueKey('learn-modes')), findsNothing);
+    for (final k in ['free', 'choose', 'closing', 'sequence']) {
+      expect(find.byKey(ValueKey('learn-card-$k')), findsNothing);
+    }
+    for (final k in ['guide', 'opening', 'styles', 'words']) {
+      expect(find.byKey(ValueKey('learn-card-$k')), findsNothing);
+    }
+  });
+
+  testWidgets('a second open mode adds its pill and row', (tester) async {
+    appState.lex.veteran = false;
+    appState.stats.played = 4;
+    await open(tester);
+    expect(find.byKey(const ValueKey('learn-modes')), findsOneWidget);
+    expect(find.byKey(const ValueKey('learn-card-free')), findsNothing);
+    appState.setup(mode: GameMode.quartet);
+    await tester.pump();
+    expect(find.text('how to play quartet'), findsOneWidget);
+    expect(find.text('how to play classic'), findsNothing);
+  });
+
+  testWidgets('at 24 games the full page shows', (tester) async {
+    appState.lex.veteran = false;
+    appState.stats.played = 24;
+    await open(tester);
+    expect(find.byKey(const ValueKey('learn-card-guide')), findsOneWidget);
+    expect(find.byKey(const ValueKey('learn-card-free')), findsOneWidget);
+  });
 
   testWidgets('a new player sees three activities, none tried', (tester) async {
     await open(tester);

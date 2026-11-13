@@ -11,6 +11,7 @@ import 'mode_wheel.dart';
 import 'modes.dart';
 import 'stepper_choice.dart';
 import 'store.dart' show Helper;
+import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -103,7 +104,10 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('mode settings')),
+      appBar: AppBar(
+        title: const Text('mode settings'),
+        actions: [const SettingsButton()],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

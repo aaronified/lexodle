@@ -42,11 +42,7 @@ void main() {
     await appState.load();
     appState.setProfile(Profile());
     await tester.binding.setSurfaceSize(const Size(420, 1700));
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
-      ),
-    );
+    await tester.pumpWidget(MaterialApp(home: const Scaffold(body: YouPage())));
     await tester.pump();
     expect(find.text('player'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('you-chip')));

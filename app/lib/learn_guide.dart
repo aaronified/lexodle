@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'help.dart';
 import 'modes.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 
 /// The strategy guide of [mode]: headed paragraphs on how to play it well.
@@ -160,12 +161,16 @@ class ModeGuidePage extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(width: 8),
-            Text(
-              'learn · ${mode.label}',
-              style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+            Flexible(
+              child: Text(
+                'learn · ${mode.label}',
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
+              ),
             ),
           ],
         ),
+        actions: [const SettingsButton()],
       ),
       body: SafeArea(
         child: Center(

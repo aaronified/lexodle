@@ -10,7 +10,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await appState.load();
+    // the guides and drills open at the 'learn' step: a veteran has it
+    appState.lex.veteran = true;
+  });
 
   test('every mode has a guide, and no other game is named', () {
     for (final m in GameMode.values) {

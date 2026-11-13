@@ -10,6 +10,7 @@ import 'main.dart';
 import 'mode_wheel.dart';
 import 'modes.dart';
 import 'routes.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 
 /// Where one chosen daily stands today.
@@ -137,6 +138,7 @@ class TodayPage extends StatelessWidget {
                     key: const ValueKey('today-date'),
                     style: TextStyle(fontSize: 12, color: dim),
                   ),
+                  const SettingsButton(),
                 ],
               ),
               const SizedBox(height: 20),
