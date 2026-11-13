@@ -88,8 +88,10 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
           (l) {
             if (mounted) setState(() => _langs = l);
           },
-          onError: (Object e) =>
-              appLog.w('modeset', 'could not load the languages ${e.runtimeType}'),
+          onError: (Object e) => appLog.w(
+            'modeset',
+            'could not load the languages ${e.runtimeType}',
+          ),
         );
       } catch (e) {
         appLog.w('modeset', 'could not load the languages ${e.runtimeType}');
@@ -333,7 +335,11 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
                           'well known',
                           'the best known places about equally likely',
                         ),
-                        (Draw.equal, 'all places', 'every place equally likely'),
+                        (
+                          Draw.equal,
+                          'all places',
+                          'every place equally likely',
+                        ),
                       ]
                     : [for (final d in Draw.values) (d, d.label, d.sub)],
                 selected: mode == GameMode.themed && draw == Draw.frequency
