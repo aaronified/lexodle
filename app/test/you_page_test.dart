@@ -18,13 +18,11 @@ void main() {
     appState.setup(themeMode: ThemeMode.system, black: false);
   });
 
-  Future<void> show(WidgetTester tester, {VoidCallback? onReplay}) async {
+  Future<void> show(WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: YouPage(onReplayFirstGame: onReplay ?? () {})),
-      ),
-    );
+    // a fresh tree each time: the page is const, so it would not rebuild
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(MaterialApp(home: const Scaffold(body: YouPage())));
     await tester.pump();
   }
 
@@ -92,18 +90,19 @@ void main() {
     expect(appState.blackTheme, isFalse);
   });
 
-  testWidgets(
-    'language, how to play, settings and what is new are always there',
-    (tester) async {
-      player(played: 0, veteran: false);
-      await show(tester);
-      for (final id in ['language', 'howto', 'settings', 'whatsnew']) {
-        expect(row(id), findsOneWidget, reason: id);
-      }
-      expect(row('solver'), findsNothing);
-      expect(row('diy'), findsNothing);
-    },
-  );
+  testWidgets('language, settings and what is new are always there', (
+    tester,
+  ) async {
+    player(played: 0, veteran: false);
+    await show(tester);
+    for (final id in ['language', 'settings', 'whatsnew']) {
+      expect(row(id), findsOneWidget, reason: id);
+    }
+    expect(row('howto'), findsNothing);
+    expect(find.byKey(const ValueKey('you-help')), findsNothing);
+    expect(row('solver'), findsNothing);
+    expect(row('diy'), findsNothing);
+  });
 
   testWidgets('solver and diy come at game 6', (tester) async {
     player(played: 5, veteran: false);
@@ -134,7 +133,7 @@ void main() {
     expect(solverModeOf(GameMode.equations), GameMode.classic);
   });
 
-  testWidgets('how to play and settings push their routes', (tester) async {
+  testWidgets('settings pushes its route', (tester) async {
     player(played: 500, veteran: true);
     final pushed = <String?>[];
     await tester.binding.setSurfaceSize(const Size(420, 1700));
@@ -147,18 +146,13 @@ void main() {
             builder: (_) => const Scaffold(body: Text('pushed')),
           );
         },
-        home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
+        home: const Scaffold(body: YouPage()),
       ),
     );
     await tester.pump();
-    await tester.tap(row('howto'));
-    await tester.pumpAndSettle();
-    expect(pushed, [Routes.howTo]);
-    Navigator.of(tester.element(find.text('pushed'))).pop();
-    await tester.pumpAndSettle();
     await tester.tap(row('settings'));
     await tester.pumpAndSettle();
-    expect(pushed, [Routes.howTo, Routes.settings]);
+    expect(pushed, [Routes.settings]);
   });
 
   Future<RouteSettings> pushedBy(WidgetTester tester, String id) async {
@@ -171,7 +165,7 @@ void main() {
           got = s;
           return onGenerateRoute(s);
         },
-        home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
+        home: const Scaffold(body: YouPage()),
       ),
     );
     await tester.pump();
@@ -216,13 +210,5 @@ void main() {
       find.descendant(of: row('achievements'), matching: find.byType(LexChip)),
       findsOneWidget,
     );
-  });
-
-  testWidgets('the help button calls back', (tester) async {
-    player(played: 500, veteran: true);
-    var n = 0;
-    await show(tester, onReplay: () => n++);
-    await tester.tap(find.byKey(const ValueKey('you-help')));
-    expect(n, 1);
   });
 }

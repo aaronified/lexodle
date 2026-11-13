@@ -459,9 +459,7 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(420, 2200));
         addTearDown(() => tester.binding.setSurfaceSize(null));
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
-          ),
+          MaterialApp(home: const Scaffold(body: YouPage())),
         );
         await tester.pumpAndSettle();
         for (final label in ['light', 'dark', 'system']) {

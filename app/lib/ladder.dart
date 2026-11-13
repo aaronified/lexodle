@@ -46,13 +46,6 @@ const ladder = <LadderStep>[
   LadderStep(
     0,
     StepKind.feature,
-    'how to play',
-    'the rules, in you',
-    card: false,
-  ),
-  LadderStep(
-    0,
-    StepKind.feature,
     'settings',
     'the app settings, in you',
     card: false,
@@ -76,6 +69,13 @@ const ladder = <LadderStep>[
     StepKind.feature,
     'lex and hints',
     'lex, and a hint for a lex',
+    card: false,
+  ),
+  LadderStep(
+    1,
+    StepKind.feature,
+    'how to play',
+    'how to play each mode, in learn',
     card: false,
   ),
   LadderStep(

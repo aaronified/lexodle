@@ -18,10 +18,7 @@ import 'words.dart';
 /// achievements, lex, reminders, playstyle, history and friends. A new player
 /// sees a door once enough games are played.
 class YouPage extends StatefulWidget {
-  const YouPage({super.key, required this.onReplayFirstGame});
-
-  /// The help button: play the first game again.
-  final VoidCallback onReplayFirstGame;
+  const YouPage({super.key});
 
   @override
   State<YouPage> createState() => _YouPageState();
@@ -138,17 +135,6 @@ class _YouPageState extends State<YouPage> {
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        key: const ValueKey('you-help'),
-                        tooltip: 'help: play your first game again',
-                        onPressed: widget.onReplayFirstGame,
-                        icon: TablerIcon(
-                          'info-circle',
-                          size: 26,
-                          color: c.onSurface,
                         ),
                       ),
                     ],
@@ -302,15 +288,6 @@ class _YouPageState extends State<YouPage> {
                       _langName,
                       icon: 'world',
                       onTap: _pickLanguage,
-                    ),
-                  if (appState.stepOpen('how to play'))
-                    _row(
-                      context,
-                      'howto',
-                      'how to play',
-                      null,
-                      icon: 'zoom-question',
-                      onTap: () => _push(context, Routes.howTo),
                     ),
                   if (appState.stepOpen('solver'))
                     _row(

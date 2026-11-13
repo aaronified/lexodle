@@ -42,7 +42,8 @@ void main() {
     expect(find.byType(AppShell), findsOneWidget);
     expect(find.byType(TodayPage), findsOneWidget);
     expect(find.text('words'), findsNothing);
-    expect(find.text('learn'), findsNothing);
+    expect(find.text('learn'), findsWidgets);
+    expect(find.text('learn'), findsWidgets);
     await tester.tap(find.text('you').last);
     await tester.pump();
     expect(find.byType(YouPage), findsOneWidget);
@@ -51,11 +52,6 @@ void main() {
     appState.notifyListeners();
     await tester.pump();
     expect(find.text('words'), findsWidgets);
-    expect(find.text('learn'), findsNothing);
-    appState.stats.played = 24;
-    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-    appState.notifyListeners();
-    await tester.pump();
     expect(find.text('learn'), findsWidgets);
   });
 

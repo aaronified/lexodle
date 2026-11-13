@@ -30,6 +30,12 @@ class LearnHomePage extends StatelessWidget {
         final log = appState.learnLog;
         final today = DateTime.now().toIso8601String().substring(0, 10);
         final streak = log.streak(today);
+        // before step 'learn' the page holds only how to play each open mode
+        final full = appState.stepOpen('learn');
+        final modes = [
+          for (final m in openModes(appState.level))
+            if (GameMode.loopFor(appState.lang).contains(m)) m,
+        ];
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -63,32 +69,32 @@ class LearnHomePage extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
                   children: [
-                    Caption(
-                      'get better at the first guesses, and at seeing '
-                      'which ${thingOf(mode, plural: false)} splits the rest best',
-                    ),
-                    const SizedBox(height: 10),
-                    ModeFilter(
-                      key: const ValueKey('learn-modes'),
-                      showAll: false,
-                      selected: mode,
-                      modes: [
-                        for (final m in openModes(appState.level))
-                          if (GameMode.loopFor(appState.lang).contains(m)) m,
-                      ],
-                      onSelect: (m) {
-                        if (m == null) return;
-                        try {
-                          appState.setup(mode: m);
-                        } catch (e) {
-                          appLog.w(
-                            'learn',
-                            'could not switch mode: ${e.runtimeType}',
-                          );
-                        }
-                      },
-                    ),
-                    if (streak > 0) ...[
+                    if (full) ...[
+                      Caption(
+                        'get better at the first guesses, and at seeing '
+                        'which ${thingOf(mode, plural: false)} splits the rest best',
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    if (modes.length > 1)
+                      ModeFilter(
+                        key: const ValueKey('learn-modes'),
+                        showAll: false,
+                        selected: mode,
+                        modes: modes,
+                        onSelect: (m) {
+                          if (m == null) return;
+                          try {
+                            appState.setup(mode: m);
+                          } catch (e) {
+                            appLog.w(
+                              'learn',
+                              'could not switch mode: ${e.runtimeType}',
+                            );
+                          }
+                        },
+                      ),
+                    if (full && streak > 0) ...[
                       const SizedBox(height: 10),
                       Text(
                         '$streak ${streak == 1 ? 'day' : 'days'} in a row',
@@ -97,43 +103,46 @@ class LearnHomePage extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 14),
-                    // how to play the mode in view well, for every mode
-                    OutlinedButton(
-                      key: const ValueKey('learn-card-guide'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                        shape: const RoundedRectangleBorder(),
-                        alignment: Alignment.centerLeft,
-                      ),
-                      onPressed: () =>
-                          Navigator.pushNamed(context, Routes.learnGuide),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${mode.label}: how to play it well',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                    if (full)
+                      // how to play the mode in view well, for every mode
+                      OutlinedButton(
+                        key: const ValueKey('learn-card-guide'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                          shape: const RoundedRectangleBorder(),
+                          alignment: Alignment.centerLeft,
+                        ),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, Routes.learnGuide),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${mode.label}: how to play it well',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'strategy for the mode you have selected',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: c.onSurface.withValues(alpha: dimAlpha),
+                              const SizedBox(height: 3),
+                              Text(
+                                'strategy for the mode you have selected',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: c.onSurface.withValues(
+                                    alpha: dimAlpha,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
+                    if (full) const SizedBox(height: 10),
                     _howToPlay(context, mode),
-                    ...[
+                    if (full) ...[
                       _lesson(
                         context,
                         'the opening',

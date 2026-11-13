@@ -165,9 +165,7 @@ void main() {
     testWidgets('it is chosen on the you tab and kept', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 2200));
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
-        ),
+        MaterialApp(home: const Scaffold(body: YouPage())),
       );
       await tester.pumpAndSettle();
       expect(find.text('theme'), findsOneWidget);
