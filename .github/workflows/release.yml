@@ -123,6 +123,9 @@ jobs:
           java-version: "21"
       - uses: subosito/flutter-action@v2
         with:
+          # the version CI tests with: on the newest stable three widget tests fail on
+          # a pending timer, which stopped the 0.10.0 release
+          flutter-version: "3.47.9"
           channel: stable
           cache: true
       - run: flutter pub get
