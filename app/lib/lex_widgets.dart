@@ -42,7 +42,15 @@ class LexChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final y = yellowOf(c);
+    // light: the scheme's green under the yellow. dark and black: a deeper green
+    // under a lighter yellow, since the pale dark-mode green drowned the number
+    final dark = c.brightness == Brightness.dark;
+    final fill = dark
+        ? HSLColor.fromColor(c.secondary).withLightness(.24).toColor()
+        : c.secondary;
+    final y = dark
+        ? HSLColor.fromColor(yellowOf(c)).withLightness(.72).toColor()
+        : yellowOf(c);
     final h = big ? 44.0 : 28.0;
     final r = Radius.circular(h / 2);
     return Container(
@@ -50,7 +58,7 @@ class LexChip extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: big ? 18 : 10),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: c.secondary,
+        color: fill,
         borderRadius: BorderRadius.horizontal(
           left: joined ? Radius.zero : r,
           right: r,

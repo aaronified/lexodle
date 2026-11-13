@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- lex chip: readable in dark and black
+  The gem and number sit on a deeper green with a lighter yellow, so they no longer wash out. Light is unchanged.
+
 ## 0.10.1
 
 - today: one button for free play and the mode
