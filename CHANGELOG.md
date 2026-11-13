@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.10.2
+
 - one ladder: every row, tab and card opens at its step
   What a player sees now opens by the games played, from one list. A mode taught early in the first run opens at once, and what is scheduled up to its step opens with it. An intro card waits until it is handled, one at a time, and no mode is named before its step. The new look is the only look: its switch is gone.
 - game over: skill, luck and risk in two steps
