@@ -53,6 +53,7 @@ class GatewayPage extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: c.surfaceContainerHighest,
+                  border: Border.fromBorderSide(hairline(c)),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(

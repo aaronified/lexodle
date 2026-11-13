@@ -128,12 +128,7 @@ class _WordsPageState extends State<WordsPage> {
             ),
           ],
         ),
-        Positioned(
-          left: 19,
-          right: 19,
-          bottom: 12,
-          child: _banner(),
-        ),
+        Positioned(left: 19, right: 19, bottom: 12, child: _banner()),
       ],
     );
   }
@@ -408,7 +403,7 @@ class _WordsPageState extends State<WordsPage> {
     return InputDecoration(
       isDense: true,
       hintText: hint,
-      // flat fill from the theme; no outline
+      // the fill and the soft outline come from the theme
     );
   }
 

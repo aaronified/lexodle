@@ -178,6 +178,7 @@ class _StreakWeekState extends State<StreakWeek>
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       decoration: BoxDecoration(
         color: c.surfaceContainerHighest,
+        border: Border.fromBorderSide(hairline(c)),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Column(

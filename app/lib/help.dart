@@ -192,6 +192,7 @@ class HelpCrop extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: c.surfaceContainerHighest,
+        border: Border.fromBorderSide(hairline(c)),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Wrap(
@@ -424,7 +425,10 @@ Future<void> showModeHelp(
     builder: (context) => Dialog(
       key: const ValueKey('help-dialog'),
       insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(3),
+        side: hairline(Theme.of(context).colorScheme),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: Column(

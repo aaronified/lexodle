@@ -20,7 +20,7 @@ import 'update_section.dart';
 import 'app_log.dart';
 import 'ui.dart' show hairline;
 
-/// Dustland-style minimalism on Material 3: flat surfaces, hairline borders,
+/// Dustland-style minimalism on Material 3: flat surfaces, soft hairline borders where they are needed,
 /// near-square corners, lowercase monospace text. Every colour comes from the
 /// generated Material You scheme and nothing is hard-coded.
 ///
@@ -120,7 +120,10 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
       filled: true,
       fillColor: scheme.surfaceContainerHighest,
       border: OutlineInputBorder(borderRadius: _radius, borderSide: line),
-      enabledBorder: OutlineInputBorder(borderRadius: _radius, borderSide: line),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: _radius,
+        borderSide: line,
+      ),
       focusedBorder: OutlineInputBorder(
         borderRadius: _radius,
         borderSide: BorderSide(color: scheme.primary, width: 1.5),
