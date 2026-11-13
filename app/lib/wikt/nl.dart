@@ -91,7 +91,7 @@ WordInfo? parseDutch(
               if (audio != null) break;
             }
           }
-          final t = squash(li.text.replaceAll(' ', ''));
+          final t = squash(li.text.replaceAll('\u202f', ''));
           if (!t.startsWith('IPA')) continue;
           for (final m in RegExp(r'/[^/\s][^/]*/').allMatches(t)) {
             final s = m.group(0)!.trim();
@@ -99,12 +99,14 @@ WordInfo? parseDutch(
           }
         }
       case 'ety' when node.localName == 'ul' && etymology.isEmpty:
-        final t = squash(
-          [
-            for (final li in node.children.where((x) => x.localName == 'li'))
-              without(li, 'sup,style').text,
-          ].join(' '),
-        ).replaceAll(RegExp(r'\s+([,;.])'), r'$1');
+        final t = tidy(
+          squash(
+            [
+              for (final li in node.children.where((x) => x.localName == 'li'))
+                without(li, 'sup,style').text,
+            ].join(' '),
+          ),
+        );
         if (t.isNotEmpty) etymology = shorten(t, 220);
       case 'pos' when current != null:
         final c = current;

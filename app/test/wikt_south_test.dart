@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/wikt/ca.dart';
 import 'package:lexodle/wikt/es.dart';
 import 'package:lexodle/wikt/it.dart';
 import 'package:lexodle/wikt/pt.dart';
@@ -162,6 +163,59 @@ void main() {
       expect(
         parsePortuguese(
           '<div class="mw-parser-output"><div class="mw-heading mw-heading1"><h1 id="Galego">Galego</h1></div></div>',
+          'u',
+        ),
+        isNull,
+      );
+    });
+  });
+
+  group('catalan edition', () {
+    WordInfo ca(String w) => parseCatalan(_fx('ca-wikt-$w'), 'u')!;
+
+    test('camí: ipa, audio, gender, plural, labels, nyms, etymology', () {
+      final i = ca('camí');
+      expect(i.ipa, ['/kəˈmi/', '/kaˈmi/']);
+      expect(i.audio, startsWith('https://upload.wikimedia.org/'));
+      final b = i.blocks.first;
+      expect(b.pos, 'nom');
+      expect(b.gender, 'm');
+      expect(b.forms, 'plural camins');
+      expect(b.senses.first.text, 'Ruta, via entre dos punts.');
+      expect(b.senses[2].labels, ['figurat']);
+      expect(b.senses[2].text, startsWith('Passos a seguir'));
+      expect(i.synonyms, containsAll(['avinguda', 'carrer']));
+      expect(i.synonyms.length, 8);
+      expect(i.etymology, startsWith('Del llatí cammīnus'));
+    });
+
+    test('farà: verb form, old catalan and italian left out', () {
+      final i = ca('farà');
+      expect(i.blocks.length, 1);
+      expect(i.blocks.first.pos, 'verb');
+      expect(
+        i.blocks.first.senses.first.text,
+        startsWith('Tercera persona del singular'),
+      );
+      expect(i.ipa, isEmpty);
+    });
+
+    test('únic: adjective forms, examples in a dl under the sense', () {
+      final i = ca('únic');
+      final b = i.blocks.first;
+      expect(b.pos, 'adjectiu');
+      expect(b.gender, 'm');
+      expect(b.forms, startsWith('femení única'));
+      expect(b.senses.first.text, 'Que no hi ha altre com ell.');
+      expect(b.senses.first.examples.first.text, startsWith('Aquest és un model'));
+      expect(i.ipa, ['/ˈu.nik/']);
+      expect(i.synonyms, containsAll(['exclusiu', 'sol']));
+    });
+
+    test('a page with no catalan section gives nothing', () {
+      expect(
+        parseCatalan(
+          '<div class="mw-parser-output"><div class="mw-heading mw-heading2"><h2 id="Català_antic">Català antic</h2></div></div>',
           'u',
         ),
         isNull,

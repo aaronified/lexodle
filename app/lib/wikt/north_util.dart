@@ -47,3 +47,7 @@ String? commonsMp3(String? href) {
   return 'https://upload.wikimedia.org/wikipedia/commons/transcoded/'
       '${m.group(1)}/$name/$name.mp3';
 }
+
+/// [s] without the gap a removed footnote mark leaves before punctuation.
+String tidy(String s) =>
+    s.replaceAllMapped(RegExp(r'\s+([,;.])'), (m) => m[1]!);

@@ -150,9 +150,7 @@ WordInfo? parseGerman(
       case 'ety':
         if (etymology.isEmpty && lines.isNotEmpty) {
           // the "→ gmh" language marks are <sup>
-          final t = squash(
-            without(lines.first, 'sup,style').text,
-          ).replaceAll(RegExp(r'\s+([,;.])'), r'$1');
+          final t = tidy(squash(without(lines.first, 'sup,style').text));
           if (t.isNotEmpty) etymology = shorten(t, 220);
         }
       case 'syn' || 'ant' || 'rel':
