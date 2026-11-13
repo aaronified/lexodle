@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- today: the mode icon is in the square, and free play has no dots
+  Each daily's icon now sits in its square: green when solved, yellow in progress, a red icon when missed (the skull is only in the streak calendar). The free play button no longer shows pending-daily dots.
+
 ## 0.10.2
 
 - one ladder: every row, tab and card opens at its step
