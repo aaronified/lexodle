@@ -45,6 +45,12 @@ const ladder = <LadderStep>[
     'history and your playstyle, in you',
   ),
   LadderStep(
+    6,
+    StepKind.feature,
+    'every mode',
+    'all eight modes are open to read about and try',
+  ),
+  LadderStep(
     7,
     StepKind.mode,
     'lockdown',
@@ -92,6 +98,7 @@ const ladder = <LadderStep>[
     'place names, in english',
     mode: GameMode.themed,
   ),
+  LadderStep(24, StepKind.feature, 'learn', 'drills for every mode, in learn'),
 ];
 
 /// The game on which [m] opens: classic is open from the first.

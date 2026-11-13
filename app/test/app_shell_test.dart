@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/app_shell.dart';
@@ -65,5 +67,49 @@ void main() {
     for (final t in ['today', 'words', 'learn', 'you']) {
       expect(find.text(t), findsWidgets);
     }
+  });
+
+  testWidgets('the tab bar casts a soft upward shadow', (tester) async {
+    appState.setNewUi(true);
+    addTearDown(() => appState.setNewUi(false));
+    await show(tester);
+    final box = tester.widget<DecoratedBox>(
+      find.byKey(const ValueKey('tabs-shadow')),
+    );
+    final shadows = (box.decoration as BoxDecoration).boxShadow!;
+    expect(shadows, hasLength(2));
+    expect(shadows.every((s) => s.offset.dy < 0), isTrue);
+  });
+
+  testWidgets('every scrollable stretches at its ends, on any platform', (
+    tester,
+  ) async {
+    for (final p in [TargetPlatform.iOS, TargetPlatform.linux]) {
+      debugDefaultTargetPlatformOverride = p;
+      await tester.pumpWidget(
+        MaterialApp(
+          scrollBehavior: const AppScrollBehavior(),
+          home: ListView(children: [for (var i = 0; i < 40; i++) Text('$i')]),
+        ),
+      );
+      expect(find.byType(StretchingOverscrollIndicator), findsOneWidget);
+      final ctx = tester.element(find.byType(ListView));
+      expect(
+        const AppScrollBehavior().getScrollPhysics(ctx),
+        isA<ClampingScrollPhysics>(),
+      );
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
+
+  testWidgets('switches have no outline and a visible off knob', (
+    tester,
+  ) async {
+    final t = buildTheme(Brightness.light).switchTheme;
+    final c = buildTheme(Brightness.light).colorScheme;
+    expect(t.trackOutlineWidth!.resolve({}), 0);
+    expect(t.trackColor!.resolve({WidgetState.selected}), c.secondary);
+    expect(t.thumbColor!.resolve({WidgetState.selected}), c.onSecondary);
+    expect(t.thumbColor!.resolve({}), c.onSurface.withValues(alpha: .6));
   });
 }

@@ -27,7 +27,7 @@ import 'app_log.dart';
 /// difficulty); the wrong-place yellow is its own hue, see ui.dart. On Android
 /// the same roles would come from the wallpaper instead.
 final _seed = HSLColor.fromAHSL(1, 48, .7, .5).toColor();
-const _radius = BorderRadius.all(Radius.circular(3));
+const _radius = BorderRadius.all(Radius.circular(6));
 
 /// The app's one font (assets/fonts).
 const _font = 'JetBrainsMono';
@@ -129,6 +129,25 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
       side: BorderSide.none,
       backgroundColor: scheme.surfaceContainerHighest,
       selectedColor: scheme.secondaryContainer,
+    ),
+    // high contrast, no outline: off is a track a shade above the card with a
+    // visible knob, on is the secondary track with its own knob
+    switchTheme: SwitchThemeData(
+      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      trackOutlineWidth: const WidgetStatePropertyAll(0),
+      trackColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.selected)
+            ? scheme.secondary
+            : Color.alphaBlend(
+                scheme.onSurface.withValues(alpha: .08),
+                scheme.surfaceContainerHighest,
+              ),
+      ),
+      thumbColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.selected)
+            ? scheme.onSecondary
+            : scheme.onSurface.withValues(alpha: .6),
+      ),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
@@ -240,7 +259,7 @@ class LexodleApp extends StatelessWidget {
         themeMode: appState.themeMode,
         initialRoute: initialRoute,
         // a mouse drags a list as a finger does
-        scrollBehavior: const _EveryPointerScroll(),
+        scrollBehavior: const AppScrollBehavior(),
         navigatorObservers: observers,
         // up and down scroll whatever the mouse is over, on every screen
         // and a press anywhere gives a short vibration on a phone
@@ -256,9 +275,25 @@ class LexodleApp extends StatelessWidget {
 }
 
 /// Scrolling by dragging, with a mouse or a pen as well as a finger (Flutter's
-/// default leaves the mouse to the wheel and the scroll bar).
-class _EveryPointerScroll extends MaterialScrollBehavior {
-  const _EveryPointerScroll();
+/// default leaves the mouse to the wheel and the scroll bar), and the Material
+/// stretch at the ends of every list on every platform, as on Android 12.
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => StretchingOverscrollIndicator(
+    axisDirection: details.direction,
+    clipBehavior: details.decorationClipBehavior ?? Clip.hardEdge,
+    child: child,
+  );
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const ClampingScrollPhysics();
 
   @override
   Set<PointerDeviceKind> get dragDevices => {

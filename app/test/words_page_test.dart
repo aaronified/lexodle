@@ -260,10 +260,8 @@ void main() {
       seed();
       appState.saveWord('en', 'alpha', null, today: '2026-11-01');
       await openCollected(tester);
-      expect(
-        find.text('4 collected · tap a word for its entry'),
-        findsOneWidget,
-      );
+      expect(find.text('collected 4'), findsOneWidget);
+      expect(find.textContaining('collected · tap'), findsNothing);
       final y = [
         for (final w in ['tours', 'clubs']) tester.getTopLeft(crow('en', w)).dy,
       ];
@@ -370,6 +368,63 @@ void main() {
         findsOneWidget,
       );
       expect(csearch(), findsNothing);
+    });
+  });
+
+  group('header and banner', () {
+    Finder banner(String list) => find.byKey(ValueKey('words-banner-$list'));
+    Finder dismiss() => find.byKey(const ValueKey('words-banner-dismiss'));
+
+    setUp(() => appState.dismissedWordBanners.clear());
+
+    testWidgets('swiping changes the tab', (tester) async {
+      appState.collection.addWord('en', 'clubs');
+      appState.refresh();
+      await page(tester);
+      expect(find.text('saved 0'), findsOneWidget);
+      expect(find.byKey(const ValueKey('collected-search')), findsNothing);
+      await tester.drag(
+        find.byKey(const ValueKey('words-pages')),
+        const Offset(-400, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('collected 1'), findsOneWidget);
+      expect(find.byKey(const ValueKey('collected-search')), findsOneWidget);
+    });
+
+    testWidgets('the banner shows on both tabs', (tester) async {
+      appState.saveWord('en', 'alpha', null, today: '2026-11-01');
+      appState.collection.addWord('en', 'clubs');
+      appState.refresh();
+      await page(tester);
+      expect(banner('saved'), findsOneWidget);
+      expect(find.text('1 words saved'), findsOneWidget);
+      expect(find.textContaining('next trophy at 5'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('words-tab-collected')));
+      await tester.pumpAndSettle();
+      expect(banner('collected'), findsOneWidget);
+      expect(find.text('1 words collected'), findsOneWidget);
+      expect(find.textContaining('next trophy at 10'), findsOneWidget);
+    });
+
+    testWidgets('dismissing hides it; a new target shows it again', (
+      tester,
+    ) async {
+      appState.saveWord('en', 'alpha', null, today: '2026-11-01');
+      appState.refresh();
+      await page(tester);
+      await tester.tap(dismiss());
+      await tester.pumpAndSettle();
+      expect(banner('saved'), findsNothing);
+      expect(appState.dismissedWordBanners, contains('saved:5'));
+      // five words saved: the target moves on to 25
+      for (final w in ['b', 'c', 'd', 'e']) {
+        appState.saveWord('en', w, null, today: '2026-11-01');
+      }
+      appState.refresh();
+      await tester.pumpAndSettle();
+      expect(banner('saved'), findsOneWidget);
+      expect(find.textContaining('next trophy at 25'), findsOneWidget);
     });
   });
 }

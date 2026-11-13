@@ -7,6 +7,20 @@ it to the version.
 
 ## Unreleased
 
+- words: saved and collected are the header, and swipe
+  The two lists are the page's header and swipe sideways. A banner floats at the bottom on both lists with the count and the next trophy, and can be dismissed. It comes back for the next trophy.
+- you: the streak card swipes between modes
+  A swipe header with arrows and dots replaces the mode pills. The month hides the week, and its day cells have a faint border.
+- history: playstyle has its own card
+  The playstyle card sits under the chart. The summary line is shorter, with the mode icon. Games are shaded rows. The playstyle screen is a page with a back button.
+- achievements: lex is a chip at the top right
+  It opens the rule and the total earned. The three most recent achievements show what they paid.
+- the tab bar has a shadow, the app stretches at the end of a scroll
+  Radius is 6 everywhere, switches are higher contrast, and the ladder has the every-mode step at game 6 and learn at game 24.
+- words: french words are looked up in the wiktionnaire
+  A french word is read from fr.wiktionary.org, in french, with its link
+  reading "wiktionnaire". Every other language still uses en.wiktionary.org.
+  Saved entries from before stay as they were.
 - my words: a word with no entry has a retry
   A word is saved even when the lookup fails. Its page says no entry was kept
   and asks for your own notes, and "try the lookup again" fetches the entry

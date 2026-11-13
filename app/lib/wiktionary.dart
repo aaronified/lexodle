@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:html/dom.dart' show Element, Text;
 import 'package:html/parser.dart' as html;
 import 'package:http/http.dart' as http;
 
@@ -328,6 +329,250 @@ PosBlock _withHeadline(PosBlock block, dynamic line, List<PosBlock> blocks) {
   return filled;
 }
 
+/// One Wiktionary edition: where it lives, how its link reads, and how its
+/// pages are parsed. To add an edition, add one entry to [editions] and one
+/// parser here.
+class Edition {
+  const Edition(this.host, this.linkLabel, [this.parsePage]);
+
+  /// The edition's host, e.g. "fr.wiktionary.org".
+  final String host;
+
+  /// The text of the link to the entry.
+  final String linkLabel;
+
+  /// Parses a whole page of this edition (the HTML of `action=parse` with
+  /// `prop=text`) into the entry of its language, or null when the page has
+  /// none. Null means the English edition, whose pages are read by section
+  /// (see [parseSection]).
+  final WordInfo? Function(String markup, String url)? parsePage;
+
+  String get api => 'https://$host/w/api.php';
+  String get wikiBase => 'https://$host/wiki/';
+}
+
+const _english = Edition('en.wiktionary.org', 'wiktionary ↗');
+
+/// The editions by language code: a word is looked up in the Wiktionary of its
+/// own language. A language that is not here uses the English edition.
+const editions = <String, Edition>{
+  'fr': Edition('fr.wiktionary.org', 'wiktionnaire ↗', parseFrench),
+};
+
+Edition editionOf(String lang) => editions[lang] ?? _english;
+
+/// How the link of an entry reads, from the edition its [url] points to.
+String linkLabelFor(String url) {
+  for (final e in editions.values) {
+    if (url.startsWith(e.wikiBase)) return e.linkLabel;
+  }
+  return _english.linkLabel;
+}
+
+const _frGender = {'masculin': 'm', 'féminin': 'f', 'neutre': 'n'};
+
+/// Parses a fr.wiktionary page: the section of the French language (heading
+/// `fr`), with its pronunciation, parts of speech, senses, etymology,
+/// synonyms and antonyms. Null when the page has no French section.
+WordInfo? parseFrench(
+  String markup,
+  String url, {
+  int maxBlocks = 3,
+  int maxDefs = 4,
+  int maxNyms = 8,
+  int maxExamples = 2,
+}) {
+  final root = html.parseFragment(markup);
+  final top = root.querySelector('.mw-parser-output') ?? root;
+
+  final ipa = <String>[];
+  String? audio;
+  final blocks = <_FrBlock>[];
+  final syn = <String>[], ant = <String>[];
+  var etymology = '';
+  var inFrench = false, found = false;
+  var mode = '';
+  _FrBlock? current;
+
+  void addNym(List<String> into, String t) {
+    t = _squash(t);
+    if (t.isEmpty || into.contains(t)) return;
+    into.add(t);
+  }
+
+  for (final node in top.children) {
+    final h = node.querySelector('h2,h3,h4,h5,h6');
+    if (node.classes.contains('mw-heading') && h != null) {
+      if (h.localName == 'h2') {
+        final isFr = h.querySelector('span.sectionlangue#fr') != null;
+        if (inFrench && !isFr) break;
+        inFrench = isFr;
+        found = found || isFr;
+        mode = '';
+        continue;
+      }
+      if (!inFrench) continue;
+      final id = h.id.replaceFirst(RegExp(r'_\d+$'), '');
+      final def = h.querySelector('span.titredef');
+      if (def != null) {
+        current = _FrBlock(
+          _squash(def.text).toLowerCase().replaceFirst(RegExp(r'\s+\d+$'), ''),
+        );
+        if (blocks.length < maxBlocks) blocks.add(current);
+        mode = 'pos';
+      } else if (h.querySelector('span.titreetym') != null) {
+        mode = 'ety';
+      } else if (id == 'Synonymes') {
+        mode = 'syn';
+      } else if (id == 'Antonymes') {
+        mode = 'ant';
+      } else {
+        mode = '';
+      }
+      continue;
+    }
+    if (!inFrench) continue;
+
+    // pronunciations and recordings can sit in any part of the section
+    for (final e in node.querySelectorAll('span.API')) {
+      if (e.parent?.classes.contains('audio-ipa') ?? false) continue;
+      final t = _squash(e.text);
+      // \…\ is the pronunciation; […] are variants and liaisons
+      if (t.startsWith('\\') && !ipa.contains(t) && ipa.length < 3) ipa.add(t);
+    }
+    if (audio == null) {
+      for (final a in node.querySelectorAll('audio source')) {
+        final src = a.attributes['src'];
+        if (src != null && a.attributes['type'] == 'audio/mpeg') {
+          audio = src.startsWith('//') ? 'https:$src' : src;
+          break;
+        }
+      }
+    }
+
+    if (mode == 'ety' && etymology.isEmpty && node.localName == 'dl') {
+      final dd = node.querySelector('dd');
+      if (dd != null) {
+        final copy = dd.clone(true);
+        for (final x in copy.querySelectorAll(
+          'sup,style,.siècle,.date,#refnec,span[style*="vertical-align:super"]',
+        )) {
+          x.remove();
+        }
+        // "(nom commun 1)" pointers to the part of speech the note is for
+        for (final x in copy.querySelectorAll('i')) {
+          if (x.querySelector('a[href^="#fr-"]') != null) x.remove();
+        }
+        final t = _squash(copy.text);
+        if (!t.toLowerCase().startsWith('étymologie manquante') &&
+            !t.toLowerCase().startsWith('étymologie à ajouter')) {
+          etymology = _shorten(t, 220);
+        }
+      }
+    } else if (mode == 'pos' && current != null) {
+      final c = current;
+      if (node.localName == 'p' &&
+          !c.headed &&
+          (node.querySelector('.ligne-de-forme, span.API') != null)) {
+        c.headed = true;
+        final g = _squash(
+          [for (final x in node.querySelectorAll('.ligne-de-forme')) x.text]
+              .join(' '),
+        ).toLowerCase();
+        c.gender = _frGender[g] ?? g;
+        // a verb's headword line gives its group ("1er groupe"); the rest of
+        // it (regions, "ou") is not kept
+        final group = RegExp(r'\d+\S*\s+groupe').firstMatch(_squash(node.text));
+        if (group != null) c.forms = group.group(0)!;
+      } else if (node.localName == 'table' && c.forms.isEmpty) {
+        // the inflection table: "singulier | pluriel" over the forms
+        final heads = [
+          for (final x in node.querySelectorAll('th')) _squash(x.text),
+        ];
+        final cells = [
+          for (final x in node.querySelectorAll('td'))
+            if (x.attributes['colspan'] == null) _squash(x.text),
+        ];
+        final i = heads.indexOf('Pluriel');
+        if (i >= 0 && i < cells.length && cells[i].isNotEmpty) {
+          c.forms = 'pluriel ${cells[i]}';
+        }
+      } else if (node.localName == 'ol' && c.senses.isEmpty) {
+        for (final li in node.children.where((x) => x.localName == 'li')) {
+          if (c.senses.length >= maxDefs) break;
+          final examples = <Example>[];
+          for (final ex in li.querySelectorAll('span.example')) {
+            final q = ex.querySelector('q') ?? ex;
+            final t = _squash(q.text);
+            if (t.isNotEmpty) examples.add(Example(t));
+            if (examples.length >= maxExamples) break;
+          }
+          final copy = li.clone(true);
+          for (final x in copy.querySelectorAll('ul,ol,dl,div,style,sup')) {
+            x.remove();
+          }
+          // the labels lead the sense: "(informal)" in italics, or the
+          // emploi and registre spans
+          final labels = <String>[];
+          for (final n in copy.nodes.toList()) {
+            if (n is Text) {
+              if (n.text.trim().isEmpty) continue;
+              break;
+            }
+            if (n is! Element) break;
+            final isLabel =
+                n.classes.contains('emploi') ||
+                n.classes.contains('registre') ||
+                (n.localName == 'i' &&
+                    RegExp(r'^\(.+\)$').hasMatch(_squash(n.text)));
+            if (!isLabel) break;
+            final l = _squash(n.text).replaceAll(RegExp(r'^\(|\)$'), '');
+            if (l.isNotEmpty) labels.add(l.toLowerCase());
+            n.remove();
+          }
+          final t = _squash(copy.text);
+          if (t.isNotEmpty) {
+            c.senses.add(Sense(t, labels: labels, examples: examples));
+          }
+        }
+      }
+    } else if ((mode == 'syn' || mode == 'ant') &&
+        (node.localName == 'ul' || node.localName == 'div')) {
+      for (final li in node.querySelectorAll('li')) {
+        addNym(
+          mode == 'syn' ? syn : ant,
+          li.querySelector('a')?.text ?? li.text,
+        );
+      }
+    }
+  }
+
+  if (!found) return null;
+  return WordInfo(
+    url: url,
+    ipa: ipa,
+    audio: audio,
+    blocks: [
+      for (final b in blocks)
+        if (b.senses.isNotEmpty)
+          PosBlock(b.pos, gender: b.gender, forms: b.forms)
+            ..senses.addAll(b.senses),
+    ],
+    synonyms: syn.take(maxNyms).toList(),
+    antonyms: ant.take(maxNyms).toList(),
+    etymology: etymology,
+  );
+}
+
+/// A part of speech of a French entry while it is being read.
+class _FrBlock {
+  _FrBlock(this.pos);
+  final String pos;
+  String gender = '', forms = '';
+  bool headed = false;
+  final senses = <Sense>[];
+}
+
 /// Candidate page titles: Wiktionary titles are case-sensitive and German
 /// nouns, for one, are capitalised.
 List<String> titleCandidates(String word, String lang) {
@@ -398,10 +643,8 @@ class Wiktionary {
     _tail = Future.value();
   }
 
-  static const _api = 'https://en.wiktionary.org/w/api.php';
-
-  Future<Map<String, dynamic>> _get(Map<String, String> q) async {
-    final uri = Uri.parse(_api).replace(
+  Future<Map<String, dynamic>> _get(Edition ed, Map<String, String> q) async {
+    final uri = Uri.parse(ed.api).replace(
       queryParameters: {
         ...q,
         'format': 'json',
@@ -418,7 +661,7 @@ class Wiktionary {
   /// throws on network failure (which is not remembered, so asking again
   /// tries again). Asking twice for the same word shares one lookup.
   Future<WordInfo?> lookup(String word, String lang, String section) {
-    final key = '$lang:$word';
+    final key = '${editionOf(lang).host}:$lang:$word';
     final hit = _cache[key];
     if (hit != null) return hit;
     final run = _tail.then((_) => _fetch(word, lang, section));
@@ -441,9 +684,29 @@ class Wiktionary {
   }
 
   Future<WordInfo?> _fetch(String word, String lang, String section) async {
+    final ed = editionOf(lang);
     final found = <WordInfo>[];
     for (final title in titleCandidates(word, lang)) {
-      final s = await _get({
+      final page = ed.parsePage;
+      if (page != null) {
+        // an edition read by whole page: one request, the parser picks the
+        // section of the language
+        final t = await _get(ed, {
+          'action': 'parse',
+          'page': title,
+          'prop': 'text',
+          'disablelimitreport': '1',
+          'disableeditsection': '1',
+        });
+        if (t['error'] != null) continue; // missing page
+        final info = page(
+          t['parse']['text'] as String,
+          '${ed.wikiBase}${Uri.encodeComponent(title.replaceAll(' ', '_'))}#$lang',
+        );
+        if (info != null) found.add(info);
+        continue;
+      }
+      final s = await _get(ed, {
         'action': 'parse',
         'page': title,
         'prop': 'sections',
@@ -456,7 +719,7 @@ class Wiktionary {
           .map((x) => x['index'] as String)
           .firstOrNull;
       if (idx == null) continue;
-      final t = await _get({
+      final t = await _get(ed, {
         'action': 'parse',
         'page': title,
         'section': idx,
@@ -465,7 +728,7 @@ class Wiktionary {
         'disableeditsection': '1',
       });
       final url =
-          'https://en.wiktionary.org/wiki/'
+          '${ed.wikiBase}'
           '${Uri.encodeComponent(title.replaceAll(' ', '_'))}#'
           '${Uri.encodeComponent(section.replaceAll(' ', '_'))}';
       found.add(parseSection(t['parse']['text'] as String, url));

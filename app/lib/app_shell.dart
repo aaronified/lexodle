@@ -79,8 +79,25 @@ class _AppShellState extends State<AppShell> {
               children: [for (final id in tabs) page(id)],
             ),
           ),
+          // a soft shadow cast upwards, so what scrolls under the bar reads as
+          // behind it (and the bar sits above any pinned action row)
           bottomNavigationBar: DecoratedBox(
-            decoration: BoxDecoration(color: c.surfaceContainerHighest),
+            key: const ValueKey('tabs-shadow'),
+            decoration: BoxDecoration(
+              color: c.surfaceContainerHighest,
+              boxShadow: [
+                BoxShadow(
+                  color: c.shadow.withValues(alpha: .2),
+                  offset: const Offset(0, -2),
+                  blurRadius: 6,
+                ),
+                BoxShadow(
+                  color: c.shadow.withValues(alpha: .18),
+                  offset: const Offset(0, -10),
+                  blurRadius: 24,
+                ),
+              ],
+            ),
             child: NavigationBar(
               key: const ValueKey('tabs'),
               height: 60,

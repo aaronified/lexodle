@@ -83,7 +83,19 @@ void main() {
     await show(tester);
     await tester.tap(find.byKey(const ValueKey('sw-month-toggle')));
     await tester.pumpAndSettle();
-    expect(find.text('show the week'), findsOneWidget);
+    expect(find.text('back to the week'), findsOneWidget);
+    expect(find.text('show the month'), findsNothing);
+    // the week strip is hidden, the streak line stays
+    expect(find.byKey(const ValueKey('sw-week-2026-11-13')), findsNothing);
+    expect(find.byKey(const ValueKey('sw-streak-count')), findsOneWidget);
+    final cs = Theme.of(tester.element(find.byType(StreakWeek))).colorScheme;
+    final cell = tester.widget<Container>(
+      find.byKey(const ValueKey('sw-month-2026-11-10')),
+    );
+    expect(
+      (cell.decoration as BoxDecoration).border,
+      Border.all(color: cs.outlineVariant),
+    );
     expect(find.text('november'), findsOneWidget);
     expect(find.byKey(const ValueKey('sw-skull-m-2026-11-09')), findsOneWidget);
     expect(
@@ -96,21 +108,63 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('sw-month-toggle')));
     await tester.pumpAndSettle();
     expect(find.text('show the month'), findsOneWidget);
+    expect(find.byKey(const ValueKey('sw-week-2026-11-13')), findsOneWidget);
     expect(find.text('november'), findsNothing);
   });
 
-  testWidgets('a pill switches the mode in view', (tester) async {
-    await show(tester);
-    expect(find.text('best 2'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('streak-pill-quartet')));
-    await tester.pumpAndSettle();
+  Color? dot(WidgetTester tester, int i) =>
+      ((tester.widget<Container>(find.byKey(ValueKey('sw-dot-$i')))).decoration
+              as BoxDecoration)
+          .color;
+
+  void expectQuartet(WidgetTester tester) {
     expect(find.text('best 0'), findsOneWidget);
     expect(find.text('quartet'), findsWidgets);
     final c = Theme.of(tester.element(find.byType(StreakWeek))).colorScheme;
+    expect(dot(tester, 1), c.onSurface);
+    expect(dot(tester, 0), isNot(c.onSurface));
     // no streak and nothing under way: today is a dim flame
     expect(
       colorOf(tester, const ValueKey('sw-flame-w-2026-11-13-0')),
       c.outlineVariant,
     );
+  }
+
+  testWidgets('the arrows change the mode and the dots', (tester) async {
+    await show(tester);
+    expect(find.text('best 2'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('sw-next')));
+    await tester.pumpAndSettle();
+    expectQuartet(tester);
+    await tester.tap(find.byKey(const ValueKey('sw-prev')));
+    await tester.pumpAndSettle();
+    expect(find.text('best 2'), findsOneWidget);
+    expect(find.byKey(const ValueKey('sw-header-mode')), findsOneWidget);
+  });
+
+  testWidgets('swiping changes the mode and the dots', (tester) async {
+    await show(tester);
+    await tester.drag(
+      find.byKey(const ValueKey('sw-swipe')),
+      const Offset(-300, 0),
+    );
+    await tester.pumpAndSettle();
+    expectQuartet(tester);
+    await tester.drag(
+      find.byKey(const ValueKey('sw-swipe')),
+      const Offset(300, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('best 2'), findsOneWidget);
+  });
+
+  testWidgets('a short drag settles back on the same mode', (tester) async {
+    await show(tester);
+    await tester.drag(
+      find.byKey(const ValueKey('sw-swipe')),
+      const Offset(-40, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('best 2'), findsOneWidget);
   });
 }

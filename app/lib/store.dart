@@ -3224,6 +3224,33 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The trophy banners of the words page the player dismissed, as
+  /// `list:target` (`saved:5`): a banner hides for that target only.
+  final Set<String> dismissedWordBanners = {};
+
+  void dismissWordBanner(String list, int target) {
+    dismissedWordBanners.add('$list:$target');
+    try {
+      _w(
+        'wordBanners',
+        _prefs?.setStringList('wordBanners', dismissedWordBanners.toList()),
+      );
+    } catch (e) {
+      appLog.w('store', 'could not save the banners: ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
+  void _readWordBanners(SharedPreferences p) {
+    try {
+      dismissedWordBanners
+        ..clear()
+        ..addAll(p.getStringList('wordBanners') ?? const []);
+    } catch (e) {
+      appLog.w('store', 'could not read the banners: ${e.runtimeType}');
+    }
+  }
+
   /// The dailies the player chose to play, per language (see my_dailies.dart):
   /// Today shows these, and "done for the day" means all of them.
   MyDailies myDailies = MyDailies();
@@ -3690,6 +3717,7 @@ class AppState extends ChangeNotifier {
       _readAchievements(p);
       _readLearn(p);
       _readWords(p);
+      _readWordBanners(p);
       _readCollection(p);
       _readLex(p);
       _readMyDailies(p);
