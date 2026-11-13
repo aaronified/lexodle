@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/game_modes_dialog.dart';
 import 'package:lexodle/first_run/mode_lesson_page.dart';
+import 'package:lexodle/ladder.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/mode_wheel.dart' show ModeSwitch;
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/my_dailies.dart';
 import 'package:lexodle/routes.dart';
@@ -24,6 +26,8 @@ void main() {
     appState.myDailies = MyDailies();
     appState.daily.clear();
     appState.introCardsDone.clear();
+    appState.modesTaught.clear();
+    appState.lex.veteran = false;
     for (final m in GameMode.values) {
       appState.dailyLogOf('en', m).clear();
     }
@@ -39,6 +43,22 @@ void main() {
   }
 
   Finder row(GameMode m) => find.byKey(ValueKey('today-row-${m.name}'));
+
+  /// The card steps before [name] are handled, so [name] is the one shown.
+  void handledBefore(String name) {
+    for (final s in ladder) {
+      if (s.name == name) break;
+      appState.introCardsDone.add(s.name);
+    }
+  }
+
+  Finder anyCard() => find.byWidgetPredicate(
+    (w) =>
+        w.key is ValueKey &&
+        ((w.key as ValueKey).value as Object).toString().startsWith(
+          'today-new-',
+        ),
+  );
 
   void veteran() {
     appState.stats.played = 50;
@@ -151,6 +171,7 @@ void main() {
   ) async {
     appState.stats.played = 4;
     appState.lex.veteran = false;
+    handledBefore('quartet');
     await show(tester);
     expect(find.byKey(const ValueKey('today-new-quartet')), findsOneWidget);
     expect(find.text('four words at once'), findsOneWidget);
@@ -178,6 +199,7 @@ void main() {
     appState.stats.played = 4;
     appState.lex.veteran = false;
     appState.modesTaught.clear();
+    handledBefore('quartet');
     await show(tester);
     expect(find.text('how it works ›'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('today-new-quartet')));
@@ -186,6 +208,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('lesson-close')));
     await tester.pumpAndSettle();
     expect(find.byType(ModeLessonPage), findsNothing);
+    // backed out: the card stays
+    expect(find.byKey(const ValueKey('today-new-quartet')), findsOneWidget);
+    expect(appState.introCardsDone, isNot(contains('quartet')));
     appState.markTaught(GameMode.quartet);
     await tester.pump();
     expect(find.byKey(const ValueKey('today-new-quartet')), findsNothing);
@@ -225,6 +250,7 @@ void main() {
   ) async {
     appState.stats.played = 3;
     appState.lex.veteran = false;
+    handledBefore('achievements');
     final pushed = await showRouted(tester);
     final card = find.byKey(const ValueKey('today-new-achievements'));
     expect(card, findsOneWidget);
@@ -245,6 +271,12 @@ void main() {
       appState.introCardsDone.clear();
       appState.stats.played = e.key;
       appState.lex.veteran = false;
+      handledBefore(switch (e.key) {
+        5 => 'your numbers',
+        9 => 'my words',
+        _ => 'learn',
+      });
+      appState.modesTaught.addAll(GameMode.values);
       final pushed = await showRouted(tester);
       await tester.tap(
         find.byWidgetPredicate(
@@ -258,6 +290,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(pushed, contains(e.value), reason: 'game ${e.key}');
     }
+    appState.modesTaught.clear();
   });
 
   testWidgets('free play starts a free game of the mode in view', (
@@ -333,15 +366,105 @@ void main() {
     expect(pushed, contains(Routes.daily));
   });
 
-  testWidgets('the every mode card only dismisses', (tester) async {
+  testWidgets('the every mode card opens the sheet and is handled', (
+    tester,
+  ) async {
     appState.stats.played = 6;
     appState.lex.veteran = false;
-    final pushed = await showRouted(tester);
+    handledBefore('every mode');
+    appState.modesTaught.add(GameMode.quartet);
+    await showRouted(tester);
     expect(find.text('got it ›'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('today-new-every mode')));
     await tester.pumpAndSettle();
-    expect(pushed, isNot(contains(Routes.gameModes)));
+    expect(find.text('choose your dailies'), findsOneWidget);
     expect(appState.introCardsDone, contains('every mode'));
+  });
+
+  testWidgets('the skill, luck and risk card just marks done', (tester) async {
+    appState.stats.played = 2;
+    await show(tester);
+    await tester.tap(
+      find.byKey(const ValueKey('today-new-skill, luck and risk')),
+    );
+    await tester.pumpAndSettle();
+    expect(appState.introCardsDone, contains('skill, luck and risk'));
+    expect(anyCard(), findsNothing);
+  });
+
+  testWidgets('a card survives more games', (tester) async {
+    appState.stats.played = 2;
+    await show(tester);
+    expect(
+      find.byKey(const ValueKey('today-new-skill, luck and risk')),
+      findsOneWidget,
+    );
+    appState.stats.played = 12;
+    await tester.pumpWidget(const SizedBox());
+    await show(tester);
+    expect(
+      find.byKey(const ValueKey('today-new-skill, luck and risk')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('cards queue one at a time, oldest first', (tester) async {
+    appState.stats.played = 5;
+    await show(tester);
+    final order = [
+      'skill, luck and risk',
+      'achievements',
+      'quartet',
+      'your numbers',
+    ];
+    for (final name in order) {
+      expect(anyCard(), findsOneWidget, reason: name);
+      expect(find.byKey(ValueKey('today-new-$name')), findsOneWidget);
+      appState.markIntroCardDone(name);
+      await tester.pump();
+    }
+    expect(anyCard(), findsNothing);
+  });
+
+  testWidgets('a taught mode has no card', (tester) async {
+    appState.stats.played = 4;
+    handledBefore('quartet');
+    appState.modesTaught.add(GameMode.quartet);
+    await show(tester);
+    expect(anyCard(), findsNothing);
+  });
+
+  testWidgets('geography has no card until the language is english', (
+    tester,
+  ) async {
+    appState.stats.played = 22;
+    handledBefore('geography');
+    appState.modesTaught.addAll([
+      GameMode.quartet, GameMode.relay, GameMode.lockdown, //
+      GameMode.blind, GameMode.equations, GameMode.mastermind,
+    ]);
+    appState.setup(lang: 'fr', mode: GameMode.classic);
+    await show(tester);
+    expect(anyCard(), findsNothing);
+    appState.setup(lang: 'en', mode: GameMode.classic);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('today-new-geography')), findsOneWidget);
+  });
+
+  testWidgets('a new player at no games sees no card', (tester) async {
+    appState.stats.played = 0;
+    await show(tester);
+    expect(anyCard(), findsNothing);
+  });
+
+  testWidgets('every open mode with an unfinished daily has a dot', (
+    tester,
+  ) async {
+    appState.stats.played = 4;
+    await show(tester);
+    // quartet is open but not chosen: its unfinished daily still counts
+    final switcher = tester.widget<ModeSwitch>(find.byType(ModeSwitch));
+    expect(switcher.pending, {GameMode.classic, GameMode.quartet});
   });
 
   testWidgets('a veteran sees no card', (tester) async {

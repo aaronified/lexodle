@@ -317,7 +317,7 @@ class _YouPageState extends State<YouPage> {
                       context,
                       'solver',
                       'solver',
-                      null,
+                      'for ${solverModeOf(appState.mode).label}',
                       icon: 'calculator',
                       onTap: () => _push(context, Routes.solver),
                     ),

@@ -95,7 +95,6 @@ class TodayPage extends StatelessWidget {
     final today = dailyDate();
     final rows = _rows(lang, today);
     final done = rows.where((r) => r.state == _State.solved).length;
-    final games = appState.stats.played;
     final veteran = appState.lex.veteran;
     final chosen = appState.dailiesOf(lang);
     final more = [
@@ -174,7 +173,7 @@ class TodayPage extends StatelessWidget {
                     key: ValueKey('today-more-${m.name}'),
                   ),
                 ),
-              if (newPlayer) ..._cards(context, games),
+              if (newPlayer) ..._cards(context, lang),
             ],
           ),
         ),
@@ -398,9 +397,20 @@ class TodayPage extends StatelessWidget {
     _ => s.mode != null ? 'how it works ›' : 'try it ›',
   };
 
-  void _go(BuildContext context, LadderStep s) {
+  Future<void> _go(BuildContext context, LadderStep s) async {
     try {
+      final mode = s.mode;
+      if (mode != null) {
+        // a mode card is handled only once its lesson finished taught
+        await _openLesson(context, mode);
+        if (appState.isTaught(mode)) appState.markIntroCardDone(s.name);
+        return;
+      }
       appState.markIntroCardDone(s.name);
+      if (s.name == 'every mode') {
+        await showChooseDailies(context);
+        return;
+      }
       final route = switch (s.name) {
         'achievements' => Routes.achievements,
         'your numbers' => Routes.history,
@@ -408,11 +418,7 @@ class TodayPage extends StatelessWidget {
         'learn' => Routes.learn,
         _ => null,
       };
-      if (s.mode != null) {
-        _openLesson(context, s.mode!);
-      } else if (route != null) {
-        Navigator.pushNamed(context, route);
-      }
+      if (route != null) await Navigator.pushNamed(context, route);
     } catch (e) {
       appLog.w('today', 'could not open the card: ${e.runtimeType}');
     }
@@ -468,9 +474,9 @@ class TodayPage extends StatelessWidget {
     );
   }
 
-  void _openLesson(BuildContext context, GameMode mode) {
+  Future<void> _openLesson(BuildContext context, GameMode mode) async {
     try {
-      Navigator.of(context).push(
+      await Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (ctx) => ModeLessonPage(
             mode: mode,
@@ -492,19 +498,20 @@ class TodayPage extends StatelessWidget {
     }
   }
 
-  /// The slow-introduction card: what just opened on exactly this game, at most
-  /// one (the most recent), so that the page is never crowded.
-  List<Widget> _cards(BuildContext context, int games) {
+  /// The slow-introduction card: the earliest reached step not yet handled, at
+  /// most one, so that the page is never crowded. A mode that is taught, or not
+  /// in the language's loop, is skipped. The card waits however many games pass.
+  List<Widget> _cards(BuildContext context, String lang) {
     final c = Theme.of(context).colorScheme;
     final dim = c.onSurface.withValues(alpha: dimAlpha);
-    final opened = [
-      for (final s in justOpened(games))
-        if (!appState.introCardsDone.contains(s.name) &&
-            (s.mode == null || !appState.isTaught(s.mode!)))
-          s,
-    ];
-    if (opened.isEmpty) return const [];
-    return [const SizedBox(height: 16), _newCard(context, c, dim, opened.last)];
+    final loop = GameMode.loopFor(lang);
+    for (final s in reached(appState.level)) {
+      if (appState.introCardsDone.contains(s.name)) continue;
+      final m = s.mode;
+      if (m != null && (appState.isTaught(m) || !loop.contains(m))) continue;
+      return [const SizedBox(height: 16), _newCard(context, c, dim, s)];
+    }
+    return const [];
   }
 
   /// The one button of the bar: free play of the mode in view, which turns
@@ -520,8 +527,10 @@ class TodayPage extends StatelessWidget {
     final shown = open.contains(appState.mode) ? appState.mode : open.first;
     final today = dailyDate();
     final pending = {
-      for (final r in _rows(lang, today))
-        if (r.state != _State.solved && r.state != _State.lost) r.mode,
+      for (final m in open)
+        if (m.hasDaily)
+          if (_rowOf(lang, today, m).state case _State.fresh || _State.progress)
+            m,
     };
     return ModeSwitch(
       mode: shown,

@@ -230,12 +230,6 @@ List<LadderStep> reached(int level, {bool veteran = false}) => [
     if (s.card && s.games > 0 && (veteran || s.games <= level)) s,
 ];
 
-/// What opens on exactly game [games] with a card: the "new" cards of Today.
-List<LadderStep> justOpened(int games) => [
-  for (final s in ladder)
-    if (s.card && s.games == games) s,
-];
-
 /// What opens next after [games] played, or null when everything is open.
 LadderStep? nextStep(int games) {
   for (final s in ladder) {

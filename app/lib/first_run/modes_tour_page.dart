@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_log.dart';
+import '../main.dart' show appState;
 import '../mode_wheel.dart';
 import '../modes.dart';
 import '../ui.dart';
@@ -43,8 +44,8 @@ class ModesTourPage extends StatefulWidget {
 }
 
 class _ModesTourPageState extends State<ModesTourPage> {
-  static final _modes = [
-    for (final m in GameMode.values)
+  final _modes = [
+    for (final m in GameMode.loopFor(appState.lang))
       if (m != GameMode.classic) m,
   ];
 

@@ -66,12 +66,7 @@ void main() {
       expect(openModes(1), [GameMode.classic]);
     });
 
-    test('what opens now and what comes next', () {
-      expect(justOpened(4).single.mode, GameMode.quartet);
-      expect(justOpened(6).single.name, 'every mode');
-      expect(justOpened(6).single.mode, isNull);
-      expect(justOpened(8), isEmpty);
-      expect(justOpened(24).single.name, 'learn');
+    test('what comes next', () {
       expect(nextStep(4)!.games, 5);
       expect(nextStep(5)!.name, 'every mode');
       expect(nextStep(22)!.name, 'learn');

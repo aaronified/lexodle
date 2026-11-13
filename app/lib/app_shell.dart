@@ -108,7 +108,7 @@ class _AppShellState extends State<AppShell> {
     // the first run ended with "i know how lexodle works": pick the dailies once
     if (FirstRunSignals.takeChooseDailies()) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
+        if (!mounted || !twoModesOpen()) return;
         try {
           showChooseDailies(context);
         } catch (e) {
@@ -153,10 +153,16 @@ class _AppShellState extends State<AppShell> {
         final tabs = _visible();
         final at = tabs.contains(_tab) ? tabs.indexOf(_tab) : 0;
         Widget page(String id) => switch (id) {
-          'today' => const TodayPage(),
-          'words' => const WordsPage(),
-          'learn' => learnGate(builder: (bank) => LearnHomePage(bank: bank)),
-          _ => YouPage(onReplayFirstGame: _replayFirstGame),
+          'today' => const TodayPage(key: ValueKey('tab-today')),
+          'words' => const WordsPage(key: ValueKey('tab-words')),
+          'learn' => KeyedSubtree(
+            key: const ValueKey('tab-learn'),
+            child: learnGate(builder: (bank) => LearnHomePage(bank: bank)),
+          ),
+          _ => YouPage(
+            key: const ValueKey('tab-you'),
+            onReplayFirstGame: _replayFirstGame,
+          ),
         };
         return Scaffold(
           body: SafeArea(

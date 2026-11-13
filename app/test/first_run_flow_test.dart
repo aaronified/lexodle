@@ -118,10 +118,24 @@ void main() {
     expect(find.byType(AppShell), findsOneWidget);
   });
 
+  testWidgets('i know how lexodle works with one mode open: no sheet', (
+    tester,
+  ) async {
+    await fresh();
+    await show(tester, HomeSwitch(screens: _screens()));
+    await tap(tester, 'language_skip');
+    expect(appState.firstRunDone, isTrue);
+    expect(find.text('choose your dailies'), findsNothing);
+    expect(FirstRunSignals.chooseDailiesPending, isFalse);
+  });
+
   testWidgets('i know how lexodle works skips to today, dailies sheet once', (
     tester,
   ) async {
     await fresh();
+    // a mode taught early opens at once: two modes are open
+    appState.modesTaught.add(GameMode.quartet);
+    addTearDown(appState.modesTaught.clear);
     await show(tester, HomeSwitch(screens: _screens()));
     await tap(tester, 'language_skip');
     expect(appState.firstRunDone, isTrue);
