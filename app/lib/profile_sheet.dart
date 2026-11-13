@@ -85,7 +85,7 @@ class _ProfileSheetState extends State<_ProfileSheet> {
     decoration: BoxDecoration(
       shape: BoxShape.circle,
       border: Border.all(
-        color: on ? c.primary : const Color(0x00000000),
+        color: on ? c.primary : c.primary.withValues(alpha: 0),
         width: 2,
       ),
     ),
