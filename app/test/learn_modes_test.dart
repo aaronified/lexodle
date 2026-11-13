@@ -62,6 +62,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await tester.binding.setSurfaceSize(const Size(420, 1400));
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     appState.setup(lang: 'en', length: 5, mode: GameMode.blind);
     final bank = (await tester.runAsync(
       () async => WordBank.load(
@@ -87,6 +88,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await tester.binding.setSurfaceSize(const Size(420, 1400));
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     final titles = <String>[];
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,
@@ -139,6 +141,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await tester.binding.setSurfaceSize(const Size(420, 1400));
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     appState.setup(lang: 'en', length: 7, mode: GameMode.equations);
     final bank = (await tester.runAsync(
       () async => Equations.load(
@@ -155,6 +158,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await tester.binding.setSurfaceSize(const Size(420, 1400));
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     appState.setup(
       lang: 'en',
       length: 5,
@@ -197,6 +201,7 @@ void main() {
   test('a learn address with a mode opens that mode', () async {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     appState.setup(lang: 'en', length: 5, mode: GameMode.classic);
     final routes = onGenerateInitialRoutes('/mastermind/learn/clue');
     expect(appState.mode, GameMode.mastermind);
@@ -212,6 +217,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await tester.binding.setSurfaceSize(const Size(420, 2400));
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     for (final (mode, thing, length) in [
       (GameMode.equations, 'equations', 7),
       (GameMode.themed, 'places', 5),
@@ -244,6 +250,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await tester.binding.setSurfaceSize(const Size(420, 1400));
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     appState.setup(lang: 'en', length: 5, mode: GameMode.blind);
     await tester.runAsync(() async {
       await WordBank.load(
@@ -294,6 +301,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await tester.binding.setSurfaceSize(const Size(420, 2000));
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     appState.setup(
       lang: 'en',
       length: 5,
