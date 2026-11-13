@@ -2972,6 +2972,17 @@ class AppState extends ChangeNotifier {
     return earned;
   }
 
+  /// Keeps [info] as the entry of a saved word that has none (or replaces it),
+  /// leaving its note. True when there was such a word.
+  bool setWordInfo(String lang, String word, WordInfo info) {
+    final w = savedWords.find(lang, word);
+    if (w == null) return false;
+    w.info = info;
+    _saveWords();
+    notifyListeners();
+    return true;
+  }
+
   /// Removes a saved word.
   void unsaveWord(String lang, String word) {
     if (!savedWords.remove(lang, word)) return;

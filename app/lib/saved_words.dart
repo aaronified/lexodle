@@ -19,7 +19,7 @@ class SavedWord {
   /// The local day it was saved, as 2026-11-12.
   final String date;
   String note;
-  final WordInfo? info;
+  WordInfo? info;
 
   /// What identifies it: the same word in two languages is two saved words.
   String get key => '$lang|$word';
