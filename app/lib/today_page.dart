@@ -546,7 +546,14 @@ class TodayPage extends StatelessWidget {
                   child: OutlinedButton(
                     key: const ValueKey('today-free-play'),
                     onPressed: () => _freePlay(context),
-                    child: const Text('free play'),
+                    // one line on any phone: less side padding, never wraps
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('free play', maxLines: 1, softWrap: false),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),

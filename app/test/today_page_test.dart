@@ -97,6 +97,23 @@ void main() {
     );
   });
 
+  testWidgets('free play is one line on a narrow phone', (tester) async {
+    veteran();
+    await tester.binding.setSurfaceSize(const Size(360, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: TodayPage())),
+    );
+    await tester.pump();
+    final text = find.descendant(
+      of: find.byKey(const ValueKey('today-free-play')),
+      matching: find.text('free play'),
+    );
+    expect(text, findsOneWidget);
+    // one line of 14 px text is well under two lines' height
+    expect(tester.getSize(text).height, lessThan(24));
+  });
+
   testWidgets('the bar is pinned with a solid background and a next button', (
     tester,
   ) async {

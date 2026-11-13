@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- today: free play stays on one line
+  The free play button no longer wraps onto two lines on a narrow phone.
+
 - your first daily says how a daily differs
   The first time a daily opens, a short sheet says: one word a day, the same for everyone, new at midnight in india, the number of tries, it is logged for your streak and history, and free play is for practice. It shows once.
 - today shows one card at a time, and it opens the feature
