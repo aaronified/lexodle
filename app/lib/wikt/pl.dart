@@ -1,4 +1,4 @@
-import 'package:html/dom.dart' show Element, Text;
+import 'package:html/dom.dart' show Element, Node, Text;
 import 'package:html/parser.dart' as html;
 
 import '../wiktionary.dart' show Example, PosBlock, Sense, WordInfo;
@@ -34,6 +34,7 @@ class _PlBlock {
   _PlBlock(this.number, this.pos, this.gender, this.forms);
   final int number;
   final String pos, gender, forms;
+  bool get inflected => forms.contains('forma fleksyjna');
   final senses = <Sense>[];
   final keys = <String>[];
 }
@@ -156,15 +157,20 @@ WordInfo? parsePolish(
         final keys = plSenseKeys(m.group(1)!);
         first.text = first.text.substring(m.end);
         // the labels lead the sense: "pot.", "przen.", "kulin."
+        // an inflected form's sense starts with "M. i W. ż lp od:", which is
+        // grammar, not a label
         final labels = <String>[];
-        for (final n in copy.nodes.toList()) {
+        for (final n in b.inflected ? const <Node>[] : copy.nodes.toList()) {
           if (n is Text) {
             if (n.text.trim().isEmpty) continue;
             break;
           }
           if (n is! Element || !n.classes.contains('short-container')) break;
           final w = n.querySelector('.short-wrapper');
-          final l = squash(w?.attributes['data-expanded'] ?? n.text);
+          // "potocznie, potoczny": the first form reads best
+          final l = squash(
+            (w?.attributes['data-expanded'] ?? n.text).split(',').first,
+          );
           if (l.isNotEmpty) labels.add(l.toLowerCase());
           n.remove();
         }

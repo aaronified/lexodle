@@ -3284,6 +3284,71 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // ---- the mode lessons ----
+
+  /// The modes whose lesson the player finished (see
+  /// first_run/mode_lesson_page.dart): a taught mode skips its intro card.
+  final Set<GameMode> modesTaught = {};
+
+  bool isTaught(GameMode m) => modesTaught.contains(m);
+
+  void markTaught(GameMode m) {
+    if (!modesTaught.add(m)) return;
+    _saveTaught();
+    notifyListeners();
+  }
+
+  void _saveTaught() {
+    try {
+      _w(
+        'modesTaught',
+        _prefs?.setStringList('modesTaught', [
+          for (final m in modesTaught) m.name,
+        ]),
+      );
+    } catch (e) {
+      appLog.w('store', 'could not save the lessons: ${e.runtimeType}');
+    }
+  }
+
+  void _readTaught(SharedPreferences p) {
+    try {
+      _setTaught(p.getStringList('modesTaught') ?? const []);
+    } catch (e) {
+      appLog.w('store', 'could not read the lessons: ${e.runtimeType}');
+    }
+  }
+
+  void _setTaught(Iterable<Object?> names) {
+    modesTaught
+      ..clear()
+      ..addAll([
+        for (final m in GameMode.values)
+          if (names.contains(m.name)) m,
+      ]);
+  }
+
+  /// Whether the one-time note at the top of the mode settings was shown.
+  bool modeSettingsNoteSeen = false;
+
+  void markModeSettingsNoteSeen() {
+    if (modeSettingsNoteSeen) return;
+    modeSettingsNoteSeen = true;
+    try {
+      _w('modeSettingsNote', _prefs?.setBool('modeSettingsNote', true));
+    } catch (e) {
+      appLog.w('store', 'could not save the note: ${e.runtimeType}');
+    }
+  }
+
+  void _readModeSettingsNote(SharedPreferences p) {
+    try {
+      modeSettingsNoteSeen = p.getBool('modeSettingsNote') ?? false;
+    } catch (e) {
+      appLog.w('store', 'could not read the note: ${e.runtimeType}');
+    }
+  }
+
   /// The trophy banners of the words page the player dismissed, as
   /// `list:target` (`saved:5`): a banner hides for that target only.
   final Set<String> dismissedWordBanners = {};
@@ -3779,6 +3844,8 @@ class AppState extends ChangeNotifier {
       _readLearn(p);
       _readWords(p);
       _readWordBanners(p);
+      _readTaught(p);
+      _readModeSettingsNote(p);
       _readCollection(p);
       _readLex(p);
       _readMyDailies(p);
@@ -4063,6 +4130,7 @@ class AppState extends ChangeNotifier {
     'theme': themeIndex,
     'seenHowTo': seenHowTo,
     'reminders': reminders.toJson(),
+    'modesTaught': [for (final m in modesTaught) m.name],
   };
 
   /// Replaces what is kept with a checked backup (see backup.dart): the
@@ -4175,6 +4243,10 @@ class AppState extends ChangeNotifier {
     final t = settings['theme'] as int?;
     if (t != null && t >= 0 && t <= maxThemeIndex) _setThemeIndex(t);
     seenHowTo = settings['seenHowTo'] as bool? ?? seenHowTo;
+    if (settings['modesTaught'] case final List l) {
+      _setTaught(l);
+      _saveTaught();
+    }
     if (settings['reminders'] != null) {
       _readReminders(settings['reminders']);
       try {

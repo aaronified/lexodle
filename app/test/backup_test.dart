@@ -88,6 +88,7 @@ void main() {
           'theme',
           'seenHowTo',
           'reminders',
+          'modesTaught',
         ]),
       );
       expect((m['stats'] as Map)['played'], 12);

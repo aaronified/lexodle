@@ -4,6 +4,7 @@ import 'app_log.dart';
 import 'choose_dailies_sheet.dart';
 import 'clock.dart';
 import 'daily.dart';
+import 'first_run/mode_lesson_page.dart';
 import 'ladder.dart';
 import 'main.dart';
 import 'mode_wheel.dart';
@@ -394,6 +395,86 @@ class TodayPage extends StatelessWidget {
     );
   }
 
+  /// The card of what just opened. A mode's card offers its lesson on a tap.
+  Widget _newCard(
+    BuildContext context,
+    ColorScheme c,
+    Color dim,
+    LadderStep s,
+  ) {
+    final mode = s.mode;
+    final card = Container(
+      key: ValueKey('today-new-${s.name}'),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: c.secondaryContainer,
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: c.surface,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text('new', style: TextStyle(fontSize: 11)),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            s.name,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(s.note, style: TextStyle(fontSize: 12, color: dim)),
+          if (mode != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'how it works ›',
+              style: TextStyle(fontSize: 12, color: c.primary),
+            ),
+          ],
+        ],
+      ),
+    );
+    if (mode == null) return card;
+    return InkWell(
+      key: ValueKey('today-lesson-${mode.name}'),
+      borderRadius: BorderRadius.circular(3),
+      onTap: () => _openLesson(context, mode),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 44),
+        child: card,
+      ),
+    );
+  }
+
+  void _openLesson(BuildContext context, GameMode mode) {
+    try {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (ctx) => ModeLessonPage(
+            mode: mode,
+            onDone: () {
+              try {
+                Navigator.of(ctx).pop();
+              } catch (e) {
+                appLog.w(
+                  'today',
+                  'could not leave the lesson: ${e.runtimeType}',
+                );
+              }
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      appLog.w('today', 'could not open the lesson: ${e.runtimeType}');
+    }
+  }
+
   /// The slow-introduction cards: what just opened, and what comes next.
   List<Widget> _cards(BuildContext context, int games) {
     final c = Theme.of(context).colorScheme;
@@ -402,38 +483,8 @@ class TodayPage extends StatelessWidget {
     return [
       const SizedBox(height: 16),
       for (final s in justOpened(games))
-        Container(
-          key: ValueKey('today-new-${s.name}'),
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: c.secondaryContainer,
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: c.surface,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text('new', style: TextStyle(fontSize: 11)),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                s.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(s.note, style: TextStyle(fontSize: 12, color: dim)),
-            ],
-          ),
-        ),
+        if (s.mode == null || !appState.isTaught(s.mode!))
+          _newCard(context, c, dim, s),
       if (next != null)
         Container(
           key: const ValueKey('today-next-up'),

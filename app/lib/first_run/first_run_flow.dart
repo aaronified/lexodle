@@ -8,6 +8,7 @@ import 'first_run_state.dart';
 import 'gateway_page.dart';
 import 'language_theme_page.dart';
 import 'modes_offer_page.dart';
+import 'mode_lesson_page.dart';
 import 'modes_tour_page.dart';
 
 /// The screens of the first run, each as a builder, so a test can put fakes in
@@ -46,28 +47,8 @@ class FirstRunScreens {
   static Widget _tour(void Function(GameMode) onLearn, VoidCallback onDone) =>
       ModesTourPage(onLearn: onLearn, onDone: onDone);
 
-  // the lesson screen is not built yet: the tour card goes straight back
   static Widget _lesson(GameMode mode, VoidCallback onDone) =>
-      _PassThrough(onDone: onDone);
-}
-
-class _PassThrough extends StatefulWidget {
-  const _PassThrough({required this.onDone});
-  final VoidCallback onDone;
-
-  @override
-  State<_PassThrough> createState() => _PassThroughState();
-}
-
-class _PassThroughState extends State<_PassThrough> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => widget.onDone());
-  }
-
-  @override
-  Widget build(BuildContext context) => const Scaffold();
+      ModeLessonPage(mode: mode, onDone: onDone);
 }
 
 /// The first run: the language and theme page, the first game, the gateway,

@@ -335,6 +335,16 @@ Map<String, Object> _settings(Object? raw) {
     if (seen is! bool) _bad('seenHowTo');
     out['seenHowTo'] = seen;
   }
+  // the modes whose lesson was finished: a list of mode names
+  final taught = raw['modesTaught'];
+  if (taught != null) {
+    final known = {for (final m in GameMode.values) m.name};
+    if (taught is! List ||
+        taught.any((n) => n is! String || !known.contains(n))) {
+      _bad('modesTaught');
+    }
+    out['modesTaught'] = [for (final n in taught) n as String];
+  }
   // the reminders: read as the settings read them (anything off falls back)
   final reminders = raw['reminders'];
   if (reminders != null) {

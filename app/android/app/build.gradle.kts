@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "io.github.aaronified.lexodle"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications and androidx.core 1.19 compile against API 37
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

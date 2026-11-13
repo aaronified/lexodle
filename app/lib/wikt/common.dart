@@ -1,7 +1,6 @@
-import 'package:html/dom.dart' show Element, Node, Text;
+import 'package:html/dom.dart' show Element;
 
-/// Small helpers shared by the parsers of the Wiktionary editions in this
-/// folder. Pure string and DOM work, nothing that can fail.
+/// Small helpers shared by the parsers of the other Wiktionary editions.
 
 String squash(String s) => s.replaceAll(RegExp(r'\s+'), ' ').trim();
 
@@ -12,25 +11,27 @@ String shorten(String s, int max) {
   return '${(end > max ~/ 2 ? cut.substring(0, end) : cut.trimRight())}…';
 }
 
-/// A protocol-relative audio link made absolute.
-String absUrl(String src) => src.startsWith('//') ? 'https:$src' : src;
-
-/// A copy of [node] without the given selectors (footnote marks, styles...).
-Element without(Element node, String selectors) {
-  final copy = node.clone(true);
-  for (final x in copy.querySelectorAll(selectors)) {
+/// A copy of [e] without footnote marks, styles and images, for plain text.
+Element plainCopy(Element e, [String extra = '']) {
+  final c = e.clone(true);
+  for (final x in c.querySelectorAll(
+    'sup,style,img,script${extra.isEmpty ? '' : ',$extra'}',
+  )) {
     x.remove();
   }
-  return copy;
+  return c;
 }
 
-/// The leading text of [node] up to its first element, trimmed; used to read
-/// a "(1.1)" sense number at the start of a line.
-String leadingText(Node node) {
-  final b = StringBuffer();
-  for (final n in node.nodes) {
-    if (n is! Text) break;
-    b.write(n.text);
+/// Adds the words of a synonym or antonym line ("mezzo, mezza parte") to
+/// [into]: split on commas and semicolons, notes in brackets dropped.
+void addNyms(List<String> into, String line) {
+  for (var t in line.split(RegExp(r'[,;]'))) {
+    t = squash(t.replaceAll(RegExp(r'\([^)]*\)'), ''));
+    t = t.replaceAll(RegExp(r'[.…]+$'), '').trim();
+    if (t.isEmpty || t.startsWith('véase') || into.contains(t)) continue;
+    into.add(t);
   }
-  return b.toString();
 }
+
+/// A protocol-relative upload link made absolute.
+String absoluteUrl(String src) => src.startsWith('//') ? 'https:$src' : src;
