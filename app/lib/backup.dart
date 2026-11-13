@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'collection.dart';
 import 'daily.dart';
 import 'history.dart';
+import 'lex.dart';
 import 'learn_log.dart';
 import 'modes.dart';
 import 'playstyle.dart';
@@ -35,6 +36,7 @@ class Backup {
     this.learn,
     this.words,
     this.collected,
+    this.lex,
   });
 
   final DateTime exported;
@@ -60,6 +62,10 @@ class Backup {
   /// The words won, kept like trophies; null in a backup from before them, which
   /// collects them again from the games it holds.
   final Collection? collected;
+
+  /// The lex balance and ledger; null in a backup from before it, which gets
+  /// the veterans' starting grant from its achievements.
+  final Lex? lex;
 
   /// The settings present in the file (a missing one keeps its current value).
   final Map<String, Object> settings;
@@ -135,6 +141,7 @@ String backupToText(AppState state, {DateTime? now}) {
     'learn': jsonEncode(state.learnLog.toJson()),
     'words': jsonEncode(state.savedWords.toJson()),
     'collection': jsonEncode(state.collection.toJson()),
+    'lex': jsonEncode(state.lex.toJson()),
   });
 }
 
@@ -244,6 +251,7 @@ Backup parseBackup(String text) {
       learn: _learn(raw['learn']),
       words: _words(raw['words']),
       collected: _collected(raw['collection']),
+      lex: _lex(raw['lex']),
     );
   } on FormatException {
     rethrow;
@@ -443,6 +451,16 @@ Collection? _collected(Object? raw) {
     return Collection.fromJson(raw is String ? jsonDecode(raw) : raw);
   } on FormatException {
     _bad('collection');
+  }
+}
+
+/// The lex, or null when the file has none.
+Lex? _lex(Object? raw) {
+  if (raw == null) return null;
+  try {
+    return Lex.fromJson(raw is String ? jsonDecode(raw) : raw);
+  } on FormatException {
+    _bad('lex');
   }
 }
 

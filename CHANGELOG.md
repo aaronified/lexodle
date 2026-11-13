@@ -7,6 +7,16 @@ it to the version.
 
 ## Unreleased
 
+- lex: the hint currency, kept and backed up (no screens yet)
+  Achievements pay lex: bronze 1, silver 2, gold 3, platinum 5. Only the
+  highest level a game earns pays, an achievement pays once a day in each
+  language, and a game in which a hint was used pays nothing (streaks are
+  untouched). Hints cost 10 (grey), 25 (yellow) and 50 (green), can be undone
+  until the next guess, and every player has one free hint to start. Players
+  with achievements get a one-time starting grant of the medal values they
+  hold (formula awaiting confirmation); new players see lex from their 10th
+  game. The backup carries the balance and the ledger.
+
 ## 0.9.0
 
 - my words: save words, and collect every word you win
