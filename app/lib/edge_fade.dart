@@ -57,6 +57,9 @@ class EdgeFadeState extends State<EdgeFade> {
 
   @override
   Widget build(BuildContext context) {
+    // only the alpha of these matters (the mask keeps or hides what is under it)
+    final solid = Theme.of(context).colorScheme.surface;
+    final clear = solid.withValues(alpha: 0);
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: (_) {
         WidgetsBinding.instance.addPostFrameCallback((_) => _update());
@@ -68,10 +71,10 @@ class EdgeFadeState extends State<EdgeFade> {
           final f = r.width <= 0 ? 0.0 : (widget.fade / r.width).clamp(0.0, .5);
           return LinearGradient(
             colors: [
-              fadeLeft ? Colors.transparent : Colors.white,
-              Colors.white,
-              Colors.white,
-              fadeRight ? Colors.transparent : Colors.white,
+              fadeLeft ? clear : solid,
+              solid,
+              solid,
+              fadeRight ? clear : solid,
             ],
             stops: [0, f, 1 - f, 1],
           ).createShader(r);
