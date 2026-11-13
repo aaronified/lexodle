@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- you: language, how to play, solver, diy and settings are back
+  The new look had dropped them. You has a row for each: language and how to play always, solver and diy from game 6, settings always. A failed screen falls back to the right home, and what's new shows once after an update.
+- you: backup and support open only their own section
+  They no longer open the whole settings page. The achievements row shows the lex pill.
+- learn, history and playstyle: mode pills in one scrolling row
+  The row scrolls sideways with its edges faded only where there is more. Learn gets its own mode pills.
+
 ## 0.10.1
 
 - today: one button for free play and the mode

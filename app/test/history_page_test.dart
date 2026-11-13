@@ -227,6 +227,8 @@ void main() {
     expect(games(), '3');
     expect(find.text('overall'), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const ValueKey('mode-quartet')));
+
     await tester.tap(find.byKey(const ValueKey('mode-quartet')));
     await tester.pump();
     expect(games(), '1');
@@ -234,11 +236,15 @@ void main() {
     expect(find.byKey(ValueKey('game-${q.id}')), findsOneWidget);
     expect(find.byKey(ValueKey('game-${a.id}')), findsNothing);
 
+    await tester.ensureVisible(find.byKey(const ValueKey('mode-classic')));
+
     await tester.tap(find.byKey(const ValueKey('mode-classic')));
     await tester.pump();
     expect(games(), '2');
     expect(find.byKey(ValueKey('game-${b.id}')), findsOneWidget);
     expect(find.byKey(ValueKey('game-${q.id}')), findsNothing);
+
+    await tester.ensureVisible(find.byKey(const ValueKey('mode-all')));
 
     await tester.tap(find.byKey(const ValueKey('mode-all')));
     await tester.pump();
@@ -256,9 +262,11 @@ void main() {
     // only the modes that have a playstyle are offered
     expect(find.byKey(const ValueKey('mode-blind')), findsOneWidget);
     expect(find.byKey(const ValueKey('mode-quartet')), findsNothing);
+    await tester.ensureVisible(find.byKey(const ValueKey('mode-blind')));
     await tester.tap(find.byKey(const ValueKey('mode-blind')));
     await tester.pump();
     expect(title(), 'playstyle · blind');
+    await tester.ensureVisible(find.byKey(const ValueKey('mode-all')));
     await tester.tap(find.byKey(const ValueKey('mode-all')));
     await tester.pump();
     expect(title(), 'playstyle · all modes');
@@ -910,6 +918,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('load-more')),
         300,
+        scrollable: find.byType(Scrollable).first,
       );
       expect(find.text('load 10 more · 35 left'), findsOneWidget);
     });
@@ -955,7 +964,11 @@ void main() {
       await show(tester, h);
       final more = find.byKey(const ValueKey('load-more'));
       Future<void> press() async {
-        await tester.scrollUntilVisible(more, 300);
+        await tester.scrollUntilVisible(
+          more,
+          300,
+          scrollable: find.byType(Scrollable).first,
+        );
         await tester.ensureVisible(more);
         await tester.pump();
         await tester.tap(more);
@@ -964,15 +977,31 @@ void main() {
 
       expect(find.text('load 10 more · 25 left'), findsOneWidget);
       await press();
-      await tester.scrollUntilVisible(tile(h, 19), 300);
+      await tester.scrollUntilVisible(
+        tile(h, 19),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(tile(h, 19), findsOneWidget, reason: 'twenty now');
-      await tester.scrollUntilVisible(more, 300);
+      await tester.scrollUntilVisible(
+        more,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('load 10 more · 15 left'), findsOneWidget);
       await press();
-      await tester.scrollUntilVisible(more, 300);
+      await tester.scrollUntilVisible(
+        more,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('load 5 more · 5 left'), findsOneWidget);
       await press();
-      await tester.scrollUntilVisible(tile(h, 34), 300);
+      await tester.scrollUntilVisible(
+        tile(h, 34),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(tile(h, 34), findsOneWidget, reason: 'the oldest, last of all');
       expect(more, findsNothing, reason: 'nothing left to load');
     });
@@ -1007,6 +1036,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('load-more')),
         300,
+        scrollable: find.byType(Scrollable).first,
       );
       expect(find.text('load 10 more · 9990 left'), findsOneWidget);
       expect(tile(h, 9), findsOneWidget);
