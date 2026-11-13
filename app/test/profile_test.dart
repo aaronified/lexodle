@@ -51,7 +51,7 @@ void main() {
     expect(find.text('player'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('you-chip')));
     await tester.pumpAndSettle();
-    expect(find.text('your name'), findsOneWidget);
+    expect(find.text('your name and photo'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('profile-icon-flame')));
     await tester.tap(find.byKey(const ValueKey('profile-bg-3')));
     await tester.enterText(find.byKey(const ValueKey('profile-name')), 'zed ');

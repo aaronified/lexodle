@@ -29,6 +29,7 @@ import 'review.dart';
 import 'game_modes_dialog.dart';
 import 'playstyle_card.dart';
 import 'puzzle.dart';
+import 'reminders_page.dart';
 import 'settings_page.dart';
 import 'solver.dart';
 import 'ui.dart';
@@ -77,6 +78,7 @@ class Routes {
   static const playstyle = '/playstyle';
   static const about = '/about';
   static const words = '/words';
+  static const reminders = '/reminders';
 
   /// One saved word; it travels as the route's argument, so an address alone
   /// shows the list instead.
@@ -272,6 +274,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return _dialog(s, const GameModesDialog());
     case Routes.playstyle:
       return page(const PlaystylePage());
+    case Routes.reminders:
+      return page(const RemindersPage());
     case Routes.about:
       return page(const LicencesPage(about: aboutText));
     default:
@@ -337,6 +341,7 @@ const _known = {
   Routes.playstyle,
   Routes.about,
   Routes.words,
+  Routes.reminders,
 };
 
 /// A popup as a route. The scrim is tinted from the theme (no colour is

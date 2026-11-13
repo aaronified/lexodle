@@ -1,11 +1,82 @@
+import 'app_log.dart';
 import 'lex.dart';
 
 /// What a bought hint reveals: [letter], and for a green one its place [pos].
+/// In a quartet or a relay race it is for one [board] (0 in a single game).
 class HintPick {
-  const HintPick(this.kind, this.letter, [this.pos = 0]);
+  const HintPick(this.kind, this.letter, [this.pos = 0, this.board = 0]);
   final HintKind kind;
   final String letter;
   final int pos;
+  final int board;
+
+  /// The same hint, for [board].
+  HintPick onBoard(int board) => HintPick(kind, letter, pos, board);
+
+  /// How a hint is kept in a saved game (an optional `hints` list there).
+  Map<String, dynamic> toJson() => {
+    'k': kind.name,
+    'l': letter,
+    if (pos != 0) 'p': pos,
+    if (board != 0) 'b': board,
+  };
+
+  /// The hint in [j], or null when it is not a valid one for a game of
+  /// [boards] boards, words of [length] and the [letters] of its language.
+  static HintPick? fromJson(
+    Object? j, {
+    required int boards,
+    required int length,
+    required Set<String> letters,
+  }) {
+    if (j is! Map) return null;
+    final kind = HintKind.named(j['k']);
+    final l = j['l'], p = j['p'] ?? 0, b = j['b'] ?? 0;
+    if (kind == null || l is! String || !letters.contains(l)) return null;
+    if (p is! int || p < 0 || p >= length) return null;
+    if (b is! int || b < 0 || b >= boards) return null;
+    return HintPick(kind, l, p, b);
+  }
+}
+
+/// The hints of a saved game's [json] (the `hints` value, absent in an old
+/// save), those that are valid; never throws.
+List<HintPick> hintsFromJson(
+  Object? json, {
+  required int boards,
+  required int length,
+  required Set<String> letters,
+}) {
+  try {
+    if (json is! List) return [];
+    return [
+      for (final j in json)
+        ?HintPick.fromJson(j, boards: boards, length: length, letters: letters),
+    ];
+  } catch (e) {
+    appLog.w('hint', 'could not read the saved hints: ${e.runtimeType}');
+    return [];
+  }
+}
+
+/// The saved form of [picks].
+List<Map<String, dynamic>> hintsToJson(Iterable<HintPick> picks) => [
+  for (final h in picks) h.toJson(),
+];
+
+/// The hints of a game put back as they were when it was left: already paid
+/// for, so nothing is charged and nothing is logged in the player's lex (the
+/// purchases are taken from a scratch [Lex], free, and marked with [guesses]).
+GameHints restoreHints(Iterable<HintPick> picks, {required int guesses}) {
+  final game = GameHints();
+  try {
+    for (final h in picks) {
+      Lex().spend(game, h.kind, guesses: guesses, free: true);
+    }
+  } catch (e) {
+    appLog.w('hint', 'could not restore the hints: ${e.runtimeType}');
+  }
+  return game;
 }
 
 /// The letters of [answer] the player already has as green in [guesses], with

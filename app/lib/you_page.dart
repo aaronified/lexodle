@@ -197,7 +197,7 @@ class YouPage extends StatelessWidget {
                       'reminders',
                       'a ping when your dailies open',
                       icon: 'clock',
-                      onTap: () => showToast(context, 'reminders are next'),
+                      onTap: () => _push(context, Routes.reminders),
                     ),
                   if (knownModes().isNotEmpty)
                     _row(

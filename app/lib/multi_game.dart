@@ -10,8 +10,12 @@ import 'guess_input.dart';
 import 'help.dart';
 import 'swipe_clear.dart';
 import 'haptics.dart';
+import 'hint_pick.dart';
 import 'history.dart';
 import 'keyboard.dart';
+import 'lex.dart';
+import 'lex_widgets.dart';
+import 'app_log.dart';
 import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
@@ -103,6 +107,18 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// What the finished game earned.
   List<Achievement> unlocked = [];
 
+  /// The hints bought in this game, what each revealed (in the same order),
+  /// whether the tray of hints is open in place of the keyboard, and the board
+  /// a quartet player has picked to hint at (null: the first one still live).
+  var _hints = GameHints();
+  final _picks = <HintPick>[];
+  bool _tray = false;
+  int? _picked;
+
+  /// Fingers down on the tray, and whether it closes once they are lifted.
+  int _fingers = 0;
+  bool _closeOnUp = false;
+
   /// The analysis of each guess, begun the moment it was made.
   var _jobs = JobQueue();
   final _analysis = <Future<MultiLandscape>?>[];
@@ -166,6 +182,19 @@ class _MultiGamePageState extends State<MultiGamePage> {
       _apply(g, restoring: true);
     }
     if (game.over || extra == null) return;
+    // the hints bought are back, not paid for again
+    final back = hintsFromJson(
+      extra['hints'],
+      boards: mode.boards,
+      length: length,
+      letters: _letters,
+    );
+    if (back.isNotEmpty) {
+      _picks
+        ..clear()
+        ..addAll(back);
+      _hints = restoreHints(back, guesses: game.guesses.length);
+    }
     // the row, its locks and its cursor as they were left
     try {
       final inp = extra['in'];
@@ -197,6 +226,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       'a': [for (final b in game.boards) b.answer],
       'g': game.guesses,
       'in': input.toJson(),
+      if (_picks.isNotEmpty) 'hints': hintsToJson(_picks),
     });
   }
 
@@ -212,6 +242,12 @@ class _MultiGamePageState extends State<MultiGamePage> {
     _jobs = JobQueue();
     _analysis.clear();
     _epoch++;
+    _hints = GameHints();
+    _picks.clear();
+    _tray = false;
+    _picked = null;
+    _fingers = 0;
+    _closeOnUp = false;
     unlocked = [];
     game = MultiGame(
       mode,
@@ -416,6 +452,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         freeRides: game.freeRides,
         lateSingles: game.lateSingles,
         daily: d != null,
+        hints: _hints.kinds,
       );
       // a step's skill and luck are the means over the boards it was made for;
       // a quartet or relay race has no daring or pool sizes of its own
@@ -465,6 +502,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
             daily: d != null,
             date: d?.date ?? '',
             dailyStreak: streak,
+            hints: _hints.kinds,
           ),
         ),
       );
@@ -593,7 +631,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
                       ),
                       // the panel is drawn over the boards, which run on under it
                       // (see [_boards]' padding), so lowering it shows them
-                      if (!game.over) _keyboard(),
+                      if (!game.over) ..._bottom(c),
                       const SizedBox(height: 12),
                     ],
                   ),
@@ -704,12 +742,19 @@ class _MultiGamePageState extends State<MultiGamePage> {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Caption(
-                  b.solved
-                      ? '${i + 1} · solved in ${b.solvedAt! + 1}'
-                      : (live && mode == GameMode.relay
-                            ? '${i + 1} · now'
-                            : '${i + 1}'),
+                child: GestureDetector(
+                  key: ValueKey('board-caption-$i'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: live && mode == GameMode.quartet && _hintable
+                      ? () => setState(() => _picked = i)
+                      : null,
+                  child: Caption(
+                    b.solved
+                        ? '${i + 1} · solved in ${b.solvedAt! + 1}'
+                        : (live && mode == GameMode.relay
+                              ? '${i + 1} · now'
+                              : '${i + 1}${_hintFor == i && mode == GameMode.quartet && _hintable ? ' · hint' : ''}'),
+                  ),
                 ),
               ),
             ),
@@ -807,12 +852,239 @@ class _MultiGamePageState extends State<MultiGamePage> {
     );
   }
 
+  /// Whether the player can buy hints here: the game is on and lex is shown.
+  bool get _hintable => !game.over && appState.lexUnlocked;
+
+  /// The board a hint would be for: in a relay race the word that is on, in a
+  /// quartet the board picked (a tap on its number), else the first still live.
+  int? get _hintFor {
+    final a = game.active;
+    if (a != null) return a;
+    final p = _picked;
+    if (p != null && game.isLive(p)) return p;
+    for (var i = 0; i < game.boards.length; i++) {
+      if (game.isLive(i)) return i;
+    }
+    return null;
+  }
+
+  /// How a board is named in the tray and the hints bought.
+  String _boardName(int i) =>
+      mode == GameMode.relay ? 'word ${i + 1}' : 'board ${i + 1}';
+
+  /// What sits under the status: the hints bought, then the hint bar and the
+  /// keyboard, or the tray of hints in place of both.
+  List<Widget> _bottom(ColorScheme c) {
+    final hintable = _hintable && _hintFor != null;
+    if (hintable && _tray) return [_trayView(c)];
+    // the hints of the boards still in play
+    final shown = [
+      for (final h in _picks)
+        if (game.isLive(h.board)) h,
+    ];
+    return [
+      if (shown.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Wrap(
+              spacing: 16,
+              runSpacing: 6,
+              children: [
+                for (final h in shown)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (mode == GameMode.quartet) ...[
+                        Caption('${h.board + 1}'),
+                        const SizedBox(width: 6),
+                      ],
+                      HintMiniRow(
+                        kind: h.kind,
+                        letter: h.letter,
+                        pos: h.pos,
+                        length: length,
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+      if (hintable)
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: HintBar(
+            free: appState.freeHints,
+            lex: appState.lexBalance,
+            onTap: () => setState(() {
+              _tray = true;
+              _fingers = 0;
+              _closeOnUp = false;
+            }),
+          ),
+        ),
+      _keyboard(),
+    ];
+  }
+
+  void _trayFingerUp() {
+    _fingers = max(0, _fingers - 1);
+    if (_fingers == 0 && _closeOnUp) {
+      _closeOnUp = false;
+      if (mounted) setState(() => _tray = false);
+    }
+  }
+
+  Widget _trayView(ColorScheme c) {
+    final target = _hintFor;
+    return Flexible(
+      child: Listener(
+        onPointerDown: (_) => _fingers++,
+        onPointerUp: (_) => _trayFingerUp(),
+        onPointerCancel: (_) => _trayFingerUp(),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (target != null)
+                  Caption(
+                    'for ${_boardName(target)}',
+                    key: const ValueKey('hint-target'),
+                  ),
+                const Caption(
+                  'a hint makes this game pay 0 lex. your streak is safe.',
+                ),
+                const SizedBox(height: 6),
+                for (final k in HintKind.values)
+                  HintHoldRow(
+                    key: ValueKey('hint-${k.name}'),
+                    kind: k,
+                    price: k.price,
+                    free: appState.freeHints,
+                    lex: appState.lexBalance,
+                    onBuy: () => _buyHint(k),
+                  ),
+                const SizedBox(height: 6),
+                TextButton(
+                  onPressed: () => setState(() => _tray = false),
+                  child: const Text('back to the keyboard'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Buys a hint of [kind] (a free one first) for the board in play, shows it
+  /// above the keyboard and offers to undo it until the next guess.
+  void _buyHint(HintKind kind) {
+    try {
+      final target = _hintFor;
+      if (game.over || target == null) return;
+      final pick = pickHint(
+        kind,
+        game.boards[target].answer,
+        game.guesses,
+        _letters,
+        taken: [
+          for (final h in _picks)
+            if (h.board == target) h,
+        ],
+      )?.onBoard(target);
+      if (pick == null) {
+        showToast(context, 'nothing left to hint at');
+        return;
+      }
+      final hints = _hints;
+      final bought = appState.buyHint(
+        hints,
+        kind,
+        guesses: game.guesses.length,
+        free: appState.freeHints > 0,
+      );
+      if (bought == null) {
+        showToast(context, 'not enough lex');
+        return;
+      }
+      setState(() {
+        _picks.add(pick);
+        _save();
+        if (_fingers > 0) {
+          _closeOnUp = true;
+        } else {
+          _tray = false;
+        }
+      });
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            content: Text(
+              bought.free
+                  ? 'free hint used'
+                  : 'hint bought · -${kind.price} lex',
+            ),
+            action: SnackBarAction(
+              label: 'undo',
+              onPressed: () => _undoHint(hints, pick),
+            ),
+          ),
+        );
+    } catch (e) {
+      appLog.w('hint', 'could not buy a hint: ${e.runtimeType}');
+    }
+  }
+
+  void _undoHint(GameHints hints, HintPick pick) {
+    try {
+      if (!identical(hints, _hints)) return;
+      if (!appState.undoHint(hints, guesses: game.guesses.length)) return;
+      if (mounted) {
+        setState(() => _picks.remove(pick));
+        _save();
+      }
+    } catch (e) {
+      appLog.w('hint', 'could not undo a hint: ${e.runtimeType}');
+    }
+  }
+
+  /// A grey hint rules its letter out on the keys of its board.
+  Map<String, Mark> get _greyKeys => {
+    for (final h in _picks)
+      if (h.kind == HintKind.grey && h.board == game.active)
+        h.letter: Mark.absent,
+  };
+
+  Map<String, List<Mark?>> get _quadMarks {
+    final out = game.letterMarks();
+    for (final h in _picks) {
+      if (h.kind != HintKind.grey || !game.isLive(h.board)) continue;
+      final per = out[h.letter] ??= List<Mark?>.filled(
+        game.boards.length,
+        null,
+      );
+      per[h.board] ??= Mark.absent;
+    }
+    return out;
+  }
+
   Widget _keyboard() => LetterKeyboard(
     letters: _letters,
     // a quartet splits each key by board; a relay race colours the keys by the
     // board that is on, as a single game would
-    marks: mode == GameMode.relay ? game.marksOf(game.active!) : const {},
-    quadMarks: mode == GameMode.relay ? const {} : game.letterMarks(),
+    marks: mode == GameMode.relay
+        ? {..._greyKeys, ...game.marksOf(game.active!)}
+        : const {},
+    quadMarks: mode == GameMode.relay ? const {} : _quadMarks,
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
     onCursor: _move,

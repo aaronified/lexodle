@@ -300,6 +300,19 @@ class _GamePageState extends State<GamePage>
       won = entry.won ?? false;
     }
     if (over || extra == null) return;
+    // the hints bought are back, not paid for again
+    final back = hintsFromJson(
+      extra['hints'],
+      boards: 1,
+      length: length,
+      letters: _letters,
+    );
+    if (back.isNotEmpty) {
+      _picks
+        ..clear()
+        ..addAll(back);
+      _hints = restoreHints(back, guesses: guesses.length);
+    }
     // the row, its locks and a blind game's colours as they were left
     try {
       final inp = extra['in'];
@@ -352,6 +365,8 @@ class _GamePageState extends State<GamePage>
         ],
       'in': input.toJson(),
       'p': pencil.toJson(),
+      // the hints bought, so a resumed game keeps them (and is not charged again)
+      if (_picks.isNotEmpty) 'hints': hintsToJson(_picks),
       'n': [
         for (final row in notes) [for (final m in row) m?.index ?? -1],
       ],
@@ -1596,6 +1611,7 @@ class _GamePageState extends State<GamePage>
       }
       setState(() {
         _picks.add(pick);
+        _save();
         if (_fingers > 0) {
           _closeOnUp = true;
         } else {
@@ -1628,7 +1644,10 @@ class _GamePageState extends State<GamePage>
     try {
       if (!identical(hints, _hints)) return;
       if (!appState.undoHint(hints, guesses: guesses.length)) return;
-      if (mounted) setState(() => _picks.remove(pick));
+      if (mounted) {
+        setState(() => _picks.remove(pick));
+        _save();
+      }
     } catch (e) {
       appLog.w('hint', 'could not undo a hint: ${e.runtimeType}');
     }

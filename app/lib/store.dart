@@ -17,6 +17,7 @@ import 'collection.dart';
 import 'lex.dart';
 import 'my_dailies.dart';
 import 'profile.dart';
+import 'reminders.dart' show ReminderSettings;
 import 'learn_log.dart';
 import 'medal.dart';
 import 'equations.dart' show equationLengths;
@@ -2594,6 +2595,28 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The reminders: on or off, the time and the weekdays (see reminders.dart).
+  ReminderSettings reminders = const ReminderSettings();
+
+  void setReminders(ReminderSettings r) {
+    if (r == reminders) return;
+    reminders = r;
+    try {
+      _w('reminders', _prefs?.setString('reminders', jsonEncode(r.toJson())));
+    } catch (e) {
+      appLog.w('store', 'reminders not saved ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
+  void _readReminders(Object? raw) {
+    try {
+      reminders = ReminderSettings.fromJson(raw is String ? jsonDecode(raw) : raw);
+    } catch (e) {
+      appLog.w('store', 'reminders not read ${e.runtimeType}');
+    }
+  }
+
   /// Whether the app looks for a newer version by itself each time it opens,
   /// and says so in a toast when there is one. On unless switched off: each
   /// check is one request to GitHub.
@@ -3645,6 +3668,7 @@ class AppState extends ChangeNotifier {
         lastRunVersion = p.getString('lastRunVersion');
         changelogSeen = p.getString('changelogSeen');
         autoUpdateCheck = p.getBool('autoUpdateCheck') ?? true;
+        _readReminders(p.getString('reminders'));
         final last = p.getInt('lastUpdateCheck');
         if (last != null) {
           lastUpdateCheck = DateTime.fromMillisecondsSinceEpoch(last);
@@ -4000,6 +4024,7 @@ class AppState extends ChangeNotifier {
     'share': share,
     'theme': themeIndex,
     'seenHowTo': seenHowTo,
+    'reminders': reminders.toJson(),
   };
 
   /// Replaces what is kept with a checked backup (see backup.dart): the
@@ -4112,6 +4137,12 @@ class AppState extends ChangeNotifier {
     final t = settings['theme'] as int?;
     if (t != null && t >= 0 && t <= maxThemeIndex) _setThemeIndex(t);
     seenHowTo = settings['seenHowTo'] as bool? ?? seenHowTo;
+    if (settings['reminders'] != null) {
+      _readReminders(settings['reminders']);
+      try {
+        _w('reminders', _prefs?.setString('reminders', jsonEncode(reminders.toJson())));
+      } catch (_) {}
+    }
     this.stats = stats;
     try {
       final p = _prefs;
