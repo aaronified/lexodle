@@ -153,6 +153,7 @@ void main() {
     await tester.pump(const Duration(seconds: 30));
     await tester.pumpAndSettle();
     expect(find.text('review'), findsOneWidget);
+    await tester.ensureVisible(find.text('review'));
     await tester.tap(find.text('review'));
     await tester.pumpAndSettle();
     // one frame in, no "working it out": the first step's picks are there

@@ -229,6 +229,7 @@ void main() {
     // the end of a game offers a step-by-step review...
     expect(find.text('review'), findsOneWidget);
     expect(find.byKey(const ValueKey('measure-skill')), findsOneWidget);
+    await tester.ensureVisible(find.text('review'));
     await tester.tap(find.text('review'));
     await tester.pumpAndSettle();
     expect(find.text('your first guess'), findsOneWidget);

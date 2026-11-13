@@ -152,19 +152,20 @@ void showMeasureHelp(BuildContext context, String which) {
 }
 
 /// The basic form of skill, luck and risk on a game over panel: each number
-/// with one line saying what it stands for. [risk] is null when the game has
-/// none (the quartet and the relay race), and the row is left out. With
+/// with one line saying what it stands for. [luck] and [risk] are null when the
+/// game has none (a largest-pool mastermind has no luck, a quartet or a relay
+/// race no risk), and the row is left out. With
 /// [explain] a row opens the maths of its measure.
 class MeasureBasics extends StatelessWidget {
   const MeasureBasics({
     super.key,
     required this.skill,
-    required this.luck,
+    this.luck,
     this.risk,
     this.explain = false,
   });
   final String skill;
-  final String luck;
+  final String? luck;
   final String? risk;
   final bool explain;
 
@@ -203,7 +204,8 @@ class MeasureBasics extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         row('skill', skill, 'how close your guesses were to the best possible'),
-        row('luck', luck, 'how much the answer helped or hurt you'),
+        if (luck != null)
+          row('luck', luck!, 'how much the answer helped or hurt you'),
         if (risk != null)
           row('risk', risk!, 'how often you gambled instead of playing safe'),
       ],

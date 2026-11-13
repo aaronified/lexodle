@@ -92,9 +92,14 @@ void main() {
   });
 
   group('the screen', () {
-    Future<void> open(WidgetTester tester, GameMode mode) async {
+    Future<void> open(
+      WidgetTester tester,
+      GameMode mode, {
+      bool veteran = false,
+    }) async {
       await tester.binding.setSurfaceSize(const Size(420, 2000));
       await appState.load();
+      appState.lex.veteran = veteran;
       appState.setup(lang: 'en', mode: mode);
       // the screen reads the word list as it opens: have it read before, in real
       // time, or the read is left waiting on the test's clock for every test
@@ -112,8 +117,7 @@ void main() {
     testWidgets('the pills pick the mode, and leave the mode in view alone', (
       tester,
     ) async {
-      appState.lex.veteran = true;
-      await open(tester, GameMode.classic);
+      await open(tester, GameMode.classic, veteran: true);
       expect(find.text('make your own · classic'), findsOneWidget);
       expect(find.byKey(const ValueKey('mode-quartet')), findsOneWidget);
       expect(find.byKey(const ValueKey('mode-mastermind')), findsNothing);

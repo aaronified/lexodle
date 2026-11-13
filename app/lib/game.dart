@@ -1435,7 +1435,7 @@ class _GamePageState extends State<GamePage>
               ? avg(metrics.map((m) => m.skill)).round().toString()
               : '…',
           // (a reply with no chance in it has no luck)
-          luck: largest ? '–' : luckText(avg(metrics.map((m) => m.luck))),
+          luck: largest ? null : luckText(avg(metrics.map((m) => m.luck))),
           risk: risk == null ? '–' : risk.round().toString(),
           explain: full,
         ),

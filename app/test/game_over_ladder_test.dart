@@ -105,21 +105,28 @@ void main() {
   testWidgets('the full analysis only once every mode is open', (tester) async {
     await won(tester, step: 2, veteran: true);
     expect(find.text('review'), findsOneWidget);
+    await tester.ensureVisible(measure('risk'));
     await tester.tap(measure('risk'));
     await tester.pumpAndSettle();
     expect(find.text('the maths'), findsOneWidget);
   });
 
-  testWidgets('the medals list comes at step 3', (tester) async {
+  testWidgets('no medals list before step 3', (tester) async {
     await won(tester, step: 2);
     expect(medal, findsNothing);
+  });
+
+  testWidgets('the medals list comes at step 3', (tester) async {
     await won(tester, step: 3);
     expect(medal, findsWidgets);
   });
 
-  testWidgets('the save-word bookmark comes at step 9', (tester) async {
+  testWidgets('no bookmark before step 9', (tester) async {
     await won(tester, step: 8);
     expect(bookmark, findsNothing);
+  });
+
+  testWidgets('the save-word bookmark comes at step 9', (tester) async {
     await won(tester, step: 9);
     expect(bookmark, findsOneWidget);
   });

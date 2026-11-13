@@ -325,6 +325,7 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
+      appState.lex.veteran = true; // every step is open
       appState.setup(lang: 'fr', length: 4, mode: GameMode.mastermind);
       final bank = await frBank(tester);
       await tester.pumpWidget(
@@ -368,6 +369,7 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
+      appState.lex.veteran = true; // every step is open
       appState.setup(lang: 'en', length: 5, mode: GameMode.mastermind);
       final bank = (await tester.runAsync(
         () async => WordBank.load(
@@ -407,6 +409,7 @@ void main() {
         (tester) async {
           await tester.binding.setSurfaceSize(const Size(420, 1700));
           await appState.load();
+          appState.lex.veteran = true; // every step is open
           appState.setup(
             lang: 'en',
             length: 5,
@@ -458,6 +461,7 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
+      appState.lex.veteran = true; // every step is open
       appState.setup(lang: 'fr', length: 4, mode: GameMode.mastermind);
       final bank = await frBank(tester);
       Widget page(int seed) => MaterialApp(
@@ -510,6 +514,7 @@ void main() {
         'to any seed', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
+      appState.lex.veteran = true; // every step is open
       appState.setup(lang: 'fr', mode: GameMode.mastermind);
       final bank = await frBank(tester);
       const daily = Daily('2026-11-12', '', length: 5, tries: 0);
@@ -566,6 +571,7 @@ void main() {
         'guess says why', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
+      appState.lex.veteran = true; // every step is open
       appState.setup(mode: GameMode.equations, eqTries: 7);
       final bank = (await tester.runAsync(
         () async => Equations.load(
@@ -645,6 +651,7 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
+      appState.lex.veteran = true; // every step is open
       appState.setup(mode: GameMode.equations, eqTries: 7, eqLength: 6);
       final bank = (await tester.runAsync(
         () async => Equations.load(
@@ -677,7 +684,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('solved in 2'), findsOneWidget);
       // skill and luck are there, and the review button
-      expect(find.textContaining('average'), findsOneWidget);
+      expect(find.byKey(const ValueKey('measure-skill')), findsOneWidget);
       expect(find.text('review'), findsOneWidget);
     });
 
@@ -686,6 +693,7 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(420, 1700));
       await appState.load();
+      appState.lex.veteran = true; // every step is open
       appState.setup(mode: GameMode.equations, eqTries: 7);
       final bank = (await tester.runAsync(
         () async => Equations.load(
