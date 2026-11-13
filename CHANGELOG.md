@@ -7,20 +7,27 @@ it to the version.
 
 ## Unreleased
 
-- lex: the hint currency, kept and backed up (no screens yet)
+- lex: the hint currency, kept and backed up
   Achievements pay lex: bronze 1, silver 2, gold 3, platinum 5. Only the
   highest level a game earns pays, an achievement pays once a day in each
   language, and a game in which a hint was used pays nothing (streaks are
   untouched). Hints cost 10 (grey), 25 (yellow) and 50 (green), can be undone
   until the next guess, and every player has one free hint to start. Players
   with achievements get a one-time starting grant of the medal values they
-  hold (formula awaiting confirmation); new players see lex from their 10th
-  game. The backup carries the balance and the ledger.
+  hold (formula awaiting confirmation); new players see lex once they have
+  played a game. The backup carries the balance and the ledger.
 
+- hints: spend lex on a clue, with one free hint to start
+  A lamp above the keyboard opens three hints: a letter that is not in the
+  word (10 lex), a letter that is in it (25) and a letter in its place (50).
+  Hold a hint until its bar fills to buy it; undo works until your next guess.
+  The hint shows above the keyboard. A game with a hint pays no lex, and the
+  streak is safe. Classic, lockdown and geography have it.
 - new look (preview): today, words, learn and you as tabs
   Switch it on in the settings. Today lists your dailies, with the state of
   each in words and a streak; you choose which dailies are yours. The you tab
-  has the streak week (with a month view), the theme, and your numbers.
+  has the streak week (with a month view), the theme, a username chip with an
+  icon in the logo's colours, and your numbers.
   Unfinished: the old home page stays until the new screens are done.
 - equations get fewer tries: easy 7, normal 5, hard 4, brutal 3
   A guess can test a lot of numbers at once, so the daily (normal) has 5 tries,

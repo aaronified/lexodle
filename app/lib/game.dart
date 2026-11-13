@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'analysis_worker.dart';
+import 'app_log.dart';
 import 'background.dart';
 import 'blind_pencil.dart';
 import 'daily.dart';
@@ -16,10 +17,13 @@ import 'share_puzzle.dart';
 import 'geography.dart';
 import 'guess_input.dart';
 import 'help.dart';
+import 'hint_pick.dart';
 import 'place_info.dart';
 import 'haptics.dart';
 import 'history.dart';
 import 'keyboard.dart';
+import 'lex.dart';
+import 'lex_widgets.dart';
 import 'logic.dart';
 import 'resizable_panel.dart';
 import 'review.dart';
@@ -179,6 +183,21 @@ class _GamePageState extends State<GamePage>
   final befores = <List<String>>[];
 
   final keyMarks = <String, Mark>{};
+
+  /// The hints bought in this game, what each revealed (in the same order),
+  /// and whether the tray of hints is open in place of the keyboard.
+  var _hints = GameHints();
+  final _picks = <HintPick>[];
+  bool _tray = false;
+
+  /// Fingers down on the tray, and whether it closes once they are lifted: a
+  /// row bought by holding must not be removed under the finger still on it.
+  int _fingers = 0;
+  bool _closeOnUp = false;
+
+  /// Whether this game has a known word to hint at, and the player sees lex.
+  bool get _hintable =>
+      !over && !blind && !_noDictionary && appState.lexUnlocked;
   late final input = GuessInput(length);
   String message = '';
   bool over = false;
@@ -372,6 +391,11 @@ class _GamePageState extends State<GamePage>
     notes.clear();
     pencil.clear();
     keyMarks.clear();
+    _hints = GameHints();
+    _picks.clear();
+    _tray = false;
+    _fingers = 0;
+    _closeOnUp = false;
     metrics.clear();
     befores.clear();
     input.clear();
@@ -735,6 +759,7 @@ class _GamePageState extends State<GamePage>
         style: style,
         styleChanged: styleChanged,
         stylesHeld: stylesHeld,
+        hints: _hints.kinds,
       );
       final played = result();
       // the game goes in the history as it was played (the guesses are the
@@ -909,7 +934,7 @@ class _GamePageState extends State<GamePage>
                       ),
                       // the panel is drawn over the boards, which run on under it
                       // (see [_grid]'s padding), so lowering it shows them
-                      if (!over) _keyboard(c),
+                      if (!over) ..._bottom(c),
                       const SizedBox(height: 12),
                     ],
                   ),
@@ -1460,13 +1485,167 @@ class _GamePageState extends State<GamePage>
     );
   }
 
+  /// What sits under the status: the hints bought, then the hint bar and the
+  /// keyboard, or the tray of hints in place of both.
+  List<Widget> _bottom(ColorScheme c) {
+    final hintable = _hintable;
+    if (hintable && _tray) return [_trayView(c)];
+    return [
+      if (_picks.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Wrap(
+              spacing: 16,
+              runSpacing: 6,
+              children: [
+                for (final h in _picks)
+                  HintMiniRow(
+                    kind: h.kind,
+                    letter: h.letter,
+                    pos: h.pos,
+                    length: length,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      if (hintable)
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: HintBar(
+            free: appState.freeHints,
+            lex: appState.lexBalance,
+            onTap: () => setState(() {
+              _tray = true;
+              _fingers = 0;
+              _closeOnUp = false;
+            }),
+          ),
+        ),
+      _keyboard(c),
+    ];
+  }
+
+  void _trayFingerUp() {
+    _fingers = max(0, _fingers - 1);
+    if (_fingers == 0 && _closeOnUp) {
+      _closeOnUp = false;
+      if (mounted) setState(() => _tray = false);
+    }
+  }
+
+  Widget _trayView(ColorScheme c) => Flexible(
+    child: Listener(
+      onPointerDown: (_) => _fingers++,
+      onPointerUp: (_) => _trayFingerUp(),
+      onPointerCancel: (_) => _trayFingerUp(),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Caption(
+                'a hint makes this game pay 0 lex. your streak is safe.',
+              ),
+              const SizedBox(height: 6),
+              for (final k in HintKind.values)
+                HintHoldRow(
+                  key: ValueKey('hint-${k.name}'),
+                  kind: k,
+                  price: k.price,
+                  free: appState.freeHints,
+                  lex: appState.lexBalance,
+                  onBuy: () => _buyHint(k),
+                ),
+              const SizedBox(height: 6),
+              TextButton(
+                onPressed: () => setState(() => _tray = false),
+                child: const Text('back to the keyboard'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+
+  /// Buys a hint of [kind] (a free one first), shows it above the keyboard and
+  /// offers to undo it until the next guess.
+  void _buyHint(HintKind kind) {
+    try {
+      if (over) return;
+      final pick = pickHint(kind, answer, guesses, _letters, taken: _picks);
+      if (pick == null) {
+        showToast(context, 'nothing left to hint at');
+        return;
+      }
+      final hints = _hints;
+      final bought = appState.buyHint(
+        hints,
+        kind,
+        guesses: guesses.length,
+        free: appState.freeHints > 0,
+      );
+      if (bought == null) {
+        showToast(context, 'not enough lex');
+        return;
+      }
+      setState(() {
+        _picks.add(pick);
+        if (_fingers > 0) {
+          _closeOnUp = true;
+        } else {
+          _tray = false;
+        }
+      });
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            content: Text(
+              bought.free
+                  ? 'free hint used'
+                  : 'hint bought · -${kind.price} lex',
+            ),
+            action: SnackBarAction(
+              label: 'undo',
+              onPressed: () => _undoHint(hints, pick),
+            ),
+          ),
+        );
+    } catch (e) {
+      appLog.w('hint', 'could not buy a hint: ${e.runtimeType}');
+    }
+  }
+
+  void _undoHint(GameHints hints, HintPick pick) {
+    try {
+      if (!identical(hints, _hints)) return;
+      if (!appState.undoHint(hints, guesses: guesses.length)) return;
+      if (mounted) setState(() => _picks.remove(pick));
+    } catch (e) {
+      appLog.w('hint', 'could not undo a hint: ${e.runtimeType}');
+    }
+  }
+
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
     numberPad: equations,
     onCursor: _move,
     marks: blind
         ? (_assist ? pencil.keyboard(_deduced, _letters) : const {})
-        : keyMarks,
+        : {
+            // a grey hint rules its letter out on the keys too
+            for (final h in _picks)
+              if (h.kind == HintKind.grey) h.letter: Mark.absent,
+            ...keyMarks,
+          },
     onLetter: _type,
     onBlank: () => _type(GuessInput.blank),
     onEnter: _submit,

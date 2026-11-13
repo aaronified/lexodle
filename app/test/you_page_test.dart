@@ -46,28 +46,50 @@ void main() {
     expect(find.text('coming in an upcoming release'), findsOneWidget);
   });
 
-  testWidgets(
-    'a new player at game 2 sees no achievements, playstyle, history',
-    (tester) async {
-      player(played: 2, veteran: false);
-      await show(tester);
-      expect(row('achievements'), findsNothing);
-      expect(row('playstyle'), findsNothing);
-      expect(row('history'), findsNothing);
-      expect(row('lex'), findsOneWidget);
-      expect(row('reminders'), findsOneWidget);
-      expect(row('friends'), findsOneWidget);
-    },
-  );
-
-  testWidgets('a new player at game 5 sees them, and lex', (tester) async {
-    player(played: 5, veteran: false);
+  Future<void> gated(
+    WidgetTester tester,
+    int played,
+    Set<String> expected,
+  ) async {
+    player(played: played, veteran: false);
     await show(tester);
-    expect(row('achievements'), findsOneWidget);
-    expect(row('playstyle'), findsOneWidget);
-    expect(row('history'), findsOneWidget);
-    expect(row('lex'), findsOneWidget);
-  });
+    for (final id in [
+      'achievements',
+      'lex',
+      'reminders',
+      'playstyle',
+      'history',
+      'friends',
+    ]) {
+      expect(
+        row(id),
+        expected.contains(id) ? findsOneWidget : findsNothing,
+        reason: '$id at game $played',
+      );
+    }
+    expect(find.text('theme'), findsOneWidget);
+  }
+
+  testWidgets('game 1 sees only lex', (t) => gated(t, 1, {'lex'}));
+  testWidgets(
+    'game 2 adds reminders',
+    (t) => gated(t, 2, {'lex', 'reminders'}),
+  );
+  testWidgets(
+    'game 3 adds achievements',
+    (t) => gated(t, 3, {'lex', 'reminders', 'achievements'}),
+  );
+  testWidgets(
+    'game 5 sees everything',
+    (t) => gated(t, 5, {
+      'lex',
+      'reminders',
+      'achievements',
+      'playstyle',
+      'history',
+      'friends',
+    }),
+  );
 
   testWidgets('the theme choice calls setup, and black needs dark', (
     tester,
