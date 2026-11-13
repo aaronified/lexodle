@@ -8,7 +8,7 @@ it to the version.
 ## Unreleased
 
 - a quiet border where a page needs one
-  Cards on the page, outlined buttons, text fields, dialogs and sheets have a thin, faint border again (0.75 px, about 1.4:1 against the page); a focused field has a clear line. Shades still separate everything inside a card.
+  Cards on the page, outlined buttons, text fields, dialogs and sheets have a thin, faint border again (0.75 px, about 1.5 to 2:1 against the page); a focused field has a clear line. Shades still separate everything inside a card.
 
 - the new look is the app
   Today and you are the first two tabs; words joins at game 9 and learn at game 24 (a veteran has all four). The first launch asks for a language and a theme, then plays your first game. Anyone who turned the new look off keeps it off; the switch is in the settings.

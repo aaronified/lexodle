@@ -9,10 +9,10 @@ import 'words.dart';
 
 export 'medal.dart' show Medal;
 
-/// The one soft line of the app: [outlineVariant] at 60% over the ground, so
-/// it reads at about 1.3 to 1.6 : 1 against it, quiet but visible.
-Color hairlineColor(ColorScheme c) =>
-    Color.alphaBlend(c.outlineVariant.withValues(alpha: .6), c.surface);
+/// The one soft line of the app: [outlineVariant], about 1.5 to 2 : 1 against
+/// the ground and lighter than the shade of a card, so it shows on both sides
+/// (a line between the two would vanish), and far quieter than [ColorScheme.outline].
+Color hairlineColor(ColorScheme c) => c.outlineVariant;
 
 /// Width of [hairline].
 const hairlineWidth = 0.75;
