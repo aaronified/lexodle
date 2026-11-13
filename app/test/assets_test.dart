@@ -241,14 +241,17 @@ void main() {
       // app: see wiki_links.dart; en.wikipedia.org is the same for the info
       // dot of a place: a link the browser opens, see place_info.dart;
       // raw.githubusercontent.com is the precomputed openings, fetched by the
-      // web app and, when the player asks, by the phone: precomputed.dart)
+      // web app and, when the player asks, by the phone: precomputed.dart;
+      // upload.wikimedia.org is where an entry's pronunciation audio lives)
       final fetched = hosts.where(
         (h) =>
             !h.endsWith('wiktionary.org') &&
             h != 'aaronified.github.io' &&
             h != 'github.com' &&
             h != 'en.wikipedia.org' &&
-            h != 'raw.githubusercontent.com',
+            h != 'raw.githubusercontent.com' &&
+            // the pronunciation audio the entries of the Wiktionaries name
+            h != 'upload.wikimedia.org',
       );
       expect(fetched, isEmpty, reason: 'unexpected hosts: $fetched');
     });

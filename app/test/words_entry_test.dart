@@ -88,6 +88,11 @@ void main() {
       await tester.pumpAndSettle();
 
       final card = find.byKey(const ValueKey('learn-card-words'));
+      await tester.scrollUntilVisible(
+        card,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(card, findsOneWidget);
       await tester.ensureVisible(card);
       await tester.pumpAndSettle();
