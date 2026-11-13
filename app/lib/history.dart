@@ -144,7 +144,7 @@ class GameRow {
     if (largest || earned.isNotEmpty || ms != null) largest ? 1 : 0,
     if (earned.isNotEmpty || ms != null) earned,
     // (a fifteenth for the time, which then has the two before it)
-    if (ms != null) ms!,
+    ?ms,
   ];
 
   /// Reads a row as [toRow] wrote it, or the map of named fields an earlier
@@ -194,7 +194,7 @@ class GameRow {
     'draw': draw.code,
     if (largest) 'lg': 1,
     if (earned.isNotEmpty) 'earned': earned,
-    if (ms != null) 'ms': ms!,
+    'ms': ?ms,
   };
 
   /// The earned levels of a saved row: a list of `id:level`, kept as it is when
