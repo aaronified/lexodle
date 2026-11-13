@@ -74,7 +74,8 @@ class GameRow {
   bool get isDaily => daily.isNotEmpty;
 
   /// Only a classic game has per-guess numbers that mean the same thing on every
-  /// row, so only those count towards a playstyle.
+  /// row, so only those are averaged in the overall numbers. Every single-board
+  /// mode has its own playstyle (see hasPlaystyle).
   bool get isClassic => mode == GameMode.classic;
 
   /// The month it is kept under, `2026-10` (UTC): games are saved a month at a

@@ -481,7 +481,7 @@ void main() {
         reason: 'a daily is played once',
       );
       expect(
-        find.textContaining('the next word comes at midnight, your time'),
+        find.textContaining('the next word comes at midnight in India'),
         findsOneWidget,
       );
       // the answer is said as the answer, not left bare

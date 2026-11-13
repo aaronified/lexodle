@@ -34,6 +34,7 @@ flutter:
     - assets/words/
     - assets/equations/
     - assets/geography/
+    - assets/wiktionary/
     - assets/icons/
     - assets/sounds/
     - assets/flags/

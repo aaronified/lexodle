@@ -27,8 +27,11 @@ class Sounds {
         p
             .stop()
             .then<void>((_) => p.play(AssetSource(asset)))
+            // silent on purpose: a sound failing must never bother play, and this runs on every tap
             .catchError((_) {}),
       );
-    } catch (_) {}
+    } catch (_) {
+      // silent on purpose: a sound failing must never bother play, and this runs on every tap
+    }
   }
 }

@@ -8,10 +8,10 @@ it to the version.
 ## Unreleased
 
 - the new look is the app
-  Today, words, learn and you are the four tabs for everyone. The first launch asks for a language and a theme, then plays your first game. Anyone who turned the new look off keeps it off; the switch is in the settings.
+  Today and you are the first two tabs; words joins at game 9 and learn at game 24 (a veteran has all four). The first launch asks for a language and a theme, then plays your first game. Anyone who turned the new look off keeps it off; the switch is in the settings.
 
-- words: every language looks a word up in its own Wiktionary
-  Meanings, pronunciation, origin and synonyms of the answer and of saved words come from the Wiktionary of the word's language: French, Spanish, Italian, Portuguese, Catalan, Romanian, German, Dutch, Swedish, Danish, Norwegian, Polish, Czech, Hungarian, Turkish and Indonesian. English stays on the English one. A word can always be saved, with your own notes, if the lookup fails.
+- words: every language looks a word up in its own wiktionary
+  Meanings, pronunciation, origin and synonyms of the answer and of saved words come from the Wiktionary of the word's language: French, Spanish, Italian, Portuguese, Catalan, Romanian, German, Dutch, Swedish, Danish, Norwegian, Polish, Czech, Hungarian, Turkish and Indonesian. English stays on the English one. A french word's link reads "wiktionnaire", and so on for each edition. Entries saved before stay as they were. A word can always be saved, with your own notes, if the lookup fails.
 
 - words: saved and collected are the header, and swipe
   The two lists are the page's header and swipe sideways. A banner floats at the bottom on both lists with the count and the next trophy, and can be dismissed. It comes back for the next trophy.
@@ -22,11 +22,7 @@ it to the version.
 - achievements: lex is a chip at the top right
   It opens the rule and the total earned. The three most recent achievements show what they paid.
 - the tab bar has a shadow, the app stretches at the end of a scroll
-  Radius is 6 everywhere, switches are higher contrast, and the ladder has the every-mode step at game 6 and learn at game 24.
-- words: french words are looked up in the wiktionnaire
-  A french word is read from fr.wiktionary.org, in french, with its link
-  reading "wiktionnaire". Every other language still uses en.wiktionary.org.
-  Saved entries from before stay as they were.
+  Buttons, cards, dialogs, chips and fields share one radius (6), switches are higher contrast, and the ladder has the every-mode step at game 6 and learn at game 24.
 - my words: a word with no entry has a retry
   A word is saved even when the lookup fails. Its page says no entry was kept
   and asks for your own notes, and "try the lookup again" fetches the entry
@@ -61,14 +57,13 @@ it to the version.
   word (10 lex), a letter that is in it (25) and a letter in its place (50).
   Hold a hint until its bar fills to buy it; undo works until your next guess.
   The hint shows above the keyboard. A game with a hint pays no lex, and the
-  streak is safe. Classic, lockdown and geography have it.
-- new look (preview): today, words, learn and you as tabs, as they are taught
-  Switch it on in the settings. The bar shows today and you first; words joins
-  at game 9 and learn, the last piece, at game 24. Today lists your dailies, with the state of
-  each in words and a streak; you choose which dailies are yours. The you tab
-  has the streak week (with a month view), the theme, a username chip with an
-  icon in the logo's colours, and your numbers.
-  Unfinished: the old home page stays until the new screens are done.
+  streak is safe. Classic, lockdown, geography, quartet and relay have it (not blind, equations or mastermind).
+- new look: today, words, learn and you as tabs, as they are taught
+  The bar shows today and you first; words joins at game 9 and learn, the last
+  piece, at game 24. Today lists your dailies, with the state of each in words
+  and a streak; you choose which dailies are yours. The you tab has the streak
+  week (with a month view), the theme, a username chip with an icon in the
+  logo's colours, and your numbers.
 - equations get fewer tries: easy 7, normal 5, hard 4, brutal 3
   A guess can test a lot of numbers at once, so the daily (normal) has 5 tries,
   not 6, and the difficulty grid of the equations says 7, 5, 4 and 3.
@@ -82,12 +77,12 @@ it to the version.
 
 - my words: save words, and collect every word you win
   A bookmark beside the answer on the end screen (lost games too, and on each
-  word of a quartet or relay race) saves the word with a copy of its Wiktionary
-  entry, so it opens without a connection. My words, next to how to play on the
+  word of a quartet or relay race) saves the word (not a geography or equation answer) with a copy of its
+  Wiktionary entry, so it opens without a connection. My words, next to how to play on the
   home page and as a card in learn, lists them with a language filter, search
   and sort, a note of your own on each (shown cut short in the list). Every
-  answer of a won game is also collected like a trophy, by language (and places
-  for geography), in a second tab; its entry is fetched when you open it, and
+  word answer of a won game is also collected like a trophy, by language (and
+  places for geography; equation answers are not), in a second tab; its entry is fetched when you open it, and
   the bookmark keeps a copy. Three achievements: word collector (the top level
   is every word of the language), word keeper and annotator. Wins already in
   the history are collected when the achievements are rebuilt. The backup

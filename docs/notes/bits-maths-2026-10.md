@@ -15,9 +15,9 @@ the remaining bits. The last guess with one word left scores skill 100, risk 0, 
 The final-try rules (skill is the win chance share, luck is the outcome less the chance) are kept.
 
 Playstyle thresholds come from simulated players (`docs/paper/experiments/styles`), not
-people. Achievements are 97, each with a medal, kept as numbers per language. Each mode has its
+people. Achievements were 97 at the time (173 now, four levels each), each with a medal, kept as numbers per language. Each mode has its
 own daily and streak. `metricsVersion` is 5, so stored games are scored again when the history
 is opened.
 
 Not done here: the PDFs of the paper (no LaTeX), and screenshots in `docs/screenshots`, which
-show the old screens.
+show the old home and screens (none for the four-tab shell, lex or hints).

@@ -158,13 +158,19 @@ class AutoBackup {
       internal = await files.writeInternal(name, bytes);
       if (internal) await _prune();
     } catch (e) {
-      appLog.e('backup', 'could not write $name to app memory: $e');
+      appLog.e(
+        'backup',
+        'could not write $name to app memory: ${e.runtimeType}',
+      );
     }
     if (downloads) {
       try {
         saved = await files.saveToDownloads(name, bytes) != null;
       } catch (e) {
-        appLog.e('backup', 'could not write $name to Downloads: $e');
+        appLog.e(
+          'backup',
+          'could not write $name to Downloads: ${e.runtimeType}',
+        );
       }
     }
     appLog.i(
@@ -182,7 +188,9 @@ class AutoBackup {
       for (final old in names.skip(keep)) {
         await files.deleteInternal(old);
       }
-    } catch (_) {}
+    } catch (e) {
+      appLog.w('backup', 'old backups could not be pruned: ${e.runtimeType}');
+    }
   }
 
   /// The newest copy in the app's own storage: its name and its text, or null.

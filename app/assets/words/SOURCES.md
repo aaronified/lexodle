@@ -1,6 +1,6 @@
 # Word list sources
 
-Candidates come from [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0). Each is kept if the language's Hunspell dictionary accepts it or en.wiktionary.org has it as a lemma or form of the language ; only the filtered word lists are shipped, not the dictionaries. The licence is the one each dictionary package states for its dictionary and affix files.
+Candidates come from [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0). Each is kept if the language's Hunspell dictionary accepts it or en.wiktionary.org has it as a lemma or form of the language; only the filtered word lists are shipped, not the dictionaries. Wiktionary (CC BY-SA 4.0) is used only to check that a word exists; none of its text is in the lists. The licence is the one each dictionary package states for its dictionary and affix files.
 
 | Language | Filter | Dictionary licence |
 | --- | --- | --- |

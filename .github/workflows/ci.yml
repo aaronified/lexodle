@@ -2,7 +2,8 @@ name: CI
 
 # The checks every change has to pass before it is merged: the analyzer on lib (errors
 # only; the existing lints and warnings are not held against a change), every
-# test, and the paper's sources. The debug APK and the web build run after a merge.
+# test, and the paper's sources. The debug APK is built on pull requests that touch the app
+# (android.yml); the web build runs after a merge.
 
 on:
   pull_request:

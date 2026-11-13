@@ -2,19 +2,20 @@
 
 ## Solver
 
-The **solver** (open it from game modes) helps with a game you are playing
+The **solver** (open it from game modes; it is not offered in blind, themed or equations) helps with a game you are playing
 elsewhere. It uses the same settings as the game: the language, the letters and the difficulty
 (the answer is one of the words of the chosen pool, and it counts the tries). Type each guess, tap
 its tiles to match the colours the game showed (grey, yellow, green), and add it. It lists the
 words still possible, most likely first, and recommends the next guess: the word that leaves the
-fewest words in expectation, drawn from the 600 most frequent words plus the possible answers.
+fewest words in expectation, drawn from the 600 likeliest of the words still possible plus the 600 most frequent words the
+game accepts.
 
 The advice follows the tries left: with two left it picks the guess most likely to solve it by the
 last try (the most groups, weighted by how common each word is), and with one left only the
 likeliest word that fits, since nothing else can win. Tap a word to use it as the next guess.
-Guesses are scored over every word the game accepts (up to 6,000 per length), and the answer is
-looked for among all of them; the frequency checkbox in the game modes sets whether commoner
-words are weighted as likelier.
+Guesses are scored over every word the game accepts, and the answer is looked for among all of
+them; the *word draw* setting in the game modes (sigmoid curve, every word, by frequency) sets how
+much likelier commoner words are taken to be.
 
 In the **quartet** and the **relay race** the solver follows the mode too (and counts the extra
 tries those modes give). Type each guess once. In a quartet, tap the colours each unsolved board
@@ -26,10 +27,11 @@ in the colours that board showed for each of them; any row can be corrected by t
 
 ## Learn mode
 
-**Learn** (the last button of game modes) opens the learn home: the opening lesson and four things
-to practise, each
-with how it has been going in the language and length you chose (a row of blocks for the skill of
-the last twelve, and the last result), and the days in a row you have learned something. What
+**Learn** (a button in game modes, above *diy* where there is one) opens the learn home: a strategy
+guide for the mode, a short how-to-play lesson, the opening and the styles lessons, five drills
+(read the clue, practise a word, choose the best, closing, three words) and *my words*. Each drill
+shows how it has been going in the language and length you chose (a row of blocks for the skill of
+the last twelve, and the last result), and the home shows the days in a row you have learned something. What
 you do there is kept on the phone, in backups, apart from the game history.
 
 **Practise a word** shows you the answer and asks you to find the best
@@ -102,7 +104,7 @@ Every learn page works in every mode, on the words of the mode in view (the equa
 or the words of the language), and its address names the mode (`#/equations/learn/free`).
 
 **Achievements.** Learning earns [achievements](Achievements): words practised well, flawless
-words, rounds and perfect rounds of the drills and of read the clue, sets of three words, a streak of days, and a full
+words, rounds and perfect rounds of the drills and of read the clue, sets of three words, words found with no hint, learning in several languages and at several word lengths, a streak of days, and a full
 lesson (practice, choose the best, three words and closing in one day). Each mode counts its own. A word typed straight in, with the answer in front of you, does not count; what counts
 is the quality of the guesses. They show at the end of a word or a round, and are kept once for
 you, not per language.

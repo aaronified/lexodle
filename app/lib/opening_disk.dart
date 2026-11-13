@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'logic.dart';
 import 'precomputed.dart' show openingFileName;
 import 'precomputed_local.dart';
+import 'app_log.dart';
 
 /// The most the kept openings take up, in bytes: the oldest are deleted first.
 const openingDiskCap = 10 * 1024 * 1024;
@@ -53,7 +54,12 @@ class DiskOpenings implements OpeningDisk {
       dir.createSync(recursive: true);
       _file(key).writeAsBytesSync(bytes, flush: true);
       _trim();
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'opening',
+        'the opening cache could not be written: ${e.runtimeType}',
+      );
+    }
   }
 
   void _trim() {

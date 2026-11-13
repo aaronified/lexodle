@@ -12,8 +12,8 @@ import 'today_page.dart';
 import 'words_page.dart';
 import 'you_page.dart';
 
-/// The home route: the new four-tab shell when the preview is switched on in the
-/// settings, the old home page otherwise.
+/// The home route: the new four-tab shell unless the player turned the new look
+/// off in the settings, which gives the old home page.
 class HomeSwitch extends StatefulWidget {
   const HomeSwitch({super.key, this.screens = const FirstRunScreens()});
 

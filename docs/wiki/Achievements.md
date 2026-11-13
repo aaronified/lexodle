@@ -1,6 +1,6 @@
 # Achievements
 
-54 achievements with 216 levels in all, saved in your browser (nothing is sent anywhere). Every one has a medal:
+173 achievements with 692 levels in all, saved in your browser (nothing is sent anywhere). Every one has a medal:
 **bronze**, **silver**, **gold** or **platinum**, and a family of them climbs in difficulty, from
 the easy version to the platinum one.
 
