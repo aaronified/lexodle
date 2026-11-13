@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
+import 'home.dart' show LanguagePopup;
 import 'main.dart';
 import 'mode_settings_page.dart' show knownModes;
 import 'profile_sheet.dart';
 import 'routes.dart';
 import 'streak_week.dart';
 import 'ui.dart';
+import 'words.dart';
 
 /// The fourth tab: the week's streak, the theme, and the doors to the
 /// achievements, lex, reminders, playstyle, history and friends. A new player
 /// sees a door once enough games are played.
-class YouPage extends StatelessWidget {
+class YouPage extends StatefulWidget {
   const YouPage({super.key, required this.onReplayFirstGame});
 
   /// The help button: play the first game again.
@@ -21,6 +23,62 @@ class YouPage extends StatelessWidget {
   /// Whether the player has played [games] games (a veteran sees all).
   static bool _from(int games) =>
       appState.lex.veteran || appState.stats.played >= games;
+
+  @override
+  State<YouPage> createState() => _YouPageState();
+}
+
+class _YouPageState extends State<YouPage> {
+  List<Language>? _langs;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLangs();
+  }
+
+  Future<void> _loadLangs() async {
+    try {
+      final l = await WordBank.languages();
+      if (mounted) setState(() => _langs = l);
+    } catch (e) {
+      appLog.w('you', 'languages failed ${e.runtimeType}');
+    }
+  }
+
+  static bool _from(int games) => YouPage._from(games);
+
+  Future<void> _pickLanguage() async {
+    try {
+      final langs = _langs ?? await WordBank.languages();
+      if (!mounted || langs.isEmpty) return;
+      final lang = langs.firstWhere(
+        (l) => l.code == appState.lang,
+        orElse: () => langs.first,
+      );
+      final code = await showDialog<String>(
+        context: context,
+        builder: (context) => LanguagePopup(langs: langs, current: lang.code),
+      );
+      if (code == null || code == lang.code) return;
+      final next = langs.firstWhere((l) => l.code == code);
+      final length = appState.length;
+      appState.setup(
+        lang: code,
+        length: next.lengths.contains(length) ? length : next.lengths.first,
+      );
+    } catch (e) {
+      appLog.w('you', 'language failed ${e.runtimeType}');
+    }
+  }
+
+  String? get _langName {
+    final langs = _langs;
+    if (langs == null || langs.isEmpty) return null;
+    return langs
+        .firstWhere((l) => l.code == appState.lang, orElse: () => langs.first)
+        .name;
+  }
 
   void _push(BuildContext context, String route) {
     try {
@@ -78,7 +136,7 @@ class YouPage extends StatelessWidget {
                       IconButton(
                         key: const ValueKey('you-help'),
                         tooltip: 'help: play your first game again',
-                        onPressed: onReplayFirstGame,
+                        onPressed: widget.onReplayFirstGame,
                         icon: TablerIcon(
                           'info-circle',
                           size: 26,
@@ -223,6 +281,48 @@ class YouPage extends StatelessWidget {
                       icon: 'hourglass',
                       onTap: () => _push(context, Routes.history),
                     ),
+                  _row(
+                    context,
+                    'language',
+                    'language',
+                    _langName,
+                    icon: 'world',
+                    onTap: _pickLanguage,
+                  ),
+                  _row(
+                    context,
+                    'howto',
+                    'how to play',
+                    null,
+                    icon: 'zoom-question',
+                    onTap: () => _push(context, Routes.howTo),
+                  ),
+                  if (_from(6))
+                    _row(
+                      context,
+                      'solver',
+                      'solver',
+                      null,
+                      icon: 'calculator',
+                      onTap: () => _push(context, Routes.solver),
+                    ),
+                  if (_from(6))
+                    _row(
+                      context,
+                      'diy',
+                      'diy',
+                      null,
+                      icon: 'puzzle',
+                      onTap: () => _push(context, Routes.diy),
+                    ),
+                  _row(
+                    context,
+                    'settings',
+                    'settings',
+                    'sound, haptics, updates, licences',
+                    icon: 'settings',
+                    onTap: () => _push(context, Routes.settings),
+                  ),
                   if (_from(3))
                     _row(
                       context,

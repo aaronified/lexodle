@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/routes.dart';
 import 'package:lexodle/you_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -91,6 +92,56 @@ void main() {
     await tester.pumpAndSettle();
     expect(appState.themeMode, ThemeMode.light);
     expect(appState.blackTheme, isFalse);
+  });
+
+  testWidgets('language, how to play and settings are always there', (
+    tester,
+  ) async {
+    player(played: 0, veteran: false);
+    await show(tester);
+    for (final id in ['language', 'howto', 'settings']) {
+      expect(row(id), findsOneWidget, reason: id);
+    }
+    expect(row('solver'), findsNothing);
+    expect(row('diy'), findsNothing);
+  });
+
+  testWidgets('solver and diy come at game 6', (tester) async {
+    player(played: 5, veteran: false);
+    await show(tester);
+    expect(row('solver'), findsNothing);
+    player(played: 6, veteran: false);
+    await show(tester);
+    await tester.pump();
+    expect(row('solver'), findsOneWidget);
+    expect(row('diy'), findsOneWidget);
+  });
+
+  testWidgets('how to play and settings push their routes', (tester) async {
+    player(played: 500, veteran: true);
+    final pushed = <String?>[];
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
+    await tester.pumpWidget(
+      MaterialApp(
+        onGenerateRoute: (s) {
+          pushed.add(s.name);
+          return MaterialPageRoute(
+            settings: s,
+            builder: (_) => const Scaffold(body: Text('pushed')),
+          );
+        },
+        home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(row('howto'));
+    await tester.pumpAndSettle();
+    expect(pushed, [Routes.howTo]);
+    Navigator.of(tester.element(find.text('pushed'))).pop();
+    await tester.pumpAndSettle();
+    await tester.tap(row('settings'));
+    await tester.pumpAndSettle();
+    expect(pushed, [Routes.howTo, Routes.settings]);
   });
 
   testWidgets('the help button calls back', (tester) async {
