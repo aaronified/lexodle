@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/reminders.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/saved_words.dart';
@@ -463,7 +464,9 @@ void main() {
 
     Future<void> open(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 3000));
-      await tester.pumpWidget(const LexodleApp(initialRoute: '/settings'));
+      await tester.pumpWidget(
+        const MaterialApp(home: SettingsPage(part: SettingsPart.backup)),
+      );
       await tester.pumpAndSettle();
     }
 

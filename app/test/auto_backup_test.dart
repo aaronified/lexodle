@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/auto_backup.dart';
 import 'package:lexodle/backup.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/update_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -132,7 +133,9 @@ void main() {
     Future<AppState> open(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 2200));
       await appState.load();
-      await tester.pumpWidget(const LexodleApp(initialRoute: '/settings'));
+      await tester.pumpWidget(
+        const MaterialApp(home: SettingsPage(part: SettingsPart.backup)),
+      );
       await tester.pumpAndSettle();
       return appState;
     }

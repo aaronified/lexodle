@@ -8,6 +8,7 @@ import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/you_page.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/period_chart.dart';
 import 'package:lexodle/playstyle.dart';
@@ -452,26 +453,34 @@ void main() {
         appState.setup(themeMode: ThemeMode.system);
       });
 
-      testWidgets('the settings show four options, black the fourth', (
+      testWidgets('the you tab offers light, dark, system and true black', (
         tester,
       ) async {
         await tester.binding.setSurfaceSize(const Size(420, 2200));
         addTearDown(() => tester.binding.setSurfaceSize(null));
-        await tester.pumpWidget(const LexodleApp(initialRoute: '/settings'));
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
+          ),
+        );
         await tester.pumpAndSettle();
-        // the theme choice is a stepper with its values in order
-        for (final label in ['system', 'light', 'dark', 'black']) {
-          appState.setup(
-            themeMode: switch (label) {
-              'system' => ThemeMode.system,
-              'light' => ThemeMode.light,
-              _ => ThemeMode.dark,
-            },
-            black: label == 'black',
-          );
-          await tester.pumpAndSettle();
-          expect(find.text(label), findsOneWidget, reason: label);
+        for (final label in ['light', 'dark', 'system']) {
+          expect(find.byKey(ValueKey('theme-$label')), findsOneWidget);
         }
+        Switch sw() => tester.widget<Switch>(
+          find.descendant(
+            of: find.byKey(const ValueKey('black-switch')),
+            matching: find.byType(Switch),
+          ),
+        );
+        // black is only reachable when dark
+        expect(sw().onChanged, isNull);
+        await tester.tap(find.byKey(const ValueKey('theme-dark')));
+        await tester.pumpAndSettle();
+        expect(sw().onChanged, isNotNull);
+        await tester.tap(find.byKey(const ValueKey('black-switch')));
+        await tester.pumpAndSettle();
+        expect(appState.blackTheme, isTrue);
         expect(appState.themeIndex, 3);
       });
 
