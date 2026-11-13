@@ -190,6 +190,11 @@ class _GamePageState extends State<GamePage>
   final _picks = <HintPick>[];
   bool _tray = false;
 
+  /// Fingers down on the tray, and whether it closes once they are lifted: a
+  /// row bought by holding must not be removed under the finger still on it.
+  int _fingers = 0;
+  bool _closeOnUp = false;
+
   /// Whether this game has a known word to hint at, and the player sees lex.
   bool get _hintable =>
       !over && !blind && !_noDictionary && appState.lexUnlocked;
@@ -389,6 +394,8 @@ class _GamePageState extends State<GamePage>
     _hints = GameHints();
     _picks.clear();
     _tray = false;
+    _fingers = 0;
+    _closeOnUp = false;
     metrics.clear();
     befores.clear();
     input.clear();
@@ -1494,7 +1501,12 @@ class _GamePageState extends State<GamePage>
               runSpacing: 6,
               children: [
                 for (final h in _picks)
-                  HintMiniRow(kind: h.kind, letter: h.letter, pos: h.pos),
+                  HintMiniRow(
+                    kind: h.kind,
+                    letter: h.letter,
+                    pos: h.pos,
+                    length: length,
+                  ),
               ],
             ),
           ),
@@ -1505,40 +1517,57 @@ class _GamePageState extends State<GamePage>
           child: HintBar(
             free: appState.freeHints,
             lex: appState.lexBalance,
-            onTap: () => setState(() => _tray = true),
+            onTap: () => setState(() {
+              _tray = true;
+              _fingers = 0;
+              _closeOnUp = false;
+            }),
           ),
         ),
       _keyboard(c),
     ];
   }
 
+  void _trayFingerUp() {
+    _fingers = max(0, _fingers - 1);
+    if (_fingers == 0 && _closeOnUp) {
+      _closeOnUp = false;
+      if (mounted) setState(() => _tray = false);
+    }
+  }
+
   Widget _trayView(ColorScheme c) => Flexible(
-    child: SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Caption(
-              'a hint makes this game pay 0 lex. your streak is safe.',
-            ),
-            const SizedBox(height: 6),
-            for (final k in HintKind.values)
-              HintHoldRow(
-                key: ValueKey('hint-${k.name}'),
-                kind: k,
-                price: k.price,
-                free: appState.freeHints,
-                lex: appState.lexBalance,
-                onBuy: () => _buyHint(k),
+    child: Listener(
+      onPointerDown: (_) => _fingers++,
+      onPointerUp: (_) => _trayFingerUp(),
+      onPointerCancel: (_) => _trayFingerUp(),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Caption(
+                'a hint makes this game pay 0 lex. your streak is safe.',
               ),
-            const SizedBox(height: 6),
-            TextButton(
-              onPressed: () => setState(() => _tray = false),
-              child: const Text('back to the keyboard'),
-            ),
-          ],
+              const SizedBox(height: 6),
+              for (final k in HintKind.values)
+                HintHoldRow(
+                  key: ValueKey('hint-${k.name}'),
+                  kind: k,
+                  price: k.price,
+                  free: appState.freeHints,
+                  lex: appState.lexBalance,
+                  onBuy: () => _buyHint(k),
+                ),
+              const SizedBox(height: 6),
+              TextButton(
+                onPressed: () => setState(() => _tray = false),
+                child: const Text('back to the keyboard'),
+              ),
+            ],
+          ),
         ),
       ),
     ),
@@ -1567,7 +1596,11 @@ class _GamePageState extends State<GamePage>
       }
       setState(() {
         _picks.add(pick);
-        _tray = false;
+        if (_fingers > 0) {
+          _closeOnUp = true;
+        } else {
+          _tray = false;
+        }
       });
       ScaffoldMessenger.of(context)
         ..clearSnackBars()

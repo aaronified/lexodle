@@ -143,6 +143,7 @@ void main() {
       expect(find.byType(HintMiniRow), findsOneWidget);
       expect(find.text('free hint used'), findsOneWidget);
 
+      await tester.pump(const Duration(milliseconds: 400));
       await tester.tap(find.text('undo'));
       await tester.pump();
       expect(appState.freeHints, 1);

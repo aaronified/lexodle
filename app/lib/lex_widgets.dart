@@ -263,6 +263,7 @@ class _HintHoldRowState extends State<HintHoldRow>
   }
 
   void _pointerEnd(PointerEvent e) {
+    if (!mounted) return;
     final held = _down != null;
     _down = null;
     if (!_canBuy) return;
@@ -398,10 +399,14 @@ class HintMiniRow extends StatelessWidget {
     required this.kind,
     required this.letter,
     this.pos = 0,
+    this.length = 5,
   });
   final HintKind kind;
   final String letter;
   final int pos;
+
+  /// The tiles of a green hint's row: the word's length.
+  final int length;
 
   static const _size = 22.0;
 
@@ -422,9 +427,9 @@ class HintMiniRow extends StatelessWidget {
     );
     final tiles = kind == HintKind.green
         ? [
-            for (var i = 0; i < 5; i++)
+            for (var i = 0; i < length; i++)
               Padding(
-                padding: EdgeInsets.only(right: i < 4 ? 3 : 0),
+                padding: EdgeInsets.only(right: i < length - 1 ? 3 : 0),
                 child: i == pos ? tile(letter, mark: Mark.correct) : tile(''),
               ),
           ]
