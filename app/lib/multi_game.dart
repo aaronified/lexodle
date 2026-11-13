@@ -7,6 +7,7 @@ import 'background.dart';
 import 'daily.dart';
 import 'daily_intro.dart';
 import 'game_header.dart';
+import 'game_timer.dart';
 import 'guess_input.dart';
 import 'help.dart';
 import 'swipe_clear.dart';
@@ -49,8 +50,12 @@ class MultiGamePage extends StatefulWidget {
     this.daily,
     this.practice = false,
     this.replay = const [],
+    this.clock,
   });
   final WordBank bank;
+
+  /// The clock of the game's timer; tests pass their own.
+  final Duration Function()? clock;
 
   /// Set to play the daily quartet or relay race: its four words and the fixed
   /// daily difficulty, instead of a game drawn at random.
@@ -73,6 +78,12 @@ class MultiGamePage extends StatefulWidget {
 class _MultiGamePageState extends State<MultiGamePage> {
   late final Random _rng = widget.random ?? Random();
   final _focus = FocusNode();
+
+  /// The time played: from the first key until the game is over.
+  late final GameTimer _timer = GameTimer(
+    elapsedMs: _saveKey == null ? 0 : appState.savedElapsedMs(_saveKey!),
+    now: widget.clock,
+  );
 
   late final DailyMulti? _daily = widget.daily;
   late final GameMode mode = _daily?.mode ?? appState.mode;
@@ -138,6 +149,8 @@ class _MultiGamePageState extends State<MultiGamePage> {
     _reset();
     _resume();
     _replay();
+    // a game already over when opened shows its time frozen
+    if (game.over) _timer.stop();
     _introduce();
   }
 
@@ -256,12 +269,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
       'g': game.guesses,
       'in': input.toJson(),
       if (_picks.isNotEmpty) 'hints': hintsToJson(_picks),
-    });
+    }, ms: _timer.elapsedMs);
   }
 
   @override
   void dispose() {
     _jobs.close();
+    _timer.dispose();
     _focus.dispose();
     super.dispose();
   }
@@ -310,6 +324,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   void _type(String ch) {
     if (game.over) return;
+    _timer.start();
     setState(() {
       if (input.type(ch, _letters) >= 0) message = '';
     });
@@ -462,6 +477,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// The finished game counts towards the achievements of its mode. Skill is
   /// final only once every guess has been analysed, so that is waited for.
   void _finish() {
+    _timer.stop();
     // practice is not counted
     if (widget.practice) return;
     final epoch = _epoch;
@@ -505,6 +521,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
             ),
         ],
         daily: d?.date ?? '',
+        ms: _timer.elapsedMs,
       );
       final streak = d == null
           ? 0
@@ -941,19 +958,27 @@ class _MultiGamePageState extends State<MultiGamePage> {
             ),
           ),
         ),
-      if (hintable)
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: HintBar(
-            free: appState.freeHints,
-            lex: appState.lexBalance,
-            onTap: () => setState(() {
-              _tray = true;
-              _fingers = 0;
-              _closeOnUp = false;
-            }),
-          ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            TimerPill(_timer),
+            Expanded(
+              child: hintable
+                  ? HintBar(
+                      free: appState.freeHints,
+                      lex: appState.lexBalance,
+                      onTap: () => setState(() {
+                        _tray = true;
+                        _fingers = 0;
+                        _closeOnUp = false;
+                      }),
+                    )
+                  : const SizedBox(height: 44),
+            ),
+          ],
         ),
+      ),
       _keyboard(),
     ];
   }

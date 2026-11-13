@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- every game has a timer, and the time is in history
+  A pill left of the keyboard counts your play time from the first key you press until the game ends. It pauses when the app is in the background and keeps its time when a saved game resumes. History shows the time next to the result. Games from before have no time.
+
 - today: the mode icon is in the square, and free play has no dots
   Each daily's icon now sits in its square: green when solved, yellow in progress, a red icon when missed (the skull is only in the streak calendar). The free play button no longer shows pending-daily dots.
 

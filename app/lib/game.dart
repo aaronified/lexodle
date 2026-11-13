@@ -11,6 +11,7 @@ import 'daily.dart';
 import 'daily_intro.dart';
 import 'equations.dart';
 import 'game_header.dart';
+import 'game_timer.dart';
 import 'hearts.dart';
 import 'modes.dart';
 import 'puzzle.dart';
@@ -52,7 +53,11 @@ class GamePage extends StatefulWidget {
     this.mode = GameMode.classic,
     this.chosen = false,
     this.hearts,
+    this.clock,
   });
+
+  /// The clock of the game's timer; tests pass their own.
+  final Duration Function()? clock;
 
   /// The hearts of a lockdown puzzle made by a friend (a link); null for the
   /// player's own setting.
@@ -88,6 +93,12 @@ class _GamePageState extends State<GamePage>
     with SingleTickerProviderStateMixin {
   late final Random _rng = widget.random ?? Random();
   final _focus = FocusNode();
+
+  /// The time played: from the first key until the game is over.
+  late final GameTimer _timer = GameTimer(
+    elapsedMs: _saveKey == null ? 0 : appState.savedElapsedMs(_saveKey!),
+    now: widget.clock,
+  );
 
   late final Daily? _daily = widget.daily;
   late final int length;
@@ -234,6 +245,8 @@ class _GamePageState extends State<GamePage>
     _reset();
     _resume();
     _replay();
+    // a game already over when opened shows its time frozen
+    if (over) _timer.stop();
     _introduce();
   }
 
@@ -401,12 +414,13 @@ class _GamePageState extends State<GamePage>
       'n': [
         for (final row in notes) [for (final m in row) m?.index ?? -1],
       ],
-    });
+    }, ms: _timer.elapsedMs);
   }
 
   @override
   void dispose() {
     _jobs.close();
+    _timer.dispose();
     _rumble.dispose();
     _scroll.dispose();
     _focus.dispose();
@@ -467,6 +481,7 @@ class _GamePageState extends State<GamePage>
 
   void _type(String ch) {
     if (over) return;
+    _timer.start();
     setState(() {
       if (input.type(ch, _letters) >= 0) message = '';
     });
@@ -770,6 +785,7 @@ class _GamePageState extends State<GamePage>
   /// The finished game counts towards the statistics and achievements. Skill
   /// is final only once every guess has been analysed, so that is waited for.
   void _finish() {
+    _timer.stop();
     // practice is not counted
     if (widget.practice) return;
     final epoch = _epoch;
@@ -830,6 +846,7 @@ class _GamePageState extends State<GamePage>
           daily: d?.date ?? '',
           draw: draw,
           largest: largest,
+          ms: _timer.elapsedMs,
         );
       }
       final code = widget.bank.language.code;
@@ -1568,19 +1585,27 @@ class _GamePageState extends State<GamePage>
             ),
           ),
         ),
-      if (hintable)
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: HintBar(
-            free: appState.freeHints,
-            lex: appState.lexBalance,
-            onTap: () => setState(() {
-              _tray = true;
-              _fingers = 0;
-              _closeOnUp = false;
-            }),
-          ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            TimerPill(_timer),
+            Expanded(
+              child: hintable
+                  ? HintBar(
+                      free: appState.freeHints,
+                      lex: appState.lexBalance,
+                      onTap: () => setState(() {
+                        _tray = true;
+                        _fingers = 0;
+                        _closeOnUp = false;
+                      }),
+                    )
+                  : const SizedBox(height: 44),
+            ),
+          ],
         ),
+      ),
       _keyboard(c),
     ];
   }
