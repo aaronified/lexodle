@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- the new look is the app
+  Today, words, learn and you are the four tabs for everyone. The first launch asks for a language and a theme, then plays your first game. Anyone who turned the new look off keeps it off; the switch is in the settings.
+
 - words: every language looks a word up in its own Wiktionary
   Meanings, pronunciation, origin and synonyms of the answer and of saved words come from the Wiktionary of the word's language: French, Spanish, Italian, Portuguese, Catalan, Romanian, German, Dutch, Swedish, Danish, Norwegian, Polish, Czech, Hungarian, Turkish and Indonesian. English stays on the English one. A word can always be saved, with your own notes, if the lookup fails.
 

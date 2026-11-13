@@ -3235,9 +3235,13 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  /// The new look (preview): today, words, learn and you as four tabs. Off until
-  /// the screens are finished.
-  bool newUi = false;
+  /// The new look: today, words, learn and you as four tabs. On unless the
+  /// player turned it off.
+  bool newUi = newUiDefault;
+
+  /// What a player who never chose gets: the new look. The tests set it to false
+  /// (test/flutter_test_config.dart) so that they drive the old home unless one asks.
+  static bool newUiDefault = true;
 
   void setNewUi(bool on) {
     newUi = on;
@@ -3850,7 +3854,7 @@ class AppState extends ChangeNotifier {
       _readLex(p);
       _readMyDailies(p);
       _readProfile(p);
-      newUi = p.getBool('newUi') ?? false;
+      newUi = p.getBool('newUi') ?? newUiDefault;
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
       // first start of this version, or it was lost) it is done again.

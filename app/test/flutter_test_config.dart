@@ -7,6 +7,7 @@ import 'package:http/testing.dart';
 import 'package:lexodle/changelog.dart';
 import 'package:lexodle/precomputed.dart';
 import 'package:lexodle/sounds.dart';
+import 'package:lexodle/store.dart';
 import 'package:lexodle/wiktionary.dart';
 
 /// Runs before every test file. The game screens look their answers up and
@@ -22,5 +23,8 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   // nothing is published in a test
   precomputedClient = () => MockClient((_) async => http.Response('', 404));
   Sounds.enabled = false;
+  // a player who never chose gets the new look; the tests drive the old home
+  // unless one turns the new look on itself
+  AppState.newUiDefault = false;
   await testMain();
 }
