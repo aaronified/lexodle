@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- today: a finished daily opens its game over screen
+  Tapping a solved or missed daily on today showed a placeholder message instead of the game. It opens the finished game, with its game over and review screens, again.
+
 ## 0.10.1
 
 - today: one button for free play and the mode

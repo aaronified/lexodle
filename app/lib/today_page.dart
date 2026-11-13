@@ -265,16 +265,8 @@ class TodayPage extends StatelessWidget {
 
     return InkWell(
       key: key ?? ValueKey('today-row-${m.name}'),
-      onTap: () {
-        if (r.state == _State.solved || lost) {
-          showToast(
-            context,
-            'the game over and review screens remain as they are',
-          );
-        } else {
-          _play(context, m);
-        }
-      },
+      // a finished daily opens its game over screen, as it always did
+      onTap: () => _play(context, m),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
