@@ -15,6 +15,7 @@ import 'mode_filter.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'period_chart.dart';
+import 'playstyle.dart' show classify, habitsOfGames, hasPlaystyle;
 import 'playstyle_card.dart' show StatTile, hairlineCard;
 import 'puzzle.dart';
 import 'replay.dart';
@@ -367,7 +368,50 @@ class _Overall extends StatelessWidget {
   }
 }
 
-/// How play changed over time: a bar for each of the last 50 weeks or months,
+/// The range of the trend plot.
+enum _Range { days, weeks, months }
+
+/// The last [count] local days, oldest first, the last of them [today]: a
+/// period for each day, empty when nothing was played (a gap in the plot). Games
+/// dated after [today] are counted in the last. The label, start and end are
+/// the date itself.
+List<Period> dailyPeriods(
+  History h,
+  String today, {
+  int count = 50,
+  String? lang,
+  GameMode? mode,
+}) {
+  final byDate = <String, List<GameRow>>{};
+  for (final g in h.games) {
+    if (lang != null && g.lang != lang) continue;
+    if (mode != null && g.mode != mode) continue;
+    var d = dailyDate(DateTime.fromMillisecondsSinceEpoch(g.at, isUtc: true));
+    if (d.compareTo(today) > 0) d = today;
+    byDate.putIfAbsent(d, () => []).add(g);
+  }
+  return [
+    for (var i = count - 1; i >= 0; i--)
+      () {
+        final d = dailyShift(today, -i);
+        final games = byDate[d] ?? const <GameRow>[];
+        return Period(
+          label: d,
+          start: d,
+          end: d,
+          stats: summarise(h, games),
+          style: classify(
+            habitsOfGames(h, [
+              for (final g in games)
+                if (hasPlaystyle(g.mode)) g,
+            ]),
+          ),
+        );
+      }(),
+  ];
+}
+
+/// How play changed over time: a bar for each of the last 50 days, weeks or months,
 /// for skill, risk, share won or games, and what was in the one picked.
 class _Trend extends StatefulWidget {
   const _Trend(this.lang, this.mode, {super.key});
@@ -381,7 +425,7 @@ class _Trend extends StatefulWidget {
 }
 
 class _TrendState extends State<_Trend> {
-  bool _weekly = true;
+  _Range _range = _Range.weeks;
 
   /// The lines drawn: all three to begin with.
   final _shown = <PeriodSeries>{...PeriodSeries.values};
@@ -390,7 +434,7 @@ class _TrendState extends State<_Trend> {
   int? _picked;
 
   // working the periods out reads every game, so it is done again only when the
-  // history, the day or the choice of weeks or months has changed
+  // history, the day or the choice of days, weeks or months has changed
   List<Period>? _periods;
   Object? _key;
 
@@ -401,24 +445,41 @@ class _TrendState extends State<_Trend> {
       h.games.length,
       h.games.isEmpty ? -1 : h.games.last.id,
       h.stale().length,
-      _weekly,
+      _range,
       today,
       widget.lang,
       widget.mode,
     );
     if (_periods == null || _key != key) {
-      _periods = _weekly
-          ? weeklyPeriods(h, today, lang: widget.lang, mode: widget.mode)
-          : monthlyPeriods(h, today, lang: widget.lang, mode: widget.mode);
+      _periods = switch (_range) {
+        _Range.days => dailyPeriods(
+          h,
+          today,
+          lang: widget.lang,
+          mode: widget.mode,
+        ),
+        _Range.weeks => weeklyPeriods(
+          h,
+          today,
+          lang: widget.lang,
+          mode: widget.mode,
+        ),
+        _Range.months => monthlyPeriods(
+          h,
+          today,
+          lang: widget.lang,
+          mode: widget.mode,
+        ),
+      };
       _key = key;
     }
     return _periods!;
   }
 
-  void _setWeekly(bool weekly) {
-    if (weekly == _weekly) return;
+  void _setRange(_Range range) {
+    if (range == _range) return;
     setState(() {
-      _weekly = weekly;
+      _range = range;
       _picked = null;
     });
   }
@@ -429,7 +490,7 @@ class _TrendState extends State<_Trend> {
     final periods = _periodsNow();
     final sel = (_picked ?? periods.length - 1).clamp(0, periods.length - 1);
     final p = periods[sel];
-    final unit = _weekly ? 'week' : 'month';
+    final unit = _range.name.substring(0, _range.name.length - 1);
     final dim = TextStyle(
       fontSize: 11,
       color: c.onSurface.withValues(alpha: dimAlpha),
@@ -465,17 +526,14 @@ class _TrendState extends State<_Trend> {
           Row(
             children: [
               Expanded(child: Caption('the last ${periods.length} ${unit}s')),
-              _Choice(
-                'weeks',
-                selected: _weekly,
-                onTap: () => _setWeekly(true),
-              ),
-              const SizedBox(width: 6),
-              _Choice(
-                'months',
-                selected: !_weekly,
-                onTap: () => _setWeekly(false),
-              ),
+              for (final (i, r) in _Range.values.indexed) ...[
+                if (i > 0) const SizedBox(width: 6),
+                _Choice(
+                  r.name,
+                  selected: _range == r,
+                  onTap: () => _setRange(r),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 12),
@@ -518,7 +576,7 @@ class _TrendState extends State<_Trend> {
           ),
           const SizedBox(height: 12),
           Text(
-            _weekly ? '${p.start} to ${p.end}' : p.label,
+            _range == _Range.weeks ? '${p.start} to ${p.end}' : p.label,
             key: const ValueKey('period-label'),
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
           ),
