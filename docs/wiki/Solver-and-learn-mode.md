@@ -2,7 +2,7 @@
 
 ## Solver
 
-The **solver** (open it from game modes; it is not offered in blind, themed or equations) helps with a game you are playing
+The **solver** (open it from the **solver** row of you, from game 6; it is not offered in blind, themed or equations) helps with a game you are playing
 elsewhere. It uses the same settings as the game: the language, the letters and the difficulty
 (the answer is one of the words of the chosen pool, and it counts the tries). Type each guess, tap
 its tiles to match the colours the game showed (grey, yellow, green), and add it. It lists the
@@ -14,7 +14,7 @@ The advice follows the tries left: with two left it picks the guess most likely 
 last try (the most groups, weighted by how common each word is), and with one left only the
 likeliest word that fits, since nothing else can win. Tap a word to use it as the next guess.
 Guesses are scored over every word the game accepts, and the answer is looked for among all of
-them; the *word draw* setting in the game modes (sigmoid curve, every word, by frequency) sets how
+them; the *word draw* setting in mode settings (sigmoid curve, every word, by frequency) sets how
 much likelier commoner words are taken to be.
 
 In the **quartet** and the **relay race** the solver follows the mode too (and counts the extra
@@ -27,8 +27,8 @@ in the colours that board showed for each of them; any row can be corrected by t
 
 ## Learn mode
 
-**Learn** (a button in game modes, above *diy* where there is one) opens the learn home: a strategy
-guide for the mode, a short how-to-play lesson, the opening and the styles lessons, five drills
+**Learn** is a tab (from game 1; until game 24 it holds only a how to play for each open mode, a short lesson of the rules and the screen). From game 24 the learn home holds a strategy
+guide for the mode, the how-to-play lesson, the opening and the styles lessons, five drills
 (read the clue, practise a word, choose the best, closing, three words) and *my words*. Each drill
 shows how it has been going in the language and length you chose (a row of blocks for the skill of
 the last twelve, and the last result), and the home shows the days in a row you have learned something. What

@@ -40,7 +40,7 @@ cannot reroll it, and it is played once a day.
   still be edited by the person who owns it.
 - **The streak** counts the days in a row on which a daily was solved **in that language and mode**: each
   language and each mode has its own streak and its own calendar (see [Languages](Languages)). A day not played
-  yet does not break it; a day missed does. Today shows each daily with a flame and its streak. The you tab has a streak card that swipes between modes: the last seven days, today last, with a green flame for a solved day (two for a double fire), a skull for a lost one and a dim flame for a day not played, and a month view. A **double fire** is a daily solved in three guesses or
+  yet does not break it; a day missed does. Today shows each daily with its mode icon in a square (green solved, yellow in progress, red when missed) and a flame with its streak. The you tab has a streak card that swipes between modes: the last seven days, today last, with a green flame for a solved day (two for a double fire), a skull for a lost one and a dim flame for a day not played, and a month view. A **double fire** is a daily solved in three guesses or
   fewer, or with every guess at 80 skill or more.
 
 ## Sharing a puzzle
