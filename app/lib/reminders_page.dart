@@ -269,7 +269,10 @@ class _RemindersPageState extends State<RemindersPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                runSpacing: 8,
                 children: [
                   Text(
                     _hhmm(r.reminders[i].minutes),
@@ -279,22 +282,26 @@ class _RemindersPageState extends State<RemindersPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Spacer(),
-                  _button(
-                    c,
-                    ValueKey('reminders-change-time-$i'),
-                    'change time',
-                    () => _time(i),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _button(
+                        c,
+                        ValueKey('reminders-change-time-$i'),
+                        'change time',
+                        () => _time(i),
+                      ),
+                      if (i > 0) ...[
+                        const SizedBox(width: 8),
+                        _button(
+                          c,
+                          ValueKey('reminders-remove-$i'),
+                          'remove',
+                          () => _remove(i),
+                        ),
+                      ],
+                    ],
                   ),
-                  if (i > 0) ...[
-                    const SizedBox(width: 8),
-                    _button(
-                      c,
-                      ValueKey('reminders-remove-$i'),
-                      'remove',
-                      () => _remove(i),
-                    ),
-                  ],
                 ],
               ),
               const SizedBox(height: 10),
