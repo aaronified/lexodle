@@ -352,13 +352,15 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('language-button')));
       await tester.pumpAndSettle();
       final dialog = tester.widget<Dialog>(find.byType(Dialog));
+      // a flat fill one step above the page, no outline
       final scaffold = Theme.of(tester.element(find.byType(Dialog)))
-          .scaffoldBackgroundColor;
+          .colorScheme
+          .surfaceContainerHigh;
       expect(dialog.backgroundColor, scaffold);
       expect(dialog.surfaceTintColor, Colors.transparent);
       final shape = dialog.shape! as RoundedRectangleBorder;
       expect(shape.borderRadius, BorderRadius.circular(3));
-      expect(shape.side.width, greaterThan(0));
+      expect(shape.side, BorderSide.none);
       // what is drawn is that colour too
       final material = tester.widget<Material>(
         find

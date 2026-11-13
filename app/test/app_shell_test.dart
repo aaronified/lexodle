@@ -29,17 +29,41 @@ void main() {
     expect(find.byType(AppShell), findsNothing);
   });
 
-  testWidgets('the preview shows four tabs, today first', (tester) async {
+  testWidgets('a new player has today and you; the rest come as taught', (
+    tester,
+  ) async {
     appState.setNewUi(true);
     addTearDown(() => appState.setNewUi(false));
+    appState.lex.veteran = false;
+    appState.stats.played = 1;
     await show(tester);
     expect(find.byType(AppShell), findsOneWidget);
     expect(find.byType(TodayPage), findsOneWidget);
-    for (final t in ['today', 'words', 'learn', 'you']) {
-      expect(find.text(t), findsWidgets);
-    }
+    expect(find.text('words'), findsNothing);
+    expect(find.text('learn'), findsNothing);
     await tester.tap(find.text('you').last);
     await tester.pump();
     expect(find.byType(YouPage), findsOneWidget);
+    appState.stats.played = 9;
+    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+    appState.notifyListeners();
+    await tester.pump();
+    expect(find.text('words'), findsWidgets);
+    expect(find.text('learn'), findsNothing);
+    appState.stats.played = 24;
+    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+    appState.notifyListeners();
+    await tester.pump();
+    expect(find.text('learn'), findsWidgets);
+  });
+
+  testWidgets('a veteran has all four tabs', (tester) async {
+    appState.setNewUi(true);
+    addTearDown(() => appState.setNewUi(false));
+    appState.lex.veteran = true;
+    await show(tester);
+    for (final t in ['today', 'words', 'learn', 'you']) {
+      expect(find.text(t), findsWidgets);
+    }
   });
 }

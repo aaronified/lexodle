@@ -59,29 +59,11 @@ class YouPage extends StatelessWidget {
                         key: const ValueKey('you-help'),
                         tooltip: 'help: play your first game again',
                         onPressed: onReplayFirstGame,
-                        icon: Container(
-                          width: 24,
-                          height: 24,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: c.surfaceContainerHighest,
-                          ),
-                          child: Text(
-                            '?',
-                            style: TextStyle(fontSize: 13, color: c.onSurface),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        key: const ValueKey('you-settings'),
-                        tooltip: 'settings',
                         icon: TablerIcon(
-                          'settings',
-                          size: 24,
+                          'info-circle',
+                          size: 26,
                           color: c.onSurface,
                         ),
-                        onPressed: () => _push(context, Routes.settings),
                       ),
                     ],
                   ),
@@ -112,80 +94,80 @@ class YouPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   const StreakWeek(),
                   const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: c.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Caption('theme'),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            for (final (m, label) in const [
-                              (ThemeMode.light, 'light'),
-                              (ThemeMode.dark, 'dark'),
-                              (ThemeMode.system, 'system'),
-                            ])
-                              Expanded(
-                                child: InkWell(
-                                  key: ValueKey('theme-$label'),
-                                  onTap: () => appState.setup(
-                                    themeMode: m,
-                                    black:
-                                        m == ThemeMode.dark &&
-                                        appState.blackTheme,
-                                  ),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 10,
+                  Material(
+                    color: c.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(3),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Caption('theme'),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              for (final (m, label) in const [
+                                (ThemeMode.light, 'light'),
+                                (ThemeMode.dark, 'dark'),
+                                (ThemeMode.system, 'system'),
+                              ])
+                                Expanded(
+                                  child: InkWell(
+                                    key: ValueKey('theme-$label'),
+                                    onTap: () => appState.setup(
+                                      themeMode: m,
+                                      black:
+                                          m == ThemeMode.dark &&
+                                          appState.blackTheme,
                                     ),
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: appState.themeMode == m
-                                          ? c.secondaryContainer
-                                          : c.surfaceContainerHighest,
-                                    ),
-                                    child: Text(
-                                      label,
-                                      style: TextStyle(
-                                        fontWeight: appState.themeMode == m
-                                            ? FontWeight.bold
-                                            : null,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
                                         color: appState.themeMode == m
-                                            ? c.onSecondaryContainer
-                                            : c.onSurface,
+                                            ? c.secondaryContainer
+                                            : c.surfaceContainerHighest,
+                                      ),
+                                      child: Text(
+                                        label,
+                                        style: TextStyle(
+                                          fontWeight: appState.themeMode == m
+                                              ? FontWeight.bold
+                                              : null,
+                                          color: appState.themeMode == m
+                                              ? c.onSecondaryContainer
+                                              : c.onSurface,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
-                        SwitchListTile(
-                          key: const ValueKey('black-switch'),
-                          contentPadding: EdgeInsets.zero,
-                          dense: true,
-                          title: const Text('true black'),
-                          subtitle: Text(
-                            'for OLED screens: pure #000000 when dark',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: c.onSurface.withValues(alpha: dimAlpha),
-                            ),
+                            ],
                           ),
-                          value: appState.blackTheme,
-                          onChanged: dark
-                              ? (on) => appState.setup(
-                                  themeMode: ThemeMode.dark,
-                                  black: on,
-                                )
-                              : null,
-                        ),
-                      ],
+                          SwitchListTile(
+                            key: const ValueKey('black-switch'),
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            title: const Text('true black'),
+                            subtitle: Text(
+                              'for OLED screens: pure #000000 when dark',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: c.onSurface.withValues(alpha: dimAlpha),
+                              ),
+                            ),
+                            value: appState.blackTheme,
+                            onChanged: dark
+                                ? (on) => appState.setup(
+                                    themeMode: ThemeMode.dark,
+                                    black: on,
+                                  )
+                                : null,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -215,6 +197,22 @@ class YouPage extends StatelessWidget {
                       'reminders',
                       'a ping when your dailies open',
                       onTap: () => showToast(context, 'reminders are next'),
+                    ),
+                  if (_from(3))
+                    _row(
+                      context,
+                      'backup',
+                      'backup',
+                      'save your data, or restore it',
+                      onTap: () => _push(context, Routes.settings),
+                    ),
+                  if (_from(7))
+                    _row(
+                      context,
+                      'support',
+                      'support lexodle',
+                      'keep it going',
+                      onTap: () => _push(context, Routes.settings),
                     ),
                   if (_from(5))
                     _row(

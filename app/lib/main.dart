@@ -50,8 +50,8 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
       surfaceContainerLowest: k,
       surfaceContainerLow: k,
       surfaceContainer: k,
-      surfaceContainerHigh: k,
-      surfaceContainerHighest: const Color(0xFF121212),
+      surfaceContainerHigh: const Color(0xFF141414),
+      surfaceContainerHighest: const Color(0xFF1C1C1C),
       // the variants stay visible on black
       outlineVariant: const Color(0xFF3A3A3A),
     );
