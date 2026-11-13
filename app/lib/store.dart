@@ -16,6 +16,7 @@ import 'clue.dart' show clueRoundLength;
 import 'collection.dart';
 import 'lex.dart';
 import 'my_dailies.dart';
+import 'profile.dart';
 import 'learn_log.dart';
 import 'medal.dart';
 import 'equations.dart' show equationLengths;
@@ -3242,6 +3243,33 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// The player's name and avatar (see profile.dart).
+  Profile profile = Profile();
+
+  void setProfile(Profile p) {
+    profile = p;
+    _saveProfile();
+    notifyListeners();
+  }
+
+  void _saveProfile() {
+    try {
+      _w('profile', _prefs?.setString('profile', jsonEncode(profile.toJson())));
+    } catch (e) {
+      appLog.w('profile', 'could not save the profile: ${e.runtimeType}');
+    }
+  }
+
+  void _readProfile(SharedPreferences p) {
+    final raw = p.getString('profile');
+    if (raw == null) return;
+    try {
+      profile = Profile.fromJson(jsonDecode(raw));
+    } catch (e) {
+      appLog.w('profile', 'the profile could not be read: ${e.runtimeType}');
+    }
+  }
+
   void _saveMyDailies() {
     try {
       _w(
@@ -3642,6 +3670,7 @@ class AppState extends ChangeNotifier {
       _readCollection(p);
       _readLex(p);
       _readMyDailies(p);
+      _readProfile(p);
       newUi = p.getBool('newUi') ?? false;
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a

@@ -2,30 +2,24 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
-import 'ladder.dart';
 import 'main.dart';
+import 'profile_sheet.dart';
 import 'routes.dart';
 import 'streak_week.dart';
 import 'ui.dart';
 
 /// The fourth tab: the week's streak, the theme, and the doors to the
 /// achievements, lex, reminders, playstyle, history and friends. A new player
-/// sees a door once the ladder has opened it (see [ladder]).
+/// sees a door once enough games are played.
 class YouPage extends StatelessWidget {
   const YouPage({super.key, required this.onReplayFirstGame});
 
   /// The help button: play the first game again.
   final VoidCallback onReplayFirstGame;
 
-  /// Whether the ladder step called [name] is open to this player.
-  static bool _open(String name) {
-    if (appState.lex.veteran) return true;
-    final played = appState.stats.played;
-    for (final s in ladder) {
-      if (s.name == name) return played >= s.games;
-    }
-    return true;
-  }
+  /// Whether the player has played [games] games (a veteran sees all).
+  static bool _from(int games) =>
+      appState.lex.veteran || appState.stats.played >= games;
 
   void _push(BuildContext context, String route) {
     try {
@@ -90,6 +84,30 @@ class YouPage extends StatelessWidget {
                         onPressed: () => _push(context, Routes.settings),
                       ),
                     ],
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: InkWell(
+                      key: const ValueKey('you-chip'),
+                      onTap: () => showProfileSheet(context),
+                      child: SizedBox(
+                        height: 44,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ProfileAvatar(appState.profile, size: 28),
+                            const SizedBox(width: 8),
+                            Text(appState.profile.name),
+                            const SizedBox(width: 2),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 20,
+                              color: c.onSurface.withValues(alpha: dimAlpha),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   const StreakWeek(),
@@ -169,7 +187,7 @@ class YouPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (_open('achievements'))
+                  if (_from(3))
                     _row(
                       context,
                       'achievements',
@@ -188,14 +206,15 @@ class YouPage extends StatelessWidget {
                       trailing: '${appState.lexBalance}',
                       onTap: () => _push(context, Routes.lex),
                     ),
-                  _row(
-                    context,
-                    'reminders',
-                    'reminders',
-                    'a ping when your dailies open',
-                    onTap: () => showToast(context, 'reminders are next'),
-                  ),
-                  if (_open('your numbers'))
+                  if (_from(2))
+                    _row(
+                      context,
+                      'reminders',
+                      'reminders',
+                      'a ping when your dailies open',
+                      onTap: () => showToast(context, 'reminders are next'),
+                    ),
+                  if (_from(5))
                     _row(
                       context,
                       'playstyle',
@@ -205,7 +224,7 @@ class YouPage extends StatelessWidget {
                           : '${style.name} · from your last 100 games',
                       onTap: () => _push(context, Routes.playstyle),
                     ),
-                  if (_open('your numbers'))
+                  if (_from(5))
                     _row(
                       context,
                       'history',
@@ -213,14 +232,15 @@ class YouPage extends StatelessWidget {
                       null,
                       onTap: () => _push(context, Routes.history),
                     ),
-                  _row(
-                    context,
-                    'friends',
-                    'friends and social',
-                    'coming in an upcoming release',
-                    onTap: () =>
-                        showToast(context, 'coming in an upcoming release'),
-                  ),
+                  if (_from(5))
+                    _row(
+                      context,
+                      'friends',
+                      'friends and social',
+                      'coming in an upcoming release',
+                      onTap: () =>
+                          showToast(context, 'coming in an upcoming release'),
+                    ),
                 ],
               ),
             ),
