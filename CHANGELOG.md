@@ -13,6 +13,11 @@ it to the version.
   They no longer open the whole settings page. The achievements row shows the lex pill.
 - learn, history and playstyle: mode pills in one scrolling row
   The row scrolls sideways with its edges faded only where there is more. Learn gets its own mode pills.
+- today: a finished daily opens its game over screen
+  Tapping a solved or missed daily on today showed a placeholder message instead of the game. It opens the finished game, with its game over and review screens, again.
+
+- lex chip: readable in dark and black
+  The gem and number sit on a deeper green with a lighter yellow, so they no longer wash out. Light is unchanged.
 
 ## 0.10.1
 
