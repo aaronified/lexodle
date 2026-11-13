@@ -115,7 +115,10 @@ WordInfo? parseDutch(
             node.querySelector('a[href*="Genus"]') != null) {
           // "het water o": the article, the word and the genus (m, v, o, m/v)
           final g = squash(
-            node.querySelectorAll('a[href*="Genus"]').map((x) => x.text).join(' '),
+            node
+                .querySelectorAll('a[href*="Genus"]')
+                .map((x) => x.text)
+                .join(' '),
           );
           c.gender = switch (g) {
             'o' => 'n',
@@ -133,7 +136,10 @@ WordInfo? parseDutch(
           t = t.replaceFirst(RegExp(r'^\[[^\]]*\]\s*'), '');
           t = t.replaceFirst(RegExp(r'^(\([^)]*\)\s*)+'), '');
           for (final w in t.split(RegExp(r'[,;]'))) {
-            addNym(mode == 'syn' ? syn : ant, w.replaceAll(RegExp(r'\s*\(\d+\)$'), ''));
+            addNym(
+              mode == 'syn' ? syn : ant,
+              w.replaceAll(RegExp(r'\s*\(\d+\)$'), ''),
+            );
           }
         }
     }

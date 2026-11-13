@@ -5,6 +5,17 @@ import 'package:html/dom.dart' show Element, Text;
 import 'package:html/parser.dart' as html;
 import 'package:http/http.dart' as http;
 
+import 'wikt/cs.dart';
+import 'wikt/da.dart';
+import 'wikt/de.dart';
+import 'wikt/hu.dart';
+import 'wikt/id.dart';
+import 'wikt/nb.dart';
+import 'wikt/nl.dart';
+import 'wikt/pl.dart';
+import 'wikt/sv.dart';
+import 'wikt/tr.dart';
+
 /// A usage example of one sense, with its translation when Wiktionary gives one.
 class Example {
   const Example(this.text, [this.translation = '']);
@@ -357,6 +368,16 @@ const _english = Edition('en.wiktionary.org', 'wiktionary ↗');
 /// own language. A language that is not here uses the English edition.
 const editions = <String, Edition>{
   'fr': Edition('fr.wiktionary.org', 'wiktionnaire ↗', parseFrench),
+  'de': Edition('de.wiktionary.org', 'wiktionary ↗', parseGerman),
+  'nl': Edition('nl.wiktionary.org', 'wikiwoordenboek ↗', parseDutch),
+  'sv': Edition('sv.wiktionary.org', 'wiktionary ↗', parseSwedish),
+  'da': Edition('da.wiktionary.org', 'wiktionary ↗', parseDanish),
+  'nb': Edition('no.wiktionary.org', 'wiktionary ↗', parseNorwegian),
+  'pl': Edition('pl.wiktionary.org', 'wikisłownik ↗', parsePolish),
+  'cs': Edition('cs.wiktionary.org', 'wikislovník ↗', parseCzech),
+  'tr': Edition('tr.wiktionary.org', 'vikisözlük ↗', parseTurkish),
+  'id': Edition('id.wiktionary.org', 'wikikamus ↗', parseIndonesian),
+  'hu': Edition('hu.wiktionary.org', 'wikiszótár ↗', parseHungarian),
 };
 
 Edition editionOf(String lang) => editions[lang] ?? _english;

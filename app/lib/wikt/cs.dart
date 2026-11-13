@@ -94,11 +94,10 @@ WordInfo? parseCzech(
     if (!inCs) continue;
 
     if (mode == 'pron') {
-      // one transcription per line: "(oblastně)" variants follow it on the
-      // same line and are left out
-      for (final li in node.querySelectorAll('li')) {
+      // lines marked "(oblastně)" are regional variants and are left out
+      for (final li in node.children.where((x) => x.localName == 'li')) {
         final e = li.querySelector('span.IPA');
-        if (e == null) continue;
+        if (e == null || li.querySelector('span.priznaky') != null) continue;
         final t = squash(e.text);
         if (t.isNotEmpty && !ipa.contains(t) && ipa.length < 3) ipa.add(t);
       }
@@ -181,4 +180,3 @@ class _CsBlock {
   String gender = '', forms = '';
   final senses = <Sense>[];
 }
-

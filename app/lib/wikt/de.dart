@@ -52,9 +52,8 @@ WordInfo? parseGerman(
       } else if (inGerman && h.localName == 'h3') {
         // "Substantiv, f": the part of speech, then the gender in <em>
         final a = h.querySelector('a');
-        final pos = squash(
-          a != null ? a.text : h.text.split(',').first,
-        ).toLowerCase();
+        final pos = squash(a != null ? a.text : h.text.split(',').first)
+            .toLowerCase();
         final gender = squash(
           [for (final g in h.querySelectorAll('em')) g.text].join(' '),
         );
@@ -143,7 +142,8 @@ WordInfo? parseGerman(
           if (text.isEmpty) continue;
           for (final s in c.senses) {
             if (nums.contains(s.number) || nums.contains('*')) {
-              if (s.examples.length < maxExamples) s.examples.add(Example(text));
+              if (s.examples.length < maxExamples)
+                s.examples.add(Example(text));
             }
           }
         }
@@ -231,13 +231,9 @@ bool _inItalic(Element a, Element stop) {
 /// The headword's inflection table as one short line: a noun's plural, a
 /// verb's preterite and past participle, an adjective's comparison.
 String _forms(Element table) {
-  final heads = [
-    for (final x in table.querySelectorAll('th')) squash(x.text),
-  ];
-  String cell(Element td) => squash(td.text).replaceFirst(
-    RegExp(r'^(der|die|das|am)\s+', caseSensitive: false),
-    '',
-  );
+  final heads = [for (final x in table.querySelectorAll('th')) squash(x.text)];
+  String cell(Element td) => squash(td.text)
+      .replaceFirst(RegExp(r'^(der|die|das|am)\s+', caseSensitive: false), '');
   final rows = table.querySelectorAll('tr');
   if (heads.contains('Plural') && heads.contains('Nominativ')) {
     for (final r in rows) {
@@ -274,9 +270,9 @@ String _forms(Element table) {
       if (tds.isNotEmpty && part.isEmpty && heads.contains('Partizip II')) {
         final head = r.previousElementSibling;
         if (head != null &&
-            head.querySelectorAll('th').any(
-              (x) => squash(x.text) == 'Partizip II',
-            )) {
+            head
+                .querySelectorAll('th')
+                .any((x) => squash(x.text) == 'Partizip II')) {
           part = squash(tds.first.text);
         }
       }

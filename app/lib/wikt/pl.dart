@@ -19,7 +19,8 @@ final _plNumber = RegExp(r'^\(\s*([\d.,\s\-–]+?)\s*\)\s*');
 Set<String> plSenseKeys(String label) {
   final keys = <String>{};
   for (final part in label.split(',')) {
-    final m = RegExp(r'^\s*(\d+)\.(\d+)(?:\s*[-–]\s*(\d+))?\s*$').firstMatch(part);
+    final m = RegExp(r'^\s*(\d+)\.(\d+)(?:\s*[-–]\s*(\d+))?\s*$')
+        .firstMatch(part);
     if (m == null) continue;
     final a = int.parse(m.group(2)!);
     final b = int.tryParse(m.group(3) ?? '') ?? a;
@@ -127,7 +128,11 @@ WordInfo? parsePolish(
       for (final e in node.querySelectorAll('span.ipa')) {
         // the line reads "IPA: [..], AS: [..]": only the first is the IPA
         Element? label;
-        for (var p = e.previousElementSibling; p != null; p = p.previousElementSibling) {
+        for (
+          var p = e.previousElementSibling;
+          p != null;
+          p = p.previousElementSibling
+        ) {
           if (p.localName == 'a') {
             label = p;
             break;
@@ -204,8 +209,14 @@ WordInfo? parsePolish(
       for (final dd in dds) {
         final copy = without(dd, 'sup,style,link');
         var t = squash(copy.text);
-        t = t.replaceFirst(_plNumber, '').replaceAll(RegExp(r'\s*\[\s*\d+\s*\]'), '');
-        t = t.replaceAll(' ,', ',').replaceAll(' .', '.').replaceAll('( ', '(').replaceAll(' )', ')');
+        t = t
+            .replaceFirst(_plNumber, '')
+            .replaceAll(RegExp(r'\s*\[\s*\d+\s*\]'), '');
+        t = t
+            .replaceAll(' ,', ',')
+            .replaceAll(' .', '.')
+            .replaceAll('( ', '(')
+            .replaceAll(' )', ')');
         if (t.isNotEmpty) {
           etymology = shorten(t, 220);
           break;
@@ -223,7 +234,11 @@ WordInfo? parsePolish(
       final s = b.senses[i];
       final ex = examples[b.keys[i]] ?? const <Example>[];
       p.senses.add(
-        Sense(s.text, labels: s.labels, examples: ex.take(maxExamples).toList()),
+        Sense(
+          s.text,
+          labels: s.labels,
+          examples: ex.take(maxExamples).toList(),
+        ),
       );
     }
     out.add(p);

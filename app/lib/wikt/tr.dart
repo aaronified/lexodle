@@ -99,12 +99,18 @@ WordInfo? parseTurkish(
     } else if (mode == 'ety' && etymology.isEmpty && node.localName == 'p') {
       // the Arabic and Ottoman spellings are left out, their transcriptions
       // stay
-      final t = squash(
-        without(
-          node,
-          'sup,style,[lang=ar],[lang=ota],[lang=fa],.mention-gloss-double-quote',
-        ).text,
-      ).replaceAll('\u200e', '').replaceAll(RegExp(r'\s+'), ' ').replaceAll(RegExp(r'\s*\(\s*\)'), '').replaceAll('( ', '(').replaceAll(' )', ')');
+      final t =
+          squash(
+                without(
+                  node,
+                  'sup,style,[lang=ar],[lang=ota],[lang=fa],.mention-gloss-double-quote',
+                ).text,
+              )
+              .replaceAll('\u200e', '')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .replaceAll(RegExp(r'\s*\(\s*\)'), '')
+              .replaceAll('( ', '(')
+              .replaceAll(' )', ')');
       if (t.isNotEmpty) etymology = shorten(t, 220);
     } else if (mode == 'pos' && current != null) {
       if (node.localName == 'p' && node.querySelector('.headword') != null) {

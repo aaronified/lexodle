@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/wikt/da.dart';
 import 'package:lexodle/wikt/de.dart';
+import 'package:lexodle/wikt/nb.dart';
 import 'package:lexodle/wikt/nl.dart';
 import 'package:lexodle/wikt/sv.dart';
 import 'package:lexodle/wiktionary.dart';
 
-String fixture(String name) => File('test/fixtures/$name.html').readAsStringSync();
+String fixture(String name) =>
+    File('test/fixtures/$name.html').readAsStringSync();
 
 /// Everything a parsed entry shows, for checks that something is left out.
 String everything(WordInfo i) => i.toJson().toString();
@@ -174,6 +177,130 @@ void main() {
       expect(
         parseSwedish(
           '<div class="mw-parser-output"><div class="mw-heading mw-heading2"><h2 id="Franska">Franska</h2></div></div>',
+          'u',
+        ),
+        isNull,
+      );
+    });
+  });
+
+  group('danish edition', () {
+    WordInfo da(String w) => parseDanish(fixture('da-wikt-$w'), 'u')!;
+
+    test('aften: ipa, gender, plural, label, nyms, etymology', () {
+      final i = da('aften');
+      expect(i.ipa.first, '/aftən/');
+      expect(i.ipa, contains('[ˈɑfd̥ən]'));
+      final b = i.blocks.first;
+      expect(b.pos, 'substantiv');
+      expect(b.gender, 'c');
+      expect(b.forms, 'flertal aftener, aftner');
+      expect(b.senses[1].labels, ['astronomisk']);
+      expect(b.senses[1].text, startsWith('Tidsrummet'));
+      expect(i.synonyms, ['kvæld']);
+      expect(i.antonyms, ['morgen', 'dag']);
+      expect(i.etymology, 'Fra oldnordisk aptann.');
+    });
+
+    test('finde: a one-sense verb, nothing else on the page', () {
+      final i = da('finde');
+      expect(i.blocks.single.pos, 'verbum');
+      expect(i.blocks.single.senses.length, 1);
+      expect(i.ipa, isEmpty);
+      expect(i.audio, isNull);
+      expect(i.synonyms, isEmpty);
+    });
+
+    test('lille: no definition yet, the forms and antonym still show', () {
+      final i = da('lille');
+      expect(i.isEmpty, isFalse);
+      expect(i.blocks.first.pos, 'adjektiv');
+      expect(i.blocks.first.forms, contains('komparativ mindre'));
+      expect(i.blocks.first.forms, contains('superlativ mindst'));
+      expect(i.blocks.first.senses, isEmpty);
+      expect(i.antonyms, ['stor']);
+    });
+
+    test('the section stops at the next language heading', () {
+      final page = fixture('da-wikt-aften').replaceFirst(
+        RegExp(r'</div>\s*$'),
+        '<div class="mw-heading mw-heading2"><h2 id="Engelsk">Engelsk</h2></div>'
+        '<div class="mw-heading mw-heading3"><h3 id="Substantiv">Substantiv</h3></div>'
+        '<p><b>aften</b></p><ol><li>english sense</li></ol></div>',
+      );
+      final i = parseDanish(page, 'u')!;
+      expect(i.blocks.length, 1);
+      expect(everything(i), isNot(contains('english sense')));
+    });
+
+    test('a page with no danish section gives nothing', () {
+      expect(
+        parseDanish(
+          '<div class="mw-parser-output"><div class="mw-heading mw-heading2"><h2 id="Norsk">Norsk</h2></div></div>',
+          'u',
+        ),
+        isNull,
+      );
+    });
+  });
+
+  group('norwegian edition', () {
+    WordInfo nb(String w) => parseNorwegian(fixture('nb-wikt-$w'), 'u')!;
+
+    test('skole: gender, bokmål plural row, examples, audio, etymology', () {
+      final i = nb('skole');
+      expect(i.audio, endsWith('/Nb-skole.oga/Nb-skole.oga.mp3'));
+      final b = i.blocks.first;
+      expect(b.pos, 'substantiv');
+      expect(b.gender, 'm');
+      expect(b.forms, 'flertall skoler'); // not the nynorsk "skolar"
+      expect(b.senses[1].examples.first.text, 'Hvor ligger denne skolen hen?');
+      expect(i.blocks[1].pos, 'verb');
+      expect(i.blocks[1].forms, startsWith('presens skoler'));
+      expect(i.etymology, startsWith('Fra norrønt skóli'));
+    });
+
+    test('bruke: verb forms of the bokmål row, synonyms without nynorsk', () {
+      final i = nb('bruke');
+      expect(
+        i.blocks.first.forms,
+        'presens bruker, preteritum brukte, perfektum har brukt',
+      );
+      expect(i.synonyms, containsAll(['pleie', 'nytte', 'anvende']));
+      expect(i.synonyms, isNot(contains('pla')));
+      expect(i.etymology, 'Frå nedertysk bruken');
+    });
+
+    test('liten: ipa from the pronunciation line, comparison, nyms', () {
+      final i = nb('liten');
+      expect(i.ipa, ["['liː.tⁿn̩]"]);
+      expect(i.blocks.first.forms, 'komparativ mindre, superlativ minst');
+      expect(i.synonyms, ['mini', 'ung']);
+      expect(i.antonyms, ['stor', 'diger']);
+    });
+
+    test('the section stops at the next language heading', () {
+      expect(nb('liten').blocks.length, 1); // "Svensk" follows
+      expect(everything(nb('skole')), isNot(contains('skool')));
+    });
+
+    test('a nynorsk-only part of speech is left out', () {
+      expect(
+        parseNorwegian(
+          '<div class="mw-parser-output"><div class="mw-heading mw-heading2"><h2 id="Norsk">Norsk</h2></div>'
+              '<div class="mw-heading mw-heading3"><h3 id="Verb">Verb</h3></div>'
+              '<p><b>gjera</b> (<span style="font-variant:small-caps">nynorsk</span>)</p>'
+              '<ol><li>utføre</li></ol></div>',
+          'u',
+        ),
+        isNull,
+      );
+    });
+
+    test('a page with no norwegian section gives nothing', () {
+      expect(
+        parseNorwegian(
+          '<div class="mw-parser-output"><div class="mw-heading mw-heading2"><h2 id="Dansk">Dansk</h2></div></div>',
           'u',
         ),
         isNull,

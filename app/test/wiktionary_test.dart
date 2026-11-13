@@ -105,7 +105,11 @@ void main() {
         'wiktionary ↗',
       );
       expect(editionOf('fr').host, 'fr.wiktionary.org');
-      expect(editionOf('de').host, 'en.wiktionary.org');
+      expect(editionOf('de').host, 'de.wiktionary.org');
+      expect(editionOf('nb').host, 'no.wiktionary.org');
+      // a language with no edition of its own keeps the English one
+      expect(editionOf('xx').host, 'en.wiktionary.org');
+      expect(editionOf('en').host, 'en.wiktionary.org');
     });
 
     test('en goes to en.wiktionary.org, fr to fr.wiktionary.org', () async {

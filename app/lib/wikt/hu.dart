@@ -17,6 +17,8 @@ const _huNotPos = {
   'szólások, közmondások',
   'ragozás',
   'jegyzetek',
+  'forrás',
+  'források',
   'külső hivatkozások',
 };
 
@@ -105,7 +107,10 @@ WordInfo? parseHungarian(
     } else if (mode == 'ety' && etymology.isEmpty) {
       if (node.localName == 'p' || node.localName == 'ul') {
         final t = squash(
-          without(node.localName == 'ul' ? node.querySelector('li') ?? node : node, 'sup,style').text,
+          without(
+            node.localName == 'ul' ? node.querySelector('li') ?? node : node,
+            'sup,style',
+          ).text,
         );
         if (t.isNotEmpty) etymology = shorten(t, 220);
       }
