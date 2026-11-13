@@ -9,7 +9,16 @@ const equationLengths = [6, 7, 8];
 
 /// The length of the daily equation, and its tries.
 const equationDailyLength = 8;
-const equationDailyTries = 6;
+const equationDailyTries = 5;
+
+/// The tries of an equation game, easy to brutal: a guess can test many numbers
+/// at once, so it gets fewer than a word does. The daily is the normal one.
+const equationTriesLevels = <(String name, int tries)>[
+  ('easy', 7),
+  ('normal', 5),
+  ('hard', 4),
+  ('brutal', 3),
+];
 
 /// What a character is drawn as: the times, divide and minus signs for the
 /// ASCII ones; every other character is itself.

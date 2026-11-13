@@ -251,6 +251,7 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           if (mode == GameMode.equations)
                             DifficultyMatrix(
                               key: const ValueKey('equations-matrix'),
+                              levels: equationTriesLevels,
                               tries: appState.tries,
                               length: appState.eqLength,
                               lengths: equationLengths,

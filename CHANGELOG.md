@@ -17,6 +17,20 @@ it to the version.
   hold (formula awaiting confirmation); new players see lex from their 10th
   game. The backup carries the balance and the ledger.
 
+- new look (preview): today, words, learn and you as tabs
+  Switch it on in the settings. Today lists your dailies, with the state of
+  each in words and a streak; you choose which dailies are yours. The you tab
+  has the streak week (with a month view), the theme, and your numbers.
+  Unfinished: the old home page stays until the new screens are done.
+- equations get fewer tries: easy 7, normal 5, hard 4, brutal 3
+  A guess can test a lot of numbers at once, so the daily (normal) has 5 tries,
+  not 6, and the difficulty grid of the equations says 7, 5, 4 and 3.
+- history: a days range beside weeks and months
+  The plot can show the last 50 days. Weeks and months are unchanged.
+- achievements: the recent ones first, and sorting
+  The three achievements earned most recently sit on top, and the list can be
+  sorted by closest to the next level, by medal, or a to z.
+
 ## 0.9.0
 
 - my words: save words, and collect every word you win

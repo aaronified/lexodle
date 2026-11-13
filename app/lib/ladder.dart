@@ -58,12 +58,6 @@ const ladder = <LadderStep>[
     'save and collect the words you meet',
   ),
   LadderStep(
-    10,
-    StepKind.feature,
-    'hints and lex',
-    'the lamp opens on the board',
-  ),
-  LadderStep(
     12,
     StepKind.mode,
     'relay race',
@@ -110,7 +104,7 @@ int gamesToOpen(GameMode m) {
 
 /// Whether [m] is open to a player with [games] played ([veteran]: everything).
 bool isOpen(GameMode m, int games, {bool veteran = false}) =>
-    veteran || games >= gamesToOpen(m);
+    veteran || m == GameMode.classic || games >= gamesToOpen(m);
 
 /// The modes open to a player with [games] played, in the app's own order.
 List<GameMode> openModes(int games, {bool veteran = false}) => [

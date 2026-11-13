@@ -42,6 +42,17 @@ class SettingsPage extends StatelessWidget {
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                   children: [
+                    SwitchListTile(
+                      key: const ValueKey('new-look'),
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('new look (preview)'),
+                      subtitle: const Text(
+                        'today, words, learn and you as tabs. unfinished.',
+                      ),
+                      value: appState.newUi,
+                      onChanged: appState.setNewUi,
+                    ),
+                    const SizedBox(height: 10),
                     const Caption('theme'),
                     const SizedBox(height: 10),
                     StepperChoice<int>(

@@ -15,6 +15,7 @@ import 'history.dart';
 import 'clue.dart' show clueRoundLength;
 import 'collection.dart';
 import 'lex.dart';
+import 'my_dailies.dart';
 import 'learn_log.dart';
 import 'medal.dart';
 import 'equations.dart' show equationLengths;
@@ -789,7 +790,12 @@ final achievements = <Achievement>[
     'collected',
     _lv(
       [10, 50, 250, allWords],
-      ['first trophies', 'a shelf of words', 'a cabinet of words', 'every word'],
+      [
+        'first trophies',
+        'a shelf of words',
+        'a cabinet of words',
+        'every word',
+      ],
     ),
   ),
   Achievement.leveled(
@@ -2342,15 +2348,8 @@ List<Achievement> advanceAchievements(
 }) {
   final earned = <Achievement>[];
   void ensureHits(Achievement a, AchState st) => _ensureHits(a, st);
-  void earnLevels(Achievement a, AchState st, {double? count}) => _earnLevels(
-    earned,
-    a,
-    st,
-    today,
-    languages,
-    count: count,
-    words: words,
-  );
+  void earnLevels(Achievement a, AchState st, {double? count}) =>
+      _earnLevels(earned, a, st, today, languages, count: count, words: words);
 
   for (final a in allAchievements) {
     final st = states.putIfAbsent(a.id, AchState.new);
@@ -3113,9 +3112,10 @@ class AppState extends ChangeNotifier {
   int get lexBalance => lex.balance;
   int get freeHints => lex.freeHints;
 
-  /// Whether the player sees lex: a veteran from the start, a new player from
-  /// their [lexUnlockGames]th game.
-  bool get lexUnlocked => lex.veteran || stats.played >= lexUnlockGames;
+  /// Whether the player sees lex: a veteran from the start, a new player once
+  /// the first game has taught it. It is earned from the first achievement
+  /// either way.
+  bool get lexUnlocked => lex.veteran || stats.played >= 1;
 
   /// Once, at the first start with lex: the veteran's starting grant from the
   /// achievements already held (see [veteranGrant]; history is never replayed).
@@ -3183,6 +3183,83 @@ class AppState extends ChangeNotifier {
       lex = Lex.fromJson(jsonDecode(raw));
     } catch (e) {
       appLog.w('lex', 'the lex could not be read: ${e.runtimeType}');
+    }
+  }
+
+  /// The new look (preview): today, words, learn and you as four tabs. Off until
+  /// the screens are finished.
+  bool newUi = false;
+
+  void setNewUi(bool on) {
+    newUi = on;
+    try {
+      _w('newUi', _prefs?.setBool('newUi', on));
+    } catch (e) {
+      appLog.w('store', 'could not save the new look: ${e.runtimeType}');
+    }
+    notifyListeners();
+  }
+
+  /// The dailies the player chose to play, per language (see my_dailies.dart):
+  /// Today shows these, and "done for the day" means all of them.
+  MyDailies myDailies = MyDailies();
+
+  List<GameMode> dailiesOf(String l) => myDailies.of(l);
+
+  /// Adds or drops [m] from the dailies of [l]; false when it is the last one
+  /// (one always stays).
+  bool chooseDaily(String l, GameMode m, {required bool on}) {
+    try {
+      final changed = on ? myDailies.add(l, m) : myDailies.remove(l, m);
+      if (changed) {
+        _saveMyDailies();
+        notifyListeners();
+      }
+      return on ? true : changed;
+    } catch (e) {
+      appLog.w('dailies', 'could not change the dailies: ${e.runtimeType}');
+      return false;
+    }
+  }
+
+  /// A veteran meeting the choice for the first time: each language they played
+  /// starts from the dailies that have a streak.
+  void _startMyDailies() {
+    try {
+      if (stats.played == 0) return;
+      var changed = false;
+      for (final l in playedLanguages) {
+        if (myDailies.decided(l)) continue;
+        myDailies.startFrom(l, [
+          for (final m in GameMode.values)
+            if (m.hasDaily && dailyLogOf(l, m).isNotEmpty) m,
+        ]);
+        changed = true;
+      }
+      if (changed) _saveMyDailies();
+    } catch (e) {
+      appLog.w('dailies', 'could not start the dailies: ${e.runtimeType}');
+    }
+  }
+
+  void _saveMyDailies() {
+    try {
+      _w(
+        'myDailies',
+        _prefs?.setString('myDailies', jsonEncode(myDailies.toJson())),
+      );
+    } catch (e) {
+      appLog.w('dailies', 'could not save the dailies: ${e.runtimeType}');
+    }
+  }
+
+  void _readMyDailies(SharedPreferences p) {
+    final raw = p.getString('myDailies');
+    if (raw == null) return;
+    try {
+      myDailies = MyDailies.fromJson(jsonDecode(raw));
+    } catch (e) {
+      appLog.w('dailies', 'the dailies could not be read: ${e.runtimeType}');
     }
   }
 
@@ -3564,6 +3641,8 @@ class AppState extends ChangeNotifier {
       _readWords(p);
       _readCollection(p);
       _readLex(p);
+      _readMyDailies(p);
+      newUi = p.getBool('newUi') ?? false;
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
       // first start of this version, or it was lost) it is done again.
@@ -3579,6 +3658,7 @@ class AppState extends ChangeNotifier {
         }
       }
       _activateLex();
+      _startMyDailies();
       appLog.i(
         'store',
         'load ends: version ${p.getString('lastRunVersion')}, '

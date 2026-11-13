@@ -106,7 +106,7 @@ void main() {
       final b = Daily.of(bank, '2026-11-04', GameMode.equations)!;
       expect(a.answer, b.answer);
       expect(a.length, 8);
-      expect(a.tries, 6);
+      expect(a.tries, 5);
       expect(bank.valid, contains(a.answer));
       expect(equationProblem(a.answer), isNull);
       // it is the same in another language
@@ -127,7 +127,7 @@ void main() {
           )!.answer,
       };
       expect(days.length, greaterThan(15));
-      expect(dailyTriesOf(GameMode.equations), 6);
+      expect(dailyTriesOf(GameMode.equations), 5);
     });
 
     test('the bank takes every character of an equation', () async {

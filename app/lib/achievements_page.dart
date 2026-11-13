@@ -30,6 +30,10 @@ class _AchievementsPageState extends State<AchievementsPage> {
   Map<String, Language> _langs = {};
   Medal? _medal;
 
+  /// The sort of the list: one of [_sorts], or null for the page's own order.
+  String? _sort;
+  static const _sorts = ['closest', 'medal', 'a to z'];
+
   @override
   void initState() {
     super.initState();
@@ -136,12 +140,26 @@ class _AchievementsPageState extends State<AchievementsPage> {
   }
 
   /// What is listed, by section (each keeps its own order), under the medal
-  /// filter.
-  List<Achievement> _shown(Map<String, AchState> mine) {
+  /// filter; under a sort, in that order instead, whatever the section.
+  List<Achievement> _shown(
+    Map<String, AchState> mine, {
+    int languages = 0,
+    int words = 0,
+  }) {
     final list = [
       for (final a in achievements)
         if (_medal == null || _topMedal(mine, a) == _medal) a,
     ];
+    final sort = _sort;
+    if (sort != null) {
+      return sortAchievements(
+        list,
+        mine,
+        sort,
+        languages: languages,
+        words: words,
+      );
+    }
     // a stable sort: within a section the order is the one they are defined in
     return [
       for (final sec in _sections)
@@ -209,6 +227,11 @@ class _AchievementsPageState extends State<AchievementsPage> {
               final learned = {
                 for (final e in appState.learnLog.events) e.language,
               }.toList()..sort();
+              final shown = _shown(
+                mine,
+                languages: _langs.length,
+                words: all ? 0 : appState.wordsOf(_lang),
+              );
               return ListView(
                 padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
                 children: [
@@ -219,6 +242,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     showAll: true,
                     onSelect: (code) => setState(() => _lang = code),
                   ),
+                  _Recent(mine, DateTime.now()),
                   const SizedBox(height: 12),
                   Caption(
                     '${achievements.fold(0, (n, a) => n + (mine[a.id]?.times ?? 0))} of '
@@ -250,9 +274,25 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  for (final (i, a) in _shown(mine).indexed) ...[
-                    if (i == 0 ||
-                        _sectionOf(_shown(mine)[i - 1]) != _sectionOf(a))
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Caption('sort'),
+                      for (final o in _sorts)
+                        _SortPill(
+                          o,
+                          on: _sort == o,
+                          onTap: () =>
+                              setState(() => _sort = _sort == o ? null : o),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  for (final (i, a) in shown.indexed) ...[
+                    if (_sort == null &&
+                        (i == 0 || _sectionOf(shown[i - 1]) != _sectionOf(a)))
                       Padding(
                         padding: EdgeInsets.only(top: i == 0 ? 0 : 20),
                         child: Caption(_sectionOf(a)),
@@ -288,6 +328,177 @@ class _AchievementsPageState extends State<AchievementsPage> {
               );
             },
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// [list] in the order of [sort] ('closest', 'medal' or 'a to z'). Ties keep
+/// the order of [list].
+List<Achievement> sortAchievements(
+  List<Achievement> list,
+  Map<String, AchState> mine,
+  String sort, {
+  int languages = 0,
+  int words = 0,
+}) {
+  int done(Achievement a) => (mine[a.id]?.times ?? 0).clamp(0, a.count);
+  // how far the next level is: maxed ones last, ones with no count at 0
+  double ratio(Achievement a) {
+    final d = done(a);
+    if (d >= a.count && !a.cycles) return -1;
+    if (!a.numbered) return 0;
+    final next = a.cycles ? (mine[a.id]?.cycle ?? 0).clamp(0, a.count - 1) : d;
+    final t = a.targetAt(next, languages: languages, words: words);
+    return t <= 0 ? 0 : ((mine[a.id]?.value ?? 0) / t).clamp(0.0, 1.0);
+  }
+
+  String name(Achievement a) {
+    final d = done(a);
+    return (d == 0 ? a : a.atLevel(d - 1)).title.toLowerCase();
+  }
+
+  int medal(Achievement a) {
+    final d = done(a);
+    return d == 0 ? -1 : a.levels[d - 1].medal.index;
+  }
+
+  final order = {for (final (i, a) in list.indexed) a.id: i};
+  return List.of(list)..sort((x, y) {
+    final c = switch (sort) {
+      'closest' => ratio(y).compareTo(ratio(x)),
+      'medal' => medal(y).compareTo(medal(x)),
+      'a to z' => name(x).compareTo(name(y)),
+      _ => 0,
+    };
+    return c != 0 ? c : order[x.id]!.compareTo(order[y.id]!);
+  });
+}
+
+/// How long ago [day] ('yyyy-mm-dd') was from [now]: today, yesterday, or N
+/// days ago.
+String daysAgo(String day, DateTime now) {
+  final d = DateTime.tryParse(day);
+  if (d == null) return day;
+  final n = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).difference(DateTime(d.year, d.month, d.day)).inDays;
+  if (n <= 0) return 'today';
+  return n == 1 ? 'yesterday' : '$n days ago';
+}
+
+/// The three achievements earned most recently, each with its icon in the
+/// medal of the level reached; nothing when none is earned yet.
+class _Recent extends StatelessWidget {
+  const _Recent(this.mine, this.now);
+  final Map<String, AchState> mine;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final rows = [
+      for (final a in achievements)
+        if ((mine[a.id]?.times ?? 0) > 0 && mine[a.id]!.latest != null)
+          (a, mine[a.id]!),
+    ];
+    // newest first; the days are sorted text, ties keep the page's order
+    final order = {for (final (i, r) in rows.indexed) r.$1.id: i};
+    rows.sort((x, y) {
+      final d = y.$2.latest!.compareTo(x.$2.latest!);
+      return d != 0 ? d : order[x.$1.id]!.compareTo(order[y.$1.id]!);
+    });
+    if (rows.isEmpty) return const SizedBox.shrink();
+    return Column(
+      key: const ValueKey('recent'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 12),
+        const Caption('recent'),
+        for (final (a, st) in rows.take(3)) ...[
+          const Divider(),
+          Builder(
+            builder: (context) {
+              final lvl = a.atLevel(st.times.clamp(1, a.count) - 1);
+              final color = medalColor(c, lvl.medal);
+              return Padding(
+                key: ValueKey('recent-${a.id}'),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    TablerIcon(lvl.icon, size: 32, color: color),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  lvl.title,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                lvl.medal.name,
+                                style: TextStyle(fontSize: 11, color: color),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            lvl.description,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Caption(
+                      daysAgo(st.latest!, now),
+                      key: ValueKey('recent-when-${a.id}'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// One sort option of the list.
+class _SortPill extends StatelessWidget {
+  const _SortPill(this.label, {required this.on, required this.onTap});
+  final String label;
+  final bool on;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return InkWell(
+      key: ValueKey('sort-$label'),
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          border: Border.all(color: on ? c.primary : c.outlineVariant),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 12, color: on ? c.primary : c.onSurface),
         ),
       ),
     );
