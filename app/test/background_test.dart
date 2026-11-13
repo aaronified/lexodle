@@ -46,6 +46,8 @@ void main() {
     Wiktionary.reset();
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await appState.load();
+    // every step is open, so the game over panel shows all it has
+    appState.lex.veteran = true;
     appState.setup(lang: 'fr', length: 4, tries: 3, mode: GameMode.classic);
     bank = (await tester.runAsync(
       () async => WordBank.load(
@@ -252,12 +254,12 @@ void main() {
         // three tries used: the game is over, but its skills are not final yet
         expect(find.text('replay'), findsOneWidget);
         expect(appState.stats.played, before, reason: 'not recorded yet');
-        expect(find.textContaining('average skill …'), findsOneWidget);
+        expect(find.text('skill …'), findsOneWidget);
 
         await tester.pump(const Duration(seconds: 60));
         expect(appState.stats.played, before + 1);
-        expect(find.textContaining('average skill …'), findsNothing);
-        expect(find.textContaining('average skill'), findsOneWidget);
+        expect(find.text('skill …'), findsNothing);
+        expect(find.byKey(const ValueKey('measure-skill')), findsOneWidget);
       },
     );
 
@@ -286,11 +288,11 @@ void main() {
       }
       expect(find.text('replay'), findsOneWidget);
       expect(appState.stats.played, before, reason: 'waits for the analysis');
-      expect(find.textContaining('average skill …'), findsOneWidget);
+      expect(find.text('skill …'), findsOneWidget);
       await tester.pump(const Duration(seconds: 90));
       expect(appState.stats.played, before + 1);
-      expect(find.textContaining('average skill …'), findsNothing);
-      expect(find.textContaining('average skill'), findsOneWidget);
+      expect(find.text('skill …'), findsNothing);
+      expect(find.byKey(const ValueKey('measure-skill')), findsOneWidget);
     });
   });
 

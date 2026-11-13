@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/donate.dart';
 import 'package:lexodle/lex_widgets.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/you_page.dart';
@@ -113,6 +114,24 @@ void main() {
     await tester.pump();
     expect(row('solver'), findsOneWidget);
     expect(row('diy'), findsOneWidget);
+  });
+
+  testWidgets('the solver row says which mode it solves', (tester) async {
+    player(played: 500, veteran: true);
+    String sub() => (tester.widget<Text>(
+      find.descendant(of: row('solver'), matching: find.byType(Text)).last,
+    )).data!;
+    appState.setup(mode: GameMode.quartet);
+    await show(tester);
+    expect(sub(), 'for quartet');
+    // no solver for these modes: the classic one opens
+    for (final m in [GameMode.blind, GameMode.equations, GameMode.themed]) {
+      appState.setup(mode: m);
+      await show(tester);
+      expect(sub(), 'for classic', reason: '$m');
+    }
+    expect(solverModeOf(GameMode.lockdown), GameMode.lockdown);
+    expect(solverModeOf(GameMode.equations), GameMode.classic);
   });
 
   testWidgets('how to play and settings push their routes', (tester) async {
