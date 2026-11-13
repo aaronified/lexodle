@@ -75,9 +75,9 @@ class TodayPage extends StatelessWidget {
 
   static void _freePlay(BuildContext context) {
     try {
-      Navigator.pushNamed(context, Routes.gameModes);
+      Navigator.pushNamed(context, Routes.play);
     } catch (e) {
-      appLog.w('today', 'could not open the game modes: ${e.runtimeType}');
+      appLog.w('today', 'could not start a free game: ${e.runtimeType}');
     }
   }
 
@@ -400,7 +400,7 @@ class TodayPage extends StatelessWidget {
     'skill, luck and risk' => 'got it ›',
     'achievements' => 'see them ›',
     'your numbers' => 'see it ›',
-    'every mode' => 'see them ›',
+    'every mode' => 'got it ›',
     'my words' => 'open it ›',
     'learn' => 'try it ›',
     _ => s.mode != null ? 'how it works ›' : 'try it ›',
@@ -412,7 +412,6 @@ class TodayPage extends StatelessWidget {
       final route = switch (s.name) {
         'achievements' => Routes.achievements,
         'your numbers' => Routes.history,
-        'every mode' => Routes.gameModes,
         'my words' => Routes.words,
         'learn' => Routes.learn,
         _ => null,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/daily.dart';
+import 'package:lexodle/game_modes_dialog.dart';
 import 'package:lexodle/first_run/mode_lesson_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
@@ -245,7 +246,6 @@ void main() {
   testWidgets('each feature card goes to its page', (tester) async {
     final want = {
       5: Routes.history,
-      6: Routes.gameModes,
       9: Routes.words,
       24: Routes.learn,
     };
@@ -267,6 +267,31 @@ void main() {
       await tester.pumpAndSettle();
       expect(pushed, contains(e.value), reason: 'game ${e.key}');
     }
+  });
+
+  testWidgets('free play starts a free game of the mode in view', (
+    tester,
+  ) async {
+    veteran();
+    appState.setup(mode: GameMode.quartet);
+    final pushed = await showRouted(tester);
+    await tester.tap(find.byKey(const ValueKey('today-free-play')));
+    await tester.pumpAndSettle();
+    expect(pushed, contains(Routes.play));
+    expect(pushed, isNot(contains(Routes.gameModes)));
+    expect(find.byType(GameModesDialog), findsNothing);
+    expect(appState.mode, GameMode.quartet);
+  });
+
+  testWidgets('the every mode card only dismisses', (tester) async {
+    appState.stats.played = 6;
+    appState.lex.veteran = false;
+    final pushed = await showRouted(tester);
+    expect(find.text('got it ›'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('today-new-every mode')));
+    await tester.pumpAndSettle();
+    expect(pushed, isNot(contains(Routes.gameModes)));
+    expect(appState.introCardsDone, contains('every mode'));
   });
 
   testWidgets('a veteran sees no card', (tester) async {

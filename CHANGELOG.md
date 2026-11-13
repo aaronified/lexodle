@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- free play plays the mode in view
+  Free play on today no longer opens the mode menu: it starts a free game of the mode you are on. The mode menus come later, from the you tab. The every mode card now just dismisses.
+
 - today: free play stays on one line
   The free play button no longer wraps onto two lines on a narrow phone.
 
