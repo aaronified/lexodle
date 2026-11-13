@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_log.dart';
 import 'main.dart';
 import 'saved_words.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'word_info.dart';
 import 'wiktionary.dart';
@@ -109,6 +110,7 @@ class _WordPageState extends State<WordPage> {
             const Text('my words'),
           ],
         ),
+        actions: [const SettingsButton()],
       ),
       body: Center(
         child: ConstrainedBox(

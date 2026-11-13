@@ -86,11 +86,14 @@ void main() {
       expect(stepOpen('my words', 9), isTrue);
       expect(stepOpen('learn', 0, veteran: true), isTrue);
       for (final n in [
-        'theme', 'language', 'how to play', 'settings', 'backup',
+        'theme', 'language', 'settings', 'backup',
         "what's new", //
       ]) {
         expect(stepOpen(n, 0), isTrue, reason: n);
       }
+      expect(gamesOf('how to play'), 1);
+      expect(stepOpen('how to play', 0), isFalse);
+      expect(stepOpen('how to play', 1), isTrue);
       expect(stepOpen('reminders', 1), isFalse);
       expect(stepOpen('reminders', 2), isTrue);
       expect(stepOpen('friends', 5), isTrue);

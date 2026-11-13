@@ -54,7 +54,7 @@ class _HomeSwitchState extends State<HomeSwitch> {
       if (!appState.newUi) return const HomePage();
       if (_firstRun) _skipChangelog();
       if (_firstRun) return FirstRunFlow(screens: widget.screens);
-      return AppShell(screens: widget.screens);
+      return const AppShell();
     },
   );
 }
@@ -62,10 +62,7 @@ class _HomeSwitchState extends State<HomeSwitch> {
 /// Today, words, learn and you as four tabs; each page is a body and the pages
 /// they open are pushed over the shell as before.
 class AppShell extends StatefulWidget {
-  const AppShell({super.key, this.screens = const FirstRunScreens()});
-
-  /// The first game's screen, for the replay from you (a test puts a fake).
-  final FirstRunScreens screens;
+  const AppShell({super.key});
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -118,21 +115,13 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
-  void _replayFirstGame() {
-    try {
-      Navigator.of(context).push(practiceRoute(screens: widget.screens));
-    } catch (e) {
-      appLog.w('first-run', 'replay failed ${e.runtimeType}');
-    }
-  }
-
   /// The tabs the player has been taught: today and you always, words with
-  /// my words and learn with learn (see ladder.dart).
+  /// my words and learn with how to play (see ladder.dart).
   List<String> _visible() {
     return [
       'today',
       if (appState.stepOpen('my words')) 'words',
-      if (appState.stepOpen('learn')) 'learn',
+      if (appState.stepOpen('how to play')) 'learn',
       'you',
     ];
   }
@@ -159,10 +148,7 @@ class _AppShellState extends State<AppShell> {
             key: const ValueKey('tab-learn'),
             child: learnGate(builder: (bank) => LearnHomePage(bank: bank)),
           ),
-          _ => YouPage(
-            key: const ValueKey('tab-you'),
-            onReplayFirstGame: _replayFirstGame,
-          ),
+          _ => const YouPage(key: ValueKey('tab-you')),
         };
         return Scaffold(
           body: SafeArea(

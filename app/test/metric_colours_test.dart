@@ -8,7 +8,7 @@ import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/you_page.dart';
+import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/period_chart.dart';
 import 'package:lexodle/playstyle.dart';
@@ -453,15 +453,13 @@ void main() {
         appState.setup(themeMode: ThemeMode.system);
       });
 
-      testWidgets('the you tab offers light, dark, system and true black', (
+      testWidgets('the settings page offers light, dark, system and true black', (
         tester,
       ) async {
         await tester.binding.setSurfaceSize(const Size(420, 2200));
         addTearDown(() => tester.binding.setSurfaceSize(null));
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
-          ),
+          const MaterialApp(home: SettingsPage()),
         );
         await tester.pumpAndSettle();
         for (final label in ['light', 'dark', 'system']) {

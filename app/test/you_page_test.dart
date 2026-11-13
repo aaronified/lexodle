@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lexodle/donate.dart';
 import 'package:lexodle/lex_widgets.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
-import 'package:lexodle/settings_page.dart';
 import 'package:lexodle/you_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,13 +16,11 @@ void main() {
     appState.setup(themeMode: ThemeMode.system, black: false);
   });
 
-  Future<void> show(WidgetTester tester, {VoidCallback? onReplay}) async {
+  Future<void> show(WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 1700));
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: YouPage(onReplayFirstGame: onReplay ?? () {})),
-      ),
-    );
+    // a fresh tree each time: the page is const, so it would not rebuild
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(MaterialApp(home: const Scaffold(body: YouPage())));
     await tester.pump();
   }
 
@@ -38,7 +34,7 @@ void main() {
   testWidgets('a veteran sees every row', (tester) async {
     player(played: 500, veteran: true);
     await show(tester);
-    for (final id in ['achievements', 'reminders', 'history', 'friends']) {
+    for (final id in ['achievements', 'history', 'friends']) {
       expect(row(id), findsOneWidget, reason: id);
     }
     expect(find.text('coming in an upcoming release'), findsOneWidget);
@@ -51,59 +47,47 @@ void main() {
   ) async {
     player(played: played, veteran: false);
     await show(tester);
-    for (final id in ['achievements', 'reminders', 'history', 'friends']) {
+    for (final id in ['achievements', 'history', 'friends']) {
       expect(
         row(id),
         expected.contains(id) ? findsOneWidget : findsNothing,
         reason: '$id at game $played',
       );
     }
-    expect(find.text('theme'), findsOneWidget);
   }
 
   testWidgets('game 1 sees none of them', (t) => gated(t, 1, {}));
-  testWidgets('game 2 adds reminders', (t) => gated(t, 2, {'reminders'}));
-  testWidgets(
-    'game 3 adds achievements',
-    (t) => gated(t, 3, {'reminders', 'achievements'}),
-  );
+  testWidgets('game 3 adds achievements', (t) => gated(t, 3, {'achievements'}));
   testWidgets(
     'game 5 sees everything',
-    (t) => gated(t, 5, {'reminders', 'achievements', 'history', 'friends'}),
+    (t) => gated(t, 5, {'achievements', 'history', 'friends'}),
   );
 
-  testWidgets('the theme choice calls setup, and black needs dark', (
+  testWidgets('language is always there, the settings rows are gone', (
     tester,
   ) async {
     player(played: 500, veteran: true);
     await show(tester);
-    Switch sw() => tester.widget<Switch>(find.byType(Switch));
-    expect(sw().onChanged, isNull);
-    await tester.tap(find.text('dark'));
-    await tester.pumpAndSettle();
-    expect(appState.themeMode, ThemeMode.dark);
-    expect(sw().onChanged, isNotNull);
-    await tester.tap(find.byType(Switch));
-    await tester.pumpAndSettle();
-    expect(appState.blackTheme, isTrue);
-    await tester.tap(find.text('light'));
-    await tester.pumpAndSettle();
-    expect(appState.themeMode, ThemeMode.light);
-    expect(appState.blackTheme, isFalse);
+    expect(row('language'), findsOneWidget);
+    for (final id in [
+      'reminders',
+      'backup',
+      'support',
+      'whatsnew',
+      'settings',
+      'theme',
+    ]) {
+      expect(row(id), findsNothing, reason: id);
+    }
+    expect(find.byKey(const ValueKey('theme-dark')), findsNothing);
+    player(played: 0, veteran: false);
+    await show(tester);
+    expect(row('language'), findsOneWidget);
+    expect(row('howto'), findsNothing);
+    expect(find.byKey(const ValueKey('you-help')), findsNothing);
+    expect(row('solver'), findsNothing);
+    expect(row('diy'), findsNothing);
   });
-
-  testWidgets(
-    'language, how to play, settings and what is new are always there',
-    (tester) async {
-      player(played: 0, veteran: false);
-      await show(tester);
-      for (final id in ['language', 'howto', 'settings', 'whatsnew']) {
-        expect(row(id), findsOneWidget, reason: id);
-      }
-      expect(row('solver'), findsNothing);
-      expect(row('diy'), findsNothing);
-    },
-  );
 
   testWidgets('solver and diy come at game 6', (tester) async {
     player(played: 5, veteran: false);
@@ -134,8 +118,10 @@ void main() {
     expect(solverModeOf(GameMode.equations), GameMode.classic);
   });
 
-  testWidgets('how to play and settings push their routes', (tester) async {
-    player(played: 500, veteran: true);
+  testWidgets('the settings button is on the tab and opens settings', (
+    tester,
+  ) async {
+    player(played: 0, veteran: false);
     final pushed = <String?>[];
     await tester.binding.setSurfaceSize(const Size(420, 1700));
     await tester.pumpWidget(
@@ -147,66 +133,13 @@ void main() {
             builder: (_) => const Scaffold(body: Text('pushed')),
           );
         },
-        home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
+        home: const Scaffold(body: YouPage()),
       ),
     );
     await tester.pump();
-    await tester.tap(row('howto'));
+    await tester.tap(find.byKey(const ValueKey('settings-button')));
     await tester.pumpAndSettle();
-    expect(pushed, [Routes.howTo]);
-    Navigator.of(tester.element(find.text('pushed'))).pop();
-    await tester.pumpAndSettle();
-    await tester.tap(row('settings'));
-    await tester.pumpAndSettle();
-    expect(pushed, [Routes.howTo, Routes.settings]);
-  });
-
-  Future<RouteSettings> pushedBy(WidgetTester tester, String id) async {
-    player(played: 500, veteran: true);
-    RouteSettings? got;
-    await tester.binding.setSurfaceSize(const Size(420, 1700));
-    await tester.pumpWidget(
-      MaterialApp(
-        onGenerateRoute: (s) {
-          got = s;
-          return onGenerateRoute(s);
-        },
-        home: Scaffold(body: YouPage(onReplayFirstGame: () {})),
-      ),
-    );
-    await tester.pump();
-    await tester.tap(row(id));
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-    return got!;
-  }
-
-  testWidgets('the support row opens only the support section', (t) async {
-    final s = await pushedBy(t, 'support');
-    expect(s.name, Routes.settings);
-    expect(s.arguments, SettingsPart.support);
-    expect(find.byType(DonateSection), findsOneWidget);
-    expect(find.text('touch'), findsNothing);
-    expect(find.text('about'), findsNothing);
-    expect(find.byType(BackButton), findsOneWidget);
-  });
-
-  testWidgets('the backup row opens only the backup section', (t) async {
-    final s = await pushedBy(t, 'backup');
-    expect(s.name, Routes.settings);
-    expect(s.arguments, SettingsPart.backup);
-    expect(find.byKey(const ValueKey('backup-download')), findsOneWidget);
-    expect(find.byType(DonateSection), findsNothing);
-    expect(find.text('touch'), findsNothing);
-    expect(find.text('about'), findsNothing);
-    expect(find.byType(BackButton), findsOneWidget);
-  });
-
-  testWidgets('the settings row opens all of the settings', (t) async {
-    final s = await pushedBy(t, 'settings');
-    expect(s.arguments, isNull);
-    expect(find.text('touch'), findsOneWidget);
-    expect(find.text('about', skipOffstage: false), findsOneWidget);
+    expect(pushed, [Routes.settings]);
   });
 
   testWidgets('the achievements row shows the lex chip', (tester) async {
@@ -216,13 +149,5 @@ void main() {
       find.descendant(of: row('achievements'), matching: find.byType(LexChip)),
       findsOneWidget,
     );
-  });
-
-  testWidgets('the help button calls back', (tester) async {
-    player(played: 500, veteran: true);
-    var n = 0;
-    await show(tester, onReplay: () => n++);
-    await tester.tap(find.byKey(const ValueKey('you-help')));
-    expect(n, 1);
   });
 }

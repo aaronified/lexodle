@@ -15,6 +15,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({'seenHowTo': true});
     await appState.load();
+    appState.lex.veteran = true; // the full learn page is open
     appState.setup(
       lang: 'en',
       length: 5,

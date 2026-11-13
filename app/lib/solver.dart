@@ -10,6 +10,7 @@ import 'logic.dart';
 import 'main.dart';
 import 'swipe_clear.dart';
 import 'typing_keys.dart';
+import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -188,6 +189,7 @@ class _SolverPageState extends State<SolverPage> {
               ),
             ],
           ),
+          actions: [const SettingsButton()],
         ),
         body: SafeArea(
           child: Center(

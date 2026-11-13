@@ -25,6 +25,7 @@ import 'replay.dart';
 import 'routes.dart';
 import 'share_puzzle.dart';
 import 'store.dart' show earnedFrom;
+import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -133,7 +134,10 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('history')),
+      appBar: AppBar(
+        title: const Text('history'),
+        actions: [const SettingsButton()],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
