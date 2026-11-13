@@ -97,12 +97,12 @@ void main() {
     expect(appState.blackTheme, isFalse);
   });
 
-  testWidgets('language and how to play are always there', (
+  testWidgets('language, how to play and settings are always there', (
     tester,
   ) async {
     player(played: 0, veteran: false);
     await show(tester);
-    for (final id in ['language', 'howto']) {
+    for (final id in ['language', 'howto', 'settings']) {
       expect(row(id), findsOneWidget, reason: id);
     }
     expect(row('solver'), findsNothing);
@@ -140,6 +140,11 @@ void main() {
     await tester.tap(row('howto'));
     await tester.pumpAndSettle();
     expect(pushed, [Routes.howTo]);
+    Navigator.of(tester.element(find.text('pushed'))).pop();
+    await tester.pumpAndSettle();
+    await tester.tap(row('settings'));
+    await tester.pumpAndSettle();
+    expect(pushed, [Routes.howTo, Routes.settings]);
   });
 
   Future<RouteSettings> pushedBy(WidgetTester tester, String id) async {
@@ -181,6 +186,13 @@ void main() {
     expect(find.text('touch'), findsNothing);
     expect(find.text('about'), findsNothing);
     expect(find.byType(BackButton), findsOneWidget);
+  });
+
+  testWidgets('the settings row opens all of the settings', (t) async {
+    final s = await pushedBy(t, 'settings');
+    expect(s.arguments, isNull);
+    expect(find.text('touch'), findsOneWidget);
+    expect(find.text('about', skipOffstage: false), findsOneWidget);
   });
 
   testWidgets('the achievements row shows the lex chip', (tester) async {

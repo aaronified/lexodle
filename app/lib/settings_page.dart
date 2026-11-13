@@ -12,8 +12,6 @@ import 'precomputed_local.dart';
 import 'precomputed_section.dart';
 import 'main.dart';
 import 'routes.dart';
-import 'store.dart';
-import 'stepper_choice.dart';
 import 'update_section.dart';
 import 'ui.dart';
 import 'wiki_links.dart';
@@ -81,25 +79,6 @@ class SettingsPage extends StatelessWidget {
                       onChanged: appState.setNewUi,
                     ),
                     const SizedBox(height: 10),
-                    const Caption('theme'),
-                    const SizedBox(height: 10),
-                    StepperChoice<int>(
-                      semanticLabel: 'theme',
-                      items: const [
-                        (0, 'system', 'follow the device'),
-                        (1, 'light', 'a light page'),
-                        (2, 'dark', 'a dark page'),
-                        (3, 'black', 'true black, for OLED screens'),
-                      ],
-                      selected: appState.themeIndex,
-                      onChanged: (t) => appState.setup(
-                        themeMode: t == AppState.maxThemeIndex
-                            ? ThemeMode.dark
-                            : ThemeMode.values[t],
-                        black: t == AppState.maxThemeIndex,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
                     const Caption('touch'),
                     const SizedBox(height: 6),
                     SwitchListTile(
@@ -140,10 +119,6 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 24),
-                    const Caption('backup'),
-                    const SizedBox(height: 10),
-                    const _BackupSection(),
-                    const SizedBox(height: 24),
                     if (updatesSupported) ...[
                       const Caption('updates'),
                       const SizedBox(height: 10),
@@ -159,10 +134,6 @@ class SettingsPage extends StatelessWidget {
                     const Caption('log'),
                     const SizedBox(height: 10),
                     const LogSection(),
-                    const SizedBox(height: 24),
-                    const Caption('support lexodle'),
-                    const SizedBox(height: 10),
-                    const DonateSection(),
                     const SizedBox(height: 24),
                     const Caption('about'),
                     const SizedBox(height: 10),
