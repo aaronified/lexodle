@@ -2,7 +2,7 @@ import 'package:html/dom.dart' show Element;
 import 'package:html/parser.dart' as html;
 
 import '../wiktionary.dart';
-import 'common.dart';
+import 'south_util.dart';
 
 const _esGender = {'masculino': 'm', 'femenino': 'f', 'neutro': 'n'};
 

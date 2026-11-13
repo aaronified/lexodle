@@ -104,7 +104,7 @@ WordInfo? parseGerman(
         }
         if (audio == null) {
           for (final a in node.querySelectorAll('a.internal')) {
-            final src = _mp3(a.attributes['href']);
+            final src = commonsMp3(a.attributes['href']);
             if (src != null) {
               audio = src;
               break;
@@ -150,7 +150,9 @@ WordInfo? parseGerman(
       case 'ety':
         if (etymology.isEmpty && lines.isNotEmpty) {
           // the "→ gmh" language marks are <sup>
-          final t = squash(without(lines.first, 'sup,style').text);
+          final t = squash(
+            without(lines.first, 'sup,style').text,
+          ).replaceAll(RegExp(r'\s+([,;.])'), r'$1');
           if (t.isNotEmpty) etymology = shorten(t, 220);
         }
       case 'syn' || 'ant' || 'rel':
@@ -226,20 +228,6 @@ bool _inItalic(Element a, Element stop) {
   // not a number in brackets ("[Kenia:] ..."): the line is kept whole
   if (nums.isEmpty) return (nums, line);
   return (nums, line.substring(m.end));
-}
-
-/// The commons recording as an mp3: Wikimedia serves every .ogg as
-/// `transcoded/<a>/<ab>/<name>.ogg/<name>.ogg.mp3`, which every player reads.
-String? _mp3(String? href) {
-  if (href == null) return null;
-  final m = RegExp(
-    r'^(?:https:)?//upload\.wikimedia\.org/wikipedia/commons/(\w/\w\w)/([^/?]+\.(?:ogg|oga|wav|flac))(?:\?.*)?$',
-    caseSensitive: false,
-  ).firstMatch(href);
-  if (m == null) return null;
-  final name = m.group(2)!;
-  return 'https://upload.wikimedia.org/wikipedia/commons/transcoded/'
-      '${m.group(1)}/$name/$name.mp3';
 }
 
 /// The headword's inflection table as one short line: a noun's plural, a

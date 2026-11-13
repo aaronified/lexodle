@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/daily.dart';
+import 'package:lexodle/first_run/mode_lesson_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/my_dailies.dart';
@@ -143,6 +144,26 @@ void main() {
     expect(find.byKey(const ValueKey('today-next-bar')), findsOneWidget);
     // quartet is open at 4, so the choice is there
     expect(find.byKey(const ValueKey('today-choose')), findsOneWidget);
+  });
+
+  testWidgets('the new mode card offers its lesson; a taught mode skips it', (
+    tester,
+  ) async {
+    appState.stats.played = 4;
+    appState.lex.veteran = false;
+    appState.modesTaught.clear();
+    await show(tester);
+    expect(find.text('how it works ›'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('today-lesson-quartet')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ModeLessonPage), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('lesson-close')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ModeLessonPage), findsNothing);
+    appState.markTaught(GameMode.quartet);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('today-new-quartet')), findsNothing);
+    appState.modesTaught.clear();
   });
 
   testWidgets('the choice is hidden until quartet opens', (tester) async {

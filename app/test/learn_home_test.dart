@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/first_run/mode_lesson_page.dart';
 import 'package:lexodle/learn_home.dart';
 import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -124,6 +126,10 @@ void main() {
     expect(opened.last, Routes.learnClosing);
     await tester.pageBack();
     await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('learn-card-sequence')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('learn-card-sequence')));
     await tester.pumpAndSettle();
     expect(opened.last, Routes.learnSequence);
@@ -137,6 +143,19 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('learn-card-styles')));
     await tester.pumpAndSettle();
     expect(opened.last, Routes.learnStyles);
+  });
+
+  testWidgets('the how to play row opens the lesson of the mode', (
+    tester,
+  ) async {
+    await open(tester);
+    appState.setup(mode: GameMode.quartet);
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('learn-card-how-to-play')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.byType(ModeLessonPage), findsOneWidget);
+    appState.setup(mode: GameMode.classic);
   });
 
   testWidgets('it follows the log: a round recorded updates the card', (

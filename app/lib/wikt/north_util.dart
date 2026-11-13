@@ -33,3 +33,17 @@ String leadingText(Node node) {
 
 /// A protocol-relative link made absolute.
 String absUrl(String src) => src.startsWith('//') ? 'https:$src' : src;
+
+/// The commons recording as an mp3: Wikimedia serves every .ogg as
+/// `transcoded/<a>/<ab>/<name>.ogg/<name>.ogg.mp3`, which every player reads.
+String? commonsMp3(String? href) {
+  if (href == null) return null;
+  final m = RegExp(
+    r'^(?:https:)?//upload\.wikimedia\.org/wikipedia/commons/(\w/\w\w)/([^/?]+\.(?:ogg|oga|wav|flac))(?:\?.*)?$',
+    caseSensitive: false,
+  ).firstMatch(href);
+  if (m == null) return null;
+  final name = m.group(2)!;
+  return 'https://upload.wikimedia.org/wikipedia/commons/transcoded/'
+      '${m.group(1)}/$name/$name.mp3';
+}
