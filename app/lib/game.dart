@@ -330,7 +330,12 @@ class _GamePageState extends State<GamePage>
           }
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'game',
+        'the saved notes could not be restored: ${e.runtimeType}',
+      );
+    }
   }
 
   /// Where this game is kept while it is played, or null when it is not kept (a
@@ -1452,7 +1457,7 @@ class _GamePageState extends State<GamePage>
               widget.practice
                   ? 'practice${_daily.date.isEmpty ? '' : ' ${_daily.date}'} · not counted'
                   : 'daily ${_daily.date} · streak ${appState.dailyStreak} · '
-                        'the next word comes at midnight, your time',
+                        'the next word comes at midnight in India',
             ),
           // the answer, said as such (a win used to show it bare)
           // (a lost game names its word here too, for the bookmark)

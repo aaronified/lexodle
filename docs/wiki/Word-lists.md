@@ -18,7 +18,7 @@ capitalised form the dictionary has and the lowercase form it has not: `texas`, 
 Hunspell stores proper nouns capitalised and the candidates are lowercase, so names and most
 abbreviations drop out; German nouns are capitalised in its dictionary, so German also tries the
 capitalised form. Every word that passes is kept as a valid guess, with a weight from its frequency (the build
-caps a length at 30,000 words, which no language reaches).
+caps a length at 30,000 words; Polish reaches it at 7 and 8 letters and Czech at 6, 7 and 8).
 
 Spelling variants are one language each: English (US and UK) is `en`, Portuguese (Brazil and
 Portugal) is `pt`. wordfreq has one frequency list per language and each variant's dictionary
@@ -46,11 +46,11 @@ word lists are shipped.
 ## The pool
 
 The difficulty grid has no word pool: the answer can be any word of the chosen length, drawn by
-the way the *word draw* row above the mode button says (a tap goes on to the next): on a sigmoid curve of
+the way the *word draw* row above the mode button says (swipe it, or use its arrows, to go to the next): on a sigmoid curve of
 how common each word is (the default), with every word of the length equally likely, or by how common
 each word is. Each mode keeps its own choice. The themed wordle has the curve and every place; the
 equations have nothing to choose (every equation is as likely as the next); in the mastermind the row is
-the pool of a reply, random or the largest. The daily always draws on the curve (see [Daily word](Daily-word)). Languages differ in size (English has about 12,000 words of five letters, Indonesian about 2,500); the game modes menu shows the real count.
+the *pool choice* of a reply, random or the largest. The daily always draws on the curve (see [Daily word](Daily-word)). Languages differ in size (English has about 12,000 words of five letters, Indonesian about 2,500); the game modes menu shows the real count.
 
 ## Themed word lists
 
@@ -60,8 +60,8 @@ one chosen and a guess may be any word of the theme. They are common English wor
 `app/tools/build_themes.py` from WordNet and the English Wiktionary's topic categories, kept when
 the word is in the English list above (its count is the word's weight), and reviewed by hand: a
 word is left out when, in its common meaning, it does not belong (see `tools/themes/deny.txt`).
-To make them again: `python3 tools/wiktionary_topics.py` (one 1.7 GB streamed download), then
-`python3 tools/build_themes.py`.
+To make them again, from `app`: `python3 tools/wiktionary_topics.py` (one 1.7 GB streamed
+download), then `python3 tools/build_themes.py`.
 
 ## Credits and licences
 
@@ -71,9 +71,12 @@ To make them again: `python3 tools/wiktionary_topics.py` (one 1.7 GB streamed do
 - Word data: [wordfreq](https://github.com/rspeer/wordfreq) (CC BY-SA 4.0), filtered with Hunspell
   dictionaries from [wooorm/dictionaries](https://github.com/wooorm/dictionaries) and
   [LibreOffice](https://github.com/LibreOffice/dictionaries)
-- Place names of the themed wordle: [GeoNames](https://www.geonames.org/) (CC BY 4.0), ranked by the
+- Place names of geography: [GeoNames](https://www.geonames.org/) (CC BY 4.0), ranked by the
   English Wikipedia page views of a day (CC0); `tools/build_geography.py` builds `assets/geography/places.tsv`
-- Definitions, IPA, audio, synonyms and antonyms: [Wiktionary](https://en.wiktionary.org), CC BY-SA 4.0
+- Definitions, IPA, synonyms and antonyms: [Wiktionary](https://www.wiktionary.org), each language
+  in its own edition (en, fr, es, it, pt, ca, ro, de, nl, sv, da, no, pl, cs, hu, tr, id), CC BY-SA 4.0
+- Pronunciation audio: Wikimedia Commons recordings linked from those entries, under the licence
+  stated on each file
 - Font: JetBrains Mono (SIL OFL 1.1)
 - Achievement and playstyle icons: [Tabler Icons](https://tabler.io/icons) filled set (MIT)
 - Flags: [Twemoji](https://github.com/jdecked/twemoji) graphics, CC BY 4.0, cropped to the flag; the

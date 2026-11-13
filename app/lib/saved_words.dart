@@ -1,4 +1,5 @@
 import 'wiktionary.dart';
+import 'app_log.dart';
 
 /// A word the player saved from the end of a game: the language, the word, the
 /// day it was saved, the player's own note and a copy of its Wiktionary entry as
@@ -51,7 +52,12 @@ class SavedWord {
     if (i is Map) {
       try {
         info = WordInfo.fromJson(i.cast<String, dynamic>());
-      } catch (_) {}
+      } catch (e) {
+        appLog.w(
+          'saved',
+          'a saved word\'s info could not be read: ${e.runtimeType}',
+        );
+      }
     }
     return SavedWord(
       lang: l,

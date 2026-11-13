@@ -20,19 +20,17 @@ was drawn by, and the review says so.
 five-letter words, drawn on the same curve by the date, the language and the mode, the same for
 everyone, with 9 tries (quartet) and 10 (relay). As in any other game, a word may share a letter
 with an earlier one with a 10% chance, and a word with a letter twice counts as sharing one (before
-2026-11-01 the words shared none, which favoured words with a letter twice). The **lockdown** daily
+2026-10-31 the words shared none, which favoured words with a letter twice). The **lockdown** daily
 is a single word with 6 tries and 5 hearts. The **blind** daily is a single word with 10 tries,
 played by the counts alone. The **equations** daily is one 8-tile equation with 5 tries, the same in
 every language. The **mastermind** daily has no word and no limit on guesses: what it says to each
 guess is drawn from the date, the language, the number of the guess and the guess itself (from the
 pool of words still possible, as in the random pool), so everyone who makes the same guesses gets
-the same replies, and the daily always uses random pools. The **geography** (themed) daily (English only) is
-one five-letter place name with 6 tries, drawn on the places' own curve by the date. The mode in
-view on the home page, which you change with its chevrons or by swiping, decides which daily the daily button
-plays. Each mode has its own streak, calendar and best. It is saved as you go, so closing the page
+the same replies, and the daily always uses random pools. The **geography** daily (English only) is
+one five-letter place name with 6 tries, drawn on the places' own curve by the date. Today lists the dailies you chose (**choose dailies**, from game 4); each row plays that mode's daily, and the bottom button plays the next one not done. The others sit under **more dailies**. Each mode has its own streak, calendar and best. It is saved as you go, so closing the page
 cannot reroll it, and it is played once a day.
 
-- **The day** is the player's own calendar date, changing at their local midnight.
+- **The day** is the calendar date in India (IST, UTC+5:30) for everyone, so the dailies change at the same instant all over the world (18:30 UTC). Today shows the time left.
 - **The clock.** So that the device clock cannot be set to another day, the app asks the server it
   is hosted on for the time (the `Date` header of one request, nothing else, no other service)
   when it starts, and again before opening the daily if the last answer is over ten minutes old.
@@ -42,8 +40,7 @@ cannot reroll it, and it is played once a day.
   still be edited by the person who owns it.
 - **The streak** counts the days in a row on which a daily was solved **in that language and mode**: each
   language and each mode has its own streak and its own calendar (see [Languages](Languages)). A day not played
-  yet does not break it; a day missed does. The home page shows it as a fire with the week
-  (Monday first) and the language's flag. A **double fire** is a daily solved in three guesses or
+  yet does not break it; a day missed does. Today shows each daily with a flame and its streak. The you tab has a streak card that swipes between modes: the last seven days, today last, with a green flame for a solved day (two for a double fire), a skull for a lost one and a dim flame for a day not played, and a month view. A **double fire** is a daily solved in three guesses or
   fewer, or with every guess at 80 skill or more.
 
 ## Sharing a puzzle
@@ -58,9 +55,8 @@ ordinary games (every mode) and for a shared puzzle already open. It offers two 
 
 `https://aaronified.github.io/lexodle/#/puzzle?l=en&m=classic&n=5&t=6&w=<hash>&g=crane.slate`
 
-Whoever opens a link plays it in a browser as **practice**, with only the colours and the tries left:
+Whoever opens a link plays it as **practice** (in the app on Android, in a browser elsewhere), with only the colours and the tries left:
 it is never saved or counted (no streak, calendar, history, statistics or achievements). The app finds
 the word by hashing the words of that length in the language until one matches; a hash is a disguise,
 not a secret, since anyone can do the same. A link with a damaged hash, or a language or mode the app
-does not know, opens the home page instead. The link opens the web app; it does not open the Android
-app by itself.
+does not know, opens the home page instead. On Android the link opens the app itself; elsewhere it opens the web app.

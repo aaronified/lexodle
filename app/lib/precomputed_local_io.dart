@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'precomputed.dart';
+import 'app_log.dart';
 
 /// The precomputed openings kept on this device: the lists the player chose to
 /// download in the settings. They are read by the analysis as the openings it
@@ -121,6 +122,11 @@ class PrecomputedLocal {
   static void remove() {
     try {
       if (dir.existsSync()) dir.deleteSync(recursive: true);
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'precomputed',
+        'the downloaded lists could not be removed: ${e.runtimeType}',
+      );
+    }
   }
 }

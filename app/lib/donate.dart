@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'ui.dart';
+import 'app_log.dart';
 
 /// Where donations go. Change these with `tools/make_donate_qr.py`, which draws
 /// the QR code bundled in `assets/donate/upi-qr.svg` from the same two values.
@@ -43,7 +44,12 @@ class _DonateSectionState extends State<DonateSection> {
     var ok = false;
     try {
       ok = await open(upiLink);
-    } catch (_) {}
+    } catch (e) {
+      appLog.w(
+        'donate',
+        'the payment link could not be opened: ${e.runtimeType}',
+      );
+    }
     if (!ok && mounted) {
       setState(() => _note = 'no UPI app opened. copy the ID or scan the code');
     }

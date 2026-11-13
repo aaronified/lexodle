@@ -5,9 +5,7 @@ Every guess is a question and the colours are the answer. Lexodle measures what 
 there are to find, *log₂ N* for *N* equally likely words.
 
 With *N* words still possible, a guess splits them into groups by the colours they would give. The
-answer follows a law: every possible word equally likely (frequency off, and every daily, which is
-equal over the 3,000 most common words and zero elsewhere), or each word by how common it is
-(frequency on). Each game is scored under the law it was drawn by. A group has a chance *q* of
+answer follows a law: the sigmoid curve of how common each word is (the default, and every daily since 2026-10-30; see [Daily word](Daily-word)), every word equally likely, or each word by its frequency. Equations and mastermind weigh every word equally. Each game is scored under the law it was drawn by. A group has a chance *q* of
 being landed in (its share of the weight), and landing in it **gains** −log₂ *q* bits. The maths,
 with proofs and the simulations, is in the
 [paper](https://github.com/aaronified/lexodle/tree/main/docs/paper).
