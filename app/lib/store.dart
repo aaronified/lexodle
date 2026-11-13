@@ -2611,7 +2611,9 @@ class AppState extends ChangeNotifier {
 
   void _readReminders(Object? raw) {
     try {
-      reminders = ReminderSettings.fromJson(raw is String ? jsonDecode(raw) : raw);
+      reminders = ReminderSettings.fromJson(
+        raw is String ? jsonDecode(raw) : raw,
+      );
     } catch (e) {
       appLog.w('store', 'reminders not read ${e.runtimeType}');
     }
@@ -4140,7 +4142,10 @@ class AppState extends ChangeNotifier {
     if (settings['reminders'] != null) {
       _readReminders(settings['reminders']);
       try {
-        _w('reminders', _prefs?.setString('reminders', jsonEncode(reminders.toJson())));
+        _w(
+          'reminders',
+          _prefs?.setString('reminders', jsonEncode(reminders.toJson())),
+        );
       } catch (_) {}
     }
     this.stats = stats;

@@ -69,6 +69,9 @@ void main() {
     expect(find.byKey(const ValueKey('profile-photo-remove')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('profile-photo-choose')));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 200)),
+    );
     await tester.pumpAndSettle();
     final kept = '${docs.path}/profile.jpg';
     expect(appState.profile.photo, kept);
@@ -77,6 +80,9 @@ void main() {
     expect(find.byKey(const ValueKey('profile-photo-remove')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('profile-photo-remove')));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 200)),
+    );
     await tester.pumpAndSettle();
     expect(appState.profile.photo, isNull);
     expect(File(kept).existsSync(), isFalse);

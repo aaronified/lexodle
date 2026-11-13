@@ -196,7 +196,6 @@ List<PlannedNudge> planReminders({
     if (waiting.isEmpty) {
       // finished for that day: the first one is next week's
       first = _plusDays(first, 7);
-      date = dailyDate(first.toUtc());
       waiting = dailies;
     }
     var top = waiting.first;
