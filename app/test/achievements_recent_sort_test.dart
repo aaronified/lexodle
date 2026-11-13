@@ -164,8 +164,14 @@ void main() {
       return a.levels[d == 0 ? 0 : d - 1].name.toLowerCase();
     }
 
+    // equal names keep the order they are defined in
     final expected = [for (final a in achievements) a]
-      ..sort((x, y) => name(x).compareTo(name(y)));
+      ..sort((x, y) {
+        final c = name(x).compareTo(name(y));
+        return c != 0
+            ? c
+            : achievements.indexOf(x).compareTo(achievements.indexOf(y));
+      });
     expect(_listed(tester), [for (final a in expected) a.id]);
   });
 
