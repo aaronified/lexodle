@@ -17,8 +17,6 @@ Future<String?> showLanguageSheet(
   showDragHandle: true,
   elevation: 0,
   backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-  surfaceTintColor: Colors.transparent,
-  shadowColor: Colors.transparent,
   constraints: BoxConstraints(
     maxHeight: MediaQuery.sizeOf(context).height * .92,
   ),
@@ -93,7 +91,7 @@ class _LanguageSheet extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                l.wikt,
+                l.wikt == l.name ? '' : l.wikt,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 12,

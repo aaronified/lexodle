@@ -4,6 +4,7 @@ import 'package:lexodle/lex_widgets.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
+import 'package:lexodle/words.dart';
 import 'package:lexodle/you_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -149,5 +150,21 @@ void main() {
       find.descendant(of: row('achievements'), matching: find.byType(LexChip)),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the language row opens the sheet and applies the choice', (
+    tester,
+  ) async {
+    player(played: 500, veteran: true);
+    await show(tester);
+    await tester.tap(row('language'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('language-sheet')), findsOneWidget);
+    final langs = (await tester.runAsync(WordBank.languages))!;
+    final other = langs.firstWhere((l) => l.code != appState.lang);
+    await tester.tap(find.byKey(ValueKey('language-${other.code}')));
+    await tester.pumpAndSettle();
+    expect(appState.lang, other.code);
+    expect(find.byKey(const ValueKey('language-sheet')), findsNothing);
   });
 }

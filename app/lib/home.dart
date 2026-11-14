@@ -132,9 +132,9 @@ class _HomePageState extends State<HomePage> {
     orElse: () => langs.first,
   );
 
-  /// The language card: its flag and name, which opens a popup of every
-  /// language in two columns. Back (the phone's, or tapping outside) closes it
-  /// and keeps the language.
+  /// The language card: its flag and name, which opens the language
+  /// sheet. Back (the phone's, or tapping outside) closes it and keeps the
+  /// language.
   Widget _languageCard(
     BuildContext context,
     List<Language> langs,
