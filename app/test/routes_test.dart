@@ -4,6 +4,7 @@ import 'package:lexodle/app_shell.dart';
 import 'package:lexodle/licences_page.dart';
 import 'package:lexodle/logo.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -119,6 +120,33 @@ void main() {
   testWidgets('the review fallback is the home switch', (tester) async {
     await open(tester, Routes.review);
     expect(find.byType(HomeSwitch), findsOneWidget);
+  });
+
+  testWidgets('the daily route takes its mode from its argument', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const SizedBox());
+    final context = tester.element(find.byType(SizedBox));
+    BankGate gate(Object? arguments) {
+      final route = onGenerateRoute(
+        RouteSettings(name: Routes.daily, arguments: arguments),
+      );
+      return (route as MaterialPageRoute<void>).builder(context) as BankGate;
+    }
+
+    appState.setup(mode: GameMode.quartet);
+    // the argument decides, and the mode in view is left as it is
+    expect(gate(GameMode.equations).equations, isTrue);
+    expect(gate(GameMode.themed).places, isTrue);
+    expect(gate(GameMode.relay).equations, isFalse);
+    expect(appState.mode, GameMode.quartet);
+    // an old caller gives none: the mode in view is the default
+    appState.setup(mode: GameMode.equations);
+    expect(gate(null).equations, isTrue);
+    expect(gate(GameMode.classic).equations, isFalse);
+    expect(appState.mode, GameMode.equations);
+    // the next tests start from the classic mode in view
+    appState.setup(mode: GameMode.classic);
   });
 
   testWidgets('moving about names each screen, as the address bar needs', (
