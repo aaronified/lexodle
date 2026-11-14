@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- solver: every mode, and your own games stay hidden from it
+  The solver opens on any mode you have open (pills at the top): classic, lockdown, quartet, relay, blind, equations, mastermind and geography. It leaves out the answers of your games in progress and of today's dailies you have not finished, so it cannot solve them.
+- diy: a few pills instead of modes
+  Board (classic, quartet, relay), rules (lockdown or classic), timer (1 min, 5 min or unlimited), word pool (sigmoid, frequency, equal), pool source (classic or geography) and language. A made puzzle can have a time limit: when it runs out the game is lost. Links made before still play as they did.
+- language: one immersive picker everywhere
+  The language popup is a full-height sheet in the app's own look, used wherever a language is chosen.
+
 - blind: guesses that share no letter settle the rest together
   When the right letters of guesses that have no letter in common add up to the word's length (3 from one guess and 2 from another, for five letters), every other letter is greyed out on the keyboard and the grid.
 
