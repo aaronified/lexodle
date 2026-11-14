@@ -144,24 +144,26 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         ),
       );
     case Routes.daily:
-      // today's word for the saved language, at the fixed daily difficulty
+      // today's word for the saved language, at the fixed daily difficulty.
+      // each mode has a daily of its own: the route argument names it, and
+      // the mode in view (the free play one) is only the default
+      final arg = settings.arguments;
+      final dailyMode = arg is GameMode ? arg : appState.mode;
       return page(
         BankGate(
-          places: appState.mode == GameMode.themed,
-          equations: appState.mode == GameMode.equations,
+          places: dailyMode == GameMode.themed,
+          equations: dailyMode == GameMode.equations,
           builder: (bank) {
-            // each mode has a daily of its own: the mode in view decides
-            final mode = appState.mode;
-            if (mode.multi) {
-              final m = DailyMulti.of(bank, mode);
+            if (dailyMode.multi) {
+              final m = DailyMulti.of(bank, dailyMode);
               return m == null
                   ? const HomeSwitch()
                   : MultiGamePage(bank: bank, daily: m);
             }
-            final d = Daily.of(bank, null, mode);
+            final d = Daily.of(bank, null, dailyMode);
             return d == null
                 ? const HomeSwitch()
-                : GamePage(bank: bank, daily: d, mode: mode);
+                : GamePage(bank: bank, daily: d, mode: dailyMode);
           },
         ),
       );
