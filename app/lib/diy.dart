@@ -520,7 +520,7 @@ class _DiyPageState extends State<DiyPage> {
       if (!mounted) return;
       await showDialog<void>(
         context: context,
-        builder: (_) => _LinkDialog(link: link, onToast: _toast),
+        builder: (_) => _LinkDialog(link: link),
       );
     } catch (e) {
       appLog.w('diy', 'could not make the link: ${e.runtimeType}');
@@ -763,6 +763,7 @@ class _DiyPageState extends State<DiyPage> {
                 onEnter: _make,
                 onBack: _back,
                 enterLabel: 'create',
+                enterEnabled: _ready,
               ),
             ],
           ),
@@ -776,15 +777,24 @@ class _DiyPageState extends State<DiyPage> {
 Future<bool> Function(String) diyShare = shareText;
 
 /// The made link: copied already, to copy again or to share.
-class _LinkDialog extends StatelessWidget {
-  const _LinkDialog({required this.link, required this.onToast});
+class _LinkDialog extends StatefulWidget {
+  const _LinkDialog({required this.link});
   final String link;
-  final void Function(String) onToast;
+
+  @override
+  State<_LinkDialog> createState() => _LinkDialogState();
+}
+
+class _LinkDialogState extends State<_LinkDialog> {
+  /// The line under the title: said here, not in a toast, which would sit
+  /// under the dialog.
+  String _said = 'copied to the clipboard';
+  String get link => widget.link;
 
   Future<void> _copy() async {
     try {
       await Clipboard.setData(ClipboardData(text: link));
-      onToast('copied');
+      if (mounted) setState(() => _said = 'copied');
     } catch (e) {
       appLog.w('diy', 'could not copy the link: ${e.runtimeType}');
     }
@@ -792,7 +802,9 @@ class _LinkDialog extends StatelessWidget {
 
   Future<void> _share() async {
     try {
-      if (!await diyShare(link)) onToast('could not open the share menu');
+      if (!await diyShare(link) && mounted) {
+        setState(() => _said = 'could not open the share menu');
+      }
     } catch (e) {
       appLog.w('diy', 'could not share the link: ${e.runtimeType}');
     }
@@ -813,7 +825,8 @@ class _LinkDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'copied to the clipboard',
+            _said,
+            key: const ValueKey('diy-said'),
             style: TextStyle(fontSize: 11, color: dim),
           ),
           const SizedBox(height: 10),

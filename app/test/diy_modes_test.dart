@@ -405,6 +405,18 @@ void main() {
       expect(find.byKey(const ValueKey('slider-hearts')), findsOneWidget);
       expect(sliderOn(tester, 'hearts'), isFalse);
       expect(sliderOn(tester, 'tries'), isTrue);
+      await tapPill(tester, 'rules-lockdown');
+      expect(sliderOn(tester, 'hearts'), isTrue);
+      expect(sliderOn(tester, 'tries'), isTrue);
+      await typeWord(tester, 'crane');
+      await sliderTo(tester, 'hearts', 3);
+      await sliderTo(tester, 'tries', 0);
+      await make(tester);
+      final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
+      expect((p.mode, p.hearts, p.tries), (GameMode.lockdown, 3, 4));
+      await closeDialog(tester);
+      await tapPill(tester, 'rules-classic');
+      expect(sliderOn(tester, 'hearts'), isFalse);
       // a tap on the greyed slider says why
       await tester.tap(
         find.byKey(const ValueKey('slider-hearts')),
@@ -412,15 +424,6 @@ void main() {
       );
       await tester.pump();
       expect(find.text('hearts only count in lockdown'), findsOneWidget);
-      await tapPill(tester, 'rules-lockdown');
-      expect(sliderOn(tester, 'hearts'), isTrue);
-      expect(sliderOn(tester, 'tries'), isTrue);
-      await sliderTo(tester, 'hearts', 3);
-      await typeWord(tester, 'crane');
-      await sliderTo(tester, 'tries', 0);
-      await make(tester);
-      final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
-      expect((p.mode, p.hearts, p.tries), (GameMode.lockdown, 3, 4));
     });
 
     testWidgets('a quartet or a relay race cannot be locked down', (
@@ -554,7 +557,7 @@ void main() {
       expect(p.word, 'crane');
       expect(p.limit, const Duration(minutes: 1));
       expect(p.draw, Draw.equal);
-      expect(linkOf(tester), isNot(contains('d=')));
+      expect(linkOf(tester), isNot(contains('&d=')));
     });
 
     testWidgets('a word that is not in the word list makes no puzzle', (

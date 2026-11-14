@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- diy: a new make your own page, with a link popup
+  Language is a dropdown on top; board, rules, timer and source are swipers (each titled inside, with chevrons, stopping at the ends); length, tries and hearts are sliders, and lockdown now has both tries and hearts (hearts are greyed until the rules are lockdown). The word pool is gone. Create is greyed out until the word is complete and in the word list; it then copies the link and shows it in a popup with copy and share (the Android share menu).
+
 - diy: the word must be in the word list
   A made word has to be in the language's list, as every guess does, so a puzzle nobody can solve ("iiiii") cannot be made. Links made before still play.
 - today: the free play strip goes round

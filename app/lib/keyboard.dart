@@ -25,6 +25,7 @@ class LetterKeyboard extends StatelessWidget {
     this.marks = const {},
     this.quadMarks = const {},
     this.enterLabel = 'enter',
+    this.enterEnabled = true,
     this.numberPad = false,
     this.faces = faceOf,
     this.onCursor,
@@ -61,6 +62,10 @@ class LetterKeyboard extends StatelessWidget {
   final VoidCallback? onBlank;
   final String enterLabel;
 
+  /// False greys the enter key out and makes it do nothing (the maker's create
+  /// key until the word is ready).
+  final bool enterEnabled;
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) => _build(context, box.maxWidth < phoneWidth),
@@ -80,6 +85,12 @@ class LetterKeyboard extends StatelessWidget {
       for (var i = 0; i < extra.length; i += 10)
         extra.sublist(i, min(i + 10, extra.length)),
     ];
+    // the enter key, greyed out when it cannot be used
+    final enterTap = enterEnabled ? onEnter : () {};
+    final enterColors = enterEnabled
+        ? (c.primary, c.onPrimary)
+        : (c.surfaceContainerHighest, c.onSurface.withValues(alpha: dimAlpha));
+    final enterFeel = enterEnabled ? Haptic.submit : Haptic.key;
     // enter and backspace flank the third row of letters
     const actionRow = 2;
 
@@ -222,9 +233,9 @@ class LetterKeyboard extends StatelessWidget {
                       child: tall(
                         key(
                           enterLabel,
-                          onEnter,
-                          colors: (c.primary, c.onPrimary),
-                          feel: Haptic.submit,
+                          enterTap,
+                          colors: enterColors,
+                          feel: enterFeel,
                         ),
                       ),
                     ),
@@ -254,10 +265,10 @@ class LetterKeyboard extends StatelessWidget {
                 if (i == actionRow)
                   key(
                     enterLabel,
-                    onEnter,
+                    enterTap,
                     flex: 1.6,
-                    colors: (c.primary, c.onPrimary),
-                    feel: Haptic.submit,
+                    colors: enterColors,
+                    feel: enterFeel,
                   ),
                 for (final l in rows[i])
                   key(
