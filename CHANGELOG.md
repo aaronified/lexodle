@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+- diy: the word must be in the word list
+  A made word has to be in the language's list, as every guess does, so a puzzle nobody can solve ("iiiii") cannot be made. Links made before still play.
 - today: the free play strip goes round
   After the last mode comes the first, and before the first the last, so you can keep dragging one way.
 

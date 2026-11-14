@@ -546,6 +546,11 @@ class _DiyPageState extends State<DiyPage> {
       }
       return null;
     }
+    // a word nobody can guess makes no puzzle: it must be in the word list
+    final bank = _bank;
+    if (bank != null && w.length == _length && !bank.valid.contains(w)) {
+      return 'not in the word list';
+    }
     return null;
   }
 
@@ -554,7 +559,7 @@ class _DiyPageState extends State<DiyPage> {
       if (_words[i].length != _length) return false;
       if (_problem(i) != null) return false;
     }
-    return !_places || _placeBank != null;
+    return _places ? _placeBank != null : _bank != null;
   }
 
   void _make() {
@@ -790,11 +795,9 @@ class _DiyPageState extends State<DiyPage> {
                               : _board.boards > 1
                               ? 'four words of $_length letters, in this '
                                     'language\'s letters. tap a word to '
-                                    'type in it. they do not have to be in the '
-                                    'word list.'
-                              : 'type any word of $_length letters, in this '
-                                    'language\'s letters. it does not have to be '
-                                    'in the word list.'),
+                                    'type in it. they must be in the word list.'
+                              : 'type a word of $_length letters from this '
+                                    'language\'s word list.'),
                       key: const ValueKey('diy-note'),
                       style: TextStyle(
                         fontSize: 11,
