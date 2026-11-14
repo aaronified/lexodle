@@ -767,6 +767,7 @@ class TodayPage extends StatelessWidget {
     return KeyedSubtree(
       key: const ValueKey('today-free-play'),
       child: ModeStrip(
+        loop: true,
         modes: open,
         selected: shown,
         onChanged: (m) {
