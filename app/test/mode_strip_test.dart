@@ -8,10 +8,11 @@ import 'package:lexodle/modes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _Host extends StatefulWidget {
-  const _Host(this.modes, this.log, {this.start});
+  const _Host(this.modes, this.log, {this.start, this.loop = false});
   final List<GameMode> modes;
   final _Log log;
   final GameMode? start;
+  final bool loop;
 
   @override
   State<_Host> createState() => _HostState();
@@ -32,6 +33,7 @@ class _HostState extends State<_Host> {
         child: SizedBox(
           width: 400,
           child: ModeStrip(
+            loop: widget.loop,
             modes: widget.modes,
             selected: selected,
             onChanged: (m) {
@@ -81,10 +83,11 @@ void main() {
     WidgetTester tester,
     List<GameMode> modes, {
     GameMode? start,
+    bool loop = false,
   }) async {
     final log = _Log();
     await tester.pumpWidget(const SizedBox());
-    await tester.pumpWidget(_Host(modes, log, start: start));
+    await tester.pumpWidget(_Host(modes, log, start: start, loop: loop));
     await tester.pump();
     return log;
   }
@@ -274,5 +277,36 @@ void main() {
       tester.getCenter(box),
     );
     handle.dispose();
+  });
+
+  group('loop', () {
+    testWidgets('after the last mode comes the first', (tester) async {
+      final log = await show(tester, three, start: three.last, loop: true);
+      await tester.drag(strip, const Offset(-140, 0));
+      await tester.pumpAndSettle();
+      expect(log.changed, [three.first]);
+    });
+
+    testWidgets('before the first mode comes the last', (tester) async {
+      final log = await show(tester, three, loop: true);
+      await tester.drag(strip, const Offset(140, 0));
+      await tester.pumpAndSettle();
+      expect(log.changed, [three.last]);
+    });
+
+    testWidgets('a neighbour across the end is tapped to', (tester) async {
+      final log = await show(tester, three, start: three.last, loop: true);
+      await tester.tap(find.byKey(ValueKey('mode-strip-${three.first.name}')));
+      await tester.pumpAndSettle();
+      expect(log.changed, [three.first]);
+    });
+
+    testWidgets('both edges fade and nothing is drawn twice by key', (
+      tester,
+    ) async {
+      await show(tester, [GameMode.classic, GameMode.quartet], loop: true);
+      expect(find.byKey(const ValueKey('mode-strip-fade-lr')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }
