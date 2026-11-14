@@ -22,6 +22,9 @@ What the app does ask for:
   as a game starts, so the end screen has it (in the mastermind, when one word is left), and when
   you save a word or retry a saved one. The word looked up is sent; your name, games and guesses
   are not. A saved word keeps a copy of its entry and opens without a lookup.
+- **English Wikipedia**, at the end of a geography game: the app asks for the place's summary and
+  photo (en.wikipedia.org, and the photo from upload.wikimedia.org). Only the place is asked for,
+  nothing else is sent. The map is drawn in the app.
 - **Pronunciation audio**, from upload.wikimedia.org (Wikimedia Commons), only when you tap the
   speaker.
 - **The time**, from the site the app is hosted on (see [Daily word](Daily-word)).

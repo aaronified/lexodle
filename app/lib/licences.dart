@@ -25,6 +25,12 @@ void registerLicences() {
     yield LicenseEntryWithLineBreaks([
       'Place names (GeoNames, CC BY 4.0)',
     ], await text('assets/geography/NOTICE.md'));
+    yield LicenseEntryWithLineBreaks(
+      ['Natural Earth land (public domain) via world-atlas (ISC)'],
+      'The outline of the land on the map of a place is Natural Earth '
+      '(naturalearthdata.com), which is in the public domain, as packaged '
+      'by the world-atlas npm package (ISC licence).',
+    );
     yield LicenseEntryWithLineBreaks([
       'Wiktionary entries (CC BY-SA 4.0)',
     ], await text('assets/wiktionary/NOTICE.md'));
