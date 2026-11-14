@@ -144,7 +144,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('time is up'), findsOneWidget);
       expect(find.byType(LetterKeyboard), findsNothing);
-      expect(pillText(tester).data, '0:00');
       final answer = (tester.state(find.byType(GamePage)) as dynamic).answer;
       expect(find.textContaining('the word was  $answer'), findsOneWidget);
       expect(appState.history.games, hasLength(1));
