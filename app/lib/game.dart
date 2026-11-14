@@ -17,6 +17,7 @@ import 'modes.dart';
 import 'puzzle.dart';
 import 'share_puzzle.dart';
 import 'geography.dart';
+import 'place_info_view.dart';
 import 'guess_input.dart';
 import 'help.dart';
 import 'hint_pick.dart';
@@ -1643,7 +1644,9 @@ class _GamePageState extends State<GamePage>
             const Divider(),
             const SizedBox(height: 10),
           ],
-          if (!equations)
+          if (themed && Geography.placeOf(answer) != null)
+            PlaceInfoView(place: Geography.placeOf(answer)!)
+          else if (!equations)
             WordInfoView(word: answer, language: widget.bank.language),
           const SizedBox(height: 12),
         ],

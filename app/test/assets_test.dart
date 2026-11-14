@@ -251,7 +251,9 @@ void main() {
             h != 'en.wikipedia.org' &&
             h != 'raw.githubusercontent.com' &&
             // the pronunciation audio the entries of the Wiktionaries name
-            h != 'upload.wikimedia.org',
+            h != 'upload.wikimedia.org' &&
+            // the photo of a place, from its Wikipedia summary
+            h != 'thumb.wikimedia.org',
       );
       expect(fetched, isEmpty, reason: 'unexpected hosts: $fetched');
     });

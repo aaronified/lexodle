@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- geography: the answer's info comes from wikipedia, with a photo and a map
+  At the end of a geography game the answer shows what the place is, a short extract and its photo from English Wikipedia (not a Wiktionary word entry), a map with the place marked, and a link to its page. The map is drawn offline from a small bundled outline. If Wikipedia has no photo or coordinates, that part is left out.
+
 - history: every game is listed, practice ones marked not scored
   Made puzzles and puzzles opened from a link now appear in the history with a "not scored" tag (a time-out too). They do not count as a game played, and they give no streak, medal, lex or playstyle, and they are left out of the skill, luck and risk averages and plots.
 - today: the free play strip, a ratchet under a fixed box
