@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- history: every game is listed, practice ones marked not scored
+  Made puzzles and puzzles opened from a link now appear in the history with a "not scored" tag (a time-out too). They do not count as a game played, and they give no streak, medal, lex or playstyle, and they are left out of the skill, luck and risk averages and plots.
+
 - solver: every mode, and your own games stay hidden from it
   The solver opens on any mode you have open (pills at the top): classic, lockdown, quartet, relay, blind, equations, mastermind and geography. It leaves out the answers of your games in progress and of today's dailies you have not finished, so it cannot solve them.
 - diy: a few pills instead of modes

@@ -5,8 +5,8 @@ import 'words.dart';
 
 /// A puzzle named by a link: the language, the mode, the length, the tries and
 /// the words themselves, hashed. (The daily is not shared this way: everyone
-/// has the same one in the app.) Anyone who opens the link plays it as practice: it never touches the streak, the history or the
-/// achievements. A link can also carry the guesses of whoever shares it, in
+/// has the same one in the app.) Anyone who opens the link plays it as practice: it never touches the streak, the stats or the
+/// achievements, and it is listed in the history as not scored. A link can also carry the guesses of whoever shares it, in
 /// plain, which the page opens already played.
 ///
 /// The link is the web app's address with the puzzle in it:
