@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.12.0
+
 - today: list or tiles, sort, and your own order
   The count row of Today has two icon groups: one to choose, sort and play the other dailies, and a switch between rows and tiles (eight tiles fit on the screen). The choose sheet now has a drag handle on each daily to put them in your own order, pills to sort Today (status, my order, name, streak), and a play button on the dailies you hid. The "choose dailies" and "more dailies" rows are gone. The choice and the order are kept.
 - dailies: hiding a daily keeps its streak
