@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- blind: guesses that share no letter settle the rest together
+  When the right letters of guesses that have no letter in common add up to the word's length (3 from one guess and 2 from another, for five letters), every other letter is greyed out on the keyboard and the grid.
+
 ## 0.11.0
 
 - every game has a timer, and the time is in history

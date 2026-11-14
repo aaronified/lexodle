@@ -105,4 +105,40 @@ void main() {
       'ruled out by the counts',
     );
   });
+
+  test('guesses with no letter in common settle the rest together', () {
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    // tares has 3 right letters, found 2: five letters, all of them known
+    final out = BlindPencil.deduce([
+      const BlindRow('tares', 0, 3),
+      const BlindRow('found', 0, 2),
+    ], letters.split(''));
+    for (final ch in letters.split('')) {
+      if ('taresfound'.contains(ch)) {
+        expect(out[ch], isNull, reason: ch);
+      } else {
+        expect(out[ch], Mark.absent, reason: ch);
+      }
+    }
+    // guesses that share a letter may count it twice: nothing is settled
+    final shared = BlindPencil.deduce([
+      const BlindRow('tares', 0, 3),
+      const BlindRow('stand', 0, 2),
+    ], letters.split(''));
+    expect(shared, isEmpty);
+    // not enough yet: 3 and 1 make 4 of 5
+    final short = BlindPencil.deduce([
+      const BlindRow('tares', 0, 3),
+      const BlindRow('found', 0, 1),
+    ], letters.split(''));
+    expect(short, isEmpty);
+    // three guesses can add up too, with a guess that found nothing
+    final three = BlindPencil.deduce([
+      const BlindRow('tares', 0, 3),
+      const BlindRow('found', 0, 2),
+      const BlindRow('lymph', 0, 0),
+    ], letters.split(''));
+    expect(three['z'], Mark.absent);
+    expect(three['l'], Mark.absent);
+  });
 }

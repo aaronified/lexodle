@@ -92,6 +92,33 @@ class BlindPencil {
         }
       }
     }
+    // guesses that share no letter cannot count the same letter of the word
+    // twice, so when the right letters of such guesses add up to the length,
+    // every letter outside them is out (3 from one guess and 2 from another
+    // that shares nothing with it, for a word of 5)
+    final n = rows.length;
+    if (n >= 2 && n <= 16) {
+      final length = rows.first.word.length;
+      final sets = [for (final r in rows) r.word.split('').toSet()];
+      for (var m = 1; m < 1 << n; m++) {
+        var sum = 0;
+        final union = <String>{};
+        var apart = true;
+        for (var i = 0; i < n; i++) {
+          if ((m >> i) & 1 == 0) continue;
+          if (sets[i].any(union.contains)) {
+            apart = false;
+            break;
+          }
+          union.addAll(sets[i]);
+          sum += rows[i].green + rows[i].yellow;
+        }
+        if (!apart || sum != length) continue;
+        for (final ch in letters) {
+          if (!union.contains(ch) && d[ch] != Mark.present) d[ch] = Mark.absent;
+        }
+      }
+    }
     return d;
   }
 
