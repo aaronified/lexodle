@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.12.1
+
 - diy: a new make your own page, with a link popup
   Language is a dropdown on top; board, rules, timer and source are swipers (each titled inside, with chevrons, stopping at the ends); length, tries and hearts are sliders, and lockdown now has both tries and hearts (hearts are greyed until the rules are lockdown). The word pool is gone. Create is greyed out until the word is complete and in the word list; it then copies the link and shows it in a popup with copy and share (the Android share menu).
 - diy: the word must be in the word list
