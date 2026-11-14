@@ -187,4 +187,31 @@ void main() {
       at,
     );
   });
+
+  testWidgets('the calendar moves with the header, the button stays', (
+    tester,
+  ) async {
+    await show(tester);
+    final count = tester.getTopLeft(
+      find.byKey(const ValueKey('sw-streak-count')),
+    );
+    final button = tester.getTopLeft(
+      find.byKey(const ValueKey('sw-month-toggle')),
+    );
+    final g = await tester.startGesture(
+      tester.getCenter(find.byKey(const ValueKey('sw-strip'))),
+    );
+    await g.moveBy(const Offset(-70, 0));
+    await tester.pump();
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('sw-streak-count')).first).dx,
+      lessThan(count.dx),
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('sw-month-toggle'))),
+      button,
+    );
+    await g.up();
+    await tester.pumpAndSettle();
+  });
 }

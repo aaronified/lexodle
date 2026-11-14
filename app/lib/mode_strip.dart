@@ -34,6 +34,7 @@ class ModeStrip extends StatefulWidget {
     this.height = 56,
     this.caption = 'free play',
     this.label = 'free play',
+    this.onMove,
   });
 
   final List<GameMode> modes;
@@ -51,6 +52,9 @@ class ModeStrip extends StatefulWidget {
 
   /// What the strip is called to a screen reader.
   final String label;
+
+  /// Told where the ratchet is, in items from the first, whenever it moves.
+  final ValueChanged<double>? onMove;
 
   @override
   State<ModeStrip> createState() => _ModeStripState();
@@ -107,6 +111,11 @@ class _ModeStripState extends State<ModeStrip>
   /// Moves the ratchet to [p] items, with a tick for each one crossed.
   void _setPos(double p) {
     _pos = p.clamp(0.0, _last.toDouble());
+    try {
+      widget.onMove?.call(_pos);
+    } catch (e) {
+      appLog.w('mode-strip', 'could not report the move: ${e.runtimeType}');
+    }
     final k = _pos.round();
     if (k != _ticked) {
       _ticked = k;

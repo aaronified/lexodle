@@ -40,6 +40,10 @@ class StreakWeek extends StatefulWidget {
 
 class _StreakWeekState extends State<StreakWeek> {
   GameMode? _picked;
+
+  /// Where the header's ratchet is, in modes from the first, while it moves;
+  /// null when it is at rest on the mode in view.
+  double? _pos;
   bool _month = false;
 
   GameMode _current(List<GameMode> modes) => modes.contains(_picked)
@@ -55,7 +59,10 @@ class _StreakWeekState extends State<StreakWeek> {
     try {
       if (modes.length < 2) return;
       final i = modes.indexOf(_current(modes));
-      setState(() => _picked = modes[(i + step) % modes.length]);
+      setState(() {
+        _picked = modes[(i + step) % modes.length];
+        _pos = null;
+      });
     } catch (e) {
       appLog.w('streak_week', 'could not change the mode: ${e.runtimeType}');
     }
@@ -111,6 +118,7 @@ class _StreakWeekState extends State<StreakWeek> {
                   caption: null,
                   label: 'streak',
                   onChanged: (m) => setState(() => _picked = m),
+                  onMove: (p) => setState(() => _pos = p),
                   onTap: () {},
                 ),
               const SizedBox(height: 6),
@@ -152,14 +160,74 @@ class _StreakWeekState extends State<StreakWeek> {
         children: [
           header,
           const SizedBox(height: 6),
-          _page(c, lang, mode),
+          LayoutBuilder(
+            builder: (context, box) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _slid(c, lang, modes, mode, box.maxWidth, top: true),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    key: const ValueKey('sw-month-toggle'),
+                    onPressed: () => setState(() => _month = !_month),
+                    child: Text(_month ? 'back to the week' : 'show the month'),
+                  ),
+                ),
+                _slid(c, lang, modes, mode, box.maxWidth, top: false),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  /// The content of the card for one mode: streak line, week or month.
-  Widget _page(ColorScheme c, String lang, GameMode mode) {
+  /// One part of the card, moved sideways with the header's ratchet: the page
+  /// of [mode] and, while the ratchet is between two modes, its neighbour.
+  Widget _slid(
+    ColorScheme c,
+    String lang,
+    List<GameMode> modes,
+    GameMode mode,
+    double width, {
+    required bool top,
+  }) {
+    Widget part(GameMode m) {
+      final (t, b) = _page(c, lang, m);
+      return top ? t : b;
+    }
+
+    final index = modes.indexOf(mode);
+    final shift = _pos == null || index < 0
+        ? 0.0
+        : (_pos! - index).clamp(-1.0, 1.0);
+    final other = index + (shift > 0 ? 1 : -1);
+    if (shift == 0 || other < 0 || other >= modes.length) return part(mode);
+    return ClipRect(
+      child: Stack(
+        children: [
+          Transform.translate(
+            offset: Offset(-shift * width, 0),
+            child: part(mode),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            width: width,
+            child: Transform.translate(
+              offset: Offset((shift > 0 ? 1 - shift : -1 - shift) * width, 0),
+              child: part(modes[other]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The content of the card for one mode, in the two parts that move with the
+  /// ratchet: the streak line and the week (top), and the month with its legend
+  /// (bottom). The month button between them stays where it is.
+  (Widget, Widget) _page(ColorScheme c, String lang, GameMode mode) {
     final today = dailyDate();
     final log = appState.dailyLogOf(lang, mode);
     final streak = appState.dailyStreakFor(lang, mode);
@@ -376,7 +444,7 @@ class _StreakWeekState extends State<StreakWeek> {
         ? (markOf(today) == _Mark.ongoing ? yellowOf(c) : c.secondary)
         : c.outlineVariant;
 
-    return Column(
+    final top = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Semantics(
@@ -434,14 +502,11 @@ class _StreakWeekState extends State<StreakWeek> {
         ),
         const SizedBox(height: 12),
         if (!_month) ...[weekRow, const SizedBox(height: 12)],
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            key: const ValueKey('sw-month-toggle'),
-            onPressed: () => setState(() => _month = !_month),
-            child: Text(_month ? 'back to the week' : 'show the month'),
-          ),
-        ),
+      ],
+    );
+    final bottom = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         if (_month) ...[
           const SizedBox(height: 14),
           Text(() {
@@ -455,5 +520,6 @@ class _StreakWeekState extends State<StreakWeek> {
         ],
       ],
     );
+    return (top, bottom);
   }
 }

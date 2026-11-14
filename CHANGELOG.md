@@ -12,7 +12,7 @@ it to the version.
 - dailies: hiding a daily keeps its streak
   The sheet no longer warns that dropping a daily ends its streak, because it never did: the streak counts from the games played, and a hidden daily can still be played from the sheet.
 - you: the mode header of the streak card is a ratchet
-  The mode name and icon at the top of the streak card are dragged like the free play strip, and the card below no longer slides, so the show the month button stays where it is.
+  The mode name and icon at the top of the streak card are dragged like the free play strip, and the calendar (the streak and the week or the month) moves along with it, while the show the month button stays where it is.
 
 - geography: the answer's info comes from wikipedia, with a photo and a map
   At the end of a geography game the answer shows what the place is, a short extract and its photo from English Wikipedia (not a Wiktionary word entry), a map with the place marked, and a link to its page. The map is drawn offline from a small bundled outline. If Wikipedia has no photo or coordinates, that part is left out.
