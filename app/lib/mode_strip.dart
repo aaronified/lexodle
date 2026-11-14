@@ -32,6 +32,8 @@ class ModeStrip extends StatefulWidget {
     required this.onChanged,
     required this.onTap,
     this.height = 56,
+    this.caption = 'free play',
+    this.label = 'free play',
   });
 
   final List<GameMode> modes;
@@ -43,6 +45,12 @@ class ModeStrip extends StatefulWidget {
   /// Called when the rectangle is tapped.
   final VoidCallback onTap;
   final double height;
+
+  /// The small line over the name in the rectangle; null for none.
+  final String? caption;
+
+  /// What the strip is called to a screen reader.
+  final String label;
 
   @override
   State<ModeStrip> createState() => _ModeStripState();
@@ -191,14 +199,15 @@ class _ModeStripState extends State<ModeStrip>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'free play',
-                        style: TextStyle(
-                          fontSize: 10,
-                          height: 1.1,
-                          color: c.onSurface.withValues(alpha: dimAlpha),
+                      if (widget.caption != null)
+                        Text(
+                          widget.caption!,
+                          style: TextStyle(
+                            fontSize: 10,
+                            height: 1.1,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
+                          ),
                         ),
-                      ),
                       Text(
                         m.label,
                         maxLines: 1,
@@ -271,7 +280,7 @@ class _ModeStripState extends State<ModeStrip>
     return Semantics(
       container: true,
       slider: many,
-      label: 'free play mode',
+      label: '${widget.label} mode',
       value: shown.label,
       increasedValue: _modes[math.min(_nearest + 1, _last)].label,
       decreasedValue: _modes[math.max(_nearest - 1, 0)].label,
@@ -307,7 +316,7 @@ class _ModeStripState extends State<ModeStrip>
                       child: Semantics(
                         container: true,
                         button: true,
-                        label: 'free play ${shown.label}',
+                        label: '${widget.label} ${shown.label}',
                         excludeSemantics: true,
                         onTap: _tapBox,
                         child: GestureDetector(

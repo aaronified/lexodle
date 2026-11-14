@@ -1,31 +1,32 @@
 import 'package:flutter/material.dart';
 
+import 'app_log.dart';
+import 'edge_fade.dart';
 import 'ladder.dart';
 import 'main.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart';
+import 'today_prefs.dart';
 import 'ui.dart';
 
 /// Opens the sheet where the player chooses their dailies: one row per game
-/// mode with a daily, and a switch that adds or drops it. The switches apply at
-/// once; there is no "done" button.
-Future<void> showChooseDailies(BuildContext context) =>
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => const _ChooseDailiesSheet(),
-    );
+/// mode with a daily, a switch that shows or hides it on Today, a handle to put
+/// the rows in their own order, and the pills that say how Today is sorted. The
+/// switches apply at once; there is no "done" button. [play] starts a daily the
+/// player has hidden (the sheet closes first); without it no "play" is offered.
+Future<void> showChooseDailies(
+  BuildContext context, {
+  Future<void> Function(GameMode)? play,
+}) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  builder: (_) => _ChooseDailiesSheet(play: play),
+);
 
-class _ChooseDailiesSheet extends StatefulWidget {
-  const _ChooseDailiesSheet();
+class _ChooseDailiesSheet extends StatelessWidget {
+  const _ChooseDailiesSheet({this.play});
 
-  @override
-  State<_ChooseDailiesSheet> createState() => _ChooseDailiesSheetState();
-}
-
-class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
-  /// The mode whose streak is being confirmed before it is dropped.
-  GameMode? _asking;
+  final Future<void> Function(GameMode)? play;
 
   @override
   Widget build(BuildContext context) =>
@@ -39,6 +40,18 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     final level = appState.level;
     // until the step opens, no locked mode is named
     final everyMode = appState.stepOpen('every mode');
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    final shown = orderModes([
+      for (final m in GameMode.loopFor(lang))
+        if (m.hasDaily && (everyMode || isOpen(m, level))) m,
+    ], appState.dailyOrder);
+    Widget caption(String t) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 4),
+      child: Text(
+        t,
+        style: TextStyle(fontSize: 10, letterSpacing: 1.2, color: dim),
+      ),
+    );
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -65,25 +78,37 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(19, 0, 19, 12),
-            child: Text(
-              'the ones you add are on Today and in your reminders. a daily you '
-              'drop keeps no streak. you can still play it from "more dailies".',
-              style: text.bodySmall?.copyWith(
-                height: 1.6,
-                color: c.onSurface.withValues(alpha: dimAlpha),
-              ),
-            ),
-          ),
           Flexible(
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (final m in GameMode.loopFor(lang))
-                    if (m.hasDaily && (everyMode || isOpen(m, level)))
-                      _row(context, m, chosen: chosen, level: level),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(19, 0, 19, 12),
+                    child: Text(
+                      'the ones you add are on today and in your reminders. a '
+                      'daily you hide keeps its streak: it is only off today. '
+                      'you can still play it from here.',
+                      style: text.bodySmall?.copyWith(height: 1.6, color: dim),
+                    ),
+                  ),
+                  caption('sort today by'),
+                  _pills(c),
+                  caption('dailies'),
+                  ReorderableListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    buildDefaultDragHandles: false,
+                    itemCount: shown.length,
+                    onReorderItem: (from, to) => _reorder(shown, from, to),
+                    itemBuilder: (context, i) => _row(
+                      context,
+                      shown[i],
+                      index: i,
+                      chosen: chosen,
+                      level: level,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -93,9 +118,84 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     );
   }
 
+  /// The sort pills: the look of the mode filter, one row that scrolls sideways.
+  Widget _pills(ColorScheme c) {
+    return EdgeFade(
+      key: const ValueKey('sort-pills'),
+      padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final s in TodaySort.values) ...[
+            if (s != TodaySort.values.first) const SizedBox(width: 6),
+            _pill(c, s),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _pill(ColorScheme c, TodaySort s) {
+    final on = appState.todaySort == s;
+    return Semantics(
+      button: true,
+      selected: on,
+      label: 'sort by ${s.label}',
+      excludeSemantics: true,
+      child: InkWell(
+        key: ValueKey('sort-${s.name}'),
+        onTap: () {
+          try {
+            appState.setTodaySort(s);
+          } catch (e) {
+            appLog.w(
+              'choose-dailies',
+              'could not set the sort: ${e.runtimeType}',
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(3),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 36),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: on ? c.secondaryContainer : c.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Center(
+            widthFactor: 1,
+            child: Text(
+              s.label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: on ? FontWeight.bold : null,
+                color: on ? c.onSecondaryContainer : null,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _reorder(List<GameMode> shown, int from, int to) {
+    try {
+      final list = [...shown];
+      list.insert(to, list.removeAt(from));
+      appState.setDailyOrder([
+        ...list,
+        for (final m in appState.dailyOrder)
+          if (!list.contains(m)) m,
+      ]);
+    } catch (e) {
+      appLog.w('choose-dailies', 'could not reorder: ${e.runtimeType}');
+    }
+  }
+
   Widget _row(
     BuildContext context,
     GameMode m, {
+    required int index,
     required List<GameMode> chosen,
     required int level,
   }) {
@@ -105,44 +205,36 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     final streak = appState.dailyStreakFor(lang, m);
     final open = isOpen(m, level);
     final dim = c.onSurface.withValues(alpha: dimAlpha);
+    final on = chosen.contains(m);
+    final tail = streak > 0 ? ' · streak $streak' : '';
+    final sub = !open
+        ? '${m.sub} · not open yet'
+        : on
+        ? '${m.sub}$tail'
+        : 'hidden$tail';
+    final play = this.play;
 
-    Widget body;
-    if (_asking == m) {
-      body = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      key: ValueKey('daily-row-${m.name}'),
+      padding: const EdgeInsets.fromLTRB(11, 10, 19, 10),
+      decoration: BoxDecoration(
+        color: c.surface,
+        border: Border(bottom: BorderSide(color: c.outlineVariant)),
+      ),
+      child: Row(
         children: [
-          Text(
-            '${m.label} has a $streak day streak. a daily you drop keeps no '
-            'streak: it ends if you skip a day. remove it anyway?',
-            style: text.bodySmall,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => setState(() => _asking = null),
-                child: const Text('keep it'),
+          ReorderableDragStartListener(
+            index: index,
+            child: Semantics(
+              label: 'move ${m.label}',
+              child: SizedBox(
+                width: 32,
+                height: 40,
+                child: Icon(Icons.drag_indicator, size: 22, color: dim),
               ),
-              TextButton(
-                onPressed: () {
-                  appState.chooseDaily(lang, m, on: false);
-                  setState(() => _asking = null);
-                },
-                child: const Text('remove'),
-              ),
-            ],
+            ),
           ),
-        ],
-      );
-    } else {
-      final on = chosen.contains(m);
-      final sub = !open
-          ? '${m.sub} · not open yet'
-          : streak > 0
-          ? '${m.sub} · streak $streak'
-          : m.sub;
-      body = Row(
-        children: [
+          const SizedBox(width: 5),
           TablerIcon(
             modeIconName(m),
             size: chooserIconSize,
@@ -164,27 +256,40 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
               ],
             ),
           ),
+          if (open && !on && play != null)
+            TextButton(
+              key: ValueKey('daily-play-${m.name}'),
+              onPressed: () => _play(context, play, m),
+              child: const Text(
+                'play ›',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
           if (open)
             Semantics(
               label: m.label,
               child: Switch(
                 key: ValueKey('daily-switch-${m.name}'),
                 value: on,
-                onChanged: (v) =>
-                    _toggle(context, m, v, chosen: chosen, streak: streak),
+                onChanged: (v) => _toggle(context, m, v, chosen: chosen),
               ),
             ),
         ],
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 10),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: c.outlineVariant)),
       ),
-      child: body,
     );
+  }
+
+  Future<void> _play(
+    BuildContext context,
+    Future<void> Function(GameMode) play,
+    GameMode m,
+  ) async {
+    try {
+      Navigator.pop(context);
+      await play(m);
+    } catch (e) {
+      appLog.w('choose-dailies', 'could not play the daily: ${e.runtimeType}');
+    }
   }
 
   void _toggle(
@@ -192,20 +297,18 @@ class _ChooseDailiesSheetState extends State<_ChooseDailiesSheet> {
     GameMode m,
     bool on, {
     required List<GameMode> chosen,
-    required int streak,
   }) {
-    if (on) {
-      appState.chooseDaily(appState.lang, m, on: true);
-      return;
+    try {
+      if (!on && chosen.length <= 1) {
+        showToast(context, 'keep at least one daily');
+        return;
+      }
+      appState.chooseDaily(appState.lang, m, on: on);
+    } catch (e) {
+      appLog.w(
+        'choose-dailies',
+        'could not switch the daily: ${e.runtimeType}',
+      );
     }
-    if (chosen.length <= 1) {
-      showToast(context, 'keep at least one daily');
-      return;
-    }
-    if (streak > 0) {
-      setState(() => _asking = m);
-      return;
-    }
-    appState.chooseDaily(appState.lang, m, on: false);
   }
 }

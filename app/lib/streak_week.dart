@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_log.dart';
 import 'daily.dart';
 import 'main.dart';
-import 'mode_wheel.dart' show modeIconName;
+import 'mode_strip.dart';
 import 'modes.dart';
 import 'ui.dart';
 
@@ -38,22 +38,9 @@ class StreakWeek extends StatefulWidget {
   State<StreakWeek> createState() => _StreakWeekState();
 }
 
-class _StreakWeekState extends State<StreakWeek>
-    with SingleTickerProviderStateMixin {
+class _StreakWeekState extends State<StreakWeek> {
   GameMode? _picked;
   bool _month = false;
-
-  late final AnimationController _anim = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 220),
-  );
-  double _dx = 0; // finger offset in px: negative shows the next mode
-
-  @override
-  void dispose() {
-    _anim.dispose();
-    super.dispose();
-  }
 
   GameMode _current(List<GameMode> modes) => modes.contains(_picked)
       ? _picked!
@@ -63,30 +50,14 @@ class _StreakWeekState extends State<StreakWeek>
       ? modes.first
       : appState.mode;
 
-  /// Slides the card to the neighbour at [step] (+1 next, -1 previous) from
-  /// where the finger left it, then makes that mode the one in view.
-  void _settle(List<GameMode> modes, int step, double width) {
+  /// Makes the neighbour at [step] (+1 next, -1 previous) the mode in view.
+  void _step(List<GameMode> modes, int step) {
     try {
-      final from = _dx;
-      final to = -step * width;
-      _anim.stop();
-      _anim.reset();
-      void tick() => setState(() => _dx = from + (to - from) * _anim.value);
-      _anim.addListener(tick);
-      _anim.forward().whenComplete(() {
-        _anim.removeListener(tick);
-        if (!mounted) return;
-        setState(() {
-          if (step != 0 && modes.length > 1) {
-            final i = modes.indexOf(_current(modes));
-            _picked = modes[(i + step) % modes.length];
-          }
-          _dx = 0;
-        });
-      });
+      if (modes.length < 2) return;
+      final i = modes.indexOf(_current(modes));
+      setState(() => _picked = modes[(i + step) % modes.length]);
     } catch (e) {
       appLog.w('streak_week', 'could not change the mode: ${e.runtimeType}');
-      setState(() => _dx = 0);
     }
   }
 
@@ -112,9 +83,7 @@ class _StreakWeekState extends State<StreakWeek>
         child: InkWell(
           key: key,
           borderRadius: BorderRadius.circular(6),
-          onTap: many && !_anim.isAnimating
-              ? () => _settle(modes, step, _width)
-              : null,
+          onTap: many ? () => _step(modes, step) : null,
           child: Center(
             child: Text(
               glyph,
@@ -135,17 +104,14 @@ class _StreakWeekState extends State<StreakWeek>
           child: Column(
             children: [
               if (modes.isNotEmpty)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TablerIcon(modeIconName(mode), size: 22, color: c.primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      mode.label,
-                      key: const ValueKey('sw-header-mode'),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                ModeStrip(
+                  key: const ValueKey('sw-strip'),
+                  modes: modes,
+                  selected: mode,
+                  caption: null,
+                  label: 'streak',
+                  onChanged: (m) => setState(() => _picked = m),
+                  onTap: () {},
                 ),
               const SizedBox(height: 6),
               Row(
@@ -186,64 +152,11 @@ class _StreakWeekState extends State<StreakWeek>
         children: [
           header,
           const SizedBox(height: 6),
-          LayoutBuilder(
-            builder: (context, box) {
-              _width = box.maxWidth;
-              Widget at(double off, Widget child) =>
-                  Transform.translate(offset: Offset(off, 0), child: child);
-              final next = _dx < 0 ? 1 : -1;
-              final other = modes.isEmpty
-                  ? null
-                  : modes[(index + next) % modes.length];
-              return GestureDetector(
-                key: const ValueKey('sw-swipe'),
-                behavior: HitTestBehavior.translucent,
-                onHorizontalDragStart: many ? (_) => _anim.stop() : null,
-                onHorizontalDragUpdate: many
-                    ? (d) => setState(
-                        () => _dx = (_dx + d.delta.dx).clamp(
-                          -box.maxWidth,
-                          box.maxWidth,
-                        ),
-                      )
-                    : null,
-                onHorizontalDragEnd: many
-                    ? (d) {
-                        final v = d.primaryVelocity ?? 0;
-                        final go =
-                            _dx.abs() > box.maxWidth * .25 || v.abs() > 700;
-                        final dir = _dx != 0
-                            ? (_dx < 0 ? 1 : -1)
-                            : (v < 0 ? 1 : -1);
-                        _settle(modes, go ? dir : 0, box.maxWidth);
-                      }
-                    : null,
-                child: ClipRect(
-                  child: Stack(
-                    children: [
-                      at(_dx, _page(c, lang, mode)),
-                      if (_dx != 0 && other != null && other != mode)
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          width: box.maxWidth,
-                          child: at(
-                            _dx + (_dx < 0 ? box.maxWidth : -box.maxWidth),
-                            _page(c, lang, other),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
+          _page(c, lang, mode),
         ],
       ),
     );
   }
-
-  double _width = 300;
 
   /// The content of the card for one mode: streak line, week or month.
   Widget _page(ColorScheme c, String lang, GameMode mode) {

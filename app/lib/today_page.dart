@@ -12,6 +12,7 @@ import 'mode_wheel.dart';
 import 'modes.dart';
 import 'routes.dart';
 import 'settings_button.dart';
+import 'today_prefs.dart';
 import 'ui.dart';
 
 /// Where one chosen daily stands today.
@@ -25,6 +26,25 @@ class _Row {
   /// The guesses used so far (in progress) or taken (solved), when known.
   final int? tries;
   final int streak;
+}
+
+/// The look of one daily: colours and words, for a row or a tile.
+class _Look {
+  const _Look({
+    required this.fill,
+    required this.mark,
+    required this.iconName,
+    required this.dim,
+    required this.lost,
+    required this.stateText,
+    required this.flame,
+    required this.verb,
+  });
+  final Color fill, mark, dim, flame;
+  final String iconName, stateText, verb;
+  final bool lost;
+
+  Widget icon(double size) => TablerIcon(iconName, size: size, color: mark);
 }
 
 /// The hours and minutes left until the dailies change (midnight in India).
@@ -47,17 +67,34 @@ class TodayPage extends StatelessWidget {
       ListenableBuilder(listenable: appState, builder: _build);
 
   static List<_Row> _rows(String lang, String today) {
-    final rows = [
-      for (final m in appState.dailiesOf(lang)) _rowOf(lang, today, m),
-    ];
-    // in progress first, then not started, then done or lost (stable inside)
-    int rank(_Row r) => switch (r.state) {
-      _State.progress => 0,
-      _State.fresh => 1,
-      _ => 2,
-    };
-    final order = [...rows]..sort((a, b) => rank(a).compareTo(rank(b)));
-    return order;
+    final modes = appState.dailiesOf(lang);
+    final rows = [for (final m in modes) _rowOf(lang, today, m)];
+    switch (appState.todaySort) {
+      case TodaySort.status:
+        // in progress first, then not started, then done or lost (stable)
+        int rank(_Row r) => switch (r.state) {
+          _State.progress => 0,
+          _State.fresh => 1,
+          _ => 2,
+        };
+        return _stable(rows, (a, b) => rank(a).compareTo(rank(b)));
+      case TodaySort.mine:
+        final order = orderModes(modes, appState.dailyOrder);
+        return [for (final m in order) rows.firstWhere((r) => r.mode == m)];
+      case TodaySort.name:
+        return _stable(rows, (a, b) => a.mode.label.compareTo(b.mode.label));
+      case TodaySort.streak:
+        return _stable(rows, (a, b) => b.streak.compareTo(a.streak));
+    }
+  }
+
+  /// [rows] sorted by [cmp], equal ones keeping their order.
+  static List<_Row> _stable(List<_Row> rows, int Function(_Row, _Row) cmp) {
+    final idx = {for (var i = 0; i < rows.length; i++) rows[i]: i};
+    return [...rows]..sort((a, b) {
+      final d = cmp(a, b);
+      return d != 0 ? d : idx[a]!.compareTo(idx[b]!);
+    });
   }
 
   /// Starts [m]'s daily: the route is told the mode, so the free play mode is
@@ -84,7 +121,7 @@ class TodayPage extends StatelessWidget {
 
   static void _choose(BuildContext context) {
     try {
-      showChooseDailies(context);
+      showChooseDailies(context, play: (m) => _play(context, m));
     } catch (e) {
       appLog.w('today', 'could not open the choice: ${e.runtimeType}');
     }
@@ -97,14 +134,6 @@ class TodayPage extends StatelessWidget {
     final rows = _rows(lang, today);
     final done = rows.where((r) => r.state == _State.solved).length;
     final veteran = appState.lex.veteran;
-    final chosen = appState.dailiesOf(lang);
-    final more = [
-      for (final m in openModes(appState.level))
-        if (m.hasDaily &&
-            GameMode.loopFor(lang).contains(m) &&
-            !chosen.contains(m))
-          m,
-    ];
     final canChoose = isOpen(GameMode.quartet, appState.level);
     final newPlayer = !veteran;
     final dim = c.onSurface.withValues(alpha: dimAlpha);
@@ -118,69 +147,325 @@ class TodayPage extends StatelessWidget {
     return Column(
       children: [
         Expanded(
-          child: ListView(
-            key: const ValueKey('today-list'),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            children: [
-              Row(
+          child: LayoutBuilder(
+            builder: (context, box) {
+              // the tiles share the free height: 8 fit on a phone
+              final n = (rows.length + 1) ~/ 2;
+              final free = box.maxHeight - 32 - 150 - 8 * (n - 1);
+              final tileHeight = n == 0
+                  ? 84.0
+                  : (free / n).clamp(84.0, 128.0).toDouble();
+              return ListView(
+                key: const ValueKey('today-list'),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 children: [
-                  const Expanded(
-                    child: Text(
-                      'today',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'today',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    ),
+                      Text(
+                        date,
+                        key: const ValueKey('today-date'),
+                        style: TextStyle(fontSize: 12, color: dim),
+                      ),
+                      const SettingsButton(),
+                    ],
                   ),
-                  Text(
-                    date,
-                    key: const ValueKey('today-date'),
-                    style: TextStyle(fontSize: 12, color: dim),
+                  const SizedBox(height: 20),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$done of ${rows.length}',
+                              key: const ValueKey('today-count'),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              rows.length == 1
+                                  ? 'daily done today'
+                                  : 'dailies done today',
+                              style: TextStyle(fontSize: 12, color: dim),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (canChoose) ...[
+                        _switch(c, [
+                          _switchButton(
+                            c,
+                            key: const ValueKey('today-choose'),
+                            icon: 'adjustments-horizontal',
+                            label: 'choose, sort and more dailies',
+                            selected: false,
+                            onTap: () => _choose(context),
+                          ),
+                        ]),
+                        const SizedBox(width: 8),
+                      ],
+                      _switch(c, [
+                        _switchButton(
+                          c,
+                          key: const ValueKey('today-view-list'),
+                          icon: 'list',
+                          label: 'list',
+                          selected: !appState.todayTiles,
+                          onTap: () => appState.setTodayTiles(false),
+                        ),
+                        _switchButton(
+                          c,
+                          key: const ValueKey('today-view-tiles'),
+                          icon: 'layout-grid',
+                          label: 'tiles',
+                          selected: appState.todayTiles,
+                          onTap: () => appState.setTodayTiles(true),
+                        ),
+                      ]),
+                    ],
                   ),
-                  const SettingsButton(),
+                  const SizedBox(height: 12),
+                  if (appState.todayTiles)
+                    _tiles(context, rows, tileHeight)
+                  else
+                    for (final r in rows) _rowTile(context, r),
+                  if (newPlayer) ..._cards(context, lang),
                 ],
-              ),
-              const SizedBox(height: 20),
-              Text(
-                '$done of ${rows.length}',
-                key: const ValueKey('today-count'),
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                rows.length == 1 ? 'daily done today' : 'dailies done today',
-                style: TextStyle(fontSize: 12, color: dim),
-              ),
-              const SizedBox(height: 12),
-              for (final r in rows) _rowTile(context, r),
-              if (canChoose)
-                _linkRow(
-                  context,
-                  key: const ValueKey('today-choose'),
-                  title: 'choose dailies',
-                  sub:
-                      '${chosen.length} shown · ${more.length} more you can add',
-                  onTap: () => _choose(context),
-                ),
-              if (more.isNotEmpty)
-                _More(
-                  modes: more,
-                  tileOf: (m) => _rowTile(
-                    context,
-                    _rowOf(lang, today, m),
-                    key: ValueKey('today-more-${m.name}'),
-                  ),
-                ),
-              if (newPlayer) ..._cards(context, lang),
-            ],
+              );
+            },
           ),
         ),
         _bottomBar(context, c, next),
       ],
+    );
+  }
+
+  /// A hairline-bordered group of flat icon buttons.
+  Widget _switch(ColorScheme c, List<Widget> buttons) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: c.outlineVariant),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < buttons.length; i++) ...[
+            if (i > 0) Container(width: 1, height: 40, color: c.outlineVariant),
+            buttons[i],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _switchButton(
+    ColorScheme c, {
+    required Key key,
+    required String icon,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: Tooltip(
+        message: label,
+        child: InkWell(
+          key: key,
+          onTap: () {
+            try {
+              onTap();
+            } catch (e) {
+              appLog.w('today', 'could not use $icon: ${e.runtimeType}');
+            }
+          },
+          child: Container(
+            width: 44,
+            height: 40,
+            alignment: Alignment.center,
+            color: selected ? c.surfaceContainerHighest : null,
+            child: TablerIcon(
+              icon,
+              size: 22,
+              color: selected
+                  ? c.onSurface
+                  : c.onSurface.withValues(alpha: dimAlpha),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The dailies as a two column grid of tiles, each [height] tall.
+  Widget _tiles(BuildContext context, List<_Row> rows, double height) {
+    return Column(
+      children: [
+        for (var i = 0; i < rows.length; i += 2)
+          Padding(
+            padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
+            child: SizedBox(
+              height: height,
+              child: Row(
+                children: [
+                  Expanded(child: _tile(context, rows[i])),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: i + 1 < rows.length
+                        ? _tile(context, rows[i + 1])
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _tile(BuildContext context, _Row r) {
+    final c = Theme.of(context).colorScheme;
+    final look = _look(c, r);
+    final m = r.mode;
+    return InkWell(
+      key: ValueKey('today-row-${m.name}'),
+      onTap: () => _play(context, m),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          color: c.surfaceContainerHighest.withValues(alpha: 0.4),
+          border: Border.all(color: c.outlineVariant),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: look.fill,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: look.icon(22),
+                ),
+                Text(
+                  '${look.verb} ›',
+                  style: TextStyle(fontSize: 12, color: look.dim),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  m.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        look.lost
+                            ? '${look.stateText} · streak ended'
+                            : look.stateText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: look.lost ? heartColor(c) : look.dim,
+                          fontWeight: look.lost ? FontWeight.w700 : null,
+                        ),
+                      ),
+                    ),
+                    if (!look.lost) ...[
+                      Text(
+                        ' · ',
+                        style: TextStyle(fontSize: 11, color: look.dim),
+                      ),
+                      TablerIcon('flame', size: 12, color: look.flame),
+                      Text(
+                        ' ${r.streak}',
+                        style: TextStyle(fontSize: 11, color: look.flame),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// The colours and words of one daily's state, shared by row and tile.
+  static _Look _look(ColorScheme c, _Row r) {
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    final m = r.mode;
+    final yellow = yellowOf(c);
+    final (Color fill, Color mark) = switch (r.state) {
+      _State.solved => (c.secondary, c.onSecondary),
+      _State.progress => (yellow, onColor(c, yellow)),
+      _State.lost => (c.surfaceContainerHighest, heartColor(c)),
+      _State.fresh => (c.surfaceContainerHighest, c.onSurface),
+    };
+    return _Look(
+      fill: fill,
+      mark: mark,
+      iconName: modeIconName(m),
+      dim: dim,
+      lost: r.state == _State.lost,
+      stateText: switch (r.state) {
+        _State.fresh => 'not started',
+        _State.progress =>
+          m.endless
+              ? '${r.tries ?? 0} guesses'
+              : '${r.tries ?? 0} of ${dailyTriesOf(m)} tries used',
+        _State.solved =>
+          r.tries == null || r.tries == 0 ? 'solved' : 'solved in ${r.tries}',
+        _State.lost => 'missed',
+      },
+      flame: switch (r.state) {
+        _State.solved => c.secondary,
+        _State.progress => yellow,
+        _ => dim,
+      },
+      verb: switch (r.state) {
+        _State.fresh => 'play',
+        _State.progress => 'continue',
+        _ => 'view',
+      },
     );
   }
 
@@ -334,47 +619,6 @@ class TodayPage extends StatelessWidget {
     );
   }
 
-  Widget _linkRow(
-    BuildContext context, {
-    required Key key,
-    required String title,
-    required String sub,
-    required VoidCallback onTap,
-  }) {
-    final c = Theme.of(context).colorScheme;
-    return InkWell(
-      key: key,
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: c.outlineVariant)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 4),
-                  Text(
-                    sub,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: c.onSurface.withValues(alpha: dimAlpha),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Text('›', style: TextStyle(fontSize: 18)),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// Where a tap on the card of [s] goes, and the verb it carries.
   static String _verb(LadderStep s) => switch (s.name) {
     'skill, luck and risk' => 'got it ›',
@@ -397,7 +641,7 @@ class TodayPage extends StatelessWidget {
       }
       appState.markIntroCardDone(s.name);
       if (s.name == 'every mode') {
-        await showChooseDailies(context);
+        await showChooseDailies(context, play: (m) => _play(context, m));
         return;
       }
       final route = switch (s.name) {
@@ -563,70 +807,6 @@ class TodayPage extends StatelessWidget {
           _modeButton(context),
         ],
       ),
-    );
-  }
-}
-
-/// "more dailies (n)": the open modes that are not chosen, folded away.
-class _More extends StatefulWidget {
-  const _More({required this.modes, required this.tileOf});
-  final List<GameMode> modes;
-  final Widget Function(GameMode) tileOf;
-
-  @override
-  State<_More> createState() => _MoreState();
-}
-
-class _MoreState extends State<_More> {
-  bool _open = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        InkWell(
-          key: const ValueKey('today-more'),
-          onTap: () => setState(() => _open = !_open),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: c.outlineVariant)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'more dailies (${widget.modes.length})',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'not on your list · play any',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: c.onSurface.withValues(alpha: dimAlpha),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                TablerIcon(
-                  _open ? 'chevron-up' : 'chevron-down',
-                  size: 18,
-                  color: c.onSurface,
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (_open)
-          for (final m in widget.modes) widget.tileOf(m),
-      ],
     );
   }
 }

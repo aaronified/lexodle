@@ -9,6 +9,7 @@ import 'package:lexodle/mode_strip.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/my_dailies.dart';
 import 'package:lexodle/routes.dart';
+import 'package:lexodle/today_prefs.dart';
 import 'package:lexodle/today_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,6 +25,9 @@ void main() {
     today = dailyDate();
     // appState is global: start each test with nothing chosen, logged or saved
     appState.myDailies = MyDailies();
+    appState.todayTiles = false;
+    appState.todaySort = TodaySort.status;
+    appState.dailyOrder = [];
     appState.daily.clear();
     appState.introCardsDone.clear();
     appState.modesTaught.clear();
@@ -221,7 +225,7 @@ void main() {
     appState.lex.veteran = false;
     await show(tester);
     expect(find.byKey(const ValueKey('today-choose')), findsNothing);
-    expect(find.byKey(const ValueKey('today-more')), findsNothing);
+    expect(find.byKey(const ValueKey('today-view-list')), findsOneWidget);
   });
 
   /// The route arguments of what was pushed, by route name.
@@ -490,5 +494,126 @@ void main() {
     await show(tester);
     expect(find.textContaining('today-new-'), findsNothing);
     expect(find.text('new'), findsNothing);
+  });
+
+  group('view modes', () {
+    double y(WidgetTester t, GameMode m) => t.getTopLeft(row(m)).dy;
+    double x(WidgetTester t, GameMode m) => t.getTopLeft(row(m)).dx;
+
+    testWidgets('the icon buttons are there and the count is small', (
+      tester,
+    ) async {
+      veteran();
+      await show(tester);
+      expect(find.byKey(const ValueKey('today-choose')), findsOneWidget);
+      expect(find.byKey(const ValueKey('today-view-list')), findsOneWidget);
+      expect(find.byKey(const ValueKey('today-view-tiles')), findsOneWidget);
+      expect(find.text('choose dailies'), findsNothing);
+      expect(find.byKey(const ValueKey('today-more')), findsNothing);
+      final t = tester.widget<Text>(find.byKey(const ValueKey('today-count')));
+      expect(t.style!.fontSize, 20);
+    });
+
+    testWidgets('the choose button opens the sheet', (tester) async {
+      veteran();
+      await show(tester);
+      await tester.tap(find.byKey(const ValueKey('today-choose')));
+      await tester.pumpAndSettle();
+      expect(find.text('choose your dailies'), findsOneWidget);
+    });
+
+    testWidgets('the switch sets and shows the view', (tester) async {
+      veteran();
+      await show(tester);
+      expect(appState.todayTiles, isFalse);
+      await tester.tap(find.byKey(const ValueKey('today-view-tiles')));
+      await tester.pump();
+      expect(appState.todayTiles, isTrue);
+      // two columns: two dailies share a top
+      final ys = {for (final m in appState.dailiesOf('en')) y(tester, m)};
+      expect(ys.length, lessThan(appState.dailiesOf('en').length));
+      await tester.tap(find.byKey(const ValueKey('today-view-list')));
+      await tester.pump();
+      expect(appState.todayTiles, isFalse);
+    });
+
+    testWidgets('a tile plays its daily', (tester) async {
+      veteran();
+      appState.todayTiles = true;
+      final pushed = await showRouted(tester);
+      await tester.tap(row(GameMode.lockdown));
+      await tester.pumpAndSettle();
+      expect(pushed, contains(Routes.daily));
+      expect(arguments[Routes.daily], GameMode.lockdown);
+    });
+
+    testWidgets('8 tiles fit a phone without scrolling', (tester) async {
+      veteran();
+      final eight = [
+        GameMode.classic, GameMode.quartet, GameMode.relay, //
+        GameMode.lockdown, GameMode.blind, GameMode.equations,
+        GameMode.mastermind, GameMode.themed,
+      ];
+      for (final m in eight) {
+        appState.chooseDaily('en', m, on: true);
+      }
+      expect(appState.dailiesOf('en').length, 8);
+      appState.todayTiles = true;
+      await tester.binding.setSurfaceSize(const Size(390, 780));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: TodayPage())),
+      );
+      await tester.pump();
+      final list = tester.getRect(find.byKey(const ValueKey('today-list')));
+      for (final m in appState.dailiesOf('en')) {
+        final r = tester.getRect(row(m));
+        expect(r.bottom, lessThanOrEqualTo(list.bottom), reason: m.name);
+        expect(r.top, greaterThanOrEqualTo(list.top), reason: m.name);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    List<GameMode> shown(WidgetTester tester) {
+      final ms = appState.dailiesOf('en');
+      return [...ms]..sort((a, b) {
+        final d = y(tester, a).compareTo(y(tester, b));
+        return d != 0 ? d : x(tester, a).compareTo(x(tester, b));
+      });
+    }
+
+    testWidgets('sorted by name, a to z', (tester) async {
+      veteran();
+      appState.todaySort = TodaySort.name;
+      await show(tester);
+      final labels = [for (final m in shown(tester)) m.label];
+      expect(labels, [...labels]..sort());
+    });
+
+    testWidgets('sorted by my order', (tester) async {
+      veteran();
+      appState.todaySort = TodaySort.mine;
+      appState.dailyOrder = [GameMode.relay, GameMode.lockdown];
+      await show(tester);
+      final got = shown(tester);
+      expect(got.take(2), [GameMode.relay, GameMode.lockdown]);
+      expect(got, orderModes(appState.dailiesOf('en'), appState.dailyOrder));
+    });
+
+    testWidgets('sorted by streak, longest first', (tester) async {
+      veteran();
+      appState.todaySort = TodaySort.streak;
+      await show(tester);
+      final streaks = [
+        for (final m in shown(tester)) appState.dailyStreakFor('en', m),
+      ];
+      expect(streaks, [...streaks]..sort((a, b) => b.compareTo(a)));
+    });
+
+    testWidgets('sorted by status is the default order', (tester) async {
+      veteran();
+      await show(tester);
+      expect(shown(tester).first, GameMode.lockdown);
+    });
   });
 }

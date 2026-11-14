@@ -139,32 +139,52 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('sw-prev')));
     await tester.pumpAndSettle();
     expect(find.text('best 2'), findsOneWidget);
-    expect(find.byKey(const ValueKey('sw-header-mode')), findsOneWidget);
+    expect(find.byKey(const ValueKey('sw-strip')), findsOneWidget);
   });
 
-  testWidgets('swiping changes the mode and the dots', (tester) async {
+  testWidgets('dragging the header like a ratchet changes the mode', (
+    tester,
+  ) async {
     await show(tester);
+    expect(find.text('best 2'), findsOneWidget);
     await tester.drag(
-      find.byKey(const ValueKey('sw-swipe')),
+      find.byKey(const ValueKey('sw-strip')),
       const Offset(-300, 0),
     );
     await tester.pumpAndSettle();
     expectQuartet(tester);
     await tester.drag(
-      find.byKey(const ValueKey('sw-swipe')),
+      find.byKey(const ValueKey('sw-strip')),
       const Offset(300, 0),
     );
     await tester.pumpAndSettle();
     expect(find.text('best 2'), findsOneWidget);
   });
 
-  testWidgets('a short drag settles back on the same mode', (tester) async {
+  testWidgets('a short drag of the header settles back', (tester) async {
     await show(tester);
     await tester.drag(
-      find.byKey(const ValueKey('sw-swipe')),
+      find.byKey(const ValueKey('sw-strip')),
       const Offset(-40, 0),
     );
     await tester.pumpAndSettle();
     expect(find.text('best 2'), findsOneWidget);
+  });
+
+  testWidgets('the body and the month button do not move with a drag', (
+    tester,
+  ) async {
+    await show(tester);
+    final at = tester.getTopLeft(find.byKey(const ValueKey('sw-month-toggle')));
+    await tester.drag(
+      find.byKey(const ValueKey('sw-streak-count')),
+      const Offset(-300, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('best 2'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('sw-month-toggle'))),
+      at,
+    );
   });
 }

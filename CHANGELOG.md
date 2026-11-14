@@ -7,6 +7,13 @@ it to the version.
 
 ## Unreleased
 
+- today: list or tiles, sort, and your own order
+  The count row of Today has two icon groups: one to choose, sort and play the other dailies, and a switch between rows and tiles (eight tiles fit on the screen). The choose sheet now has a drag handle on each daily to put them in your own order, pills to sort Today (status, my order, name, streak), and a play button on the dailies you hid. The "choose dailies" and "more dailies" rows are gone. The choice and the order are kept.
+- dailies: hiding a daily keeps its streak
+  The sheet no longer warns that dropping a daily ends its streak, because it never did: the streak counts from the games played, and a hidden daily can still be played from the sheet.
+- you: the mode header of the streak card is a ratchet
+  The mode name and icon at the top of the streak card are dragged like the free play strip, and the card below no longer slides, so the show the month button stays where it is.
+
 - geography: the answer's info comes from wikipedia, with a photo and a map
   At the end of a geography game the answer shows what the place is, a short extract and its photo from English Wikipedia (not a Wiktionary word entry), a map with the place marked, and a link to its page. The map is drawn offline from a small bundled outline. If Wikipedia has no photo or coordinates, that part is left out.
 
