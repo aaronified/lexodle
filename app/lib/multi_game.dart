@@ -51,11 +51,21 @@ class MultiGamePage extends StatefulWidget {
     this.practice = false,
     this.replay = const [],
     this.clock,
+    this.limit,
+    this.draw,
   });
   final WordBank bank;
 
   /// The clock of the game's timer; tests pass their own.
   final Duration Function()? clock;
+
+  /// The time a made puzzle allows for the whole game, counted from the first
+  /// key; when it runs out the game is lost. Null: no limit.
+  final Duration? limit;
+
+  /// How the answers of a made puzzle were drawn, so that its scores are worked
+  /// out under the pool the maker chose; null for the usual rule.
+  final Draw? draw;
 
   /// Set to play the daily quartet or relay race: its four words and the fixed
   /// daily difficulty, instead of a game drawn at random.
@@ -99,7 +109,9 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// How the answers are drawn, and so the chances their scores are worked out
   /// under: the setting, the curve for a daily, and equal chances for the old
   /// daily and for a puzzle from a link.
-  late final Draw draw = _daily == null
+  late final Draw draw = widget.draw != null
+      ? widget.draw!
+      : _daily == null
       ? appState.draw
       : _curveDaily
       ? Draw.sigmoid
@@ -139,6 +151,49 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// Counts the games begun, so work for an earlier one is ignored.
   var _epoch = 0;
 
+  /// Whether the game was lost to its time limit.
+  bool _timeUp = false;
+
+  /// Whether the game is over: played out, or lost to its time limit.
+  bool get _over => game.over || _timeUp;
+
+  /// Whether the time limit has run out and the game is not over yet.
+  bool get _expired =>
+      widget.limit != null &&
+      !_over &&
+      _timer.elapsedMs >= widget.limit!.inMilliseconds;
+
+  /// The time counted for the record: a game lost to its limit took the limit.
+  int get _ms => _timeUp ? widget.limit!.inMilliseconds : _timer.elapsedMs;
+
+  void _tick() {
+    try {
+      if (mounted && _expired) setState(_runOut);
+    } catch (e) {
+      appLog.w('multi', 'time limit: ${e.runtimeType}');
+    }
+  }
+
+  /// Ends the game as a loss: the time is up.
+  void _runOut({bool live = true}) {
+    _timeUp = true;
+    message = '';
+    input.clear();
+    if (live) Haptics.fire(Haptic.lose);
+    _finish();
+    final d = _daily;
+    if (d != null && !widget.practice) {
+      appState.saveDaily(
+        widget.bank.language.code,
+        d.date,
+        game.guesses,
+        won: false,
+        mode: mode,
+      );
+    }
+    _save();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -149,15 +204,18 @@ class _MultiGamePageState extends State<MultiGamePage> {
     _reset();
     _resume();
     _replay();
+    // a game saved past its time limit opens over, and is recorded once
+    if (_expired) _runOut(live: false);
     // a game already over when opened shows its time frozen
-    if (game.over) _timer.stop();
+    if (_over) _timer.stop();
+    _timer.addListener(_tick);
     _introduce();
   }
 
   /// The one-time introduction to the daily, on the first daily opened.
   void _introduce() {
     final d = _daily;
-    if (d == null || d.date.isEmpty || widget.practice || game.over) return;
+    if (d == null || d.date.isEmpty || widget.practice || _over) return;
     if (appState.dailyIntroSeen) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -179,7 +237,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// left half played. Nothing is saved or counted: it is practice.
   void _replay() {
     for (final g in widget.replay) {
-      if (game.over || g.length != length || !widget.bank.valid.contains(g)) {
+      if (_over || g.length != length || !widget.bank.valid.contains(g)) {
         break;
       }
       _apply(g, restoring: true);
@@ -213,12 +271,12 @@ class _MultiGamePageState extends State<MultiGamePage> {
     }
     for (final g in saved) {
       // a damaged save stops the replay rather than breaking the game
-      if (game.over || g.length != length || !widget.bank.valid.contains(g)) {
+      if (_over || g.length != length || !widget.bank.valid.contains(g)) {
         break;
       }
       _apply(g, restoring: true);
     }
-    if (game.over || extra == null) return;
+    if (_over || extra == null) return;
     // the hints bought are back, not paid for again
     final back = hintsFromJson(
       extra['hints'],
@@ -260,7 +318,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   void _save() {
     final key = _saveKey;
     if (key == null) return;
-    if (game.over) {
+    if (_over) {
       appState.clearProgress(key);
       return;
     }
@@ -275,6 +333,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   @override
   void dispose() {
     _jobs.close();
+    _timer.removeListener(_tick);
     _timer.dispose();
     _focus.dispose();
     super.dispose();
@@ -292,6 +351,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     _fingers = 0;
     _closeOnUp = false;
     unlocked = [];
+    _timeUp = false;
     game = MultiGame(
       mode,
       answers ??
@@ -323,7 +383,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   }
 
   void _type(String ch) {
-    if (game.over) return;
+    if (_over) return;
     _timer.start();
     setState(() {
       if (input.type(ch, _letters) >= 0) message = '';
@@ -332,7 +392,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   }
 
   void _back() {
-    if (game.over) return;
+    if (_over) return;
     setState(() {
       if (input.back() >= 0) message = '';
     });
@@ -343,14 +403,14 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   /// Shift locks the letter under the cursor, or unlocks it.
   void _toggleLockAtCursor() {
-    if (game.over) return;
+    if (_over) return;
     setState(() => input.toggleLock(input.cursor));
     Haptics.lockToggled(locked: input.isLocked(input.cursor));
     _save();
   }
 
   void _select(int i) {
-    if (game.over) return;
+    if (_over) return;
     setState(() {
       // a second tap on a tile locks its letter, or lets it go
       if (input.tap(i)) Haptics.lockToggled(locked: input.isLocked(i));
@@ -377,7 +437,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// Erases the row being typed (a swipe from right to left over it, or shift
   /// and backspace).
   void _clearRow() {
-    if (game.over) return;
+    if (_over) return;
     setState(() {
       if (input.clearTyped()) Haptics.fire(Haptic.erase);
     });
@@ -385,13 +445,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
   }
 
   void _move(int by) {
-    if (game.over) return;
+    if (_over) return;
     setState(() => input.move(by));
     _save();
   }
 
   void _submit() {
-    if (game.over) return;
+    if (_over) return;
     if (!input.complete) {
       Haptics.fire(Haptic.reject);
       setState(
@@ -521,7 +581,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
             ),
         ],
         daily: d?.date ?? '',
-        ms: _timer.elapsedMs,
+        ms: _ms,
       );
       final streak = d == null
           ? 0
@@ -670,18 +730,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
                     children: [
                       Expanded(child: _boards(c)),
                       ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: game.over ? 0 : 40,
-                        ),
+                        constraints: BoxConstraints(minHeight: _over ? 0 : 40),
                         child: Center(child: _status(c)),
                       ),
                       // the panel is drawn over the boards, which run on under it
                       // (see [_boards]' padding), so lowering it shows them
-                      if (!game.over) ..._bottom(c),
+                      if (!_over) ..._bottom(c),
                       const SizedBox(height: 12),
                     ],
                   ),
-                  if (game.over) Positioned.fill(child: _overPanel(c)),
+                  if (_over) Positioned.fill(child: _overPanel(c)),
                 ],
               ),
             ),
@@ -695,7 +753,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     if (message.isNotEmpty) {
       return Text(message, style: TextStyle(color: c.error));
     }
-    if (game.over) return const SizedBox();
+    if (_over) return const SizedBox();
     final left = '${tries - game.guesses.length} tries left';
     final a = game.active;
     return Caption(
@@ -720,7 +778,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
             11,
             8,
             11,
-            8 + (game.over ? ResizablePanel.restHeight(context) : 0),
+            8 + (_over ? ResizablePanel.restHeight(context) : 0),
           ),
           child: Column(
             children: [
@@ -899,7 +957,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   }
 
   /// Whether the player can buy hints here: the game is on and lex is shown.
-  bool get _hintable => !game.over && appState.lexUnlocked;
+  bool get _hintable => !_over && appState.lexUnlocked;
 
   /// The board a hint would be for: in a relay race the word that is on, in a
   /// quartet the board picked (a tap on its number), else the first still live.
@@ -962,7 +1020,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            TimerPill(_timer),
+            TimerPill(_timer, limit: widget.limit),
             Expanded(
               child: hintable
                   ? HintBar(
@@ -1041,7 +1099,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
   void _buyHint(HintKind kind) {
     try {
       final target = _hintFor;
-      if (game.over || target == null) return;
+      if (_over || target == null) return;
       final pick = pickHint(
         kind,
         game.boards[target].answer,
@@ -1220,6 +1278,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_timeUp) const Caption('time is up'),
             if (_daily != null)
               Caption(
                 widget.practice

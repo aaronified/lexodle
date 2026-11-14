@@ -6,7 +6,6 @@ import 'package:lexodle/history_page.dart';
 import 'package:lexodle/playstyle_card.dart';
 import 'package:lexodle/home.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/ui.dart' show hairline;
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';

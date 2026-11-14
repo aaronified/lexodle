@@ -140,9 +140,8 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
     if (!input.complete) {
       Haptics.fire(Haptic.reject);
       setState(
-        () => message = input.hasBlank
-            ? 'fill the blanks'
-            : 'need $length tiles',
+        () =>
+            message = input.hasBlank ? 'fill the blanks' : 'need $length tiles',
       );
       return;
     }
@@ -322,16 +321,18 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
     );
   }
 
+  String _face(String eq) => eq.split('').map(faceOf).join();
+
   Widget _result(ColorScheme c) {
     final n = eligible.length;
     final left = tries - history.length;
     final head = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Caption('$n ${n == 1 ? 'word' : 'words'} on my list fit'),
+        Caption('$n ${n == 1 ? 'equation' : 'equations'} on my list fit'),
         const SizedBox(height: 4),
         Caption(
-          'answers from ${_answers.length} words · '
+          'answers from ${_answers.length} equations · '
           '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
         ),
       ],
@@ -343,8 +344,7 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
           head,
           const SizedBox(height: 8),
           Text(
-            'no word matches. check the colours of the guesses above, or the '
-            'game may use a word this list lacks.',
+            'no equation matches. check the colours of the guesses above.',
             style: TextStyle(color: c.error, fontSize: 13),
           ),
         ],
@@ -358,23 +358,14 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
         const SizedBox(height: 10),
         if (n == 1) ...[
           Text(
-            'the only word on my list that fits: ${eligible.first}',
+            'the only equation on my list that fits: ${_face(eligible.first)}',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'if the game does not accept it, the answer is a word my list '
-            'does not have.',
-            style: TextStyle(
-              fontSize: 11,
-              color: c.onSurface.withValues(alpha: dimAlpha),
-            ),
           ),
         ] else if (r == null || busy)
           const Caption('working out the best guess…')
         else ...[
           Caption(switch (tries - history.length) {
-            <= 1 => 'last try: the likeliest word that fits',
+            <= 1 => 'last try: an equation that fits',
             2 => 'two tries left: the guess most likely to solve it in time',
             _ => 'recommended guess',
           }),
@@ -384,7 +375,7 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Text(
-                r.word,
+                _face(r.word),
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -397,7 +388,7 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
             context,
             '${r.winChance == null ? 'skill ${r.skill.toStringAsFixed(1)}' : 'about ${(r.winChance! * 100).toStringAsFixed(0)}% to solve it'}'
                 ' · expect about '
-                '${r.expected.toStringAsFixed(1)} words left'
+                '${r.expected.toStringAsFixed(1)} equations left'
                 '${r.canWin ? ' · could be the answer' : ''}  (tap to use)',
             'skill',
             style: TextStyle(
@@ -408,26 +399,17 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
         ],
         if (n > 1) ...[
           const SizedBox(height: 16),
-          Caption(n > 40 ? 'most likely 40' : 'all the words that fit'),
+          Caption(n > 40 ? 'the first 40' : 'all the equations that fit'),
           const SizedBox(height: 6),
           Wrap(
             spacing: 12,
             runSpacing: 4,
             children: [
               for (final w in eligible.take(40))
-                InkWell(onTap: () => _use(w), child: Text(w)),
+                InkWell(onTap: () => _use(w), child: Text(_face(w))),
             ],
           ),
         ],
-        const SizedBox(height: 16),
-        Text(
-          'my list holds all ${_answers.length} words of this '
-          'length. a game can use a word that is not on it.',
-          style: TextStyle(
-            fontSize: 11,
-            color: c.onSurface.withValues(alpha: dimAlpha),
-          ),
-        ),
       ],
     );
   }
