@@ -191,7 +191,7 @@ class _YouPageState extends State<YouPage> {
                       context,
                       'solver',
                       'solver',
-                      'for ${solverModeOf(appState.mode).label}',
+                      null,
                       icon: 'calculator',
                       onTap: () => _push(context, Routes.solver),
                     ),

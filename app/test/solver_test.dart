@@ -103,4 +103,42 @@ void main() {
       }
     });
   }
+
+  testWidgets('an excluded word is neither listed nor recommended', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(420, 900));
+    appState.setup(lang: 'fr', length: 4, tries: 6);
+    final bank = (await tester.runAsync(
+      () async => WordBank.load(
+        (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
+      ),
+    ))!;
+    Finder big() => find.byWidgetPredicate(
+      (w) => w is Text && w.style?.fontSize == 22 && w.data != null,
+    );
+
+    await tester.pumpWidget(MaterialApp(home: SolverPage(bank: bank)));
+    await tester.pump(const Duration(seconds: 2));
+    final total = bank.answers(4).length;
+    expect(find.textContaining('answers from $total words'), findsOneWidget);
+    final rec = tester.widget<Text>(big()).data!;
+    final first = bank.answers(4).first;
+    expect(find.text(first), findsWidgets);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SolverPage(bank: bank, excluded: {rec, first}),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 2));
+    expect(
+      find.textContaining('answers from ${total - {rec, first}.length} words'),
+      findsOneWidget,
+    );
+    expect(find.text(rec), findsNothing);
+    expect(find.text(first), findsNothing);
+    expect(tester.widget<Text>(big()).data, isNot(rec));
+  });
 }

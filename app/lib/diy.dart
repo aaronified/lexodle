@@ -94,7 +94,7 @@ class DiyPuzzle {
     this.limit,
     Draw? draw,
   }) : words = words ?? [word],
-       draw = draw ?? Draw.sigmoid;
+       draw = draw ?? Draw.equal;
 
   final String lang;
   final GameMode mode;
@@ -109,8 +109,8 @@ class DiyPuzzle {
   /// The time to win in; null for no limit.
   final Duration? limit;
 
-  /// The draw of the answer, for the scores: the sigmoid curve when a link says
-  /// nothing.
+  /// The draw of the answer, for the scores: equal when a link says nothing, as
+  /// every link did before it had one.
   final Draw draw;
 
   String get word => words.first;
@@ -122,14 +122,14 @@ class DiyPuzzle {
       '${limit == null ? '' : '&cd=${limit!.inSeconds}'}'
       '${switch (draw) {
         Draw.frequency => '&d=f',
-        Draw.equal => '&d=e',
-        Draw.sigmoid => '',
+        Draw.equal => '',
+        Draw.sigmoid => '&d=s',
       }}'
       '&w=${words.map(diyEncode).join('.')}';
 
   /// The puzzle a link names, or null when it names none. A link without a mode
   /// is a classic one, as every link was before the other modes had one; one
-  /// without a limit or a draw has no limit and the sigmoid curve.
+  /// without a limit or a draw has no limit and equal chances.
   static DiyPuzzle? parse(Uri uri) {
     final q = uri.queryParameters;
     final lang = q['l'], t = int.tryParse(q['t'] ?? '');
@@ -179,7 +179,7 @@ class DiyPuzzle {
           : null,
       draw: switch (q['d']) {
         'f' => Draw.frequency,
-        'e' => Draw.equal,
+        's' => Draw.sigmoid,
         _ => null,
       },
     );

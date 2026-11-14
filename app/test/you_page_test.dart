@@ -101,22 +101,15 @@ void main() {
     expect(row('diy'), findsOneWidget);
   });
 
-  testWidgets('the solver row says which mode it solves', (tester) async {
+  testWidgets('the solver row has no sub-line', (tester) async {
     player(played: 500, veteran: true);
-    String sub() => (tester.widget<Text>(
-      find.descendant(of: row('solver'), matching: find.byType(Text)).last,
-    )).data!;
     appState.setup(mode: GameMode.quartet);
     await show(tester);
-    expect(sub(), 'for quartet');
-    // no solver for these modes: the classic one opens
-    for (final m in [GameMode.blind, GameMode.equations, GameMode.themed]) {
-      appState.setup(mode: m);
-      await show(tester);
-      expect(sub(), 'for classic', reason: '$m');
-    }
-    expect(solverModeOf(GameMode.lockdown), GameMode.lockdown);
-    expect(solverModeOf(GameMode.equations), GameMode.classic);
+    expect(
+      find.descendant(of: row('solver'), matching: find.byType(Text)),
+      findsOneWidget,
+    );
+    expect(find.text('for quartet'), findsNothing);
   });
 
   testWidgets('the settings button is on the tab and opens settings', (
