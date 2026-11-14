@@ -5,7 +5,8 @@ import 'daily.dart';
 import 'equations.dart';
 import 'game.dart';
 import 'geography.dart';
-import 'home.dart' show HomePage, LanguagePopup;
+import 'home.dart' show HomePage;
+import 'language_sheet.dart';
 import 'keyboard.dart';
 import 'ladder.dart' show openModes;
 import 'main.dart';
@@ -362,9 +363,10 @@ class _DiyMakerState extends State<_DiyMaker> {
   }
 
   Future<void> _pickLanguage() async {
-    final code = await showDialog<String>(
-      context: context,
-      builder: (_) => LanguagePopup(langs: _langs, current: _lang),
+    final code = await showLanguageSheet(
+      context,
+      langs: _langs,
+      current: _lang,
     );
     if (code == null || code == _lang) return;
     setState(() {
