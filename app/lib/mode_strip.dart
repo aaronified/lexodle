@@ -178,7 +178,6 @@ class _ModeStripState extends State<ModeStrip>
       onTap: () => _goTo(i),
       child: SizedBox(
         width: modeStripSlot,
-        height: widget.height,
         child: Center(
           child: FittedBox(
             fit: BoxFit.scaleDown,
@@ -255,8 +254,8 @@ class _ModeStripState extends State<ModeStrip>
             Positioned(
               left: width / 2 - modeStripSlot / 2 + (i - _pos) * modeStripSlot,
               top: 0,
+              bottom: 0,
               width: modeStripSlot,
-              height: widget.height,
               child: _item(c, i),
             ),
         ],
@@ -274,6 +273,8 @@ class _ModeStripState extends State<ModeStrip>
       slider: many,
       label: 'free play mode',
       value: shown.label,
+      increasedValue: _modes[math.min(_nearest + 1, _last)].label,
+      decreasedValue: _modes[math.max(_nearest - 1, 0)].label,
       onIncrease: many && _nearest < _last ? () => _goTo(_nearest + 1) : null,
       onDecrease: many && _nearest > 0 ? () => _goTo(_nearest - 1) : null,
       child: GestureDetector(
@@ -286,6 +287,7 @@ class _ModeStripState extends State<ModeStrip>
         onHorizontalDragEnd: many ? (d) => _end(d.primaryVelocity ?? 0) : null,
         onHorizontalDragCancel: many ? () => _end(0) : null,
         child: Container(
+          width: double.infinity,
           height: widget.height,
           decoration: BoxDecoration(
             border: Border.fromBorderSide(hairline(c)),
@@ -297,26 +299,28 @@ class _ModeStripState extends State<ModeStrip>
               builder: (context, box) {
                 final w = box.maxWidth.isFinite ? box.maxWidth : modeStripSlot;
                 return Stack(
-                  alignment: Alignment.center,
                   children: [
                     Positioned.fill(
                       child: ExcludeSemantics(child: _track(c, w)),
                     ),
-                    Semantics(
-                      button: true,
-                      label: 'free play ${shown.label}',
-                      excludeSemantics: true,
-                      onTap: _tapBox,
-                      child: GestureDetector(
-                        key: const ValueKey('mode-strip-box'),
-                        behavior: HitTestBehavior.opaque,
+                    Center(
+                      child: Semantics(
+                        container: true,
+                        button: true,
+                        label: 'free play ${shown.label}',
+                        excludeSemantics: true,
                         onTap: _tapBox,
-                        child: Container(
-                          width: _boxWidth,
-                          height: _boxHeight,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: c.onSurface),
-                            borderRadius: BorderRadius.circular(4),
+                        child: GestureDetector(
+                          key: const ValueKey('mode-strip-box'),
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _tapBox,
+                          child: Container(
+                            width: _boxWidth,
+                            height: _boxHeight,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: c.onSurface),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
                         ),
                       ),

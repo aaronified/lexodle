@@ -83,6 +83,7 @@ void main() {
     GameMode? start,
   }) async {
     final log = _Log();
+    await tester.pumpWidget(const SizedBox());
     await tester.pumpWidget(_Host(modes, log, start: start));
     await tester.pump();
     return log;
@@ -175,10 +176,10 @@ void main() {
 
   testWidgets('a fast flick moves one item', (tester) async {
     final log = await show(tester, eight);
-    await tester.fling(strip, const Offset(-30, 0), 1500);
+    await tester.fling(strip, const Offset(-60, 0), 1500);
     await tester.pumpAndSettle();
     expect(log.changed, [eight[1]]);
-    await tester.fling(strip, const Offset(30, 0), 1500);
+    await tester.fling(strip, const Offset(60, 0), 1500);
     await tester.pumpAndSettle();
     expect(log.changed, [eight[1], eight[0]]);
   });
