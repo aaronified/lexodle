@@ -19,6 +19,7 @@ import 'lex.dart';
 import 'my_dailies.dart';
 import 'profile.dart';
 import 'reminders.dart' show ReminderSettings;
+import 'today_prefs.dart';
 import 'learn_log.dart';
 import 'medal.dart';
 import 'equations.dart' show equationLengths, equationTriesLevels;
@@ -3576,6 +3577,61 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// How Today shows the dailies: as rows or as tiles, in which sort, and the
+  /// player's own order (see today_prefs.dart). All three are kept.
+  bool todayTiles = false;
+  TodaySort todaySort = TodaySort.status;
+  List<GameMode> dailyOrder = [];
+
+  void setTodayTiles(bool on) {
+    if (todayTiles == on) return;
+    todayTiles = on;
+    _saveTodayView();
+    notifyListeners();
+  }
+
+  void setTodaySort(TodaySort s) {
+    if (todaySort == s) return;
+    todaySort = s;
+    _saveTodayView();
+    notifyListeners();
+  }
+
+  /// Keeps [order] as the player's own order and sorts Today by it.
+  void setDailyOrder(List<GameMode> order) {
+    dailyOrder = [...order];
+    todaySort = TodaySort.mine;
+    _saveTodayView();
+    notifyListeners();
+  }
+
+  void _saveTodayView() {
+    try {
+      _w('todayTiles', _prefs?.setBool('todayTiles', todayTiles));
+      _w('todaySort', _prefs?.setInt('todaySort', todaySort.index));
+      _w(
+        'dailyOrder',
+        _prefs?.setString(
+          'dailyOrder',
+          jsonEncode([for (final m in dailyOrder) m.index]),
+        ),
+      );
+    } catch (e) {
+      appLog.w('dailies', 'could not save the view: ${e.runtimeType}');
+    }
+  }
+
+  void _readTodayView(SharedPreferences p) {
+    try {
+      todayTiles = p.getBool('todayTiles') ?? false;
+      todaySort = TodaySort.fromIndex(p.getInt('todaySort'));
+      final raw = p.getString('dailyOrder');
+      if (raw != null) dailyOrder = dailyOrderFromJson(jsonDecode(raw));
+    } catch (e) {
+      appLog.w('dailies', 'the view could not be read: ${e.runtimeType}');
+    }
+  }
+
   void _readMyDailies(SharedPreferences p) {
     final raw = p.getString('myDailies');
     if (raw == null) return;
@@ -3999,6 +4055,7 @@ class AppState extends ChangeNotifier {
       _readLex(p);
       _readDailyIntro(p);
       _readMyDailies(p);
+      _readTodayView(p);
       _readProfile(p);
       // the achievements were changed to levels: once, work them all out again
       // from the games kept. The flag is kept with the rest; without it (a
