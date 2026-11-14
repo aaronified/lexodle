@@ -35,6 +35,7 @@ class ModeStrip extends StatefulWidget {
     this.caption = 'free play',
     this.label = 'free play',
     this.onMove,
+    this.loop = false,
   });
 
   final List<GameMode> modes;
@@ -55,6 +56,10 @@ class ModeStrip extends StatefulWidget {
 
   /// Told where the ratchet is, in items from the first, whenever it moves.
   final ValueChanged<double>? onMove;
+
+  /// Goes round: after the last mode comes the first, and before the first the
+  /// last (with more than one mode).
+  final bool loop;
 
   @override
   State<ModeStrip> createState() => _ModeStripState();
@@ -77,7 +82,9 @@ class _ModeStripState extends State<ModeStrip>
       widget.modes.isEmpty ? [widget.selected] : widget.modes;
   int get _last => _modes.length - 1;
   int get _selectedIndex => math.max(0, _modes.indexOf(widget.selected));
-  int get _nearest => _pos.round().clamp(0, _last);
+  bool get _loop => widget.loop && _modes.length > 1;
+  int _mod(int k) => ((k % _modes.length) + _modes.length) % _modes.length;
+  int get _nearest => _loop ? _mod(_pos.round()) : _pos.round().clamp(0, _last);
 
   @override
   void initState() {
@@ -110,7 +117,7 @@ class _ModeStripState extends State<ModeStrip>
 
   /// Moves the ratchet to [p] items, with a tick for each one crossed.
   void _setPos(double p) {
-    _pos = p.clamp(0.0, _last.toDouble());
+    _pos = _loop ? p : p.clamp(0.0, _last.toDouble());
     try {
       widget.onMove?.call(_pos);
     } catch (e) {
@@ -130,15 +137,16 @@ class _ModeStripState extends State<ModeStrip>
   /// Runs on to item [target], then reports the mode it lands on.
   void _goTo(int target) {
     try {
-      target = target.clamp(0, _last);
+      if (!_loop) target = target.clamp(0, _last);
       final reduced = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
       void settle() {
         if (!mounted) return;
+        final at = _loop ? _mod(target) : target;
         setState(() {
-          _pos = target.toDouble();
-          _ticked = target;
+          _pos = at.toDouble();
+          _ticked = at;
         });
-        final m = _modes[target];
+        final m = _modes[at];
         if (m != widget.selected) {
           try {
             widget.onChanged(m);
@@ -185,12 +193,12 @@ class _ModeStripState extends State<ModeStrip>
     _goTo(target);
   }
 
-  Widget _item(ColorScheme c, int i) {
-    final m = _modes[i];
-    final here = i == _nearest;
+  Widget _item(ColorScheme c, int i, Key key) {
+    final m = _modes[_loop ? _mod(i) : i];
+    final here = i == (_loop ? _pos.round() : _nearest);
     final color = here ? c.onSurface : c.onSurface.withValues(alpha: .62);
     return GestureDetector(
-      key: ValueKey('mode-strip-${m.name}'),
+      key: key,
       behavior: HitTestBehavior.opaque,
       onTap: () => _goTo(i),
       child: SizedBox(
@@ -245,11 +253,33 @@ class _ModeStripState extends State<ModeStrip>
     );
   }
 
+  /// The slots drawn: every item, or round a looping strip enough of them to
+  /// fill [width] on both sides of where it is.
+  Iterable<int> _slots(double width) {
+    if (!_loop) return Iterable<int>.generate(_modes.length);
+    final half = (width / modeStripSlot / 2).ceil() + 1;
+    final mid = _pos.round();
+    return [for (var k = mid - half; k <= mid + half; k++) k];
+  }
+
+  /// The key of slot [i]: `mode-strip-<mode>` for the one nearest the box
+  /// (so a tap or a test finds one), another for its repeats in a loop.
+  Key _keyOf(int i) {
+    final n = _modes.length;
+    final m = _modes[_loop ? _mod(i) : i];
+    if (!_loop) return ValueKey('mode-strip-${m.name}');
+    final j = _mod(i);
+    final nearest = j + n * ((_pos - j) / n).round();
+    return ValueKey(
+      i == nearest ? 'mode-strip-${m.name}' : 'mode-strip-${m.name}-$i',
+    );
+  }
+
   Widget _track(ColorScheme c, double width) {
     final solid = c.surface;
     final clear = solid.withValues(alpha: 0);
-    final fadeLeft = _pos > .01;
-    final fadeRight = _pos < _last - .01;
+    final fadeLeft = _loop || _pos > .01;
+    final fadeRight = _loop || _pos < _last - .01;
     final f = width <= 0 ? 0.0 : (_fadeWidth / width).clamp(0.0, .5);
     return ShaderMask(
       // the key says which sides fade, for the tests
@@ -268,13 +298,13 @@ class _ModeStripState extends State<ModeStrip>
       ).createShader(r),
       child: Stack(
         children: [
-          for (var i = 0; i < _modes.length; i++)
+          for (final i in _slots(width))
             Positioned(
               left: width / 2 - modeStripSlot / 2 + (i - _pos) * modeStripSlot,
               top: 0,
               bottom: 0,
               width: modeStripSlot,
-              child: _item(c, i),
+              child: _item(c, i, _keyOf(i)),
             ),
         ],
       ),
@@ -291,10 +321,17 @@ class _ModeStripState extends State<ModeStrip>
       slider: many,
       label: '${widget.label} mode',
       value: shown.label,
-      increasedValue: _modes[math.min(_nearest + 1, _last)].label,
-      decreasedValue: _modes[math.max(_nearest - 1, 0)].label,
-      onIncrease: many && _nearest < _last ? () => _goTo(_nearest + 1) : null,
-      onDecrease: many && _nearest > 0 ? () => _goTo(_nearest - 1) : null,
+      increasedValue:
+          _modes[_loop ? _mod(_nearest + 1) : math.min(_nearest + 1, _last)]
+              .label,
+      decreasedValue:
+          _modes[_loop ? _mod(_nearest - 1) : math.max(_nearest - 1, 0)].label,
+      onIncrease: many && (_loop || _nearest < _last)
+          ? () => _goTo(_loop ? _pos.round() + 1 : _nearest + 1)
+          : null,
+      onDecrease: many && (_loop || _nearest > 0)
+          ? () => _goTo(_loop ? _pos.round() - 1 : _nearest - 1)
+          : null,
       child: GestureDetector(
         key: const ValueKey('mode-strip'),
         behavior: HitTestBehavior.translucent,

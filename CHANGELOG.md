@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- today: the free play strip goes round
+  After the last mode comes the first, and before the first the last, so you can keep dragging one way.
+
 ## 0.12.0
 
 - today: list or tiles, sort, and your own order
