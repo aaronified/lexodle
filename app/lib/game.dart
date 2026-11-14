@@ -54,10 +54,20 @@ class GamePage extends StatefulWidget {
     this.chosen = false,
     this.hearts,
     this.clock,
+    this.limit,
+    this.draw,
   });
 
   /// The clock of the game's timer; tests pass their own.
   final Duration Function()? clock;
+
+  /// The time a made puzzle allows for the whole game, counted from the first
+  /// key; when it runs out the game is lost. Null: no limit.
+  final Duration? limit;
+
+  /// How the answer of a made puzzle was drawn, so that its scores are worked
+  /// out under the pool the maker chose; null for the usual rule.
+  final Draw? draw;
 
   /// The hearts of a lockdown puzzle made by a friend (a link); null for the
   /// player's own setting.
@@ -161,6 +171,8 @@ class _GamePageState extends State<GamePage>
   /// daily and for a puzzle from a link.
   late final Draw draw = equations || mastermind
       ? Draw.equal
+      : widget.draw != null
+      ? widget.draw!
       : _daily == null
       ? appState.draw
       : _curveDaily
@@ -245,9 +257,44 @@ class _GamePageState extends State<GamePage>
     _reset();
     _resume();
     _replay();
+    // a game saved past its time limit opens over, and is recorded once
+    if (_expired) _runOut(live: false);
     // a game already over when opened shows its time frozen
     if (over) _timer.stop();
+    _timer.addListener(_tick);
     _introduce();
+  }
+
+  /// Whether the game has a time limit that has run out, and is not over yet.
+  bool get _expired =>
+      widget.limit != null &&
+      !over &&
+      _timer.elapsedMs >= widget.limit!.inMilliseconds;
+
+  /// Whether the game was lost to its time limit.
+  bool _timeUp = false;
+
+  /// The time counted for the record: a game lost to its limit took the limit.
+  int get _ms => _timeUp ? widget.limit!.inMilliseconds : _timer.elapsedMs;
+
+  void _tick() {
+    try {
+      if (mounted && _expired) setState(_runOut);
+    } catch (e) {
+      appLog.w('game', 'time limit: ${e.runtimeType}');
+    }
+  }
+
+  /// Ends the game as a loss: the time is up.
+  void _runOut({bool live = true}) {
+    over = true;
+    won = false;
+    _timeUp = true;
+    message = '';
+    input.clear();
+    if (live) Haptics.fire(Haptic.lose);
+    _finish();
+    _saveDaily();
   }
 
   /// The one-time introduction to the daily, on the first daily opened.
@@ -420,6 +467,7 @@ class _GamePageState extends State<GamePage>
   @override
   void dispose() {
     _jobs.close();
+    _timer.removeListener(_tick);
     _timer.dispose();
     _rumble.dispose();
     _scroll.dispose();
@@ -460,7 +508,7 @@ class _GamePageState extends State<GamePage>
     befores.clear();
     input.clear();
     message = '';
-    over = won = false;
+    over = won = _timeUp = false;
     hearts = heartsTotal;
     unlocked = [];
     // score the opening while the first guess is being chosen
@@ -846,7 +894,7 @@ class _GamePageState extends State<GamePage>
           daily: d?.date ?? '',
           draw: draw,
           largest: largest,
-          ms: _timer.elapsedMs,
+          ms: _ms,
         );
       }
       final code = widget.bank.language.code;
@@ -1503,6 +1551,7 @@ class _GamePageState extends State<GamePage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 6),
+          if (_timeUp) const Caption('time is up'),
           if (_daily != null)
             Caption(
               widget.practice
@@ -1589,7 +1638,7 @@ class _GamePageState extends State<GamePage>
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            TimerPill(_timer),
+            TimerPill(_timer, limit: widget.limit),
             Expanded(
               child: hintable
                   ? HintBar(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
-import 'home.dart' show LanguagePopup;
+import 'language_sheet.dart';
 import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
 import 'mode_settings_page.dart' show knownModes;
@@ -49,9 +49,10 @@ class _YouPageState extends State<YouPage> {
         (l) => l.code == appState.lang,
         orElse: () => langs.first,
       );
-      final code = await showDialog<String>(
-        context: context,
-        builder: (context) => LanguagePopup(langs: langs, current: lang.code),
+      final code = await showLanguageSheet(
+        context,
+        langs: langs,
+        current: lang.code,
       );
       if (code == null || code == lang.code) return;
       final next = langs.firstWhere((l) => l.code == code);
@@ -190,7 +191,7 @@ class _YouPageState extends State<YouPage> {
                       context,
                       'solver',
                       'solver',
-                      'for ${solverModeOf(appState.mode).label}',
+                      null,
                       icon: 'calculator',
                       onTap: () => _push(context, Routes.solver),
                     ),

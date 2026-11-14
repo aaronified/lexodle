@@ -49,62 +49,40 @@ void main() {
       expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
     });
 
-    testWidgets('the language opens a two-column popup of every language', (
+    testWidgets('the language opens a sheet of every language', (
       tester,
     ) async {
       await home(tester);
-      expect(find.byKey(const ValueKey('language-grid')), findsNothing);
+      expect(find.byKey(const ValueKey('language-sheet')), findsNothing);
       await tester.tap(find.byKey(const ValueKey('language-button')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('language-grid')), findsOneWidget);
-      final langs = (await tester.runAsync(WordBank.languages))!;
-      for (final l in langs) {
-        expect(
-          find.byKey(ValueKey('language-option-${l.code}')),
-          findsOneWidget,
-          reason: l.code,
-        );
-      }
-      // two columns: the first two share a row, the third starts the next
-      final first = tester.getTopLeft(
-        find.byKey(ValueKey('language-option-${langs[0].code}')),
-      );
-      final second = tester.getTopLeft(
-        find.byKey(ValueKey('language-option-${langs[1].code}')),
-      );
-      final third = tester.getTopLeft(
-        find.byKey(ValueKey('language-option-${langs[2].code}')),
-      );
-      expect(second.dy, first.dy);
-      expect(second.dx, greaterThan(first.dx));
-      expect(third.dy, greaterThan(first.dy));
-      expect(third.dx, first.dx);
+      expect(find.byKey(const ValueKey('language-sheet')), findsOneWidget);
     });
 
-    testWidgets('choosing a language sets it and closes the popup', (
+    testWidgets('choosing a language sets it and closes the sheet', (
       tester,
     ) async {
       await home(tester);
       await tester.tap(find.byKey(const ValueKey('language-button')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('language-option-fr')));
+      await tester.tap(find.byKey(const ValueKey('language-fr')));
       await tester.pumpAndSettle();
       expect(appState.lang, 'fr');
-      expect(find.byKey(const ValueKey('language-grid')), findsNothing);
+      expect(find.byKey(const ValueKey('language-sheet')), findsNothing);
       expect(find.byKey(const ValueKey('language-name')), findsOneWidget);
     });
 
-    testWidgets('the back button closes the popup and keeps the language', (
+    testWidgets('the back button closes the sheet and keeps the language', (
       tester,
     ) async {
       await home(tester);
       await tester.tap(find.byKey(const ValueKey('language-button')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('language-grid')), findsOneWidget);
+      expect(find.byKey(const ValueKey('language-sheet')), findsOneWidget);
       // the phone's back button
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('language-grid')), findsNothing);
+      expect(find.byKey(const ValueKey('language-sheet')), findsNothing);
       expect(appState.lang, 'en');
       // and the home screen is still there, not left
       expect(find.byKey(const ValueKey('language-button')), findsOneWidget);

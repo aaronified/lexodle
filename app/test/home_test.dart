@@ -6,7 +6,6 @@ import 'package:lexodle/history_page.dart';
 import 'package:lexodle/playstyle_card.dart';
 import 'package:lexodle/home.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/ui.dart' show hairline;
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -345,36 +344,15 @@ void main() {
     });
   });
 
-  group('language popup', () {
-    testWidgets('has the app background and a rectangular shape', (
-      tester,
-    ) async {
+  group('language sheet', () {
+    testWidgets('is a flat sheet in the app colours', (tester) async {
       await home(tester);
       await tester.tap(find.byKey(const ValueKey('language-button')));
       await tester.pumpAndSettle();
-      final dialog = tester.widget<Dialog>(find.byType(Dialog));
-      // a flat fill one step above the page, with the soft line
-      final scaffold = Theme.of(tester.element(find.byType(Dialog)))
-          .colorScheme
-          .surfaceContainerHigh;
-      expect(dialog.backgroundColor, scaffold);
-      expect(dialog.surfaceTintColor, Colors.transparent);
-      final shape = dialog.shape! as RoundedRectangleBorder;
-      expect(shape.borderRadius, BorderRadius.circular(3));
-      expect(
-        shape.side,
-        hairline(Theme.of(tester.element(find.byType(Dialog))).colorScheme),
-      );
-      // what is drawn is that colour too
-      final material = tester.widget<Material>(
-        find
-            .descendant(
-              of: find.byType(Dialog),
-              matching: find.byType(Material),
-            )
-            .first,
-      );
-      expect(material.color, scaffold);
+      final sheet = tester.widget<BottomSheet>(find.byType(BottomSheet));
+      final c = Theme.of(tester.element(find.byType(BottomSheet))).colorScheme;
+      expect(sheet.backgroundColor, c.surfaceContainerHigh);
+      expect(sheet.elevation, 0);
     });
   });
 }

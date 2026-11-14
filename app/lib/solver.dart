@@ -8,6 +8,7 @@ import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
+import 'modes.dart';
 import 'swipe_clear.dart';
 import 'typing_keys.dart';
 import 'settings_button.dart';
@@ -18,10 +19,23 @@ import 'words.dart';
 /// match the colours the game showed, and it narrows the words still possible
 /// and recommends the best next guess. Ported from the original solver_gui.py,
 /// with the recommendation scored by expected words left (the skill measure)
-/// over a wider candidate list.
+/// over a wider candidate list. [excluded] holds answers the solver must not
+/// know (see SolverExclusions): they are neither listed nor recommended. The
+/// [mode] (its draw), [length] and [tries] default to the settings.
 class SolverPage extends StatefulWidget {
-  const SolverPage({super.key, required this.bank});
+  const SolverPage({
+    super.key,
+    required this.bank,
+    this.excluded = const {},
+    this.mode,
+    this.length,
+    this.tries,
+  });
   final WordBank bank;
+  final Set<String> excluded;
+  final GameMode? mode;
+  final int? length;
+  final int? tries;
 
   @override
   State<SolverPage> createState() => _SolverPageState();
@@ -29,11 +43,15 @@ class SolverPage extends StatefulWidget {
 
 class _SolverPageState extends State<SolverPage> {
   final _focus = FocusNode();
-  late final int length = appState.length;
-  late final int tries = appState.tries;
-  // The words the answer can be: every word of the length. Guesses are scored
-  // over every word the game accepts too (see _solve).
-  late final List<String> _answers = widget.bank.answers(length);
+  late final int length = widget.length ?? appState.length;
+  late final int tries = widget.tries ?? appState.tries;
+  late final Draw _draw = appState.drawOf(widget.mode ?? appState.mode);
+  // The words the answer can be: every word of the length but the excluded.
+  // Guesses are scored over every word the game accepts too (see _solve).
+  late final List<String> _answers = [
+    for (final w in widget.bank.answers(length))
+      if (!widget.excluded.contains(w)) w,
+  ];
   late final Set<String> _letters = widget.bank.letters(length);
 
   final history = <(String, List<Mark>)>[];
@@ -67,17 +85,17 @@ class _SolverPageState extends State<SolverPage> {
       eligible = left;
       busy = true;
     });
-    final candidates = recommendationCandidates(
-      left,
-      widget.bank.guessable(length),
-    );
+    final candidates = recommendationCandidates(left, [
+      for (final w in widget.bank.guessable(length))
+        if (!widget.excluded.contains(w)) w,
+    ]);
     // the tries left shape the advice: with two, the guess most likely to solve
     // it in time; with one, only a word that fits
     final r = await recommendWithin(
       left,
       candidates,
       max(tries - history.length, 1),
-      weights: widget.bank.law(length, appState.draw),
+      weights: widget.bank.law(length, _draw),
     );
     if (!mounted || run != _run) return; // a newer guess superseded this one
     setState(() {

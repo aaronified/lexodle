@@ -28,7 +28,7 @@ import 'package:lexodle/geography.dart';
 import 'package:lexodle/learn_guide.dart' show ModeGuidePage;
 import 'package:lexodle/game.dart';
 import 'package:lexodle/keyboard.dart';
-import 'package:lexodle/home.dart' show LanguagePopup;
+import 'package:lexodle/language_sheet.dart';
 import 'package:lexodle/history.dart';
 import 'package:lexodle/history_page.dart';
 import 'package:lexodle/learn.dart';
@@ -840,29 +840,22 @@ void main() {
     await t.pumpWidget(
       framed(
         key,
-        Scaffold(
-          body: Align(
-            alignment: Alignment.topCenter,
-            child: LanguagePopup(langs: langs, current: 'hu'),
+        Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () =>
+                    showLanguageSheet(context, langs: langs, current: 'hu'),
+                child: const Text('open'),
+              ),
+            ),
           ),
         ),
       ),
     );
-    await t.pump(const Duration(seconds: 1));
-    final box = t.getRect(
-      find
-          .descendant(
-            of: find.byType(LanguagePopup),
-            matching: find.byType(Material),
-          )
-          .first,
-    );
-    await shot(
-      t,
-      key,
-      'features/languages',
-      crop: Rect.fromLTRB(0, box.top - 6, 412, box.bottom + 6),
-    );
+    await t.tap(find.text('open'));
+    await t.pumpAndSettle();
+    await shot(t, key, 'features/languages');
   }, skip: skip != null);
 
   testWidgets('sharing a game: the link button and its menu', (t) async {

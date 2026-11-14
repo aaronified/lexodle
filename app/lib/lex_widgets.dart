@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -176,8 +177,16 @@ class HintBar extends StatelessWidget {
 /// keyboard: a clock and `m:ss`, on the same surface. 28px to look at, 44px
 /// high like the [HintBar]. It ticks with the [timer].
 class TimerPill extends StatelessWidget {
-  const TimerPill(this.timer, {super.key = const ValueKey('timer-pill')});
+  const TimerPill(
+    this.timer, {
+    this.limit,
+    super.key = const ValueKey('timer-pill'),
+  });
   final GameTimer timer;
+
+  /// With a limit the pill shows the time left, in red for the last ten
+  /// seconds, instead of the time played.
+  final Duration? limit;
 
   @override
   Widget build(BuildContext context) {
@@ -185,9 +194,15 @@ class TimerPill extends StatelessWidget {
     return ListenableBuilder(
       listenable: timer,
       builder: (context, _) {
-        final text = formatElapsed(timer.elapsedMs);
+        final left = limit == null
+            ? null
+            : max(0, limit!.inMilliseconds - timer.elapsedMs);
+        // (the seconds left round up: 0:00 is only the moment it is over)
+        final text = left == null
+            ? formatElapsed(timer.elapsedMs)
+            : formatElapsed((left + 999) ~/ 1000 * 1000);
         return Semantics(
-          label: 'time $text',
+          label: left == null ? 'time $text' : 'time left $text',
           excludeSemantics: true,
           child: SizedBox(
             height: 44,
@@ -206,7 +221,16 @@ class TimerPill extends StatelessWidget {
                   children: [
                     TablerIcon('clock', size: 16, color: c.onSurface),
                     const SizedBox(width: 6),
-                    Text(text, style: const TextStyle(fontSize: 13, height: 1)),
+                    Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1,
+                        color: left != null && left <= 10000
+                            ? heartColor(c)
+                            : null,
+                      ),
+                    ),
                   ],
                 ),
               ),

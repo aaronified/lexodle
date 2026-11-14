@@ -201,6 +201,37 @@ void main() {
       appState.setup(mode: GameMode.classic);
     });
 
+    testWidgets('an excluded word is neither counted nor recommended', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1400));
+      appState.setup(lang: 'fr', length: 4, tries: 6, mode: GameMode.quartet);
+      final b = await bank(tester);
+      Finder big() => find.byWidgetPredicate(
+        (w) => w is Text && w.style?.fontSize == 22 && w.data != null,
+      );
+      await tester.pumpWidget(MaterialApp(home: MultiSolverPage(bank: b)));
+      await tester.pump(const Duration(seconds: 3));
+      final total = b.answers(4).length;
+      expect(find.textContaining('answers from $total words'), findsOneWidget);
+      final rec = tester.widget<Text>(big()).data!;
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MultiSolverPage(bank: b, excluded: {rec}),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 3));
+      expect(
+        find.textContaining('answers from ${total - 1} words'),
+        findsOneWidget,
+      );
+      expect(find.text(rec), findsNothing);
+      expect(tester.widget<Text>(big()).data, isNot(rec));
+      appState.setup(mode: GameMode.classic);
+    });
+
     testWidgets(
       'with one try left it names the word that fits the most boards',
       (tester) async {

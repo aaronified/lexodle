@@ -6,6 +6,7 @@ import 'changelog.dart';
 import 'clock.dart';
 import 'daily.dart';
 import 'daily_streak.dart';
+import 'language_sheet.dart';
 import 'logo.dart';
 import 'style_chip.dart';
 import 'main.dart';
@@ -131,9 +132,9 @@ class _HomePageState extends State<HomePage> {
     orElse: () => langs.first,
   );
 
-  /// The language card: its flag and name, which opens a popup of every
-  /// language in two columns. Back (the phone's, or tapping outside) closes it
-  /// and keeps the language.
+  /// The language card: its flag and name, which opens the language
+  /// sheet. Back (the phone's, or tapping outside) closes it and keeps the
+  /// language.
   Widget _languageCard(
     BuildContext context,
     List<Language> langs,
@@ -145,9 +146,10 @@ class _HomePageState extends State<HomePage> {
       key: const ValueKey('language-button'),
       borderRadius: BorderRadius.circular(4),
       onTap: () async {
-        final code = await showDialog<String>(
-          context: context,
-          builder: (context) => LanguagePopup(langs: langs, current: lang.code),
+        final code = await showLanguageSheet(
+          context,
+          langs: langs,
+          current: lang.code,
         );
         if (code == null || code == lang.code) return;
         final next = langs.firstWhere((l) => l.code == code);
@@ -674,74 +676,6 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-/// Every language in two columns. Tapping one closes it with that language's
-/// code; back, or a tap outside, closes it with nothing.
-class LanguagePopup extends StatelessWidget {
-  const LanguagePopup({super.key, required this.langs, required this.current});
-  final List<Language> langs;
-  final String current;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    // the app's own background, and a rectangular box like game modes
-    return Dialog(
-      backgroundColor: c.surfaceContainerHigh,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(3),
-        side: hairline(c),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: GridView.count(
-            key: const ValueKey('language-grid'),
-            shrinkWrap: true,
-            crossAxisCount: 2,
-            childAspectRatio: 3.4,
-            mainAxisSpacing: 4,
-            crossAxisSpacing: 4,
-            children: [
-              for (final l in langs)
-                InkWell(
-                  key: ValueKey('language-option-${l.code}'),
-                  borderRadius: BorderRadius.circular(6),
-                  onTap: () => Navigator.pop(context, l.code),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: l.code == current
-                          ? c.secondaryContainer
-                          : c.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      children: [
-                        FlagBadge(l.flag, size: 16),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            l.name,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
         ),
       ),
     );

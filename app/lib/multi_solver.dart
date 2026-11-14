@@ -140,9 +140,20 @@ Mark nextMark(Mark m) => switch (m) {
 /// colours each live board showed, and it narrows every board and recommends
 /// the next guess for them together (see [analyseMulti]). It follows the
 /// settings: mode, language, letters, difficulty and the tries.
+///
+/// [excluded] holds answers the solver must not know (see SolverExclusions):
+/// they are neither listed nor recommended. [mode] (quartet or relay) defaults
+/// to the mode in view.
 class MultiSolverPage extends StatefulWidget {
-  const MultiSolverPage({super.key, required this.bank});
+  const MultiSolverPage({
+    super.key,
+    required this.bank,
+    this.excluded = const {},
+    this.mode,
+  });
   final WordBank bank;
+  final Set<String> excluded;
+  final GameMode? mode;
 
   @override
   State<MultiSolverPage> createState() => _MultiSolverPageState();
@@ -151,9 +162,12 @@ class MultiSolverPage extends StatefulWidget {
 class _MultiSolverPageState extends State<MultiSolverPage> {
   final _focus = FocusNode();
   late final int length = appState.length;
-  late final GameMode mode = appState.mode;
+  late final GameMode mode = widget.mode ?? appState.mode;
   late final int tries = triesFor(mode, appState.tries);
-  late final List<String> _answers = widget.bank.answers(length);
+  late final List<String> _answers = [
+    for (final w in widget.bank.answers(length))
+      if (!widget.excluded.contains(w)) w,
+  ];
   late final Set<String> _letters = widget.bank.letters(length);
   late final state = MultiSolverState(
     mode: mode,
@@ -176,7 +190,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
   int _run = 0;
 
   /// The law the answers are drawn by, as weights; null for equal chances.
-  Map<String, int>? get _law => widget.bank.law(length, appState.draw);
+  Map<String, int>? get _law => widget.bank.law(length, appState.drawOf(mode));
 
   @override
   void initState() {
@@ -211,7 +225,10 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
     }
     final picks = await recommendMulti(
       lists,
-      multiCandidates(lists, widget.bank.guessable(length)),
+      multiCandidates(lists, [
+        for (final w in widget.bank.guessable(length))
+          if (!widget.excluded.contains(w)) w,
+      ]),
       k: 1,
       weights: _law,
     );

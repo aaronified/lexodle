@@ -24,14 +24,13 @@ import 'how_to.dart';
 import 'main.dart';
 import 'multi_game.dart';
 import 'multi_review.dart';
-import 'multi_solver.dart';
 import 'review.dart';
 import 'game_modes_dialog.dart';
 import 'playstyle_card.dart';
 import 'puzzle.dart';
 import 'reminders_page.dart';
 import 'settings_page.dart';
-import 'solver.dart';
+import 'solver_hub.dart';
 import 'ui.dart';
 import 'geography.dart';
 import 'modes.dart';
@@ -89,13 +88,6 @@ class Routes {
   /// One collected word, which travels as a [CollectedRef].
   static const collected = '/words/collected';
 }
-
-/// The mode a solver opens for when [m] is in view: the blind, themed and
-/// equations modes have no solver of their own, so theirs is the classic one.
-GameMode solverModeOf(GameMode m) =>
-    m == GameMode.blind || m == GameMode.themed || m == GameMode.equations
-    ? GameMode.classic
-    : m;
 
 /// The argument that tells the how-to page it is the first-visit onboarding.
 const onboardingArgument = 'onboarding';
@@ -259,15 +251,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         ),
       );
     case Routes.solver:
-      // the solver follows the mode: one board, or four that share the guesses;
-      // a mode with no solver opens the classic one (see solverModeOf)
-      return page(
-        BankGate(
-          builder: (bank) => solverModeOf(appState.mode).multi
-              ? MultiSolverPage(bank: bank)
-              : SolverPage(bank: bank),
-        ),
-      );
+      return page(const SolverHubPage());
     case Routes.achievements:
       return page(const AchievementsPage());
     case Routes.mastery:
