@@ -387,6 +387,21 @@ void main() {
       expect(p.draw, Draw.frequency);
     });
 
+    testWidgets('a word that is not in the word list makes no puzzle', (
+      tester,
+    ) async {
+      await open(tester);
+      await typeWord(tester, 'iiiii');
+      await tester.pump();
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('diy-note'))).data,
+        'not in the word list',
+      );
+      await tester.tap(find.byKey(const ValueKey('diy-make')));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('diy-link')), findsNothing);
+    });
+
     testWidgets('the default pool makes a link with d=s', (tester) async {
       await open(tester);
       await typeWord(tester, 'crane');

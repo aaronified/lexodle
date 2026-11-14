@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- diy: the word must be in the word list
+  A made word has to be in the language's list, as every guess does, so a puzzle nobody can solve ("iiiii") cannot be made. Links made before still play.
+
 ## 0.12.0
 
 - today: list or tiles, sort, and your own order
