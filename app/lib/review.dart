@@ -22,6 +22,31 @@ import 'words.dart';
 /// never makes the row taller.
 const typeIconSize = 16.0;
 
+/// What a review of a practice game says where skill, luck and risk would be.
+class NotScoredNote extends StatelessWidget {
+  const NotScoredNote({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return Column(
+      key: const ValueKey('not-scored'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Caption('not scored'),
+        const SizedBox(height: 4),
+        Text(
+          'made or opened from a link: it does not count',
+          style: TextStyle(
+            fontSize: 12,
+            color: c.onSurface.withValues(alpha: dimAlpha),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Everything the review needs about one finished game.
 class GameRecord {
   const GameRecord({
@@ -45,7 +70,11 @@ class GameRecord {
     this.luckless = false,
     this.earned = const [],
     this.ms,
+    this.unscored = false,
   });
+
+  /// Whether the game was practice: it has no skill, luck or risk to show.
+  final bool unscored;
 
   /// How long the game took in milliseconds of play; null when not known.
   final int? ms;
@@ -282,9 +311,13 @@ class _ReviewPageState extends State<ReviewPage> {
                         const SizedBox(height: 4),
                         Caption('the word was ${r.answer}'),
                         const SizedBox(height: 14),
-                        const Caption('the whole game'),
-                        const SizedBox(height: 6),
-                        _pills(c),
+                        if (r.unscored)
+                          const NotScoredNote()
+                        else ...[
+                          const Caption('the whole game'),
+                          const SizedBox(height: 6),
+                          _pills(c),
+                        ],
                         EarnedInGame(r.earned),
                         const SizedBox(height: 16),
                         _board(c),

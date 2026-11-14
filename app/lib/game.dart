@@ -88,8 +88,9 @@ class GamePage extends StatefulWidget {
   /// of a random word at the chosen settings. Read once, when the game begins.
   final Daily? daily;
 
-  /// A daily opened by a link: played as practice, so nothing is saved or
-  /// counted (no streak, history, statistics or achievements).
+  /// A daily or a puzzle opened by a link, or a made puzzle: played as
+  /// practice. It is listed in the history, as not scored, and nothing else is
+  /// saved or counted (no streak, statistics, achievements, lex or words).
   final bool practice;
 
   /// Guesses a link carries, played at once when the page opens.
@@ -509,6 +510,7 @@ class _GamePageState extends State<GamePage>
     input.clear();
     message = '';
     over = won = _timeUp = false;
+    _practiceListed = false;
     hearts = heartsTotal;
     unlocked = [];
     // score the opening while the first guess is being chosen
@@ -830,12 +832,52 @@ class _GamePageState extends State<GamePage>
     if (!restoring) _saveDaily();
   }
 
+  /// Whether this practice game is already in the history (it is there once).
+  bool _practiceListed = false;
+
+  /// Writes the finished practice game to the history, marked as not scored:
+  /// it is in the list, and nothing that scores reads it. A link that carried
+  /// guesses is someone else's game, and is not written.
+  void _listPractice() {
+    if (_practiceListed || widget.replay.isNotEmpty) return;
+    _practiceListed = true;
+    try {
+      // the mastermind has no word when it ends unsolved: any word that fits
+      // every reply stands in for it
+      final word = answer.length == length
+          ? answer
+          : (eligible.isEmpty ? '' : eligible.first);
+      if (word.length != length) return;
+      appState.recordHistory(
+        lang: widget.bank.language.code,
+        mode: mode,
+        length: length,
+        tries: mastermind ? guesses.length.clamp(1, 40) : tries,
+        pool: pool,
+        answers: [word],
+        won: won,
+        guesses: [
+          for (var i = 0; i < metrics.length; i++) guessRowOf(i, metrics[i]),
+        ],
+        draw: draw,
+        largest: largest,
+        ms: _ms,
+        unscored: true,
+      );
+    } catch (e) {
+      appLog.w('game', 'could not list a practice game: ${e.runtimeType}');
+    }
+  }
+
   /// The finished game counts towards the statistics and achievements. Skill
   /// is final only once every guess has been analysed, so that is waited for.
   void _finish() {
     _timer.stop();
-    // practice is not counted
-    if (widget.practice) return;
+    // practice is listed in the history and nothing else
+    if (widget.practice) {
+      _listPractice();
+      return;
+    }
     final epoch = _epoch;
     void record() {
       final d = _daily;
@@ -1478,6 +1520,7 @@ class _GamePageState extends State<GamePage>
     weights: _law,
     analysis: List.of(_analysis),
     luckless: largest,
+    unscored: widget.practice,
   );
 
   /// Whether the game over panel says how the game was played: from the step
@@ -1555,7 +1598,7 @@ class _GamePageState extends State<GamePage>
           if (_daily != null)
             Caption(
               widget.practice
-                  ? 'practice${_daily.date.isEmpty ? '' : ' ${_daily.date}'} · not counted'
+                  ? 'not scored'
                   : 'daily ${_daily.date} · streak ${appState.dailyStreak} · '
                         'the next word comes at midnight in India',
             ),

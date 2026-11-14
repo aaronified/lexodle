@@ -32,7 +32,13 @@ class GameRow {
     this.largest = false,
     this.earned = const [],
     this.ms,
+    this.unscored = false,
   });
+
+  /// A practice game (a made puzzle, or a puzzle or daily opened from a link):
+  /// it is in the history list and can be reviewed, but it is not scored, so
+  /// nothing that adds games up counts it (see [History.scoredGames]).
+  final bool unscored;
 
   /// How long the game took, in milliseconds of active play; null for a game
   /// from before the time was kept.
@@ -103,6 +109,7 @@ class GameRow {
     largest: largest,
     earned: earned,
     ms: ms,
+    unscored: unscored,
   );
 
   /// This row with [earned] as what it earned.
@@ -122,11 +129,12 @@ class GameRow {
     largest: largest,
     earned: earned,
     ms: ms,
+    unscored: unscored,
   );
 
   /// The row as saved: a list, in this order, which is a good deal smaller than
   /// a map of named fields once there are thousands.
-  List<Object> toRow() => [
+  List<Object?> toRow() => [
     id,
     at,
     lang,
@@ -141,10 +149,13 @@ class GameRow {
     draw.code,
     // (a thirteenth for the mastermind that kept the largest pool, and a
     // fourteenth for what the game earned: the thirteenth is then 0 or 1)
-    if (largest || earned.isNotEmpty || ms != null) largest ? 1 : 0,
-    if (earned.isNotEmpty || ms != null) earned,
-    // (a fifteenth for the time, which then has the two before it)
-    ?ms,
+    if (largest || earned.isNotEmpty || ms != null || unscored) largest ? 1 : 0,
+    if (earned.isNotEmpty || ms != null || unscored) earned,
+    // (a fifteenth for the time, which then has the two before it; null when
+    // it is not known)
+    if (ms != null || unscored) ms,
+    // (a sixteenth, 1, for a game that is not scored)
+    if (unscored) 1,
   ];
 
   /// Reads a row as [toRow] wrote it, or the map of named fields an earlier
@@ -153,7 +164,7 @@ class GameRow {
     if (raw is Map) return fromJson(raw.cast<String, dynamic>());
     // (twelve, or thirteen with the largest-pool flag; eleven before the law the
     // answer was drawn under was kept)
-    if (raw is! List || raw.length < 11 || raw.length > 15) {
+    if (raw is! List || raw.length < 11 || raw.length > 16) {
       throw const FormatException('game');
     }
     return fromJson({
@@ -175,7 +186,13 @@ class GameRow {
       if (raw.length >= 12) 'draw': raw[11],
       if (raw.length >= 13) 'lg': raw[12],
       if (raw.length >= 14) 'earned': raw[13],
-      if (raw.length == 15) 'ms': raw[14],
+      if (raw.length >= 15) 'ms': raw[14],
+      if (raw.length == 16)
+        'unscored': raw[15] == 1
+            ? true
+            : raw[15] == 0
+            ? false
+            : throw const FormatException('unscored'),
     });
   }
 
@@ -195,6 +212,7 @@ class GameRow {
     if (largest) 'lg': 1,
     if (earned.isNotEmpty) 'earned': earned,
     'ms': ?ms,
+    if (unscored) 'unscored': true,
   };
 
   /// The earned levels of a saved row: a list of `id:level`, kept as it is when
@@ -227,6 +245,8 @@ class GameRow {
     }
     final won = j['won'];
     if (won is! bool) throw const FormatException('won');
+    final unscored = j['unscored'] ?? false;
+    if (unscored is! bool) throw const FormatException('unscored');
     return GameRow(
       id: _int(j['id'], 0, _big),
       at: _int(j['at'], 0, _maxMs),
@@ -252,6 +272,7 @@ class GameRow {
       largest: j['lg'] == 1,
       earned: _earnedOf(j['earned']),
       ms: j['ms'] == null ? null : _int(j['ms'], 0, _maxMs),
+      unscored: unscored,
     );
   }
 }
@@ -468,7 +489,8 @@ class History {
     _index();
   }
 
-  /// Oldest first.
+  /// Oldest first. Every game, the unscored ones too: this is what the list and
+  /// a review show. Whatever adds games up reads [scoredGames] instead.
   final List<GameRow> games;
   final List<GuessRow> _guesses;
   final _byGame = <int, List<GuessRow>>{};
@@ -517,6 +539,7 @@ class History {
     Draw draw = Draw.frequency,
     bool largest = false,
     int? ms,
+    bool unscored = false,
   }) {
     final row = GameRow(
       id: _next++,
@@ -532,6 +555,7 @@ class History {
       draw: draw,
       largest: largest,
       ms: ms,
+      unscored: unscored,
     );
     games.add(row);
     dirtyMonths.add(row.month);
@@ -568,6 +592,13 @@ class History {
     _guesses.removeWhere((g) => gone.contains(g.game));
   }
 
+  /// The games that are scored, oldest first: every sum, mean, plot,
+  /// playstyle and rebuild reads these (a practice game is not one of them).
+  List<GameRow> get scoredGames => [
+    for (final g in games)
+      if (!g.unscored) g,
+  ];
+
   /// The last [n] games of [mode], oldest first (those in [lang] when given):
   /// the ones a playstyle is read from. With no [mode], the games of every mode
   /// with a single board, mixed.
@@ -575,7 +606,8 @@ class History {
     final out = <GameRow>[];
     for (var i = games.length - 1; i >= 0 && out.length < n; i--) {
       final g = games[i];
-      if ((mode == null ? g.mode.boards == 1 : g.mode == mode) &&
+      if (!g.unscored &&
+          (mode == null ? g.mode.boards == 1 : g.mode == mode) &&
           (lang == null || g.lang == lang)) {
         out.add(g);
       }
@@ -583,10 +615,11 @@ class History {
     return out.reversed.toList();
   }
 
-  /// Games whose cached numbers are from an older [metricsVersion].
+  /// Games whose cached numbers are from an older [metricsVersion]. A game that
+  /// is not scored has no numbers that anything reads, so it is never stale.
   List<GameRow> stale() => [
     for (final g in games)
-      if (g.version != metricsVersion) g,
+      if (g.version != metricsVersion && !g.unscored) g,
   ];
 
   /// Replaces the numbers of game [id] with [rows] (worked out afresh), under
@@ -676,9 +709,10 @@ class History {
       }
     }
     final withGuesses = {for (final g in guesses) g.game};
+    // (a practice game timed out before any guess has none, and is kept)
     final kept = [
       for (final g in games)
-        if (withGuesses.contains(g.id)) g,
+        if (g.unscored || withGuesses.contains(g.id)) g,
     ];
     dropped += games.length - kept.length;
     kept.sort((a, b) => a.id.compareTo(b.id));
@@ -726,7 +760,9 @@ class History {
     ];
     final h = History(games: games, guesses: kept);
     for (final g in games) {
-      if (h.guessesOf(g.id).isEmpty) throw const FormatException('no guesses');
+      if (!g.unscored && h.guessesOf(g.id).isEmpty) {
+        throw const FormatException('no guesses');
+      }
     }
     return h;
   }

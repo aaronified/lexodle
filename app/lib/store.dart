@@ -2721,7 +2721,7 @@ class AppState extends ChangeNotifier {
 
   /// The languages the player has played, from the history and what is kept.
   Set<String> get playedLanguages => {
-    for (final g in history.games) g.lang,
+    for (final g in history.scoredGames) g.lang,
     ..._langAch.keys,
     ..._styles.keys.where((k) => !k.contains('|')),
     ..._dailyLogs.keys.where((k) => !k.contains('|')),
@@ -3644,7 +3644,9 @@ class AppState extends ChangeNotifier {
   /// Tells the screens to redraw (the clock they show a date from changed).
   void refresh() => notifyListeners();
 
-  /// Saves a finished game and its guesses to the [history]; returns its id.
+  /// Saves a finished game and its guesses to the [history]; returns its id. A
+  /// game that is [unscored] (a practice game) is only listed: its words are
+  /// not collected.
   int recordHistory({
     required String lang,
     required GameMode mode,
@@ -3658,12 +3660,14 @@ class AppState extends ChangeNotifier {
     Draw draw = Draw.frequency,
     bool largest = false,
     int? ms,
+    bool unscored = false,
     DateTime? now,
   }) {
     appLog.i(
       'game',
       'recorded: ${mode.name}, $length letters, $tries tries, '
-          '${won ? 'won' : 'lost'}${daily.isEmpty ? '' : ', daily'}',
+          '${won ? 'won' : 'lost'}${daily.isEmpty ? '' : ', daily'}'
+          '${unscored ? ', not scored' : ''}',
     );
     final row = history.add(
       at: (now ?? DateTime.now()).toUtc().millisecondsSinceEpoch,
@@ -3679,10 +3683,11 @@ class AppState extends ChangeNotifier {
       draw: draw,
       largest: largest,
       ms: ms,
+      unscored: unscored,
     );
     saveHistory();
     // a won game's words are collected like trophies
-    if (won && _collect(lang, mode, answers)) _saveCollection();
+    if (won && !unscored && _collect(lang, mode, answers)) _saveCollection();
     notifyListeners();
     return row.id;
   }
@@ -4145,7 +4150,8 @@ class AppState extends ChangeNotifier {
   void rebuildAchievements() {
     _globalAch.clear();
     _langAch.clear();
-    final games = [...history.games]..sort((a, b) => a.at.compareTo(b.at));
+    final games = [...history.scoredGames]
+      ..sort((a, b) => a.at.compareTo(b.at));
     final temp = Stats();
     final logs = <String, Map<String, int>>{};
     final langs = WordBank.loadedLanguages ?? const <Language>[];
@@ -4356,7 +4362,7 @@ class AppState extends ChangeNotifier {
       collection = collected;
     } else {
       collection = Collection();
-      for (final g in this.history.games) {
+      for (final g in this.history.scoredGames) {
         if (g.won) _collect(g.lang, g.mode, g.answers);
       }
     }

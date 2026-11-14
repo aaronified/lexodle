@@ -137,8 +137,10 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
       expect(find.text('solved in 1 of 6'), findsOneWidget);
-      expect(find.text('practice · not counted'), findsOneWidget);
-      expect(appState.history.games, isEmpty);
+      expect(find.text('not scored'), findsOneWidget);
+      // listed in the history, as not scored, and nothing else
+      expect(appState.history.games.single.unscored, isTrue);
+      expect(appState.history.scoredGames, isEmpty);
       expect(appState.stats.played, 0);
       expect(appState.dailyLogOf('en'), isEmpty);
       expect(appState.unlockedCount, 0);

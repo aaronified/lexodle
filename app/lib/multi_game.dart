@@ -71,8 +71,9 @@ class MultiGamePage extends StatefulWidget {
   /// daily difficulty, instead of a game drawn at random.
   final DailyMulti? daily;
 
-  /// A daily opened by a link: played as practice, so nothing is saved or
-  /// counted (no streak, history, statistics or achievements).
+  /// A daily or a puzzle opened by a link, or a made puzzle: played as
+  /// practice. It is listed in the history, as not scored, and nothing else is
+  /// saved or counted (no streak, statistics, achievements, lex or words).
   final bool practice;
 
   /// Guesses a link carries, played at once when the page opens.
@@ -352,6 +353,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     _closeOnUp = false;
     unlocked = [];
     _timeUp = false;
+    _practiceListed = false;
     game = MultiGame(
       mode,
       answers ??
@@ -534,12 +536,52 @@ class _MultiGamePageState extends State<MultiGamePage> {
       : game.steps.map((s) => s.luck).reduce((a, b) => a + b) /
             game.steps.length;
 
+  /// Whether this practice game is already in the history (it is there once).
+  bool _practiceListed = false;
+
+  /// Writes the finished practice game to the history, marked as not scored
+  /// (see GamePage's): nothing that scores reads it. A link that carried
+  /// guesses is someone else's game, and is not written.
+  void _listPractice() {
+    if (_practiceListed || widget.replay.isNotEmpty) return;
+    _practiceListed = true;
+    try {
+      appState.recordHistory(
+        lang: widget.bank.language.code,
+        mode: mode,
+        length: length,
+        tries: tries,
+        pool: pool,
+        draw: draw,
+        answers: [for (final b in game.boards) b.answer],
+        won: game.won,
+        guesses: [
+          for (var i = 0; i < game.steps.length; i++)
+            GuessRow(
+              game: 0,
+              n: i,
+              word: game.guesses[i],
+              skill: game.steps[i].skill,
+              luck: game.steps[i].luck,
+            ),
+        ],
+        ms: _ms,
+        unscored: true,
+      );
+    } catch (e) {
+      appLog.w('multi', 'could not list a practice game: ${e.runtimeType}');
+    }
+  }
+
   /// The finished game counts towards the achievements of its mode. Skill is
   /// final only once every guess has been analysed, so that is waited for.
   void _finish() {
     _timer.stop();
-    // practice is not counted
-    if (widget.practice) return;
+    // practice is listed in the history and nothing else
+    if (widget.practice) {
+      _listPractice();
+      return;
+    }
     final epoch = _epoch;
     void record() {
       final d = _daily;
@@ -648,6 +690,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     analysis: List.of(_analysis),
     kind: drawKindOf(draw, daily: _daily?.date ?? ''),
     daily: _daily != null && _daily.date.isNotEmpty,
+    unscored: widget.practice,
   );
 
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
@@ -1282,7 +1325,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
             if (_daily != null)
               Caption(
                 widget.practice
-                    ? 'practice${_daily.date.isEmpty ? '' : ' ${_daily.date}'} · not counted'
+                    ? 'not scored'
                     : 'daily ${_daily.date} · streak '
                           '${appState.dailyStreakFor(widget.bank.language.code, mode)} · '
                           'the next words come at midnight in India',

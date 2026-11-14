@@ -115,6 +115,7 @@ GameRecord replayClassic(WordBank bank, GameRow g, List<GuessRow> rows) {
     luckless: g.largest,
     earned: earnedFrom(g.earned),
     ms: g.ms,
+    unscored: g.unscored,
   );
 }
 
@@ -145,6 +146,7 @@ MultiRecord replayMulti(WordBank bank, GameRow g, List<GuessRow> rows) {
     daily: g.daily.isNotEmpty,
     earned: earnedFrom(g.earned),
     ms: g.ms,
+    unscored: g.unscored,
   );
 }
 
