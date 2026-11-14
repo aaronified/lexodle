@@ -78,12 +78,16 @@ void main() {
       final plain = DiyPuzzle('en', 'crane', 6);
       expect(plain.link, isNot(contains('cd=')));
       expect(plain.link, isNot(contains('&d=')));
+      expect(plain.draw, Draw.equal);
+      final sig = DiyPuzzle('en', 'crane', 6, draw: Draw.sigmoid);
+      expect(sig.link, contains('&d=s'));
+      expect(back(sig)!.draw, Draw.sigmoid);
     });
 
     test('an unknown limit or draw is ignored', () {
       final w = diyEncode('crane');
       final p = DiyPuzzle.parse(Uri.parse('/diy?l=en&t=6&cd=90&d=x&w=$w'))!;
-      expect((p.limit, p.draw), (null, Draw.sigmoid));
+      expect((p.limit, p.draw), (null, Draw.equal));
       final q = DiyPuzzle.parse(Uri.parse('/diy?l=en&t=6&cd=30&d=s&w=$w'))!;
       expect((q.limit, q.draw), (null, Draw.sigmoid));
     });
@@ -110,7 +114,7 @@ void main() {
         Uri.parse('/diy?l=en&t=6&w=${diyEncode('crane')}'),
       )!;
       expect(old.mode, GameMode.classic);
-      expect((old.limit, old.draw), (null, Draw.sigmoid));
+      expect((old.limit, old.draw), (null, Draw.equal));
     });
 
     test('what is not a puzzle is not read', () {
@@ -381,6 +385,16 @@ void main() {
       expect(p.word, 'crane');
       expect(p.limit, const Duration(minutes: 1));
       expect(p.draw, Draw.frequency);
+    });
+
+    testWidgets('the default pool makes a link with d=s', (tester) async {
+      await open(tester);
+      await typeWord(tester, 'crane');
+      await tester.tap(find.byKey(const ValueKey('diy-make')));
+      await tester.pump();
+      final link = linkOf(tester);
+      expect(link, contains('&d=s'));
+      expect(DiyPuzzle.parse(Uri.parse(routeOf(link)))!.draw, Draw.sigmoid);
     });
 
     testWidgets('lockdown rules make a lockdown puzzle with hearts', (

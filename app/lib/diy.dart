@@ -180,6 +180,7 @@ class DiyPuzzle {
       draw: switch (q['d']) {
         'f' => Draw.frequency,
         's' => Draw.sigmoid,
+        'e' => Draw.equal,
         _ => null,
       },
     );
