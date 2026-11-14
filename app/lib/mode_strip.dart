@@ -126,7 +126,10 @@ class _ModeStripState extends State<ModeStrip>
           try {
             widget.onChanged(m);
           } catch (e) {
-            appLog.w('mode-strip', 'could not change the mode: ${e.runtimeType}');
+            appLog.w(
+              'mode-strip',
+              'could not change the mode: ${e.runtimeType}',
+            );
           }
         }
       }
@@ -232,9 +235,18 @@ class _ModeStripState extends State<ModeStrip>
     final fadeRight = _pos < _last - .01;
     final f = width <= 0 ? 0.0 : (_fadeWidth / width).clamp(0.0, .5);
     return ShaderMask(
+      // the key says which sides fade, for the tests
+      key: ValueKey(
+        'mode-strip-fade-${fadeLeft ? 'l' : '-'}${fadeRight ? 'r' : '-'}',
+      ),
       blendMode: BlendMode.dstIn,
       shaderCallback: (r) => LinearGradient(
-        colors: [fadeLeft ? clear : solid, solid, solid, fadeRight ? clear : solid],
+        colors: [
+          fadeLeft ? clear : solid,
+          solid,
+          solid,
+          fadeRight ? clear : solid,
+        ],
         stops: [0, f, 1 - f, 1],
       ).createShader(r),
       child: Stack(
@@ -276,7 +288,7 @@ class _ModeStripState extends State<ModeStrip>
         child: Container(
           height: widget.height,
           decoration: BoxDecoration(
-            border: Border.fromBorderSide(hairlineSide(c)),
+            border: Border.fromBorderSide(hairline(c)),
             borderRadius: BorderRadius.circular(6),
           ),
           child: ClipRRect(

@@ -7,6 +7,7 @@ import 'daily.dart';
 import 'first_run/mode_lesson_page.dart';
 import 'ladder.dart';
 import 'main.dart';
+import 'mode_strip.dart';
 import 'mode_wheel.dart';
 import 'modes.dart';
 import 'routes.dart';
@@ -59,16 +60,15 @@ class TodayPage extends StatelessWidget {
     return order;
   }
 
-  /// Starts [m]'s daily the way the home page does: the mode in view decides
-  /// which daily the route opens, and the clock is asked again if it is stale.
+  /// Starts [m]'s daily: the route is told the mode, so the free play mode is
+  /// left as it is, and the clock is asked again if it is stale.
   static Future<void> _play(BuildContext context, GameMode m) async {
     try {
-      appState.setup(mode: m);
       if (!TrustedClock.isFresh()) {
         await TrustedClock.sync(timeout: const Duration(milliseconds: 1500));
       }
       if (!context.mounted) return;
-      await Navigator.pushNamed(context, Routes.daily);
+      await Navigator.pushNamed(context, Routes.daily, arguments: m);
     } catch (e) {
       appLog.w('today', 'could not start a daily: ${e.runtimeType}');
     }
@@ -503,40 +503,37 @@ class TodayPage extends StatelessWidget {
     return const [];
   }
 
-  /// The one button of the bar: free play of the mode in view, which turns
-  /// through the open modes when there is more than one.
+  /// The free play slider of the bar: the open modes side by side, the one
+  /// under the rectangle is the free play mode.
   Widget _modeButton(BuildContext context) {
-    final lang = appState.lang;
-    final loop = GameMode.loopFor(lang);
+    final loop = GameMode.loopFor(appState.lang);
     var open = [
       for (final m in openModes(appState.level))
         if (loop.contains(m)) m,
     ];
     if (open.isEmpty) open = [GameMode.classic];
     final shown = open.contains(appState.mode) ? appState.mode : open.first;
-    return ModeSwitch(
-      mode: shown,
-      lang: lang,
-      modes: open,
-      plain: true,
-      facePrefix: 'free play · ',
-      showChevrons: open.length > 1,
-      buttonKey: const ValueKey('today-free-play'),
-      onChanged: (m) {
-        try {
-          appState.setup(mode: m);
-        } catch (e) {
-          appLog.w('today', 'could not change the mode: ${e.runtimeType}');
-        }
-      },
-      onOpen: () {
-        try {
-          if (shown != appState.mode) appState.setup(mode: shown);
-        } catch (e) {
-          appLog.w('today', 'could not set the mode: ${e.runtimeType}');
-        }
-        _freePlay(context);
-      },
+    return KeyedSubtree(
+      key: const ValueKey('today-free-play'),
+      child: ModeStrip(
+        modes: open,
+        selected: shown,
+        onChanged: (m) {
+          try {
+            appState.setup(mode: m);
+          } catch (e) {
+            appLog.w('today', 'could not change the mode: ${e.runtimeType}');
+          }
+        },
+        onTap: () {
+          try {
+            if (shown != appState.mode) appState.setup(mode: shown);
+          } catch (e) {
+            appLog.w('today', 'could not set the mode: ${e.runtimeType}');
+          }
+          _freePlay(context);
+        },
+      ),
     );
   }
 
