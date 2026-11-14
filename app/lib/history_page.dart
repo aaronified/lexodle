@@ -108,6 +108,8 @@ class _HistoryPageState extends State<HistoryPage> {
   Future<void> _open(GameRow g) async {
     final lang = _langs[g.lang];
     if (lang == null || _opening) return;
+    // (a practice game timed out before any guess has nothing to review)
+    if (appState.history.guessesOf(g.id).isEmpty) return;
     setState(() {
       _opening = true;
       _error = '';
@@ -178,8 +180,11 @@ class _HistoryPageState extends State<HistoryPage> {
                                 EdgeFade(
                                   key: const ValueKey('lang-fade'),
                                   child: LanguagePicker(
-                                    codes: appState.playedLanguages.toList()
-                                      ..sort(),
+                                    // (a language only practised is in the list)
+                                    codes: {
+                                      ...appState.playedLanguages,
+                                      for (final g in h.games) g.lang,
+                                    }.toList()..sort(),
                                     languages: _langs,
                                     selected: _lang,
                                     onSelect: (code) => setState(() {
@@ -329,7 +334,7 @@ class _Overall extends StatelessWidget {
     final c = Theme.of(context).colorScheme;
     final h = appState.history;
     final s = summarise(h, [
-      for (final g in h.games)
+      for (final g in h.scoredGames)
         if (g.lang == lang && (mode == null || g.mode == mode)) g,
     ]);
     final dim = TextStyle(
@@ -339,7 +344,7 @@ class _Overall extends StatelessWidget {
     String whole(double? v) => v == null ? '–' : v.round().toString();
     // the mode with the most games, and how many of the games are in it
     final games = [
-      for (final g in h.games)
+      for (final g in h.scoredGames)
         if (g.lang == lang && (mode == null || g.mode == mode)) g,
     ];
     final counts = <GameMode, int>{};
@@ -520,7 +525,7 @@ List<Period> dailyPeriods(
   GameMode? mode,
 }) {
   final byDate = <String, List<GameRow>>{};
-  for (final g in h.games) {
+  for (final g in h.scoredGames) {
     if (lang != null && g.lang != lang) continue;
     if (mode != null && g.mode != mode) continue;
     var d = dailyDate(DateTime.fromMillisecondsSinceEpoch(g.at, isUtc: true));
@@ -579,8 +584,8 @@ class _TrendState extends State<_Trend> {
     final h = appState.history;
     final today = dailyDate();
     final key = (
-      h.games.length,
-      h.games.isEmpty ? -1 : h.games.last.id,
+      h.scoredGames.length,
+      h.scoredGames.isEmpty ? -1 : h.scoredGames.last.id,
       h.stale().length,
       _range,
       today,
@@ -924,7 +929,23 @@ class _GameTile extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    metricLine(context, 'skill $skill', 'skill', style: dim),
+                    // a game that is not scored has no skill to show: the tag
+                    // takes its place
+                    if (game.unscored)
+                      Container(
+                        key: ValueKey('unscored-${game.id}'),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.fromBorderSide(hairline(c)),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Text('not scored', style: dim),
+                      )
+                    else
+                      metricLine(context, 'skill $skill', 'skill', style: dim),
                     // the achievements the game earned
                     if (game.earned.isNotEmpty)
                       Padding(

@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+- history: every game is listed, practice ones marked not scored
+  Made puzzles and puzzles opened from a link now appear in the history with a "not scored" tag (a time-out too). They do not count as a game played, and they give no streak, medal, lex or playstyle, and they are left out of the skill, luck and risk averages and plots.
 - today: the free play strip, a ratchet under a fixed box
   The free play control at the bottom is a strip of every open mode. The selection box stays in the middle and the modes slide under it, clicking from one to the next with a tick, snapping when you let go. Tap a neighbour to move to it, tap the box to start free play. Tapping a daily no longer changes the free play mode, and learn still opens on it.
 - diy: choose the word length

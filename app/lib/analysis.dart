@@ -157,7 +157,7 @@ List<Period> weeklyPeriods(
 }) {
   final todayN = _dayNumber(today);
   final buckets = List.generate(count, (_) => <GameRow>[]);
-  for (final g in h.games) {
+  for (final g in h.scoredGames) {
     if (lang != null && g.lang != lang) continue;
     if (mode != null && g.mode != mode) continue;
     final ago = todayN - _dayNumber(_localDate(g.at));
@@ -189,7 +189,7 @@ List<Period> monthlyPeriods(
   final t = DateTime.parse(today);
   final todayKey = t.year * 12 + t.month - 1;
   final buckets = List.generate(count, (_) => <GameRow>[]);
-  for (final g in h.games) {
+  for (final g in h.scoredGames) {
     if (lang != null && g.lang != lang) continue;
     if (mode != null && g.mode != mode) continue;
     final d = DateTime.parse(_localDate(g.at));

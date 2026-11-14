@@ -5,6 +5,7 @@ import 'earned_rows.dart';
 import 'logic.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
+import 'review.dart' show NotScoredNote;
 import 'review_text.dart';
 import 'store.dart' show Achievement;
 import 'ui.dart';
@@ -28,7 +29,11 @@ class MultiRecord {
     this.daily = false,
     this.earned = const [],
     this.ms,
+    this.unscored = false,
   });
+
+  /// Whether the game was practice: it has no skill or luck to show.
+  final bool unscored;
 
   /// How long the game took in milliseconds of play; null when not known.
   final int? ms;
@@ -172,6 +177,10 @@ class _MultiReviewPageState extends State<MultiReviewPage> {
                       children: [
                         _progress(c, n),
                         EarnedInGame(widget.record.earned),
+                        if (r.unscored) ...[
+                          const SizedBox(height: 14),
+                          const NotScoredNote(),
+                        ],
                         const SizedBox(height: 22),
                         Text(
                           'your ${ordinal(step + 1)} guess',

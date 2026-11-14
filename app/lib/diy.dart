@@ -26,7 +26,7 @@ import 'words.dart';
 /// its code point times a prime, shifted by its place so a repeated letter
 /// looks different, modulo 10,000). It is a disguise, not a secret.
 /// `https://…/lexodle/#/diy?l=en&t=6&w=<digits>`. Whoever opens it plays the
-/// word as practice: nothing is saved or counted.
+/// word as practice: it is listed in the history as not scored, and nothing else counts.
 const _mul = 7919, _shift = 2713, _offset = 4093;
 
 /// The tries a made wordle can have, hardest first.

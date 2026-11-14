@@ -52,7 +52,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
   /// game when null).
   ({int played, int wins, int streak, int best}) _record(String? lang) {
     var played = 0, wins = 0, streak = 0, best = 0;
-    for (final g in appState.history.games) {
+    for (final g in appState.history.scoredGames) {
       if (lang != null && g.lang != lang) continue;
       played++;
       if (g.won) {
