@@ -571,9 +571,7 @@ void main() {
         expect(r.bottom, lessThanOrEqualTo(list.bottom), reason: m.name);
         expect(r.top, greaterThanOrEqualTo(list.top), reason: m.name);
       }
-      final ex = tester.takeException();
-      if (ex != null) debugPrint('DBG ${(ex as FlutterError).diagnostics.map((d) => d.toStringDeep()).join('\n')}');
-      expect(ex, isNull);
+      expect(tester.takeException(), isNull);
     });
 
     List<GameMode> shown(WidgetTester tester) {

@@ -373,9 +373,16 @@ class TodayPage extends StatelessWidget {
                   ),
                   child: look.icon(22),
                 ),
-                Text(
-                  '${look.verb} ›',
-                  style: TextStyle(fontSize: 12, color: look.dim),
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: Text(
+                      '${look.verb} ›',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: look.dim),
+                    ),
+                  ),
                 ),
               ],
             ),
