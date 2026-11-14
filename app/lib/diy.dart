@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'app_log.dart';
 import 'daily.dart';
 import 'equations.dart';
 import 'game.dart';
@@ -8,9 +9,7 @@ import 'geography.dart';
 import 'home.dart' show HomePage;
 import 'language_sheet.dart';
 import 'keyboard.dart';
-import 'ladder.dart' show openModes;
 import 'main.dart';
-import 'mode_filter.dart';
 import 'modes.dart';
 import 'multi_game.dart';
 import 'puzzle.dart';
@@ -79,7 +78,11 @@ const diyMultiTries = [7, 9, 10, 12, 14];
 /// The lengths of a made equation.
 const diyEquationLengths = equationLengths;
 
-/// A made puzzle: its mode, language, words and tries (and, in lockdown, hearts).
+/// The time limits a made puzzle can have, in seconds; none is unlimited.
+const diyLimits = [60, 300];
+
+/// A made puzzle: its mode, language, words and tries (and, in lockdown, hearts),
+/// its time limit (null: none) and the draw its scores are worked under.
 class DiyPuzzle {
   DiyPuzzle(
     this.lang,
@@ -88,7 +91,10 @@ class DiyPuzzle {
     this.mode = GameMode.classic,
     List<String>? words,
     this.hearts,
-  }) : words = words ?? [word];
+    this.limit,
+    Draw? draw,
+  }) : words = words ?? [word],
+       draw = draw ?? Draw.sigmoid;
 
   final String lang;
   final GameMode mode;
@@ -100,16 +106,30 @@ class DiyPuzzle {
   /// The hearts of a lockdown puzzle; null for every other mode.
   final int? hearts;
 
+  /// The time to win in; null for no limit.
+  final Duration? limit;
+
+  /// The draw of the answer, for the scores: the sigmoid curve when a link says
+  /// nothing.
+  final Draw draw;
+
   String get word => words.first;
 
   String get link =>
       '$puzzleBase#${Routes.diy}?l=$lang'
       '${mode == GameMode.classic ? '' : '&m=${mode.name}'}'
       '&t=$tries${hearts == null ? '' : '&h=$hearts'}'
+      '${limit == null ? '' : '&cd=${limit!.inSeconds}'}'
+      '${switch (draw) {
+        Draw.frequency => '&d=f',
+        Draw.equal => '&d=e',
+        Draw.sigmoid => '',
+      }}'
       '&w=${words.map(diyEncode).join('.')}';
 
   /// The puzzle a link names, or null when it names none. A link without a mode
-  /// is a classic one, as every link was before the other modes had one.
+  /// is a classic one, as every link was before the other modes had one; one
+  /// without a limit or a draw has no limit and the sigmoid curve.
   static DiyPuzzle? parse(Uri uri) {
     final q = uri.queryParameters;
     final lang = q['l'], t = int.tryParse(q['t'] ?? '');
@@ -145,6 +165,8 @@ class DiyPuzzle {
         return null;
       }
     }
+    // a limit or a draw this version does not know is left out, not refused
+    final cd = int.tryParse(q['cd'] ?? '');
     return DiyPuzzle(
       lang,
       words.first,
@@ -152,13 +174,95 @@ class DiyPuzzle {
       mode: mode,
       words: words,
       hearts: hearts,
+      limit: cd != null && diyLimits.contains(cd)
+          ? Duration(seconds: cd)
+          : null,
+      draw: switch (q['d']) {
+        'f' => Draw.frequency,
+        'e' => Draw.equal,
+        _ => null,
+      },
     );
   }
 }
 
-/// The screen where a puzzle is made: a row to pick its mode (among the open
-/// ones that can be made up; it starts at the mode in view, which it does not
-/// change), then [_DiyMaker].
+/// The boards a made puzzle can have.
+enum DiyBoard {
+  classic('classic', 1),
+  quartet('quartet', 4),
+  relay('relay', 4);
+
+  const DiyBoard(this.label, this.boards);
+  final String label;
+  final int boards;
+}
+
+/// One group of pills, one selected: the flat look of the mode filter.
+class _Pills<T> extends StatelessWidget {
+  const _Pills({
+    required this.id,
+    required this.items,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  /// The group's name: its pills are keyed `diy-<id>-<name>`.
+  final String id;
+  final List<(T, String)> items;
+  final T selected;
+  final ValueChanged<T> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final (v, label) in items)
+          Semantics(
+            button: true,
+            selected: v == selected,
+            label: '$id $label',
+            excludeSemantics: true,
+            child: InkWell(
+              key: ValueKey('diy-$id-$label'),
+              onTap: () => onSelect(v),
+              borderRadius: BorderRadius.circular(3),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 36),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: v == selected
+                      ? c.secondaryContainer
+                      : c.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: Center(
+                  widthFactor: 1,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: v == selected ? FontWeight.bold : null,
+                      color: v == selected ? c.onSecondaryContainer : null,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The page that makes a puzzle: pills for its board, rules, timer, word pool,
+/// pool source and language, then its word (or four, or a place), its tries,
+/// then the link to copy.
 class DiyPage extends StatefulWidget {
   const DiyPage({super.key});
 
@@ -167,83 +271,46 @@ class DiyPage extends StatefulWidget {
 }
 
 class _DiyPageState extends State<DiyPage> {
-  GameMode _mode = diyApplies(appState.mode) ? appState.mode : GameMode.classic;
-
-  @override
-  Widget build(BuildContext context) {
-    final open = openModes(appState.level).toSet();
-    final modes = [
-      for (final m in GameMode.loopFor(appState.lang))
-        if (open.contains(m) && diyApplies(m)) m,
-    ];
-    return _DiyMaker(
-      // another mode starts the page afresh: its words, tries and keys differ
-      key: ValueKey(_mode),
-      mode: _mode,
-      modes: ModeFilter(
-        selected: _mode,
-        showAll: false,
-        modes: modes,
-        onSelect: (m) {
-          if (m != null) setState(() => _mode = m);
-        },
-      ),
-    );
-  }
-}
-
-/// The page that makes a puzzle in [mode]: its language, its word (or four, or
-/// an equation, or a place), its tries, then the link to copy.
-class _DiyMaker extends StatefulWidget {
-  const _DiyMaker({super.key, required this.mode, required this.modes});
-  final GameMode mode;
-
-  /// The row that picks the mode.
-  final Widget modes;
-
-  @override
-  State<_DiyMaker> createState() => _DiyMakerState();
-}
-
-class _DiyMakerState extends State<_DiyMaker> {
   List<Language> _langs = WordBank.loadedLanguages ?? const [];
-  GameMode get _mode => widget.mode;
-  // places are English
-  late String _lang = _mode == GameMode.themed ? 'en' : appState.lang;
-  late final List<String> _words = List.filled(_mode.boards, '');
+  DiyBoard _board = DiyBoard.classic;
+  bool _lockdown = false;
+  int? _seconds;
+  Draw _draw = Draw.sigmoid;
+  bool _geography = false;
+  String _lang = appState.lang;
+  late List<String> _words = List.filled(_board.boards, '');
   int _active = 0;
-  late int _tries = switch (_mode) {
-    GameMode.blind => appState.blindTries,
-    GameMode.quartet => 9,
-    GameMode.relay => 10,
-    GameMode.lockdown => lockdownTries,
-    GameMode.equations => appState.eqTries,
-    _ => 6,
-  };
+  int _tries = 6;
   int _hearts = appState.hearts;
   String? _link;
+  WordBank? _placeBank;
+  WordBank? _bank;
 
-  bool get _equations => _mode == GameMode.equations;
-  bool get _places => _mode == GameMode.themed;
+  /// The mode the pills make.
+  GameMode get _mode => _geography
+      ? GameMode.themed
+      : _lockdown
+      ? GameMode.lockdown
+      : switch (_board) {
+          DiyBoard.quartet => GameMode.quartet,
+          DiyBoard.relay => GameMode.relay,
+          DiyBoard.classic => GameMode.classic,
+        };
+  bool get _places => _geography;
 
   @override
   void initState() {
     super.initState();
     if (_langs.isEmpty) {
-      WordBank.languages().then((l) {
-        if (mounted) setState(() => _langs = l);
-      });
-    }
-    if (_places) {
-      WordBank.languages()
-          .then((l) => Geography.load(l.firstWhere((x) => x.code == 'en')))
-          .then((b) {
-            if (mounted) setState(() => _placeBank = b);
-          }, onError: (_) {});
+      WordBank.languages().then(
+        (l) {
+          if (mounted) setState(() => _langs = l);
+        },
+        onError: (Object e) =>
+            appLog.w('diy', 'could not read the languages: ${e.runtimeType}'),
+      );
     }
   }
-
-  WordBank? _placeBank;
 
   Language? get _language {
     for (final l in _langs) {
@@ -253,9 +320,9 @@ class _DiyMakerState extends State<_DiyMaker> {
   }
 
   Set<String> get _letters {
-    if (_equations) return {...'0123456789+-*/='.split('')};
-    if (_places)
+    if (_places) {
       return {for (final c in 'abcdefghijklmnopqrstuvwxyz'.split('')) c};
+    }
     final lang = _language;
     if (lang == null) return {};
     // the language's letters: those of the words of its lists (see the
@@ -266,25 +333,140 @@ class _DiyMakerState extends State<_DiyMaker> {
         : {for (final n in diyLengths) ...bank.letters(n)};
   }
 
-  WordBank? _bank;
   Future<void> _loadBank() async {
     final lang = _language;
-    if (lang == null || _equations || _places) return;
-    final bank = await WordBank.load(lang);
-    if (mounted && lang.code == _lang) setState(() => _bank = bank);
+    if (lang == null || _places) return;
+    try {
+      final bank = await WordBank.load(lang);
+      if (mounted && lang.code == _lang) setState(() => _bank = bank);
+    } catch (e) {
+      appLog.w('diy', 'could not read the word list: ${e.runtimeType}');
+    }
   }
 
-  int get _maxLength => _equations
-      ? diyEquationLengths.last
-      : _places
-      ? 20
-      : diyLengths.last;
+  Future<void> _loadPlaces() async {
+    try {
+      final l = await WordBank.languages();
+      final b = await Geography.load(l.firstWhere((x) => x.code == 'en'));
+      if (mounted && _geography) setState(() => _placeBank = b);
+    } catch (e) {
+      appLog.w('diy', 'could not read the places: ${e.runtimeType}');
+    }
+  }
+
+  int get _maxLength => _places ? 20 : diyLengths.last;
+
+  /// Applies a change of the pills: a different board or source starts the
+  /// words afresh (their number, their letters and their tries differ).
+  void _change({
+    DiyBoard? board,
+    bool? lockdown,
+    bool? geography,
+    String? lang,
+  }) {
+    final before = (_board, _geography);
+    setState(() {
+      _board = board ?? _board;
+      _lockdown = lockdown ?? _lockdown;
+      _geography = geography ?? _geography;
+      if (lang != null && lang != _lang) {
+        _lang = lang;
+        _bank = null;
+        for (var i = 0; i < _words.length; i++) {
+          _words[i] = '';
+        }
+      }
+      if (before != (_board, _geography)) {
+        _words = List.filled(_places ? 1 : _board.boards, '');
+        _active = 0;
+        _tries = switch (_board) {
+          DiyBoard.quartet => 9,
+          DiyBoard.relay => 10,
+          DiyBoard.classic => 6,
+        };
+        _bank = null;
+      }
+      _link = null;
+    });
+    if (_geography && _placeBank == null) _loadPlaces();
+    if (!_geography) _loadBank();
+  }
+
+  void _pickBoard(DiyBoard b) {
+    if (b == _board) return;
+    if (_lockdown && b != DiyBoard.classic) {
+      _toast('lockdown is for one board: classic rules it is');
+    } else if (_geography && b != DiyBoard.classic) {
+      _toast('geography is one board, classic rules');
+    }
+    _change(
+      board: b,
+      lockdown: b == DiyBoard.classic ? null : false,
+      geography: b == DiyBoard.classic ? null : false,
+    );
+  }
+
+  void _pickRules(bool lockdown) {
+    if (lockdown == _lockdown) return;
+    if (lockdown && _board != DiyBoard.classic) {
+      _toast(
+        _board == DiyBoard.quartet
+            ? 'a quartet cannot be locked down'
+            : 'a relay race cannot be locked down',
+      );
+      return;
+    }
+    if (lockdown && _geography) _toast('geography is one board, classic rules');
+    _change(lockdown: lockdown, geography: lockdown ? false : null);
+  }
+
+  void _pickSource(bool geography) {
+    if (geography == _geography) return;
+    if (geography) {
+      if (_lang != 'en') {
+        _toast('geography is only in english');
+        return;
+      }
+      if (_board != DiyBoard.classic || _lockdown) {
+        _toast('geography is one board, classic rules');
+        return;
+      }
+    }
+    _change(geography: geography);
+  }
+
+  void _toast(String text) {
+    try {
+      showToast(context, text);
+    } catch (e) {
+      appLog.w('diy', 'could not show a toast: ${e.runtimeType}');
+    }
+  }
+
+  Future<void> _pickLanguage() async {
+    try {
+      final code = await showLanguageSheet(
+        context,
+        langs: _langs,
+        current: _lang,
+      );
+      if (!mounted || code == null || code == _lang) return;
+      if (_geography && code != 'en') {
+        _toast('geography is only in english');
+        _change(lang: code, geography: false);
+      } else {
+        _change(lang: code);
+      }
+    } catch (e) {
+      appLog.w('diy', 'could not pick the language: ${e.runtimeType}');
+    }
+  }
 
   void _type(String ch) {
     final w = _words[_active];
     if (w.length >= _maxLength) return;
     setState(() {
-      _words[_active] = w + (_equations ? typedEquationChar(ch) : ch);
+      _words[_active] = w + ch;
       _link = null;
     });
   }
@@ -305,7 +487,6 @@ class _DiyMakerState extends State<_DiyMaker> {
     // a word here is made by adding to its end: there is no cursor to move
     move: (_) {},
     type: _type,
-    equations: _equations,
   );
 
   void _back() {
@@ -321,12 +502,6 @@ class _DiyMakerState extends State<_DiyMaker> {
   String? _problem(int i) {
     final w = _words[i];
     if (w.isEmpty) return null;
-    if (_equations) {
-      if (!diyEquationLengths.contains(w.length)) {
-        return 'six, seven or eight tiles';
-      }
-      return equationProblem(w);
-    }
     if (_places) {
       final b = _placeBank;
       if (b != null && w.length >= 3 && !b.valid.contains(w)) {
@@ -350,50 +525,33 @@ class _DiyMakerState extends State<_DiyMaker> {
 
   void _make() {
     if (!_ready) return;
-    setState(
-      () => _link = DiyPuzzle(
-        _lang,
-        _words.first,
-        _tries,
-        mode: _mode,
-        words: List.of(_words),
-        hearts: _mode == GameMode.lockdown ? _hearts : null,
-      ).link,
-    );
-  }
-
-  Future<void> _pickLanguage() async {
-    final code = await showLanguageSheet(
-      context,
-      langs: _langs,
-      current: _lang,
-    );
-    if (code == null || code == _lang) return;
-    setState(() {
-      _lang = code;
-      for (var i = 0; i < _words.length; i++) {
-        _words[i] = '';
-      }
-      _link = null;
-      _bank = null;
-    });
-    _loadBank();
+    try {
+      setState(
+        () => _link = DiyPuzzle(
+          _lang,
+          _words.first,
+          _tries,
+          mode: _mode,
+          words: List.of(_words),
+          hearts: _mode == GameMode.lockdown ? _hearts : null,
+          limit: _seconds == null ? null : Duration(seconds: _seconds!),
+          draw: _draw,
+        ).link,
+      );
+    } catch (e) {
+      appLog.w('diy', 'could not make the link: ${e.runtimeType}');
+    }
   }
 
   /// What a made puzzle of this mode is called.
-  String get _noun => _equations
-      ? 'equation'
-      : _places
+  String get _noun => _places
       ? 'place'
-      : _mode.boards > 1
+      : _board.boards > 1
       ? 'words'
       : 'word';
 
   List<(int, String, String)> get _triesItems {
-    if (_mode == GameMode.blind) {
-      return [for (final (name, n) in blindTriesLevels) (n, '$n tries', name)];
-    }
-    if (_mode == GameMode.quartet || _mode == GameMode.relay) {
+    if (_board != DiyBoard.classic) {
       return [for (final t in diyMultiTries) (t, '$t tries', '')];
     }
     return [
@@ -457,19 +615,50 @@ class _DiyMakerState extends State<_DiyMaker> {
     );
   }
 
+  Widget _group(String caption, Widget pills) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [Caption(caption), const SizedBox(height: 8), pills],
+  );
+
+  Widget _languagePill(ColorScheme c, Language? lang) => Align(
+    alignment: Alignment.centerLeft,
+    child: InkWell(
+      key: const ValueKey('diy-language'),
+      borderRadius: BorderRadius.circular(3),
+      onTap: lang == null ? null : _pickLanguage,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 36),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: c.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (lang != null) FlagBadge(lang.flag, size: 16),
+            const SizedBox(width: 6),
+            Text(_lang, style: const TextStyle(fontSize: 12)),
+            Icon(Icons.arrow_drop_down, size: 16, color: c.onSurfaceVariant),
+          ],
+        ),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final dim = c.onSurface.withValues(alpha: dimAlpha);
     final lang = _language;
-    if (_bank == null && lang != null) _loadBank();
+    if (_bank == null && lang != null && !_places) _loadBank();
     final problem = _problem(_active);
     return Focus(
       autofocus: true,
       onKeyEvent: (_, e) => _keys.handle(e),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('make your own · ${_mode.label}'),
+          title: const Text('make your own'),
           actions: [const SettingsButton()],
         ),
         body: SafeArea(
@@ -479,54 +668,81 @@ class _DiyMakerState extends State<_DiyMaker> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(19, 8, 19, 16),
                   children: [
-                    widget.modes,
-                    const SizedBox(height: 18),
-                    if (!_equations && !_places) ...[
-                      const Caption('language'),
-                      const SizedBox(height: 8),
-                      InkWell(
-                        key: const ValueKey('diy-language'),
-                        borderRadius: BorderRadius.circular(4),
-                        onTap: lang == null ? null : _pickLanguage,
-                        child: Container(
-                          height: 56,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: c.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            children: [
-                              if (lang != null) FlagBadge(lang.flag),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  lang?.name ?? '',
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_drop_down,
-                                color: c.onSurfaceVariant,
-                              ),
-                            ],
-                          ),
-                        ),
+                    _group(
+                      'board',
+                      _Pills<DiyBoard>(
+                        id: 'board',
+                        items: [for (final b in DiyBoard.values) (b, b.label)],
+                        selected: _board,
+                        onSelect: _pickBoard,
                       ),
-                      const SizedBox(height: 18),
-                    ],
+                    ),
+                    const SizedBox(height: 14),
+                    _group(
+                      'rules',
+                      _Pills<bool>(
+                        id: 'rules',
+                        items: const [(true, 'lockdown'), (false, 'classic')],
+                        selected: _lockdown,
+                        onSelect: _pickRules,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _group(
+                      'timer',
+                      _Pills<int?>(
+                        id: 'timer',
+                        items: const [
+                          (60, '1 min'),
+                          (300, '5 min'),
+                          (null, 'unlimited'),
+                        ],
+                        selected: _seconds,
+                        onSelect: (s) => setState(() {
+                          _seconds = s;
+                          _link = null;
+                        }),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _group(
+                      'word pool',
+                      _Pills<Draw>(
+                        id: 'draw',
+                        items: const [
+                          (Draw.sigmoid, 'sigmoid'),
+                          (Draw.frequency, 'frequency'),
+                          (Draw.equal, 'equal'),
+                        ],
+                        selected: _draw,
+                        onSelect: (d) => setState(() {
+                          _draw = d;
+                          _link = null;
+                        }),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _group(
+                      'pool source',
+                      _Pills<bool>(
+                        id: 'source',
+                        items: const [(false, 'classic'), (true, 'geography')],
+                        selected: _geography,
+                        onSelect: _pickSource,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _group('language', _languagePill(c, lang)),
+                    const SizedBox(height: 18),
                     Caption('your $_noun'),
                     const SizedBox(height: 8),
                     for (var b = 0; b < _words.length; b++) _tiles(c, b),
                     const SizedBox(height: 8),
                     Text(
                       problem ??
-                          (_equations
-                              ? 'a true equation of six to eight tiles: one =, a '
-                                    'sum on the left, a whole number on the right.'
-                              : _places
+                          (_places
                               ? 'a place of the list, in english, with no spaces.'
-                              : _mode.boards > 1
+                              : _board.boards > 1
                               ? 'four words of one length, four to eight letters, '
                                     'in this language\'s letters. tap a word to '
                                     'type in it. they do not have to be in the '
@@ -602,12 +818,21 @@ class _DiyMakerState extends State<_DiyMaker> {
                         key: const ValueKey('diy-copy'),
                         onPressed: () async {
                           final messenger = ScaffoldMessenger.of(context);
-                          await Clipboard.setData(ClipboardData(text: _link!));
-                          messenger
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(
-                              const SnackBar(content: Text('link copied')),
+                          try {
+                            await Clipboard.setData(
+                              ClipboardData(text: _link!),
                             );
+                            messenger
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                const SnackBar(content: Text('link copied')),
+                              );
+                          } catch (e) {
+                            appLog.w(
+                              'diy',
+                              'could not copy the link: ${e.runtimeType}',
+                            );
+                          }
                         },
                         child: const Text('copy'),
                       ),
@@ -624,7 +849,6 @@ class _DiyMakerState extends State<_DiyMaker> {
               ),
               LetterKeyboard(
                 letters: _letters,
-                numberPad: _equations,
                 onLetter: _type,
                 onEnter: _make,
                 onBack: _back,
@@ -695,6 +919,8 @@ class _DiyGateState extends State<DiyGate> {
               length: p.word.length,
               tries: p.tries,
             ),
+            limit: p.limit,
+            draw: p.draw,
           );
         }
         return GamePage(
@@ -703,6 +929,8 @@ class _DiyGateState extends State<DiyGate> {
           practice: true,
           chosen: true,
           hearts: p.hearts,
+          limit: p.limit,
+          draw: p.draw,
           daily: Daily('', p.word, length: p.word.length, tries: p.tries),
         );
       },

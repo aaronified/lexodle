@@ -91,11 +91,13 @@ void main() {
     }
     for (var i = 0; i < 6; i++) {
       // grey, then yellow, then green
-      await tester.tap(find.byType(MarkTile).at(i));
-      await tester.pump();
-      print('${tester.widget<MarkTile>(find.byType(MarkTile).at(i)).mark} ${find.byType(MarkTile).evaluate().length}');
-      await tester.tap(find.byType(MarkTile).at(i));
-      await tester.pump();
+      final tile = find.byType(MarkTile).at(i);
+      for (var k = 0; k < 3; k++) {
+        if (tester.widget<MarkTile>(tile).mark == Mark.correct) break;
+        await tester.tap(tile);
+        await tester.pump();
+      }
+      expect(tester.widget<MarkTile>(tile).mark, Mark.correct);
     }
     await tester.tap(find.text('add guess'));
     await tester.pump(const Duration(seconds: 2));
