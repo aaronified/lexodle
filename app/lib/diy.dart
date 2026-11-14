@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'app_log.dart';
 import 'daily.dart';
+import 'diy_controls.dart';
 import 'equations.dart';
 import 'game.dart';
 import 'geography.dart';
@@ -14,7 +15,7 @@ import 'modes.dart';
 import 'multi_game.dart';
 import 'puzzle.dart';
 import 'routes.dart';
-import 'stepper_choice.dart';
+import 'share_text.dart';
 import 'typing_keys.dart';
 import 'settings_button.dart';
 import 'ui.dart';
@@ -198,72 +199,9 @@ enum DiyBoard {
   final int boards;
 }
 
-/// One group of pills, one selected: the flat look of the mode filter.
-class _Pills<T> extends StatelessWidget {
-  const _Pills({
-    required this.id,
-    required this.items,
-    required this.selected,
-    required this.onSelect,
-  });
-
-  /// The group's name: its pills are keyed `diy-<id>-<name>`.
-  final String id;
-  final List<(T, String)> items;
-  final T selected;
-  final ValueChanged<T> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: [
-        for (final (v, label) in items)
-          Semantics(
-            button: true,
-            selected: v == selected,
-            label: '$id $label',
-            excludeSemantics: true,
-            child: InkWell(
-              key: ValueKey('diy-$id-$label'),
-              onTap: () => onSelect(v),
-              borderRadius: BorderRadius.circular(3),
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 36),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: v == selected
-                      ? c.secondaryContainer
-                      : c.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: Center(
-                  widthFactor: 1,
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: v == selected ? FontWeight.bold : null,
-                      color: v == selected ? c.onSecondaryContainer : null,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// The page that makes a puzzle: pills for its board, rules, timer, word pool,
-/// pool source and language, then its word (or four, or a place), its tries,
-/// then the link to copy.
+/// The page that makes a puzzle: the language, swipers for its board, rules,
+/// timer and source, sliders for its length, tries and hearts, then its word
+/// (or four, or a place). Creating it copies the link and shows it in a dialog.
 class DiyPage extends StatefulWidget {
   const DiyPage({super.key});
 
@@ -276,7 +214,6 @@ class _DiyPageState extends State<DiyPage> {
   DiyBoard _board = DiyBoard.classic;
   bool _lockdown = false;
   int? _seconds;
-  Draw _draw = Draw.sigmoid;
   bool _geography = false;
   String _lang = appState.lang;
   late List<String> _words = List.filled(_board.boards, '');
@@ -284,7 +221,6 @@ class _DiyPageState extends State<DiyPage> {
   int _length = _defaultLength;
   int _tries = 6;
   int _hearts = appState.hearts;
-  String? _link;
   WordBank? _placeBank;
   WordBank? _bank;
 
@@ -412,7 +348,6 @@ class _DiyPageState extends State<DiyPage> {
         _bank = null;
         _length = _legal(_length);
       }
-      _link = null;
     });
     if (_geography && _placeBank == null) _loadPlaces();
     if (!_geography) _loadBank();
@@ -425,7 +360,6 @@ class _DiyPageState extends State<DiyPage> {
       for (var i = 0; i < _words.length; i++) {
         if (_words[i].length != n) _words[i] = '';
       }
-      _link = null;
     });
   }
 
@@ -472,6 +406,16 @@ class _DiyPageState extends State<DiyPage> {
     _change(geography: geography);
   }
 
+  Future<bool> _copy(String link) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: link));
+      return true;
+    } catch (e) {
+      appLog.w('diy', 'could not copy the link: ${e.runtimeType}');
+      return false;
+    }
+  }
+
   void _toast(String text) {
     try {
       showToast(context, text);
@@ -504,7 +448,6 @@ class _DiyPageState extends State<DiyPage> {
     if (w.length >= _maxLength) return;
     setState(() {
       _words[_active] = w + ch;
-      _link = null;
     });
   }
 
@@ -513,7 +456,6 @@ class _DiyPageState extends State<DiyPage> {
     if (_words[_active].isEmpty) return;
     setState(() {
       _words[_active] = '';
-      _link = null;
     });
   }
 
@@ -531,7 +473,6 @@ class _DiyPageState extends State<DiyPage> {
     if (w.isEmpty) return;
     setState(() {
       _words[_active] = w.substring(0, w.length - 1);
-      _link = null;
     });
   }
 
@@ -562,20 +503,24 @@ class _DiyPageState extends State<DiyPage> {
     return _places ? _placeBank != null : _bank != null;
   }
 
-  void _make() {
+  /// Makes the link, copies it to the clipboard and shows it in a dialog.
+  Future<void> _make() async {
     if (!_ready) return;
     try {
-      setState(
-        () => _link = DiyPuzzle(
-          _lang,
-          _words.first,
-          _tries,
-          mode: _mode,
-          words: List.of(_words),
-          hearts: _mode == GameMode.lockdown ? _hearts : null,
-          limit: _seconds == null ? null : Duration(seconds: _seconds!),
-          draw: _draw,
-        ).link,
+      final link = DiyPuzzle(
+        _lang,
+        _words.first,
+        _tries,
+        mode: _mode,
+        words: List.of(_words),
+        hearts: _mode == GameMode.lockdown ? _hearts : null,
+        limit: _seconds == null ? null : Duration(seconds: _seconds!),
+      ).link;
+      await _copy(link);
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (_) => _LinkDialog(link: link),
       );
     } catch (e) {
       appLog.w('diy', 'could not make the link: ${e.runtimeType}');
@@ -591,13 +536,13 @@ class _DiyPageState extends State<DiyPage> {
 
   List<(int, String, String)> get _triesItems {
     if (_board != DiyBoard.classic) {
-      return [for (final t in diyMultiTries) (t, '$t tries', '')];
+      return [for (final t in diyMultiTries) (t, '$t', '')];
     }
     return [
       for (final t in diyTries)
         (
           t,
-          '$t tries',
+          '$t',
           switch (t) {
             4 => 'hard',
             5 => '',
@@ -654,33 +599,22 @@ class _DiyPageState extends State<DiyPage> {
     );
   }
 
-  Widget _group(String caption, Widget pills) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [Caption(caption), const SizedBox(height: 8), pills],
-  );
-
-  Widget _languagePill(ColorScheme c, Language? lang) => Align(
-    alignment: Alignment.centerLeft,
-    child: InkWell(
-      key: const ValueKey('diy-language'),
-      borderRadius: BorderRadius.circular(3),
-      onTap: lang == null ? null : _pickLanguage,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 36),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: c.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(3),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (lang != null) FlagBadge(lang.flag, size: 16),
-            const SizedBox(width: 6),
-            Text(_lang, style: const TextStyle(fontSize: 12)),
-            Icon(Icons.arrow_drop_down, size: 16, color: c.onSurfaceVariant),
+  Widget _languageBox(Language? lang) => KeyedSubtree(
+    key: const ValueKey('diy-language'),
+    child: DropdownBox(
+      title: 'language',
+      onTap: () {
+        if (lang != null) _pickLanguage();
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (lang != null) ...[
+            FlagBadge(lang.flag, size: 16),
+            const SizedBox(width: 8),
           ],
-        ),
+          Text(_lang),
+        ],
       ),
     ),
   );
@@ -707,81 +641,91 @@ class _DiyPageState extends State<DiyPage> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(19, 8, 19, 16),
                   children: [
-                    _group(
-                      'board',
-                      _Pills<DiyBoard>(
-                        id: 'board',
-                        items: [for (final b in DiyBoard.values) (b, b.label)],
-                        selected: _board,
-                        onSelect: _pickBoard,
-                      ),
+                    _languageBox(lang),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SwipeChoice<DiyBoard>(
+                            title: 'board',
+                            items: [
+                              for (final b in DiyBoard.values) (b, b.label),
+                            ],
+                            selected: _board,
+                            onChanged: _pickBoard,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SwipeChoice<bool>(
+                            title: 'rules',
+                            items: const [
+                              (true, 'lockdown'),
+                              (false, 'classic'),
+                            ],
+                            selected: _lockdown,
+                            onChanged: _pickRules,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SwipeChoice<int?>(
+                            title: 'timer',
+                            items: const [
+                              (60, '1 min'),
+                              (300, '5 min'),
+                              (null, 'unlimited'),
+                            ],
+                            selected: _seconds,
+                            onChanged: (s) => setState(() => _seconds = s),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SwipeChoice<bool>(
+                            title: 'source',
+                            items: const [
+                              (false, 'classic'),
+                              (true, 'geography'),
+                            ],
+                            selected: _geography,
+                            onChanged: _pickSource,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 14),
-                    _group(
-                      'length',
-                      _Pills<int>(
-                        id: 'length',
-                        items: [for (final n in _lengths) (n, '$n')],
-                        selected: _length,
-                        onSelect: _pickLength,
-                      ),
+                    LineSlider<int>(
+                      title: 'length',
+                      items: [for (final n in _lengths) (n, '$n', '')],
+                      selected: _length,
+                      onChanged: _pickLength,
                     ),
-                    const SizedBox(height: 14),
-                    _group(
-                      'rules',
-                      _Pills<bool>(
-                        id: 'rules',
-                        items: const [(true, 'lockdown'), (false, 'classic')],
-                        selected: _lockdown,
-                        onSelect: _pickRules,
-                      ),
+                    const SizedBox(height: 12),
+                    LineSlider<int>(
+                      title: 'tries',
+                      items: _triesItems,
+                      selected: _triesItems.any((i) => i.$1 == _tries)
+                          ? _tries
+                          : _triesItems.first.$1,
+                      onChanged: (t) => setState(() => _tries = t),
                     ),
-                    const SizedBox(height: 14),
-                    _group(
-                      'timer',
-                      _Pills<int?>(
-                        id: 'timer',
-                        items: const [
-                          (60, '1 min'),
-                          (300, '5 min'),
-                          (null, 'unlimited'),
-                        ],
-                        selected: _seconds,
-                        onSelect: (s) => setState(() {
-                          _seconds = s;
-                          _link = null;
-                        }),
-                      ),
+                    const SizedBox(height: 12),
+                    LineSlider<int>(
+                      title: 'hearts',
+                      items: [
+                        for (final (name, n) in lockdownHearts) (n, '$n', name),
+                      ],
+                      selected: _hearts,
+                      enabled: _mode == GameMode.lockdown,
+                      onDisabledTap: () =>
+                          _toast('hearts only count in lockdown'),
+                      onChanged: (h) => setState(() => _hearts = h),
                     ),
-                    const SizedBox(height: 14),
-                    _group(
-                      'word pool',
-                      _Pills<Draw>(
-                        id: 'draw',
-                        items: const [
-                          (Draw.sigmoid, 'sigmoid'),
-                          (Draw.frequency, 'frequency'),
-                          (Draw.equal, 'equal'),
-                        ],
-                        selected: _draw,
-                        onSelect: (d) => setState(() {
-                          _draw = d;
-                          _link = null;
-                        }),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    _group(
-                      'pool source',
-                      _Pills<bool>(
-                        id: 'source',
-                        items: const [(false, 'classic'), (true, 'geography')],
-                        selected: _geography,
-                        onSelect: _pickSource,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    _group('language', _languagePill(c, lang)),
                     const SizedBox(height: 18),
                     Caption('your $_noun'),
                     const SizedBox(height: 8),
@@ -805,93 +749,11 @@ class _DiyPageState extends State<DiyPage> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    if (_mode == GameMode.lockdown) ...[
-                      const Caption('hearts'),
-                      const SizedBox(height: 10),
-                      StepperChoice<int>(
-                        key: const ValueKey('diy-hearts'),
-                        semanticLabel: 'hearts',
-                        items: [
-                          for (final (name, n) in lockdownHearts)
-                            (n, '$n ${n == 1 ? 'heart' : 'hearts'}', name),
-                        ],
-                        selected: _hearts,
-                        onChanged: (h) => setState(() {
-                          _hearts = h;
-                          _link = null;
-                        }),
-                      ),
-                    ] else ...[
-                      const Caption('tries'),
-                      const SizedBox(height: 10),
-                      StepperChoice<int>(
-                        key: const ValueKey('diy-tries'),
-                        semanticLabel: 'tries',
-                        items: _triesItems,
-                        selected: _triesItems.any((i) => i.$1 == _tries)
-                            ? _tries
-                            : _triesItems.first.$1,
-                        onChanged: (t) => setState(() {
-                          _tries = t;
-                          _link = null;
-                        }),
-                      ),
-                    ],
-                    const SizedBox(height: 18),
                     FilledButton(
                       key: const ValueKey('diy-make'),
                       onPressed: _ready ? _make : null,
                       child: const Text('create the link'),
                     ),
-                    if (_link != null) ...[
-                      const SizedBox(height: 18),
-                      const Caption('the link'),
-                      const SizedBox(height: 8),
-                      Container(
-                        key: const ValueKey('diy-link'),
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: c.surfaceContainerHighest,
-                          border: Border.fromBorderSide(hairline(c)),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: SelectableText(
-                          _link!,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      OutlinedButton(
-                        key: const ValueKey('diy-copy'),
-                        onPressed: () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          try {
-                            await Clipboard.setData(
-                              ClipboardData(text: _link!),
-                            );
-                            messenger
-                              ..hideCurrentSnackBar()
-                              ..showSnackBar(
-                                const SnackBar(content: Text('link copied')),
-                              );
-                          } catch (e) {
-                            appLog.w(
-                              'diy',
-                              'could not copy the link: ${e.runtimeType}',
-                            );
-                          }
-                        },
-                        child: const Text('copy'),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'whoever opens it plays your $_noun as practice: nothing '
-                        'is saved or counted. it is only lightly disguised, not '
-                        'secret: each character is four digits.',
-                        style: TextStyle(fontSize: 11, color: dim),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -901,10 +763,112 @@ class _DiyPageState extends State<DiyPage> {
                 onEnter: _make,
                 onBack: _back,
                 enterLabel: 'create',
+                enterEnabled: _ready,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Where the share menu is opened from; tests replace it.
+Future<bool> Function(String) diyShare = shareText;
+
+/// The made link: copied already, to copy again or to share.
+class _LinkDialog extends StatefulWidget {
+  const _LinkDialog({required this.link});
+  final String link;
+
+  @override
+  State<_LinkDialog> createState() => _LinkDialogState();
+}
+
+class _LinkDialogState extends State<_LinkDialog> {
+  /// The line under the title: said here, not in a toast, which would sit
+  /// under the dialog.
+  String _said = 'copied to the clipboard';
+  String get link => widget.link;
+
+  Future<void> _copy() async {
+    try {
+      await Clipboard.setData(ClipboardData(text: link));
+      if (mounted) setState(() => _said = 'copied');
+    } catch (e) {
+      appLog.w('diy', 'could not copy the link: ${e.runtimeType}');
+    }
+  }
+
+  Future<void> _share() async {
+    try {
+      if (!await diyShare(link) && mounted) {
+        setState(() => _said = 'could not open the share menu');
+      }
+    } catch (e) {
+      appLog.w('diy', 'could not share the link: ${e.runtimeType}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: hairline(c),
+      ),
+      title: const Text('your link', style: TextStyle(fontSize: 17)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _said,
+            key: const ValueKey('diy-said'),
+            style: TextStyle(fontSize: 11, color: dim),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            key: const ValueKey('diy-link'),
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: c.surfaceContainerHighest,
+              border: Border.fromBorderSide(hairline(c)),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: SelectableText(link, style: const TextStyle(fontSize: 11)),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  key: const ValueKey('diy-copy'),
+                  onPressed: _copy,
+                  child: const Text('copy'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton(
+                  key: const ValueKey('diy-share'),
+                  onPressed: _share,
+                  child: const Text('share'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                key: const ValueKey('diy-close'),
+                tooltip: 'close',
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

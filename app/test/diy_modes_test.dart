@@ -1,9 +1,8 @@
-import 'dart:ui' show Tristate;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/diy.dart';
+import 'package:lexodle/diy_controls.dart';
 import 'package:lexodle/equations.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/game_modes_dialog.dart';
@@ -150,7 +149,25 @@ void main() {
   });
 
   group('the screen', () {
+    String? copied;
+
     Future<void> open(WidgetTester tester, {String lang = 'en'}) async {
+      copied = null;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied = (call.arguments as Map)['text'] as String;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
       await tester.binding.setSurfaceSize(const Size(420, 2400));
       await appState.load();
       appState.setup(lang: lang, mode: GameMode.classic);
@@ -175,17 +192,90 @@ void main() {
       await tester.pump();
     }
 
-    Future<void> tapPill(WidgetTester tester, String key) async {
-      await tester.tap(find.byKey(ValueKey('diy-$key')));
-      await tester.pump();
+    /// The swipers' choices, by title.
+    const swipes = {
+      'board': ['classic', 'quartet', 'relay'],
+      'rules': ['lockdown', 'classic'],
+      'timer': ['1 min', '5 min', 'unlimited'],
+      'source': ['classic', 'geography'],
+    };
+
+    Finder swipeOf(String title) =>
+        find.byWidgetPredicate((w) => w is SwipeChoice && w.title == title);
+
+    Finder lineOf(String title) =>
+        find.byWidgetPredicate((w) => w is LineSlider && w.title == title);
+
+    String chosen(WidgetTester tester, String title) {
+      final w = tester.widget(swipeOf(title)) as dynamic;
+      return w.items.firstWhere((e) => e.$1 == w.selected).$2 as String;
     }
 
-    bool on(WidgetTester tester, String key) =>
+    /// Drives a control by the old pill's name: a swiper by its chevrons, one
+    /// choice at a time (it stops where the page refuses), a slider by its
+    /// onChanged.
+    Future<void> tapPill(WidgetTester tester, String key) async {
+      final cut = key.indexOf('-');
+      final group = key.substring(0, cut), name = key.substring(cut + 1);
+      if (group == 'length') {
+        final w = tester.widget(lineOf('length')) as dynamic;
+        final i = (w.items as List).indexWhere(
+          (e) => (e as dynamic).$1 == int.parse(name),
+        );
+        expect(i, isNonNegative, reason: 'length $name is offered');
         tester
-            .getSemantics(find.byKey(ValueKey('diy-$key')))
-            .flagsCollection
-            .isSelected ==
-        Tristate.isTrue;
+            .widget<Slider>(find.byKey(const ValueKey('slider-length')))
+            .onChanged!(i.toDouble());
+        await tester.pumpAndSettle();
+        return;
+      }
+      final labels = swipes[group]!;
+      final to = labels.indexOf(name);
+      expect(to, isNonNegative);
+      while (true) {
+        final at = labels.indexOf(chosen(tester, group));
+        if (at == to) return;
+        await tester.tap(
+          find.byKey(ValueKey('swipe-$group-${to > at ? 'next' : 'prev'}')),
+        );
+        await tester.pumpAndSettle();
+        if (labels.indexOf(chosen(tester, group)) == at) return;
+      }
+    }
+
+    bool on(WidgetTester tester, String key) {
+      final cut = key.indexOf('-');
+      final group = key.substring(0, cut), name = key.substring(cut + 1);
+      if (group == 'length') {
+        return (tester.widget(lineOf('length')) as dynamic).selected ==
+            int.parse(name);
+      }
+      return chosen(tester, group) == name;
+    }
+
+    Future<void> sliderTo(WidgetTester tester, String title, int index) async {
+      tester.widget<Slider>(find.byKey(ValueKey('slider-$title'))).onChanged!(
+        index.toDouble(),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    bool sliderOn(WidgetTester tester, String title) =>
+        tester
+            .widget<Slider>(find.byKey(ValueKey('slider-$title')))
+            .onChanged !=
+        null;
+
+    /// Presses create: the link is made, copied, and shown in a dialog.
+    Future<void> make(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('diy-make')));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> closeDialog(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('diy-close')));
+      await tester.pumpAndSettle();
+    }
 
     Future<void> typeWord(WidgetTester tester, String w) async {
       for (final ch in w.split('')) {
@@ -203,7 +293,7 @@ void main() {
         )
         .data!;
 
-    testWidgets('there is no mode row, and each group selects one pill', (
+    testWidgets('there is no mode row, and each swiper selects one choice', (
       tester,
     ) async {
       await open(tester);
@@ -214,7 +304,6 @@ void main() {
       expect(on(tester, 'board-classic'), isTrue);
       expect(on(tester, 'rules-classic'), isTrue);
       expect(on(tester, 'timer-unlimited'), isTrue);
-      expect(on(tester, 'draw-sigmoid'), isTrue);
       expect(on(tester, 'source-classic'), isTrue);
       await tapPill(tester, 'board-quartet');
       expect(
@@ -229,10 +318,10 @@ void main() {
       await tapPill(tester, 'board-classic');
       await tapPill(tester, 'rules-lockdown');
       expect(on(tester, 'rules-lockdown'), isTrue);
-      expect(find.byKey(const ValueKey('diy-hearts')), findsOneWidget);
-      expect(find.byKey(const ValueKey('diy-tries')), findsNothing);
+      expect(find.byKey(const ValueKey('slider-hearts')), findsOneWidget);
+      expect(find.byKey(const ValueKey('slider-tries')), findsOneWidget);
       await tapPill(tester, 'rules-classic');
-      expect(find.byKey(const ValueKey('diy-tries')), findsOneWidget);
+      expect(find.byKey(const ValueKey('slider-tries')), findsOneWidget);
       await tapPill(tester, 'timer-1 min');
       expect(
         (on(tester, 'timer-1 min'), on(tester, 'timer-unlimited')),
@@ -240,16 +329,101 @@ void main() {
       );
       await tapPill(tester, 'timer-5 min');
       expect(on(tester, 'timer-5 min'), isTrue);
-      await tapPill(tester, 'draw-frequency');
-      expect(on(tester, 'draw-frequency'), isTrue);
-      await tapPill(tester, 'draw-equal');
-      expect(
-        (on(tester, 'draw-equal'), on(tester, 'draw-frequency')),
-        (true, false),
-      );
       await tapPill(tester, 'source-geography');
       expect(on(tester, 'source-geography'), isTrue);
       expect(find.text('geography is only in english'), findsNothing);
+    });
+
+    testWidgets('create is greyed out until the word is complete and listed', (
+      tester,
+    ) async {
+      await open(tester);
+      bool enabled() =>
+          tester
+              .widget<FilledButton>(find.byKey(const ValueKey('diy-make')))
+              .onPressed !=
+          null;
+      expect(enabled(), isFalse);
+      await typeWord(tester, 'cran');
+      expect(enabled(), isFalse);
+      await typeWord(tester, 'e');
+      expect(enabled(), isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await typeWord(tester, 'x');
+      await tester.pump();
+      expect(enabled(), isFalse, reason: 'cranx is not in the word list');
+    });
+
+    testWidgets('creating copies the link and shows it in a dialog', (
+      tester,
+    ) async {
+      await open(tester);
+      await typeWord(tester, 'crane');
+      expect(find.byKey(const ValueKey('diy-link')), findsNothing);
+      await make(tester);
+      expect(find.text('your link'), findsOneWidget);
+      expect(find.text('copied to the clipboard'), findsOneWidget);
+      final link = linkOf(tester);
+      expect(DiyPuzzle.parse(Uri.parse(routeOf(link)))!.word, 'crane');
+      expect(copied, link);
+      copied = null;
+      await tester.tap(find.byKey(const ValueKey('diy-copy')));
+      await tester.pump();
+      expect(copied, link);
+      expect(find.text('copied'), findsOneWidget);
+      await closeDialog(tester);
+      expect(find.byKey(const ValueKey('diy-link')), findsNothing);
+    });
+
+    testWidgets('share hands the link to the share menu, and says when it '
+        'cannot', (tester) async {
+      final saved = diyShare;
+      addTearDown(() => diyShare = saved);
+      String? shared;
+      var opens = true;
+      diyShare = (text) async {
+        shared = text;
+        return opens;
+      };
+      await open(tester);
+      await typeWord(tester, 'crane');
+      await make(tester);
+      await tester.tap(find.byKey(const ValueKey('diy-share')));
+      await tester.pump();
+      expect(shared, linkOf(tester));
+      expect(find.text('could not open the share menu'), findsNothing);
+      opens = false;
+      await tester.tap(find.byKey(const ValueKey('diy-share')));
+      await tester.pump();
+      expect(find.text('could not open the share menu'), findsOneWidget);
+    });
+
+    testWidgets('the hearts slider is there but still until lockdown', (
+      tester,
+    ) async {
+      await open(tester);
+      expect(find.byKey(const ValueKey('slider-hearts')), findsOneWidget);
+      expect(sliderOn(tester, 'hearts'), isFalse);
+      expect(sliderOn(tester, 'tries'), isTrue);
+      await tapPill(tester, 'rules-lockdown');
+      expect(sliderOn(tester, 'hearts'), isTrue);
+      expect(sliderOn(tester, 'tries'), isTrue);
+      await typeWord(tester, 'crane');
+      await sliderTo(tester, 'hearts', 3);
+      await sliderTo(tester, 'tries', 0);
+      await make(tester);
+      final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
+      expect((p.mode, p.hearts, p.tries), (GameMode.lockdown, 3, 4));
+      await closeDialog(tester);
+      await tapPill(tester, 'rules-classic');
+      expect(sliderOn(tester, 'hearts'), isFalse);
+      // a tap on the greyed slider says why
+      await tester.tap(
+        find.byKey(const ValueKey('slider-hearts')),
+        warnIfMissed: false,
+      );
+      await tester.pump();
+      expect(find.text('hearts only count in lockdown'), findsOneWidget);
     });
 
     testWidgets('a quartet or a relay race cannot be locked down', (
@@ -371,20 +545,19 @@ void main() {
       expect(on(tester, 'source-classic'), isTrue);
     });
 
-    testWidgets('a classic board makes a link with its timer and pool', (
+    testWidgets('a classic board makes a link with its timer and no pool', (
       tester,
     ) async {
       await open(tester);
       await tapPill(tester, 'timer-1 min');
-      await tapPill(tester, 'draw-frequency');
       await typeWord(tester, 'crane');
-      await tester.tap(find.byKey(const ValueKey('diy-make')));
-      await tester.pump();
+      await make(tester);
       final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
       expect(p.mode, GameMode.classic);
       expect(p.word, 'crane');
       expect(p.limit, const Duration(minutes: 1));
-      expect(p.draw, Draw.frequency);
+      expect(p.draw, Draw.equal);
+      expect(linkOf(tester), isNot(contains('&d=')));
     });
 
     testWidgets('a word that is not in the word list makes no puzzle', (
@@ -397,19 +570,8 @@ void main() {
         tester.widget<Text>(find.byKey(const ValueKey('diy-note'))).data,
         'not in the word list',
       );
-      await tester.tap(find.byKey(const ValueKey('diy-make')));
-      await tester.pump();
+      await make(tester);
       expect(find.byKey(const ValueKey('diy-link')), findsNothing);
-    });
-
-    testWidgets('the default pool makes a link with d=s', (tester) async {
-      await open(tester);
-      await typeWord(tester, 'crane');
-      await tester.tap(find.byKey(const ValueKey('diy-make')));
-      await tester.pump();
-      final link = linkOf(tester);
-      expect(link, contains('&d=s'));
-      expect(DiyPuzzle.parse(Uri.parse(routeOf(link)))!.draw, Draw.sigmoid);
     });
 
     testWidgets('lockdown rules make a lockdown puzzle with hearts', (
@@ -418,8 +580,7 @@ void main() {
       await open(tester);
       await tapPill(tester, 'rules-lockdown');
       await typeWord(tester, 'crane');
-      await tester.tap(find.byKey(const ValueKey('diy-make')));
-      await tester.pump();
+      await make(tester);
       final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
       expect(p.mode, GameMode.lockdown);
       expect(p.hearts, isNotNull);
@@ -430,13 +591,12 @@ void main() {
       await tapPill(tester, 'source-geography');
       await tester.pump();
       await typeWord(tester, 'spain');
-      await tester.tap(find.byKey(const ValueKey('diy-make')));
-      await tester.pump();
+      await make(tester);
       final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
       expect((p.mode, p.word, p.lang), (GameMode.themed, 'spain', 'en'));
     });
 
-    testWidgets('each length pill selects and sets the tile count', (
+    testWidgets('each length stop selects and sets the tile count', (
       tester,
     ) async {
       await open(tester);
@@ -464,10 +624,10 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.tap(find.byKey(const ValueKey('diy-make')));
-      await tester.pump();
+      await make(tester);
       final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
       expect(p.word.length, 6);
+      await closeDialog(tester);
       // a shorter word is not complete
       await tapPill(tester, 'length-7');
       expect(find.byKey(const ValueKey('diy-link')), findsNothing);
@@ -504,10 +664,11 @@ void main() {
       await open(tester);
       await tapPill(tester, 'source-geography');
       await tester.pump();
-      for (final n in Geography.counts.keys) {
-        expect(find.byKey(ValueKey('diy-length-$n')), findsOneWidget);
-      }
-      expect(find.byKey(const ValueKey('diy-length-9')), findsNothing);
+      final items = (tester.widget(lineOf('length')) as dynamic).items as List;
+      expect([
+        for (final e in items) (e as dynamic).$1,
+      ], Geography.counts.keys.toList()..sort());
+      expect(Geography.counts.containsKey(9), isFalse);
       expect(on(tester, 'length-5'), isTrue);
     });
 
@@ -546,8 +707,7 @@ void main() {
         await tester.pump();
         await typeWord(tester, ['crane', 'plumb', 'ghost', 'fifty'][i]);
       }
-      await tester.tap(find.byKey(const ValueKey('diy-make')));
-      await tester.pump();
+      await make(tester);
       final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
       expect(p.mode, GameMode.quartet);
       expect(p.words, ['crane', 'plumb', 'ghost', 'fifty']);
@@ -562,8 +722,7 @@ void main() {
         await tester.pump();
         await typeWord(tester, ['crane', 'plumb', 'ghost', 'fifty'][i]);
       }
-      await tester.tap(find.byKey(const ValueKey('diy-make')));
-      await tester.pump();
+      await make(tester);
       final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
       expect((p.mode, p.tries), (GameMode.relay, 10));
     });
@@ -586,11 +745,12 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.delete);
       await type('e');
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(
         DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!.word,
         'crane',
       );
+      await closeDialog(tester);
       // shift and backspace clear the word, and the link with it
       await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
       await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
