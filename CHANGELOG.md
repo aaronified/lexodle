@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- today: the free play strip, a ratchet under a fixed box
+  The free play control at the bottom is a strip of every open mode. The selection box stays in the middle and the modes slide under it, clicking from one to the next with a tick, snapping when you let go. Tap a neighbour to move to it, tap the box to start free play. Tapping a daily no longer changes the free play mode, and learn still opens on it.
+- diy: choose the word length
+  Every puzzle has a length pill (4 to 8 letters, and the lengths places have for geography), and the entry shows exactly that many tiles.
+
 - solver: every mode, and your own games stay hidden from it
   The solver opens on any mode you have open (pills at the top): classic, lockdown, quartet, relay, blind, equations, mastermind and geography. It leaves out the answers of your games in progress and of today's dailies you have not finished, so it cannot solve them.
 - diy: a few pills instead of modes

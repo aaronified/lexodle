@@ -281,6 +281,7 @@ class _DiyPageState extends State<DiyPage> {
   String _lang = appState.lang;
   late List<String> _words = List.filled(_board.boards, '');
   int _active = 0;
+  int _length = _defaultLength;
   int _tries = 6;
   int _hearts = appState.hearts;
   String? _link;
@@ -298,6 +299,24 @@ class _DiyPageState extends State<DiyPage> {
           DiyBoard.classic => GameMode.classic,
         };
   bool get _places => _geography;
+
+  static const _defaultLength = 5;
+
+  /// The lengths the board can have: those of the places for geography once
+  /// they are read, else those of the word lists.
+  List<int> get _lengths {
+    if (_places && Geography.counts.isNotEmpty) {
+      return Geography.counts.keys.toList()..sort();
+    }
+    return diyLengths;
+  }
+
+  /// [n] if the source has it, else the default (or the shortest).
+  int _legal(int n) {
+    final l = _lengths;
+    if (l.contains(n)) return n;
+    return l.contains(_defaultLength) ? _defaultLength : l.first;
+  }
 
   @override
   void initState() {
@@ -349,13 +368,18 @@ class _DiyPageState extends State<DiyPage> {
     try {
       final l = await WordBank.languages();
       final b = await Geography.load(l.firstWhere((x) => x.code == 'en'));
-      if (mounted && _geography) setState(() => _placeBank = b);
+      if (mounted && _geography) {
+        setState(() {
+          _placeBank = b;
+          _length = _legal(_length);
+        });
+      }
     } catch (e) {
       appLog.w('diy', 'could not read the places: ${e.runtimeType}');
     }
   }
 
-  int get _maxLength => _places ? 20 : diyLengths.last;
+  int get _maxLength => _length;
 
   /// Applies a change of the pills: a different board or source starts the
   /// words afresh (their number, their letters and their tries differ).
@@ -386,11 +410,23 @@ class _DiyPageState extends State<DiyPage> {
           DiyBoard.classic => 6,
         };
         _bank = null;
+        _length = _legal(_length);
       }
       _link = null;
     });
     if (_geography && _placeBank == null) _loadPlaces();
     if (!_geography) _loadBank();
+  }
+
+  void _pickLength(int n) {
+    if (n == _length) return;
+    setState(() {
+      _length = n;
+      for (var i = 0; i < _words.length; i++) {
+        if (_words[i].length != n) _words[i] = '';
+      }
+      _link = null;
+    });
   }
 
   void _pickBoard(DiyBoard b) {
@@ -510,18 +546,15 @@ class _DiyPageState extends State<DiyPage> {
       }
       return null;
     }
-    if (!diyLengths.contains(w.length)) return 'four to eight letters';
     return null;
   }
 
   bool get _ready {
-    final n = _words.first.length;
     for (var i = 0; i < _words.length; i++) {
-      if (_words[i].isEmpty || _words[i].length != n) return false;
+      if (_words[i].length != _length) return false;
       if (_problem(i) != null) return false;
     }
-    if (_places) return _placeBank != null && n >= 3;
-    return true;
+    return !_places || _placeBank != null;
   }
 
   void _make() {
@@ -574,7 +607,7 @@ class _DiyPageState extends State<DiyPage> {
 
   Widget _tiles(ColorScheme c, int b) {
     final w = _words[b];
-    final shown = w.length < 5 ? 5 : (w.length + 1).clamp(5, _maxLength);
+    final shown = _length;
     final on = b == _active;
     return InkWell(
       key: ValueKey('diy-word-$b'),
@@ -680,6 +713,16 @@ class _DiyPageState extends State<DiyPage> {
                     ),
                     const SizedBox(height: 14),
                     _group(
+                      'length',
+                      _Pills<int>(
+                        id: 'length',
+                        items: [for (final n in _lengths) (n, '$n')],
+                        selected: _length,
+                        onSelect: _pickLength,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _group(
                       'rules',
                       _Pills<bool>(
                         id: 'rules',
@@ -742,13 +785,14 @@ class _DiyPageState extends State<DiyPage> {
                     Text(
                       problem ??
                           (_places
-                              ? 'a place of the list, in english, with no spaces.'
+                              ? 'a place of the list, of $_length letters, in '
+                                    'english, with no spaces.'
                               : _board.boards > 1
-                              ? 'four words of one length, four to eight letters, '
-                                    'in this language\'s letters. tap a word to '
+                              ? 'four words of $_length letters, in this '
+                                    'language\'s letters. tap a word to '
                                     'type in it. they do not have to be in the '
                                     'word list.'
-                              : 'type any word, four to eight letters, in this '
+                              : 'type any word of $_length letters, in this '
                                     'language\'s letters. it does not have to be '
                                     'in the word list.'),
                       key: const ValueKey('diy-note'),

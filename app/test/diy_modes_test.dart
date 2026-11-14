@@ -421,6 +421,105 @@ void main() {
       expect((p.mode, p.word, p.lang), (GameMode.themed, 'spain', 'en'));
     });
 
+    testWidgets('each length pill selects and sets the tile count', (
+      tester,
+    ) async {
+      await open(tester);
+      expect(on(tester, 'length-5'), isTrue);
+      for (final n in diyLengths) {
+        await tapPill(tester, 'length-$n');
+        expect(on(tester, 'length-$n'), isTrue);
+        expect(find.byKey(ValueKey('diy-tile-${n - 1}')), findsOneWidget);
+        expect(find.byKey(ValueKey('diy-tile-$n')), findsNothing);
+      }
+    });
+
+    testWidgets('a word is held to the length, and a link of 6 parses back', (
+      tester,
+    ) async {
+      await open(tester);
+      await tapPill(tester, 'length-6');
+      await typeWord(tester, 'cranes');
+      await typeWord(tester, 'x');
+      expect(find.byKey(const ValueKey('diy-tile-6')), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('diy-tile-5')),
+          matching: find.text('s'),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('diy-make')));
+      await tester.pump();
+      final p = DiyPuzzle.parse(Uri.parse(routeOf(linkOf(tester))))!;
+      expect(p.word.length, 6);
+      // a shorter word is not complete
+      await tapPill(tester, 'length-7');
+      expect(find.byKey(const ValueKey('diy-link')), findsNothing);
+      await typeWord(tester, 'cranes');
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('diy-make')))
+            .onPressed,
+        isNull,
+      );
+    });
+
+    testWidgets('a length change keeps the words that fit', (tester) async {
+      await open(tester);
+      await tapPill(tester, 'board-quartet');
+      await typeWord(tester, 'crane');
+      await tapPill(tester, 'length-6');
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('diy-tile-0')),
+          matching: find.text('c'),
+        ),
+        findsNothing,
+      );
+      await tapPill(tester, 'length-5');
+      await typeWord(tester, 'crane');
+      await tapPill(tester, 'length-5');
+      await tapPill(tester, 'length-6');
+      await tapPill(tester, 'length-5');
+      expect(find.byKey(const ValueKey('diy-tile-4')), findsOneWidget);
+    });
+
+    testWidgets('geography shows the place lengths', (tester) async {
+      await open(tester);
+      await tapPill(tester, 'source-geography');
+      await tester.pump();
+      for (final n in Geography.counts.keys) {
+        expect(find.byKey(ValueKey('diy-length-$n')), findsOneWidget);
+      }
+      expect(find.byKey(const ValueKey('diy-length-9')), findsNothing);
+      expect(on(tester, 'length-5'), isTrue);
+    });
+
+    testWidgets('the length survives a board change when legal, else resets', (
+      tester,
+    ) async {
+      await open(tester);
+      await tapPill(tester, 'length-7');
+      await tapPill(tester, 'board-relay');
+      expect(on(tester, 'length-7'), isTrue);
+      await tapPill(tester, 'board-classic');
+      await tapPill(tester, 'source-geography');
+      await tester.pump();
+      expect(on(tester, 'length-7'), isTrue);
+      // a length no place has resets to the default when the source changes
+      final keep = Map.of(Geography.counts);
+      Geography.counts = {
+        for (final e in keep.entries)
+          if (e.key != 7) e.key: e.value,
+      };
+      await tapPill(tester, 'source-classic');
+      await tapPill(tester, 'length-7');
+      await tapPill(tester, 'source-geography');
+      expect(on(tester, 'length-5'), isTrue);
+      Geography.counts = keep;
+    });
+
     testWidgets('quartet: four words, one at a time, tries of its own', (
       tester,
     ) async {

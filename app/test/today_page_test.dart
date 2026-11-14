@@ -5,7 +5,7 @@ import 'package:lexodle/game_modes_dialog.dart';
 import 'package:lexodle/first_run/mode_lesson_page.dart';
 import 'package:lexodle/ladder.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/mode_wheel.dart' show ModeSwitch;
+import 'package:lexodle/mode_strip.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/my_dailies.dart';
 import 'package:lexodle/routes.dart';
@@ -112,7 +112,7 @@ void main() {
     expect(find.text(' · streak ended'), findsOneWidget);
   });
 
-  testWidgets('free play is one line on a narrow phone', (tester) async {
+  testWidgets('the free play strip fits a narrow phone', (tester) async {
     veteran();
     await tester.binding.setSurfaceSize(const Size(360, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -120,13 +120,12 @@ void main() {
       const MaterialApp(home: Scaffold(body: TodayPage())),
     );
     await tester.pump();
-    final text = find.descendant(
-      of: find.byKey(const ValueKey('today-free-play')),
-      matching: find.text('free play · classic'),
-    );
-    expect(text, findsOneWidget);
-    // one line of 14 px text is well under two lines' height
-    expect(tester.getSize(text).height, lessThan(24));
+    final strip = find.byKey(const ValueKey('mode-strip'));
+    expect(strip, findsOneWidget);
+    expect(tester.getSize(strip).width, lessThanOrEqualTo(360));
+    expect(find.text('free play'), findsOneWidget);
+    expect(find.text('classic'), findsWidgets);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the bar is pinned with a solid background and a next button', (
@@ -144,7 +143,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('today-free-play')),
-        matching: find.text('free play · classic'),
+        matching: find.text('free play'),
       ),
       findsOneWidget,
     );
@@ -160,7 +159,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('today-free-play')),
-        matching: find.text('free play · classic'),
+        matching: find.text('free play'),
       ),
       findsOneWidget,
     );
@@ -225,8 +224,12 @@ void main() {
     expect(find.byKey(const ValueKey('today-more')), findsNothing);
   });
 
+  /// The route arguments of what was pushed, by route name.
+  final arguments = <String, Object?>{};
+
   Future<List<String>> showRouted(WidgetTester tester) async {
     final pushed = <String>[];
+    arguments.clear();
     await tester.binding.setSurfaceSize(const Size(420, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -234,6 +237,7 @@ void main() {
         home: const Scaffold(body: TodayPage()),
         onGenerateRoute: (r) {
           pushed.add(r.name ?? '');
+          arguments[r.name ?? ''] = r.arguments;
           return MaterialPageRoute<void>(
             settings: r,
             builder: (_) => const Scaffold(body: Text('elsewhere')),
@@ -307,13 +311,14 @@ void main() {
     expect(appState.mode, GameMode.quartet);
   });
 
-  testWidgets('one open mode: no chevrons, a tap starts its free play', (
+  testWidgets('one open mode: just the rectangle, a tap starts its free play', (
     tester,
   ) async {
     appState.stats.played = 0;
     appState.lex.veteran = false;
     final pushed = await showRouted(tester);
-    expect(find.text('free play · classic'), findsOneWidget);
+    expect(find.byKey(const ValueKey('mode-strip-box')), findsOneWidget);
+    expect(find.text('free play'), findsOneWidget);
     expect(find.byKey(const ValueKey('mode-prev')), findsNothing);
     expect(find.byKey(const ValueKey('mode-next')), findsNothing);
     await tester.tap(find.byKey(const ValueKey('today-free-play')));
@@ -322,29 +327,44 @@ void main() {
     expect(appState.mode, GameMode.classic);
   });
 
-  testWidgets('several open modes: the button turns through them', (
+  testWidgets('several open modes: the strip changes the free play mode', (
     tester,
   ) async {
     veteran();
     final pushed = await showRouted(tester);
-    expect(find.byKey(const ValueKey('mode-prev')), findsOneWidget);
-    expect(find.byKey(const ValueKey('mode-next')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('mode-next')));
+    expect(find.byType(ModeStrip), findsOneWidget);
+    expect(find.byKey(const ValueKey('mode-prev')), findsNothing);
+    // a tap on a neighbour selects it
+    await tester.tap(find.byKey(const ValueKey('mode-strip-quartet')));
     await tester.pumpAndSettle();
-    expect(appState.mode, isNot(GameMode.classic));
-    final first = appState.mode;
-    expect(find.text('free play · ${first.label}'), findsOneWidget);
-    // a drag over the button turns it too
+    expect(appState.mode, GameMode.quartet);
+    // a drag turns it too
     await tester.drag(
-      find.byKey(const ValueKey('today-free-play')),
+      find.byKey(const ValueKey('mode-strip')),
       const Offset(-160, 0),
     );
     await tester.pumpAndSettle();
-    expect(appState.mode, isNot(first));
-    expect(find.text('free play · ${appState.mode.label}'), findsOneWidget);
+    expect(appState.mode, isNot(GameMode.quartet));
+    final now = appState.mode;
+    expect(pushed, isNot(contains(Routes.play)));
+    // free play starts the mode the strip shows
     await tester.tap(find.byKey(const ValueKey('today-free-play')));
     await tester.pumpAndSettle();
     expect(pushed, contains(Routes.play));
+    expect(appState.mode, now);
+  });
+
+  testWidgets('a daily row opens its own daily and leaves the free play mode', (
+    tester,
+  ) async {
+    veteran();
+    appState.setup(mode: GameMode.quartet);
+    final pushed = await showRouted(tester);
+    await tester.tap(row(GameMode.lockdown));
+    await tester.pumpAndSettle();
+    expect(pushed, contains(Routes.daily));
+    expect(arguments[Routes.daily], GameMode.lockdown);
+    expect(appState.mode, GameMode.quartet);
   });
 
   testWidgets('a finished daily opens its game, with no placeholder', (
@@ -457,11 +477,12 @@ void main() {
     expect(anyCard(), findsNothing);
   });
 
-  testWidgets('the free play button has no pending dots', (tester) async {
+  testWidgets('free play is the strip, with no pending dots', (tester) async {
     appState.stats.played = 4;
     await show(tester);
-    final switcher = tester.widget<ModeSwitch>(find.byType(ModeSwitch));
-    expect(switcher.pending, isEmpty);
+    expect(find.byType(ModeStrip), findsOneWidget);
+    expect(find.byKey(const ValueKey('daily-dot-prev')), findsNothing);
+    expect(find.byKey(const ValueKey('daily-dot-next')), findsNothing);
   });
 
   testWidgets('a veteran sees no card', (tester) async {
