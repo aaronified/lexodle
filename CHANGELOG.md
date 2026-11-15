@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- solver: the solver is chosen in the settings sheet, and there are no tries
+  The row of mode pills is gone from the solver page: which solver it is (classic, quartet, ...) is the first choice of the solver settings sheet, and the title names it. The tries slider is gone too, as it only shaped the advice near the end and the solver does not weigh risk.
+
 ## 0.12.2
 
 - solver: alternatives and a plot in every mode
