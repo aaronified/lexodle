@@ -122,6 +122,37 @@ void main() {
       fits: fits,
     );
 
+    test(
+      'in the mastermind a fitting guess closes only with two words left',
+      () {
+        // ten words left, a word that fits: not a closer, a prober when it is a
+        // top split
+        expect(
+          behaviourOf(row(before: 10, fits: true, rank: 5), mastermind: true),
+          Behaviour.prober,
+        );
+        expect(
+          behaviourOf(row(before: 10, fits: true, rank: 50), mastermind: true),
+          isNull,
+        );
+        // two words left: the only guess that can win, so it closes
+        expect(
+          behaviourOf(row(before: 2, fits: true, rank: 50), mastermind: true),
+          Behaviour.closer,
+        );
+        // a word that does not fit is a prober when it is a top split
+        expect(
+          behaviourOf(row(before: 8, fits: false, rank: 5), mastermind: true),
+          Behaviour.prober,
+        );
+        // the other modes keep the rule: any fitting guess at the end closes
+        expect(
+          behaviourOf(row(before: 10, fits: true, rank: 50)),
+          Behaviour.closer,
+        );
+      },
+    );
+
     test('the phases follow the words left and the greens known', () {
       expect(phaseOf(1, 0), isNull);
       expect(phaseOf(64, 0), Phase.early);

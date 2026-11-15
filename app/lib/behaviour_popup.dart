@@ -8,9 +8,13 @@ import 'ui.dart';
 /// as (a gambler, a maximiser, an eliminator in the early game, a closer or a
 /// prober at the end), in a line, and the calculation on this guess's own
 /// numbers. A guess counted as nothing says why not.
-void showBehaviourPopup(BuildContext context, GuessRow row) {
+void showBehaviourPopup(
+  BuildContext context,
+  GuessRow row, {
+  bool mastermind = false,
+}) {
   final c = Theme.of(context).colorScheme;
-  final b = behaviourOf(row);
+  final b = behaviourOf(row, mastermind: mastermind);
   final phase = phaseOf(row.before, row.greens);
   const body = TextStyle(fontSize: 13, height: 1.5);
   final dim = TextStyle(
