@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- you: the streak card is dragged as a whole
+  The mode name, the streak and the week (or the month) move with your finger and the dots sit under them; the arrows and the strip are gone, and the show the month button stays where it is. It stops at the first and the last mode.
+- diy: the swipers fade out a long way before the sides
+  Only the middle third of a swiper shows its words in full.
+
 ## 0.12.1
 
 - diy: a new make your own page, with a link popup
