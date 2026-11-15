@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- history: the range of the chart is remembered
+  The history chart opens on the days, weeks or months you last chose.
+
 ## 0.12.2
 
 - solver: alternatives and a plot in every mode

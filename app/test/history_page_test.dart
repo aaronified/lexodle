@@ -1156,6 +1156,24 @@ void main() {
       expect(text(tester, 'period-label'), '2026-10-18 to 2026-10-24');
     });
 
+    testWidgets('the range chosen is kept for the next time', (tester) async {
+      await load(tester);
+      final h = History();
+      game(h, DateTime(2026, 10, 24), skill: 80);
+      await show(tester, h);
+      await tester.tap(find.text('months'));
+      await tester.pump();
+      expect(appState.historyRange, 2);
+      // the page is left and opened again: it opens on months
+      await show(tester, h);
+      expect(find.text('the last 50 months'), findsOneWidget);
+      await tester.tap(find.text('days'));
+      await tester.pump();
+      await show(tester, h);
+      expect(find.text('the last 50 days'), findsOneWidget);
+      appState.setHistoryRange(1);
+    });
+
     testWidgets('all three lines are drawn, and each can be switched off', (
       tester,
     ) async {

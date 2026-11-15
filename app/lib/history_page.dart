@@ -567,7 +567,8 @@ class _Trend extends StatefulWidget {
 }
 
 class _TrendState extends State<_Trend> {
-  _Range _range = _Range.weeks;
+  // the range the player left it on
+  _Range _range = _Range.values[appState.historyRange.clamp(0, 2)];
 
   /// The lines drawn: all three to begin with.
   final _shown = <PeriodSeries>{...PeriodSeries.values};
@@ -620,6 +621,7 @@ class _TrendState extends State<_Trend> {
 
   void _setRange(_Range range) {
     if (range == _range) return;
+    appState.setHistoryRange(range.index);
     setState(() {
       _range = range;
       _picked = null;
