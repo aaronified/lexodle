@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'blind_solver.dart';
-import 'diy.dart' show diyLengths, diyMultiTries, diyTries;
+import 'diy.dart' show diyLengths;
 import 'diy_controls.dart';
 import 'equation_solver.dart';
-import 'equations.dart' show equationLengths, equationTriesLevels;
+import 'equations.dart' show equationLengths;
 import 'geography.dart';
 import 'ladder.dart';
 import 'language_sheet.dart';
 import 'main.dart';
-import 'mode_filter.dart';
 import 'modes.dart';
 import 'multi_solver.dart';
 import 'routes.dart';
@@ -20,11 +19,11 @@ import 'solver_exclusions.dart';
 import 'ui.dart';
 import 'words.dart';
 
-/// The page behind the solver: a row of the modes open to the player and the
-/// solver of the one chosen. Choosing a mode here changes only this page, never
-/// the mode in view; so do its language, length and tries (the solver settings
-/// sheet), which never touch the saved ones. Every solver leaves out the answers of games in progress
-/// and of dailies not finished (see [SolverExclusions]).
+/// The page behind the solver: the solver of the mode chosen. The mode, the
+/// language and the length are chosen in the solver settings sheet, and change
+/// only this page, never the mode in view or the saved settings. Every solver
+/// leaves out the answers of games in progress and of dailies not finished (see
+/// [SolverExclusions]).
 class SolverHubPage extends StatefulWidget {
   const SolverHubPage({super.key});
 
@@ -38,7 +37,6 @@ class _SolverHubPageState extends State<SolverHubPage> {
   // The solver's own settings: null until chosen, then the default is used.
   String? _lang;
   int? _length;
-  int? _tries;
   List<Language> _langs = WordBank.loadedLanguages ?? const [];
 
   @override
@@ -108,44 +106,6 @@ class _SolverHubPageState extends State<SolverHubPage> {
     return l.isEmpty ? _defaultLength : l.first;
   }
 
-  /// The tries slider: (tries, label, hint), and whether it can be moved.
-  List<(int, String, String)> get _triesItems {
-    switch (_mode) {
-      case GameMode.lockdown:
-        return [(lockdownTries, '$lockdownTries', 'fixed')];
-      case GameMode.mastermind:
-        return [(99, 'no limit', '')];
-      case GameMode.blind:
-        return [for (final (n, t) in blindTriesLevels) (t, '$t', n)];
-      case GameMode.equations:
-        return [
-          for (final (n, t) in equationTriesLevels.reversed) (t, '$t', n),
-        ];
-      case GameMode.quartet:
-      case GameMode.relay:
-        return [for (final t in diyMultiTries) (t, '$t', '')];
-      default:
-        return [
-          for (final t in diyTries)
-            (
-              t,
-              '$t',
-              switch (t) {
-                4 => 'hard',
-                5 => '',
-                6 => 'normal',
-                8 => 'easy',
-                10 => 'easier',
-                _ => 'easiest',
-              },
-            ),
-        ];
-    }
-  }
-
-  bool get _triesFixed =>
-      _mode == GameMode.lockdown || _mode == GameMode.mastermind;
-
   int get _defaultTries => switch (_mode) {
     GameMode.lockdown => lockdownTries,
     GameMode.mastermind => 99,
@@ -155,12 +115,9 @@ class _SolverHubPageState extends State<SolverHubPage> {
     _ => appState.tries,
   };
 
-  int get _triesNow {
-    if (_triesFixed) return _defaultTries;
-    final n = _tries;
-    if (n != null && _triesItems.any((i) => i.$1 == n)) return n;
-    return _defaultTries;
-  }
+  /// The tries the game of the mode starts with: the solver does not change
+  /// them (they only shape its advice near the end).
+  int get _triesNow => _defaultTries;
 
   Future<void> _openOptions() async {
     try {
@@ -207,8 +164,6 @@ class _SolverHubPageState extends State<SolverHubPage> {
     final c = Theme.of(sheet).colorScheme;
     final dim = c.onSurface.withValues(alpha: dimAlpha);
     final lang = _languageInfo;
-    final items = _triesItems;
-    final tries = _triesNow;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(19, 0, 19, 19),
@@ -234,6 +189,16 @@ class _SolverHubPageState extends State<SolverHubPage> {
                 ],
               ),
               const SizedBox(height: 8),
+              SwipeChoice<GameMode>(
+                title: 'solver',
+                items: [for (final m in _modes) (m, m.label)],
+                selected: _mode,
+                onChanged: (m) {
+                  _mode = m;
+                  refresh();
+                },
+              ),
+              const SizedBox(height: 14),
               Opacity(
                 opacity: _fixedLanguage ? .35 : 1,
                 child: DropdownBox(
@@ -264,19 +229,6 @@ class _SolverHubPageState extends State<SolverHubPage> {
                   refresh();
                 },
               ),
-              const SizedBox(height: 12),
-              LineSlider<int>(
-                title: 'tries',
-                items: items,
-                selected: items.any((i) => i.$1 == tries)
-                    ? tries
-                    : items.first.$1,
-                enabled: !_triesFixed,
-                onChanged: (t) {
-                  _tries = t;
-                  refresh();
-                },
-              ),
               const SizedBox(height: 14),
               Text(
                 'answers of your games in progress and of dailies you have '
@@ -295,7 +247,10 @@ class _SolverHubPageState extends State<SolverHubPage> {
     final c = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('solver'),
+        title: Text(
+          _mode == GameMode.classic ? 'solver' : 'solver · ${_mode.label}',
+          key: const ValueKey('solver-title'),
+        ),
         actions: [
           IconButton(
             key: const ValueKey('solver-options'),
@@ -314,25 +269,7 @@ class _SolverHubPageState extends State<SolverHubPage> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(19, 4, 19, 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: ModeFilter(
-                      selected: _mode,
-                      showAll: false,
-                      modes: _modes,
-                      onSelect: (m) {
-                        if (m != null) setState(() => _mode = m);
-                      },
-                    ),
-                  ),
-                ),
-                Expanded(child: _solver(_mode)),
-              ],
-            ),
+            child: Column(children: [Expanded(child: _solver(_mode))]),
           ),
         ),
       ),

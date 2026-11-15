@@ -4,6 +4,7 @@ import 'package:lexodle/blind_solver.dart';
 import 'package:lexodle/diy_controls.dart';
 import 'package:lexodle/equation_solver.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/mode_filter.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/multi_solver.dart';
 import 'package:lexodle/solver.dart';
@@ -34,12 +35,29 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   }
 
+  Future<void> openSheet(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('solver-options')));
+    await tester.pumpAndSettle();
+  }
+
+  SwipeChoice<GameMode> modeSwiper(WidgetTester tester) =>
+      tester.widget<SwipeChoice<GameMode>>(find.byType(SwipeChoice<GameMode>));
+
+  /// Chooses the solver of [m] in the settings sheet, then closes the sheet.
   Future<void> pick(WidgetTester tester, GameMode m) async {
-    final pill = find.byKey(ValueKey('mode-${m.name}'));
-    await tester.ensureVisible(pill);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(pill);
-    await tester.pump();
+    await openSheet(tester);
+    final modes = [for (final (v, _) in modeSwiper(tester).items) v];
+    var guard = 0;
+    while (modeSwiper(tester).selected != m && guard++ < 12) {
+      final from = modes.indexOf(modeSwiper(tester).selected);
+      final next = modes.indexOf(m) > from;
+      await tester.tap(
+        find.byKey(ValueKey('swipe-solver-${next ? 'next' : 'prev'}')),
+      );
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.byKey(const ValueKey('solver-options-close')));
+    await tester.pumpAndSettle();
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 2)));
     await tester.pump(const Duration(seconds: 2));
   }
@@ -48,7 +66,7 @@ void main() {
       'answers of your games in progress and of dailies you have not '
       'finished are left out.';
 
-  testWidgets('a veteran sees a pill for every mode and one header', (
+  testWidgets('a veteran sees one header and every mode in the sheet', (
     tester,
   ) async {
     await show(tester);
@@ -57,24 +75,27 @@ void main() {
     expect(find.byType(SettingsButton), findsOneWidget);
     expect(find.byKey(const ValueKey('solver-options')), findsOneWidget);
     expect(find.text(caption), findsNothing);
-    for (final m in GameMode.loopFor('en')) {
-      expect(
-        find.byKey(ValueKey('mode-${m.name}')),
-        findsOneWidget,
-        reason: '$m',
-      );
-    }
+    // no row of pills on the page: the mode is chosen in the sheet
+    expect(find.byType(ModeFilter), findsNothing);
     expect(find.byType(SolverPage), findsOneWidget);
+    await openSheet(tester);
+    expect(find.byKey(const ValueKey('swipe-solver')), findsOneWidget);
+    expect(
+      [for (final (m, _) in modeSwiper(tester).items) m],
+      [for (final m in GameMode.loopFor('en')) m],
+    );
     await done(tester);
   });
 
-  testWidgets('a player with few games sees fewer pills', (tester) async {
+  testWidgets('a player with few games sees fewer modes', (tester) async {
     appState.lex.veteran = false;
     appState.stats.played = 1;
     await show(tester);
-    expect(find.byKey(const ValueKey('mode-classic')), findsOneWidget);
-    expect(find.byKey(const ValueKey('mode-equations')), findsNothing);
-    expect(find.byKey(const ValueKey('mode-themed')), findsNothing);
+    await openSheet(tester);
+    final modes = [for (final (m, _) in modeSwiper(tester).items) m];
+    expect(modes, contains(GameMode.classic));
+    expect(modes, isNot(contains(GameMode.equations)));
+    expect(modes, isNot(contains(GameMode.themed)));
     await done(tester);
   });
 
@@ -86,33 +107,30 @@ void main() {
     await done(tester);
   });
 
-  testWidgets('a pill shows the solver of its mode, and keeps the mode', (
-    tester,
-  ) async {
-    await show(tester);
-    await pick(tester, GameMode.relay);
-    expect(find.byType(MultiSolverPage), findsOneWidget);
-    await pick(tester, GameMode.blind);
-    expect(find.byType(BlindSolverPage), findsOneWidget);
-    await pick(tester, GameMode.equations);
-    expect(find.byType(EquationSolverPage), findsOneWidget);
-    await pick(tester, GameMode.themed);
-    expect(find.byType(SolverPage), findsOneWidget);
-    expect(find.byKey(const ValueKey('places-5')), findsWidgets);
-    await pick(tester, GameMode.mastermind);
-    expect(find.byType(SolverPage), findsOneWidget);
-    await pick(tester, GameMode.lockdown);
-    expect(find.textContaining('$lockdownTries tries'), findsWidgets);
-    expect(appState.mode, GameMode.classic);
-    await done(tester);
-  });
+  testWidgets(
+    'a mode chosen in the sheet shows its solver, and keeps the mode',
+    (tester) async {
+      await show(tester);
+      await pick(tester, GameMode.relay);
+      expect(find.byType(MultiSolverPage), findsOneWidget);
+      await pick(tester, GameMode.blind);
+      expect(find.byType(BlindSolverPage), findsOneWidget);
+      await pick(tester, GameMode.equations);
+      expect(find.byType(EquationSolverPage), findsOneWidget);
+      await pick(tester, GameMode.themed);
+      expect(find.byType(SolverPage), findsOneWidget);
+      expect(find.byKey(const ValueKey('places-5')), findsWidgets);
+      await pick(tester, GameMode.mastermind);
+      expect(find.byType(SolverPage), findsOneWidget);
+      await pick(tester, GameMode.lockdown);
+      expect(find.textContaining('$lockdownTries tries left'), findsWidgets);
+      expect(find.byKey(const ValueKey('solver-title')), findsOneWidget);
+      expect(appState.mode, GameMode.classic);
+      await done(tester);
+    },
+  );
 
-  Future<void> openSheet(WidgetTester tester) async {
-    await tester.tap(find.byKey(const ValueKey('solver-options')));
-    await tester.pumpAndSettle();
-  }
-
-  testWidgets('the sheet has the language box, two sliders and the note', (
+  testWidgets('the sheet has the mode, the language, the length and the note', (
     tester,
   ) async {
     await show(tester);
@@ -120,7 +138,7 @@ void main() {
     expect(find.text('solver settings'), findsWidgets);
     expect(find.byKey(const ValueKey('dropdown-language')), findsOneWidget);
     expect(find.byKey(const ValueKey('slider-length')), findsOneWidget);
-    expect(find.byKey(const ValueKey('slider-tries')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slider-tries')), findsNothing);
     expect(find.text(caption), findsOneWidget);
     await done(tester);
   });
