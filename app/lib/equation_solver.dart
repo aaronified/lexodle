@@ -9,6 +9,7 @@ import 'haptics.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
+import 'split_plot.dart';
 import 'swipe_clear.dart';
 import 'typing_keys.dart';
 import 'ui.dart';
@@ -56,6 +57,15 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
   String message = '';
   late List<String> eligible = _answers;
   Recommendation? rec;
+  // up to five next guesses, best first: rec, then the best of the rest
+  List<Recommendation> alts = const [];
+  int altSel = 0;
+  // each equation's split of the equations that fit, kept while history stays
+  final _splits = <String, (List<(int, int)>, double)>{};
+  late final Set<String> _guessable = {
+    for (final w in widget.bank.guessable(length)) w,
+    ...widget.bank.answers(length),
+  };
   bool busy = false;
   int _run = 0;
 
@@ -84,24 +94,43 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
     setState(() {
       eligible = left;
       busy = true;
+      altSel = 0;
+      _splits.clear();
     });
-    Recommendation? r;
     try {
+      final candidates = recommendationCandidates(
+        left,
+        widget.bank.guessable(length),
+      );
       // the tries left shape the advice: with two, the guess most likely to
       // solve it in time; with one, only an equation that fits
-      r = await recommendWithin(
+      final r = await recommendWithin(
         left,
-        recommendationCandidates(left, widget.bank.guessable(length)),
+        candidates,
         max(tries - history.length, 1),
       );
+      final more = left.length > 1
+          ? await recommendTop(left, candidates, k: 5)
+          : const <Recommendation>[];
+      if (!mounted || run != _run) return; // a newer guess superseded this one
+      setState(() {
+        rec = r;
+        alts = [
+          ?r,
+          for (final x in more)
+            if (x.word != r?.word) x,
+        ].take(5).toList();
+        busy = false;
+      });
     } catch (e) {
       appLog.w('equation solver', 'could not recommend: ${e.runtimeType}');
+      if (!mounted || run != _run) return;
+      setState(() {
+        rec = null;
+        alts = const [];
+        busy = false;
+      });
     }
-    if (!mounted || run != _run) return; // a newer guess superseded this one
-    setState(() {
-      rec = r;
-      busy = false;
-    });
   }
 
   void _type(String ch) {
@@ -201,10 +230,14 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
                       children: [
-                        const Caption(
-                          'type each equation you played, then tap '
-                          'its tiles to match the colours the game showed',
-                        ),
+                        if (history.isEmpty)
+                          Text(
+                            'type a guess, tap its tiles to match the game',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: c.onSurface.withValues(alpha: dimAlpha),
+                            ),
+                          ),
                         const SizedBox(height: 14),
                         LayoutBuilder(
                           builder: (context, box) {
@@ -269,11 +302,9 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: history.isEmpty ? null : _undo,
-                                child: const Text('undo last'),
-                              ),
+                            OutlinedButton(
+                              onPressed: history.isEmpty ? null : _undo,
+                              child: const Text('undo'),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -284,9 +315,7 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-                        const Divider(),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         _result(c),
                       ],
                     ),
@@ -313,94 +342,148 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
 
   String _face(String eq) => eq.split('').map(faceOf).join();
 
+  (List<(int, int)>, double) _split(String word) =>
+      _splits.putIfAbsent(word, () {
+        final groups = splitGroups(eligible, word);
+        var sq = 0;
+        for (final g in groups) {
+          sq += g.$2 * g.$2;
+        }
+        return (groups, eligible.isEmpty ? 0.0 : sq / eligible.length);
+      });
+
   Widget _result(ColorScheme c) {
     final n = eligible.length;
     final left = tries - history.length;
-    final head = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Caption('$n ${n == 1 ? 'equation' : 'equations'} on my list fit'),
-        const SizedBox(height: 4),
-        Caption(
-          'answers from ${_answers.length} equations · '
-          '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
-        ),
-      ],
-    );
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
     if (n == 0) {
+      return Text(
+        'no equation matches. check the colours.',
+        style: TextStyle(color: c.error, fontSize: 13),
+      );
+    }
+    if (n == 1) {
+      return Text(
+        'the only equation that fits: ${_face(eligible.first)}',
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      );
+    }
+    final line = Caption(
+      '$n ${n == 1 ? 'equation fits' : 'equations fit'} · '
+      '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
+    );
+    if (busy || alts.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          head,
-          const SizedBox(height: 8),
-          Text(
-            'no equation matches. check the colours of the guesses above.',
-            style: TextStyle(color: c.error, fontSize: 13),
-          ),
+          line,
+          const SizedBox(height: 10),
+          const Caption('working out the best guesses…'),
         ],
       );
     }
-    final r = rec;
+    final typed = input.complete ? input.word : null;
+    final typedKnown = typed != null && _guessable.contains(typed);
+    Widget plot;
+    try {
+      if (typedKnown) {
+        final (groups, avg) = _split(typed);
+        plot = SplitPlot(
+          word: _face(typed),
+          groups: groups,
+          average: avg,
+          length: length,
+          highlight: markCode(inputMarks),
+        );
+      } else if (typed != null) {
+        plot = Text(
+          '${_face(typed)} is not in the equation list',
+          style: TextStyle(fontSize: 12, color: dim),
+        );
+      } else {
+        final word = alts[min(altSel, alts.length - 1)].word;
+        final (groups, avg) = _split(word);
+        plot = SplitPlot(
+          word: _face(word),
+          groups: groups,
+          average: avg,
+          length: length,
+          onUse: () => _use(word),
+        );
+      }
+    } catch (e) {
+      appLog.w('equation solver', 'could not plot: ${e.runtimeType}');
+      plot = const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        head,
-        const SizedBox(height: 10),
-        if (n == 1) ...[
-          Text(
-            'the only equation on my list that fits: ${_face(eligible.first)}',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        line,
+        const SizedBox(height: 12),
+        const Caption('alternatives'),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (var i = 0; i < alts.length; i++)
+              _chip(c, i, alts[i], selected: !typedKnown && i == altSel),
+          ],
+        ),
+        const SizedBox(height: 12),
+        plot,
+      ],
+    );
+  }
+
+  Widget _chip(
+    ColorScheme c,
+    int i,
+    Recommendation r, {
+    required bool selected,
+  }) {
+    final border = BorderRadius.circular(4);
+    return InkWell(
+      key: ValueKey('alt-${r.word}'),
+      borderRadius: border,
+      onTap: () => setState(() => altSel = i),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 78, maxWidth: 140),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? c.surfaceContainerHighest : null,
+          borderRadius: border,
+          border: Border.all(
+            color: selected ? c.onSurface : hairlineColor(c),
+            width: selected ? 1 : hairlineWidth,
           ),
-        ] else if (r == null || busy)
-          const Caption('working out the best guess…')
-        else ...[
-          Caption(switch (tries - history.length) {
-            <= 1 => 'last try: an equation that fits',
-            2 => 'two tries left: the guess most likely to solve it in time',
-            _ => 'recommended guess',
-          }),
-          const SizedBox(height: 4),
-          InkWell(
-            onTap: () => _use(r.word),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
                 _face(r.word),
-                style: TextStyle(
-                  fontSize: 22,
+                style: const TextStyle(
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: c.primary,
+                  letterSpacing: 1.5,
                 ),
               ),
-            ),
-          ),
-          metricLine(
-            context,
-            '${r.winChance == null ? 'skill ${r.skill.toStringAsFixed(1)}' : 'about ${(r.winChance! * 100).toStringAsFixed(0)}% to solve it'}'
-                ' · expect about '
-                '${r.expected.toStringAsFixed(1)} equations left'
-                '${r.canWin ? ' · could be the answer' : ''}  (tap to use)',
-            'skill',
-            style: TextStyle(
-              fontSize: 11,
-              color: c.onSurface.withValues(alpha: dimAlpha),
-            ),
-          ),
-        ],
-        if (n > 1) ...[
-          const SizedBox(height: 16),
-          Caption(n > 40 ? 'the first 40' : 'all the equations that fit'),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 12,
-            runSpacing: 4,
-            children: [
-              for (final w in eligible.take(40))
-                InkWell(onTap: () => _use(w), child: Text(_face(w))),
+              Text(
+                '${r.expected.toStringAsFixed(1)} left',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: c.onSurface.withValues(alpha: dimAlpha),
+                ),
+              ),
             ],
           ),
-        ],
-      ],
+        ),
+      ),
     );
   }
 }

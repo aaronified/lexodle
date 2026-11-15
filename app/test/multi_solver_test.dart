@@ -5,6 +5,8 @@ import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/multi_solver.dart';
+import 'package:lexodle/split_plot.dart';
+import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -155,6 +157,79 @@ void main() {
       }
     }
 
+    // the words of the alternative chips, in order
+    List<String> alts() => [
+      for (final w in find.byWidgetPredicate((w) {
+        final k = w.key;
+        return k is ValueKey<String> && k.value.startsWith('alt-');
+      }).evaluate())
+        (w.widget.key as ValueKey<String>).value.substring(4),
+    ];
+
+    SplitPlot plot(WidgetTester tester) =>
+        tester.widget<SplitPlot>(find.byType(SplitPlot));
+
+    Future<WordBank> openQuartet(WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1400));
+      appState.setup(lang: 'fr', length: 4, tries: 6, mode: GameMode.quartet);
+      final b = await bank(tester);
+      await tester.pumpWidget(MaterialApp(home: MultiSolverPage(bank: b)));
+      await tester.pump(const Duration(seconds: 3));
+      return b;
+    }
+
+    testWidgets('up to five alternatives, the recommended first', (
+      tester,
+    ) async {
+      await openQuartet(tester);
+      final a = alts();
+      expect(a.length, inInclusiveRange(2, 5));
+      expect(a.toSet().length, a.length);
+      expect(plot(tester).word, a.first);
+      appState.setup(mode: GameMode.classic);
+    });
+
+    testWidgets('selecting a chip changes the plot, use fills the row', (
+      tester,
+    ) async {
+      await openQuartet(tester);
+      final a = alts();
+      await tester.tap(find.byKey(ValueKey('alt-${a[1]}')));
+      await tester.pump();
+      expect(plot(tester).word, a[1]);
+      await tester.tap(find.byKey(const ValueKey('plot-use')));
+      await tester.pump();
+      // the word is in the row: the plot now follows it and has a lit bar
+      expect(plot(tester).word, a[1]);
+      expect(plot(tester).highlight, isNotNull);
+      expect(find.byKey(const ValueKey('plot-use')), findsNothing);
+      appState.setup(mode: GameMode.classic);
+    });
+
+    testWidgets('board chips switch the plot, marking lights the bar', (
+      tester,
+    ) async {
+      await openQuartet(tester);
+      await tester.tap(find.byKey(const ValueKey('plot-use')));
+      await tester.pump();
+      final before = plot(tester).highlight;
+      final tile = find
+          .descendant(
+            of: find.byKey(const ValueKey('board-0')),
+            matching: find.byType(MarkTile),
+          )
+          .first;
+      await tester.tap(tile);
+      await tester.pump();
+      expect(plot(tester).highlight, isNot(before));
+      final marked = plot(tester).highlight;
+      await tester.tap(find.byKey(const ValueKey('plot-board-1')));
+      await tester.pump();
+      expect(plot(tester).highlight, before);
+      expect(plot(tester).highlight, isNot(marked));
+      appState.setup(mode: GameMode.classic);
+    });
+
     testWidgets('a quartet shows four boards and recommends a guess', (
       tester,
     ) async {
@@ -168,18 +243,20 @@ void main() {
       }
       expect(find.byType(AppBar), findsNothing);
       expect(find.textContaining('solver · quartet'), findsNothing);
-      expect(find.text('recommended guess'), findsOneWidget);
-      expect(find.textContaining('across the boards'), findsOneWidget);
+      expect(alts(), isNotEmpty);
+      expect(find.textContaining('type a guess'), findsOneWidget);
+      expect(find.textContaining('every unsolved board'), findsNothing);
 
       await type(tester, 'mais');
       await tester.tap(find.text('add guess'));
       await tester.pump(const Duration(seconds: 3));
       expect(find.textContaining('8 tries left'), findsOneWidget);
-      expect(find.text('recommended guess'), findsOneWidget);
+      expect(alts(), isNotEmpty);
+      expect(find.textContaining('type a guess'), findsNothing);
       expect(
         tester
             .widget<OutlinedButton>(
-              find.widgetWithText(OutlinedButton, 'undo last'),
+              find.widgetWithText(OutlinedButton, 'undo'),
             )
             .onPressed,
         isNotNull,
@@ -197,7 +274,7 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
       expect(find.byType(AppBar), findsNothing);
       expect(find.textContaining('board 2 · waiting'), findsOneWidget);
-      expect(find.text('recommended guess'), findsOneWidget);
+      expect(alts(), isNotEmpty);
       appState.setup(mode: GameMode.classic);
     });
 
@@ -207,14 +284,11 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(420, 1400));
       appState.setup(lang: 'fr', length: 4, tries: 6, mode: GameMode.quartet);
       final b = await bank(tester);
-      Finder big() => find.byWidgetPredicate(
-        (w) => w is Text && w.style?.fontSize == 22 && w.data != null,
-      );
       await tester.pumpWidget(MaterialApp(home: MultiSolverPage(bank: b)));
       await tester.pump(const Duration(seconds: 3));
       final total = b.answers(4).length;
-      expect(find.textContaining('answers from $total words'), findsOneWidget);
-      final rec = tester.widget<Text>(big()).data!;
+      expect(find.textContaining('b1 $total'), findsOneWidget);
+      final rec = alts().first;
 
       await tester.pumpWidget(const SizedBox());
       await tester.pumpWidget(
@@ -223,12 +297,9 @@ void main() {
         ),
       );
       await tester.pump(const Duration(seconds: 3));
-      expect(
-        find.textContaining('answers from ${total - 1} words'),
-        findsOneWidget,
-      );
-      expect(find.text(rec), findsNothing);
-      expect(tester.widget<Text>(big()).data, isNot(rec));
+      expect(find.textContaining('b1 ${total - 1}'), findsOneWidget);
+      expect(find.byKey(ValueKey('alt-$rec')), findsNothing);
+      expect(alts().first, isNot(rec));
       appState.setup(mode: GameMode.classic);
     });
 
@@ -248,11 +319,8 @@ void main() {
           await tester.pump(const Duration(seconds: 3));
         }
         expect(find.textContaining('1 try left'), findsOneWidget);
-        expect(
-          find.text('last try: the word that fits the most boards'),
-          findsOneWidget,
-        );
-        expect(find.textContaining('boards solved'), findsOneWidget);
+        expect(alts(), isNotEmpty);
+        expect(find.textContaining('solved'), findsWidgets);
         appState.setup(mode: GameMode.classic);
       },
     );

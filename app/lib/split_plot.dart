@@ -18,6 +18,7 @@ class SplitPlot extends StatefulWidget {
     required this.length,
     this.highlight,
     this.onUse,
+    this.label,
     this.idle = 'use it, then tap its tiles to see where the game puts you',
   });
 
@@ -30,6 +31,10 @@ class SplitPlot extends StatefulWidget {
   final int length;
   final VoidCallback? onUse;
   final String idle;
+
+  /// Says in words which colouring a group is, in place of the row of coloured
+  /// squares (for the blind counts, whose groups are not colours).
+  final String Function(int code)? label;
 
   @override
   State<SplitPlot> createState() => _SplitPlotState();
@@ -209,17 +214,23 @@ class _SplitPlotState extends State<SplitPlot> {
                   )
                 : Row(
                     children: [
-                      for (final m in _marksOf(hl)) ...[
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: markColors(c, m).$1,
-                            borderRadius: BorderRadius.circular(2),
+                      if (widget.label != null)
+                        Text(
+                          '${widget.label!(hl)} · ',
+                          style: TextStyle(fontSize: 12, color: dim),
+                        )
+                      else
+                        for (final m in _marksOf(hl)) ...[
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: markColors(c, m).$1,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 2),
-                      ],
+                          const SizedBox(width: 2),
+                        ],
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
@@ -233,8 +244,9 @@ class _SplitPlotState extends State<SplitPlot> {
           ),
           const SizedBox(height: 6),
           Text(
-            'each bar is the words left for one colouring, not the bits of '
-            'information that the review plots.',
+            'each bar is the words left for one '
+            '${widget.label != null ? 'pair of counts' : 'colouring'}, not the '
+            'bits of information that the review plots.',
             style: TextStyle(fontSize: 10, color: dim),
           ),
         ],

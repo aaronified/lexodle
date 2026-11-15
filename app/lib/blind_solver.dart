@@ -8,6 +8,7 @@ import 'haptics.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
+import 'split_plot.dart';
 import 'swipe_clear.dart';
 import 'typing_keys.dart';
 import 'ui.dart';
@@ -40,6 +41,19 @@ List<String> blindNarrow(List<String> pool, Iterable<BlindGuess> history) {
     );
   }
   return left;
+}
+
+/// How [guess] splits [eligible] by the counts a blind game shows: (code, words)
+/// pairs over [blindCode], biggest group first, ties by code.
+List<(int, int)> blindGroups(List<String> eligible, String guess) {
+  final counts = <int, int>{};
+  for (final w in eligible) {
+    counts.update(blindCode(w, guess), (c) => c + 1, ifAbsent: () => 1);
+  }
+  return [for (final e in counts.entries) (e.key, e.value)]..sort((a, b) {
+    final by = b.$2.compareTo(a.$2);
+    return by != 0 ? by : a.$1.compareTo(b.$1);
+  });
 }
 
 /// The best next guess of a blind game with [triesLeft] tries, this one
@@ -166,6 +180,15 @@ class _BlindSolverPageState extends State<BlindSolverPage> {
   String message = '';
   late List<String> eligible = _answers;
   Recommendation? rec;
+  // up to five next guesses, best first: rec, then the best of the rest
+  List<Recommendation> alts = const [];
+  int altSel = 0;
+  // each word's split of the words that fit, kept while the history stays
+  final _splits = <String, (List<(int, int)>, double)>{};
+  late final Set<String> _guessable = {
+    for (final w in widget.bank.guessable(length)) w,
+    ...widget.bank.answers(length),
+  };
   bool busy = false;
   int _run = 0;
 
@@ -192,23 +215,49 @@ class _BlindSolverPageState extends State<BlindSolverPage> {
     setState(() {
       eligible = left;
       busy = true;
+      altSel = 0;
+      _splits.clear();
     });
-    Recommendation? r;
     try {
-      r = await blindRecommend(
+      final candidates = recommendationCandidates(
         left,
-        recommendationCandidates(left, widget.bank.guessable(length)),
-        max(tries - history.length, 1),
-        weights: widget.bank.law(length, appState.draw),
+        widget.bank.guessable(length),
       );
+      final weights = widget.bank.law(length, appState.draw);
+      final r = await blindRecommend(
+        left,
+        candidates,
+        max(tries - history.length, 1),
+        weights: weights,
+      );
+      final more = left.length > 1
+          ? (await analyseGuesses(
+              left,
+              candidates,
+              k: 5,
+              weights: weights,
+              blind: true,
+            )).top
+          : const <Recommendation>[];
+      if (!mounted || run != _run) return; // a newer guess superseded this one
+      setState(() {
+        rec = r;
+        alts = [
+          ?r,
+          for (final x in more)
+            if (x.word != r?.word) x,
+        ].take(5).toList();
+        busy = false;
+      });
     } catch (e) {
       appLog.w('blind solver', 'could not recommend: ${e.runtimeType}');
+      if (!mounted || run != _run) return;
+      setState(() {
+        rec = null;
+        alts = const [];
+        busy = false;
+      });
     }
-    if (!mounted || run != _run) return; // a newer guess superseded this one
-    setState(() {
-      rec = r;
-      busy = false;
-    });
   }
 
   void _type(String ch) {
@@ -299,11 +348,14 @@ class _BlindSolverPageState extends State<BlindSolverPage> {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
                       children: [
-                        const Caption(
-                          'type each guess you played, then tap the two '
-                          'counts to match what the game showed: letters '
-                          'right and in place, letters right elsewhere',
-                        ),
+                        if (history.isEmpty)
+                          Text(
+                            'type a guess, tap its counts to match the game',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: c.onSurface.withValues(alpha: dimAlpha),
+                            ),
+                          ),
                         const SizedBox(height: 14),
                         LayoutBuilder(
                           builder: (context, box) {
@@ -405,11 +457,9 @@ class _BlindSolverPageState extends State<BlindSolverPage> {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: history.isEmpty ? null : _undo,
-                                child: const Text('undo last'),
-                              ),
+                            OutlinedButton(
+                              onPressed: history.isEmpty ? null : _undo,
+                              child: const Text('undo'),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -420,9 +470,7 @@ class _BlindSolverPageState extends State<BlindSolverPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-                        const Divider(),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         _result(c),
                       ],
                     ),
@@ -456,92 +504,147 @@ class _BlindSolverPageState extends State<BlindSolverPage> {
         ],
       );
 
+  (List<(int, int)>, double) _split(String word) =>
+      _splits.putIfAbsent(word, () {
+        final groups = blindGroups(eligible, word);
+        var sq = 0;
+        for (final g in groups) {
+          sq += g.$2 * g.$2;
+        }
+        return (groups, eligible.isEmpty ? 0.0 : sq / eligible.length);
+      });
+
+  String _label(int code) {
+    final g = code ~/ (length + 1), y = code % (length + 1);
+    return '$g in place · $y elsewhere';
+  }
+
   Widget _result(ColorScheme c) {
     final n = eligible.length;
     final left = tries - history.length;
-    final head = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Caption('$n ${n == 1 ? 'word' : 'words'} on my list fit'),
-        const SizedBox(height: 4),
-        Caption(
-          'answers from ${_answers.length} words · '
-          '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
-        ),
-      ],
-    );
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
     if (n == 0) {
+      return Text(
+        'no word matches. check the counts or the list.',
+        style: TextStyle(color: c.error, fontSize: 13),
+      );
+    }
+    if (n == 1) {
+      return Text(
+        'the only word that fits: ${eligible.first}',
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      );
+    }
+    final line = Caption(
+      '$n words fit · '
+      '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
+    );
+    if (busy || alts.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          head,
-          const SizedBox(height: 8),
-          Text(
-            'no word matches. check the counts of the guesses above, or the '
-            'game may use a word this list lacks.',
-            style: TextStyle(color: c.error, fontSize: 13),
-          ),
+          line,
+          const SizedBox(height: 10),
+          const Caption('working out the best guesses…'),
         ],
       );
     }
-    final r = rec;
+    final typed = input.complete ? input.word : null;
+    final typedKnown = typed != null && _guessable.contains(typed);
+    final Widget plot;
+    if (typedKnown) {
+      final (groups, avg) = _split(typed);
+      plot = SplitPlot(
+        word: typed,
+        groups: groups,
+        average: avg,
+        length: length,
+        highlight: green * (length + 1) + yellow,
+        label: _label,
+      );
+    } else if (typed != null) {
+      plot = Text(
+        '$typed is not in the word list',
+        style: TextStyle(fontSize: 12, color: dim),
+      );
+    } else {
+      final word = alts[min(altSel, alts.length - 1)].word;
+      final (groups, avg) = _split(word);
+      plot = SplitPlot(
+        word: word,
+        groups: groups,
+        average: avg,
+        length: length,
+        label: _label,
+        idle: 'use it, then tap its counts to see where the game puts you',
+        onUse: () => _use(word),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        head,
-        const SizedBox(height: 10),
-        if (n == 1) ...[
-          Text(
-            'the only word on my list that fits: ${eligible.first}',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        line,
+        const SizedBox(height: 12),
+        const Caption('alternatives'),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (var i = 0; i < alts.length; i++)
+              _chip(c, i, alts[i], selected: !typedKnown && i == altSel),
+          ],
+        ),
+        const SizedBox(height: 12),
+        plot,
+      ],
+    );
+  }
+
+  Widget _chip(
+    ColorScheme c,
+    int i,
+    Recommendation r, {
+    required bool selected,
+  }) {
+    final border = BorderRadius.circular(4);
+    return InkWell(
+      key: ValueKey('alt-${r.word}'),
+      borderRadius: border,
+      onTap: () => setState(() => altSel = i),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 78),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? c.surfaceContainerHighest : null,
+          borderRadius: border,
+          border: Border.all(
+            color: selected ? c.onSurface : hairlineColor(c),
+            width: selected ? 1 : hairlineWidth,
           ),
-        ] else if (r == null || busy)
-          const Caption('working out the best guess…')
-        else ...[
-          Caption(switch (left) {
-            <= 1 => 'last try: the likeliest word that fits',
-            2 => 'two tries left: the guess most likely to solve it in time',
-            _ => 'recommended guess',
-          }),
-          const SizedBox(height: 4),
-          InkWell(
-            onTap: () => _use(r.word),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                r.word,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: c.primary,
-                ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              r.word,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
               ),
             ),
-          ),
-          Text(
-            '${r.winChance == null ? '' : 'about ${(r.winChance! * 100).toStringAsFixed(0)}% to solve it · '}'
-            'expect about ${r.expected.toStringAsFixed(1)} words left'
-            '${r.canWin ? ' · could be the answer' : ''}  (tap to use)',
-            style: TextStyle(
-              fontSize: 11,
-              color: c.onSurface.withValues(alpha: dimAlpha),
+            Text(
+              '${r.expected.toStringAsFixed(1)} left',
+              style: TextStyle(
+                fontSize: 10,
+                color: c.onSurface.withValues(alpha: dimAlpha),
+              ),
             ),
-          ),
-        ],
-        if (n > 1) ...[
-          const SizedBox(height: 16),
-          Caption(n > 40 ? 'most likely 40' : 'all the words that fit'),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 12,
-            runSpacing: 4,
-            children: [
-              for (final w in eligible.take(40))
-                InkWell(onTap: () => _use(w), child: Text(w)),
-            ],
-          ),
-        ],
-      ],
+          ],
+        ),
+      ),
     );
   }
 }

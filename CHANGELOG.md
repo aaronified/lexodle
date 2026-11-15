@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- solver: alternatives and a plot in every mode
+  The quartet, relay race, blind and equations solvers get the same cleaner page as the classic one: five alternative guesses with a plot of how each splits the words that fit (for quartet and relay race, one board at a time; for blind, by the two counts), and the group your marks lead to lit as you tap.
+
 - solver: one header, a settings sheet, alternatives and a plot of the groups
   The solver has one header (back, solver, its settings and the app settings) and almost no text. Its settings sheet holds the language, length and tries, for the solver only. Each round offers five alternative guesses with the expected words left; choose one to see how the words that fit would split by the colours it could show, a bar for every group (the plot scrolls sideways when it is wide), use it, and as you tap the tiles to match the game the bar of that group lights with its number of words. A word of your own gets the same plot.
 - you: the streak card is dragged as a whole

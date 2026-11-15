@@ -2,12 +2,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'app_log.dart';
 import 'guess_input.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
+import 'split_plot.dart';
 import 'typing_keys.dart';
 import 'ui.dart';
 import 'words.dart';
@@ -194,6 +196,19 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
   // the advice for the live boards
   MultiPick? pick;
   FinalPick? finalPick;
+  // up to five next guesses, best first: the recommended, then the rest; each
+  // with the number the page reports for it
+  List<({String word, String note})> alts = const [];
+  int altSel = 0;
+  // the board whose split the plot shows
+  int plotBoard = 0;
+  // each (word, board, guesses) split of that board's words, kept while the
+  // history stays
+  final _splits = <String, (List<(int, int)>, double)>{};
+  late final Set<String> _guessable = {
+    for (final w in widget.bank.guessable(length)) w,
+    ...widget.bank.answers(length),
+  };
   bool busy = false;
   int _run = 0;
 
@@ -219,32 +234,58 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
     setState(() {
       pick = null;
       finalPick = null;
+      alts = const [];
+      altSel = 0;
+      _splits.clear();
+      if (!live.contains(plotBoard)) plotBoard = live.isEmpty ? 0 : live.first;
       busy = lists.isNotEmpty && lists.every((l) => l.isNotEmpty);
     });
     if (!busy) return;
-    if (state.triesLeft <= 1) {
-      // nothing is left to learn: only a word that fits a board can win one
-      final picks = finalPicks(lists, k: 1, weights: _law);
+    try {
+      if (state.triesLeft <= 1) {
+        // nothing is left to learn: only a word that fits a board can win one
+        final picks = finalPicks(lists, k: 5, weights: _law);
+        setState(() {
+          finalPick = picks.isEmpty ? null : picks.first;
+          alts = [
+            for (final p in picks)
+              (
+                word: p.word,
+                note: '${p.expectedSolved.toStringAsFixed(1)} solved',
+              ),
+          ];
+          busy = false;
+        });
+        return;
+      }
+      final picks = await recommendMulti(
+        lists,
+        multiCandidates(lists, [
+          for (final w in widget.bank.guessable(length))
+            if (!widget.excluded.contains(w)) w,
+        ]),
+        k: 5,
+        weights: _law,
+      );
+      if (!mounted || run != _run) return;
       setState(() {
-        finalPick = picks.isEmpty ? null : picks.first;
+        pick = picks.isEmpty ? null : picks.first;
+        alts = [
+          for (final p in picks)
+            (word: p.word, note: 'skill ${p.skill.toStringAsFixed(1)}'),
+        ];
         busy = false;
       });
-      return;
+    } catch (e) {
+      appLog.w('multi solver', 'solve failed ${e.runtimeType}');
+      if (!mounted || run != _run) return;
+      setState(() {
+        pick = null;
+        finalPick = null;
+        alts = const [];
+        busy = false;
+      });
     }
-    final picks = await recommendMulti(
-      lists,
-      multiCandidates(lists, [
-        for (final w in widget.bank.guessable(length))
-          if (!widget.excluded.contains(w)) w,
-      ]),
-      k: 1,
-      weights: _law,
-    );
-    if (!mounted || run != _run) return;
-    setState(() {
-      pick = picks.isEmpty ? null : picks.first;
-      busy = false;
-    });
   }
 
   void _type(String ch) {
@@ -347,17 +388,10 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
                       children: [
-                        Caption(
-                          mode == GameMode.relay
-                              ? 'type each guess once, then tap the tiles of '
-                                    'the board that is on to match the colours '
-                                    'the game showed. when a board is solved '
-                                    'the next opens: tap in the colours it '
-                                    'showed for the guesses so far'
-                              : 'type each guess once, then tap the tiles of '
-                                    'every unsolved board to match the colours '
-                                    'the game showed',
-                        ),
+                        if (state.guesses.isEmpty)
+                          const Caption(
+                            'type a guess, tap its tiles to match the game',
+                          ),
                         const SizedBox(height: 14),
                         LayoutBuilder(
                           builder: (context, box) {
@@ -380,11 +414,9 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: state.guesses.isEmpty ? null : _undo,
-                                child: const Text('undo last'),
-                              ),
+                            OutlinedButton(
+                              onPressed: state.guesses.isEmpty ? null : _undo,
+                              child: const Text('undo'),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -395,9 +427,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-                        const Divider(),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         _result(c),
                       ],
                     ),
@@ -506,40 +536,31 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
     );
   }
 
+  (List<(int, int)>, double) _split(String word, int board) =>
+      _splits.putIfAbsent('$word|$board|${state.guesses.length}', () {
+        final eligible = state.eligibleOf(board);
+        final groups = splitGroups(eligible, word);
+        var sq = 0;
+        for (final g in groups) {
+          sq += g.$2 * g.$2;
+        }
+        return (groups, eligible.isEmpty ? 0.0 : sq / eligible.length);
+      });
+
   Widget _result(ColorScheme c) {
-    final dim = TextStyle(
-      fontSize: 11,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
     final left = state.triesLeft;
-    final head = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var i = 0; i < state.boards; i++)
-          if (state.isOpen(i) && !state.isSolved(i))
-            Caption(
-              '${state.eligibleOf(i).length} '
-              '${state.eligibleOf(i).length == 1 ? 'word' : 'words'} on my list '
-              'fit board ${i + 1}',
-            ),
-        const SizedBox(height: 4),
-        Caption(
-          'answers from ${_answers.length} words · '
-          '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
-        ),
-      ],
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    final fit = [
+      for (final i in state.live) 'b${i + 1} ${state.eligibleOf(i).length}',
+    ];
+    final line = Caption(
+      '${fit.isEmpty ? '' : 'fit: ${fit.join(' · ')} · '}'
+              '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
     );
     if (state.done) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          head,
-          const SizedBox(height: 8),
-          const Text(
-            'every board is solved',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ],
+      return const Text(
+        'every board is solved',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       );
     }
     final empty = [
@@ -547,67 +568,145 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
         if (state.eligibleOf(i).isEmpty) i + 1,
     ];
     if (empty.isNotEmpty) {
+      return Text(
+        'no word matches board ${empty.join(' and ')}. check its colours.',
+        style: TextStyle(color: c.error, fontSize: 13),
+      );
+    }
+    if (busy || alts.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          head,
-          const SizedBox(height: 8),
-          Text(
-            'no word matches board ${empty.join(' and ')}. check the colours '
-            'of its guesses above, or the game may use a word this list lacks.',
-            style: TextStyle(color: c.error, fontSize: 13),
-          ),
+          line,
+          const SizedBox(height: 10),
+          Caption(busy ? 'working out the best guesses…' : 'nothing to recommend'),
         ],
       );
     }
-    final word = pick?.word ?? finalPick?.word;
+    final live = state.live;
+    final board = live.contains(plotBoard) ? plotBoard : live.first;
+    final typed = input.complete ? input.word : null;
+    final typedKnown = typed != null && _guessable.contains(typed);
+    final Widget plot;
+    if (typedKnown) {
+      final (groups, avg) = _split(typed, board);
+      plot = SplitPlot(
+        key: ValueKey('plot-$board'),
+        word: typed,
+        groups: groups,
+        average: avg,
+        length: length,
+        highlight: markCode(inputMarks[board]),
+      );
+    } else if (typed != null) {
+      plot = Text(
+        '$typed is not in the word list',
+        style: TextStyle(fontSize: 12, color: dim),
+      );
+    } else {
+      final word = alts[min(altSel, alts.length - 1)].word;
+      final (groups, avg) = _split(word, board);
+      plot = SplitPlot(
+        key: ValueKey('plot-$board'),
+        word: word,
+        groups: groups,
+        average: avg,
+        length: length,
+        onUse: () => _use(word),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        head,
-        const SizedBox(height: 10),
-        if (word == null)
-          Caption(busy ? 'working out the best guess…' : 'nothing to recommend')
-        else ...[
-          Caption(
-            finalPick != null
-                ? 'last try: the word that fits the most boards'
-                : 'recommended guess',
-          ),
-          const SizedBox(height: 4),
-          InkWell(
-            onTap: () => _use(word),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                word,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: c.primary,
-                ),
-              ),
-            ),
-          ),
-          metricLine(
-            context,
-            finalPick != null
-                ? 'expect about ${finalPick!.expectedSolved.toStringAsFixed(2)} '
-                      'of the ${state.live.length} boards solved  (tap to use)'
-                : 'skill ${pick!.skill.toStringAsFixed(1)} across the boards'
-                      '${pick!.possibleOn > 0 ? ' · could be the answer on ${pick!.possibleOn}' : ''}'
-                      '  (tap to use)',
-            'skill',
-            style: dim,
+        line,
+        const SizedBox(height: 12),
+        const Caption('alternatives'),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (var i = 0; i < alts.length; i++)
+              _chip(c, i, alts[i], selected: !typedKnown && i == altSel),
+          ],
+        ),
+        if (live.length > 1) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              for (final i in live) ...[
+                _boardChip(c, i, selected: i == board),
+                const SizedBox(width: 6),
+              ],
+            ],
           ),
         ],
-        const SizedBox(height: 16),
-        Text(
-          'my list holds all ${_answers.length} words of this '
-          'length. a game can use a word that is not on it.',
-          style: dim,
-        ),
+        const SizedBox(height: 12),
+        plot,
       ],
     );
   }
+
+  BoxDecoration _chipBox(ColorScheme c, bool selected) => BoxDecoration(
+    color: selected ? c.surfaceContainerHighest : null,
+    borderRadius: BorderRadius.circular(4),
+    border: Border.all(
+      color: selected ? c.onSurface : hairlineColor(c),
+      width: selected ? 1 : hairlineWidth,
+    ),
+  );
+
+  Widget _boardChip(ColorScheme c, int i, {required bool selected}) => InkWell(
+    key: ValueKey('plot-board-$i'),
+    borderRadius: BorderRadius.circular(4),
+    onTap: () => setState(() => plotBoard = i),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: _chipBox(c, selected),
+      child: Text(
+        '${i + 1}',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    ),
+  );
+
+  Widget _chip(
+    ColorScheme c,
+    int i,
+    ({String word, String note}) r, {
+    required bool selected,
+  }) => InkWell(
+    key: ValueKey('alt-${r.word}'),
+    borderRadius: BorderRadius.circular(4),
+    onTap: () => setState(() => altSel = i),
+    child: Container(
+      constraints: const BoxConstraints(minWidth: 78),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: _chipBox(c, selected),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            r.word,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+            ),
+          ),
+          Text(
+            r.note,
+            style: TextStyle(
+              fontSize: 10,
+              color: c.onSurface.withValues(alpha: dimAlpha),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
