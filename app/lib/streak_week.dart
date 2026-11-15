@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_log.dart';
 import 'daily.dart';
 import 'main.dart';
-import 'mode_strip.dart';
+import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart';
 import 'ui.dart';
 
@@ -38,13 +38,25 @@ class StreakWeek extends StatefulWidget {
   State<StreakWeek> createState() => _StreakWeekState();
 }
 
-class _StreakWeekState extends State<StreakWeek> {
+class _StreakWeekState extends State<StreakWeek>
+    with SingleTickerProviderStateMixin {
   GameMode? _picked;
-
-  /// Where the header's ratchet is, in modes from the first, while it moves;
-  /// null when it is at rest on the mode in view.
-  double? _pos;
   bool _month = false;
+
+  late final AnimationController _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 200),
+  );
+
+  /// How far the card has been dragged, in pages: positive shows the next mode,
+  /// negative the previous. The calendar follows the finger.
+  double _shift = 0;
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
 
   GameMode _current(List<GameMode> modes) => modes.contains(_picked)
       ? _picked!
@@ -54,17 +66,41 @@ class _StreakWeekState extends State<StreakWeek> {
       ? modes.first
       : appState.mode;
 
-  /// Makes the neighbour at [step] (+1 next, -1 previous) the mode in view.
-  void _step(List<GameMode> modes, int step) {
+  /// Runs on to the neighbour at [step] (+1 next, -1 previous, 0 stay) from
+  /// where the finger left it, then makes that mode the one in view.
+  void _settle(List<GameMode> modes, int step) {
     try {
-      if (modes.length < 2) return;
-      final i = modes.indexOf(_current(modes));
-      setState(() {
-        _picked = modes[(i + step) % modes.length];
-        _pos = null;
+      final from = _shift;
+      final to = step.toDouble();
+      void land() {
+        if (!mounted) return;
+        setState(() {
+          if (step != 0 && modes.length > 1) {
+            final i = modes.indexOf(_current(modes));
+            _picked = modes[(i + step).clamp(0, modes.length - 1)];
+          }
+          _shift = 0;
+        });
+      }
+
+      _anim.stop();
+      if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
+        land();
+        return;
+      }
+      _anim.reset();
+      void tick() => setState(
+        () =>
+            _shift = from + (to - from) * Curves.easeOut.transform(_anim.value),
+      );
+      _anim.addListener(tick);
+      _anim.forward().whenComplete(() {
+        _anim.removeListener(tick);
+        land();
       });
     } catch (e) {
       appLog.w('streak_week', 'could not change the mode: ${e.runtimeType}');
+      if (mounted) setState(() => _shift = 0);
     }
   }
 
@@ -77,73 +113,25 @@ class _StreakWeekState extends State<StreakWeek> {
     final lang = appState.lang;
     final modes = appState.dailiesOf(lang);
     final mode = _current(modes);
-    final many = modes.length > 1;
     final index = modes.indexOf(mode);
+    final last = modes.length - 1;
+    // the dot of the page nearest the middle while it is being dragged
+    final at = index < 0 ? 0 : (index + _shift).round().clamp(0, last);
 
-    Widget arrow(String glyph, String label, int step, Key key) => SizedBox(
-      width: 44,
-      height: 44,
-      child: Semantics(
-        button: true,
-        label: label,
-        excludeSemantics: true,
-        child: InkWell(
-          key: key,
-          borderRadius: BorderRadius.circular(6),
-          onTap: many ? () => _step(modes, step) : null,
-          child: Center(
-            child: Text(
-              glyph,
-              style: TextStyle(
-                fontSize: 24,
-                color: c.onSurface.withValues(alpha: many ? 1 : dimAlpha),
-              ),
+    final dots = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var i = 0; i < modes.length; i++)
+          Container(
+            key: ValueKey('sw-dot-$i'),
+            width: 6,
+            height: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: i == at ? c.onSurface : c.onSurface.withValues(alpha: .25),
             ),
           ),
-        ),
-      ),
-    );
-
-    final header = Row(
-      children: [
-        arrow('\u2039', 'previous mode', -1, const ValueKey('sw-prev')),
-        Expanded(
-          child: Column(
-            children: [
-              if (modes.isNotEmpty)
-                ModeStrip(
-                  key: const ValueKey('sw-strip'),
-                  modes: modes,
-                  selected: mode,
-                  caption: null,
-                  label: 'streak',
-                  onChanged: (m) => setState(() => _picked = m),
-                  onMove: (p) => setState(() => _pos = p),
-                  onTap: () {},
-                ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var i = 0; i < modes.length; i++)
-                    Container(
-                      key: ValueKey('sw-dot-$i'),
-                      width: 6,
-                      height: 6,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: i == index
-                            ? c.onSurface
-                            : c.onSurface.withValues(alpha: .25),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        arrow('\u203a', 'next mode', 1, const ValueKey('sw-next')),
       ],
     );
 
@@ -155,34 +143,69 @@ class _StreakWeekState extends State<StreakWeek> {
         border: Border.fromBorderSide(hairline(c)),
         borderRadius: BorderRadius.circular(3),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          header,
-          const SizedBox(height: 6),
-          LayoutBuilder(
-            builder: (context, box) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _slid(c, lang, modes, mode, box.maxWidth, top: true),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    key: const ValueKey('sw-month-toggle'),
-                    onPressed: () => setState(() => _month = !_month),
-                    child: Text(_month ? 'back to the week' : 'show the month'),
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final width = box.maxWidth;
+          final many = modes.length > 1;
+          // no looping: nothing before the first mode or after the last
+          final lo = index > 0 ? -1.0 : 0.0;
+          final hi = index >= 0 && index < last ? 1.0 : 0.0;
+          return Semantics(
+            container: true,
+            label: 'streak',
+            value: mode.label,
+            increasedValue: index < last ? modes[index + 1].label : null,
+            decreasedValue: index > 0 ? modes[index - 1].label : null,
+            onIncrease: many && index < last ? () => _settle(modes, 1) : null,
+            onDecrease: many && index > 0 ? () => _settle(modes, -1) : null,
+            child: GestureDetector(
+              key: const ValueKey('sw-swipe'),
+              behavior: HitTestBehavior.translucent,
+              onHorizontalDragStart: many ? (_) => _anim.stop() : null,
+              onHorizontalDragUpdate: many
+                  ? (d) => setState(
+                      () =>
+                          _shift = (_shift - d.delta.dx / width).clamp(lo, hi),
+                    )
+                  : null,
+              onHorizontalDragEnd: many
+                  ? (d) {
+                      final v = d.primaryVelocity ?? 0;
+                      final go = _shift.abs() > .25 || v.abs() > 700;
+                      final dir = _shift != 0
+                          ? (_shift > 0 ? 1 : -1)
+                          : (v < 0 ? 1 : -1);
+                      final ok = dir > 0 ? index < last : index > 0;
+                      _settle(modes, go && ok ? dir : 0);
+                    }
+                  : null,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _slid(c, lang, modes, mode, width, top: true),
+                  if (many) ...[const SizedBox(height: 4), dots],
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      key: const ValueKey('sw-month-toggle'),
+                      onPressed: () => setState(() => _month = !_month),
+                      child: Text(
+                        _month ? 'back to the week' : 'show the month',
+                      ),
+                    ),
                   ),
-                ),
-                _slid(c, lang, modes, mode, box.maxWidth, top: false),
-              ],
+                  _slid(c, lang, modes, mode, width, top: false),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  /// One part of the card, moved sideways with the header's ratchet: the page
+  /// One part of the card, moved sideways with the finger: the page
   /// of [mode] and, while the ratchet is between two modes, its neighbour.
   Widget _slid(
     ColorScheme c,
@@ -198,9 +221,7 @@ class _StreakWeekState extends State<StreakWeek> {
     }
 
     final index = modes.indexOf(mode);
-    final shift = _pos == null || index < 0
-        ? 0.0
-        : (_pos! - index).clamp(-1.0, 1.0);
+    final shift = index < 0 ? 0.0 : _shift.clamp(-1.0, 1.0);
     final other = index + (shift > 0 ? 1 : -1);
     if (shift == 0 || other < 0 || other >= modes.length) return part(mode);
     return ClipRect(
@@ -225,7 +246,7 @@ class _StreakWeekState extends State<StreakWeek> {
   }
 
   /// The content of the card for one mode, in the two parts that move with the
-  /// ratchet: the streak line and the week (top), and the month with its legend
+  /// finger: the mode's name, the streak line and the week (top), and the month with its legend
   /// (bottom). The month button between them stays where it is.
   (Widget, Widget) _page(ColorScheme c, String lang, GameMode mode) {
     final today = dailyDate();
@@ -447,6 +468,19 @@ class _StreakWeekState extends State<StreakWeek> {
     final top = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TablerIcon(modeIconName(mode), size: 22, color: c.primary),
+            const SizedBox(width: 8),
+            Text(
+              mode.label,
+              key: const ValueKey('sw-header-mode'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
         Semantics(
           container: true,
           excludeSemantics: true,
@@ -479,14 +513,6 @@ class _StreakWeekState extends State<StreakWeek> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    mode.label,
-                    key: const ValueKey('sw-streak-mode'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: c.onSurface.withValues(alpha: dimAlpha),
-                    ),
-                  ),
                   Text(
                     'best $best',
                     key: const ValueKey('sw-streak-best'),

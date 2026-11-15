@@ -277,21 +277,35 @@ class _SwipeChoiceState<T> extends State<SwipeChoice<T>>
                   children: [
                     Positioned.fill(
                       child: ExcludeSemantics(
-                        child: Stack(
-                          children: [
-                            for (
-                              var i = math.max(0, mid - 2);
-                              i <= math.min(_last, mid + 2);
-                              i++
-                            )
-                              Positioned(
-                                left: w / 2 - _slot / 2 + (i - _pos) * _slot,
-                                top: 0,
-                                bottom: 0,
-                                width: _slot,
-                                child: _item(c, i),
-                              ),
-                          ],
+                        // the labels fade out a long way before the sides: only
+                        // the middle third is solid
+                        child: ShaderMask(
+                          blendMode: BlendMode.dstIn,
+                          shaderCallback: (r) => const LinearGradient(
+                            colors: [
+                              Color(0x00FFFFFF),
+                              Color(0xFFFFFFFF),
+                              Color(0xFFFFFFFF),
+                              Color(0x00FFFFFF),
+                            ],
+                            stops: [.12, .36, .64, .88],
+                          ).createShader(r),
+                          child: Stack(
+                            children: [
+                              for (
+                                var i = math.max(0, mid - 2);
+                                i <= math.min(_last, mid + 2);
+                                i++
+                              )
+                                Positioned(
+                                  left: w / 2 - _slot / 2 + (i - _pos) * _slot,
+                                  top: 0,
+                                  bottom: 0,
+                                  width: _slot,
+                                  child: _item(c, i),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
