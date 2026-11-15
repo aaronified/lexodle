@@ -1337,6 +1337,29 @@ int patternCode(String target, String guess) {
   return code;
 }
 
+/// The groups [guess] splits [eligible] into by the colours it would show, as
+/// (pattern code, number of words), the biggest group first (ties by code).
+/// The code is [patternCode]'s; [markCode] makes one from marks.
+List<(int, int)> splitGroups(List<String> eligible, String guess) {
+  final counts = <int, int>{};
+  for (final w in eligible) {
+    counts.update(patternCode(w, guess), (c) => c + 1, ifAbsent: () => 1);
+  }
+  return [for (final e in counts.entries) (e.key, e.value)]..sort((a, b) {
+    final by = b.$2.compareTo(a.$2);
+    return by != 0 ? by : a.$1.compareTo(b.$1);
+  });
+}
+
+/// The [patternCode] of the colours [marks] (first tile first).
+int markCode(List<Mark> marks) {
+  var code = 0;
+  for (final m in marks) {
+    code = code * 3 + m.index;
+  }
+  return code;
+}
+
 /// Frequency-weighted random choice, as choose_word does.
 String chooseWord(List<String> words, List<int> weights, Random rng) {
   final total = weights.fold<int>(0, (a, b) => a + b);
