@@ -1,10 +1,14 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/drill.dart';
 import 'package:lexodle/drill_page.dart';
 import 'package:lexodle/learn_log.dart';
+import 'package:lexodle/logic.dart' show Landscape;
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,9 +36,10 @@ void main() {
   Future<void> open(
     WidgetTester tester, {
     LearnKind kind = LearnKind.choose,
+    GameMode mode = GameMode.classic,
   }) async {
     await tester.binding.setSurfaceSize(const Size(420, 1100));
-    appState.setup(lang: 'fr', length: 4);
+    appState.setup(lang: 'fr', length: 4, mode: mode);
     final bank = (await tester.runAsync(
       () async => WordBank.load(
         (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
@@ -244,6 +249,56 @@ void main() {
     final e = appState.learnLog.events.single;
     expect(e.kind, LearnKind.closing);
     expect(e.questions, drillRoundLength);
+  });
+
+  testWidgets('mastermind closing: splits, no tries, no percent, lowest best', (
+    tester,
+  ) async {
+    await open(tester, kind: LearnKind.closing, mode: GameMode.mastermind);
+    expect(
+      find.text('which guess splits the last words best?'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('tries'), findsNothing);
+    expect(find.textContaining('%'), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('drill-option-0')));
+    await tester.pump();
+    expect(find.textContaining(' left'), findsWidgets);
+    expect(find.textContaining('wins'), findsNothing);
+    final shown = [
+      for (final t in tester.widgetList<Text>(find.textContaining(' left')))
+        if (RegExp(r'^(best · )?[0-9.]+ left$').hasMatch(t.data ?? '')) t.data!,
+    ];
+    expect(shown.length, 4);
+    double value(String t) =>
+        double.parse(RegExp(r'([0-9.]+) left').firstMatch(t)!.group(1)!);
+    final best = shown.singleWhere((t) => t.startsWith('best · '));
+    expect(value(best), shown.map(value).reduce(min));
+    expect(find.byKey(const ValueKey('drill-calc')), findsNothing);
+    expect(find.textContaining('groups'), findsWidgets);
+    await tester.pump(const Duration(seconds: 2));
+    appState.setup(mode: GameMode.classic);
+  });
+
+  test('mastermind split options: the best leaves the fewest', () {
+    final left = {'a': 1.0, 'b': 1.5, 'c': 2.5, 'd': 4.0, 'e': 6.0};
+    final o = pickSplitOptions(left, Random(1))!;
+    expect(o.length, 4);
+    expect(o.every((x) => x.win == null && x.left != null), isTrue);
+    final top = o.firstWhere((x) => x.skill >= 99.99);
+    expect(top.left, o.map((x) => x.left!).reduce(min));
+    final q = DrillQuestion(
+      answer: 'a',
+      guesses: const [],
+      marks: const [],
+      eligible: const ['a', 'b', 'c'],
+      options: o,
+      landscape: const Landscape([], []),
+      weights: null,
+      splits: true,
+    );
+    expect(q.closing, isTrue);
+    expect(q.closingLines(o.first).join(' '), isNot(contains('wins')));
   });
 
   test('a round counts its right answers and averages the skill', () {

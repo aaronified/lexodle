@@ -14,8 +14,12 @@ export 'learn_log.dart' show drillRoundLength;
 
 /// One word offered in a drill, with how good a guess it is here.
 class DrillOption {
-  const DrillOption(this.word, this.skill, this.gain, {this.win});
+  const DrillOption(this.word, this.skill, this.gain, {this.win, this.left});
   final String word;
+
+  /// In a mastermind closing question, the words expected to be left after
+  /// this guess (lower is better); null otherwise.
+  final double? left;
 
   /// In a closing question, the chance, 0 to 1, that this guess wins within the
   /// tries left; null otherwise.
@@ -41,12 +45,17 @@ class DrillQuestion {
     required this.landscape,
     required this.weights,
     this.triesLeft,
+    this.splits = false,
   });
+
+  /// A mastermind closing question: no tries, the guesses are scored by how
+  /// well they split the last words (see [DrillOption.left]).
+  final bool splits;
 
   /// In a closing question, the tries left (this guess included): what is asked
   /// is the guess most likely to win in time. Null in choose the best.
   final int? triesLeft;
-  bool get closing => triesLeft != null;
+  bool get closing => triesLeft != null || splits;
 
   /// The word the clues came from. It is not shown: it only fixes the colours.
   final String answer;
@@ -78,6 +87,7 @@ class DrillQuestion {
   /// how it splits the words that fit, and the chance it wins in time, then the
   /// same for the best and what the difference is.
   List<String> closingLines(DrillOption o) {
+    if (splits) return _splitLines(o);
     final tries = triesLeft ?? 1;
     final best = options.firstWhere(isRight);
     String line(DrillOption x) {
@@ -127,6 +137,29 @@ class DrillQuestion {
         'the best, ${best.word}, counts as '
             '${bestStyle == null ? 'no habit' : 'a ${bestStyle.label}'}',
     ];
+  }
+
+  /// The mastermind version of [closingLines]: how many groups [o] makes, the
+  /// biggest, the words expected left, and the same for the best.
+  List<String> _splitLines(DrillOption o) {
+    final best = options.firstWhere(isRight);
+    String line(DrillOption x) {
+      final groups = walkGroups(eligible, x.word, null).groups;
+      final biggest = groups.isEmpty
+          ? 0
+          : groups.map((g) => g.words.length).reduce(max);
+      return '${x.word}: ${groups.length} '
+          '${groups.length == 1 ? 'group' : 'groups'}, the biggest '
+          '$biggest, ${(x.left ?? 0).toStringAsFixed(1)} left on average';
+    }
+
+    if (isRight(o)) {
+      return [
+        line(o),
+        'nothing here splits the ${eligible.length} words better',
+      ];
+    }
+    return [line(o), line(best)];
   }
 
   /// What the explanation of choosing [o] says (see [learnWhy]).
@@ -316,6 +349,23 @@ List<DrillOption>? pickClosingOptions(Map<String, double> wins, Random rng) {
   return [option(top.first), for (final w in chosen) option(w)]..shuffle(rng);
 }
 
+/// Picks four words for a mastermind closing question from the words expected
+/// [left] after each: the one that leaves the fewest, and three clearly worse
+/// ones spread out. Null when the position is no choice. Pure.
+List<DrillOption>? pickSplitOptions(Map<String, double> left, Random rng) {
+  if (left.isEmpty) return null;
+  final least = left.values.reduce(min);
+  if (least <= 0) return null;
+  // the share of the best's score, so the closing picker can spread them out
+  final picked = pickClosingOptions({
+    for (final e in left.entries) e.key: least / max(e.value, least),
+  }, rng);
+  if (picked == null) return null;
+  return [
+    for (final o in picked) DrillOption(o.word, o.skill, 0, left: left[o.word]),
+  ];
+}
+
 /// Builds a closing position: a few words fit the clues (three to ten) and two
 /// or three tries are left, so the choice is between a word that may be right
 /// now and a word that splits the rest so the next guess is. Every guess is
@@ -327,6 +377,7 @@ Future<DrillQuestion?> buildClosingQuestion({
   required Draw draw,
   required Random rng,
   int attempts = 80,
+  bool mastermind = false,
 }) async {
   final pool = bank.answers(length);
   final guessable = bank.guessable(length);
@@ -352,6 +403,30 @@ Future<DrillQuestion?> buildClosingQuestion({
       marks.add(m);
     }
     if (!ok || eligible.length < 3 || eligible.length > 10) continue;
+    if (mastermind) {
+      // no tries: each guess is scored by the words it is expected to leave
+      // (every word that fits is as likely as the next)
+      final probes = guessable.take(800).where((w) => !guesses.contains(w));
+      final candidates = {
+        ...eligible,
+        ...probes,
+        for (var i = 0; i < 6; i++) guessable[rng.nextInt(guessable.length)],
+      }..removeAll(guesses);
+      final left = {for (final c in candidates) c: expectedPool(eligible, c)};
+      final options = pickSplitOptions(left, rng);
+      if (options == null) continue;
+      final land = await analyseOffThread(eligible, guessable, k: 3);
+      return DrillQuestion(
+        answer: answer,
+        guesses: guesses,
+        marks: marks,
+        eligible: eligible,
+        options: options,
+        landscape: land,
+        weights: null,
+        splits: true,
+      );
+    }
     final tries = 2 + rng.nextInt(2);
     final probes = closingProbeWords(
       eligible,

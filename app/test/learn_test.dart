@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/learn.dart';
 import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/main.dart';
+import 'package:lexodle/modes.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -60,6 +61,27 @@ void main() {
       ),
     );
   });
+
+  testWidgets(
+    'mastermind: no answer is shown, a guess is judged by its split',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1100));
+      appState.setup(lang: 'fr', length: 4, mode: GameMode.mastermind);
+      final b = await bank(tester);
+      await tester.pumpWidget(MaterialApp(home: LearnPage(bank: b, seed: 3)));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byKey(const ValueKey('learn-answer')), findsNothing);
+      expect(find.textContaining('the answer'), findsNothing);
+      expect(find.textContaining('you know'), findsNothing);
+      await type(tester, 'rien');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byKey(const ValueKey('learn-feedback-0')), findsOneWidget);
+      expect(find.textContaining('skill'), findsWidgets);
+      expect(find.byKey(const ValueKey('learn-answer')), findsNothing);
+      appState.setup(mode: GameMode.classic);
+    },
+  );
 
   testWidgets('a guess narrows the list, and is graded against the best', (
     tester,
