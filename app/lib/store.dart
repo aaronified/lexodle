@@ -3580,6 +3580,22 @@ class AppState extends ChangeNotifier {
   /// How Today shows the dailies: as rows or as tiles, in which sort, and the
   /// player's own order (see today_prefs.dart). All three are kept.
   bool todayTiles = false;
+
+  /// The range of the history chart, as the index of days (0), weeks (1) or
+  /// months (2); kept so that it opens as the player left it.
+  int historyRange = 1;
+
+  void setHistoryRange(int range) {
+    final r = range.clamp(0, 2);
+    if (historyRange == r) return;
+    historyRange = r;
+    try {
+      _w('historyRange', _prefs?.setInt('historyRange', r));
+    } catch (e) {
+      appLog.w('history', 'could not save the range: ${e.runtimeType}');
+    }
+  }
+
   TodaySort todaySort = TodaySort.status;
   List<GameMode> dailyOrder = [];
 
@@ -3624,6 +3640,7 @@ class AppState extends ChangeNotifier {
   void _readTodayView(SharedPreferences p) {
     try {
       todayTiles = p.getBool('todayTiles') ?? false;
+      historyRange = (p.getInt('historyRange') ?? 1).clamp(0, 2);
       todaySort = TodaySort.fromIndex(p.getInt('todaySort'));
       final raw = p.getString('dailyOrder');
       if (raw != null) dailyOrder = dailyOrderFromJson(jsonDecode(raw));
