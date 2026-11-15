@@ -281,14 +281,14 @@ class _SwipeChoiceState<T> extends State<SwipeChoice<T>>
                         // the middle third is solid
                         child: ShaderMask(
                           blendMode: BlendMode.dstIn,
-                          shaderCallback: (r) => const LinearGradient(
+                          shaderCallback: (r) => LinearGradient(
                             colors: [
-                              Color(0x00FFFFFF),
-                              Color(0xFFFFFFFF),
-                              Color(0xFFFFFFFF),
-                              Color(0x00FFFFFF),
+                              c.surface.withValues(alpha: 0),
+                              c.surface,
+                              c.surface,
+                              c.surface.withValues(alpha: 0),
                             ],
-                            stops: [.12, .36, .64, .88],
+                            stops: const [.12, .36, .64, .88],
                           ).createShader(r),
                           child: Stack(
                             children: [
