@@ -398,8 +398,17 @@ class BankGate extends StatefulWidget {
     required this.builder,
     this.places = false,
     this.equations = false,
+    this.lang,
+    this.bare = false,
   });
   final Widget Function(WordBank bank) builder;
+
+  /// Waits without a header of its own (when it sits inside a page that has
+  /// one).
+  final bool bare;
+
+  /// The language code to load instead of the saved one.
+  final String? lang;
 
   /// Whether the words are the equations of the equations mode.
   final bool equations;
@@ -420,14 +429,14 @@ class _BankGateState extends State<BankGate> {
       return Geography.load(langs.firstWhere((l) => l.code == 'en'));
     }
     final lang = langs.firstWhere(
-      (l) => l.code == appState.lang,
+      (l) => l.code == (widget.lang ?? appState.lang),
       orElse: () => langs.first,
     );
     return widget.equations ? Equations.load(lang) : WordBank.load(lang);
   }
 
   Widget _waiting(String text) => Scaffold(
-    appBar: AppBar(),
+    appBar: widget.bare ? null : AppBar(),
     body: Center(child: Caption(text)),
   );
 

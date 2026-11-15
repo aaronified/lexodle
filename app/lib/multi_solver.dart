@@ -9,7 +9,6 @@ import 'main.dart';
 import 'modes.dart';
 import 'multi_analysis.dart';
 import 'typing_keys.dart';
-import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -150,10 +149,18 @@ class MultiSolverPage extends StatefulWidget {
     required this.bank,
     this.excluded = const {},
     this.mode,
+    this.length,
+    this.tries,
   });
   final WordBank bank;
   final Set<String> excluded;
   final GameMode? mode;
+
+  /// Overrides for this page only; the saved length and tries when null.
+  final int? length;
+
+  /// The tries as the mode counts them (see [triesFor]), not the base.
+  final int? tries;
 
   @override
   State<MultiSolverPage> createState() => _MultiSolverPageState();
@@ -161,9 +168,10 @@ class MultiSolverPage extends StatefulWidget {
 
 class _MultiSolverPageState extends State<MultiSolverPage> {
   final _focus = FocusNode();
-  late final int length = appState.length;
+  late final int length = widget.length ?? appState.length;
   late final GameMode mode = widget.mode ?? appState.mode;
-  late final int tries = triesFor(mode, appState.tries);
+  late final int tries =
+      widget.tries ?? triesFor(mode, appState.tries);
   late final List<String> _answers = [
     for (final w in widget.bank.answers(length))
       if (!widget.excluded.contains(w)) w,
@@ -324,29 +332,11 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final lang = widget.bank.language.name.toLowerCase();
     return Focus(
       focusNode: _focus,
       autofocus: true,
       onKeyEvent: _onKey,
       child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FlagBadge(widget.bank.language.flag, size: 16),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  'solver · ${mode.label} · $lang · $length · $tries tries',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-                ),
-              ),
-            ],
-          ),
-          actions: [const SettingsButton()],
-        ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(

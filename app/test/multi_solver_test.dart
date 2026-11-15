@@ -166,8 +166,8 @@ void main() {
       for (var i = 0; i < 4; i++) {
         expect(find.byKey(ValueKey('board-$i')), findsOneWidget);
       }
-      expect(find.textContaining('solver · quartet'), findsOneWidget);
-      expect(find.textContaining('9 tries'), findsWidgets);
+      expect(find.byType(AppBar), findsNothing);
+      expect(find.textContaining('solver · quartet'), findsNothing);
       expect(find.text('recommended guess'), findsOneWidget);
       expect(find.textContaining('across the boards'), findsOneWidget);
 
@@ -195,7 +195,7 @@ void main() {
       final b = await bank(tester);
       await tester.pumpWidget(MaterialApp(home: MultiSolverPage(bank: b)));
       await tester.pump(const Duration(seconds: 3));
-      expect(find.textContaining('solver · relay race'), findsOneWidget);
+      expect(find.byType(AppBar), findsNothing);
       expect(find.textContaining('board 2 · waiting'), findsOneWidget);
       expect(find.text('recommended guess'), findsOneWidget);
       appState.setup(mode: GameMode.classic);
