@@ -90,7 +90,7 @@ void main() {
     await open(tester, Routes.solver);
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 2)));
     await tester.pumpAndSettle();
-    expect(find.textContaining('my list holds'), findsOneWidget);
+    expect(find.textContaining('words fit'), findsOneWidget);
     nav(tester).pop();
     await tester.pumpAndSettle();
     expect(home(), findsOneWidget);
