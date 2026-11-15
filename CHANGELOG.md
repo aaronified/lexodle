@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- solver: one header, a settings sheet, alternatives and a plot of the groups
+  The solver has one header (back, solver, its settings and the app settings) and almost no text. Its settings sheet holds the language, length and tries, for the solver only. Each round offers five alternative guesses with the expected words left; choose one to see how the words that fit would split by the colours it could show, a bar for every group (the plot scrolls sideways when it is wide), use it, and as you tap the tiles to match the game the bar of that group lights with its number of words. A word of your own gets the same plot.
+
 ## 0.12.1
 
 - diy: a new make your own page, with a link popup
