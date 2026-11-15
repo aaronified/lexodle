@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'analysis_worker.dart';
+import 'app_log.dart';
 import 'earned_rows.dart';
 import 'guess_input.dart';
 import 'haptics.dart';
@@ -79,7 +80,23 @@ class _LearnPageState extends State<LearnPage> {
   /// Which guesses show their explanation.
   final _open = <int>{};
 
-  bool get solved => guesses.isNotEmpty && guesses.last == answer;
+  /// The mastermind has no answer: the opponent replies as one of the words
+  /// still possible would, so nothing is shown or named.
+  bool get _mastermind => appState.mode == GameMode.mastermind;
+
+  /// In the mastermind a round is this many guesses at most.
+  static const int _mastermindGuesses = 5;
+
+  /// Whether the word is found or the round is over: the answer was guessed
+  /// (in the mastermind, every mark green, or one word left, or the round's
+  /// guesses used).
+  bool get solved =>
+      guesses.isNotEmpty &&
+      (_mastermind
+          ? marks.last.every((m) => m == Mark.correct) ||
+                eligible.length <= 1 ||
+                guesses.length >= _mastermindGuesses
+          : guesses.last == answer);
 
   @override
   void initState() {
@@ -94,11 +111,14 @@ class _LearnPageState extends State<LearnPage> {
   }
 
   void _reset() {
-    answer = chooseWord(
-      _pool,
-      widget.bank.drawWeights(length, appState.learnDraw),
-      _rng,
-    );
+    // (the mastermind has no answer: it is never set, shown or named)
+    answer = _mastermind
+        ? ''
+        : chooseWord(
+            _pool,
+            widget.bank.drawWeights(length, appState.learnDraw),
+            _rng,
+          );
     // every word the game accepts could be the answer as far as a clue goes
     eligible = List.of(widget.bank.guessable(length));
     guesses.clear();
@@ -174,7 +194,19 @@ class _LearnPageState extends State<LearnPage> {
       setState(() => message = 'not in the word list');
       return;
     }
-    final m = evaluate(answer, word);
+    final List<Mark> m;
+    if (_mastermind) {
+      // as the game does: the marks one of the words still possible would give
+      List<Mark>? reply;
+      try {
+        reply = mastermindReply(eligible, word, _rng);
+      } catch (e) {
+        appLog.w('learn', 'could not draw a reply: ${e.runtimeType}');
+      }
+      m = reply ?? evaluate(word, word);
+    } else {
+      m = evaluate(answer, word);
+    }
     final before = eligible;
     final after = filterEligible(before, word, m);
     final index = guesses.length;
@@ -196,7 +228,7 @@ class _LearnPageState extends State<LearnPage> {
       _open.clear();
       input.next();
       message = '';
-      if (word == answer) {
+      if (solved) {
         _land = null;
         _landNow = null;
         _bestReport = null;
@@ -402,19 +434,23 @@ class _LearnPageState extends State<LearnPage> {
                       padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
                       children: [
                         Caption(
-                          'you know the answer. find the guess that cuts '
-                          'the ${thingOf(appState.mode)} that fit down the most',
+                          _mastermind
+                              ? 'the opponent has no word yet. find the guess '
+                                    'that splits the words that fit best'
+                              : 'you know the answer. find the guess that cuts '
+                                    'the ${thingOf(appState.mode)} that fit down the most',
                         ),
                         const SizedBox(height: 10),
-                        Text(
-                          'the answer: $answer',
-                          key: const ValueKey('learn-answer'),
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: c.primary,
+                        if (!_mastermind)
+                          Text(
+                            'the answer: $answer',
+                            key: const ValueKey('learn-answer'),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: c.primary,
+                            ),
                           ),
-                        ),
                         const SizedBox(height: 14),
                         LayoutBuilder(
                           builder: (context, box) {
@@ -500,7 +536,9 @@ class _LearnPageState extends State<LearnPage> {
                         if (solved) ...[
                           const SizedBox(height: 8),
                           Text(
-                            'solved in ${guesses.length}',
+                            _mastermind
+                                ? 'done in ${guesses.length}'
+                                : 'solved in ${guesses.length}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -654,7 +692,7 @@ class _LearnPageState extends State<LearnPage> {
                 onTap: () => _use(w),
                 child: Text(
                   w,
-                  style: w == answer && solved
+                  style: !_mastermind && w == answer && solved
                       ? TextStyle(color: c.primary, fontWeight: FontWeight.bold)
                       : null,
                 ),

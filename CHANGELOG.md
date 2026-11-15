@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- mastermind: learn and playstyle follow how the mode is played
+  There is no tries limit and no fixed word in mastermind, so the closing drill now asks which guess splits the last words best (the expected words left, no tries and no win percentages), and practise shows no answer: the opponent replies as in the game and each guess is judged by its split. In your playstyle a guess that fits all the clues is a closer only with two words left, when nothing else can win; before that, a top split is a prober.
+
 - history: the range of the chart is remembered
   The history chart opens on the days, weeks or months you last chose.
 - solver: the solver is chosen in the settings sheet, and there are no tries

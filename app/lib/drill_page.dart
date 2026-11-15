@@ -82,6 +82,7 @@ class _DrillPageState extends State<DrillPage> {
           length: length,
           draw: appState.learnDraw,
           rng: _rng,
+          mastermind: appState.mode == GameMode.mastermind,
         )
       : buildDrillQuestion(
           bank: widget.bank,
@@ -231,7 +232,9 @@ class _DrillPageState extends State<DrillPage> {
     final fits = q.eligible.length;
     return [
       Caption(
-        q.closing
+        q.splits
+            ? 'which guess splits the last words best?'
+            : q.closing
             ? '${q.triesLeft} tries left (this one included): which guess is '
                   'most likely to win in time?'
             : 'which guess tells the ${thingOf(appState.mode)} that fit apart best?',
@@ -470,7 +473,9 @@ class _DrillPageState extends State<DrillPage> {
             ),
             if (p != null)
               Text(
-                q.closing
+                q.splits
+                    ? '${isBest ? 'best · ' : ''}${(o.left ?? 0).toStringAsFixed(1)} left'
+                    : q.closing
                     ? '${isBest ? 'best · ' : ''}wins ${((o.win ?? 0) * 100).round()}%'
                     : isBest
                     ? 'best · ${o.skill.round()}'
@@ -502,7 +507,9 @@ class _DrillPageState extends State<DrillPage> {
       children: [
         Text(
           right
-              ? (q.closing
+              ? (q.splits
+                    ? 'right: nothing here splits better'
+                    : q.closing
                     ? 'right: nothing here wins more often'
                     : 'right: nothing here does better')
               : 'not the best: $bestWord is',

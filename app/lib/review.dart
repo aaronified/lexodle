@@ -664,7 +664,12 @@ class _ReviewPageState extends State<ReviewPage> {
   ) {
     final m = metric(i);
     final strong = i == step, dimmed = i < step;
-    final b = m.ready ? behaviourOf(guessRowOf(i + 1, m)) : null;
+    final b = m.ready
+        ? behaviourOf(
+            guessRowOf(i + 1, m),
+            mastermind: widget.record.kind == DrawKind.dodging,
+          )
+        : null;
     return [
       SizedBox(
         width: wordsW,
@@ -719,8 +724,11 @@ class _ReviewPageState extends State<ReviewPage> {
                 child: GestureDetector(
                   key: ValueKey('type-$i'),
                   behavior: HitTestBehavior.opaque,
-                  onTap: () =>
-                      showBehaviourPopup(context, guessRowOf(i + 1, m)),
+                  onTap: () => showBehaviourPopup(
+                    context,
+                    guessRowOf(i + 1, m),
+                    mastermind: widget.record.kind == DrawKind.dodging,
+                  ),
                   child: b == null
                       ? cell('·', strong: false, dimmed: true)
                       : TablerIcon(

@@ -172,7 +172,10 @@ class LearnHomePage extends StatelessWidget {
                         context,
                         LearnKind.free,
                         'practise ${mode == GameMode.equations ? 'an equation' : 'a ${thingOf(mode, plural: false)}'}',
-                        'the answer is shown. find the best guess at each step',
+                        mode == GameMode.mastermind
+                            ? 'the opponent answers as in the game. find the best '
+                                  'split at each step'
+                            : 'the answer is shown. find the best guess at each step',
                         Routes.learnFree,
                         log,
                       ),
@@ -188,8 +191,11 @@ class LearnHomePage extends StatelessWidget {
                         context,
                         LearnKind.closing,
                         'closing',
-                        'ten endgames: few ${thingOf(mode)} left, few tries. which guess '
-                            'wins in time',
+                        mode == GameMode.mastermind
+                            ? 'ten endgames: few words left. which guess splits '
+                                  'them best'
+                            : 'ten endgames: few ${thingOf(mode)} left, few tries. which guess '
+                                  'wins in time',
                         Routes.learnClosing,
                         log,
                       ),

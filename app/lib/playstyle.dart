@@ -111,13 +111,16 @@ Phase? phaseOf(int before, int greens) {
 
 /// What a guess is counted as, or null when it is neither (a middle game guess,
 /// or one that does not qualify). Only classic guesses have what it needs.
-Behaviour? behaviourOf(GuessRow r) => behaviourFor(
+/// In the mastermind ([mastermind]) no word is fixed yet, so a word that fits is
+/// no closer's goal: see [behaviourFor].
+Behaviour? behaviourOf(GuessRow r, {bool mastermind = false}) => behaviourFor(
   before: r.before,
   greens: r.greens,
   risk: r.risk,
   rank: r.rank,
   fresh: r.fresh,
   fits: r.fits,
+  mastermind: mastermind,
 );
 
 /// The same rule on the numbers themselves, so that a guess that was not played
@@ -130,6 +133,7 @@ Behaviour? behaviourFor({
   required double? rank,
   required int fresh,
   required bool fits,
+  bool mastermind = false,
 }) {
   switch (phaseOf(before, greens)) {
     case null:
@@ -141,6 +145,16 @@ Behaviour? behaviourFor({
       if (fresh >= freshLetters) return Behaviour.eliminator;
       return null;
     case Phase.end:
+      if (mastermind) {
+        // the opponent never commits to a word: a fitting guess wins only if
+        // it happens to be the one left, so it closes only when two words are
+        // left (nothing else can win); before that, a top split is a probe
+        if (fits && before <= 2) return Behaviour.closer;
+        if (rank != null && rank <= topRank && before >= 3) {
+          return Behaviour.prober;
+        }
+        return null;
+      }
       if (fits) return Behaviour.closer;
       if (rank != null && rank <= topRank && before >= 3) {
         return Behaviour.prober;
@@ -357,7 +371,7 @@ Habits habitsOfGames(History h, List<GameRow> games) {
       if (phase == Phase.early || phase == Phase.end) {
         opportunities[phase!] = opportunities[phase]! + 1;
       }
-      final b = behaviourOf(r);
+      final b = behaviourOf(r, mastermind: g.mode == GameMode.mastermind);
       if (b != null) counts[b] = counts[b]! + 1;
     }
   }
