@@ -11,7 +11,6 @@ import 'main.dart';
 import 'modes.dart';
 import 'swipe_clear.dart';
 import 'typing_keys.dart';
-import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -186,29 +185,11 @@ class _SolverPageState extends State<SolverPage> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final lang = widget.bank.language.name.toLowerCase();
     return Focus(
       focusNode: _focus,
       autofocus: true,
       onKeyEvent: _onKey,
       child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FlagBadge(widget.bank.language.flag, size: 16),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  'solver · $lang · $length · $tries tries',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-                ),
-              ),
-            ],
-          ),
-          actions: [const SettingsButton()],
-        ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(

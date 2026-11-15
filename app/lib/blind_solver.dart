@@ -8,7 +8,6 @@ import 'haptics.dart';
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
-import 'settings_button.dart';
 import 'swipe_clear.dart';
 import 'typing_keys.dart';
 import 'ui.dart';
@@ -136,9 +135,15 @@ class BlindSolverPage extends StatefulWidget {
     super.key,
     required this.bank,
     this.excluded = const {},
+    this.length,
+    this.tries,
   });
   final WordBank bank;
   final Set<String> excluded;
+
+  /// Overrides for this page only; the saved length and tries when null.
+  final int? length;
+  final int? tries;
 
   @override
   State<BlindSolverPage> createState() => _BlindSolverPageState();
@@ -146,8 +151,8 @@ class BlindSolverPage extends StatefulWidget {
 
 class _BlindSolverPageState extends State<BlindSolverPage> {
   final _focus = FocusNode();
-  late final int length = appState.length;
-  late final int tries = appState.blindTries;
+  late final int length = widget.length ?? appState.length;
+  late final int tries = widget.tries ?? appState.blindTries;
   late final List<String> _answers = [
     for (final w in widget.bank.answers(length))
       if (!widget.excluded.contains(w)) w,
@@ -279,29 +284,11 @@ class _BlindSolverPageState extends State<BlindSolverPage> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final lang = widget.bank.language.name.toLowerCase();
     return Focus(
       focusNode: _focus,
       autofocus: true,
       onKeyEvent: _onKey,
       child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FlagBadge(widget.bank.language.flag, size: 16),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  'solver · blind · $lang · $length · $tries tries',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-                ),
-              ),
-            ],
-          ),
-          actions: [const SettingsButton()],
-        ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(

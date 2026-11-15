@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
+import 'app_log.dart';
 import 'blind_solver.dart';
+import 'diy.dart' show diyLengths, diyMultiTries, diyTries;
+import 'diy_controls.dart';
 import 'equation_solver.dart';
+import 'equations.dart' show equationLengths, equationTriesLevels;
 import 'geography.dart';
 import 'ladder.dart';
+import 'language_sheet.dart';
 import 'main.dart';
 import 'mode_filter.dart';
 import 'modes.dart';
@@ -17,7 +22,8 @@ import 'words.dart';
 
 /// The page behind the solver: a row of the modes open to the player and the
 /// solver of the one chosen. Choosing a mode here changes only this page, never
-/// the mode in view. Every solver leaves out the answers of games in progress
+/// the mode in view; so do its language, length and tries (the solver settings
+/// sheet), which never touch the saved ones. Every solver leaves out the answers of games in progress
 /// and of dailies not finished (see [SolverExclusions]).
 class SolverHubPage extends StatefulWidget {
   const SolverHubPage({super.key});
@@ -29,8 +35,28 @@ class SolverHubPage extends StatefulWidget {
 class _SolverHubPageState extends State<SolverHubPage> {
   late GameMode _mode = _first();
 
-  /// The length of the place names being solved; null until one is chosen.
-  int? _placeLength;
+  // The solver's own settings: null until chosen, then the default is used.
+  String? _lang;
+  int? _length;
+  int? _tries;
+  List<Language> _langs = WordBank.loadedLanguages ?? const [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (_langs.isEmpty) {
+      WordBank.languages()
+          .then((l) {
+            if (mounted) setState(() => _langs = l);
+          })
+          .catchError((Object e) {
+            appLog.w(
+              'solver',
+              'could not list the languages: ${e.runtimeType}',
+            );
+          });
+    }
+  }
 
   List<GameMode> get _modes => [
     for (final m in openModes(appState.level))
@@ -42,12 +68,247 @@ class _SolverHubPageState extends State<SolverHubPage> {
     return _modes.contains(m) ? m : GameMode.classic;
   }
 
+  bool get _fixedLanguage =>
+      _mode == GameMode.themed || _mode == GameMode.equations;
+
+  String get _language => _fixedLanguage ? 'en' : (_lang ?? appState.lang);
+
+  Language? get _languageInfo {
+    for (final l in _langs) {
+      if (l.code == _language) return l;
+    }
+    return null;
+  }
+
+  /// The lengths the slider offers for the mode.
+  List<int> get _lengths {
+    switch (_mode) {
+      case GameMode.themed:
+        return Geography.counts.keys.toList()..sort();
+      case GameMode.equations:
+        return equationLengths;
+      default:
+        final l = _languageInfo;
+        final have = [
+          for (final n in diyLengths)
+            if (l == null || l.lengths.contains(n)) n,
+        ];
+        return have.isEmpty ? diyLengths : have;
+    }
+  }
+
+  int get _defaultLength =>
+      _mode == GameMode.equations ? appState.eqLength : appState.length;
+
+  int get _lengthNow {
+    final l = _lengths;
+    final n = _length;
+    if (n != null && l.contains(n)) return n;
+    if (l.contains(_defaultLength)) return _defaultLength;
+    return l.isEmpty ? _defaultLength : l.first;
+  }
+
+  /// The tries slider: (tries, label, hint), and whether it can be moved.
+  List<(int, String, String)> get _triesItems {
+    switch (_mode) {
+      case GameMode.lockdown:
+        return [(lockdownTries, '$lockdownTries', 'fixed')];
+      case GameMode.mastermind:
+        return [(99, 'no limit', '')];
+      case GameMode.blind:
+        return [for (final (n, t) in blindTriesLevels) (t, '$t', n)];
+      case GameMode.equations:
+        return [
+          for (final (n, t) in equationTriesLevels.reversed) (t, '$t', n),
+        ];
+      case GameMode.quartet:
+      case GameMode.relay:
+        return [for (final t in diyMultiTries) (t, '$t', '')];
+      default:
+        return [
+          for (final t in diyTries)
+            (
+              t,
+              '$t',
+              switch (t) {
+                4 => 'hard',
+                5 => '',
+                6 => 'normal',
+                8 => 'easy',
+                10 => 'easier',
+                _ => 'easiest',
+              },
+            ),
+        ];
+    }
+  }
+
+  bool get _triesFixed =>
+      _mode == GameMode.lockdown || _mode == GameMode.mastermind;
+
+  int get _defaultTries => switch (_mode) {
+    GameMode.lockdown => lockdownTries,
+    GameMode.mastermind => 99,
+    GameMode.blind => appState.blindTries,
+    GameMode.equations => appState.eqTries,
+    GameMode.quartet || GameMode.relay => triesFor(_mode, appState.tries),
+    _ => appState.tries,
+  };
+
+  int get _triesNow {
+    if (_triesFixed) return _defaultTries;
+    final n = _tries;
+    if (n != null && _triesItems.any((i) => i.$1 == n)) return n;
+    return _defaultTries;
+  }
+
+  Future<void> _openOptions() async {
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        elevation: 0,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+          side: hairline(Theme.of(context).colorScheme),
+        ),
+        builder: (sheet) => StatefulBuilder(
+          builder: (sheet, setSheet) => _options(sheet, () {
+            setState(() {});
+            setSheet(() {});
+          }),
+        ),
+      );
+    } catch (e) {
+      appLog.w('solver', 'could not open the settings: ${e.runtimeType}');
+    }
+  }
+
+  Future<void> _pickLanguage(BuildContext sheet, VoidCallback refresh) async {
+    try {
+      final code = await showLanguageSheet(
+        sheet,
+        langs: _langs,
+        current: _language,
+      );
+      if (!mounted || code == null || code == _language) return;
+      _lang = code;
+      // the lengths of the new language may not include the one chosen
+      refresh();
+    } catch (e) {
+      appLog.w('solver', 'could not pick the language: ${e.runtimeType}');
+    }
+  }
+
+  Widget _options(BuildContext sheet, VoidCallback refresh) {
+    final c = Theme.of(sheet).colorScheme;
+    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    final lang = _languageInfo;
+    final items = _triesItems;
+    final tries = _triesNow;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(19, 0, 19, 19),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'solver settings',
+                      style: TextStyle(fontSize: 14, letterSpacing: 1.5),
+                    ),
+                  ),
+                  IconButton(
+                    key: const ValueKey('solver-options-close'),
+                    tooltip: 'close',
+                    icon: TablerIcon('x', size: 20, color: c.onSurface),
+                    onPressed: () => Navigator.of(sheet).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Opacity(
+                opacity: _fixedLanguage ? .35 : 1,
+                child: DropdownBox(
+                  title: 'language',
+                  onTap: () {
+                    if (_fixedLanguage || _langs.isEmpty) return;
+                    _pickLanguage(sheet, refresh);
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (lang != null) ...[
+                        FlagBadge(lang.flag, size: 16),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(_language),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              LineSlider<int>(
+                title: 'length',
+                items: [for (final n in _lengths) (n, '$n', '')],
+                selected: _lengthNow,
+                onChanged: (n) {
+                  _length = n;
+                  refresh();
+                },
+              ),
+              const SizedBox(height: 12),
+              LineSlider<int>(
+                title: 'tries',
+                items: items,
+                selected: items.any((i) => i.$1 == tries)
+                    ? tries
+                    : items.first.$1,
+                enabled: !_triesFixed,
+                onChanged: (t) {
+                  _tries = t;
+                  refresh();
+                },
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'answers of your games in progress and of dailies you have '
+                'not finished are left out.',
+                style: TextStyle(fontSize: 11, color: dim),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text('solver'),
-        actions: [const SettingsButton()],
+        actions: [
+          IconButton(
+            key: const ValueKey('solver-options'),
+            tooltip: 'solver settings',
+            icon: TablerIcon(
+              'adjustments-horizontal',
+              size: 24,
+              color: c.onSurface,
+            ),
+            onPressed: _openOptions,
+          ),
+          const SettingsButton(),
+        ],
       ),
       body: SafeArea(
         child: Center(
@@ -56,7 +317,7 @@ class _SolverHubPageState extends State<SolverHubPage> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(19, 4, 19, 0),
+                  padding: const EdgeInsets.fromLTRB(19, 4, 19, 8),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: ModeFilter(
@@ -69,16 +330,6 @@ class _SolverHubPageState extends State<SolverHubPage> {
                     ),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(19, 8, 19, 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Caption(
-                      'answers of your games in progress and of dailies you '
-                      'have not finished are left out.',
-                    ),
-                  ),
-                ),
                 Expanded(child: _solver(_mode)),
               ],
             ),
@@ -88,99 +339,82 @@ class _SolverHubPageState extends State<SolverHubPage> {
     );
   }
 
-  /// The solver of [m], keyed by the mode so that a change rebuilds it.
+  /// The solver of [m], keyed by the mode, language, length and tries so that
+  /// a change of any rebuilds it (and its guesses are lost).
   Widget _solver(GameMode m) {
-    final key = ValueKey(m);
+    final lang = _language;
+    final n = _lengthNow;
+    final t = _triesNow;
+    final key = ValueKey('${m.name}-$lang-$n-$t');
     switch (m) {
       case GameMode.equations:
         return BankGate(
+          bare: true,
           key: key,
           equations: true,
+          lang: lang,
           builder: (bank) => EquationSolverPage(
             bank: bank,
-            excluded: SolverExclusions.equations(appState.eqLength, bank: bank),
+            length: n,
+            tries: t,
+            excluded: SolverExclusions.equations(n, bank: bank),
           ),
         );
       case GameMode.themed:
         return BankGate(
+          bare: true,
           key: key,
           places: true,
-          builder: (bank) => _places(bank),
-        );
-      default:
-        return BankGate(key: key, builder: (bank) => _words(m, bank));
-    }
-  }
-
-  Widget _words(GameMode m, WordBank bank) {
-    final excluded = SolverExclusions.words(
-      bank.language.code,
-      appState.length,
-      bank: bank,
-    );
-    switch (m) {
-      case GameMode.quartet:
-      case GameMode.relay:
-        return MultiSolverPage(bank: bank, mode: m, excluded: excluded);
-      case GameMode.blind:
-        return BlindSolverPage(bank: bank, excluded: excluded);
-      case GameMode.lockdown:
-        return SolverPage(
-          bank: bank,
-          mode: m,
-          tries: lockdownTries,
-          excluded: excluded,
-        );
-      case GameMode.mastermind:
-        // no fixed answer to hide; unlimited tries, so a large number
-        return SolverPage(bank: bank, mode: m, tries: 99);
-      default:
-        return SolverPage(bank: bank, mode: m, excluded: excluded);
-    }
-  }
-
-  /// The places solver, with a row to choose the length of the names.
-  Widget _places(WordBank bank) {
-    final lengths = Geography.counts.keys.toList()..sort();
-    final n = lengths.contains(_placeLength)
-        ? _placeLength!
-        : lengths.contains(appState.length)
-        ? appState.length
-        : (lengths.isEmpty ? appState.length : lengths.first);
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(19, 0, 19, 8),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final l in lengths) ...[
-                    ChoiceChip(
-                      key: ValueKey('places-$l'),
-                      label: Text('$l'),
-                      selected: l == n,
-                      onSelected: (_) => setState(() => _placeLength = l),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: SolverPage(
+          lang: lang,
+          builder: (bank) => SolverPage(
             key: ValueKey('places-$n'),
             bank: bank,
             mode: GameMode.themed,
             length: n,
+            tries: t,
             excluded: SolverExclusions.places(bank: bank),
           ),
-        ),
-      ],
-    );
+        );
+      default:
+        return BankGate(
+          bare: true,
+          key: key,
+          lang: lang,
+          builder: (bank) => _words(m, bank, n, t),
+        );
+    }
+  }
+
+  Widget _words(GameMode m, WordBank bank, int n, int t) {
+    final excluded = SolverExclusions.words(bank.language.code, n, bank: bank);
+    switch (m) {
+      case GameMode.quartet:
+      case GameMode.relay:
+        return MultiSolverPage(
+          bank: bank,
+          mode: m,
+          length: n,
+          tries: t,
+          excluded: excluded,
+        );
+      case GameMode.blind:
+        return BlindSolverPage(
+          bank: bank,
+          length: n,
+          tries: t,
+          excluded: excluded,
+        );
+      case GameMode.mastermind:
+        // no fixed answer to hide; unlimited tries, so a large number
+        return SolverPage(bank: bank, mode: m, length: n, tries: 99);
+      default:
+        return SolverPage(
+          bank: bank,
+          mode: m,
+          length: n,
+          tries: t,
+          excluded: excluded,
+        );
+    }
   }
 }

@@ -11,7 +11,6 @@ import 'logic.dart';
 import 'main.dart';
 import 'swipe_clear.dart';
 import 'typing_keys.dart';
-import 'settings_button.dart';
 import 'ui.dart';
 import 'words.dart';
 
@@ -26,9 +25,15 @@ class EquationSolverPage extends StatefulWidget {
     super.key,
     required this.bank,
     this.excluded = const {},
+    this.length,
+    this.tries,
   });
   final WordBank bank;
   final Set<String> excluded;
+
+  /// Overrides for this page only; the saved length and tries when null.
+  final int? length;
+  final int? tries;
 
   @override
   State<EquationSolverPage> createState() => _EquationSolverPageState();
@@ -36,8 +41,8 @@ class EquationSolverPage extends StatefulWidget {
 
 class _EquationSolverPageState extends State<EquationSolverPage> {
   final _focus = FocusNode();
-  late final int length = appState.eqLength;
-  late final int tries = appState.eqTries;
+  late final int length = widget.length ?? appState.eqLength;
+  late final int tries = widget.tries ?? appState.eqTries;
   // The equations the answer can be: every one of the length but the excluded.
   late final List<String> _answers = [
     for (final w in widget.bank.answers(length))
@@ -186,21 +191,6 @@ class _EquationSolverPageState extends State<EquationSolverPage> {
       autofocus: true,
       onKeyEvent: _onKey,
       child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Text(
-                  'solver · equations · $length · $tries tries',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-                ),
-              ),
-            ],
-          ),
-          actions: [const SettingsButton()],
-        ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
