@@ -244,8 +244,9 @@ class _SplitPlotState extends State<SplitPlot> {
           ),
           const SizedBox(height: 6),
           Text(
-            'each bar is the words left for one colouring, not the bits of '
-            'information that the review plots.',
+            'each bar is the words left for one '
+            '${widget.label != null ? 'pair of counts' : 'colouring'}, not the '
+            'bits of information that the review plots.',
             style: TextStyle(fontSize: 10, color: dim),
           ),
         ],
