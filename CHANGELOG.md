@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.12.2
+
 - solver: alternatives and a plot in every mode
   The quartet, relay race, blind and equations solvers get the same cleaner page as the classic one: five alternative guesses with a plot of how each splits the words that fit (for quartet and relay race, one board at a time; for blind, by the two counts), and the group your marks lead to lit as you tap.
 
