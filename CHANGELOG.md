@@ -9,6 +9,10 @@ it to the version.
 
 - solver: one header, a settings sheet, alternatives and a plot of the groups
   The solver has one header (back, solver, its settings and the app settings) and almost no text. Its settings sheet holds the language, length and tries, for the solver only. Each round offers five alternative guesses with the expected words left; choose one to see how the words that fit would split by the colours it could show, a bar for every group (the plot scrolls sideways when it is wide), use it, and as you tap the tiles to match the game the bar of that group lights with its number of words. A word of your own gets the same plot.
+- you: the streak card is dragged as a whole
+  The mode name, the streak and the week (or the month) move with your finger and the dots sit under them; the arrows and the strip are gone, and the show the month button stays where it is. It stops at the first and the last mode.
+- diy: the swipers fade out a long way before the sides
+  Only the middle third of a swiper shows its words in full.
 
 ## 0.12.1
 

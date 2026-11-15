@@ -32,9 +32,6 @@ class ModeStrip extends StatefulWidget {
     required this.onChanged,
     required this.onTap,
     this.height = 56,
-    this.caption = 'free play',
-    this.label = 'free play',
-    this.onMove,
     this.loop = false,
   });
 
@@ -47,15 +44,6 @@ class ModeStrip extends StatefulWidget {
   /// Called when the rectangle is tapped.
   final VoidCallback onTap;
   final double height;
-
-  /// The small line over the name in the rectangle; null for none.
-  final String? caption;
-
-  /// What the strip is called to a screen reader.
-  final String label;
-
-  /// Told where the ratchet is, in items from the first, whenever it moves.
-  final ValueChanged<double>? onMove;
 
   /// Goes round: after the last mode comes the first, and before the first the
   /// last (with more than one mode).
@@ -118,11 +106,6 @@ class _ModeStripState extends State<ModeStrip>
   /// Moves the ratchet to [p] items, with a tick for each one crossed.
   void _setPos(double p) {
     _pos = _loop ? p : p.clamp(0.0, _last.toDouble());
-    try {
-      widget.onMove?.call(_pos);
-    } catch (e) {
-      appLog.w('mode-strip', 'could not report the move: ${e.runtimeType}');
-    }
     final k = _pos.round();
     if (k != _ticked) {
       _ticked = k;
@@ -216,15 +199,14 @@ class _ModeStripState extends State<ModeStrip>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (widget.caption != null)
-                        Text(
-                          widget.caption!,
-                          style: TextStyle(
-                            fontSize: 10,
-                            height: 1.1,
-                            color: c.onSurface.withValues(alpha: dimAlpha),
-                          ),
+                      Text(
+                        'free play',
+                        style: TextStyle(
+                          fontSize: 10,
+                          height: 1.1,
+                          color: c.onSurface.withValues(alpha: dimAlpha),
                         ),
+                      ),
                       Text(
                         m.label,
                         maxLines: 1,
@@ -319,7 +301,7 @@ class _ModeStripState extends State<ModeStrip>
     return Semantics(
       container: true,
       slider: many,
-      label: '${widget.label} mode',
+      label: 'free play mode',
       value: shown.label,
       increasedValue:
           _modes[_loop ? _mod(_nearest + 1) : math.min(_nearest + 1, _last)]
@@ -362,7 +344,7 @@ class _ModeStripState extends State<ModeStrip>
                       child: Semantics(
                         container: true,
                         button: true,
-                        label: '${widget.label} ${shown.label}',
+                        label: 'free play ${shown.label}',
                         excludeSemantics: true,
                         onTap: _tapBox,
                         child: GestureDetector(

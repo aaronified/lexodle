@@ -130,82 +130,60 @@ void main() {
     );
   }
 
-  testWidgets('the arrows change the mode and the dots', (tester) async {
-    await show(tester);
-    expect(find.text('best 2'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('sw-next')));
-    await tester.pumpAndSettle();
-    expectQuartet(tester);
-    await tester.tap(find.byKey(const ValueKey('sw-prev')));
-    await tester.pumpAndSettle();
-    expect(find.text('best 2'), findsOneWidget);
-    expect(find.byKey(const ValueKey('sw-strip')), findsOneWidget);
-  });
-
-  testWidgets('dragging the header like a ratchet changes the mode', (
+  testWidgets('dragging the card changes the mode and the dots', (
     tester,
   ) async {
     await show(tester);
     expect(find.text('best 2'), findsOneWidget);
     await tester.drag(
-      find.byKey(const ValueKey('sw-strip')),
+      find.byKey(const ValueKey('sw-swipe')),
+      const Offset(-300, 0),
+    );
+    await tester.pumpAndSettle();
+    expectQuartet(tester);
+    // no looping: another drag the same way stays on the last mode
+    await tester.drag(
+      find.byKey(const ValueKey('sw-swipe')),
       const Offset(-300, 0),
     );
     await tester.pumpAndSettle();
     expectQuartet(tester);
     await tester.drag(
-      find.byKey(const ValueKey('sw-strip')),
+      find.byKey(const ValueKey('sw-swipe')),
       const Offset(300, 0),
     );
     await tester.pumpAndSettle();
     expect(find.text('best 2'), findsOneWidget);
   });
 
-  testWidgets('a short drag of the header settles back', (tester) async {
+  testWidgets('a short drag settles back on the same mode', (tester) async {
     await show(tester);
     await tester.drag(
-      find.byKey(const ValueKey('sw-strip')),
+      find.byKey(const ValueKey('sw-swipe')),
       const Offset(-40, 0),
     );
     await tester.pumpAndSettle();
     expect(find.text('best 2'), findsOneWidget);
   });
 
-  testWidgets('the body and the month button do not move with a drag', (
+  testWidgets('the header, the streak and the week follow the finger', (
     tester,
   ) async {
     await show(tester);
-    final at = tester.getTopLeft(find.byKey(const ValueKey('sw-month-toggle')));
-    await tester.drag(
-      find.byKey(const ValueKey('sw-streak-count')),
-      const Offset(-300, 0),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('best 2'), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.byKey(const ValueKey('sw-month-toggle'))),
-      at,
-    );
-  });
-
-  testWidgets('the calendar moves with the header, the button stays', (
-    tester,
-  ) async {
-    await show(tester);
-    final count = tester.getTopLeft(
-      find.byKey(const ValueKey('sw-streak-count')),
+    final head = tester.getTopLeft(
+      find.byKey(const ValueKey('sw-header-mode')),
     );
     final button = tester.getTopLeft(
       find.byKey(const ValueKey('sw-month-toggle')),
     );
     final g = await tester.startGesture(
-      tester.getCenter(find.byKey(const ValueKey('sw-strip'))),
+      tester.getCenter(find.byKey(const ValueKey('sw-swipe'))),
     );
     await g.moveBy(const Offset(-70, 0));
     await tester.pump();
     expect(
-      tester.getTopLeft(find.byKey(const ValueKey('sw-streak-count')).first).dx,
-      lessThan(count.dx),
+      tester.getTopLeft(find.byKey(const ValueKey('sw-header-mode')).first).dx,
+      lessThan(head.dx),
     );
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('sw-month-toggle'))),
@@ -213,5 +191,20 @@ void main() {
     );
     await g.up();
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('the dots sit below the week and above the month button', (
+    tester,
+  ) async {
+    await show(tester);
+    final week = tester
+        .getBottomLeft(find.byKey(const ValueKey('sw-streak-count')))
+        .dy;
+    final dot = tester.getTopLeft(find.byKey(const ValueKey('sw-dot-0'))).dy;
+    final button = tester
+        .getTopLeft(find.byKey(const ValueKey('sw-month-toggle')))
+        .dy;
+    expect(dot, greaterThan(week));
+    expect(dot, lessThan(button));
   });
 }
