@@ -456,9 +456,7 @@ class TodayPage extends StatelessWidget {
       stateText: switch (r.state) {
         _State.fresh => 'not started',
         _State.progress =>
-          m.endless
-              ? '${r.tries ?? 0} guesses'
-              : '${r.tries ?? 0} of ${dailyTriesOf(m)} tries used',
+          '${r.tries ?? 0} of ${dailyTriesOf(m)} tries used',
         _State.solved =>
           r.tries == null || r.tries == 0 ? 'solved' : 'solved in ${r.tries}',
         _State.lost => 'missed',
@@ -532,9 +530,7 @@ class TodayPage extends StatelessWidget {
     final String stateText = switch (r.state) {
       _State.fresh => 'not started',
       _State.progress =>
-        m.endless
-            ? '${r.tries ?? 0} guesses'
-            : '${r.tries ?? 0} of ${dailyTriesOf(m)} tries used',
+        '${r.tries ?? 0} of ${dailyTriesOf(m)} tries used',
       _State.solved =>
         r.tries == null || r.tries == 0 ? 'solved' : 'solved in ${r.tries}',
       _State.lost => 'missed',

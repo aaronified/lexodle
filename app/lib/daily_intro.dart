@@ -10,8 +10,6 @@ import 'ui.dart';
 /// mode from the daily's own rules.
 String dailyIntroTries(GameMode mode) {
   switch (mode) {
-    case GameMode.mastermind:
-      return 'no limit on guesses.';
     case GameMode.lockdown:
       return '$lockdownTries tries and $dailyHearts hearts.';
     default:
