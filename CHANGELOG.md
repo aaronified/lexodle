@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- mastermind: the daily has 6 tries
+  The mastermind daily is limited to 6 guesses like the other dailies: the board has 6 rows and the daily is missed if none of them is all green. Free play mastermind stays endless, and dailies solved before keep their results and streaks.
+
 ## 0.12.3
 
 - mastermind: learn and playstyle follow how the mode is played
