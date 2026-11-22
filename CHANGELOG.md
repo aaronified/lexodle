@@ -9,6 +9,8 @@ it to the version.
 
 - blind: pencilling a letter that is already green elsewhere
   Tapping the same letter in another place starts yellow, and a second tap makes it green beside the other green (a doubled letter). Where the counts cannot allow two greens, the earlier green turns yellow by itself, so nothing has to be undone by hand.
+- blind: the helper colours only what cannot be otherwise
+  A tile gets the helper's colour only where no other colour is possible for that letter in that place: a letter ruled out is grey, and a letter the counts put in the word is yellow where its guess has no green, green where it has no yellow. These tiles carry a small dot and cannot be changed; every other tile is the player's to colour, and a letter the counts put in the word can no longer be pencilled grey.
 - blind: a won game no longer colours the board by itself
   The winning row turns all green and nothing else changes: the other rows keep the colours they had before the last guess.
 - mastermind: the daily has 6 tries

@@ -615,12 +615,13 @@ class _GamePageState extends State<GamePage>
   void _lockGreens() {
     if (over) return;
     final deduced = _deduced;
+    final forced = _forced;
     final greens = <(int, String)>[
       for (var r = 0; r < marks.length; r++)
         for (var i = 0; i < length; i++)
           if ((blind
                   ? (_assist
-                        ? pencil.shown(guesses[r][i], i, deduced)
+                        ? pencil.shown(guesses[r][i], i, deduced, forced)
                         : notes[r][i])
                   : marks[r][i]) ==
               Mark.correct)
@@ -1135,6 +1136,7 @@ class _GamePageState extends State<GamePage>
   Widget _grid() {
     final c = Theme.of(context).colorScheme;
     final deduced = _deduced;
+    final forced = _forced;
     return LayoutBuilder(
       builder: (context, box) {
         const gap = 6.0;
@@ -1179,13 +1181,23 @@ class _GamePageState extends State<GamePage>
                                 ? (won && over && r == guesses.length - 1
                                       ? Mark.correct
                                       : _assist
-                                      ? pencil.shown(guesses[r][i], i, deduced)
+                                      ? pencil.shown(
+                                          guesses[r][i],
+                                          i,
+                                          deduced,
+                                          forced,
+                                        )
                                       : notes[r][i])
                                 : marks[r][i])
                           : null,
                       active: r == guesses.length && !over,
                       cursor: r == guesses.length && !over && i == input.cursor,
                       key: ValueKey('tile-$r-$i'),
+                      helper:
+                          r < marks.length &&
+                          blind &&
+                          forced.containsKey('${guesses[r][i]}@$i') &&
+                          !(won && over && r == guesses.length - 1),
                       locked: r == guesses.length && input.isLocked(i),
                       fixed: r == guesses.length && input.isFixed(i),
                       onTap: r == guesses.length && !over
@@ -1259,7 +1271,9 @@ class _GamePageState extends State<GamePage>
       return;
     }
     late final String? why;
-    setState(() => why = pencil.tap(guesses[r][i], i, _rows, _deduced));
+    setState(
+      () => why = pencil.tap(guesses[r][i], i, _rows, _deduced, _forced),
+    );
     _save();
     if (why == null) return;
     ScaffoldMessenger.of(context)
@@ -1287,6 +1301,11 @@ class _GamePageState extends State<GamePage>
   /// the colour logic on): a guess with no right letters rules all of its
   /// letters out; one whose counts add up to the length has all of its letters
   /// in the word, and every other letter out.
+  /// The tiles the helper colours because nothing else is possible there: the
+  /// player cannot change them, and they carry a small dot.
+  Map<String, Mark> get _forced =>
+      _assist ? BlindPencil.forcedTiles(_rows, _deduced) : const {};
+
   Map<String, Mark> get _deduced {
     if (!_assist) return const {};
     // a won game adds nothing to the colours: its last row is all green on
@@ -1398,6 +1417,7 @@ class _GamePageState extends State<GamePage>
     bool cursor = false,
     bool locked = false,
     bool fixed = false,
+    bool helper = false,
     Key? key,
     VoidCallback? onTap,
   }) {
@@ -1447,6 +1467,21 @@ class _GamePageState extends State<GamePage>
                   color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
                 ),
               ),
+              // the helper set this colour: it is the only one possible
+              if (helper)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    key: const ValueKey('helper-dot'),
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: fg.withValues(alpha: .7),
+                    ),
+                  ),
+                ),
               if (locked)
                 Positioned(
                   top: 3,

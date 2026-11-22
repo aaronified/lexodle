@@ -122,13 +122,45 @@ class BlindPencil {
     return d;
   }
 
-  /// The colour shown on letter [ch] at position [p]: what the counts settle
-  /// first, then the player's own.
-  Mark? shown(String ch, int p, Map<String, Mark> d) {
-    final x = d[ch];
-    if (x == Mark.absent) return Mark.absent;
+  /// The tiles the helper colours because no other colour is possible for that
+  /// letter at that place, keyed `ch@position`: a letter ruled out is grey
+  /// everywhere; a letter the counts put in the word is yellow where its guess
+  /// has no green, and green where its guess has no yellow (when the guess has
+  /// the letter once). The player cannot change them.
+  static Map<String, Mark> forcedTiles(
+    List<BlindRow> rows,
+    Map<String, Mark> d,
+  ) {
+    final out = <String, Mark>{};
+    for (final r in rows) {
+      for (var i = 0; i < r.word.length; i++) {
+        final ch = r.word[i];
+        if (d[ch] == Mark.absent) {
+          out['$ch@$i'] = Mark.absent;
+        } else if (d[ch] == Mark.present && ch.allMatches(r.word).length == 1) {
+          if (r.green == 0) {
+            out['$ch@$i'] = Mark.present;
+          } else if (r.yellow == 0) {
+            out['$ch@$i'] = Mark.correct;
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  /// The colour shown on letter [ch] at position [p]: what the helper settled
+  /// ([forced]), then the player's own.
+  Mark? shown(
+    String ch,
+    int p,
+    Map<String, Mark> d, [
+    Map<String, Mark> forced = const {},
+  ]) {
+    final f = forced['$ch@$p'];
+    if (f != null) return f;
+    if (d[ch] == Mark.absent) return Mark.absent;
     if (green[ch]?.contains(p) ?? false) return Mark.correct;
-    if (x == Mark.present) return Mark.present;
     if (yellow[ch]?.contains(p) ?? false) return Mark.present;
     if (grey.contains(ch)) return Mark.absent;
     return null;
@@ -175,7 +207,12 @@ class BlindPencil {
 
   /// Why the pencil breaks a rule, or null. [focus] is the letter being
   /// pencilled, so the reason can speak of it.
-  String? _violation(String focus, List<BlindRow> rows, Map<String, Mark> d) {
+  String? _violation(
+    String focus,
+    List<BlindRow> rows,
+    Map<String, Mark> d,
+    Map<String, Mark> forced,
+  ) {
     // a position is green with one letter only
     final at = <int, String>{};
     for (final e in green.entries) {
@@ -237,7 +274,7 @@ class BlindPencil {
       final right = <String>{};
       for (var i = 0; i < row.word.length; i++) {
         final ch = row.word[i];
-        final m = shown(ch, i, d);
+        final m = shown(ch, i, d, forced);
         if (m == Mark.correct) greens++;
         if (m == Mark.correct || m == Mark.present) right.add(ch);
         if (m == Mark.absent) wrong++;
@@ -284,9 +321,16 @@ class BlindPencil {
   /// A tap on letter [ch] at position [p]: the next colour of none, green,
   /// yellow, grey that keeps the rules. Returns why a colour was passed over,
   /// or null.
-  String? tap(String ch, int p, List<BlindRow> rows, Map<String, Mark> d) {
+  String? tap(
+    String ch,
+    int p,
+    List<BlindRow> rows,
+    Map<String, Mark> d, [
+    Map<String, Mark> forced = const {},
+  ]) {
     if (d[ch] == Mark.absent) return 'ruled out by the counts';
-    final now = shown(ch, p, d);
+    if (forced.containsKey('$ch@$p')) return 'set by the helper';
+    final now = shown(ch, p, d, forced);
     // where the letter is already green: marked again elsewhere it may be the
     // same copy or a second one, so it starts yellow, and green keeps the
     // other green (a doubled letter) unless the rules cannot allow two, when
@@ -297,32 +341,30 @@ class BlindPencil {
     };
     // each step is a colour and whether the other greens may give way to it
     final List<(Mark?, bool)> order;
-    if (d[ch] == Mark.present) {
-      // settled as in the word: only yellow and green
-      order = now == Mark.correct
-          ? [(Mark.present, false)]
-          : [(Mark.correct, others.isNotEmpty)];
-    } else if (others.isNotEmpty && now != Mark.correct) {
+    if (others.isNotEmpty && now != Mark.correct) {
       order = now == Mark.present
           ? [(Mark.correct, true), (null, false), (Mark.present, false)]
           : [(Mark.present, false), (Mark.correct, true), (null, false)];
     } else {
       final i = _cycle.indexOf(now);
       order = [
-        for (var k = 1; k <= _cycle.length; k++) (_cycle[(i + k) % 4], false),
+        for (var k = 1; k <= _cycle.length; k++)
+          // a letter the counts put in the word cannot be grey
+          if (!(d[ch] == Mark.present && _cycle[(i + k) % 4] == Mark.absent))
+            (_cycle[(i + k) % 4], false),
       ];
     }
     String? passed;
     for (final (m, mayMove) in order) {
       var hyp = _copy().._set(ch, p, m);
-      var why = m == null ? null : hyp._violation(ch, rows, d);
+      var why = m == null ? null : hyp._violation(ch, rows, d, forced);
       if (why != null && mayMove) {
         // two greens of the letter do not fit: the earlier one turns yellow
         final moved = _copy().._set(ch, p, m);
         for (final q in others) {
           moved._set(ch, q, Mark.present);
         }
-        final again = moved._violation(ch, rows, d);
+        final again = moved._violation(ch, rows, d, forced);
         if (again == null) {
           hyp = moved;
           why = null;

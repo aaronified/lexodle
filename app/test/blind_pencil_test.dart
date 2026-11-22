@@ -158,4 +158,35 @@ void main() {
     expect(three['z'], Mark.absent);
     expect(three['l'], Mark.absent);
   });
+
+  test('the helper colours only what no other colour can be, and it stays', () {
+    // crane has 0 in place and 2 right: no tile of it can be green
+    final rows = [const BlindRow('crane', 0, 2), const BlindRow('abcde', 0, 5)];
+    final d = BlindPencil.deduce(rows, 'abcdefg'.split(''));
+    final f = BlindPencil.forcedTiles(rows, d);
+    // abcde has all five letters in the word, none in place: every tile yellow
+    expect(f['a@0'], Mark.present);
+    expect(f['e@4'], Mark.present);
+    final p = BlindPencil(5);
+    expect(p.shown('a', 0, d, f), Mark.present);
+    // a forced tile cannot be changed
+    expect(p.tap('a', 0, rows, d, f), 'set by the helper');
+    expect(p.shown('a', 0, d, f), Mark.present);
+    // a letter the counts only put in the word is left to the player
+    final one = [const BlindRow('abcde', 1, 4)];
+    final d1 = BlindPencil.deduce(one, 'abcdefg'.split(''));
+    final f1 = BlindPencil.forcedTiles(one, d1);
+    expect(f1, isEmpty);
+    expect(p.shown('a', 0, d1, f1), isNull);
+  });
+
+  test(
+    'a row with nothing in place or nothing elsewhere settles its tiles',
+    () {
+      final rows = [const BlindRow('abcde', 5, 0)];
+      final d = BlindPencil.deduce(rows, 'abcdefg'.split(''));
+      final f = BlindPencil.forcedTiles(rows, d);
+      expect(f['c@2'], Mark.correct);
+    },
+  );
 }
