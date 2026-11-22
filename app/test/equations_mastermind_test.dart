@@ -443,9 +443,13 @@ void main() {
       final win = eligible.firstWhere(
         (w) =>
             RegExp(r'^[a-z]+$').hasMatch(w) &&
-            mastermindDailyReply(eligible, w, 'en', date, 0).every(
-              (x) => x == Mark.correct,
-            ),
+            mastermindDailyReply(
+              eligible,
+              w,
+              'en',
+              date,
+              0,
+            ).every((x) => x == Mark.correct),
       );
       await typeWord(tester, win);
       expect(find.text('solved in 1 of 6'), findsOneWidget);
@@ -606,7 +610,12 @@ void main() {
       appState.lex.veteran = true; // every step is open
       appState.setup(lang: 'fr', mode: GameMode.mastermind);
       final bank = await frBank(tester);
-      const daily = Daily('2026-11-12', '', length: 5, tries: 0);
+      const daily = Daily(
+        '2026-11-12',
+        '',
+        length: 5,
+        tries: mastermindDailyTries,
+      );
       Widget page(int seed) => MaterialApp(
         home: GamePage(
           bank: bank,

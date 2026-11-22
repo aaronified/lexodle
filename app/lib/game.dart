@@ -137,7 +137,7 @@ class _GamePageState extends State<GamePage>
   /// The mastermind daily has [mastermindDailyTries] tries; any other
   /// mastermind (free play) is endless.
   bool get _limitedDaily =>
-      mastermind && _daily != null && _daily.date.isNotEmpty;
+      mastermind && _daily != null && _daily.date.isNotEmpty && tries > 0;
   bool get _endless => mastermind && !_limitedDaily;
 
   /// The mastermind that always keeps the largest pool, as chosen when it began.
