@@ -172,8 +172,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
   final _focus = FocusNode();
   late final int length = widget.length ?? appState.length;
   late final GameMode mode = widget.mode ?? appState.mode;
-  late final int tries =
-      widget.tries ?? triesFor(mode, appState.tries);
+  late final int tries = widget.tries ?? triesFor(mode, appState.tries);
   late final List<String> _answers = [
     for (final w in widget.bank.answers(length))
       if (!widget.excluded.contains(w)) w,
@@ -555,7 +554,7 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
     ];
     final line = Caption(
       '${fit.isEmpty ? '' : 'fit: ${fit.join(' · ')} · '}'
-              '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
+      '${left > 0 ? '$left ${left == 1 ? 'try' : 'tries'} left' : 'out of tries'}',
     );
     if (state.done) {
       return const Text(
@@ -579,7 +578,9 @@ class _MultiSolverPageState extends State<MultiSolverPage> {
         children: [
           line,
           const SizedBox(height: 10),
-          Caption(busy ? 'working out the best guesses…' : 'nothing to recommend'),
+          Caption(
+            busy ? 'working out the best guesses…' : 'nothing to recommend',
+          ),
         ],
       );
     }

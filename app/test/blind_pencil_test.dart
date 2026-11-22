@@ -163,7 +163,8 @@ void main() {
     // crane has 0 in place and 2 right: no tile of it can be green
     final rows = [const BlindRow('crane', 0, 2), const BlindRow('abcde', 0, 5)];
     final d = BlindPencil.deduce(rows, 'abcdefg'.split(''));
-    final f = BlindPencil.forcedTiles(rows, d);
+    final p0 = BlindPencil(5);
+    final f = p0.forcedTiles(rows, d);
     // abcde has all five letters in the word, none in place: every tile yellow
     expect(f['a@0'], Mark.present);
     expect(f['e@4'], Mark.present);
@@ -175,7 +176,7 @@ void main() {
     // a letter the counts only put in the word is left to the player
     final one = [const BlindRow('abcde', 1, 4)];
     final d1 = BlindPencil.deduce(one, 'abcdefg'.split(''));
-    final f1 = BlindPencil.forcedTiles(one, d1);
+    final f1 = BlindPencil(5).forcedTiles(one, d1);
     expect(f1, isEmpty);
     expect(p.shown('a', 0, d1, f1), isNull);
   });
@@ -185,8 +186,26 @@ void main() {
     () {
       final rows = [const BlindRow('abcde', 5, 0)];
       final d = BlindPencil.deduce(rows, 'abcdefg'.split(''));
-      final f = BlindPencil.forcedTiles(rows, d);
+      final f = BlindPencil(5).forcedTiles(rows, d);
       expect(f['c@2'], Mark.correct);
     },
   );
+
+  test('once every letter is found, the others are grey in every place', () {
+    final rows = [const BlindRow('abcde', 2, 3), const BlindRow('vwxyz', 0, 0)];
+    final p = BlindPencil(5);
+    final d = BlindPencil.deduce(rows, 'abcdefghvwxyz'.split(''));
+    // abcde has all five: f, g, h are out by the counts already; vwxyz zero
+    final f = p.forcedTiles(rows, d);
+    expect(f['v@0'], Mark.absent);
+    // a guess whose letters are only found by pencil
+    final p2 = BlindPencil(2);
+    final r2 = [const BlindRow('ab', 1, 0), const BlindRow('cd', 0, 1)];
+    p2.tap('a', 0, r2, const {});
+    p2.tap('c', 0, r2, const {});
+    final f2 = p2.forcedTiles(r2, const {});
+    expect(f2['b@1'], Mark.absent);
+    expect(f2['d@1'], Mark.absent);
+    expect(f2['a@0'], isNull);
+  });
 }

@@ -1304,7 +1304,7 @@ class _GamePageState extends State<GamePage>
   /// The tiles the helper colours because nothing else is possible there: the
   /// player cannot change them, and they carry a small dot.
   Map<String, Mark> get _forced =>
-      _assist ? BlindPencil.forcedTiles(_rows, _deduced) : const {};
+      _assist ? pencil.forcedTiles(_rows, _deduced) : const {};
 
   Map<String, Mark> get _deduced {
     if (!_assist) return const {};

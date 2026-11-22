@@ -123,19 +123,23 @@ class BlindPencil {
   }
 
   /// The tiles the helper colours because no other colour is possible for that
-  /// letter at that place, keyed `ch@position`: a letter ruled out is grey
-  /// everywhere; a letter the counts put in the word is yellow where its guess
+  /// letter at that place, keyed `ch@position`: a letter ruled out (or, once every
+  /// letter of the word is found, any letter not found) is grey everywhere; a letter the counts put in the word is yellow where its guess
   /// has no green, and green where its guess has no yellow (when the guess has
   /// the letter once). The player cannot change them.
-  static Map<String, Mark> forcedTiles(
-    List<BlindRow> rows,
-    Map<String, Mark> d,
-  ) {
+  Map<String, Mark> forcedTiles(List<BlindRow> rows, Map<String, Mark> d) {
     final out = <String, Mark>{};
+    // once as many letters are found as the word has, every other letter is
+    // grey everywhere, as on the keyboard
+    final found = {
+      ...green.keys,
+      ...yellow.keys,
+      ...d.keys,
+    }.where((ch) => _present(ch, d)).length;
     for (final r in rows) {
       for (var i = 0; i < r.word.length; i++) {
         final ch = r.word[i];
-        if (d[ch] == Mark.absent) {
+        if (d[ch] == Mark.absent || (found >= length && !_present(ch, d))) {
           out['$ch@$i'] = Mark.absent;
         } else if (d[ch] == Mark.present && ch.allMatches(r.word).length == 1) {
           if (r.green == 0) {
