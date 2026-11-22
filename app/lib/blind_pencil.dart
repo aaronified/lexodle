@@ -287,17 +287,42 @@ class BlindPencil {
   String? tap(String ch, int p, List<BlindRow> rows, Map<String, Mark> d) {
     if (d[ch] == Mark.absent) return 'ruled out by the counts';
     final now = shown(ch, p, d);
-    final List<Mark?> order;
+    // where the letter is already green: a letter found in place and marked
+    // again elsewhere is the same copy, so the player is not made to undo it
+    // (not when a guess has the letter in both places: the word may have two)
+    final others = {
+      for (final q in green[ch] ?? <int>{})
+        if (q != p &&
+            !rows.any((r) => r.word[p] == ch && r.word[q] == ch))
+          q,
+    };
+    // each step is a colour and whether the other greens give way to it
+    final List<(Mark?, bool)> order;
     if (d[ch] == Mark.present) {
       // settled as in the word: only yellow and green
-      order = [now == Mark.correct ? Mark.present : Mark.correct];
+      order = now == Mark.correct
+          ? [(Mark.present, false)]
+          : [(Mark.correct, others.isNotEmpty)];
+    } else if (others.isNotEmpty && now != Mark.correct) {
+      // yellow first (the copy is elsewhere), then green with the old green
+      // turned yellow (the copy moved), then none
+      order = now == Mark.present
+          ? [(Mark.correct, true), (null, false), (Mark.present, false)]
+          : [(Mark.present, false), (Mark.correct, true), (null, false)];
     } else {
       final i = _cycle.indexOf(now);
-      order = [for (var k = 1; k <= _cycle.length; k++) _cycle[(i + k) % 4]];
+      order = [
+        for (var k = 1; k <= _cycle.length; k++) (_cycle[(i + k) % 4], false),
+      ];
     }
     String? passed;
-    for (final m in order) {
+    for (final (m, move) in order) {
       final hyp = _copy().._set(ch, p, m);
+      if (move) {
+        for (final q in others) {
+          hyp._set(ch, q, Mark.present);
+        }
+      }
       final why = m == null ? null : hyp._violation(ch, rows, d);
       if (why == null) {
         _become(hyp);

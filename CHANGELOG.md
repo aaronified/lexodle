@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+- blind: pencilling a letter that is already green elsewhere
+  Tapping the same letter in another place starts yellow (it is the same copy), and a second tap makes it green and turns the earlier green yellow, so nothing has to be undone by hand. A guess that has the letter twice still allows two greens.
 - mastermind: the daily has 6 tries
   The mastermind daily is limited to 6 guesses like the other dailies: the board has 6 rows and the daily is missed if none of them is all green. Free play mastermind stays endless, and dailies solved before keep their results and streaks.
 

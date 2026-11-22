@@ -9,10 +9,28 @@ void main() {
     final p = BlindPencil(3);
     final rows = [const BlindRow('abc', 2, 0), const BlindRow('cab', 2, 0)];
     expect(p.tap('a', 0, rows, none), isNull);
-    expect(p.tap('a', 1, rows, none), isNull);
+    // a guess that has the letter twice may have it twice in the word
+    final p2 = BlindPencil(3);
+    final twice = [const BlindRow('aab', 2, 0)];
+    p2.tap('a', 0, twice, none);
+    expect(p2.tap('a', 1, twice, none), isNull);
+    expect(p2.shown('a', 0, none), Mark.correct);
+    expect(p2.shown('a', 1, none), Mark.correct);
+    expect(p2.keyboard(none)['a'], Mark.correct);
+  });
+
+  test('a green marked again elsewhere starts yellow, and moves on a second tap',
+      () {
+    final p = BlindPencil(5);
+    final rows = [const BlindRow('abcde', 1, 0), const BlindRow('xxaxx', 1, 0)];
+    p.tap('a', 0, rows, none);
     expect(p.shown('a', 0, none), Mark.correct);
-    expect(p.shown('a', 1, none), Mark.correct);
-    expect(p.keyboard(none)['a'], Mark.correct);
+    p.tap('a', 2, rows, none);
+    expect(p.shown('a', 2, none), Mark.present);
+    expect(p.shown('a', 0, none), Mark.correct);
+    p.tap('a', 2, rows, none);
+    expect(p.shown('a', 2, none), Mark.correct);
+    expect(p.shown('a', 0, none), Mark.present);
   });
 
   test('once every letter is found the rest of the keyboard is grey', () {
