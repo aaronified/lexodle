@@ -1176,7 +1176,9 @@ class _GamePageState extends State<GamePage>
                           : (r == guesses.length ? input.slot(i) : ''),
                       r < marks.length
                           ? (blind
-                                ? (_assist
+                                ? (won && over && r == guesses.length - 1
+                                      ? Mark.correct
+                                      : _assist
                                       ? pencil.shown(guesses[r][i], i, deduced)
                                       : notes[r][i])
                                 : marks[r][i])
@@ -1285,8 +1287,16 @@ class _GamePageState extends State<GamePage>
   /// the colour logic on): a guess with no right letters rules all of its
   /// letters out; one whose counts add up to the length has all of its letters
   /// in the word, and every other letter out.
-  Map<String, Mark> get _deduced =>
-      _assist ? BlindPencil.deduce(_rows, _letters) : const {};
+  Map<String, Mark> get _deduced {
+    if (!_assist) return const {};
+    // a won game adds nothing to the colours: its last row is all green on
+    // its own, and the other rows stay as they were before it
+    final rows = _rows;
+    return BlindPencil.deduce(
+      won && over && rows.isNotEmpty ? rows.sublist(0, rows.length - 1) : rows,
+      _letters,
+    );
+  }
 
   /// The colour after [m] in the cycle a tap goes through: none, green,
   /// yellow, grey, and round to none.
