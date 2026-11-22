@@ -25,7 +25,12 @@ class BlindPencil {
   final yellow = <String, Set<int>>{};
   final grey = <String>{};
 
+  /// The place a green last gave way from, by letter, so that the next tap can
+  /// bring it back beside the new green (a doubled letter).
+  final _moved = <String, int>{};
+
   void clear() {
+    _moved.clear();
     green.clear();
     yellow.clear();
     grey.clear();
@@ -58,6 +63,7 @@ class BlindPencil {
       c.yellow[e.key] = {...e.value};
     }
     c.grey.addAll(grey);
+    c._moved.addAll(_moved);
     return c;
   }
 
@@ -70,6 +76,7 @@ class BlindPencil {
       yellow[e.key] = {...e.value};
     }
     grey.addAll(o.grey);
+    _moved.addAll(o._moved);
   }
 
   /// What the counts settle outright: a guess with no right letters rules all
@@ -292,36 +299,51 @@ class BlindPencil {
     // (not when a guess has the letter in both places: the word may have two)
     final others = {
       for (final q in green[ch] ?? <int>{})
-        if (q != p &&
-            !rows.any((r) => r.word[p] == ch && r.word[q] == ch))
-          q,
+        if (q != p && !rows.any((r) => r.word[p] == ch && r.word[q] == ch)) q,
     };
-    // each step is a colour and whether the other greens give way to it
-    final List<(Mark?, bool)> order;
+    // each step is a colour and what happens to the other places: 0 nothing,
+    // 1 the other greens give way (yellow), 2 the place a green gave way from
+    // is green again (a doubled letter)
+    final List<(Mark?, int)> order;
     if (d[ch] == Mark.present) {
       // settled as in the word: only yellow and green
       order = now == Mark.correct
-          ? [(Mark.present, false)]
-          : [(Mark.correct, others.isNotEmpty)];
+          ? [(Mark.present, 0)]
+          : [(Mark.correct, others.isNotEmpty ? 1 : 0)];
     } else if (others.isNotEmpty && now != Mark.correct) {
       // yellow first (the copy is elsewhere), then green with the old green
       // turned yellow (the copy moved), then none
       order = now == Mark.present
-          ? [(Mark.correct, true), (null, false), (Mark.present, false)]
-          : [(Mark.present, false), (Mark.correct, true), (null, false)];
+          ? [(Mark.correct, 1), (null, 0), (Mark.present, 0)]
+          : [(Mark.present, 0), (Mark.correct, 1), (null, 0)];
+    } else if (now == Mark.correct &&
+        _moved[ch] != null &&
+        (yellow[ch]?.contains(_moved[ch]) ?? false) &&
+        d[ch] != Mark.present) {
+      // the green that moved was one of two: green again beside this one
+      order = [
+        (Mark.correct, 2),
+        (Mark.present, 0),
+        (Mark.absent, 0),
+        (null, 0),
+      ];
     } else {
       final i = _cycle.indexOf(now);
       order = [
-        for (var k = 1; k <= _cycle.length; k++) (_cycle[(i + k) % 4], false),
+        for (var k = 1; k <= _cycle.length; k++) (_cycle[(i + k) % 4], 0),
       ];
     }
     String? passed;
     for (final (m, move) in order) {
       final hyp = _copy().._set(ch, p, m);
-      if (move) {
+      if (move == 1) {
         for (final q in others) {
           hyp._set(ch, q, Mark.present);
         }
+        if (others.isNotEmpty) hyp._moved[ch] = others.first;
+      } else if (move == 2) {
+        hyp._set(ch, _moved[ch]!, Mark.correct);
+        hyp._moved.remove(ch);
       }
       final why = m == null ? null : hyp._violation(ch, rows, d);
       if (why == null) {

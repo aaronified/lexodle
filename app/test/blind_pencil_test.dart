@@ -19,18 +19,36 @@ void main() {
     expect(p2.keyboard(none)['a'], Mark.correct);
   });
 
-  test('a green marked again elsewhere starts yellow, and moves on a second tap',
-      () {
+  test(
+    'a green marked again elsewhere starts yellow, and moves on a second tap',
+    () {
+      final p = BlindPencil(5);
+      final rows = [
+        const BlindRow('abcde', 1, 0),
+        const BlindRow('xxaxx', 1, 0),
+      ];
+      p.tap('a', 0, rows, none);
+      expect(p.shown('a', 0, none), Mark.correct);
+      p.tap('a', 2, rows, none);
+      expect(p.shown('a', 2, none), Mark.present);
+      expect(p.shown('a', 0, none), Mark.correct);
+      p.tap('a', 2, rows, none);
+      expect(p.shown('a', 2, none), Mark.correct);
+      expect(p.shown('a', 0, none), Mark.present);
+    },
+  );
+
+  test('a moved green can come back beside the new one: a doubled letter', () {
     final p = BlindPencil(5);
-    final rows = [const BlindRow('abcde', 1, 0), const BlindRow('xxaxx', 1, 0)];
+    final rows = [const BlindRow('abcde', 1, 0), const BlindRow('xxaxa', 2, 0)];
     p.tap('a', 0, rows, none);
-    expect(p.shown('a', 0, none), Mark.correct);
     p.tap('a', 2, rows, none);
-    expect(p.shown('a', 2, none), Mark.present);
-    expect(p.shown('a', 0, none), Mark.correct);
     p.tap('a', 2, rows, none);
-    expect(p.shown('a', 2, none), Mark.correct);
     expect(p.shown('a', 0, none), Mark.present);
+    // one more tap: both are green
+    expect(p.tap('a', 2, rows, none), isNull);
+    expect(p.shown('a', 2, none), Mark.correct);
+    expect(p.shown('a', 0, none), Mark.correct);
   });
 
   test('once every letter is found the rest of the keyboard is grey', () {
