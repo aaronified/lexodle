@@ -323,8 +323,8 @@ class BlindPencil {
   static const _cycle = <Mark?>[Mark.correct, Mark.present, Mark.absent, null];
 
   /// A tap on letter [ch] at position [p]: the next colour of none, green,
-  /// yellow, grey that keeps the rules. Returns why a colour was passed over,
-  /// or null.
+  /// yellow, grey that keeps the rules, passing over any that would break one.
+  /// Returns why the tile could not change, or null when it did.
   String? tap(
     String ch,
     int p,
@@ -376,7 +376,8 @@ class BlindPencil {
       }
       if (why == null) {
         _become(hyp);
-        return passed;
+        // refused only when the tile could not be cycled to another colour
+        return m == now ? passed : null;
       }
       passed ??= why;
     }

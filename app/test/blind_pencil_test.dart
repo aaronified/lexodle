@@ -45,6 +45,15 @@ void main() {
     expect(k['a'], Mark.correct);
   });
 
+  test('a tap is refused only when no colour can be reached', () {
+    final p = BlindPencil(1);
+    final rows = [const BlindRow('a', 1, 0), const BlindRow('b', 1, 0)];
+    p.tap('a', 0, rows, none);
+    // b cannot be green, yellow or grey beside a: nothing to cycle to
+    expect(p.tap('b', 0, rows, none), isNotNull);
+    expect(p.shown('b', 0, none), isNull);
+  });
+
   test('no more letters than the length are in the word', () {
     final p = BlindPencil(2);
     final rows = [const BlindRow('ab', 2, 0), const BlindRow('cx', 2, 0)];
@@ -60,7 +69,8 @@ void main() {
     final rows = [const BlindRow('abc', 2, 0), const BlindRow('xbz', 2, 0)];
     p.tap('a', 0, rows, none);
     final why = p.tap('x', 0, rows, none);
-    expect(why, 'position 1 is already green with a');
+    // green is passed over, yellow is taken: no refusal
+    expect(why, isNull);
     expect(p.shown('x', 0, none), Mark.present);
   });
 
@@ -80,7 +90,8 @@ void main() {
     expect(p.shown('a', 2, none), Mark.correct);
     // yellow and grey are passed over
     final why = p.tap('a', 2, rows, none);
-    expect(why, 'already yellow in all other available positions');
+    // yellow and grey are passed over, so it clears: no refusal
+    expect(why, isNull);
     expect(p.shown('a', 2, none), isNull);
   });
 
@@ -93,7 +104,8 @@ void main() {
     // yellow -> grey is allowed only when this was its one mark
     p.tap('a', 1, rows, none);
     p.tap('a', 1, rows, none);
-    expect(p.tap('a', 1, rows, none), 'a is already green or yellow');
+    // grey is passed over and the tile clears
+    expect(p.tap('a', 1, rows, none), isNull);
     expect(p.grey, isEmpty);
   });
 
@@ -101,7 +113,7 @@ void main() {
     final p = BlindPencil(3);
     final rows = [const BlindRow('abc', 0, 1)];
     final why = p.tap('a', 0, rows, none);
-    expect(why, 'row 1 has only 0 in place');
+    expect(why, isNull);
     expect(p.shown('a', 0, none), Mark.present);
   });
 
