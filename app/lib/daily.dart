@@ -230,6 +230,9 @@ int dailyCurveIndex(String key, String date, List<int> weights) {
   return picks[day];
 }
 
+/// The guesses the mastermind daily allows (free play mastermind is endless).
+const mastermindDailyTries = 6;
+
 /// What the mastermind daily of [lang] on [date] answers to [guess], the
 /// [index]th of the day: the marks one of the [words] still possible would give.
 /// The word is drawn by a hash of the date, the language, the number of the guess
@@ -287,8 +290,10 @@ class Daily {
     final all = bank.answers(dailyLength);
     if (all.isEmpty) return null;
     // the mastermind's word is not chosen: what it says to each guess is drawn
-    // from the date (see [mastermindDailyReply]), with no limit on guesses
-    if (mode == GameMode.mastermind) return Daily(d, '', tries: 0);
+    // from the date (see [mastermindDailyReply]), with [mastermindDailyTries] guesses
+    if (mode == GameMode.mastermind) {
+      return Daily(d, '', tries: mastermindDailyTries);
+    }
     final code = bank.language.code;
     final key = mode == GameMode.classic ? code : '$code|${mode.name}';
     if (dailyUsesCurve(d)) {
@@ -307,7 +312,7 @@ class Daily {
 /// The tries of a daily in [mode]: the fixed daily difficulty, with the extra
 /// tries the mode has (9 for a quartet, 10 for a relay race).
 int dailyTriesOf(GameMode mode) => switch (mode) {
-  GameMode.mastermind => 0,
+  GameMode.mastermind => mastermindDailyTries,
   GameMode.blind => blindDailyTries,
   GameMode.equations => equationDailyTries,
   _ => triesFor(mode, dailyTries),

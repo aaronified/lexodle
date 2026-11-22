@@ -29,8 +29,6 @@ String dailySettingsOf(GameMode m) {
   switch (m) {
     case GameMode.equations:
       return '$equationDailyLength tiles, $equationDailyTries tries';
-    case GameMode.mastermind:
-      return '$dailyLength letters, no limit';
     case GameMode.lockdown:
       return '$dailyLength letters, $lockdownTries tries, $dailyHearts hearts';
     case GameMode.quartet:

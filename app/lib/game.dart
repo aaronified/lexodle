@@ -134,6 +134,12 @@ class _GamePageState extends State<GamePage>
   /// Neither has a word of the language to look up.
   bool get _noDictionary => equations || mastermind;
 
+  /// The mastermind daily has [mastermindDailyTries] tries; any other
+  /// mastermind (free play) is endless.
+  bool get _limitedDaily =>
+      mastermind && _daily != null && _daily.date.isNotEmpty;
+  bool get _endless => mastermind && !_limitedDaily;
+
   /// The mastermind that always keeps the largest pool, as chosen when it began.
   late final bool largest =
       mastermind && _daily == null && appState.mastermindLargest;
@@ -143,7 +149,7 @@ class _GamePageState extends State<GamePage>
 
   /// The rows of the board: the tries, or in the endless mastermind one for
   /// each guess made and the one being typed.
-  int get _boardRows => mastermind ? guesses.length + (over ? 0 : 1) : tries;
+  int get _boardRows => _endless ? guesses.length + (over ? 0 : 1) : tries;
   final _scroll = ScrollController();
 
   /// The hearts of a lockdown game, and how many are left: a daily has its own
@@ -386,6 +392,10 @@ class _GamePageState extends State<GamePage>
     if (!over && entry != null && entry.over) {
       over = true;
       won = entry.won ?? false;
+    } else if (over && _limitedDaily && entry != null && entry.over) {
+      // a mastermind daily played before it had a limit may have run past it:
+      // the replay stops at the limit, the result stays as it was stored
+      won = entry.won ?? won;
     }
     if (over || extra == null) return;
     // the hints bought are back, not paid for again
@@ -663,7 +673,7 @@ class _GamePageState extends State<GamePage>
     }
     setState(() => _apply(word));
     // an endless board grows: keep the row being typed in view
-    if (mastermind) {
+    if (_endless) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!_scroll.hasClients) return;
         _scroll.animateTo(
@@ -749,9 +759,9 @@ class _GamePageState extends State<GamePage>
       word,
       after.length,
       // (the mastermind has no tries to run out of)
-      finalTry: !mastermind && guesses.length >= tries,
+      finalTry: !_endless && guesses.length >= tries,
       solved: word == answer,
-      triesLeft: mastermind ? 99 : tries - (guesses.length - 1),
+      triesLeft: _endless ? 99 : tries - (guesses.length - 1),
       weights: _law,
       afterWords: after,
       // skill is measured against the best real guess, which the
@@ -823,6 +833,11 @@ class _GamePageState extends State<GamePage>
     if (solved || (tries > 0 && guesses.length >= tries)) {
       over = true;
       won = solved;
+      // a mastermind daily lost has no word: the game settles on any word that
+      // fits every reply
+      if (!solved && mastermind && eligible.isNotEmpty) {
+        answer = eligible.first;
+      }
       // nothing is kept once the game is over: no letter stays locked
       input.clear();
       if (!restoring) {
@@ -853,7 +868,7 @@ class _GamePageState extends State<GamePage>
         lang: widget.bank.language.code,
         mode: mode,
         length: length,
-        tries: mastermind ? guesses.length.clamp(1, 40) : tries,
+        tries: _endless ? guesses.length.clamp(1, 40) : tries,
         pool: pool,
         answers: [word],
         won: won,
@@ -884,7 +899,7 @@ class _GamePageState extends State<GamePage>
       final d = _daily;
       final traits = gameTraits(metrics);
       // an endless game is kept with the tries it took: a record has at least one
-      final triesKept = mastermind ? guesses.length.clamp(1, 40) : tries;
+      final triesKept = _endless ? guesses.length.clamp(1, 40) : tries;
       GameResult result({
         int streak = 0,
         String? style,
@@ -1053,7 +1068,7 @@ class _GamePageState extends State<GamePage>
               date: _daily?.date ?? '',
               length: length,
               tries: tries,
-              endless: mastermind,
+              endless: _endless,
             ),
           ),
         ),
@@ -1449,7 +1464,7 @@ class _GamePageState extends State<GamePage>
     final h = _daily != null || blind || themed || equations
         ? Helper.off
         : appState.helper;
-    if (mastermind) {
+    if (_endless) {
       return Caption(
         guesses.isEmpty
             ? (largest
@@ -1580,7 +1595,7 @@ class _GamePageState extends State<GamePage>
           Expanded(
             child: Text(
               won
-                  ? (mastermind
+                  ? (_endless
                         ? 'solved in ${guesses.length}'
                         : 'solved in ${guesses.length} of $tries')
                   : 'the $_noun was  ${equations ? answer.split('').map(faceOf).join() : answer}',
