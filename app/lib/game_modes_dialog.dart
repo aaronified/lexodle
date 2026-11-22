@@ -155,7 +155,8 @@ class _GameModesDialogState extends State<GameModesDialog> {
                           mode == GameMode.mastermind
                               ? 'the word is not chosen: it answers each guess '
                                     'as one of the words still possible would. you '
-                                    'win by guessing the one left. there is no '
+                                    'win by guessing the one left. the daily has '
+                                    '$mastermindDailyTries tries; free play has no '
                                     'limit on guesses.'
                               : mode == GameMode.themed
                               ? 'geography accepts only place names, in english: '

@@ -125,7 +125,7 @@ void main() {
   });
 
   test('the tries line is true for every mode', () {
-    expect(dailyIntroTries(GameMode.mastermind), 'no limit on guesses.');
+    expect(dailyIntroTries(GameMode.mastermind), '6 tries.');
     expect(
       dailyIntroTries(GameMode.lockdown),
       '$lockdownTries tries and $dailyHearts hearts.',

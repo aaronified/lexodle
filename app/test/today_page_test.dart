@@ -75,6 +75,21 @@ void main() {
     appState.saveDaily('en', today, ['crane'], mode: GameMode.lockdown);
   }
 
+  testWidgets('an in-progress mastermind daily reads N of 6 tries used', (
+    tester,
+  ) async {
+    veteran();
+    appState.chooseDaily('en', GameMode.mastermind, on: true);
+    appState.saveDaily(
+      'en',
+      today,
+      ['crane', 'sloth'],
+      mode: GameMode.mastermind,
+    );
+    await show(tester);
+    expect(find.text('2 of 6 tries used'), findsOneWidget);
+  });
+
   testWidgets('counts the dailies solved today, a lost one is not done', (
     tester,
   ) async {
