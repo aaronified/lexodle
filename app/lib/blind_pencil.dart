@@ -374,6 +374,25 @@ class BlindPencil {
           why = null;
         }
       }
+      if (why != null &&
+          m != null &&
+          (why.startsWith('row ') || why.startsWith('at most'))) {
+        // a letter marked in the way stands down when it is the only one
+        // that does: yellow on s after yellow on t in a guess with one right
+        final fixes = <BlindPencil>[];
+        for (final other in {...green.keys, ...yellow.keys, ...grey}) {
+          if (other == ch) continue;
+          final h = hyp._copy()
+            ..green.remove(other)
+            ..yellow.remove(other)
+            ..grey.remove(other);
+          if (h._violation(ch, rows, d, forced) == null) fixes.add(h);
+        }
+        if (fixes.length == 1) {
+          hyp = fixes.first;
+          why = null;
+        }
+      }
       if (why == null) {
         _become(hyp);
         // refused only when the tile could not be cycled to another colour

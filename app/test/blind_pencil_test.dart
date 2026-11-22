@@ -45,23 +45,17 @@ void main() {
     expect(k['a'], Mark.correct);
   });
 
-  test('a tap is refused only when no colour can be reached', () {
-    final p = BlindPencil(1);
-    final rows = [const BlindRow('a', 1, 0), const BlindRow('b', 1, 0)];
-    p.tap('a', 0, rows, none);
-    // b cannot be green, yellow or grey beside a: nothing to cycle to
-    expect(p.tap('b', 0, rows, none), isNotNull);
-    expect(p.shown('b', 0, none), isNull);
-  });
-
   test('no more letters than the length are in the word', () {
     final p = BlindPencil(2);
     final rows = [const BlindRow('ab', 2, 0), const BlindRow('cx', 2, 0)];
     p.tap('a', 0, rows, none);
     p.tap('b', 1, rows, none);
-    // a third letter cannot be green or yellow, so it stays unmarked
-    expect(p.tap('c', 0, rows, none), isNotNull);
-    expect(p.shown('c', 0, none), isNull);
+    // a third letter cannot be green (a is there); yellow fits only if b
+    // stands down, which is the one mark in the way
+    expect(p.tap('c', 0, rows, none), isNull);
+    expect(p.shown('c', 0, none), Mark.present);
+    expect(p.shown('b', 1, none), isNull);
+    expect(p.shown('a', 0, none), Mark.correct);
   });
 
   test('two letters are not green in one position', () {
@@ -219,5 +213,35 @@ void main() {
     expect(f2['b@1'], Mark.absent);
     expect(f2['d@1'], Mark.absent);
     expect(f2['a@0'], isNull);
+  });
+
+  test(
+    'marking the other letter swaps a yellow when only one can be right',
+    () {
+      // tares has one right letter: t or s, not both
+      final p = BlindPencil(5);
+      final rows = [const BlindRow('tares', 0, 1)];
+      p.tap('t', 0, rows, none);
+      expect(p.shown('t', 0, none), Mark.present);
+      // one tap: s takes the yellow and t is unmarked
+      expect(p.tap('s', 4, rows, none), isNull);
+      expect(p.shown('s', 4, none), Mark.present);
+      expect(p.shown('t', 0, none), isNull);
+    },
+  );
+
+  test('no swap when more than one mark stands in the way', () {
+    final p = BlindPencil(5);
+    final rows = [const BlindRow('tares', 0, 2)];
+    p.tap('t', 0, rows, none);
+    p.tap('a', 1, rows, none);
+    expect(p.shown('t', 0, none), Mark.present);
+    expect(p.shown('a', 1, none), Mark.present);
+    // a third yellow could replace either: nothing is guessed for the player,
+    // and s takes the next colour that fits
+    p.tap('s', 4, rows, none);
+    expect(p.shown('t', 0, none), Mark.present);
+    expect(p.shown('a', 1, none), Mark.present);
+    expect(p.shown('s', 4, none), Mark.absent);
   });
 }
