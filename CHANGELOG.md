@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- blind: a won game no longer colours the board by itself
+  The winning row turns all green and nothing else changes: the other rows keep the colours they had before the last guess.
+
 ## 0.12.3
 
 - mastermind: learn and playstyle follow how the mode is played
