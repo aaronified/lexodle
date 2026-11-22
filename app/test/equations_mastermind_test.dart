@@ -364,6 +364,95 @@ void main() {
       expect(find.textContaining('guess'), findsWidgets);
     });
 
+    Future<(WordBank, GamePage)> dailyMastermind(
+      WidgetTester tester,
+      String date,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1700));
+      await appState.load();
+      appState.lex.veteran = true;
+      appState.daily.clear();
+      appState.setup(lang: 'en', length: 5, mode: GameMode.mastermind);
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+        ),
+      ))!;
+      final page = GamePage(
+        bank: bank,
+        random: Random(5),
+        mode: GameMode.mastermind,
+        daily: Daily.of(bank, date, GameMode.mastermind),
+      );
+      await tester.pumpWidget(
+        MaterialApp(home: page, onGenerateRoute: onGenerateRoute),
+      );
+      await tester.pump();
+      return (bank, page);
+    }
+
+    List<String> dailyPool(WordBank bank, String date) => List.of(
+      dailyUsesCurve(date)
+          ? bank.guessable(5)
+          : bank.answers(5).take(dailyAnswers),
+    );
+
+    testWidgets('a mastermind daily has 6 rows and is lost after 6 guesses', (
+      tester,
+    ) async {
+      const date = '2026-11-12';
+      final (bank, _) = await dailyMastermind(tester, date);
+      expect(find.byKey(const ValueKey('tile-5-0')), findsOneWidget);
+      expect(find.byKey(const ValueKey('tile-6-0')), findsNothing);
+      expect(find.text('6 tries left'), findsOneWidget);
+      var eligible = dailyPool(bank, date);
+      final words = bank
+          .guessable(5)
+          .where((w) => RegExp(r'^[a-z]+$').hasMatch(w))
+          .toList();
+      var n = 0;
+      for (final w in words) {
+        if (n == 6) break;
+        final m = mastermindDailyReply(eligible, w, 'en', date, n);
+        if (m.every((x) => x == Mark.correct)) continue;
+        eligible = filterEligible(eligible, w, m);
+        await typeWord(tester, w);
+        n++;
+        if (n == 5) {
+          expect(find.text('1 tries left'), findsOneWidget);
+          expect(find.textContaining('solved in'), findsNothing);
+        }
+      }
+      expect(n, 6);
+      // the board did not grow, and the game is lost with a word that fits
+      expect(find.byKey(const ValueKey('tile-6-0')), findsNothing);
+      expect(find.textContaining('solved in'), findsNothing);
+      expect(find.textContaining('the word was'), findsWidgets);
+      final e = appState.dailyFor('en', date, GameMode.mastermind)!;
+      expect(e.over, isTrue);
+      expect(e.won, isFalse);
+      expect(e.guesses.length, 6);
+    });
+
+    testWidgets('a mastermind daily solved in fewer than 6 is a win', (
+      tester,
+    ) async {
+      const date = '2026-11-13';
+      final (bank, _) = await dailyMastermind(tester, date);
+      final eligible = dailyPool(bank, date);
+      final win = eligible.firstWhere(
+        (w) =>
+            RegExp(r'^[a-z]+$').hasMatch(w) &&
+            mastermindDailyReply(eligible, w, 'en', date, 0).every(
+              (x) => x == Mark.correct,
+            ),
+      );
+      await typeWord(tester, win);
+      expect(find.text('solved in 1 of 6'), findsOneWidget);
+      final e = appState.dailyFor('en', date, GameMode.mastermind)!;
+      expect(e.won, isTrue);
+    });
+
     testWidgets('a won mastermind game shows the word\'s wiktionary page', (
       tester,
     ) async {

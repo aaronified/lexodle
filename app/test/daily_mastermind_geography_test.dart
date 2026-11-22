@@ -19,12 +19,15 @@ void main() {
   });
 
   group('the mastermind daily', () {
-    test('has no word and no limit on guesses, at the daily length', () {
+    test('has no word and 6 tries, at the daily length', () {
       final d = Daily.of(bank, '2026-11-12', GameMode.mastermind)!;
       expect(d.answer, isEmpty);
-      expect(d.tries, 0);
+      expect(mastermindDailyTries, 6);
+      expect(d.tries, 6);
       expect(d.length, dailyLength);
-      expect(dailyTriesOf(GameMode.mastermind), 0);
+      expect(dailyTriesOf(GameMode.mastermind), 6);
+      // free play stays endless
+      expect(GameMode.mastermind.endless, isTrue);
     });
 
     /// A game played with [guesses]: what the daily said to each, and the words
