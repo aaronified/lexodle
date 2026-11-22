@@ -5,50 +5,31 @@ import 'package:lexodle/logic.dart';
 void main() {
   const none = <String, Mark>{};
 
-  test('a doubled letter can be green in two places', () {
-    final p = BlindPencil(3);
-    final rows = [const BlindRow('abc', 2, 0), const BlindRow('cab', 2, 0)];
-    expect(p.tap('a', 0, rows, none), isNull);
-    // a guess that has the letter twice may have it twice in the word
-    final p2 = BlindPencil(3);
-    final twice = [const BlindRow('aab', 2, 0)];
-    p2.tap('a', 0, twice, none);
-    expect(p2.tap('a', 1, twice, none), isNull);
-    expect(p2.shown('a', 0, none), Mark.correct);
-    expect(p2.shown('a', 1, none), Mark.correct);
-    expect(p2.keyboard(none)['a'], Mark.correct);
-  });
-
-  test(
-    'a green marked again elsewhere starts yellow, and moves on a second tap',
-    () {
-      final p = BlindPencil(5);
-      final rows = [
-        const BlindRow('abcde', 1, 0),
-        const BlindRow('xxaxx', 1, 0),
-      ];
-      p.tap('a', 0, rows, none);
-      expect(p.shown('a', 0, none), Mark.correct);
-      p.tap('a', 2, rows, none);
-      expect(p.shown('a', 2, none), Mark.present);
-      expect(p.shown('a', 0, none), Mark.correct);
-      p.tap('a', 2, rows, none);
-      expect(p.shown('a', 2, none), Mark.correct);
-      expect(p.shown('a', 0, none), Mark.present);
-    },
-  );
-
-  test('a moved green can come back beside the new one: a doubled letter', () {
+  test('a letter green elsewhere starts yellow, then green beside it', () {
     final p = BlindPencil(5);
     final rows = [const BlindRow('abcde', 1, 0), const BlindRow('xxaxa', 2, 0)];
     p.tap('a', 0, rows, none);
+    expect(p.shown('a', 0, none), Mark.correct);
     p.tap('a', 2, rows, none);
+    expect(p.shown('a', 2, none), Mark.present);
+    expect(p.shown('a', 0, none), Mark.correct);
+    // the rows allow two greens: both stay
     p.tap('a', 2, rows, none);
-    expect(p.shown('a', 0, none), Mark.present);
-    // one more tap: both are green
-    expect(p.tap('a', 2, rows, none), isNull);
     expect(p.shown('a', 2, none), Mark.correct);
     expect(p.shown('a', 0, none), Mark.correct);
+    expect(p.keyboard(none)['a'], Mark.correct);
+  });
+
+  test('when two greens cannot fit, the earlier one turns yellow', () {
+    final p = BlindPencil(3);
+    // one guess with a at both places and one green: only one can be green
+    final rows = [const BlindRow('aab', 1, 1)];
+    p.tap('a', 0, rows, none);
+    p.tap('a', 1, rows, none);
+    expect(p.shown('a', 1, none), Mark.present);
+    p.tap('a', 1, rows, none);
+    expect(p.shown('a', 1, none), Mark.correct);
+    expect(p.shown('a', 0, none), Mark.present);
   });
 
   test('once every letter is found the rest of the keyboard is grey', () {

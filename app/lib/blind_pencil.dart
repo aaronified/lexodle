@@ -25,12 +25,7 @@ class BlindPencil {
   final yellow = <String, Set<int>>{};
   final grey = <String>{};
 
-  /// The place a green last gave way from, by letter, so that the next tap can
-  /// bring it back beside the new green (a doubled letter).
-  final _moved = <String, int>{};
-
   void clear() {
-    _moved.clear();
     green.clear();
     yellow.clear();
     grey.clear();
@@ -63,7 +58,6 @@ class BlindPencil {
       c.yellow[e.key] = {...e.value};
     }
     c.grey.addAll(grey);
-    c._moved.addAll(_moved);
     return c;
   }
 
@@ -76,7 +70,6 @@ class BlindPencil {
       yellow[e.key] = {...e.value};
     }
     grey.addAll(o.grey);
-    _moved.addAll(o._moved);
   }
 
   /// What the counts settle outright: a guess with no right letters rules all
@@ -294,58 +287,47 @@ class BlindPencil {
   String? tap(String ch, int p, List<BlindRow> rows, Map<String, Mark> d) {
     if (d[ch] == Mark.absent) return 'ruled out by the counts';
     final now = shown(ch, p, d);
-    // where the letter is already green: a letter found in place and marked
-    // again elsewhere is the same copy, so the player is not made to undo it
-    // (not when a guess has the letter in both places: the word may have two)
+    // where the letter is already green: marked again elsewhere it may be the
+    // same copy or a second one, so it starts yellow, and green keeps the
+    // other green (a doubled letter) unless the rules cannot allow two, when
+    // the earlier green gives way and turns yellow by itself
     final others = {
       for (final q in green[ch] ?? <int>{})
-        if (q != p && !rows.any((r) => r.word[p] == ch && r.word[q] == ch)) q,
+        if (q != p) q,
     };
-    // each step is a colour and what happens to the other places: 0 nothing,
-    // 1 the other greens give way (yellow), 2 the place a green gave way from
-    // is green again (a doubled letter)
-    final List<(Mark?, int)> order;
+    // each step is a colour and whether the other greens may give way to it
+    final List<(Mark?, bool)> order;
     if (d[ch] == Mark.present) {
       // settled as in the word: only yellow and green
       order = now == Mark.correct
-          ? [(Mark.present, 0)]
-          : [(Mark.correct, others.isNotEmpty ? 1 : 0)];
+          ? [(Mark.present, false)]
+          : [(Mark.correct, others.isNotEmpty)];
     } else if (others.isNotEmpty && now != Mark.correct) {
-      // yellow first (the copy is elsewhere), then green with the old green
-      // turned yellow (the copy moved), then none
       order = now == Mark.present
-          ? [(Mark.correct, 1), (null, 0), (Mark.present, 0)]
-          : [(Mark.present, 0), (Mark.correct, 1), (null, 0)];
-    } else if (now == Mark.correct &&
-        _moved[ch] != null &&
-        (yellow[ch]?.contains(_moved[ch]) ?? false) &&
-        d[ch] != Mark.present) {
-      // the green that moved was one of two: green again beside this one
-      order = [
-        (Mark.correct, 2),
-        (Mark.present, 0),
-        (Mark.absent, 0),
-        (null, 0),
-      ];
+          ? [(Mark.correct, true), (null, false), (Mark.present, false)]
+          : [(Mark.present, false), (Mark.correct, true), (null, false)];
     } else {
       final i = _cycle.indexOf(now);
       order = [
-        for (var k = 1; k <= _cycle.length; k++) (_cycle[(i + k) % 4], 0),
+        for (var k = 1; k <= _cycle.length; k++) (_cycle[(i + k) % 4], false),
       ];
     }
     String? passed;
-    for (final (m, move) in order) {
-      final hyp = _copy().._set(ch, p, m);
-      if (move == 1) {
+    for (final (m, mayMove) in order) {
+      var hyp = _copy().._set(ch, p, m);
+      var why = m == null ? null : hyp._violation(ch, rows, d);
+      if (why != null && mayMove) {
+        // two greens of the letter do not fit: the earlier one turns yellow
+        final moved = _copy().._set(ch, p, m);
         for (final q in others) {
-          hyp._set(ch, q, Mark.present);
+          moved._set(ch, q, Mark.present);
         }
-        if (others.isNotEmpty) hyp._moved[ch] = others.first;
-      } else if (move == 2) {
-        hyp._set(ch, _moved[ch]!, Mark.correct);
-        hyp._moved.remove(ch);
+        final again = moved._violation(ch, rows, d);
+        if (again == null) {
+          hyp = moved;
+          why = null;
+        }
       }
-      final why = m == null ? null : hyp._violation(ch, rows, d);
       if (why == null) {
         _become(hyp);
         return passed;
