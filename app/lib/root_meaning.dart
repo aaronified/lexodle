@@ -5,24 +5,15 @@ import 'ui.dart';
 import 'words.dart';
 import 'wiktionary.dart';
 
-/// The words an inflected form is a form of, read from its senses ("plural of
+/// The word an inflected form is a form of, read from its sense ("plural of
 /// deke", "third-person singular simple present indicative of deke", "simple
-/// past of run"): the word at the end, once per word, in the order of the
-/// senses. English wording only; a sense that is not a form of a word, or the
-/// form of the word itself, gives none.
-List<String> rootsOf(WordInfo info, String word) {
-  final out = <String>[];
-  final seen = <String>{word.toLowerCase()};
-  for (final b in info.blocks) {
-    for (final s in b.senses) {
-      final m = _formOf.firstMatch(s.text.trim());
-      if (m == null) continue;
-      final root = m[1]!.replaceAll(RegExp(r'^[("“]+|[)"”.,;:]+$'), '');
-      if (root.isEmpty || !seen.add(root.toLowerCase())) continue;
-      out.add(root);
-    }
-  }
-  return out;
+/// past of run"): the word at the end. English wording only; a sense that is
+/// not a form of a word, or the form of the word itself, gives null.
+String? rootOfSense(String sense, String word) {
+  final m = _formOf.firstMatch(sense.trim());
+  if (m == null) return null;
+  final root = m[1]!.replaceAll(RegExp(r'^[("“]+|[)"”.,;:]+$'), '');
+  return root.isEmpty || root.toLowerCase() == word.toLowerCase() ? null : root;
 }
 
 final _formOf = RegExp(
@@ -33,37 +24,37 @@ final _formOf = RegExp(
   caseSensitive: false,
 );
 
-/// The meaning of the root word of an inflected answer: for each root, its
-/// parts of speech with their first senses. A root without an entry, or one
-/// that cannot be fetched, is left out and the failure is logged.
-class RootMeaning extends StatelessWidget {
-  const RootMeaning({super.key, required this.roots, required this.language});
-  final List<String> roots;
-  final Language language;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      for (final r in roots.take(2)) _Root(root: r, language: language),
-    ],
-  );
-}
-
-class _Root extends StatefulWidget {
-  const _Root({required this.root, required this.language});
+/// What the root of an inflected form means, set under the sense that names it
+/// ("plural of deke"): the root's senses of the same part of speech as the form
+/// (a plural noun's root as a noun), or its first part of speech when it has
+/// none of that kind. Nothing while it loads or when there is no entry; a
+/// failure is logged.
+class RootSenses extends StatefulWidget {
+  const RootSenses({
+    super.key,
+    required this.root,
+    required this.pos,
+    required this.language,
+    this.lookup,
+  });
   final String root;
+  final String pos;
   final Language language;
 
+  /// Replaces the Wiktionary lookup, for a test.
+  final Future<WordInfo?> Function(String root)? lookup;
+
   @override
-  State<_Root> createState() => _RootState();
+  State<RootSenses> createState() => _RootSensesState();
 }
 
-class _RootState extends State<_Root> {
+class _RootSensesState extends State<RootSenses> {
   late final Future<WordInfo?> _future = _look();
 
   Future<WordInfo?> _look() async {
     try {
+      final custom = widget.lookup;
+      if (custom != null) return await custom(widget.root);
       return await Wiktionary.shared.lookup(
         widget.root,
         widget.language.code,
@@ -84,7 +75,7 @@ class _RootState extends State<_Root> {
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
           return Padding(
-            padding: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.only(left: 14, top: 4),
             child: Text(
               'looking up ${widget.root}…',
               style: TextStyle(fontSize: 12, color: dim),
@@ -93,74 +84,55 @@ class _RootState extends State<_Root> {
         }
         final info = snap.data;
         if (info == null || info.blocks.isEmpty) return const SizedBox.shrink();
-        return Padding(
-          padding: const EdgeInsets.only(top: 14),
+        final same = info.blocks.where((b) => b.pos == widget.pos).toList();
+        final blocks = same.isEmpty ? [info.blocks.first] : same;
+        final senses = [for (final b in blocks) ...b.senses].take(3).toList();
+        if (senses.isEmpty) return const SizedBox.shrink();
+        return Container(
+          key: ValueKey('root-${widget.root}'),
+          margin: const EdgeInsets.only(left: 14, top: 4),
+          padding: const EdgeInsets.only(left: 8),
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: c.primary, width: 2)),
+          ),
           child: Column(
-            key: ValueKey('root-${widget.root}'),
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'the root  ',
-                      style: TextStyle(
-                        fontSize: 12,
-                        letterSpacing: 2,
-                        color: dim,
-                      ),
-                    ),
-                    TextSpan(
-                      text: widget.root,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: c.primary,
-                      ),
-                    ),
-                  ],
+              Text(
+                widget.root,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: c.primary,
                 ),
               ),
-              for (final b in info.blocks.take(3)) ...[
-                const SizedBox(height: 8),
-                Text(
-                  b.pos,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: c.primary,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                for (var i = 0; i < b.senses.length && i < 3; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
+              for (var i = 0; i < senses.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '${i + 1}  ',
+                          style: TextStyle(
+                            color: c.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (senses[i].labels.isNotEmpty)
                           TextSpan(
-                            text: '${i + 1}  ',
+                            text: '${senses[i].labels.join(', ')}  ',
                             style: TextStyle(
-                              color: c.primary,
-                              fontWeight: FontWeight.bold,
+                              color: yellowOf(c),
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
-                          if (b.senses[i].labels.isNotEmpty)
-                            TextSpan(
-                              text: '${b.senses[i].labels.join(', ')}  ',
-                              style: TextStyle(
-                                color: yellowOf(c),
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          TextSpan(text: b.senses[i].text),
-                        ],
-                      ),
-                      style: const TextStyle(fontSize: 13),
+                        TextSpan(text: senses[i].text),
+                      ],
                     ),
+                    style: const TextStyle(fontSize: 13),
                   ),
-              ],
+                ),
             ],
           ),
         );

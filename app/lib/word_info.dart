@@ -42,12 +42,14 @@ class _WordInfoViewState extends State<WordInfoView> {
         if (info == null || info.isEmpty) {
           return const Caption('no wiktionary entry for this word');
         }
-        final roots = rootsOf(info, widget.word);
         return WordInfoBody(
           info: info,
-          afterBlocks: roots.isEmpty
-              ? null
-              : RootMeaning(roots: roots, language: widget.language),
+          underSense: (b, s) {
+            final root = rootOfSense(s.text, widget.word);
+            return root == null
+                ? null
+                : RootSenses(root: root, pos: b.pos, language: widget.language);
+          },
         );
       },
     );
@@ -58,11 +60,12 @@ class _WordInfoViewState extends State<WordInfoView> {
 /// with their examples, the origin, synonyms and antonyms. The end screen shows
 /// it for the answer ([WordInfoView]), and a saved word shows its own copy.
 class WordInfoBody extends StatefulWidget {
-  const WordInfoBody({super.key, required this.info, this.afterBlocks});
+  const WordInfoBody({super.key, required this.info, this.underSense});
   final WordInfo info;
 
-  /// Shown under the meanings: the meaning of the root of an inflected form.
-  final Widget? afterBlocks;
+  /// Shown under a meaning, if it gives something: the meaning of the root
+  /// when the sense says it is a form of another word.
+  final Widget? Function(PosBlock block, Sense sense)? underSense;
 
   @override
   State<WordInfoBody> createState() => _WordInfoBodyState();
@@ -121,9 +124,13 @@ class _WordInfoBodyState extends State<WordInfoBody> {
           _heading(c, b),
           const SizedBox(height: 6),
           for (var i = 0; i < b.senses.length; i++)
-            _sense(c, i + 1, b.senses[i]),
+            _sense(
+              c,
+              i + 1,
+              b.senses[i],
+              extra: widget.underSense?.call(b, b.senses[i]),
+            ),
         ],
-        if (widget.afterBlocks != null) widget.afterBlocks!,
         if (info.etymology.isNotEmpty) ...[
           const SizedBox(height: 12),
           _label('origin', yellowOf(c)),
@@ -196,7 +203,7 @@ class _WordInfoBodyState extends State<WordInfoBody> {
 
   /// One numbered sense: labels in the warm colour, the gloss, then examples
   /// under a green rule.
-  Widget _sense(ColorScheme c, int n, Sense s) => Padding(
+  Widget _sense(ColorScheme c, int n, Sense s, {Widget? extra}) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,6 +228,7 @@ class _WordInfoBodyState extends State<WordInfoBody> {
           ),
           style: const TextStyle(fontSize: 13),
         ),
+        ?extra,
         for (final e in s.examples)
           Container(
             margin: const EdgeInsets.only(left: 14, top: 4),
