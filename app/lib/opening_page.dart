@@ -204,8 +204,7 @@ class _OpeningPageState extends State<OpeningPage> {
       final guess = _guess[k];
       if (pool.isEmpty || guess == null) return;
       final weights = [
-        for (final w in pool)
-          _law == null ? 1 : max(_law[w] ?? 1, 1),
+        for (final w in pool) _law == null ? 1 : max(_law[w] ?? 1, 1),
       ];
       final word = chooseWord(pool, weights, _rng);
       _select(k, evaluate(word, guess));
@@ -327,7 +326,7 @@ class _OpeningPageState extends State<OpeningPage> {
       }
       out.addAll(_replies(c, dim, k, w));
       if (_sel[k] == null) {
-        if (_noWord == k) out.add(_noWordText(dim));
+        if (_noWord == k && _edit != k) out.add(_noWordText(dim));
         break;
       }
     }
@@ -345,8 +344,7 @@ class _OpeningPageState extends State<OpeningPage> {
     ),
   );
 
-  int _left(GroupWalk w) =>
-      max(1, (w.words / pow(2, w.expectedBits)).round());
+  int _left(GroupWalk w) => max(1, (w.words / pow(2, w.expectedBits)).round());
 
   CalcSpec _levelSpec(int k, GroupWalk w) {
     final n = w.words;
@@ -364,10 +362,7 @@ class _OpeningPageState extends State<OpeningPage> {
         ('$thing that fit', '$n'),
         ('groups it makes', '${w.groups.length}'),
         ('bits it gains on average (H)', '${h.toStringAsFixed(2)} bits'),
-        (
-          'bits still to find',
-          'log₂ $n = ${bitsOf(1 / n).toStringAsFixed(2)}',
-        ),
+        ('bits still to find', 'log₂ $n = ${bitsOf(1 / n).toStringAsFixed(2)}'),
       ],
       result: ('$thing left on average ≈ N/2^H', '≈ ${_left(w)}'),
       note: k == 0 || n > 400
@@ -516,14 +511,13 @@ class _OpeningPageState extends State<OpeningPage> {
     return [
       Row(
         children: [
-          const Caption('the five likeliest replies'),
+          const Flexible(child: Caption('the five likeliest replies')),
           const SizedBox(width: 8),
           CalcDot(spec, key: ValueKey('opening-replies-dot-$k')),
         ],
       ),
       const SizedBox(height: 8),
-      for (var i = 0; i < top.length; i++)
-        row(top[i], 'opening-reply-$k-$i'),
+      for (var i = 0; i < top.length; i++) row(top[i], 'opening-reply-$k-$i'),
       if (custom != null) row(custom, 'opening-reply-$k-custom'),
       Padding(
         padding: const EdgeInsets.only(top: 4, bottom: 8),

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'calc_dialog.dart';
 import 'logic.dart';
+import 'modes.dart' show Draw;
 import 'review_plots.dart' show Outcome;
 import 'words.dart';
 

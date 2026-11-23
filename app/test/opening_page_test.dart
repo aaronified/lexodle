@@ -1,7 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/opening.dart';
 import 'package:lexodle/opening_page.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,7 +30,11 @@ void main() {
         (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
       ),
     ))!;
-    await tester.pumpWidget(MaterialApp(home: OpeningPage(bank: bank)));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: OpeningPage(bank: bank, random: Random(3)),
+      ),
+    );
     await waitFor(tester, find.byKey(const ValueKey('opening-first')));
   }
 
@@ -42,83 +47,128 @@ void main() {
     }
   }
 
-  testWidgets('it names the best first guess, with how it splits the words', (
+  bool shown(String key) => find.byKey(ValueKey(key)).evaluate().isNotEmpty;
+
+  testWidgets('it names the best first guess, how it splits the words', (
     tester,
   ) async {
     await open(tester);
     final first = text(tester, 'opening-first');
     expect(first.length, 4);
-    final stats = text(tester, 'opening-stats');
-    expect(stats, contains('groups · the biggest'));
-    expect(stats, contains('words left'));
-    expect(stats, contains('bits expected'));
-    // other first guesses to compare, the best among them at 100
-    expect(find.byKey(const ValueKey('opening-alt-0')), findsOneWidget);
-    expect(find.byKey(const ValueKey('opening-alt-1')), findsOneWidget);
-    expect(find.text('$first 100'), findsOneWidget);
-    await settle(tester);
-  });
-
-  testWidgets('each likely outcome gets a best second guess, filling in', (
-    tester,
-  ) async {
-    await open(tester);
-    // the rows are there at once, the second guesses come one by one
-    expect(find.byKey(const ValueKey('opening-row-0')), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('opening-row-${openingOutcomeCount - 1}')),
-      findsOneWidget,
+      text(tester, 'opening-stats'),
+      matches(r'^\d+\.\d\d bits · \d+ outcomes$'),
     );
-    await waitFor(tester, find.byKey(const ValueKey('opening-second-0')));
-    await waitFor(
-      tester,
-      find.byKey(const ValueKey('opening-second-${openingOutcomeCount - 1}')),
-    );
-    for (var i = 0; i < openingOutcomeCount; i++) {
-      final line = text(tester, 'opening-second-$i');
-      expect(line, startsWith('play '));
-      // a word of the language's length
-      final word = line.substring(5).split(' ').first;
-      expect(word.length, 4, reason: 'row $i: $line');
+    for (var i = 0; i < 5; i++) {
+      expect(find.byKey(ValueKey('opening-reply-0-$i')), findsOneWidget);
     }
-    await settle(tester);
-  });
-
-  testWidgets('a row opens to the other good second guesses and its words', (
-    tester,
-  ) async {
-    await open(tester);
-    await waitFor(tester, find.byKey(const ValueKey('opening-second-0')));
-    await tester.tap(find.byKey(const ValueKey('opening-row-0')));
-    await tester.pump();
-    final more = find.byWidgetPredicate(
-      (w) => w.key.toString().contains('opening-more-0-'),
+    expect(find.byKey(const ValueKey('opening-reply-0-5')), findsNothing);
+    expect(
+      text(tester, 'opening-cover-0'),
+      matches(r'^the five cover [\d.]+% of the words\.$'),
     );
-    expect(more, findsWidgets);
-    final line = textOf(tester.widget<Text>(more.first))!;
-    expect(line, contains('skill 100'));
-    expect(line, contains('words left'));
-    expect(line, contains('bits'));
-    // a second tap closes it
-    await tester.tap(find.byKey(const ValueKey('opening-row-0')));
-    await tester.pump();
-    expect(more, findsNothing);
+    expect(shown('opening-second'), isFalse);
     await settle(tester);
   });
 
-  testWidgets('choosing another first guess starts its outcomes afresh', (
+  testWidgets('tapping a reply shows the second guess, then the third', (
     tester,
   ) async {
     await open(tester);
-    final first = text(tester, 'opening-first');
-    await waitFor(tester, find.byKey(const ValueKey('opening-second-0')));
-    await tester.tap(find.byKey(const ValueKey('opening-alt-1')));
+    await tester.tap(find.byKey(const ValueKey('opening-reply-0-0')));
+    await waitFor(tester, find.byKey(const ValueKey('opening-second')));
+    expect(text(tester, 'opening-second').length, 4);
+    expect(shown('opening-third'), isFalse);
+    await tester.tap(find.byKey(const ValueKey('opening-reply-1-0')));
+    await waitFor(tester, find.byKey(const ValueKey('opening-third')));
+    expect(text(tester, 'opening-end'), startsWith('three guesses in: about '));
+    // changing the first reply clears the levels below
+    await tester.tap(find.byKey(const ValueKey('opening-reply-0-1')));
     await tester.pump();
-    final other = text(tester, 'opening-first');
-    expect(other, isNot(first));
-    // the second guesses of the old choice are gone, and fill in again
-    expect(find.byKey(const ValueKey('opening-second-0')), findsNothing);
-    await waitFor(tester, find.byKey(const ValueKey('opening-second-0')));
+    expect(shown('opening-third'), isFalse);
+    expect(shown('opening-second'), isFalse);
+    await waitFor(tester, find.byKey(const ValueKey('opening-second')));
+    expect(shown('opening-reply-1-0'), isTrue);
     await settle(tester);
+  });
+
+  testWidgets(
+    'set colours: a reply no word gives is said so, a real one used',
+    (tester) async {
+      await open(tester);
+      await tester.tap(find.byKey(const ValueKey('opening-set-0')));
+      await tester.pump();
+      // all four green but for one yellow cannot be: tiles cycle grey, yellow, green
+      final tile = find.byKey(const ValueKey('opening-tile-0-0'));
+      for (var i = 0; i < 4; i++) {
+        await tester.tap(find.byKey(ValueKey('opening-tile-0-$i')));
+        await tester.tap(find.byKey(ValueKey('opening-tile-0-$i')));
+      }
+      await tester.pump();
+      expect(tile, findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('opening-tile-0-0')));
+      await tester.tap(find.byKey(const ValueKey('opening-tile-0-0')));
+      await tester.pump();
+      // three green and one grey/green mix: whatever it is, "use these" answers
+      await tester.tap(find.byKey(const ValueKey('opening-use-0')));
+      await tester.pump();
+      final none = shown('opening-no-word');
+      if (none) {
+        expect(text(tester, 'opening-no-word'), 'no word gives these colours.');
+        expect(shown('opening-second'), isFalse);
+      }
+      // grey everywhere: the likeliest reply of the first guess is often this
+      // one; at least one reply is always usable by tapping it
+      await tester.tap(find.byKey(const ValueKey('opening-set-0')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('opening-reply-0-0')));
+      await waitFor(tester, find.byKey(const ValueKey('opening-second')));
+      await tester.tap(find.byKey(const ValueKey('opening-set-0')));
+      await tester.pump();
+      // the tiles start as the reply picked: using them again picks the same
+      await tester.tap(find.byKey(const ValueKey('opening-use-0')));
+      await waitFor(tester, find.byKey(const ValueKey('opening-second')));
+      await settle(tester);
+    },
+  );
+
+  testWidgets('set colours with all green: only the guess itself fits', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.tap(find.byKey(const ValueKey('opening-set-0')));
+    await tester.pump();
+    for (var i = 0; i < 4; i++) {
+      final t = find.byKey(ValueKey('opening-tile-0-$i'));
+      await tester.tap(t);
+      await tester.pump();
+      await tester.tap(t);
+      await tester.pump();
+    }
+    await tester.tap(find.byKey(const ValueKey('opening-use-0')));
+    await waitFor(tester, find.byKey(const ValueKey('opening-second')));
+    // the one word that fits is the second guess: the first guess itself
+    expect(text(tester, 'opening-second'), text(tester, 'opening-first'));
+    await settle(tester);
+  });
+
+  testWidgets('randomise picks a reply and goes on to the next guess', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.tap(find.byKey(const ValueKey('opening-random-0')));
+    await waitFor(tester, find.byKey(const ValueKey('opening-second')));
+    await tester.tap(find.byKey(const ValueKey('opening-random-1')));
+    await waitFor(tester, find.byKey(const ValueKey('opening-third')));
+    await settle(tester);
+  });
+
+  testWidgets('the calculation of a guess opens from its dot', (tester) async {
+    await open(tester);
+    await tester.tap(find.byKey(const ValueKey('opening-dot-0')));
+    await tester.pumpAndSettle();
+    expect(find.text('the best first guess'), findsOneWidget);
+    expect(find.textContaining('bits it gains on average'), findsOneWidget);
+    expect(find.textContaining('words left on average'), findsOneWidget);
   });
 }
