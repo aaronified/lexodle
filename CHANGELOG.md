@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+- blind: the rest of a guess turns grey once its right letters are marked
+  When a guess has as many right letters marked as its counts say (tares with one right, t marked yellow), every other letter of it is grey by itself, on the board and on the keyboard. Tapping one of them takes the mark and the one in the way stands down. Unmark the right letter and the greys go.
 - blind: pencilling a letter that is already green elsewhere
   Tapping the same letter in another place starts yellow, and a second tap makes it green beside the other green (a doubled letter). Where the counts cannot allow two greens, the earlier green turns yellow by itself, so nothing has to be undone by hand.
 - blind: the helper colours only what cannot be otherwise

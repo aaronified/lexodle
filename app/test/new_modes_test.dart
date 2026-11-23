@@ -365,11 +365,13 @@ void main() {
         }
 
         expect(fill(), isNull);
-        for (final mark in [Mark.correct, Mark.present, Mark.absent]) {
+        for (final mark in [Mark.correct, Mark.present]) {
           await tester.tap(find.byKey(const ValueKey('tile-0-2')));
           await tester.pump();
           expect(fill(), markColors(scheme, mark).$1, reason: '$mark');
         }
+        // crane has one right letter and it is marked: grey would leave none
+        // of the other four to be it, so grey is passed over and it clears
         await tester.tap(find.byKey(const ValueKey('tile-0-2')));
         await tester.pump();
         expect(fill(), isNull);
