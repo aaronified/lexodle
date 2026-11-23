@@ -5,14 +5,31 @@ import 'package:lexodle/logic.dart';
 void main() {
   const none = <String, Mark>{};
 
-  test('a doubled letter can be green in two places', () {
-    final p = BlindPencil(3);
-    final rows = [const BlindRow('abc', 2, 0), const BlindRow('cab', 2, 0)];
-    expect(p.tap('a', 0, rows, none), isNull);
-    expect(p.tap('a', 1, rows, none), isNull);
+  test('a letter green elsewhere starts yellow, then green beside it', () {
+    final p = BlindPencil(5);
+    final rows = [const BlindRow('abcde', 1, 0), const BlindRow('xxaxa', 2, 0)];
+    p.tap('a', 0, rows, none);
     expect(p.shown('a', 0, none), Mark.correct);
-    expect(p.shown('a', 1, none), Mark.correct);
+    p.tap('a', 2, rows, none);
+    expect(p.shown('a', 2, none), Mark.present);
+    expect(p.shown('a', 0, none), Mark.correct);
+    // the rows allow two greens: both stay
+    p.tap('a', 2, rows, none);
+    expect(p.shown('a', 2, none), Mark.correct);
+    expect(p.shown('a', 0, none), Mark.correct);
     expect(p.keyboard(none)['a'], Mark.correct);
+  });
+
+  test('when two greens cannot fit, the earlier one turns yellow', () {
+    final p = BlindPencil(3);
+    // one guess with a at both places and one green: only one can be green
+    final rows = [const BlindRow('aab', 1, 1)];
+    p.tap('a', 0, rows, none);
+    p.tap('a', 1, rows, none);
+    expect(p.shown('a', 1, none), Mark.present);
+    p.tap('a', 1, rows, none);
+    expect(p.shown('a', 1, none), Mark.correct);
+    expect(p.shown('a', 0, none), Mark.present);
   });
 
   test('once every letter is found the rest of the keyboard is grey', () {
@@ -33,9 +50,12 @@ void main() {
     final rows = [const BlindRow('ab', 2, 0), const BlindRow('cx', 2, 0)];
     p.tap('a', 0, rows, none);
     p.tap('b', 1, rows, none);
-    // a third letter cannot be green or yellow, so it stays unmarked
-    expect(p.tap('c', 0, rows, none), isNotNull);
-    expect(p.shown('c', 0, none), isNull);
+    // a third letter cannot be green (a is there); yellow fits only if b
+    // stands down, which is the one mark in the way
+    expect(p.tap('c', 0, rows, none), isNull);
+    expect(p.shown('c', 0, none), Mark.present);
+    expect(p.shown('b', 1, none), isNull);
+    expect(p.shown('a', 0, none), Mark.correct);
   });
 
   test('two letters are not green in one position', () {
@@ -43,7 +63,8 @@ void main() {
     final rows = [const BlindRow('abc', 2, 0), const BlindRow('xbz', 2, 0)];
     p.tap('a', 0, rows, none);
     final why = p.tap('x', 0, rows, none);
-    expect(why, 'position 1 is already green with a');
+    // green is passed over, yellow is taken: no refusal
+    expect(why, isNull);
     expect(p.shown('x', 0, none), Mark.present);
   });
 
@@ -63,7 +84,8 @@ void main() {
     expect(p.shown('a', 2, none), Mark.correct);
     // yellow and grey are passed over
     final why = p.tap('a', 2, rows, none);
-    expect(why, 'already yellow in all other available positions');
+    // yellow and grey are passed over, so it clears: no refusal
+    expect(why, isNull);
     expect(p.shown('a', 2, none), isNull);
   });
 
@@ -76,7 +98,8 @@ void main() {
     // yellow -> grey is allowed only when this was its one mark
     p.tap('a', 1, rows, none);
     p.tap('a', 1, rows, none);
-    expect(p.tap('a', 1, rows, none), 'a is already green or yellow');
+    // grey is passed over and the tile clears
+    expect(p.tap('a', 1, rows, none), isNull);
     expect(p.grey, isEmpty);
   });
 
@@ -84,7 +107,7 @@ void main() {
     final p = BlindPencil(3);
     final rows = [const BlindRow('abc', 0, 1)];
     final why = p.tap('a', 0, rows, none);
-    expect(why, 'row 1 has only 0 in place');
+    expect(why, isNull);
     expect(p.shown('a', 0, none), Mark.present);
   });
 
@@ -140,5 +163,85 @@ void main() {
     ], letters.split(''));
     expect(three['z'], Mark.absent);
     expect(three['l'], Mark.absent);
+  });
+
+  test('the helper colours only what no other colour can be, and it stays', () {
+    // crane has 0 in place and 2 right: no tile of it can be green
+    final rows = [const BlindRow('crane', 0, 2), const BlindRow('abcde', 0, 5)];
+    final d = BlindPencil.deduce(rows, 'abcdefg'.split(''));
+    final p0 = BlindPencil(5);
+    final f = p0.forcedTiles(rows, d);
+    // abcde has all five letters in the word, none in place: every tile yellow
+    expect(f['a@0'], Mark.present);
+    expect(f['e@4'], Mark.present);
+    final p = BlindPencil(5);
+    expect(p.shown('a', 0, d, f), Mark.present);
+    // a forced tile cannot be changed
+    expect(p.tap('a', 0, rows, d, f), 'set by the helper');
+    expect(p.shown('a', 0, d, f), Mark.present);
+    // a letter the counts only put in the word is left to the player
+    final one = [const BlindRow('abcde', 1, 4)];
+    final d1 = BlindPencil.deduce(one, 'abcdefg'.split(''));
+    final f1 = BlindPencil(5).forcedTiles(one, d1);
+    expect(f1, isEmpty);
+    expect(p.shown('a', 0, d1, f1), isNull);
+  });
+
+  test(
+    'a row with nothing in place or nothing elsewhere settles its tiles',
+    () {
+      final rows = [const BlindRow('abcde', 5, 0)];
+      final d = BlindPencil.deduce(rows, 'abcdefg'.split(''));
+      final f = BlindPencil(5).forcedTiles(rows, d);
+      expect(f['c@2'], Mark.correct);
+    },
+  );
+
+  test('once every letter is found, the others are grey in every place', () {
+    final rows = [const BlindRow('abcde', 2, 3), const BlindRow('vwxyz', 0, 0)];
+    final p = BlindPencil(5);
+    final d = BlindPencil.deduce(rows, 'abcdefghvwxyz'.split(''));
+    // abcde has all five: f, g, h are out by the counts already; vwxyz zero
+    final f = p.forcedTiles(rows, d);
+    expect(f['v@0'], Mark.absent);
+    // a guess whose letters are only found by pencil
+    final p2 = BlindPencil(2);
+    final r2 = [const BlindRow('ab', 1, 0), const BlindRow('cd', 0, 1)];
+    p2.tap('a', 0, r2, const {});
+    p2.tap('c', 0, r2, const {});
+    final f2 = p2.forcedTiles(r2, const {});
+    expect(f2['b@1'], Mark.absent);
+    expect(f2['d@1'], Mark.absent);
+    expect(f2['a@0'], isNull);
+  });
+
+  test(
+    'marking the other letter swaps a yellow when only one can be right',
+    () {
+      // tares has one right letter: t or s, not both
+      final p = BlindPencil(5);
+      final rows = [const BlindRow('tares', 0, 1)];
+      p.tap('t', 0, rows, none);
+      expect(p.shown('t', 0, none), Mark.present);
+      // one tap: s takes the yellow and t is unmarked
+      expect(p.tap('s', 4, rows, none), isNull);
+      expect(p.shown('s', 4, none), Mark.present);
+      expect(p.shown('t', 0, none), isNull);
+    },
+  );
+
+  test('no swap when more than one mark stands in the way', () {
+    final p = BlindPencil(5);
+    final rows = [const BlindRow('tares', 0, 2)];
+    p.tap('t', 0, rows, none);
+    p.tap('a', 1, rows, none);
+    expect(p.shown('t', 0, none), Mark.present);
+    expect(p.shown('a', 1, none), Mark.present);
+    // a third yellow could replace either: nothing is guessed for the player,
+    // and s takes the next colour that fits
+    p.tap('s', 4, rows, none);
+    expect(p.shown('t', 0, none), Mark.present);
+    expect(p.shown('a', 1, none), Mark.present);
+    expect(p.shown('s', 4, none), Mark.absent);
   });
 }
