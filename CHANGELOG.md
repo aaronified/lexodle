@@ -7,8 +7,8 @@ it to the version.
 
 ## Unreleased
 
-## 0.13.0
-
+- the meaning of the root word, under the form that names it
+  When a meaning of the answer says it is a form of another word ("plural of deke"), the meaning of that word is set right under it, in the same part of speech (a plural noun's root as a noun). English wording only for now.
 - learn: four things for classic, blind and mastermind
   Learn now holds the opening, how to play, how to master and guess the best. The opening goes three guesses deep: the best first guess, the five likeliest replies (with how much of the words they cover), any other colours you set or draw by chance, and the best second and third guess for each. How to master is a game with a hidden word (in mastermind an opponent that answers as a word that still fits) and every number to hand: the words that fit and how we got to them, the likeliest answers, the best guesses for skill, the best bets for luck and the logic of each colour, letter by letter; the plots behind the info dots can be read column by column. In blind the tiles are pencilled with the colouring logic of the game, and the keys show the chance of each letter stacked (green at the bottom), grey only for what the counts rule out. Guess the best is a quiz: which of four guesses splits the rest best, and which got the luckiest reply. The other modes keep the learn pages they had.
 - blind: the rest of the commonsense colouring

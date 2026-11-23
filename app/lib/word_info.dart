@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'root_meaning.dart';
 import 'ui.dart';
 import 'words.dart';
 import 'wiktionary.dart';
@@ -41,7 +42,15 @@ class _WordInfoViewState extends State<WordInfoView> {
         if (info == null || info.isEmpty) {
           return const Caption('no wiktionary entry for this word');
         }
-        return WordInfoBody(info: info);
+        return WordInfoBody(
+          info: info,
+          underSense: (b, s) {
+            final root = rootOfSense(s.text, widget.word);
+            return root == null
+                ? null
+                : RootSenses(root: root, pos: b.pos, language: widget.language);
+          },
+        );
       },
     );
   }
@@ -51,8 +60,12 @@ class _WordInfoViewState extends State<WordInfoView> {
 /// with their examples, the origin, synonyms and antonyms. The end screen shows
 /// it for the answer ([WordInfoView]), and a saved word shows its own copy.
 class WordInfoBody extends StatefulWidget {
-  const WordInfoBody({super.key, required this.info});
+  const WordInfoBody({super.key, required this.info, this.underSense});
   final WordInfo info;
+
+  /// Shown under a meaning, if it gives something: the meaning of the root
+  /// when the sense says it is a form of another word.
+  final Widget? Function(PosBlock block, Sense sense)? underSense;
 
   @override
   State<WordInfoBody> createState() => _WordInfoBodyState();
@@ -111,7 +124,12 @@ class _WordInfoBodyState extends State<WordInfoBody> {
           _heading(c, b),
           const SizedBox(height: 6),
           for (var i = 0; i < b.senses.length; i++)
-            _sense(c, i + 1, b.senses[i]),
+            _sense(
+              c,
+              i + 1,
+              b.senses[i],
+              extra: widget.underSense?.call(b, b.senses[i]),
+            ),
         ],
         if (info.etymology.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -185,7 +203,7 @@ class _WordInfoBodyState extends State<WordInfoBody> {
 
   /// One numbered sense: labels in the warm colour, the gloss, then examples
   /// under a green rule.
-  Widget _sense(ColorScheme c, int n, Sense s) => Padding(
+  Widget _sense(ColorScheme c, int n, Sense s, {Widget? extra}) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,6 +228,7 @@ class _WordInfoBodyState extends State<WordInfoBody> {
           ),
           style: const TextStyle(fontSize: 13),
         ),
+        ?extra,
         for (final e in s.examples)
           Container(
             margin: const EdgeInsets.only(left: 14, top: 4),
