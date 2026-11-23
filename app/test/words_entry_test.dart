@@ -74,7 +74,7 @@ void main() {
   group('learn page entry', () {
     testWidgets('the my words card opens the words page', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1100));
-      appState.setup(lang: 'fr', length: 4);
+      appState.setup(lang: 'fr', length: 4, mode: GameMode.lockdown);
       final bank = (await tester.runAsync(
         () async => WordBank.load(
           (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),

@@ -33,6 +33,7 @@ void main() {
     int right = 7,
     double skill = 80,
     String? date,
+    GameMode mode = GameMode.lockdown,
   }) => LearnEvent(
     kind: kind,
     language: language,
@@ -41,6 +42,7 @@ void main() {
     questions: questions,
     right: right,
     avgSkill: skill,
+    mode: mode,
   );
 
   Future<List<String>> open(WidgetTester tester) async {
@@ -105,12 +107,14 @@ void main() {
   testWidgets('at 24 games the full page shows', (tester) async {
     appState.lex.veteran = false;
     appState.stats.played = 24;
+    appState.setup(mode: GameMode.lockdown);
     await open(tester);
     expect(find.byKey(const ValueKey('learn-card-guide')), findsOneWidget);
     expect(find.byKey(const ValueKey('learn-card-free')), findsOneWidget);
   });
 
   testWidgets('a new player sees three activities, none tried', (tester) async {
+    appState.setup(mode: GameMode.lockdown);
     await open(tester);
     for (final k in ['free', 'choose', 'closing', 'sequence']) {
       expect(find.byKey(ValueKey('learn-card-$k')), findsOneWidget);
@@ -131,6 +135,7 @@ void main() {
       event(LearnKind.choose, length: 5, right: 2, skill: 20),
       event(LearnKind.free, questions: 3, right: 2, skill: 95),
     ]);
+    appState.setup(mode: GameMode.lockdown);
     await open(tester);
     expect(
       text(tester, 'learn-progress-choose'),
@@ -154,6 +159,7 @@ void main() {
   });
 
   testWidgets('a card opens its activity', (tester) async {
+    appState.setup(mode: GameMode.lockdown);
     final opened = await open(tester);
     await tester.tap(find.byKey(const ValueKey('learn-card-free')));
     await tester.pumpAndSettle();
@@ -205,6 +211,7 @@ void main() {
   testWidgets('it follows the log: a round recorded updates the card', (
     tester,
   ) async {
+    appState.setup(mode: GameMode.lockdown);
     await open(tester);
     expect(find.byKey(const ValueKey('learn-trend-closing')), findsNothing);
     appState.recordLearn(event(LearnKind.closing, questions: 10, right: 10));
@@ -243,6 +250,34 @@ void main() {
       await tester.pump();
       expect(appState.mode, other);
       appState.setup(mode: GameMode.classic);
+    }
+  });
+
+  testWidgets('classic, blind and mastermind show four things', (tester) async {
+    for (final m in [GameMode.classic, GameMode.blind, GameMode.mastermind]) {
+      appState.setup(mode: m);
+      await open(tester);
+      for (final k in ['opening', 'master', 'guess', 'how-to-play']) {
+        expect(
+          find.byKey(ValueKey('learn-card-$k')),
+          findsOneWidget,
+          reason: '$m',
+        );
+      }
+      for (final k in [
+        'guide',
+        'free',
+        'choose',
+        'closing',
+        'sequence',
+        'styles',
+      ]) {
+        expect(
+          find.byKey(ValueKey('learn-card-$k')),
+          findsNothing,
+          reason: '$m',
+        );
+      }
     }
   });
 }
