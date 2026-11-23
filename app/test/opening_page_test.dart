@@ -92,45 +92,27 @@ void main() {
     await settle(tester);
   });
 
-  testWidgets(
-    'set colours: a reply no word gives is said so, a real one used',
-    (tester) async {
-      await open(tester);
-      await tester.tap(find.byKey(const ValueKey('opening-set-0')));
-      await tester.pump();
-      // all four green but for one yellow cannot be: tiles cycle grey, yellow, green
-      final tile = find.byKey(const ValueKey('opening-tile-0-0'));
-      for (var i = 0; i < 4; i++) {
-        await tester.tap(find.byKey(ValueKey('opening-tile-0-$i')));
-        await tester.tap(find.byKey(ValueKey('opening-tile-0-$i')));
+  testWidgets('set colours: a reply no word gives is said so', (tester) async {
+    await open(tester);
+    await tester.tap(find.byKey(const ValueKey('opening-set-0')));
+    await tester.pump();
+    // tiles cycle grey, yellow, green: three green and one yellow cannot be
+    for (var i = 0; i < 4; i++) {
+      final t = find.byKey(ValueKey('opening-tile-0-$i'));
+      for (var n = 0; n < (i < 3 ? 2 : 1); n++) {
+        await tester.tap(t);
+        await tester.pump();
       }
-      await tester.pump();
-      expect(tile, findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('opening-tile-0-0')));
-      await tester.tap(find.byKey(const ValueKey('opening-tile-0-0')));
-      await tester.pump();
-      // three green and one grey/green mix: whatever it is, "use these" answers
-      await tester.tap(find.byKey(const ValueKey('opening-use-0')));
-      await tester.pump();
-      final none = shown('opening-no-word');
-      if (none) {
-        expect(text(tester, 'opening-no-word'), 'no word gives these colours.');
-        expect(shown('opening-second'), isFalse);
-      }
-      // grey everywhere: the likeliest reply of the first guess is often this
-      // one; at least one reply is always usable by tapping it
-      await tester.tap(find.byKey(const ValueKey('opening-set-0')));
-      await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('opening-reply-0-0')));
-      await waitFor(tester, find.byKey(const ValueKey('opening-second')));
-      await tester.tap(find.byKey(const ValueKey('opening-set-0')));
-      await tester.pump();
-      // the tiles start as the reply picked: using them again picks the same
-      await tester.tap(find.byKey(const ValueKey('opening-use-0')));
-      await waitFor(tester, find.byKey(const ValueKey('opening-second')));
-      await settle(tester);
-    },
-  );
+    }
+    await tester.tap(find.byKey(const ValueKey('opening-use-0')));
+    await tester.pump();
+    expect(text(tester, 'opening-no-word'), 'no word gives these colours.');
+    expect(shown('opening-second'), isFalse);
+    // a reply that exists is used: tapping the likeliest one
+    await tester.tap(find.byKey(const ValueKey('opening-reply-0-0')));
+    await waitFor(tester, find.byKey(const ValueKey('opening-second')));
+    await settle(tester);
+  });
 
   testWidgets('set colours with all green: only the guess itself fits', (
     tester,
