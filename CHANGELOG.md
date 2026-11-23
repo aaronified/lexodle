@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.13.1
+
 - the meaning of the root word, under the form that names it
   When a meaning of the answer says it is a form of another word ("plural of deke"), the meaning of that word is set right under it, in the same part of speech (a plural noun's root as a noun). English wording only for now.
 - learn: four things for classic, blind and mastermind
