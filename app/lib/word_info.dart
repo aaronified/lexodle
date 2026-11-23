@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'root_meaning.dart';
 import 'ui.dart';
 import 'words.dart';
 import 'wiktionary.dart';
@@ -41,7 +42,13 @@ class _WordInfoViewState extends State<WordInfoView> {
         if (info == null || info.isEmpty) {
           return const Caption('no wiktionary entry for this word');
         }
-        return WordInfoBody(info: info);
+        final roots = rootsOf(info, widget.word);
+        return WordInfoBody(
+          info: info,
+          afterBlocks: roots.isEmpty
+              ? null
+              : RootMeaning(roots: roots, language: widget.language),
+        );
       },
     );
   }
@@ -51,8 +58,11 @@ class _WordInfoViewState extends State<WordInfoView> {
 /// with their examples, the origin, synonyms and antonyms. The end screen shows
 /// it for the answer ([WordInfoView]), and a saved word shows its own copy.
 class WordInfoBody extends StatefulWidget {
-  const WordInfoBody({super.key, required this.info});
+  const WordInfoBody({super.key, required this.info, this.afterBlocks});
   final WordInfo info;
+
+  /// Shown under the meanings: the meaning of the root of an inflected form.
+  final Widget? afterBlocks;
 
   @override
   State<WordInfoBody> createState() => _WordInfoBodyState();
@@ -113,6 +123,7 @@ class _WordInfoBodyState extends State<WordInfoBody> {
           for (var i = 0; i < b.senses.length; i++)
             _sense(c, i + 1, b.senses[i]),
         ],
+        if (widget.afterBlocks != null) widget.afterBlocks!,
         if (info.etymology.isNotEmpty) ...[
           const SizedBox(height: 12),
           _label('origin', yellowOf(c)),

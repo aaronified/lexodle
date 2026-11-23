@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+- the meaning of the root word of an inflected answer
+  When the answer is a form of another word ("plural of deke", "third-person singular simple present indicative of deke"), its end screen now shows the meaning of that word under the meanings of the form: its parts of speech and first senses. English wording only for now.
 ## 0.13.0
 
 - learn: four things for classic, blind and mastermind
