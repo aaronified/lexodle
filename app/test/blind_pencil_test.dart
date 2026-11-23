@@ -269,4 +269,56 @@ void main() {
       expect(p.soft, isEmpty);
     },
   );
+
+  test(
+    'the reverse: with four letters of a guess out, the fifth is the right one',
+    () {
+      final p = BlindPencil(5);
+      final rows = [const BlindRow('tares', 0, 1)];
+      p.grey.addAll(['a', 'r', 'e', 's']);
+      p.refreshSoft(rows, none);
+      expect(p.softIn, {'t'});
+      // no green in the guess, so t is yellow there
+      expect(p.shown('t', 0, none), Mark.present);
+      expect(p.keyboard(none)['t'], Mark.present);
+      // and t can no longer be pencilled grey
+      expect(
+        p.tap('t', 0, rows, none),
+        'follows from the counts and your marks',
+      );
+    },
+  );
+
+  test('a letter that can be in one place only is green there', () {
+    // every letter is right, none in place: each has one place left
+    final rows = [const BlindRow('abc', 0, 3), const BlindRow('bca', 0, 3)];
+    final d = BlindPencil.deduce(rows, 'abc'.split(''));
+    final f = BlindPencil(3).forcedTiles(rows, d);
+    expect(f['a@1'], Mark.correct);
+    expect(f['b@2'], Mark.correct);
+    expect(f['c@0'], Mark.correct);
+  });
+
+  test('a green place makes the other right letters there yellow', () {
+    final p = BlindPencil(3);
+    final rows = [const BlindRow('abc', 1, 2)];
+    final d = BlindPencil.deduce(rows, 'abc'.split(''));
+    p.tap('a', 0, rows, d);
+    p.refreshSoft(rows, d);
+    expect(p.shown('a', 0, d), Mark.correct);
+    // the one green is placed: the other two right letters are yellow
+    expect(p.shown('b', 1, d), Mark.present);
+    expect(p.shown('c', 2, d), Mark.present);
+    expect(p.tap('b', 1, rows, d), 'follows from the counts and your marks');
+  });
+
+  test('as many places as greens settle the greens', () {
+    // a b c with two greens and one yellow, c ruled out in place by x@2 green
+    final rows = [const BlindRow('abc', 2, 1), const BlindRow('xyc', 1, 1)];
+    final d = BlindPencil.deduce(rows, 'abcxy'.split(''));
+    final f = BlindPencil(3).forcedTiles(rows, d);
+    // abc has all its letters right; with 2 green and 1 yellow the colours are
+    // not settled by the counts alone
+    expect(f['a@0'], isNull);
+  });
 }
