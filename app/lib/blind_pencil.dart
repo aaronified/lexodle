@@ -25,7 +25,14 @@ class BlindPencil {
   final yellow = <String, Set<int>>{};
   final grey = <String>{};
 
+  /// Letters the player's own marks rule out, worked from the counts: once a
+  /// guess has as many right letters marked as its counts say, every other
+  /// letter of it is out. They show grey and a tap on one takes the place of
+  /// the mark in the way.
+  Set<String> soft = {};
+
   void clear() {
+    soft = {};
     green.clear();
     yellow.clear();
     grey.clear();
@@ -58,6 +65,7 @@ class BlindPencil {
       c.yellow[e.key] = {...e.value};
     }
     c.grey.addAll(grey);
+    c.soft = {...soft};
     return c;
   }
 
@@ -153,6 +161,21 @@ class BlindPencil {
     return out;
   }
 
+  /// Works out [soft] from the counts of [rows] and the marks now on the
+  /// pencil, given what the counts alone settled ([d]).
+  void refreshSoft(List<BlindRow> rows, Map<String, Mark> d) {
+    final out = <String>{};
+    for (final r in rows) {
+      if (r.word.split('').toSet().length != r.word.length) continue;
+      final right = r.word.split('').where((ch) => _present(ch, d)).length;
+      if (right != r.green + r.yellow) continue;
+      for (final ch in r.word.split('')) {
+        if (!_present(ch, d) && d[ch] != Mark.absent) out.add(ch);
+      }
+    }
+    soft = out;
+  }
+
   /// The colour shown on letter [ch] at position [p]: what the helper settled
   /// ([forced]), then the player's own.
   Mark? shown(
@@ -166,7 +189,7 @@ class BlindPencil {
     if (d[ch] == Mark.absent) return Mark.absent;
     if (green[ch]?.contains(p) ?? false) return Mark.correct;
     if (yellow[ch]?.contains(p) ?? false) return Mark.present;
-    if (grey.contains(ch)) return Mark.absent;
+    if (grey.contains(ch) || soft.contains(ch)) return Mark.absent;
     return null;
   }
 
@@ -189,6 +212,9 @@ class BlindPencil {
       } else if (grey.contains(ch)) {
         out[ch] = Mark.absent;
       }
+    }
+    for (final ch in soft) {
+      if (!_present(ch, d)) out[ch] = Mark.absent;
     }
     final found = {
       ...green.keys,
@@ -335,6 +361,8 @@ class BlindPencil {
     if (d[ch] == Mark.absent) return 'ruled out by the counts';
     if (forced.containsKey('$ch@$p')) return 'set by the helper';
     final now = shown(ch, p, d, forced);
+    final claim =
+        soft.contains(ch) && !green.containsKey(ch) && !yellow.containsKey(ch);
     // where the letter is already green: marked again elsewhere it may be the
     // same copy or a second one, so it starts yellow, and green keeps the
     // other green (a doubled letter) unless the rules cannot allow two, when
@@ -345,7 +373,10 @@ class BlindPencil {
     };
     // each step is a colour and whether the other greens may give way to it
     final List<(Mark?, bool)> order;
-    if (others.isNotEmpty && now != Mark.correct) {
+    if (claim) {
+      // grey only because of a mark in the way: yellow or green takes its place
+      order = [(Mark.present, false), (Mark.correct, false)];
+    } else if (others.isNotEmpty && now != Mark.correct) {
       order = now == Mark.present
           ? [(Mark.correct, true), (null, false), (Mark.present, false)]
           : [(Mark.present, false), (Mark.correct, true), (null, false)];

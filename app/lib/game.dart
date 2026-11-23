@@ -1303,8 +1303,12 @@ class _GamePageState extends State<GamePage>
   /// in the word, and every other letter out.
   /// The tiles the helper colours because nothing else is possible there: the
   /// player cannot change them, and they carry a small dot.
-  Map<String, Mark> get _forced =>
-      _assist ? pencil.forcedTiles(_rows, _deduced) : const {};
+  Map<String, Mark> get _forced {
+    if (!_assist) return const {};
+    final d = _deduced;
+    pencil.refreshSoft(_rows, d);
+    return pencil.forcedTiles(_rows, d);
+  }
 
   Map<String, Mark> get _deduced {
     if (!_assist) return const {};
@@ -1875,12 +1879,17 @@ class _GamePageState extends State<GamePage>
     }
   }
 
+  Map<String, Mark> _keys() {
+    _forced;
+    return pencil.keyboard(_deduced, _letters);
+  }
+
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
     numberPad: equations,
     onCursor: _move,
     marks: blind
-        ? (_assist ? pencil.keyboard(_deduced, _letters) : const {})
+        ? (_assist ? _keys() : const {})
         : {
             // a grey hint rules its letter out on the keys too
             for (final h in _picks)

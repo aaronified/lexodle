@@ -244,4 +244,29 @@ void main() {
     expect(p.shown('a', 1, none), Mark.present);
     expect(p.shown('s', 4, none), Mark.absent);
   });
+
+  test(
+    'once a guess has all its right letters marked, the rest of it is grey',
+    () {
+      final p = BlindPencil(5);
+      final rows = [const BlindRow('tares', 0, 1)];
+      p.tap('t', 0, rows, none);
+      p.refreshSoft(rows, none);
+      expect(p.soft, {'a', 'r', 'e', 's'});
+      expect(p.shown('a', 1, none), Mark.absent);
+      expect(p.keyboard(none)['s'], Mark.absent);
+      expect(p.keyboard(none)['t'], Mark.present);
+      // tapping a grey one takes the yellow and t stands down
+      expect(p.tap('s', 4, rows, none), isNull);
+      p.refreshSoft(rows, none);
+      expect(p.shown('s', 4, none), Mark.present);
+      expect(p.shown('t', 0, none), Mark.absent);
+      expect(p.soft, {'t', 'a', 'r', 'e'});
+      // unmarking the yellow lets the greys go
+      p.tap('s', 4, rows, none);
+      p.refreshSoft(rows, none);
+      expect(p.shown('s', 4, none), isNull);
+      expect(p.soft, isEmpty);
+    },
+  );
 }
