@@ -64,12 +64,19 @@ void main() {
     expect(find.text('the shape'), findsOneWidget);
   });
 
-  testWidgets('learn for classic keeps its drills and adds the guide', (
+  testWidgets('learn for classic is four things, with no guide card', (
     tester,
   ) async {
     await open(tester, GameMode.classic);
-    expect(find.byKey(const ValueKey('learn-card-guide')), findsOneWidget);
     expect(find.byKey(const ValueKey('learn-card-opening')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('learn-card-how-to-play')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('learn-card-master')), findsOneWidget);
+    expect(find.byKey(const ValueKey('learn-card-guess')), findsOneWidget);
+    expect(find.byKey(const ValueKey('learn-card-guide')), findsNothing);
+    expect(find.byKey(const ValueKey('learn-card-free')), findsNothing);
   });
 
   testWidgets('learn for equations and places does not talk about words', (

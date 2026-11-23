@@ -125,15 +125,17 @@ void main() {
       expect(titles, contains(title), reason: route);
     }
     // a page of learn has its own: the guide, with its own address
+    appState.setup(lang: 'en', length: 6, mode: GameMode.equations);
+    await tester.pumpAndSettle();
     titles.clear();
     await tester.tap(find.byKey(const ValueKey('learn-card-guide')));
     await tester.pumpAndSettle();
-    expect(titles, contains('blind/learn/guide'));
+    expect(titles, contains('equations/learn/guide'));
     expect(
       ModalRoute.of(tester.element(find.byKey(const ValueKey('mode-guide'))))!
           .settings
           .name,
-      '/blind${Routes.learnGuide}',
+      '/equations${Routes.learnGuide}',
     );
   });
 
