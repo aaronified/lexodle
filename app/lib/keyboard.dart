@@ -29,7 +29,14 @@ class LetterKeyboard extends StatelessWidget {
     this.numberPad = false,
     this.faces = faceOf,
     this.onCursor,
+    this.chances = const {},
   });
+
+  /// Per letter, the chance that a copy is in place (green) and that a copy is
+  /// in the word and not yet in place (yellow): the key shows them as one
+  /// column filling it from the bottom, the green first and the yellow on top of
+  /// it. A letter with a mark of [marks] is drawn by its mark instead.
+  final Map<String, (double, double)> chances;
 
   /// Moves the cursor of the row being typed by this many tiles: a drag along
   /// the space key (the blank, `_`) does it, as along a phone keyboard's space
@@ -104,6 +111,7 @@ class LetterKeyboard extends StatelessWidget {
       double flex = 1,
       (Color fill, Color fg)? colors,
       List<Mark?>? quad,
+      (double, double)? chance,
       Haptic feel = Haptic.key,
       void Function(int by)? drag,
     }) {
@@ -122,6 +130,24 @@ class LetterKeyboard extends StatelessWidget {
               onTap: press,
               borderRadius: BorderRadius.circular(3),
               child: _QuadKey(label: label, marks: quad, height: keyHeight),
+            ),
+          ),
+        );
+      }
+      if (chance != null && mark == null) {
+        return Expanded(
+          flex: (flex * 10).round(),
+          child: Padding(
+            padding: EdgeInsets.all(gap),
+            child: InkWell(
+              onTap: press,
+              borderRadius: BorderRadius.circular(3),
+              child: _ChanceKey(
+                label: label,
+                green: chance.$1,
+                yellow: chance.$2,
+                height: keyHeight,
+              ),
             ),
           ),
         );
@@ -276,6 +302,7 @@ class LetterKeyboard extends StatelessWidget {
                     () => onLetter(l),
                     mark: marks[l],
                     quad: quadMarks[l],
+                    chance: chances[l],
                   ),
                 if (i == actionRow)
                   key(
@@ -364,6 +391,70 @@ class _QuadKey extends StatelessWidget {
               Center(child: _HaloText(label, ink, halo)),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One key that shows a letter's chances as a column filling it from the
+/// bottom: green (a copy in place) at the foot, yellow (a copy in the word, not
+/// in place yet) on top of it. The letter is drawn as the quartet keyboard's.
+class _ChanceKey extends StatelessWidget {
+  const _ChanceKey({
+    required this.label,
+    required this.green,
+    required this.yellow,
+    required this.height,
+  });
+  final String label;
+  final double green;
+  final double yellow;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    var g = green.clamp(0.0, 1.0), y = yellow.clamp(0.0, 1.0);
+    if (g + y > 1) {
+      final k = 1 / (g + y);
+      g *= k;
+      y *= k;
+    }
+    final inner = height - 2;
+    return Container(
+      height: height,
+      decoration: BoxDecoration(
+        border: Border.all(color: c.outline),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: g * inner,
+              child: ColoredBox(
+                key: ValueKey('chance-g-$label'),
+                color: markColors(c, Mark.correct).$1,
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: g * inner,
+              height: y * inner,
+              child: ColoredBox(
+                key: ValueKey('chance-y-$label'),
+                color: markColors(c, Mark.present).$1,
+              ),
+            ),
+            Center(child: _HaloText(label, c.onSurface, c.surface)),
+          ],
         ),
       ),
     );

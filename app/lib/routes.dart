@@ -12,7 +12,10 @@ import 'drill_page.dart';
 import 'game.dart';
 import 'history_page.dart';
 import 'learn.dart';
+import 'guess_page.dart';
 import 'learn_guide.dart';
+import 'master_game.dart' show MasterKind;
+import 'master_page.dart';
 import 'learn_home.dart';
 import 'learn_log.dart';
 import 'mode_settings_page.dart';
@@ -69,6 +72,8 @@ class Routes {
   static const learnSequence = '/learn/sequence';
   static const learnStyles = '/learn/styles';
   static const learnGuide = '/learn/guide';
+  static const learnMaster = '/learn/master';
+  static const learnGuess = '/learn/guess';
   static const achievements = '/achievements';
   static const mastery = '/achievements/mastery';
   static const howTo = '/how-to';
@@ -245,6 +250,27 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       );
     case Routes.learnGuide:
       return page(ModeGuidePage(mode: appState.mode));
+    case Routes.learnMaster:
+      return page(
+        learnGate(
+          page: 'master',
+          builder: (bank) => MasterPage(
+            bank: bank,
+            kind: switch (appState.mode) {
+              GameMode.blind => MasterKind.blind,
+              GameMode.mastermind => MasterKind.mastermind,
+              _ => MasterKind.classic,
+            },
+          ),
+        ),
+      );
+    case Routes.learnGuess:
+      return page(
+        learnGate(
+          page: 'guess',
+          builder: (bank) => GuessPage(bank: bank),
+        ),
+      );
     case Routes.learnStyles:
       return page(
         learnGate(
@@ -331,6 +357,8 @@ const _known = {
   Routes.learnSequence,
   Routes.learnStyles,
   Routes.learnGuide,
+  Routes.learnMaster,
+  Routes.learnGuess,
   Routes.achievements,
   Routes.howTo,
   Routes.settings,

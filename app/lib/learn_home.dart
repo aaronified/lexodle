@@ -33,6 +33,13 @@ class LearnHomePage extends StatelessWidget {
         final streak = log.streak(today);
         // before step 'learn' the page holds only how to play each open mode
         final full = appState.stepOpen('learn');
+        // learn is four things for the modes with a board of one word to find:
+        // the opening, how to play, how to master and a quiz
+        final four = const {
+          GameMode.classic,
+          GameMode.blind,
+          GameMode.mastermind,
+        }.contains(mode);
         final modes = [
           for (final m in openModes(appState.level))
             if (GameMode.loopFor(appState.lang).contains(m)) m,
@@ -105,8 +112,16 @@ class LearnHomePage extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 14),
-                    if (full)
-                      // how to play the mode in view well, for every mode
+                    if (full && four)
+                      _lesson(
+                        context,
+                        'the opening',
+                        'the best first guess, then the best second and third '
+                            'for any colours it can show',
+                        Routes.learnOpening,
+                      ),
+                    if (full && !four)
+                      // how to play the mode in view well
                       OutlinedButton(
                         key: const ValueKey('learn-card-guide'),
                         style: OutlinedButton.styleFrom(
@@ -142,9 +157,27 @@ class LearnHomePage extends StatelessWidget {
                           ),
                         ),
                       ),
-                    if (full) const SizedBox(height: 10),
+                    if (full && !four) const SizedBox(height: 10),
                     _howToPlay(context, mode),
-                    if (full) ...[
+                    if (full && four) ...[
+                      _lesson(
+                        context,
+                        'how to master ${mode.label}',
+                        'play a word with every number to hand: the words that '
+                            'fit, the best guesses and the logic of each colour',
+                        Routes.learnMaster,
+                        key: 'learn-card-master',
+                      ),
+                      _lesson(
+                        context,
+                        'guess the best',
+                        'four guesses: which splits the rest best, or got the '
+                            'luckiest reply',
+                        Routes.learnGuess,
+                        key: 'learn-card-guess',
+                      ),
+                    ],
+                    if (full && !four) ...[
                       _lesson(
                         context,
                         'the opening',
