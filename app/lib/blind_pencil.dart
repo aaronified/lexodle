@@ -9,6 +9,14 @@ class BlindRow {
   final int yellow;
 }
 
+/// What the counts and the marks settle together: letters in the word, letters
+/// out of it, and tiles whose colour is the only one possible.
+class _Facts {
+  final present = <String>{};
+  final absent = <String>{};
+  final tiles = <String, Mark>{};
+}
+
 /// The colours a player of a blind game pencils on letters, with the rules
 /// they must keep. Green and yellow belong to a letter at a position, grey to a
 /// letter. A letter can be green in several positions (a doubled letter), but a
@@ -31,8 +39,15 @@ class BlindPencil {
   /// the mark in the way.
   Set<String> soft = {};
 
+  /// Letters the player's marks and the counts put in the word, and tiles
+  /// whose colour follows, both beyond what the counts alone settle.
+  Set<String> softIn = {};
+  Map<String, Mark> softTiles = {};
+
   void clear() {
     soft = {};
+    softIn = {};
+    softTiles = {};
     green.clear();
     yellow.clear();
     grey.clear();
@@ -66,6 +81,8 @@ class BlindPencil {
     }
     c.grey.addAll(grey);
     c.soft = {...soft};
+    c.softIn = {...softIn};
+    c.softTiles = {...softTiles};
     return c;
   }
 
@@ -127,7 +144,198 @@ class BlindPencil {
         }
       }
     }
+    if (rows.isNotEmpty) {
+      final f = _infer(
+        rows,
+        rows.first.word.length,
+        present: [
+          for (final e in d.entries)
+            if (e.value == Mark.present) e.key,
+        ],
+        absent: [
+          for (final e in d.entries)
+            if (e.value == Mark.absent) e.key,
+        ],
+      );
+      for (final c in f.absent) {
+        d[c] = Mark.absent;
+      }
+      for (final c in f.present) {
+        if (d[c] != Mark.absent) d[c] = Mark.present;
+      }
+    }
     return d;
+  }
+
+  /// The common-sense deductions, from the counts of [rows] and what is already
+  /// known: letters [present] in the word or [absent] from it, and [tiles]
+  /// ('letter@place') already green or yellow. They are repeated until nothing
+  /// new follows:
+  ///
+  /// - a guess with no right letter has all its letters out;
+  /// - a guess whose right letters are all its letters has them in, and every
+  ///   other letter out;
+  /// - a guess with as many right letters known as its counts say has the rest
+  ///   out; with as many unknown as it still needs, they are all in;
+  /// - a guess with all its greens placed has its other right letters yellow;
+  ///   with all its yellows placed, green; as many places that can be green as
+  ///   it has greens, and they are green;
+  /// - a letter in the word that can be in one place only is green there;
+  /// - a place green with one letter is yellow for every other letter.
+  ///
+  /// Guesses with a letter twice are left out of what counts per letter, since
+  /// the word may have it twice.
+  static _Facts _infer(
+    List<BlindRow> rows,
+    int length, {
+    Iterable<String> present = const [],
+    Iterable<String> absent = const [],
+    Map<String, Mark> tiles = const {},
+  }) {
+    final f = _Facts()
+      ..present.addAll(present)
+      ..absent.addAll(absent)
+      ..tiles.addAll(tiles);
+    if (rows.isEmpty) return f;
+    final universe = {for (final r in rows) ...r.word.split('')};
+    final twice = <String>{};
+    for (final r in rows) {
+      final seen = <String>{};
+      for (final c in r.word.split('')) {
+        if (!seen.add(c)) twice.add(c);
+      }
+    }
+    var changed = true;
+    bool inP(String c) => f.present.contains(c);
+    bool inA(String c) => f.absent.contains(c);
+    void addP(String c) {
+      if (inP(c) || inA(c)) return;
+      f.present.add(c);
+      changed = true;
+    }
+
+    void addA(String c) {
+      if (inP(c) || inA(c)) return;
+      f.absent.add(c);
+      changed = true;
+    }
+
+    void addT(String c, int p, Mark m) {
+      final k = '$c@$p';
+      if (f.tiles.containsKey(k)) return;
+      f.tiles[k] = m;
+      changed = true;
+      addP(c);
+    }
+
+    var guard = 0;
+    while (changed && guard++ < 30) {
+      changed = false;
+      for (final e in f.tiles.entries.toList()) {
+        addP(e.key.split('@').first);
+      }
+      final taken = <int, String>{};
+      for (final e in f.tiles.entries) {
+        if (e.value == Mark.correct) {
+          final q = e.key.split('@');
+          taken[int.parse(q[1])] = q[0];
+        }
+      }
+      for (final r in rows) {
+        final w = r.word.split('');
+        final need = r.green + r.yellow;
+        if (need == 0) {
+          for (final c in w) {
+            addA(c);
+          }
+        }
+        if (need == w.length) {
+          for (final c in w) {
+            addP(c);
+          }
+          for (final c in universe) {
+            if (!w.contains(c)) addA(c);
+          }
+        }
+        if (w.toSet().length != w.length) continue;
+        final known = w.where(inP).length;
+        final unknown = [
+          for (final c in w)
+            if (!inP(c) && !inA(c)) c,
+        ];
+        if (known == need) {
+          for (final c in unknown) {
+            addA(c);
+          }
+        } else if (known + unknown.length == need) {
+          for (final c in unknown) {
+            addP(c);
+          }
+        }
+        var gTiles = 0, yTiles = 0;
+        for (var i = 0; i < w.length; i++) {
+          final m = f.tiles['${w[i]}@$i'];
+          if (m == Mark.correct) gTiles++;
+          if (m == Mark.present) yTiles++;
+        }
+        for (var i = 0; i < w.length; i++) {
+          final c = w[i];
+          if (f.tiles.containsKey('$c@$i') || !inP(c)) continue;
+          if (gTiles == r.green && yTiles != r.yellow) {
+            addT(c, i, Mark.present);
+          } else if (yTiles == r.yellow && gTiles != r.green) {
+            addT(c, i, Mark.correct);
+          }
+        }
+        if (r.green > 0) {
+          final can = <int>[];
+          for (var i = 0; i < w.length; i++) {
+            final c = w[i];
+            final m = f.tiles['$c@$i'];
+            if (inA(c) || m == Mark.present) continue;
+            final t = taken[i];
+            if (t != null && t != c) continue;
+            can.add(i);
+          }
+          if (can.length == r.green) {
+            for (final i in can) {
+              addT(w[i], i, Mark.correct);
+            }
+          }
+        }
+      }
+      // a letter in the word with one place left is green there
+      for (final c in f.present.toList()) {
+        if (twice.contains(c)) continue;
+        if (f.tiles.entries.any(
+          (e) => e.value == Mark.correct && e.key.startsWith('$c@'),
+        )) {
+          continue;
+        }
+        final left = [
+          for (var p = 0; p < length; p++)
+            if (f.tiles['$c@$p'] != Mark.present &&
+                (taken[p] == null || taken[p] == c))
+              p,
+        ];
+        if (left.length == 1) addT(c, left.first, Mark.correct);
+      }
+      // a place green with one letter is yellow for the others there
+      for (final r in rows) {
+        final w = r.word.split('');
+        for (var i = 0; i < w.length; i++) {
+          final t = taken[i];
+          if (t != null && t != w[i] && inP(w[i]) && !twice.contains(w[i])) {
+            addT(w[i], i, Mark.present);
+          }
+        }
+      }
+    }
+    for (final c in f.present.intersection(f.absent)) {
+      f.present.remove(c);
+      f.absent.remove(c);
+    }
+    return f;
   }
 
   /// The tiles the helper colours because no other colour is possible for that
@@ -144,6 +352,19 @@ class BlindPencil {
       ...yellow.keys,
       ...d.keys,
     }.where((ch) => _present(ch, d)).length;
+    final hard = _infer(
+      rows,
+      length,
+      present: [
+        for (final e in d.entries)
+          if (e.value == Mark.present) e.key,
+      ],
+      absent: [
+        for (final e in d.entries)
+          if (e.value == Mark.absent) e.key,
+      ],
+    );
+    out.addAll(hard.tiles);
     for (final r in rows) {
       for (var i = 0; i < r.word.length; i++) {
         final ch = r.word[i];
@@ -164,16 +385,47 @@ class BlindPencil {
   /// Works out [soft] from the counts of [rows] and the marks now on the
   /// pencil, given what the counts alone settled ([d]).
   void refreshSoft(List<BlindRow> rows, Map<String, Mark> d) {
-    final out = <String>{};
-    for (final r in rows) {
-      if (r.word.split('').toSet().length != r.word.length) continue;
-      final right = r.word.split('').where((ch) => _present(ch, d)).length;
-      if (right != r.green + r.yellow) continue;
-      for (final ch in r.word.split('')) {
-        if (!_present(ch, d) && d[ch] != Mark.absent) out.add(ch);
-      }
-    }
-    soft = out;
+    final hard = _infer(
+      rows,
+      length,
+      present: [
+        for (final e in d.entries)
+          if (e.value == Mark.present) e.key,
+      ],
+      absent: [
+        for (final e in d.entries)
+          if (e.value == Mark.absent) e.key,
+      ],
+    );
+    final tiles0 = <String, Mark>{
+      for (final e in green.entries)
+        for (final p in e.value) '${e.key}@$p': Mark.correct,
+      for (final e in yellow.entries)
+        for (final p in e.value) '${e.key}@$p': Mark.present,
+    };
+    final f = _infer(
+      rows,
+      length,
+      present: [...hard.present, ...green.keys, ...yellow.keys],
+      absent: [...hard.absent, ...grey],
+      tiles: tiles0,
+    );
+    soft = {
+      for (final c in f.absent)
+        if (!hard.absent.contains(c) && !grey.contains(c)) c,
+    };
+    softIn = {
+      for (final c in f.present)
+        if (!hard.present.contains(c) &&
+            !green.containsKey(c) &&
+            !yellow.containsKey(c))
+          c,
+    };
+    softTiles = {
+      for (final e in f.tiles.entries)
+        if (!tiles0.containsKey(e.key) && !hard.tiles.containsKey(e.key))
+          e.key: e.value,
+    };
   }
 
   /// The colour shown on letter [ch] at position [p]: what the helper settled
@@ -189,6 +441,8 @@ class BlindPencil {
     if (d[ch] == Mark.absent) return Mark.absent;
     if (green[ch]?.contains(p) ?? false) return Mark.correct;
     if (yellow[ch]?.contains(p) ?? false) return Mark.present;
+    final st = softTiles['$ch@$p'];
+    if (st != null) return st;
     if (grey.contains(ch) || soft.contains(ch)) return Mark.absent;
     return null;
   }
@@ -216,6 +470,11 @@ class BlindPencil {
     for (final ch in soft) {
       if (!_present(ch, d)) out[ch] = Mark.absent;
     }
+    for (final ch in softIn) {
+      if (out[ch] != Mark.correct && d[ch] != Mark.absent) {
+        out[ch] = Mark.present;
+      }
+    }
     final found = {
       ...green.keys,
       ...yellow.keys,
@@ -233,6 +492,7 @@ class BlindPencil {
       d[ch] != Mark.absent &&
       (green.containsKey(ch) ||
           d[ch] == Mark.present ||
+          softIn.contains(ch) ||
           (yellow[ch]?.isNotEmpty ?? false));
 
   /// Why the pencil breaks a rule, or null. [focus] is the letter being
@@ -263,7 +523,7 @@ class BlindPencil {
       }
     }
     // a letter that is yellow needs a position left to be in
-    final letters = <String>{...green.keys, ...yellow.keys};
+    final letters = <String>{...green.keys, ...yellow.keys, ...softIn};
     for (final e in d.entries) {
       if (e.value == Mark.present) letters.add(e.key);
     }
@@ -360,6 +620,9 @@ class BlindPencil {
   ]) {
     if (d[ch] == Mark.absent) return 'ruled out by the counts';
     if (forced.containsKey('$ch@$p')) return 'set by the helper';
+    if (softTiles.containsKey('$ch@$p')) {
+      return 'follows from the counts and your marks';
+    }
     final now = shown(ch, p, d, forced);
     final claim =
         soft.contains(ch) && !green.containsKey(ch) && !yellow.containsKey(ch);
@@ -385,7 +648,8 @@ class BlindPencil {
       order = [
         for (var k = 1; k <= _cycle.length; k++)
           // a letter the counts put in the word cannot be grey
-          if (!(d[ch] == Mark.present && _cycle[(i + k) % 4] == Mark.absent))
+          if (!((d[ch] == Mark.present || softIn.contains(ch)) &&
+              _cycle[(i + k) % 4] == Mark.absent))
             (_cycle[(i + k) % 4], false),
       ];
     }

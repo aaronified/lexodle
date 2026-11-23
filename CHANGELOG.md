@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+- blind: the rest of the commonsense colouring
+  The helper now works the counts through to the end: four letters of a guess out make the fifth the right one; a guess with all its greens placed has its other right letters yellow, and with all its yellows placed, green; as many places that can be green as a guess has greens make them green; a letter in the word that can only be in one place is green there; a place that is green with one letter is yellow for the others. What follows from the counts alone has the dot and is fixed; what follows from your own marks follows them, and a tap on it says so, so you change the mark it follows from.
 - blind: the rest of a guess turns grey once its right letters are marked
   When a guess has as many right letters marked as its counts say (tares with one right, t marked yellow), every other letter of it is grey by itself, on the board and on the keyboard. Tapping one of them takes the mark and the one in the way stands down. Unmark the right letter and the greys go.
 - blind: pencilling a letter that is already green elsewhere
