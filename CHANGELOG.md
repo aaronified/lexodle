@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- the tile the cursor is on glows
+  The tile the next letter or digit goes into has a glow around its border: soft on the cream theme, stronger on night and black. Nothing else about the tile changes.
+
 ## 0.13.2
 
 - dailies: no spellings like comin as an answer, from 25 nov
