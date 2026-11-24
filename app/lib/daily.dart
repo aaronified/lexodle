@@ -4,6 +4,7 @@ import 'clock.dart';
 import 'equations.dart';
 import 'logic.dart' show Mark, evaluate;
 import 'modes.dart';
+import 'retired_words.dart';
 import 'words.dart';
 
 /// The daily word: one word per language per day, the same for everyone on that
@@ -203,8 +204,14 @@ List<int> _totalsOf(String key, List<int> weights) =>
 /// Which word the curve daily of [key] (the language, and the mode when it is
 /// not classic) on [date] is, among words with [weights]. Like [dailyIndex],
 /// a word that was a daily in the last [dailyNoRepeat] days is drawn again; the
-/// days are replayed from [dailyCurveFrom].
-int dailyCurveIndex(String key, String date, List<int> weights) {
+/// days are replayed from [dailyCurveFrom]. From [dailyRetireFrom] a pick for
+/// which [retired] says yes is drawn again too.
+int dailyCurveIndex(
+  String key,
+  String date,
+  List<int> weights, {
+  bool Function(int index)? retired,
+}) {
   final d = DateTime.tryParse(date);
   final a = DateTime.utc(2026, 10, 30);
   final day = d == null
@@ -224,7 +231,8 @@ int dailyCurveIndex(String key, String date, List<int> weights) {
     do {
       p = pick(ds, k);
       k++;
-    } while (picks.indexOf(p, from < 0 ? 0 : from) >= 0);
+    } while (picks.indexOf(p, from < 0 ? 0 : from) >= 0 ||
+        (retired != null && ds.compareTo(dailyRetireFrom) >= 0 && retired(p)));
     picks.add(p);
   }
   return picks[day];
@@ -300,7 +308,12 @@ class Daily {
       final w = bank.curveWeights(dailyLength);
       return Daily(
         d,
-        all[dailyCurveIndex(key, d, w)],
+        all[dailyCurveIndex(
+          key,
+          d,
+          w,
+          retired: code == 'en' ? (i) => retiredEnglish.contains(all[i]) : null,
+        )],
         tries: mode == GameMode.lockdown ? lockdownTries : dailyTriesOf(mode),
       );
     }
@@ -364,6 +377,11 @@ class DailyMulti {
     final mayShare = d.length == 10 && d.compareTo(dailyShareFrom) >= 0;
     bool keeps(List<String> chosen, String w, int k, int j, int t) {
       if (chosen.contains(w)) return false;
+      if (code == 'en' &&
+          d.compareTo(dailyRetireFrom) >= 0 &&
+          retiredEnglish.contains(w)) {
+        return false;
+      }
       if (!mayShare) return chosen.every((o) => !sharesLetter(o, w));
       final shared =
           chosen.where((o) => sharesLetter(o, w)).length +
