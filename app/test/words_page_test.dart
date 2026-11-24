@@ -146,20 +146,21 @@ void main() {
       expect(row('fr', 'bonjour'), findsOneWidget);
     });
 
-    testWidgets('the sort pill switches to a to z', (tester) async {
+    testWidgets('the sort menu switches to a to z', (tester) async {
       appState.saveWord('en', 'charlie', null, today: '2026-11-01');
       appState.saveWord('en', 'alpha', null, today: '2026-11-02');
       appState.saveWord('en', 'bravo', null, today: '2026-11-03');
       await page(tester);
-      expect(find.text('newest first'), findsOneWidget);
       expect(
         tester.getTopLeft(row('en', 'bravo')).dy,
         lessThan(tester.getTopLeft(row('en', 'alpha')).dy),
       );
 
       await tester.tap(sort());
-      await tester.pump();
-      expect(find.text('a to z'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('sort saved'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('sort-az')));
+      await tester.pumpAndSettle();
       final y = [
         for (final w in ['alpha', 'bravo', 'charlie'])
           tester.getTopLeft(row('en', w)).dy,
@@ -359,6 +360,27 @@ void main() {
       expect(find.byType(CollectedWordPage), findsOneWidget);
     });
 
+    testWidgets('the collected sort menu lists the oldest first', (
+      tester,
+    ) async {
+      seed();
+      await openCollected(tester);
+      expect(
+        tester.getTopLeft(crow('en', 'tours')).dy,
+        lessThan(tester.getTopLeft(crow('en', 'clubs')).dy),
+      );
+
+      await tester.tap(find.byKey(const ValueKey('collected-sort')));
+      await tester.pumpAndSettle();
+      expect(find.text('sort collected'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('sort-oldest')));
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(crow('en', 'clubs')).dy,
+        lessThan(tester.getTopLeft(crow('en', 'tours')).dy),
+      );
+    });
+
     testWidgets('an empty collection shows only its caption', (tester) async {
       await openCollected(tester);
       expect(
@@ -390,6 +412,21 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('collected 1'), findsOneWidget);
       expect(find.byKey(const ValueKey('collected-search')), findsOneWidget);
+    });
+
+    testWidgets('the header tabs switch the lists', (tester) async {
+      appState.saveWord('en', 'alpha', null, today: '2026-11-01');
+      appState.collection.addWord('en', 'clubs');
+      appState.refresh();
+      await page(tester);
+      expect(row('en', 'alpha'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('words-tab-collected')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('collected-search')), findsOneWidget);
+      expect(row('en', 'alpha'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('words-tab-saved')));
+      await tester.pumpAndSettle();
+      expect(row('en', 'alpha'), findsOneWidget);
     });
 
     testWidgets('the banner shows on both tabs', (tester) async {

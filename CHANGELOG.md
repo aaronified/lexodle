@@ -9,6 +9,10 @@ it to the version.
 
 - the streak calendar goes back through the months and opens a day
   The month of the streak card has arrows beside its name: the left goes to the month before (as far back as the daily log reaches), the right to the month after (never a future one). A month of another year says its year. A day with a kept game (solved, super solved or lost) opens the review of that day's daily, the same screen the history opens; days not played, days to come and days with nothing kept cannot be opened. The month opens on the current month each time.
+- words: underlined tabs, scrolling language pills and a sort button
+  The two tabs of the words page (saved, collected) are plain text in a one-line header with the settings cog, the one on show underlined, like the other pages. The language pills scroll sideways under a fade, and a sort button is fixed at the right end of the row on both lists: newest first, oldest first, a to z, z to a (the button is tinted when the list is not newest first). The sort pill of the saved list is gone.
+- the tile the cursor is on glows
+  The tile the next letter or digit goes into has a glow around its border: soft on the cream theme, stronger on night and black. Nothing else about the tile changes.
 
 ## 0.13.2
 
