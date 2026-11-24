@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'collection.dart';
+import 'edge_fade.dart';
 import 'geography.dart';
 import 'main.dart';
 import 'routes.dart';
@@ -12,8 +13,11 @@ import 'ui.dart';
 import 'words.dart';
 import 'words_banner.dart';
 
+/// The orders a list can be shown in; newest first is the stored order.
+enum _Sort { newest, oldest, az, za }
+
 /// "my words": the personal dictionary, newest first, with a language filter,
-/// a sort toggle and a search over the word, the note and the first meaning.
+/// a sort menu and a search over the word, the note and the first meaning.
 /// A second tab shows the words and places won (see collection.dart).
 class WordsPage extends StatefulWidget {
   const WordsPage({super.key});
@@ -26,8 +30,13 @@ class _WordsPageState extends State<WordsPage> {
   /// The language filter; null is all of them.
   String? _lang;
 
-  /// False keeps the stored order (newest first), true sorts by word.
-  bool _az = false;
+  /// The order of each list, in memory only.
+  _Sort _savedSort = _Sort.newest;
+  _Sort _collectedSort = _Sort.newest;
+
+  /// The sort buttons, to anchor their menus.
+  final _savedSortKey = GlobalKey();
+  final _collectedSortKey = GlobalKey();
 
   final _search = TextEditingController();
   String _query = '';
@@ -115,11 +124,26 @@ class _WordsPageState extends State<WordsPage> {
         Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(19, 8, 19, 14),
-              child: Row(
+              padding: const EdgeInsets.symmetric(horizontal: 19),
+              child: Column(
                 children: [
-                  Expanded(child: _tabs(c)),
-                  if (!Navigator.of(context).canPop()) const SettingsButton(),
+                  SizedBox(
+                    height: 56,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: _tabs(c),
+                          ),
+                        ),
+                        if (!Navigator.of(context).canPop())
+                          const SettingsButton(),
+                      ],
+                    ),
+                  ),
+                  Divider(height: 1, thickness: 1, color: c.outlineVariant),
                 ],
               ),
             ),
@@ -185,27 +209,25 @@ class _WordsPageState extends State<WordsPage> {
     }
   }
 
+  /// The two tabs, left aligned on one line each; the selected one has a
+  /// primary underline at the bottom edge of the header.
   Widget _tabs(ColorScheme c) {
     return Row(
       children: [
-        Expanded(
-          child: _tab(
-            c,
-            key: const ValueKey('words-tab-saved'),
-            label: 'saved ${_savedCount()}',
-            selected: !_collected,
-            onTap: () => _goTo(0),
-          ),
+        _tab(
+          c,
+          key: const ValueKey('words-tab-saved'),
+          label: 'saved ${_savedCount()}',
+          selected: !_collected,
+          onTap: () => _goTo(0),
         ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: _tab(
-            c,
-            key: const ValueKey('words-tab-collected'),
-            label: 'collected ${_collectedCount()}',
-            selected: _collected,
-            onTap: () => _goTo(1),
-          ),
+        const SizedBox(width: 22),
+        _tab(
+          c,
+          key: const ValueKey('words-tab-collected'),
+          label: 'collected ${_collectedCount()}',
+          selected: _collected,
+          onTap: () => _goTo(1),
         ),
       ],
     );
@@ -221,20 +243,30 @@ class _WordsPageState extends State<WordsPage> {
     return InkWell(
       key: key,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        height: 52,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6),
-          color: selected ? c.secondaryContainer : c.surfaceContainerHighest,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: selected ? FontWeight.bold : null,
-            color: selected ? c.onSecondaryContainer : c.onSurface,
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+                  color: selected
+                      ? c.onSurface
+                      : c.onSurface.withValues(alpha: dimAlpha),
+                ),
+              ),
+              Container(
+                height: 2,
+                color: selected ? c.primary : Colors.transparent,
+              ),
+            ],
           ),
         ),
       ),
@@ -255,17 +287,18 @@ class _WordsPageState extends State<WordsPage> {
     final langs = _langs(all);
     final lang = langs.contains(_lang) ? _lang : null;
 
-    final rows = _filter(all, lang, _query.trim().toLowerCase());
-    if (_az) _sortByWord(rows);
+    final rows = _sortSaved(
+      _filter(all, lang, _query.trim().toLowerCase()),
+      _savedSort,
+    );
 
     return [
       Caption('${all.length} saved · tap a word for its entry'),
       const SizedBox(height: 14),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
+      _pillRow(
+        c,
+        scrollKey: const ValueKey('words-pills-scroll'),
+        pills: [
           _pill(
             c,
             key: const ValueKey('words-lang-all'),
@@ -288,17 +321,19 @@ class _WordsPageState extends State<WordsPage> {
                 ],
               ),
             ),
-          _pill(
-            c,
-            key: const ValueKey('words-sort'),
-            selected: _az,
-            onTap: () => setState(() => _az = !_az),
-            child: Text(
-              _az ? 'a to z' : 'newest first',
-              style: const TextStyle(fontSize: 12),
-            ),
-          ),
         ],
+        sort: _sortButton(
+          c,
+          key: const ValueKey('words-sort'),
+          buttonKey: _savedSortKey,
+          changed: _savedSort != _Sort.newest,
+          onTap: () => _openSort(
+            buttonKey: _savedSortKey,
+            title: 'sort saved',
+            current: _savedSort,
+            onPick: (s) => _savedSort = s,
+          ),
+        ),
       ),
       const SizedBox(height: 14),
       Semantics(
@@ -345,14 +380,17 @@ class _WordsPageState extends State<WordsPage> {
         ? appState.lang
         : pills.first;
 
-    final keys = _cMatches(col, sel, _cQuery.trim().toLowerCase());
+    final keys = _sortKeys(
+      _cMatches(col, sel, _cQuery.trim().toLowerCase()),
+      _collectedSort,
+      sel == 'places',
+    );
 
     return [
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
+      _pillRow(
+        c,
+        scrollKey: const ValueKey('collected-pills-scroll'),
+        pills: [
           for (final code in langs)
             _pill(
               c,
@@ -377,6 +415,18 @@ class _WordsPageState extends State<WordsPage> {
               child: const Text('places', style: TextStyle(fontSize: 12)),
             ),
         ],
+        sort: _sortButton(
+          c,
+          key: const ValueKey('collected-sort'),
+          buttonKey: _collectedSortKey,
+          changed: _collectedSort != _Sort.newest,
+          onTap: () => _openSort(
+            buttonKey: _collectedSortKey,
+            title: 'sort collected',
+            current: _collectedSort,
+            onPick: (s) => _collectedSort = s,
+          ),
+        ),
       ),
       const SizedBox(height: 14),
       Semantics(
@@ -454,13 +504,179 @@ class _WordsPageState extends State<WordsPage> {
     }
   }
 
-  /// Sorts [rows] by word in place; keeps the order when it fails.
-  void _sortByWord(List<SavedWord> rows) {
+  /// [rows] (newest first) in the order [sort] asks; keeps them as they are
+  /// when it fails.
+  List<SavedWord> _sortSaved(List<SavedWord> rows, _Sort sort) {
     try {
-      rows.sort((a, b) => a.word.toLowerCase().compareTo(b.word.toLowerCase()));
+      return switch (sort) {
+        _Sort.newest => rows,
+        _Sort.oldest => rows.reversed.toList(),
+        _Sort.az => List.of(
+          rows,
+        )..sort((a, b) => a.word.toLowerCase().compareTo(b.word.toLowerCase())),
+        _Sort.za => List.of(
+          rows,
+        )..sort((a, b) => b.word.toLowerCase().compareTo(a.word.toLowerCase())),
+      };
     } catch (e) {
       appLog.w('words', 'could not sort the saved words: ${e.runtimeType}');
+      return rows;
     }
+  }
+
+  /// The collected [keys] (newest first) in the order [sort] asks, by the place
+  /// name when [places]; keeps them as they are when it fails.
+  List<String> _sortKeys(List<String> keys, _Sort sort, bool places) {
+    try {
+      String name(String k) =>
+          (places ? (_placeOf(k)?.name ?? k) : k).toLowerCase();
+      return switch (sort) {
+        _Sort.newest => keys,
+        _Sort.oldest => keys.reversed.toList(),
+        _Sort.az => List.of(keys)..sort((a, b) => name(a).compareTo(name(b))),
+        _Sort.za => List.of(keys)..sort((a, b) => name(b).compareTo(name(a))),
+      };
+    } catch (e) {
+      appLog.w('words', 'could not sort the collected words: ${e.runtimeType}');
+      return keys;
+    }
+  }
+
+  /// Opens the sort menu under the button at [buttonKey]; the pick is saved
+  /// with [onPick]. A failure is logged and the list keeps its order.
+  Future<void> _openSort({
+    required GlobalKey buttonKey,
+    required String title,
+    required _Sort current,
+    required ValueChanged<_Sort> onPick,
+  }) async {
+    try {
+      final c = Theme.of(context).colorScheme;
+      final box = buttonKey.currentContext?.findRenderObject() as RenderBox?;
+      final overlay =
+          Overlay.of(context).context.findRenderObject() as RenderBox?;
+      if (box == null || overlay == null) return;
+      final rect = box.localToGlobal(Offset.zero, ancestor: overlay) & box.size;
+      final picked = await showMenu<_Sort>(
+        context: context,
+        position: RelativeRect.fromRect(rect, Offset.zero & overlay.size),
+        items: [
+          PopupMenuItem<_Sort>(
+            enabled: false,
+            height: 28,
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 11,
+                color: c.onSurface.withValues(alpha: dimAlpha),
+              ),
+            ),
+          ),
+          _sortItem(c, _Sort.newest, 'newest first', current, 'sort-newest'),
+          _sortItem(c, _Sort.oldest, 'oldest first', current, 'sort-oldest'),
+          _sortItem(c, _Sort.az, 'a to z', current, 'sort-az'),
+          _sortItem(c, _Sort.za, 'z to a', current, 'sort-za'),
+        ],
+      );
+      if (picked != null && mounted) setState(() => onPick(picked));
+    } catch (e) {
+      appLog.w('words', 'could not open the sort menu: ${e.runtimeType}');
+    }
+  }
+
+  /// One option of the sort menu; the chosen one is bold, in primary, with a
+  /// check mark.
+  PopupMenuItem<_Sort> _sortItem(
+    ColorScheme c,
+    _Sort value,
+    String label,
+    _Sort current,
+    String key,
+  ) {
+    final chosen = value == current;
+    return PopupMenuItem<_Sort>(
+      key: ValueKey(key),
+      value: value,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: chosen ? FontWeight.bold : null,
+                color: chosen ? c.primary : c.onSurface,
+              ),
+            ),
+          ),
+          if (chosen) Icon(Icons.check, size: 16, color: c.primary),
+        ],
+      ),
+    );
+  }
+
+  /// The pills in a sideways row that fades its ends where it scrolls, with the
+  /// sort button at the right, outside the fade.
+  Widget _pillRow(
+    ColorScheme c, {
+    required Key scrollKey,
+    required List<Widget> pills,
+    required Widget sort,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: EdgeFade(
+            scrollKey: scrollKey,
+            fade: 28,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < pills.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 8),
+                  pills[i],
+                ],
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        sort,
+      ],
+    );
+  }
+
+  /// The sort button: 32 square, tinted when the list is not in its default
+  /// order.
+  Widget _sortButton(
+    ColorScheme c, {
+    required Key key,
+    required GlobalKey buttonKey,
+    required bool changed,
+    required VoidCallback onTap,
+  }) {
+    final fg = changed ? c.onSecondaryContainer : c.onSurface;
+    return Semantics(
+      label: 'sort',
+      button: true,
+      child: InkWell(
+        key: key,
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          key: buttonKey,
+          width: 32,
+          height: 32,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: changed ? c.secondaryContainer : c.surfaceContainerHighest,
+          ),
+          child: TablerIcon('arrows-sort', size: 20, color: fg),
+        ),
+      ),
+    );
   }
 
   /// Opens the word's entry; a failed navigation is logged, not thrown.
