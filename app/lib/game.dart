@@ -1457,6 +1457,18 @@ class _GamePageState extends State<GamePage>
           color: fill,
           border: Border.all(color: border, width: borderWidth),
           borderRadius: BorderRadius.circular(3),
+          // the cursor glows: soft on the cream, stronger on the dark grounds
+          boxShadow: cursor
+              ? [
+                  BoxShadow(
+                    color: c.onSurface.withValues(
+                      alpha: c.brightness == Brightness.dark ? .55 : .38,
+                    ),
+                    blurRadius: c.brightness == Brightness.dark ? 12 : 8,
+                    spreadRadius: c.brightness == Brightness.dark ? 2 : 1,
+                  ),
+                ]
+              : null,
         ),
         // the whole tile, so the lock sits in its corner, not by the letter
         child: SizedBox.expand(
