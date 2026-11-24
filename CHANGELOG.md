@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.13.2
+
 - dailies: no spellings like comin as an answer, from 25 nov
   60 English words that are another word with its final g dropped (comin, goin, nothin, takin) are never the answer of a daily from 2026-11-25: every daily mode, the quartet and the relay race draw again when one comes up. Earlier dailies keep their words, and the retired words stay valid guesses.
 
