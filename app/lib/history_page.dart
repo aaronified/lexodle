@@ -1,5 +1,3 @@
-import 'equations.dart';
-
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -8,7 +6,6 @@ import 'analysis.dart';
 import 'app_log.dart';
 import 'daily.dart';
 import 'earned_rows.dart';
-import 'geography.dart';
 import 'game_timer.dart' show formatElapsed;
 import 'history.dart';
 import 'logic.dart';
@@ -16,6 +13,7 @@ import 'language_picker.dart';
 import 'mode_filter.dart';
 import 'main.dart';
 import 'modes.dart';
+import 'open_review.dart';
 import 'period_chart.dart';
 import 'edge_fade.dart';
 import 'mode_wheel.dart' show modeIconName;
@@ -114,22 +112,12 @@ class _HistoryPageState extends State<HistoryPage> {
       _opening = true;
       _error = '';
     });
-    try {
-      final bank = g.mode == GameMode.themed
-          ? await Geography.load(lang)
-          : g.mode == GameMode.equations
-          ? await Equations.load(lang)
-          : await WordBank.load(lang);
-      final rows = appState.history.guessesOf(g.id);
-      final record = !g.mode.multi
-          ? replayClassic(bank, g, rows)
-          : replayMulti(bank, g, rows);
-      if (!mounted) return;
-      await Navigator.pushNamed(context, Routes.review, arguments: record);
-    } catch (_) {
-      if (mounted) setState(() => _error = 'could not rebuild that game');
-    } finally {
-      if (mounted) setState(() => _opening = false);
+    final why = await openGameReview(context, appState.history, g, lang);
+    if (mounted) {
+      setState(() {
+        _opening = false;
+        if (why != null) _error = why;
+      });
     }
   }
 

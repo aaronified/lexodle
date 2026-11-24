@@ -5,7 +5,9 @@ import 'daily.dart';
 import 'main.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart';
+import 'open_review.dart';
 import 'ui.dart';
+import 'words.dart';
 
 /// How a day of a daily log looks in the streak week and its month.
 enum _Mark { solved, double, ongoing, lost, none }
@@ -42,6 +44,11 @@ class _StreakWeekState extends State<StreakWeek>
     with SingleTickerProviderStateMixin {
   GameMode? _picked;
   bool _month = false;
+
+  /// The month the calendar shows, as the first of it; null: the current one.
+  /// It opens on the current month each time.
+  DateTime? _viewing;
+  bool _opening = false;
 
   late final AnimationController _anim = AnimationController(
     vsync: this,
@@ -101,6 +108,27 @@ class _StreakWeekState extends State<StreakWeek>
     } catch (e) {
       appLog.w('streak_week', 'could not change the mode: ${e.runtimeType}');
       if (mounted) setState(() => _shift = 0);
+    }
+  }
+
+  /// Opens the review of the daily of [mode] on [date], the screen the history
+  /// opens for that game.
+  Future<void> _openDay(String lang, GameMode mode, String date) async {
+    if (_opening) return;
+    _opening = true;
+    try {
+      final g = dailyGamesOf(appState.history, lang, mode)[date];
+      if (g == null) return;
+      final langs = WordBank.loadedLanguages ?? await WordBank.languages();
+      final language = langs.where((l) => l.code == g.lang).firstOrNull;
+      if (language == null || !mounted) return;
+      final why = await openGameReview(context, appState.history, g, language);
+      if (why != null && mounted) showToast(context, why);
+    } catch (e) {
+      appLog.w('streak_week', 'could not open a day: ${e.runtimeType}');
+      if (mounted) showToast(context, 'could not open that day');
+    } finally {
+      _opening = false;
     }
   }
 
@@ -189,7 +217,10 @@ class _StreakWeekState extends State<StreakWeek>
                     width: double.infinity,
                     child: OutlinedButton(
                       key: const ValueKey('sw-month-toggle'),
-                      onPressed: () => setState(() => _month = !_month),
+                      onPressed: () => setState(() {
+                        _month = !_month;
+                        _viewing = null;
+                      }),
                       child: Text(
                         _month ? 'back to the week' : 'show the month',
                       ),
@@ -241,6 +272,43 @@ class _StreakWeekState extends State<StreakWeek>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// One of the two arrows beside the month name: a hairline square, dim when
+  /// there is no month that way.
+  Widget _monthArrow(
+    ColorScheme c,
+    Key key,
+    IconData icon,
+    String label,
+    VoidCallback? onTap,
+  ) {
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        key: key,
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          width: 36,
+          height: 32,
+          decoration: BoxDecoration(
+            border: Border.all(color: c.outlineVariant),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: onTap == null
+                ? c.onSurface.withValues(alpha: .3)
+                : c.onSurface,
+          ),
+        ),
       ),
     );
   }
@@ -340,30 +408,41 @@ class _StreakWeekState extends State<StreakWeek>
       required Widget bottom,
       required bool mark,
       bool bordered = false,
+      VoidCallback? onTap,
     }) {
       final m = markOf(date);
       final isToday = date == today;
+      final box = Container(
+        key: ValueKey('sw-$prefix-$date'),
+        margin: const EdgeInsets.all(1),
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        decoration: BoxDecoration(
+          color: isToday ? c.secondaryContainer : null,
+          // the month's days are the only bordered thing in the app
+          border: bordered && !isToday
+              ? Border.all(color: c.outlineVariant)
+              : null,
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [top, const SizedBox(height: 4), bottom],
+        ),
+      );
       return Semantics(
         container: true,
         excludeSemantics: true,
+        button: onTap != null,
+        onTap: onTap,
         label: mark ? '$date: ${describe(m)}' : date,
-        child: Container(
-          key: ValueKey('sw-$prefix-$date'),
-          margin: const EdgeInsets.all(1),
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(
-            color: isToday ? c.secondaryContainer : null,
-            // the month's days are the only bordered thing in the app
-            border: bordered && !isToday
-                ? Border.all(color: c.outlineVariant)
-                : null,
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [top, const SizedBox(height: 4), bottom],
-          ),
-        ),
+        child: onTap == null
+            ? box
+            : InkWell(
+                key: ValueKey('sw-open-$date'),
+                borderRadius: BorderRadius.circular(3),
+                onTap: onTap,
+                child: box,
+              ),
       );
     }
 
@@ -391,8 +470,41 @@ class _StreakWeekState extends State<StreakWeek>
       ],
     );
 
+    // the month on show: the current one to begin with, never a future one,
+    // never before the first month the log has a day in
+    final nowDate = DateTime.tryParse(today);
+    final curFirst = nowDate == null
+        ? null
+        : DateTime.utc(nowDate.year, nowDate.month, 1);
+    DateTime? firstLogged;
+    for (final k in log.keys) {
+      final t = DateTime.tryParse(k);
+      if (t == null) continue;
+      final f = DateTime.utc(t.year, t.month, 1);
+      if (firstLogged == null || f.isBefore(firstLogged)) firstLogged = f;
+    }
+    var view = _viewing ?? curFirst;
+    if (view != null && curFirst != null) {
+      if (view.isAfter(curFirst)) view = curFirst;
+      final lo = firstLogged ?? curFirst;
+      if (view.isBefore(lo.isAfter(curFirst) ? curFirst : lo)) {
+        view = lo.isAfter(curFirst) ? curFirst : lo;
+      }
+    }
+    final canBack =
+        view != null && firstLogged != null && view.isAfter(firstLogged);
+    final canForward =
+        view != null && curFirst != null && view.isBefore(curFirst);
+    void goMonth(int by) {
+      if (view == null) return;
+      setState(() => _viewing = DateTime.utc(view!.year, view.month + by, 1));
+    }
+
+    // the days that have a game to open
+    final kept = _month ? dailyGamesOf(appState.history, lang, mode) : const {};
+
     Widget monthGrid() {
-      final d = DateTime.tryParse(today);
+      final d = view;
       if (d == null) return const SizedBox.shrink();
       final first = DateTime.utc(d.year, d.month, 1);
       final days = DateTime.utc(d.year, d.month + 1, 0).day;
@@ -423,11 +535,23 @@ class _StreakWeekState extends State<StreakWeek>
                       );
                       // days still to come have no mark, only their number
                       final past = date.compareTo(today) <= 0;
+                      final m = markOf(date);
+                      final game = kept[date];
+                      final canOpen =
+                          past &&
+                          game != null &&
+                          (m == _Mark.solved ||
+                              m == _Mark.double ||
+                              m == _Mark.lost) &&
+                          appState.history.guessesOf(game.id).isNotEmpty;
                       return cell(
                         'month',
                         date,
                         mark: past,
                         bordered: true,
+                        onTap: canOpen
+                            ? () => _openDay(lang, mode, date)
+                            : null,
                         top: past
                             ? flames('m-$date', markOf(date), 20)
                             : const SizedBox(height: 20),
@@ -535,10 +659,35 @@ class _StreakWeekState extends State<StreakWeek>
       children: [
         if (_month) ...[
           const SizedBox(height: 14),
-          Text(() {
-            final d = DateTime.tryParse(today);
-            return d == null ? '' : _months[d.month - 1];
-          }(), style: const TextStyle(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  view == null
+                      ? ''
+                      : '${_months[view.month - 1]}'
+                            '${curFirst != null && view.year != curFirst.year ? ' ${view.year}' : ''}',
+                  key: const ValueKey('sw-month-title'),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              _monthArrow(
+                c,
+                const ValueKey('sw-month-prev'),
+                Icons.chevron_left,
+                'earlier month',
+                canBack ? () => goMonth(-1) : null,
+              ),
+              const SizedBox(width: 4),
+              _monthArrow(
+                c,
+                const ValueKey('sw-month-next'),
+                Icons.chevron_right,
+                'later month',
+                canForward ? () => goMonth(1) : null,
+              ),
+            ],
+          ),
           const SizedBox(height: 6),
           monthGrid(),
           const SizedBox(height: 12),
