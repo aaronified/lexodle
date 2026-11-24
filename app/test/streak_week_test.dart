@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/daily.dart';
+import 'package:lexodle/history.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/streak_week.dart';
@@ -206,5 +207,111 @@ void main() {
         .dy;
     expect(dot, greaterThan(week));
     expect(dot, lessThan(button));
+  });
+
+  Future<void> openMonth(WidgetTester tester) async {
+    await show(tester);
+    await tester.tap(find.byKey(const ValueKey('sw-month-toggle')));
+    await tester.pumpAndSettle();
+  }
+
+  bool enabled(WidgetTester tester, String key) =>
+      tester.widget<InkWell>(find.byKey(ValueKey(key))).onTap != null;
+
+  testWidgets('the month has no earlier month before the first logged day', (
+    tester,
+  ) async {
+    await openMonth(tester);
+    // the log starts on 2026-11-07 and today is in november
+    expect(enabled(tester, 'sw-month-prev'), isFalse);
+    expect(enabled(tester, 'sw-month-next'), isFalse);
+  });
+
+  testWidgets('the arrows move between the months the log reaches', (
+    tester,
+  ) async {
+    appState.recordDaily('2026-09-28', dailySolved, lang: 'en');
+    await openMonth(tester);
+    expect(find.text('november'), findsOneWidget);
+    expect(enabled(tester, 'sw-month-prev'), isTrue);
+    expect(enabled(tester, 'sw-month-next'), isFalse);
+    await tester.tap(find.byKey(const ValueKey('sw-month-prev')));
+    await tester.pumpAndSettle();
+    expect(find.text('october'), findsOneWidget);
+    expect(enabled(tester, 'sw-month-next'), isTrue);
+    // a day of that month shows its mark and the days before the log, none
+    expect(find.byKey(const ValueKey('sw-month-2026-10-05')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('sw-month-prev')));
+    await tester.pumpAndSettle();
+    expect(find.text('september'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('sw-flame-m-2026-09-28-0')),
+      findsOneWidget,
+    );
+    // nothing before the first month of the log
+    expect(enabled(tester, 'sw-month-prev'), isFalse);
+    await tester.tap(find.byKey(const ValueKey('sw-month-next')));
+    await tester.pumpAndSettle();
+    expect(find.text('october'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('sw-month-next')));
+    await tester.pumpAndSettle();
+    expect(find.text('november'), findsOneWidget);
+    // closing the month and opening it again is back on the current one
+    await tester.tap(find.byKey(const ValueKey('sw-month-prev')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('sw-month-toggle')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('sw-month-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('november'), findsOneWidget);
+  });
+
+  testWidgets('a month of another year says the year', (tester) async {
+    appState.recordDaily('2025-12-30', dailySolved, lang: 'en');
+    await openMonth(tester);
+    for (var i = 0; i < 11; i++) {
+      await tester.tap(find.byKey(const ValueKey('sw-month-prev')));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('december 2025'), findsOneWidget);
+    expect(enabled(tester, 'sw-month-prev'), isFalse);
+  });
+
+  testWidgets('a day with a kept game can be opened, the others cannot', (
+    tester,
+  ) async {
+    appState.history.add(
+      at: 1,
+      lang: 'en',
+      mode: GameMode.classic,
+      length: 5,
+      tries: 6,
+      pool: 100,
+      answers: const ['crane'],
+      won: true,
+      daily: '2026-11-11',
+      guesses: const [GuessRow(game: 0, n: 0, word: 'crane', skill: 80)],
+    );
+    appState.history.add(
+      at: 2,
+      lang: 'en',
+      mode: GameMode.classic,
+      length: 5,
+      tries: 6,
+      pool: 100,
+      answers: const ['crane'],
+      won: true,
+      daily: '2026-11-12',
+      guesses: const [],
+    );
+    await openMonth(tester);
+    // solved with a kept game with guesses: opens
+    expect(find.byKey(const ValueKey('sw-open-2026-11-11')), findsOneWidget);
+    // solved but nothing to review, not played, to come: no
+    expect(find.byKey(const ValueKey('sw-open-2026-11-12')), findsNothing);
+    expect(find.byKey(const ValueKey('sw-open-2026-11-10')), findsNothing);
+    expect(find.byKey(const ValueKey('sw-open-2026-11-20')), findsNothing);
+    // a solved day with no game kept at all
+    expect(find.byKey(const ValueKey('sw-open-2026-11-09')), findsNothing);
   });
 }
