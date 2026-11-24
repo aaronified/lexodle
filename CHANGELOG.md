@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.13.3
+
 - the streak calendar goes back through the months and opens a day
   The month of the streak card has arrows beside its name: the left goes to the month before (as far back as the daily log reaches), the right to the month after (never a future one). A month of another year says its year. A day with a kept game (solved, super solved or lost) opens the review of that day's daily, the same screen the history opens; days not played, days to come and days with nothing kept cannot be opened. The month opens on the current month each time.
 - words: underlined tabs, scrolling language pills and a sort button
