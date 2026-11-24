@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+- words: underlined tabs, scrolling language pills and a sort button
+  The two tabs of the words page (saved, collected) are plain text in a one-line header with the settings cog, the one on show underlined, like the other pages. The language pills scroll sideways under a fade, and a sort button is fixed at the right end of the row on both lists: newest first, oldest first, a to z, z to a (the button is tinted when the list is not newest first). The sort pill of the saved list is gone.
 - the tile the cursor is on glows
   The tile the next letter or digit goes into has a glow around its border: soft on the cream theme, stronger on night and black. Nothing else about the tile changes.
 
