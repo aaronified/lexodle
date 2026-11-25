@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'app_log.dart';
 import 'settings_button.dart';
 import 'tonal.dart';
 import 'ui.dart';
@@ -382,7 +383,7 @@ class ChoiceItem<T> {
 /// medal): an arrow either side, the name with its icon between them, dots under
 /// it, and a swipe. It does not wrap round: the arrow of an end is dim. [id] names
 /// the keys: the slider itself, and `$id-prev`, `$id-next` and `$id-dots`.
-class ChoiceSlider<T> extends StatelessWidget {
+class ChoiceSlider<T> extends StatefulWidget {
   const ChoiceSlider({
     super.key,
     required this.id,
@@ -409,21 +410,140 @@ class ChoiceSlider<T> extends StatelessWidget {
   /// Whether the dots show under the slider.
   final bool dots;
 
+  @override
+  State<ChoiceSlider<T>> createState() => _ChoiceSliderState<T>();
+}
+
+/// The slider follows the finger: the name moves with the drag and the next
+/// one comes in from the side; on release it settles on the next choice when
+/// the drag went far or fast enough, and otherwise slides back. At an end
+/// the drag is resisted.
+class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _settle = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 180),
+  );
+  double _dx = 0;
+  double _width = 0;
+  Animation<double>? _tween;
+
+  @override
+  void initState() {
+    super.initState();
+    _settle.addListener(() {
+      final t = _tween;
+      if (t != null) setState(() => _dx = t.value);
+    });
+  }
+
+  @override
+  void dispose() {
+    _settle.dispose();
+    super.dispose();
+  }
+
   int get _at {
-    final i = items.indexWhere((x) => x.value == selected);
+    final i = widget.items.indexWhere((x) => x.value == widget.selected);
     return i < 0 ? 0 : i;
   }
 
-  void _go(int by) {
+  bool _has(int by) {
     final to = _at + by;
-    if (to < 0 || to >= items.length) return;
-    onChanged(items[to].value);
+    return to >= 0 && to < widget.items.length;
+  }
+
+  void _go(int by) {
+    if (!_has(by)) return;
+    widget.onChanged(widget.items[_at + by].value);
+  }
+
+  void _start(DragStartDetails d) {
+    _settle.stop();
+    _tween = null;
+  }
+
+  void _update(DragUpdateDetails d) {
+    // an end of the list resists: the name follows only a third of the way
+    final delta = d.delta.dx;
+    final toward = delta < 0 ? 1 : -1;
+    final blocked =
+        (_dx == 0 && !_has(toward)) ||
+        (_dx < 0 && !_has(1)) ||
+        (_dx > 0 && !_has(-1));
+    setState(() {
+      _dx += blocked ? delta / 3 : delta;
+      final w = _width <= 0 ? 200.0 : _width;
+      _dx = _dx.clamp(-w, w);
+    });
+  }
+
+  void _end(DragEndDetails d) {
+    final w = _width <= 0 ? 200.0 : _width;
+    final v = d.primaryVelocity ?? 0;
+    var by = 0;
+    if (_dx.abs() > w * 0.3 || v.abs() > 300) {
+      // the direction of the drag, or of the flick when it goes the other way
+      final dir = v.abs() > 300 ? (v < 0 ? 1 : -1) : (_dx < 0 ? 1 : -1);
+      if (_has(dir)) by = dir;
+    }
+    final target = by == 0 ? 0.0 : -by * w;
+    _tween = Tween<double>(
+      begin: _dx,
+      end: target,
+    ).animate(CurvedAnimation(parent: _settle, curve: Curves.easeOut));
+    _settle.forward(from: 0).whenComplete(() {
+      if (!mounted) return;
+      _tween = null;
+      // the choice is made when the name has come to rest; the new name is
+      // drawn at 0 where the one that slid in stopped, so nothing jumps
+      if (by != 0) {
+        try {
+          _go(by);
+        } catch (e) {
+          appLog.w('slider', 'choice failed ${e.runtimeType}');
+        }
+      }
+      setState(() => _dx = 0);
+    });
+  }
+
+  Widget _name(ChoiceItem<T> item, ColorScheme c, {bool tap = false}) {
+    final row = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (item.icon != null) ...[
+          TablerIcon(item.icon!, size: 22, color: c.primary),
+          const SizedBox(width: 8),
+        ] else if (item.leading != null) ...[
+          item.leading!,
+          const SizedBox(width: 8),
+        ],
+        Flexible(
+          child: Text(
+            item.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
+    );
+    if (!tap) return row;
+    return InkWell(
+      key: ValueKey('${widget.id}-name'),
+      borderRadius: BorderRadius.circular(radiusElement),
+      onTap: widget.onTapName,
+      child: row,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final tones = tonesOf(context);
+    final items = widget.items;
+    final id = widget.id;
     if (items.isEmpty) return const SizedBox.shrink();
     final at = _at;
     final item = items[at];
@@ -451,12 +571,12 @@ class ChoiceSlider<T> extends StatelessWidget {
 
     final bar = Container(
       key: ValueKey(id),
-      height: compact ? 48 : 52,
+      height: widget.compact ? 48 : 52,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: tones.s1,
         borderRadius: BorderRadius.circular(
-          compact ? radiusElement : radiusContainer,
+          widget.compact ? radiusElement : radiusContainer,
         ),
       ),
       child: Row(
@@ -469,33 +589,42 @@ class ChoiceSlider<T> extends StatelessWidget {
             at > 0,
           ),
           Expanded(
-            child: InkWell(
-              key: ValueKey('$id-name'),
-              borderRadius: BorderRadius.circular(radiusElement),
-              onTap: onTapName,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (item.icon != null) ...[
-                    TablerIcon(item.icon!, size: 22, color: c.primary),
-                    const SizedBox(width: 8),
-                  ] else if (item.leading != null) ...[
-                    item.leading!,
-                    const SizedBox(width: 8),
-                  ],
-                  Flexible(
-                    child: Text(
-                      item.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+            child: LayoutBuilder(
+              builder: (context, box) {
+                _width = box.maxWidth;
+                final w = box.maxWidth;
+                return ClipRect(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (_dx > 0 && at > 0)
+                        Transform.translate(
+                          offset: Offset(_dx - w, 0),
+                          child: SizedBox(
+                            width: w,
+                            child: _name(items[at - 1], c),
+                          ),
+                        ),
+                      if (_dx < 0 && at < items.length - 1)
+                        Transform.translate(
+                          offset: Offset(_dx + w, 0),
+                          child: SizedBox(
+                            width: w,
+                            child: _name(items[at + 1], c),
+                          ),
+                        ),
+                      Transform.translate(
+                        offset: Offset(_dx, 0),
+                        child: SizedBox(
+                          width: w,
+                          height: double.infinity,
+                          child: _name(item, c, tap: true),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
           ),
           arrow(
@@ -519,19 +648,17 @@ class ChoiceSlider<T> extends StatelessWidget {
       onDecrease: at > 0 ? () => _go(-1) : null,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onHorizontalDragEnd: (d) {
-          final v = d.primaryVelocity ?? 0;
-          if (v < -300) {
-            _go(1);
-          } else if (v > 300) {
-            _go(-1);
-          }
+        onHorizontalDragStart: _start,
+        onHorizontalDragUpdate: _update,
+        onHorizontalDragEnd: _end,
+        onHorizontalDragCancel: () {
+          if (_dx != 0) _end(DragEndDetails());
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             bar,
-            if (dots && items.length > 1) ...[
+            if (widget.dots && items.length > 1) ...[
               const SizedBox(height: 8),
               Row(
                 key: ValueKey('$id-dots'),

@@ -16,6 +16,9 @@ it to the version.
 - keys not tried yet are outlined again
   A key you have not used is an outline on the page, like an empty tile, instead of a grey fill; keys that got a colour are filled as before.
 
+- sliders follow your finger
+  Dragging a slider (modes, languages, medals, sort) moves the name with the finger and brings the next one in from the side. Let go past a third of the way, or with a flick, and it settles on the next choice; otherwise it slides back. At the first and last choice the drag is held back.
+
 ## 0.14.0
 
 - a new look: tonal colours, one slider for every choice, a flat tab bar
