@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/modes.dart';
+import 'package:lexodle/retired_abbreviations.dart';
 import 'package:lexodle/retired_words.dart';
 import 'package:lexodle/words.dart';
 
 void main() {
+  abbreviationsMain();
   laterMain();
   late WordBank en;
 
@@ -81,6 +83,38 @@ void main() {
   });
 }
 
+void abbreviationsMain() {
+  test(
+    'the abbreviations are five letters, in their list, and never a daily',
+    () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      final langs = await WordBank.languages();
+      var checked = 0;
+      for (final code in ['en', 'es', 'pt', 'nl']) {
+        final bank = await WordBank.load(
+          langs.firstWhere((l) => l.code == code),
+        );
+        final set = retiredAbbreviations[code]!;
+        expect(set, isNotEmpty, reason: code);
+        for (final w in set) {
+          expect(w.length, 5, reason: '$code $w');
+          expect(bank.valid.contains(w), isTrue, reason: '$code $w');
+        }
+        for (var n = 0; n < 700; n++) {
+          final d = dailyShift(dailyRetireFromLater, n);
+          expect(
+            set,
+            isNot(contains(Daily.of(bank, d)!.answer)),
+            reason: '$code $d',
+          );
+          checked++;
+        }
+      }
+      expect(checked, 2800);
+    },
+  );
+}
+
 void laterMain() {
   late WordBank en;
   setUpAll(() async {
@@ -103,7 +137,7 @@ void laterMain() {
           'u',
           d,
           w,
-          retired: (i, ds) => retiredAnswer(en.answers(5)[i], ds),
+          retired: (i, ds) => retiredAnswer('en', en.answers(5)[i], ds),
         ),
         dailyCurveIndex(
           'u',

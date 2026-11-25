@@ -1,3 +1,5 @@
+import 'retired_abbreviations.dart';
+
 /// The first daily that never has a retired word as its answer. Earlier dailies
 /// keep the draw they had, so one played before replays against the same word.
 const dailyRetireFrom = '2026-11-25';
@@ -36,8 +38,14 @@ const retiredEnglishLater = <String>{
   'dunno', 'lemme', 'gimme', 'yknow', //
 };
 
-/// Whether [word] may not be the answer of the English daily of [date].
-bool retiredAnswer(String word, String date) =>
-    (date.compareTo(dailyRetireFrom) >= 0 && retiredEnglish.contains(word)) ||
+/// Whether [word] may not be the answer of the daily of [date] in the language
+/// [code]: the g-dropped English words from [dailyRetireFrom]; from
+/// [dailyRetireFromLater] the other English words above and, in every language,
+/// the words the Wiktionary shows as nothing but an abbreviation.
+bool retiredAnswer(String code, String word, String date) =>
+    (code == 'en' &&
+        date.compareTo(dailyRetireFrom) >= 0 &&
+        retiredEnglish.contains(word)) ||
     (date.compareTo(dailyRetireFromLater) >= 0 &&
-        retiredEnglishLater.contains(word));
+        ((code == 'en' && retiredEnglishLater.contains(word)) ||
+            (retiredAbbreviations[code]?.contains(word) ?? false)));

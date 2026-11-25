@@ -312,7 +312,7 @@ class Daily {
           key,
           d,
           w,
-          retired: code == 'en' ? (i, ds) => retiredAnswer(all[i], ds) : null,
+          retired: (i, ds) => retiredAnswer(code, all[i], ds),
         )],
         tries: mode == GameMode.lockdown ? lockdownTries : dailyTriesOf(mode),
       );
@@ -377,7 +377,7 @@ class DailyMulti {
     final mayShare = d.length == 10 && d.compareTo(dailyShareFrom) >= 0;
     bool keeps(List<String> chosen, String w, int k, int j, int t) {
       if (chosen.contains(w)) return false;
-      if (code == 'en' && retiredAnswer(w, d)) return false;
+      if (retiredAnswer(code, w, d)) return false;
       if (!mayShare) return chosen.every((o) => !sharesLetter(o, w));
       final shared =
           chosen.where((o) => sharesLetter(o, w)).length +
