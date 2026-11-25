@@ -393,8 +393,8 @@ void main() {
 
     List<String> dailyPool(WordBank bank, String date) => List.of(
       dailyUsesCurve(date)
-          ? bank.guessable(5)
-          : bank.answers(5).take(dailyAnswers),
+          ? bank.daily.guessable(5)
+          : bank.daily.answers(5).take(dailyAnswers),
     );
 
     testWidgets('a mastermind daily has 6 rows and is lost after 6 guesses', (

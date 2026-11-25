@@ -431,7 +431,7 @@ void main() {
       );
       final r = replayClassic(bank, row, h.guessesOf(row.id));
       expect(r.weights, isNull);
-      expect(r.befores.first.length, min(3000, bank.answers(4).length));
+      expect(r.befores.first.length, min(3000, bank.daily.answers(4).length));
     });
 
     test('a daily from the curve date is scored under the curve', () {

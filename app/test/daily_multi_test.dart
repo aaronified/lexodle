@@ -50,7 +50,7 @@ void main() {
 
     test('four five-letter words that share no letter, from the common 3,000 '
         'before the curve date', () {
-      final common = bank.answers(dailyLength).take(dailyAnswers).toSet();
+      final common = bank.daily.answers(dailyLength).take(dailyAnswers).toSet();
       for (final mode in [GameMode.quartet, GameMode.relay]) {
         // the 29 days before the curve date
         for (var day = 0; day < 29; day++) {
