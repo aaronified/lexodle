@@ -150,13 +150,14 @@ class TodayPage extends StatelessWidget {
         Expanded(
           child: LayoutBuilder(
             builder: (context, box) {
-              // the tiles share the free height: 8 fit on a phone (212 is the
-              // header, the language slider, the count, the label and the bottom gap)
+              // the tiles share the free height, but never less than they need to
+              // read: with many dailies the list scrolls (128 holds the icon, the
+              // name and the state line with room around them)
               final n = (rows.length + 1) ~/ 2;
               final free = box.maxHeight - 268 - 8 * (n - 1);
               final tileHeight = n == 0
-                  ? 84.0
-                  : (free / n).clamp(84.0, 128.0).toDouble();
+                  ? 128.0
+                  : (free / n).clamp(128.0, 148.0).toDouble();
               return ListView(
                 key: const ValueKey('today-list'),
                 padding: const EdgeInsets.only(bottom: 16),
@@ -348,7 +349,7 @@ class TodayPage extends StatelessWidget {
       key: ValueKey('today-row-${m.name}'),
       onTap: () => _play(context, m),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           color: tonesOf(context).s1,
@@ -704,6 +705,16 @@ class TodayPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(2, 0, 2, 6),
+            child: Text(
+              'free play',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -716,8 +727,7 @@ class TodayPage extends StatelessWidget {
                     for (final m in open)
                       ChoiceItem<GameMode>(
                         value: m,
-                        label: 'free play · ${m.label}',
-                        name: m.label,
+                        label: m.label,
                         icon: modeIconName(m),
                       ),
                   ],
