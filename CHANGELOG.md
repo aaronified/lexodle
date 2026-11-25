@@ -10,6 +10,9 @@ it to the version.
 - once every letter is found, the other keys go grey, in every mode
   When the letters found (green or yellow, counting a repeated letter as often as one guess showed it) make up the whole word, no other letter can be in it, so their keys turn grey on the classic, lockdown, equations, quartet and relay boards (the blind game already did). On a quartet each board greys its own quarter of a key.
 
+- words: the collected list has an all stop too
+  Like the saved list, the collected one can show every language at once: the words of each language one after another, with the flag of its language on each tile. The count line says how many words were won and how many are saved.
+
 - today: the tiles keep their room
   The tiles of the dailies were squeezed to fit the screen and clipped their state line. They keep at least 128 px now, and the list scrolls when there are many. The free play strip shows the mode's name under a free play label instead of a clipped one-line text.
 
