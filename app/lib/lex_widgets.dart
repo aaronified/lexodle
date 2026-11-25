@@ -7,6 +7,7 @@ import 'app_log.dart';
 import 'game_timer.dart';
 import 'lex.dart';
 import 'logic.dart';
+import 'tonal.dart';
 import 'ui.dart';
 
 /// The widgets of lex and hints (issue #93): pure, they take values and
@@ -47,13 +48,19 @@ class LexChip extends StatelessWidget {
     // light: the scheme's green under the yellow. dark and black: a deeper green
     // under a lighter yellow, since the pale dark-mode green drowned the number
     final dark = c.brightness == Brightness.dark;
-    final fill = dark
+    // in the pill row (joined) the gems are the selected tone, bold; elsewhere
+    // the scheme's green under the yellow
+    final fill = joined
+        ? c.secondaryContainer
+        : dark
         ? HSLColor.fromColor(c.secondary).withLightness(.24).toColor()
         : c.secondary;
-    final y = dark
+    final y = joined
+        ? c.onSecondaryContainer
+        : dark
         ? HSLColor.fromColor(yellowOf(c)).withLightness(.72).toColor()
         : yellowOf(c);
-    final h = big ? 44.0 : 28.0;
+    final h = big ? 44.0 : (joined ? 40.0 : 28.0);
     final r = Radius.circular(h / 2);
     return Container(
       height: h,
@@ -87,8 +94,8 @@ class LexChip extends StatelessWidget {
   }
 }
 
-/// The one control above the keyboard: a lamp, "hint" and "N free" on a surface
-/// part, joined with no gap to the lex chip (hidden when [lex] is null). 28px
+/// The one control above the keyboard: a lamp, "hint" and "N free" on a tonal
+/// pill, joined with no gap to the lex chip (hidden when [lex] is null). 40px
 /// to look at, 44px to tap.
 class HintBar extends StatelessWidget {
   const HintBar({
@@ -129,25 +136,29 @@ class HintBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  height: 28,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
-                    color: c.surfaceContainerHigh,
+                    color: tonesOf(context).s1,
                     borderRadius: BorderRadius.horizontal(
-                      left: const Radius.circular(14),
+                      left: const Radius.circular(20),
                       right: n == null
-                          ? const Radius.circular(14)
+                          ? const Radius.circular(20)
                           : Radius.zero,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      TablerIcon('bulb', size: 16, color: c.onSurface),
+                      TablerIcon('bulb', size: 16, color: c.onSurfaceVariant),
                       const SizedBox(width: 6),
-                      const Text(
+                      Text(
                         'hint',
-                        style: TextStyle(fontSize: 13, height: 1),
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1,
+                          color: c.onSurfaceVariant,
+                        ),
                       ),
                       if (free > 0) ...[
                         const SizedBox(width: 8),
@@ -174,7 +185,7 @@ class HintBar extends StatelessWidget {
 }
 
 /// The time of the game as a pill, the hint pill's mirror on the left of the
-/// keyboard: a clock and `m:ss`, on the same surface. 28px to look at, 44px
+/// keyboard: a clock and `m:ss`, on the same tonal fill. 40px to look at, 44px
 /// high like the [HintBar]. It ticks with the [timer].
 class TimerPill extends StatelessWidget {
   const TimerPill(
@@ -210,16 +221,16 @@ class TimerPill extends StatelessWidget {
               alignment: Alignment.centerLeft,
               widthFactor: 1,
               child: Container(
-                height: 28,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                height: 40,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: c.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(14),
+                  color: tonesOf(context).s1,
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TablerIcon('clock', size: 16, color: c.onSurface),
+                    TablerIcon('clock', size: 16, color: c.onSurfaceVariant),
                     const SizedBox(width: 6),
                     Text(
                       text,
@@ -228,7 +239,7 @@ class TimerPill extends StatelessWidget {
                         height: 1,
                         color: left != null && left <= 10000
                             ? heartColor(c)
-                            : null,
+                            : c.onSurfaceVariant,
                       ),
                     ),
                   ],
