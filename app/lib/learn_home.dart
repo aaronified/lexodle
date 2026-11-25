@@ -8,6 +8,7 @@ import 'mode_filter.dart';
 import 'modes.dart';
 import 'main.dart';
 import 'routes.dart';
+import 'language_picker.dart';
 import 'ui.dart';
 import 'ui_kit.dart';
 import 'words.dart';
@@ -28,7 +29,6 @@ class LearnHomePage extends StatelessWidget {
         final c = Theme.of(context).colorScheme;
         final mode = appState.mode;
         final length = appState.learnLength;
-        final lang = bank.language.name.toLowerCase();
         final log = appState.learnLog;
         final today = DateTime.now().toIso8601String().substring(0, 10);
         final streak = log.streak(today);
@@ -55,20 +55,17 @@ class LearnHomePage extends StatelessWidget {
                   children: [
                     PageHeader(
                       text: 'learn',
-                      info: HeaderInfo(
-                        // classic shows its language and length; the other
-                        // modes show the flag and the code (the slider names
-                        // the mode)
-                        mode == GameMode.classic
-                            ? '$lang · $length'
-                            : bank.language.code,
-                        leading: FlagBadge(bank.language.flag, size: 16),
-                      ),
+                      // the language is the slider below; classic adds its length
+                      info: mode == GameMode.classic
+                          ? HeaderInfo('$length letters')
+                          : null,
                     ),
                     Expanded(
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                         children: [
+                          const LanguageBar(),
+                          const SizedBox(height: 8),
                           if (full) ...[
                             Caption(
                               'get better at the first guesses, and at seeing '

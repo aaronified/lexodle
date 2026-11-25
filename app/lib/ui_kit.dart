@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 
 import 'app_log.dart';
@@ -172,7 +173,11 @@ class GroupRow {
     this.chevron = true,
     this.crossAxisStart = false,
     this.below,
+    this.selected = false,
   });
+
+  /// The row is the choice in force: the green fill and its ink.
+  final bool selected;
 
   final Key? key;
   final Widget? leading;
@@ -260,7 +265,9 @@ class GroupedList extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.4,
-                        color: c.onSurfaceVariant,
+                        color: r.selected
+                            ? c.onSecondaryContainer.withValues(alpha: .8)
+                            : c.onSurfaceVariant,
                       ),
                       child: r.subtitle!,
                     ),
@@ -285,10 +292,13 @@ class GroupedList extends StatelessWidget {
     );
     return Material(
       key: r.key,
-      color: tones.s1,
+      color: r.selected ? c.secondaryContainer : tones.s1,
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
-      child: r.onTap == null ? body : InkWell(onTap: r.onTap, child: body),
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: r.selected ? c.onSecondaryContainer : null),
+        child: r.onTap == null ? body : InkWell(onTap: r.onTap, child: body),
+      ),
     );
   }
 }
@@ -371,12 +381,214 @@ class ChoiceItem<T> {
     required this.label,
     this.icon,
     this.leading,
+    this.sub,
+    this.name,
+    this.popupLeading,
   });
 
   final T value;
   final String label;
   final String? icon;
   final Widget? leading;
+
+  /// A dim line under the name in the popup list (a language's other name).
+  final String? sub;
+
+  /// The name in the popup when it is not the label (a language's own name
+  /// where the slider shows its code).
+  final String? name;
+
+  /// What leads the row in the popup when it is not the slider's [leading]
+  /// (a bigger flag).
+  final Widget? popupLeading;
+}
+
+/// A tick box at the right of a row: filled green with a check when on.
+class TickBox extends StatelessWidget {
+  const TickBox(this.on, {super.key});
+  final bool on;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: on ? c.secondaryContainer : tonesOf(context).s3,
+        borderRadius: BorderRadius.circular(radiusInner),
+      ),
+      child: on
+          ? Icon(Icons.check, size: 18, color: c.onSecondaryContainer)
+          : null,
+    );
+  }
+}
+
+/// The frame of every sheet that picks something: a title at 22 and a close
+/// icon, then [child] scrolling under it. The sheet itself (radius 28, the
+/// handle) comes from the theme.
+class SheetFrame extends StatelessWidget {
+  const SheetFrame({
+    super.key,
+    required this.title,
+    required this.child,
+    this.note,
+    this.closeKey = const ValueKey('sheet-close'),
+  });
+  final String title;
+
+  /// The key of the close icon.
+  final Key closeKey;
+  final Widget child;
+
+  /// A dim line under the title.
+  final String? note;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(19, 8, 8, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  key: closeKey,
+                  tooltip: 'close',
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          if (note != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(19, 0, 19, 12),
+              child: Text(
+                note!,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: c.onSurfaceVariant,
+                ),
+              ),
+            ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              child: child,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The popup of a slider: its choices as one grouped list, the one on show in
+/// green with a check. Returns the value tapped, or null when closed. [footer]
+/// is one more row under the list in a group of its own (a way to edit the
+/// choices).
+Future<T?> showPickerSheet<T>(
+  BuildContext context, {
+  required String title,
+  required List<ChoiceItem<T>> items,
+  required T selected,
+  GroupRow? footer,
+  String keyPrefix = 'pick',
+}) => showModalBottomSheet<T>(
+  context: context,
+  isScrollControlled: true,
+  useSafeArea: true,
+  builder: (sheet) {
+    final c = Theme.of(sheet).colorScheme;
+    return SheetFrame(
+      title: title,
+      closeKey: ValueKey('$keyPrefix-close'),
+      child: Column(
+        key: ValueKey('$keyPrefix-sheet'),
+        children: [
+          GroupedList(
+            rows: [
+              for (final it in items)
+                GroupRow(
+                  key: ValueKey('$keyPrefix-${it.value}'),
+                  selected: it.value == selected,
+                  leading: it.icon != null
+                      ? TonalTile(it.icon!)
+                      : (it.popupLeading ?? it.leading) == null
+                      ? null
+                      : LeadTile((it.popupLeading ?? it.leading)!),
+                  title: Text(it.name ?? it.label),
+                  subtitle: it.sub == null || it.sub!.isEmpty
+                      ? null
+                      : Text(it.sub!),
+                  trailing: it.value == selected
+                      ? Icon(
+                          Icons.check,
+                          size: 22,
+                          color: c.onSecondaryContainer,
+                        )
+                      : null,
+                  chevron: false,
+                  onTap: () => Navigator.pop(sheet, it.value),
+                ),
+            ],
+          ),
+          if (footer != null) ...[
+            const SizedBox(height: 12),
+            GroupedList(
+              rows: [
+                GroupRow(
+                  key: footer.key,
+                  leading: footer.leading,
+                  title: footer.title,
+                  subtitle: footer.subtitle,
+                  // the popup closes, then the footer's own sheet opens
+                  onTap: () {
+                    Navigator.pop(sheet);
+                    footer.onTap?.call();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  },
+);
+
+/// A 40 pixel tonal tile around a widget (a flag), as [TonalTile] is around an
+/// icon.
+class LeadTile extends StatelessWidget {
+  const LeadTile(this.child, {super.key});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 40,
+    height: 40,
+    decoration: BoxDecoration(
+      color: tonesOf(context).s2,
+      borderRadius: BorderRadius.circular(radiusElement),
+    ),
+    child: Center(child: child),
+  );
 }
 
 /// The one control for choosing one of several things (a mode, a language, a
@@ -393,11 +605,17 @@ class ChoiceSlider<T> extends StatefulWidget {
     this.compact = false,
     this.dots = true,
     this.onTapName,
+    this.title = 'choose',
+    this.footer,
   });
 
-  /// Called when the name in the middle is tapped (the free play strip starts a
-  /// game with it); null leaves the middle as plain text.
+  /// Called when the name in the middle is tapped; without it a tap opens the
+  /// popup list of the choices.
   final VoidCallback? onTapName;
+
+  /// The title of that popup, and an extra row under its list.
+  final String title;
+  final GroupRow? footer;
 
   final String id;
   final List<ChoiceItem<T>> items;
@@ -508,6 +726,25 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
     });
   }
 
+  Future<void> _openPicker() async {
+    try {
+      final items = widget.items;
+      if (items.length < 2 && widget.footer == null) return;
+      final picked = await showPickerSheet<T>(
+        context,
+        title: widget.title,
+        items: items,
+        selected: widget.selected,
+        footer: widget.footer,
+      );
+      if (picked != null && picked != widget.selected) {
+        widget.onChanged(picked);
+      }
+    } catch (e) {
+      appLog.w('slider', 'popup failed ${e.runtimeType}');
+    }
+  }
+
   Widget _name(ChoiceItem<T> item, ColorScheme c, {bool tap = false}) {
     final row = Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -533,7 +770,7 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
     return InkWell(
       key: ValueKey('${widget.id}-name'),
       borderRadius: BorderRadius.circular(radiusElement),
-      onTap: widget.onTapName,
+      onTap: widget.onTapName ?? _openPicker,
       child: row,
     );
   }
@@ -648,6 +885,9 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
       onDecrease: at > 0 ? () => _go(-1) : null,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
+        // the name follows the finger from where it touched down, not from
+        // where the drag was told apart from a tap
+        dragStartBehavior: DragStartBehavior.down,
         onHorizontalDragStart: _start,
         onHorizontalDragUpdate: _update,
         onHorizontalDragEnd: _end,

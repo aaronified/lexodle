@@ -318,7 +318,7 @@ void main() {
     veteran();
     appState.setup(mode: GameMode.quartet);
     final pushed = await showRouted(tester);
-    await tester.tap(find.byKey(const ValueKey('today-free-play')));
+    await tester.tap(find.byKey(const ValueKey('free-play-start')));
     await tester.pumpAndSettle();
     expect(pushed, contains(Routes.play));
     expect(pushed, isNot(contains(Routes.gameModes)));
@@ -340,7 +340,7 @@ void main() {
           .onPressed,
       isNull,
     );
-    await tester.tap(find.byKey(const ValueKey('today-free-play')));
+    await tester.tap(find.byKey(const ValueKey('free-play-start')));
     await tester.pumpAndSettle();
     expect(pushed, contains(Routes.play));
     expect(appState.mode, GameMode.classic);
@@ -367,7 +367,7 @@ void main() {
     final now = appState.mode;
     expect(pushed, isNot(contains(Routes.play)));
     // free play starts the mode the strip shows
-    await tester.tap(find.byKey(const ValueKey('today-free-play')));
+    await tester.tap(find.byKey(const ValueKey('free-play-start')));
     await tester.pumpAndSettle();
     expect(pushed, contains(Routes.play));
     expect(appState.mode, now);

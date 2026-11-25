@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'ui.dart';
+import 'language_sheet.dart';
+import 'language_switch.dart';
+import 'app_log.dart';
+import 'main.dart';
 import 'ui_kit.dart';
 import 'words.dart';
 
@@ -19,7 +22,11 @@ class LanguagePicker extends StatelessWidget {
     required this.selected,
     required this.onSelect,
     this.showAll = false,
+    this.dots = true,
   });
+
+  /// Whether the dots show under the slider.
+  final bool dots;
 
   /// Offers "all" before the languages: every language at once.
   final bool showAll;
@@ -39,20 +46,58 @@ class LanguagePicker extends StatelessWidget {
       key: const ValueKey('language-picker'),
       id: 'language-slider',
       compact: true,
+      dots: dots,
       selected: selected,
       onChanged: onSelect,
+      title: 'language',
+      footer: languagesFooter(context),
       items: [
         if (showAll)
-          const ChoiceItem<String>(value: allLanguages, label: 'all'),
-        for (final code in codes)
-          ChoiceItem<String>(
-            value: code,
-            label: code,
-            leading: languages[code] == null
-                ? null
-                : FlagBadge(languages[code]!.flag, size: 14),
+          const ChoiceItem<String>(
+            value: allLanguages,
+            label: 'all',
+            name: 'all languages',
           ),
+        ...languageItems(codes, languages),
       ],
     );
   }
+}
+
+/// The language slider of the tab screens: the languages the player ticked in
+/// the You tab, the one in use on show. Choosing another makes it the language
+/// in use, for the dailies, free play and learn alike.
+class LanguageBar extends StatefulWidget {
+  const LanguageBar({super.key});
+
+  @override
+  State<LanguageBar> createState() => _LanguageBarState();
+}
+
+class _LanguageBarState extends State<LanguageBar> {
+  Map<String, Language> _langs = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    WordBank.languages()
+        .then((ls) {
+          if (mounted) setState(() => _langs = {for (final l in ls) l.code: l});
+        })
+        .catchError((Object e) {
+          appLog.w('language', 'bar failed ${e.runtimeType}');
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: appState,
+    builder: (context, _) => LanguagePicker(
+      codes: appState.playLangs,
+      languages: _langs,
+      selected: appState.lang,
+      dots: false,
+      onSelect: switchLanguage,
+    ),
+  );
 }
