@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- today: the tiles keep their room
+  The tiles of the dailies were squeezed to fit the screen and clipped their state line. They keep at least 128 px now, and the list scrolls when there are many. The free play strip shows the mode's name under a free play label instead of a clipped one-line text.
+
 ## 0.14.1
 
 - a language switcher on today and learn, and several languages in you
