@@ -7,7 +7,6 @@ import 'daily.dart';
 import 'first_run/mode_lesson_page.dart';
 import 'ladder.dart';
 import 'main.dart';
-import 'mode_strip.dart';
 import 'mode_wheel.dart';
 import 'modes.dart';
 import 'routes.dart';
@@ -697,9 +696,16 @@ class TodayPage extends StatelessWidget {
     final shown = open.contains(appState.mode) ? appState.mode : open.first;
     return KeyedSubtree(
       key: const ValueKey('today-free-play'),
-      child: ModeStrip(
-        loop: true,
-        modes: open,
+      child: ChoiceSlider<GameMode>(
+        id: 'free-play',
+        items: [
+          for (final m in open)
+            ChoiceItem<GameMode>(
+              value: m,
+              label: 'free play · ${m.label}',
+              icon: modeIconName(m),
+            ),
+        ],
         selected: shown,
         onChanged: (m) {
           try {
@@ -708,7 +714,7 @@ class TodayPage extends StatelessWidget {
             appLog.w('today', 'could not change the mode: ${e.runtimeType}');
           }
         },
-        onTap: () {
+        onTapName: () {
           try {
             if (shown != appState.mode) appState.setup(mode: shown);
           } catch (e) {
