@@ -6,6 +6,7 @@ import 'equations.dart' show faceOf;
 import 'swipe_clear.dart' show CursorDrag;
 import 'haptics.dart';
 import 'logic.dart';
+import 'tonal.dart';
 import 'ui.dart';
 
 /// The widest screen that counts as a phone: below it the keyboard is bigger.
@@ -80,6 +81,7 @@ class LetterKeyboard extends StatelessWidget {
 
   Widget _build(BuildContext context, bool phone) {
     final c = Theme.of(context).colorScheme;
+    final tones = tonesOf(context);
     // on a phone the keys are taller and wider (the keys of the phone's own
     // keyboard are about this size), with the letters bigger
     final keyHeight = phone ? 58.0 : 46.0;
@@ -114,6 +116,7 @@ class LetterKeyboard extends StatelessWidget {
       (double, double)? chance,
       Haptic feel = Haptic.key,
       void Function(int by)? drag,
+      bool space = false,
     }) {
       // each press has its own feel (see [Haptic])
       void press() {
@@ -128,7 +131,7 @@ class LetterKeyboard extends StatelessWidget {
             padding: EdgeInsets.all(gap),
             child: InkWell(
               onTap: press,
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(radiusInner),
               child: _QuadKey(label: label, marks: quad, height: keyHeight),
             ),
           ),
@@ -141,7 +144,7 @@ class LetterKeyboard extends StatelessWidget {
             padding: EdgeInsets.all(gap),
             child: InkWell(
               onTap: press,
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(radiusInner),
               child: _ChanceKey(
                 label: label,
                 green: chance.$1,
@@ -152,29 +155,19 @@ class LetterKeyboard extends StatelessWidget {
           ),
         );
       }
-      Color? fill;
-      Color fg = c.onSurface;
-      Color? edge;
-      var edgeWidth = 1.0;
-      if (mark != null) {
-        (fill, fg) = markColors(c, mark);
-        edge = markBorder(c, mark);
-        edgeWidth = markBorderWidth(mark);
-      }
+      // a key is a tonal fill with no edge; a mark or an action key has its own
+      var (fill, fg) = (tones.s1, c.onSurface);
+      if (mark != null) (fill, fg) = markColors(c, mark);
       if (colors != null) (fill, fg) = colors;
       final button = InkWell(
         onTap: press,
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(radiusInner),
         child: Container(
-          height: keyHeight,
+          height: space ? 50 : keyHeight,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: fill,
-            border: Border.all(
-              color: edge ?? fill ?? c.outline,
-              width: edgeWidth,
-            ),
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(radiusInner),
           ),
           child: Text(
             label,
@@ -269,7 +262,11 @@ class LetterKeyboard extends StatelessWidget {
                 ),
                 // the space: a tap is a blank, a drag along it moves the cursor
                 if (onBlank != null)
-                  Row(children: [key('_', onBlank!, flex: 4, drag: onCursor)]),
+                  Row(
+                    children: [
+                      key('_', onBlank!, flex: 4, drag: onCursor, space: true),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -320,7 +317,7 @@ class LetterKeyboard extends StatelessWidget {
             Row(
               children: [
                 const Spacer(flex: 20),
-                key('_', onBlank!, flex: 6, drag: onCursor),
+                key('_', onBlank!, flex: 6, drag: onCursor, space: true),
                 const Spacer(flex: 20),
               ],
             ),
@@ -355,7 +352,8 @@ class _QuadKey extends StatelessWidget {
             : null,
     ];
     // the average of what is behind the letter, an unset part being the page
-    final shown = [for (final x in colors) x ?? c.surface];
+    final base = tonesOf(context).s1;
+    final shown = [for (final x in colors) x ?? base];
     final avg = Color.fromARGB(
       255,
       shown.map((x) => (x.r * 255).round()).reduce((a, b) => a + b) ~/ 4,
@@ -367,18 +365,15 @@ class _QuadKey extends StatelessWidget {
     final ink = onColor(c, avg);
     // (the other of the page's two text colours)
     final halo = ink == c.surface ? c.onSurface : c.surface;
-    // a soft shadow round the key, so a key the boards have all greyed (or left
-    // clear) still stands out from the page
+    // the key's fill is the tonal one, so a key the boards have all greyed (or
+    // left clear) still stands out from the page, with no shadow or edge
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(3),
-        boxShadow: [
-          BoxShadow(color: c.onSurface.withValues(alpha: .35), blurRadius: 3),
-        ],
+        color: base,
+        borderRadius: BorderRadius.circular(radiusInner),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(radiusInner),
         child: SizedBox(
           height: height,
           child: Stack(
@@ -421,12 +416,12 @@ class _ChanceKey extends StatelessWidget {
       g *= k;
       y *= k;
     }
-    final inner = height - 2;
+    final inner = height;
     return Container(
       height: height,
       decoration: BoxDecoration(
-        border: Border.all(color: c.outline),
-        borderRadius: BorderRadius.circular(3),
+        color: tonesOf(context).s1,
+        borderRadius: BorderRadius.circular(radiusInner),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(2),

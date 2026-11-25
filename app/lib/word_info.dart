@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'root_meaning.dart';
+import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'words.dart';
 import 'wiktionary.dart';
 import 'app_log.dart';
@@ -56,16 +58,25 @@ class _WordInfoViewState extends State<WordInfoView> {
   }
 }
 
-/// An entry already in hand: the pronunciation, the meanings by part of speech
-/// with their examples, the origin, synonyms and antonyms. The end screen shows
-/// it for the answer ([WordInfoView]), and a saved word shows its own copy.
+/// An entry already in hand: the pronunciation (with its listen button), the
+/// meanings by part of speech with their examples, the origin, synonyms and
+/// antonyms. The end screen shows it for the answer ([WordInfoView]), and a
+/// saved word shows its own copy.
 class WordInfoBody extends StatefulWidget {
-  const WordInfoBody({super.key, required this.info, this.underSense});
+  const WordInfoBody({
+    super.key,
+    required this.info,
+    this.underSense,
+    this.saved,
+  });
   final WordInfo info;
 
   /// Shown under a meaning, if it gives something: the meaning of the root
   /// when the sense says it is a form of another word.
   final Widget? Function(PosBlock block, Sense sense)? underSense;
+
+  /// Shown at the right of the pronunciation row (a saved word's date).
+  final Widget? saved;
 
   @override
   State<WordInfoBody> createState() => _WordInfoBodyState();
@@ -97,200 +108,190 @@ class _WordInfoBodyState extends State<WordInfoBody> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final info = widget.info;
+    final dim = c.onSurfaceVariant;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (info.ipa.isNotEmpty || info.audio != null)
-          Row(
-            children: [
-              Flexible(
-                child: Text(
-                  info.ipa.join('   '),
-                  style: TextStyle(color: c.primary, fontSize: 15),
-                ),
-              ),
-              if (info.audio != null)
-                IconButton(
-                  tooltip: 'listen',
-                  visualDensity: VisualDensity.compact,
-                  color: c.primary,
-                  icon: const Icon(Icons.volume_up_outlined, size: 20),
-                  onPressed: () => _play(info.audio!),
+        if (info.ipa.isNotEmpty || info.audio != null || widget.saved != null)
+          _pronunciation(context, c, info),
+        for (var i = 0; i < info.blocks.length; i++) ...[
+          SectionLabel(_posLabel(info.blocks[i]), first: i == 0),
+          GroupedList(
+            rows: [
+              for (var j = 0; j < info.blocks[i].senses.length; j++)
+                _senseRow(
+                  context,
+                  c,
+                  j + 1,
+                  info.blocks[i],
+                  info.blocks[i].senses[j],
                 ),
             ],
           ),
-        for (final b in info.blocks) ...[
-          const SizedBox(height: 12),
-          _heading(c, b),
-          const SizedBox(height: 6),
-          for (var i = 0; i < b.senses.length; i++)
-            _sense(
-              c,
-              i + 1,
-              b.senses[i],
-              extra: widget.underSense?.call(b, b.senses[i]),
-            ),
         ],
         if (info.etymology.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          _label('origin', yellowOf(c)),
-          const SizedBox(height: 2),
-          Text(
-            info.etymology,
-            style: TextStyle(
-              fontSize: 12,
-              fontStyle: FontStyle.italic,
-              color: c.onSurface.withValues(alpha: .75),
+          const SectionLabel('origin'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(
+              info.etymology,
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+                color: dim,
+              ),
             ),
           ),
         ],
-        if (info.synonyms.isNotEmpty)
-          _nyms(
-            'synonyms',
-            info.synonyms,
-            c.secondaryContainer,
-            c.onSecondaryContainer,
-          ),
-        if (info.antonyms.isNotEmpty)
-          _nyms(
-            'antonyms',
-            info.antonyms,
-            c.errorContainer,
-            c.onErrorContainer,
-          ),
-        const SizedBox(height: 4),
-        TextButton(
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 36),
-          ),
-          onPressed: () => launchUrl(Uri.parse(info.url)),
-          child: Text(
-            linkLabelFor(info.url),
-            style: TextStyle(color: c.primary),
+        if (info.synonyms.isNotEmpty) ...[
+          const SectionLabel('synonyms'),
+          _pills(info.synonyms, c.onSurface, tonesOf(context).s2),
+        ],
+        if (info.antonyms.isNotEmpty) ...[
+          const SectionLabel('antonyms'),
+          _pills(info.antonyms, c.onErrorContainer, c.errorContainer),
+        ],
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => launchUrl(Uri.parse(info.url)),
+            icon: TablerIcon('link', size: 18, color: c.onSurface),
+            label: Text(linkLabelFor(info.url)),
           ),
         ),
       ],
     );
   }
 
-  /// The part of speech in the accent colour, then gender and forms.
-  Widget _heading(ColorScheme c, PosBlock b) => Text.rich(
-    TextSpan(
+  /// The pronunciation (dim, 16) with the round listen button, and the saved
+  /// info at the right of the same row.
+  Widget _pronunciation(BuildContext context, ColorScheme c, WordInfo info) {
+    final saved = widget.saved;
+    return Row(
       children: [
-        TextSpan(
-          text: b.pos,
-          style: TextStyle(
+        if (info.ipa.isNotEmpty)
+          Flexible(
+            child: Text(
+              info.ipa.join('   '),
+              style: TextStyle(color: c.onSurfaceVariant, fontSize: 16),
+            ),
+          ),
+        if (info.audio != null) ...[
+          const SizedBox(width: 12),
+          IconButton(
+            key: const ValueKey('word-listen'),
+            tooltip: 'listen',
+            style: IconButton.styleFrom(
+              backgroundColor: tonesOf(context).s1,
+              shape: const CircleBorder(),
+              fixedSize: const Size(44, 44),
+              padding: EdgeInsets.zero,
+            ),
             color: c.primary,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
+            icon: const Icon(Icons.volume_up_outlined, size: 22),
+            onPressed: () => _play(info.audio!),
           ),
-        ),
-        if (b.gender.isNotEmpty)
-          TextSpan(
-            text: '  ${b.gender}',
-            style: TextStyle(color: c.secondary, fontWeight: FontWeight.bold),
-          ),
-        if (b.forms.isNotEmpty)
-          TextSpan(
-            text: '  ${b.forms}',
-            style: TextStyle(color: c.onSurface.withValues(alpha: dimAlpha)),
+        ],
+        if (saved != null)
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FittedBox(fit: BoxFit.scaleDown, child: saved),
+            ),
           ),
       ],
-    ),
-    style: const TextStyle(fontSize: 12),
-  );
+    );
+  }
 
-  /// One numbered sense: labels in the warm colour, the gloss, then examples
-  /// under a green rule.
-  Widget _sense(ColorScheme c, int n, Sense s, {Widget? extra}) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: '$n  ',
-                style: TextStyle(color: c.primary, fontWeight: FontWeight.bold),
-              ),
-              if (s.labels.isNotEmpty)
-                TextSpan(
-                  text: '${s.labels.join(', ')}  ',
-                  style: TextStyle(
-                    color: yellowOf(c),
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              TextSpan(text: s.text),
-            ],
-          ),
-          style: const TextStyle(fontSize: 13),
+  /// The section label of a part of speech: the part, then gender and forms.
+  String _posLabel(PosBlock b) =>
+      [b.pos, b.gender, b.forms].where((s) => s.isNotEmpty).join('  ');
+
+  /// One numbered sense: a small round badge, the labels in the warm colour
+  /// and the gloss, the examples dim and italic under it, and the root's
+  /// meanings (if any) last.
+  GroupRow _senseRow(
+    BuildContext context,
+    ColorScheme c,
+    int n,
+    PosBlock b,
+    Sense s,
+  ) {
+    final examples = s.examples;
+    return GroupRow(
+      crossAxisStart: true,
+      leading: Container(
+        width: 22,
+        height: 22,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: tonesOf(context).s3,
+          shape: BoxShape.circle,
         ),
-        ?extra,
-        for (final e in s.examples)
-          Container(
-            margin: const EdgeInsets.only(left: 14, top: 4),
-            padding: const EdgeInsets.only(left: 8),
-            decoration: BoxDecoration(
-              border: Border(left: BorderSide(color: c.secondary, width: 2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  e.text,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                    color: c.onSurface.withValues(alpha: .9),
-                  ),
+        child: Text(
+          '$n',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: c.onSurface,
+          ),
+        ),
+      ),
+      title: Text.rich(
+        TextSpan(
+          children: [
+            if (s.labels.isNotEmpty)
+              TextSpan(
+                text: '${s.labels.join(', ')}  ',
+                style: TextStyle(
+                  color: yellowOf(c),
+                  fontStyle: FontStyle.italic,
                 ),
-                if (e.translation.isNotEmpty)
-                  Text(
-                    e.translation,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: c.onSurface.withValues(alpha: .55),
+              ),
+            TextSpan(text: s.text),
+          ],
+        ),
+        style: const TextStyle(fontWeight: FontWeight.w400),
+      ),
+      subtitle: examples.isEmpty
+          ? null
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final e in examples)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      e.translation.isEmpty
+                          ? e.text
+                          : '${e.text}\n${e.translation}',
+                      style: const TextStyle(fontStyle: FontStyle.italic),
                     ),
                   ),
               ],
             ),
+      below: widget.underSense?.call(b, s),
+    );
+  }
+
+  /// Related words as tonal pills, 36 high and fully round, no edge.
+  Widget _pills(List<String> words, Color fg, Color bg) => Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      for (final w in words)
+        Container(
+          height: 36,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(999),
           ),
-      ],
-    ),
-  );
-
-  Widget _label(String text, Color color) => Text(
-    text,
-    style: TextStyle(fontSize: 12, letterSpacing: 2, color: color),
-  );
-
-  /// Related words as small tinted chips.
-  Widget _nyms(String label, List<String> words, Color bg, Color fg) => Padding(
-    padding: const EdgeInsets.only(top: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _label(label, fg.withValues(alpha: .9)),
-        const SizedBox(height: 4),
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: [
-            for (final w in words)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: bg,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: Text(w, style: TextStyle(fontSize: 12, color: fg)),
-              ),
-          ],
+          child: Text(w, style: TextStyle(fontSize: 14, color: fg)),
         ),
-      ],
-    ),
+    ],
   );
 }

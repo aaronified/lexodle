@@ -122,7 +122,7 @@ void main() {
       await key(tester, 'a');
       await wait(tester, 49);
       expect(pillText(tester).data, '0:11');
-      expect(pillText(tester).style!.color, isNull);
+      expect(pillText(tester).style!.color, isNot(heartColor(c)));
       await wait(tester, 1);
       expect(pillText(tester).data, '0:10');
       expect(pillText(tester).style!.color, heartColor(c));
@@ -181,12 +181,13 @@ void main() {
     testWidgets('a game with no limit is not cut short', (tester) async {
       await load(tester);
       await show(tester);
+      final c = Theme.of(tester.element(find.byKey(pill))).colorScheme;
       await key(tester, 'a');
       await wait(tester, 3600);
       expect(find.text('time is up'), findsNothing);
       expect(find.byType(LetterKeyboard), findsOneWidget);
       expect(pillText(tester).data, '1:00:00');
-      expect(pillText(tester).style!.color, isNull);
+      expect(pillText(tester).style!.color, isNot(heartColor(c)));
     });
 
     testWidgets('a quartet is lost the same way', (tester) async {

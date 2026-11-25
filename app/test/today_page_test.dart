@@ -5,7 +5,6 @@ import 'package:lexodle/game_modes_dialog.dart';
 import 'package:lexodle/first_run/mode_lesson_page.dart';
 import 'package:lexodle/ladder.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/mode_strip.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/my_dailies.dart';
 import 'package:lexodle/routes.dart';
@@ -80,12 +79,10 @@ void main() {
   ) async {
     veteran();
     appState.chooseDaily('en', GameMode.mastermind, on: true);
-    appState.saveDaily(
-      'en',
-      today,
-      ['crane', 'sloth'],
-      mode: GameMode.mastermind,
-    );
+    appState.saveDaily('en', today, [
+      'crane',
+      'sloth',
+    ], mode: GameMode.mastermind);
     await show(tester);
     expect(find.text('2 of 6 tries used'), findsOneWidget);
   });
@@ -139,11 +136,10 @@ void main() {
       const MaterialApp(home: Scaffold(body: TodayPage())),
     );
     await tester.pump();
-    final strip = find.byKey(const ValueKey('mode-strip'));
+    final strip = find.byKey(const ValueKey('free-play'));
     expect(strip, findsOneWidget);
     expect(tester.getSize(strip).width, lessThanOrEqualTo(360));
-    expect(find.text('free play'), findsOneWidget);
-    expect(find.text('classic'), findsWidgets);
+    expect(find.textContaining('free play'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -162,7 +158,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('today-free-play')),
-        matching: find.text('free play'),
+        matching: find.textContaining('free play'),
       ),
       findsOneWidget,
     );
@@ -178,7 +174,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('today-free-play')),
-        matching: find.text('free play'),
+        matching: find.textContaining('free play'),
       ),
       findsOneWidget,
     );
@@ -336,10 +332,14 @@ void main() {
     appState.stats.played = 0;
     appState.lex.veteran = false;
     final pushed = await showRouted(tester);
-    expect(find.byKey(const ValueKey('mode-strip-box')), findsOneWidget);
-    expect(find.text('free play'), findsOneWidget);
-    expect(find.byKey(const ValueKey('mode-prev')), findsNothing);
-    expect(find.byKey(const ValueKey('mode-next')), findsNothing);
+    expect(find.textContaining('free play'), findsOneWidget);
+    // one mode: nothing to slide to
+    expect(
+      tester
+          .widget<IconButton>(find.byKey(const ValueKey('free-play-next')))
+          .onPressed,
+      isNull,
+    );
     await tester.tap(find.byKey(const ValueKey('today-free-play')));
     await tester.pumpAndSettle();
     expect(pushed, contains(Routes.play));
@@ -351,16 +351,16 @@ void main() {
   ) async {
     veteran();
     final pushed = await showRouted(tester);
-    expect(find.byType(ModeStrip), findsOneWidget);
-    expect(find.byKey(const ValueKey('mode-prev')), findsNothing);
-    // a tap on a neighbour selects it
-    await tester.tap(find.byKey(const ValueKey('mode-strip-quartet')));
+    expect(find.byKey(const ValueKey('free-play')), findsOneWidget);
+    // the arrow selects the next mode
+    await tester.tap(find.byKey(const ValueKey('free-play-next')));
     await tester.pumpAndSettle();
     expect(appState.mode, GameMode.quartet);
-    // a drag turns it too
-    await tester.drag(
-      find.byKey(const ValueKey('mode-strip')),
-      const Offset(-160, 0),
+    // a swipe turns it too
+    await tester.fling(
+      find.byKey(const ValueKey('free-play')),
+      const Offset(-300, 0),
+      1000,
     );
     await tester.pumpAndSettle();
     expect(appState.mode, isNot(GameMode.quartet));
@@ -496,10 +496,10 @@ void main() {
     expect(anyCard(), findsNothing);
   });
 
-  testWidgets('free play is the strip, with no pending dots', (tester) async {
+  testWidgets('free play is the slider, with no pending dots', (tester) async {
     appState.stats.played = 4;
     await show(tester);
-    expect(find.byType(ModeStrip), findsOneWidget);
+    expect(find.byKey(const ValueKey('free-play')), findsOneWidget);
     expect(find.byKey(const ValueKey('daily-dot-prev')), findsNothing);
     expect(find.byKey(const ValueKey('daily-dot-next')), findsNothing);
   });
@@ -526,7 +526,7 @@ void main() {
       expect(find.text('choose dailies'), findsNothing);
       expect(find.byKey(const ValueKey('today-more')), findsNothing);
       final t = tester.widget<Text>(find.byKey(const ValueKey('today-count')));
-      expect(t.style!.fontSize, 20);
+      expect(t.style!.fontSize, 28);
     });
 
     testWidgets('the choose button opens the sheet', (tester) async {

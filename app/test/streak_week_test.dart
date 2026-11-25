@@ -89,14 +89,11 @@ void main() {
     // the week strip is hidden, the streak line stays
     expect(find.byKey(const ValueKey('sw-week-2026-11-13')), findsNothing);
     expect(find.byKey(const ValueKey('sw-streak-count')), findsOneWidget);
-    final cs = Theme.of(tester.element(find.byType(StreakWeek))).colorScheme;
+    // the month's days have no edge, like the rest of the app
     final cell = tester.widget<Container>(
       find.byKey(const ValueKey('sw-month-2026-11-10')),
     );
-    expect(
-      (cell.decoration as BoxDecoration).border,
-      Border.all(color: cs.outlineVariant),
-    );
+    expect((cell.decoration as BoxDecoration).border, isNull);
     expect(find.text('november'), findsOneWidget);
     expect(find.byKey(const ValueKey('sw-skull-m-2026-11-09')), findsOneWidget);
     expect(

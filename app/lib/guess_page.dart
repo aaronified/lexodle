@@ -8,7 +8,9 @@ import 'guess_quiz.dart';
 import 'logic.dart';
 import 'main.dart';
 import 'typing_keys.dart';
+import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'words.dart';
 
 /// Guess the best, an endless quiz of real positions. The questions alternate
@@ -76,6 +78,7 @@ class _GuessPageState extends State<GuessPage> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final lang = widget.bank.language.name.toLowerCase();
@@ -89,31 +92,26 @@ class _GuessPageState extends State<GuessPage> {
         next: _next,
       ),
       child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FlagBadge(widget.bank.language.flag, size: 16),
-              const SizedBox(width: 8),
-              TablerIcon('school', size: headerIconSize, color: c.primary),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  'guess the best · $lang · $length',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-                ),
-              ),
-            ],
-          ),
-        ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
-                children: _body(c),
+                padding: const EdgeInsets.only(bottom: 24),
+                children: [
+                  PageHeader(
+                    text: 'guess the best · $lang · $length',
+                    back: true,
+                    settings: false,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: _body(context, c),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -183,7 +181,48 @@ class _GuessPageState extends State<GuessPage> {
     );
   }
 
-  List<Widget> _body(ColorScheme c) {
+  /// The words expected to be left after [o]: the words that fit over 2 to the
+  /// power of the bits it gains, as the calculation says.
+  int _leftOf(GuessQuestion q, GuessOption o) =>
+      max(1, (q.eligible.length / pow(2, o.h)).round());
+
+  int _maxLeftOf(GuessQuestion q) =>
+      q.options.fold<int>(1, (m, o) => max(m, _leftOf(q, o)));
+
+  /// The colour of one letter of a guess: green right, yellow wrong place, and
+  /// the absent grey.
+  Color _squareOf(ColorScheme c, Mark m) => switch (m) {
+    Mark.correct => c.secondary,
+    Mark.present => yellowOf(c),
+    Mark.absent => markColors(c, Mark.absent).$1,
+  };
+
+  /// A bar of [f] (0 to 1) of the width, on the tone three above the page.
+  Widget _bar(BuildContext context, ColorScheme c, double f) {
+    final v = f > 1 ? 1.0 : (f < 0 ? 0.0 : f);
+    return Container(
+      height: 6,
+      decoration: BoxDecoration(
+        color: tonesOf(context).s3,
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: FractionallySizedBox(
+          widthFactor: v,
+          child: Container(
+            height: 6,
+            decoration: BoxDecoration(
+              color: c.primary,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _body(BuildContext context, ColorScheme c) {
     final dim = TextStyle(
       fontSize: 11,
       color: c.onSurface.withValues(alpha: dimAlpha),
@@ -199,47 +238,73 @@ class _GuessPageState extends State<GuessPage> {
     final skill = q.kind == GuessKind.skill;
     final n = q.eligible.length;
     return [
-      Caption(skill ? 'pick the best splitter' : 'pick the luckiest guess'),
-      const SizedBox(height: 12),
-      LayoutBuilder(
-        builder: (context, box) {
-          const gap = 6.0;
-          final size = min(44.0, (box.maxWidth - gap * (length - 1)) / length);
-          return Row(
-            children: [
-              for (var i = 0; i < length; i++) ...[
-                if (i > 0) const SizedBox(width: gap),
-                MarkTile(q.first[i], mark: q.marks[i], size: size),
-              ],
-            ],
-          );
-        },
-      ),
-      const SizedBox(height: 10),
-      Row(
-        children: [
-          Expanded(
-            child: Text(
-              '$n words fit. ${skill ? 'which guess splits the rest best?' : 'which guess got the luckiest reply?'}',
-              key: const ValueKey('guess-question'),
-              style: const TextStyle(fontSize: 14),
+      TonalCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: 'after '),
+                  TextSpan(
+                    text: q.first,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const TextSpan(text: ' you got'),
+                ],
+              ),
+              style: dim,
             ),
-          ),
-          const SizedBox(width: 8),
-          CalcDot(_questionSpec(q)),
-        ],
-      ),
-      if (!skill) ...[
-        const SizedBox(height: 4),
-        Text(
-          'the hidden word is fixed; all four were played against it.',
-          style: dim,
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                for (var i = 0; i < length; i++) ...[
+                  if (i > 0) const SizedBox(width: 4),
+                  Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: _squareOf(c, q.marks[i]),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '$n words fit. ${skill ? 'which guess splits the rest best?' : 'which guess got the luckiest reply?'}',
+                    key: const ValueKey('guess-question'),
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                CalcDot(_questionSpec(q)),
+              ],
+            ),
+            if (!skill) ...[
+              const SizedBox(height: 4),
+              Text(
+                'the hidden word is fixed; all four were played against it.',
+                style: dim,
+              ),
+            ],
+          ],
         ),
-      ],
-      const SizedBox(height: 14),
-      for (var i = 0; i < q.options.length; i++) _option(c, q, i, dim),
+      ),
+      SectionLabel(
+        p == null ? 'pick one' : 'words left on average after each guess',
+      ),
+      for (var i = 0; i < q.options.length; i++)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _option(context, c, q, i),
+        ),
       if (p != null) ...[
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         _verdict(c, q, p),
         const SizedBox(height: 12),
         FilledButton(
@@ -251,76 +316,106 @@ class _GuessPageState extends State<GuessPage> {
     ];
   }
 
-  Widget _option(ColorScheme c, GuessQuestion q, int i, TextStyle dim) {
+  Widget _option(BuildContext context, ColorScheme c, GuessQuestion q, int i) {
     final o = q.options[i];
     final p = picked;
-    final word = Text(
-      o.word,
-      style: TextStyle(fontSize: 20, letterSpacing: 2, color: c.onSurface),
-    );
-    if (p == null) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: OutlinedButton(
-          key: ValueKey('guess-option-$i'),
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(52),
-            backgroundColor: c.surfaceContainerHighest,
-            shape: const RoundedRectangleBorder(),
-            side: hairline(c),
-            alignment: Alignment.centerLeft,
-          ),
-          onPressed: () => _pick(i),
-          child: Align(alignment: Alignment.centerLeft, child: word),
-        ),
-      );
-    }
-    final isRight = i == q.rightIndex;
-    final isPicked = i == p;
+    final tones = tonesOf(context);
     final skill = q.kind == GuessKind.skill;
+    final isRight = p != null && i == q.rightIndex;
+    final isPicked = p != null && i == p;
+    final fill = isRight
+        ? c.secondaryContainer
+        : isPicked
+        ? tones.s2
+        : tones.s1;
+    final ink = isRight ? c.onSecondaryContainer : c.onSurface;
+    final tileFill = isPicked && !isRight ? tones.s3 : tones.s2;
+    final left = _leftOf(q, o);
     final colour = metricColor(c, skill ? 'skill' : 'luck');
     final numbers = skill
         ? '${o.h.toStringAsFixed(2)} bits · ${o.groups} groups · '
               'skill ${o.skill.round()}'
         : 'luck ${luckText(o.luck)} · group of ${o.landedWords} · '
               '${o.bits.toStringAsFixed(2)} bits';
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        key: ValueKey('guess-option-$i'),
-        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-        constraints: const BoxConstraints(minHeight: 52),
-        decoration: BoxDecoration(
-          color: isRight
-              ? c.secondaryContainer
-              : isPicked
-              ? c.errorContainer
-              : c.surfaceContainerHighest,
-          border: Border.fromBorderSide(
-            isRight
-                ? BorderSide(color: c.secondary, width: 1.5)
-                : isPicked
-                ? BorderSide(color: c.error, width: 1.5)
-                : hairline(c),
-          ),
-        ),
-        child: Row(
-          children: [
-            word,
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                numbers,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isRight ? FontWeight.bold : null,
-                  color: colour,
-                ),
+    return Material(
+      key: ValueKey('guess-option-$i'),
+      color: fill,
+      borderRadius: BorderRadius.circular(radiusContainer),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: p == null ? () => _pick(i) : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var k = 0; k < o.word.length; k++) ...[
+                        if (k > 0) const SizedBox(width: 6),
+                        Container(
+                          width: 32,
+                          height: 32,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: tileFill,
+                            borderRadius: BorderRadius.circular(radiusElement),
+                          ),
+                          child: Text(
+                            o.word[k],
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: ink,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const Spacer(),
+                  if (p == null)
+                    Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: c.onSurfaceVariant,
+                    )
+                  else
+                    Text(
+                      '$left',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: ink,
+                      ),
+                    ),
+                ],
               ),
-            ),
-            const SizedBox(width: 8),
-            CalcDot(_optionSpec(q, o)),
-          ],
+              if (p != null) ...[
+                const SizedBox(height: 10),
+                _bar(context, c, left / _maxLeftOf(q)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        numbers,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isRight ? FontWeight.bold : null,
+                          color: isRight ? ink : colour,
+                        ),
+                      ),
+                    ),
+                    CalcDot(_optionSpec(q, o)),
+                  ],
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

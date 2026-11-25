@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'precomputed.dart';
 import 'precomputed_local.dart';
-import 'ui.dart';
 import 'words.dart';
 
 /// "12 MB", "340 KB": a size as a person reads it.
@@ -93,11 +92,6 @@ class _PrecomputedSectionState extends State<PrecomputedSection> {
         width: double.infinity,
         child: OutlinedButton(
           key: ValueKey('precomputed-$key'),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-            shape: const RoundedRectangleBorder(),
-            alignment: Alignment.centerLeft,
-          ),
           onPressed: _busy != null || done ? null : () => _download(key, lists),
           child: Text(
             working
@@ -114,11 +108,7 @@ class _PrecomputedSectionState extends State<PrecomputedSection> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final dim = TextStyle(
-      fontSize: 12,
-      height: 1.4,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
+    final dim = TextStyle(fontSize: 13, height: 1.4, color: c.onSurfaceVariant);
     final m = _manifest;
     final onDisk = PrecomputedLocal.size();
     return Column(

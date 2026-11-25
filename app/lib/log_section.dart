@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'main.dart';
-import 'ui.dart';
 
 /// The log section of the settings: what the app did since it started, to look
 /// at or to export for sending. Exports go to the Downloads folder as text.
@@ -63,11 +62,7 @@ class _LogSectionState extends State<LogSection> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final dim = TextStyle(
-      fontSize: 12,
-      height: 1.4,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
+    final dim = TextStyle(fontSize: 13, height: 1.4, color: c.onSurfaceVariant);
     final failed = appState.saveFailures;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +75,7 @@ class _LogSectionState extends State<LogSection> {
           key: const ValueKey('log-summary'),
           style: dim,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(

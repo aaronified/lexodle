@@ -38,6 +38,7 @@ import 'save_word_button.dart';
 import 'sounds.dart';
 import 'swipe_clear.dart';
 import 'store.dart';
+import 'tonal.dart';
 import 'ui.dart';
 import 'wiktionary.dart';
 import 'word_info.dart';
@@ -1427,18 +1428,19 @@ class _GamePageState extends State<GamePage>
   }) {
     Color? fill;
     Color fg = c.onSurface;
-    Color border = active
-        ? c.onSurface.withValues(alpha: .5)
-        : c.outlineVariant;
-    var borderWidth = 1.0;
+    // an empty tile is outlined in the line tone, a typed letter in the faint
+    // one; a marked tile is a plain fill with no edge
+    final tones = tonesOf(context);
+    Color? border = ch.isEmpty ? tones.line : tones.faint;
+    var borderWidth = ch.isEmpty ? 1.0 : 1.5;
     // the game's lock (a green in lockdown) is green; the player's own is pink
     final lockColor = fixed ? markColors(c, Mark.correct).$1 : c.primary;
     if (m != null) {
       (fill, fg) = markColors(c, m);
-      border = markBorder(c, m);
-      borderWidth = markBorderWidth(m);
-    } else if (ch.isNotEmpty) {
-      border = locked ? lockColor : c.onSurface;
+      border = null;
+    } else if (ch.isNotEmpty && locked) {
+      border = lockColor;
+      borderWidth = 1;
     }
     // the cursor is the ink colour, the lock the pink accent
     if (cursor) {
@@ -1455,8 +1457,10 @@ class _GamePageState extends State<GamePage>
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: fill,
-          border: Border.all(color: border, width: borderWidth),
-          borderRadius: BorderRadius.circular(3),
+          border: border == null
+              ? null
+              : Border.all(color: border, width: borderWidth),
+          borderRadius: BorderRadius.circular(radiusElement),
           // the cursor glows: soft on the cream, stronger on the dark grounds
           boxShadow: cursor
               ? [
@@ -1516,6 +1520,15 @@ class _GamePageState extends State<GamePage>
     );
   }
 
+  /// The status line under the boards: 14, dim, centred.
+  TextStyle _lineStyle() => TextStyle(
+    fontSize: 14,
+    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: dimAlpha),
+  );
+
+  Widget _line(String text) =>
+      Text(text, textAlign: TextAlign.center, style: _lineStyle());
+
   Widget _status(ColorScheme c) {
     if (message.isNotEmpty) {
       return Text(message, style: TextStyle(color: c.error));
@@ -1526,7 +1539,7 @@ class _GamePageState extends State<GamePage>
         ? Helper.off
         : appState.helper;
     if (_endless) {
-      return Caption(
+      return _line(
         guesses.isEmpty
             ? (largest
                   ? 'no limit · it keeps the largest pool'
@@ -1538,7 +1551,7 @@ class _GamePageState extends State<GamePage>
     final left = lockdown
         ? '$hearts ${hearts == 1 ? 'heart' : 'hearts'} · $triesLeft'
         : triesLeft;
-    if (guesses.isEmpty) return Caption(left);
+    if (guesses.isEmpty) return _line(left);
     final m = metrics.last;
     final parts = <(String, String?)>[
       if (h.showSkill)
@@ -1549,7 +1562,7 @@ class _GamePageState extends State<GamePage>
       mainAxisSize: MainAxisSize.min,
       children: [
         if (parts.isNotEmpty)
-          Caption.rich(
+          Text.rich(
             metricParts(c, [
               ('last guess · ', null),
               for (final (i, p) in parts.indexed) ...[
@@ -1558,8 +1571,9 @@ class _GamePageState extends State<GamePage>
               ],
             ]),
             textAlign: TextAlign.center,
+            style: _lineStyle(),
           ),
-        Caption(
+        _line(
           h.showWordsLeft
               ? '${eligible.length} possible '
                     '${eligible.length == 1 ? 'word' : 'words'} · $left'

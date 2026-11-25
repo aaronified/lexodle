@@ -88,7 +88,7 @@ void main() {
     for (final k in ['free', 'choose', 'closing', 'sequence']) {
       expect(find.byKey(ValueKey('learn-card-$k')), findsNothing);
     }
-    for (final k in ['guide', 'opening', 'styles', 'words']) {
+    for (final k in ['guide', 'opening', 'styles']) {
       expect(find.byKey(ValueKey('learn-card-$k')), findsNothing);
     }
   });
@@ -119,7 +119,7 @@ void main() {
     await open(tester);
     for (final k in ['free', 'choose', 'closing', 'sequence']) {
       expect(find.byKey(ValueKey('learn-card-$k')), findsOneWidget);
-      expect(text(tester, 'learn-progress-$k'), 'not tried yet at this length');
+      expect(text(tester, 'learn-progress-$k'), 'new');
       expect(find.byKey(ValueKey('learn-trend-$k')), findsNothing);
     }
     expect(find.byKey(const ValueKey('learn-streak')), findsNothing);
@@ -147,10 +147,7 @@ void main() {
       text(tester, 'learn-progress-free'),
       'last word: 2 of 3 guesses the best · skill 95',
     );
-    expect(
-      text(tester, 'learn-progress-closing'),
-      'not tried yet at this length',
-    );
+    expect(text(tester, 'learn-progress-closing'), 'new');
   });
 
   testWidgets('the streak is shown once there is one', (tester) async {
