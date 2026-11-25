@@ -20,7 +20,7 @@ from pathlib import Path
 
 WORDS = Path(__file__).resolve().parent.parent / "assets" / "words"
 OUT = Path(sys.argv[0]).resolve().parent / "wikt_abbr_out"
-KAIKKI = "https://kaikki.org/dictionary/{n}/kaikki.org-dictionary-{n}.jsonl"
+KAIKKI = "https://kaikki.org/dictionary/{n}/kaikki.org-dictionary-{f}.jsonl"
 TAGS = {"abbreviation", "initialism", "acronym"}
 CAT = re.compile(r"(abbreviation|initialism|acronym)s?$", re.I)
 HEAD = re.compile(r'"word": "((?:[^"\\]|\\.)*)", "lang"')
@@ -61,7 +61,8 @@ def entry_abbr(d):
 
 
 def scan(code, name, words):
-    url = KAIKKI.format(n=urllib.parse.quote(name))
+    # (the file name has no space in it: NorwegianBokmål)
+    url = KAIKKI.format(n=urllib.parse.quote(name), f=urllib.parse.quote(name.replace(" ", "")))
     found = {}
     p = subprocess.Popen(["curl", "-sS", "-f", url], stdout=subprocess.PIPE)
     lines = 0
