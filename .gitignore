@@ -2,3 +2,4 @@
 # Local venv for tools/build_words.py (pip install wordfreq)
 app/tools/.venv/
 app/tools/dictionaries/
+app/tools/wikt_abbr_out/
