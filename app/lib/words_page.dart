@@ -227,12 +227,15 @@ class _WordsPageState extends State<WordsPage> {
       key: key,
       onTap: onTap,
       child: Align(
-        alignment: Alignment.bottomLeft,
+        alignment: Alignment.centerLeft,
         child: IntrinsicWidth(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // the line below is 2 high: the same above keeps the text on
+              // the centre line the cog and the other headers share
+              const SizedBox(height: 2),
               Text(
                 label,
                 maxLines: 1,
