@@ -11,6 +11,7 @@ import 'tonal.dart';
 import 'ui.dart';
 import 'ui_kit.dart';
 import 'words.dart';
+import 'language_picker.dart' show allLanguages;
 import 'language_sheet.dart';
 import 'language_switch.dart';
 import 'words_banner.dart';
@@ -356,7 +357,7 @@ class _WordsPageState extends State<WordsPage> {
     }
 
     final langs = col.languages;
-    final pills = [...langs, if (col.placeCount > 0) 'places'];
+    final pills = [allLanguages, ...langs, if (col.placeCount > 0) 'places'];
     final last = _cLang;
     final sel = last != null && pills.contains(last)
         ? last
@@ -372,7 +373,14 @@ class _WordsPageState extends State<WordsPage> {
 
     // the count line, for a language; it reads what is already known
     String? summary;
-    if (sel != 'places') {
+    if (sel == allLanguages) {
+      final won = _cKeys(col, sel);
+      final savedHere = won.where((k) {
+        final i = k.indexOf('\t');
+        return _saved(k.substring(0, i), k.substring(i + 1));
+      }).length;
+      summary = '${won.length} words won · $savedHere saved';
+    } else if (sel != 'places') {
       final won = _cKeys(col, sel);
       final savedHere = won.where((w) => _saved(sel, w)).length;
       final name = (_langByCode?[sel]?.name ?? sel).toLowerCase();
@@ -388,6 +396,11 @@ class _WordsPageState extends State<WordsPage> {
           title: 'language',
           footer: languagesFooter(context),
           items: [
+            const ChoiceItem<String>(
+              value: allLanguages,
+              label: 'all',
+              name: 'all languages',
+            ),
             for (final it in languageItems(
               languageStops(langs),
               _langByCode ?? const {},
@@ -450,9 +463,20 @@ class _WordsPageState extends State<WordsPage> {
             crossAxisSpacing: 8,
             mainAxisExtent: 52,
           ),
-          itemBuilder: (context, i) => sel == 'places'
-              ? _placeTile(context, c, keys[i])
-              : _collectedTile(context, c, sel, keys[i]),
+          itemBuilder: (context, i) {
+            if (sel == 'places') return _placeTile(context, c, keys[i]);
+            if (sel == allLanguages) {
+              final t = keys[i].indexOf('\t');
+              return _collectedTile(
+                context,
+                c,
+                keys[i].substring(0, t),
+                keys[i].substring(t + 1),
+                flag: true,
+              );
+            }
+            return _collectedTile(context, c, sel, keys[i]);
+          },
         ),
     ];
   }
@@ -559,7 +583,7 @@ class _WordsPageState extends State<WordsPage> {
   List<String> _sortKeys(List<String> keys, _Sort sort, bool places) {
     try {
       String name(String k) =>
-          (places ? (_placeOf(k)?.name ?? k) : k).toLowerCase();
+          (places ? (_placeOf(k)?.name ?? k) : _wordOf(k)).toLowerCase();
       return switch (sort) {
         _Sort.newest => keys,
         _Sort.oldest => keys.reversed.toList(),
@@ -743,11 +767,24 @@ class _WordsPageState extends State<WordsPage> {
   /// when they cannot be listed.
   List<String> _cKeys(Collection col, String sel) {
     try {
+      if (sel == allLanguages) {
+        // every language's words, a language after another, each newest first
+        return [
+          for (final l in col.languages)
+            for (final w in col.wordsOf(l)) '$l\t$w',
+        ];
+      }
       return sel == 'places' ? col.places : col.wordsOf(sel);
     } catch (e) {
       appLog.w('words', 'could not list the collected words: ${e.runtimeType}');
       return const [];
     }
+  }
+
+  /// The word of a collected key: for every language the key is `lang<tab>word`.
+  String _wordOf(String key) {
+    final i = key.indexOf('\t');
+    return i < 0 ? key : key.substring(i + 1);
   }
 
   /// The keys of [sel] that match [q] in the word (or in the place key and
@@ -758,7 +795,7 @@ class _WordsPageState extends State<WordsPage> {
       return [
         for (final k in _cKeys(col, sel))
           if (q.isEmpty ||
-              k.toLowerCase().contains(q) ||
+              _wordOf(k).toLowerCase().contains(q) ||
               (places && (_placeOf(k)?.name ?? '').toLowerCase().contains(q)))
             k,
       ];
@@ -842,8 +879,9 @@ class _WordsPageState extends State<WordsPage> {
     BuildContext context,
     ColorScheme c,
     String lang,
-    String word,
-  ) {
+    String word, {
+    bool flag = false,
+  }) {
     return InkWell(
       key: ValueKey('collected-row-$lang-$word'),
       onTap: () => _openCollected(context, lang, word),
@@ -856,6 +894,11 @@ class _WordsPageState extends State<WordsPage> {
         ),
         child: Row(
           children: [
+            // in the list of every language, the flag says which one
+            if (flag) ...[
+              languageBadge(lang, size: 14),
+              const SizedBox(width: 8),
+            ],
             Expanded(
               child: Text(
                 word,

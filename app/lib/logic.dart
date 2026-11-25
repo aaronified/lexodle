@@ -9,6 +9,38 @@ import 'dart:typed_data';
 /// guess repeats a letter that is also green or yellow.
 enum Mark { correct, present, absent }
 
+/// The letters of [letters] that a board has ruled out for good, once every
+/// letter of its word is found: the most copies of a letter that one guess
+/// showed (a correct or a present mark) are added up over the letters, and
+/// when that makes the length of the word, no other letter can be in it.
+/// Nothing is ruled out before that. [guesses] and [marks] are the board's, in
+/// step.
+Set<String> ruledOut(
+  List<String> guesses,
+  List<List<Mark>> marks,
+  int length,
+  Iterable<String> letters,
+) {
+  final most = <String, int>{};
+  for (var r = 0; r < guesses.length && r < marks.length; r++) {
+    final here = <String, int>{};
+    for (var i = 0; i < marks[r].length && i < guesses[r].length; i++) {
+      if (marks[r][i] != Mark.absent) {
+        here[guesses[r][i]] = (here[guesses[r][i]] ?? 0) + 1;
+      }
+    }
+    for (final e in here.entries) {
+      if (e.value > (most[e.key] ?? 0)) most[e.key] = e.value;
+    }
+  }
+  final found = most.values.fold(0, (a, b) => a + b);
+  if (found < length) return const {};
+  return {
+    for (final l in letters)
+      if (!most.containsKey(l)) l,
+  };
+}
+
 /// Two-pass scoring: greens first, then yellows limited by remaining counts.
 /// With [blind] the marks are only counted: the same marks, greens first, then
 /// yellows, then absents, so two guesses with as many right and as many

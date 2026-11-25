@@ -319,6 +319,28 @@ void main() {
       expect(crow('en', 'clubs'), findsOneWidget);
     });
 
+    testWidgets('the all stop lists the words of every language', (
+      tester,
+    ) async {
+      seed();
+      await openCollected(tester);
+      // the choice runs all, en, fr, places: the one before en is all
+      await tester.tap(cprev());
+      await tester.pumpAndSettle();
+      expect(crow('en', 'clubs'), findsOneWidget);
+      expect(crow('fr', 'cloche'), findsOneWidget);
+      expect(find.byKey(const ValueKey('collected-place-paris')), findsNothing);
+      expect(find.textContaining('words won ·'), findsOneWidget);
+      // the search looks at the word, not at the language code in the key
+      await tester.enterText(
+        find.byKey(const ValueKey('collected-search')),
+        'clo',
+      );
+      await tester.pumpAndSettle();
+      expect(crow('fr', 'cloche'), findsOneWidget);
+      expect(crow('en', 'clubs'), findsNothing);
+    });
+
     testWidgets('search narrows the collected rows', (tester) async {
       seed();
       await openCollected(tester);
