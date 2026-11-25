@@ -143,19 +143,31 @@ void main() {
     );
   });
 
-  testWidgets('the language row opens the sheet and applies the choice', (
+  testWidgets('the languages row opens the sheet where several are ticked', (
     tester,
   ) async {
     player(played: 500, veteran: true);
+    await tester.binding.setSurfaceSize(const Size(420, 2400));
     await show(tester);
+    final here = appState.lang;
+    expect(appState.playLangs, [here]);
     await tester.tap(row('language'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('language-sheet')), findsOneWidget);
     final langs = (await tester.runAsync(WordBank.languages))!;
-    final other = langs.firstWhere((l) => l.code != appState.lang);
-    await tester.tap(find.byKey(ValueKey('language-${other.code}')));
+    final other = langs.firstWhere((l) => l.code != here).code;
+    // ticking another keeps the one in use
+    await tester.tap(find.byKey(ValueKey('tick-$other')));
     await tester.pumpAndSettle();
-    expect(appState.lang, other.code);
-    expect(find.byKey(const ValueKey('language-sheet')), findsNothing);
+    expect(appState.playLangs, [here, other]);
+    expect(appState.lang, here);
+    // the last one cannot be unticked, but one of two can: the one in use goes,
+    // and the other is in use
+    await tester.tap(find.byKey(ValueKey('tick-$here')));
+    await tester.pumpAndSettle();
+    expect(appState.playLangs, [other]);
+    expect(appState.lang, other);
+    await tester.tap(find.byKey(ValueKey('tick-$other')));
+    await tester.pumpAndSettle();
+    expect(appState.playLangs, [other]);
   });
 }

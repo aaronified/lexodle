@@ -263,6 +263,44 @@ void main() {
       expect(tester.getCenter(find.text('one')).dx, closeTo(x0, 1));
     });
 
+    testWidgets('tapping the name opens a popup of the choices; one switches', (
+      tester,
+    ) async {
+      var got = 'one';
+      await tester.pumpWidget(
+        _app(
+          StatefulBuilder(
+            builder: (context, set) => ChoiceSlider<String>(
+              id: 's',
+              title: 'number',
+              items: items,
+              selected: got,
+              onChanged: (v) => set(() => got = v),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byKey(const ValueKey('s-name')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('pick-sheet')), findsOneWidget);
+      expect(find.text('number'), findsOneWidget);
+      for (final n in ['one', 'two', 'three']) {
+        expect(find.byKey(ValueKey('pick-$n')), findsOneWidget);
+      }
+      // the choice in force shows a check
+      expect(find.byIcon(Icons.check), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('pick-three')));
+      await tester.pumpAndSettle();
+      expect(got, 'three');
+      expect(find.byKey(const ValueKey('pick-sheet')), findsNothing);
+      // the close icon leaves it as it is
+      await tester.tap(find.byKey(const ValueKey('s-name')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('pick-close')));
+      await tester.pumpAndSettle();
+      expect(got, 'three');
+    });
+
     testWidgets('one item has no dots and a long name does not overflow', (
       tester,
     ) async {

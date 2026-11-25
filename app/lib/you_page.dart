@@ -43,37 +43,17 @@ class _YouPageState extends State<YouPage> {
     }
   }
 
-  Future<void> _pickLanguage() async {
-    try {
-      final langs = _langs ?? await WordBank.languages();
-      if (!mounted || langs.isEmpty) return;
-      final lang = langs.firstWhere(
-        (l) => l.code == appState.lang,
-        orElse: () => langs.first,
-      );
-      final code = await showLanguageSheet(
-        context,
-        langs: langs,
-        current: lang.code,
-      );
-      if (code == null || code == lang.code) return;
-      final next = langs.firstWhere((l) => l.code == code);
-      final length = appState.length;
-      appState.setup(
-        lang: code,
-        length: next.lengths.contains(length) ? length : next.lengths.first,
-      );
-    } catch (e) {
-      appLog.w('you', 'language failed ${e.runtimeType}');
-    }
-  }
+  /// The sheet where the languages of the switchers are ticked.
+  void _pickLanguages() => showLanguagesChooser(context);
 
+  /// The names of the ticked languages, in English, for the line under the row.
   String? get _langName {
     final langs = _langs;
     if (langs == null || langs.isEmpty) return null;
-    return langs
-        .firstWhere((l) => l.code == appState.lang, orElse: () => langs.first)
-        .name;
+    return [
+      for (final c in appState.playLangs)
+        (langs.where((l) => l.code == c).firstOrNull?.wikt ?? c).toLowerCase(),
+    ].join(', ');
   }
 
   void _push(BuildContext context, String route, {Object? arguments}) {
@@ -145,10 +125,10 @@ class _YouPageState extends State<YouPage> {
           if (appState.stepOpen('language'))
             _row(
               'language',
-              'language',
+              'languages',
               _langName,
               icon: 'world',
-              onTap: _pickLanguage,
+              onTap: _pickLanguages,
             ),
           if (appState.stepOpen('friends'))
             _row(

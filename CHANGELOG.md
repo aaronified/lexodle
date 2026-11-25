@@ -7,6 +7,11 @@ it to the version.
 
 ## Unreleased
 
+- a language switcher on today and learn, and several languages in you
+  The language slider of the words page is now on today and learn too. In you, the language row is now languages: tick the ones you play and they are the stops of every language slider (at least one stays ticked). Tapping the name on any slider opens a popup list of its choices, and the language popup ends with a choose languages row. The free play strip has a play button beside it, since a tap on its name opens the popup.
+- one sheet for every picker
+  The language popup was the oldest sheet in the app (flat rows, an olive band, small corners). It now looks like choose your dailies: the same sheet, a 22 px title, one grouped list with icon tiles, the choice in green with a check.
+
 - you: solver and diy say what they are
   Each row has its own short line under its name, like the others in the menu.
 

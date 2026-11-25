@@ -12,6 +12,7 @@ import 'modes.dart';
 import 'routes.dart';
 import 'today_prefs.dart';
 import 'tonal.dart';
+import 'language_picker.dart';
 import 'ui.dart';
 import 'ui_kit.dart';
 
@@ -150,9 +151,9 @@ class TodayPage extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, box) {
               // the tiles share the free height: 8 fit on a phone (212 is the
-              // header, the count, the label and the bottom gap)
+              // header, the language slider, the count, the label and the bottom gap)
               final n = (rows.length + 1) ~/ 2;
-              final free = box.maxHeight - 212 - 8 * (n - 1);
+              final free = box.maxHeight - 268 - 8 * (n - 1);
               final tileHeight = n == 0
                   ? 84.0
                   : (free / n).clamp(84.0, 128.0).toDouble();
@@ -168,8 +169,12 @@ class TodayPage extends StatelessWidget {
                       style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
                     ),
                   ),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: LanguageBar(),
+                  ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -696,32 +701,67 @@ class TodayPage extends StatelessWidget {
     final shown = open.contains(appState.mode) ? appState.mode : open.first;
     return KeyedSubtree(
       key: const ValueKey('today-free-play'),
-      child: ChoiceSlider<GameMode>(
-        id: 'free-play',
-        items: [
-          for (final m in open)
-            ChoiceItem<GameMode>(
-              value: m,
-              label: 'free play · ${m.label}',
-              icon: modeIconName(m),
-            ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ChoiceSlider<GameMode>(
+                  id: 'free-play',
+                  title: 'free play',
+                  compact: true,
+                  items: [
+                    for (final m in open)
+                      ChoiceItem<GameMode>(
+                        value: m,
+                        label: 'free play · ${m.label}',
+                        name: m.label,
+                        icon: modeIconName(m),
+                      ),
+                  ],
+                  selected: shown,
+                  onChanged: (m) {
+                    try {
+                      appState.setup(mode: m);
+                    } catch (e) {
+                      appLog.w(
+                        'today',
+                        'could not change the mode: ${e.runtimeType}',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              // the name opens the list of modes, so the game starts from here
+              SizedBox(
+                width: 48,
+                height: 48,
+                child: FilledButton(
+                  key: const ValueKey('free-play-start'),
+                  style: FilledButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(48, 48),
+                  ),
+                  onPressed: () {
+                    try {
+                      if (shown != appState.mode) appState.setup(mode: shown);
+                    } catch (e) {
+                      appLog.w(
+                        'today',
+                        'could not set the mode: ${e.runtimeType}',
+                      );
+                    }
+                    _freePlay(context);
+                  },
+                  child: const Icon(Icons.play_arrow),
+                ),
+              ),
+            ],
+          ),
         ],
-        selected: shown,
-        onChanged: (m) {
-          try {
-            appState.setup(mode: m);
-          } catch (e) {
-            appLog.w('today', 'could not change the mode: ${e.runtimeType}');
-          }
-        },
-        onTapName: () {
-          try {
-            if (shown != appState.mode) appState.setup(mode: shown);
-          } catch (e) {
-            appLog.w('today', 'could not set the mode: ${e.runtimeType}');
-          }
-          _freePlay(context);
-        },
       ),
     );
   }

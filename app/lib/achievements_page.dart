@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'language_picker.dart';
+import 'language_switch.dart';
 import 'lex.dart';
 import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
@@ -275,7 +276,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                             const SizedBox(height: 16),
                           ],
                           LanguagePicker(
-                            codes: codes,
+                            codes: languageStops(codes),
                             languages: _langs,
                             selected: _lang,
                             showAll: true,

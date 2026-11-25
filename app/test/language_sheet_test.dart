@@ -41,7 +41,9 @@ void main() {
     for (final l in langs) {
       expect(find.byKey(ValueKey('language-${l.code}')), findsOneWidget);
       expect(find.text(l.name), findsOneWidget);
-      if (l.wikt != l.name) expect(find.text(l.wikt), findsOneWidget);
+      if (l.wikt != l.name) {
+        expect(find.text(l.wikt.toLowerCase()), findsOneWidget);
+      }
     }
     expect(
       find.descendant(

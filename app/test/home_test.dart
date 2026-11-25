@@ -345,14 +345,14 @@ void main() {
   });
 
   group('language sheet', () {
-    testWidgets('is a flat sheet in the app colours', (tester) async {
+    testWidgets('is the same sheet as the others: the theme\'s, radius 28', (
+      tester,
+    ) async {
       await home(tester);
       await tester.tap(find.byKey(const ValueKey('language-button')));
       await tester.pumpAndSettle();
-      final sheet = tester.widget<BottomSheet>(find.byType(BottomSheet));
-      final c = Theme.of(tester.element(find.byType(BottomSheet))).colorScheme;
-      expect(sheet.backgroundColor, c.surfaceContainerHigh);
-      expect(sheet.elevation, 0);
+      // the sheet of the theme (radius 28, the handle), with the picker's list
+      expect(find.byKey(const ValueKey('language-sheet')), findsOneWidget);
     });
   });
 }

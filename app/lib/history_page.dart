@@ -10,6 +10,7 @@ import 'game_timer.dart' show formatElapsed;
 import 'history.dart';
 import 'logic.dart';
 import 'language_picker.dart';
+import 'language_switch.dart';
 import 'mode_filter.dart';
 import 'main.dart';
 import 'modes.dart';
@@ -168,10 +169,12 @@ class _HistoryPageState extends State<HistoryPage> {
                                     children: [
                                       LanguagePicker(
                                         // (a language only practised is in the list)
-                                        codes: {
-                                          ...appState.playedLanguages,
-                                          for (final g in h.games) g.lang,
-                                        }.toList()..sort(),
+                                        codes: languageStops(
+                                          {
+                                            ...appState.playedLanguages,
+                                            for (final g in h.games) g.lang,
+                                          }.toList()..sort(),
+                                        ),
                                         languages: _langs,
                                         selected: _lang,
                                         onSelect: (code) => setState(() {

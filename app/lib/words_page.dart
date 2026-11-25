@@ -11,6 +11,8 @@ import 'tonal.dart';
 import 'ui.dart';
 import 'ui_kit.dart';
 import 'words.dart';
+import 'language_sheet.dart';
+import 'language_switch.dart';
 import 'words_banner.dart';
 
 /// The orders a list can be shown in; newest first is the stored order.
@@ -284,13 +286,25 @@ class _WordsPageState extends State<WordsPage> {
           id: 'words-language',
           compact: true,
           dots: false,
+          title: 'language',
+          footer: languagesFooter(context),
           items: [
-            const ChoiceItem<String?>(value: null, label: 'all'),
-            for (final code in langs)
+            const ChoiceItem<String?>(
+              value: null,
+              label: 'all',
+              name: 'all languages',
+            ),
+            for (final it in languageItems(
+              languageStops(langs),
+              _langByCode ?? const {},
+            ))
               ChoiceItem<String?>(
-                value: code,
-                label: code,
-                leading: languageBadge(code, size: 14),
+                value: it.value,
+                label: it.label,
+                name: it.name,
+                sub: it.sub,
+                leading: languageBadge(it.value, size: 14),
+                popupLeading: languageBadge(it.value, size: 22),
               ),
           ],
           selected: lang,
@@ -371,12 +385,20 @@ class _WordsPageState extends State<WordsPage> {
           id: 'collected-language',
           compact: true,
           dots: false,
+          title: 'language',
+          footer: languagesFooter(context),
           items: [
-            for (final code in langs)
+            for (final it in languageItems(
+              languageStops(langs),
+              _langByCode ?? const {},
+            ))
               ChoiceItem<String>(
-                value: code,
-                label: code,
-                leading: languageBadge(code, size: 14),
+                value: it.value,
+                label: it.label,
+                name: it.name,
+                sub: it.sub,
+                leading: languageBadge(it.value, size: 14),
+                popupLeading: languageBadge(it.value, size: 22),
               ),
             if (col.placeCount > 0)
               const ChoiceItem<String>(

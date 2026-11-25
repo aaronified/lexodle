@@ -3487,6 +3487,47 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The languages the player ticked in the You tab: the stops of every
+  /// language slider. The language in use is always one of them.
+  final List<String> _playLangs = [];
+  List<String> get playLangs => [
+    ..._playLangs,
+    if (!_playLangs.contains(lang)) lang,
+  ];
+
+  /// Ticks or unticks a language. At least one stays ticked (false is returned
+  /// when this would leave none).
+  bool setPlayLang(String code, bool on) {
+    final now = playLangs;
+    if (on == now.contains(code)) return true;
+    if (!on && now.length <= 1) return false;
+    _playLangs
+      ..clear()
+      ..addAll(now);
+    if (on) {
+      _playLangs.add(code);
+    } else {
+      _playLangs.remove(code);
+    }
+    try {
+      _w('playLangs', _prefs?.setStringList('playLangs', _playLangs));
+    } catch (e) {
+      appLog.w('store', 'could not save the languages: ${e.runtimeType}');
+    }
+    notifyListeners();
+    return true;
+  }
+
+  void _readPlayLangs(SharedPreferences p) {
+    try {
+      _playLangs
+        ..clear()
+        ..addAll(p.getStringList('playLangs') ?? const []);
+    } catch (e) {
+      appLog.w('store', 'could not read the languages: ${e.runtimeType}');
+    }
+  }
+
   void _readWordBanners(SharedPreferences p) {
     try {
       dismissedWordBanners
@@ -4066,6 +4107,7 @@ class AppState extends ChangeNotifier {
       _readLearn(p);
       _readWords(p);
       _readWordBanners(p);
+      _readPlayLangs(p);
       _readTaught(p);
       _readModeSettingsNote(p);
       _readCollection(p);
