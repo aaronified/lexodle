@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'collection.dart';
-import 'edge_fade.dart';
 import 'geography.dart';
 import 'main.dart';
 import 'routes.dart';
 import 'save_word_button.dart';
 import 'saved_words.dart';
-import 'settings_button.dart';
+import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'words.dart';
 import 'words_banner.dart';
 
 /// The orders a list can be shown in; newest first is the stored order.
 enum _Sort { newest, oldest, az, za }
 
-/// "my words": the personal dictionary, newest first, with a language filter,
+/// "my words": the personal dictionary, newest first, with a language choice,
 /// a sort menu and a search over the word, the note and the first meaning.
 /// A second tab shows the words and places won (see collection.dart).
 class WordsPage extends StatefulWidget {
@@ -27,7 +27,7 @@ class WordsPage extends StatefulWidget {
 }
 
 class _WordsPageState extends State<WordsPage> {
-  /// The language filter; null is all of them.
+  /// The language choice; null is all of them.
   String? _lang;
 
   /// The order of each list, in memory only.
@@ -46,8 +46,8 @@ class _WordsPageState extends State<WordsPage> {
   int _page = 0;
   bool get _collected => _page == 1;
 
-  /// The selected pill of the collected tab: a language code or 'places'; null
-  /// is the default (the app's language, else the first pill).
+  /// The selected language of the collected tab: a language code or 'places';
+  /// null is the default (the app's language, else the first one).
   String? _cLang;
 
   final _cSearch = TextEditingController();
@@ -98,11 +98,6 @@ class _WordsPageState extends State<WordsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // no title: the two lists are the header. A bar stays only to go back
-      // when the page was opened on top of another.
-      appBar: Navigator.of(context).canPop()
-          ? AppBar(actions: [const SettingsButton()])
-          : null,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -119,57 +114,42 @@ class _WordsPageState extends State<WordsPage> {
 
   Widget _body(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Stack(
+    return Column(
       children: [
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 19),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 56,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: _tabs(c),
-                          ),
-                        ),
-                        if (!Navigator.of(context).canPop())
-                          const SettingsButton(),
-                      ],
-                    ),
-                  ),
-                  Divider(height: 1, thickness: 1, color: c.outlineVariant),
-                ],
-              ),
-            ),
-            Expanded(
-              child: PageView(
-                key: const ValueKey('words-pages'),
-                controller: _pages,
-                onPageChanged: (i) => setState(() => _page = i),
-                children: [
-                  _list(_savedBody(context, c)),
-                  _list(_collectedBody(context, c)),
-                ],
-              ),
-            ),
-          ],
+        // the two lists are the header: their tabs sit in the shared title row.
+        // A back arrow shows only when the page was opened on top of another.
+        PageHeader(
+          back: Navigator.of(context).canPop(),
+          title: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: _tabs(c),
+          ),
         ),
-        Positioned(left: 19, right: 19, bottom: 12, child: _banner()),
+        Container(
+          height: 1,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          color: tonesOf(context).line,
+        ),
+        Expanded(
+          child: PageView(
+            key: const ValueKey('words-pages'),
+            controller: _pages,
+            onPageChanged: (i) => setState(() => _page = i),
+            children: [
+              _list(_savedBody(context, c)),
+              _list(_collectedBody(context, c)),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  /// One page: its content, with room under it for the floating banner.
+  /// One page: its content, and the goal card of its list at the end.
   Widget _list(List<Widget> children) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(19, 0, 19, 140),
-      children: children,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      children: [...children, _banner()],
     );
   }
 
@@ -177,8 +157,8 @@ class _WordsPageState extends State<WordsPage> {
   int _savedCount() => _all().length;
   int _collectedCount() => _collection()?.total ?? 0;
 
-  /// The banner of the list on show; none when its trophies are all earned or
-  /// this target was dismissed.
+  /// The goal card of the list on show; none when its trophies are all earned
+  /// or this target was dismissed.
   Widget _banner() {
     try {
       final saved = !_collected;
@@ -189,7 +169,10 @@ class _WordsPageState extends State<WordsPage> {
           appState.dismissedWordBanners.contains('$list:$target')) {
         return const SizedBox.shrink();
       }
-      return WordsBanner(list: list, n: n, target: target);
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: WordsBanner(list: list, n: n, target: target),
+      );
     } catch (e) {
       appLog.w('words', 'could not show the banner: ${e.runtimeType}');
       return const SizedBox.shrink();
@@ -283,7 +266,7 @@ class _WordsPageState extends State<WordsPage> {
       ];
     }
 
-    // a filter whose language has no saved word left is no filter
+    // a choice whose language has no saved word left is no choice
     final langs = _langs(all);
     final lang = langs.contains(_lang) ? _lang : null;
 
@@ -294,34 +277,24 @@ class _WordsPageState extends State<WordsPage> {
 
     return [
       Caption('${all.length} saved · tap a word for its entry'),
-      const SizedBox(height: 14),
-      _pillRow(
-        c,
-        scrollKey: const ValueKey('words-pills-scroll'),
-        pills: [
-          _pill(
-            c,
-            key: const ValueKey('words-lang-all'),
-            selected: lang == null,
-            onTap: () => setState(() => _lang = null),
-            child: const Text('all', style: TextStyle(fontSize: 12)),
-          ),
-          for (final code in langs)
-            _pill(
-              c,
-              key: ValueKey('words-lang-$code'),
-              selected: lang == code,
-              onTap: () => setState(() => _lang = code),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  languageBadge(code, size: 13),
-                  const SizedBox(width: 6),
-                  Text(code, style: const TextStyle(fontSize: 12)),
-                ],
+      const SizedBox(height: 12),
+      _controlRow(
+        slider: ChoiceSlider<String?>(
+          id: 'words-language',
+          compact: true,
+          dots: false,
+          items: [
+            const ChoiceItem<String?>(value: null, label: 'all'),
+            for (final code in langs)
+              ChoiceItem<String?>(
+                value: code,
+                label: code,
+                leading: languageBadge(code, size: 14),
               ),
-            ),
-        ],
+          ],
+          selected: lang,
+          onChanged: (v) => setState(() => _lang = v),
+        ),
         sort: _sortButton(
           c,
           key: const ValueKey('words-sort'),
@@ -335,7 +308,7 @@ class _WordsPageState extends State<WordsPage> {
           ),
         ),
       ),
-      const SizedBox(height: 14),
+      const SizedBox(height: 12),
       Semantics(
         label: 'search words and notes',
         textField: true,
@@ -347,17 +320,11 @@ class _WordsPageState extends State<WordsPage> {
           decoration: _searchDecoration(c, 'search words and notes'),
         ),
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 16),
       if (rows.isEmpty)
-        const Padding(
-          padding: EdgeInsets.only(top: 16),
-          child: Caption('no saved word matches.'),
-        )
+        const Caption('no saved word matches.')
       else
-        for (var i = 0; i < rows.length; i++) ...[
-          if (i > 0) Divider(height: 1, thickness: 1, color: c.outlineVariant),
-          _row(context, c, rows[i]),
-        ],
+        for (final w in rows) _row(context, c, w),
     ];
   }
 
@@ -386,35 +353,38 @@ class _WordsPageState extends State<WordsPage> {
       sel == 'places',
     );
 
+    // the count line, for a language; it reads what is already known
+    String? summary;
+    if (sel != 'places') {
+      final won = _cKeys(col, sel);
+      final savedHere = won.where((w) => _saved(sel, w)).length;
+      final name = (_langByCode?[sel]?.name ?? sel).toLowerCase();
+      summary = '${won.length} words won in $name · $savedHere saved here';
+    }
+
     return [
-      _pillRow(
-        c,
-        scrollKey: const ValueKey('collected-pills-scroll'),
-        pills: [
-          for (final code in langs)
-            _pill(
-              c,
-              key: ValueKey('collected-lang-$code'),
-              selected: sel == code,
-              onTap: () => setState(() => _cLang = code),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  languageBadge(code, size: 13),
-                  const SizedBox(width: 6),
-                  Text(code, style: const TextStyle(fontSize: 12)),
-                ],
+      _controlRow(
+        slider: ChoiceSlider<String>(
+          id: 'collected-language',
+          compact: true,
+          dots: false,
+          items: [
+            for (final code in langs)
+              ChoiceItem<String>(
+                value: code,
+                label: code,
+                leading: languageBadge(code, size: 14),
               ),
-            ),
-          if (col.placeCount > 0)
-            _pill(
-              c,
-              key: const ValueKey('collected-lang-places'),
-              selected: sel == 'places',
-              onTap: () => setState(() => _cLang = 'places'),
-              child: const Text('places', style: TextStyle(fontSize: 12)),
-            ),
-        ],
+            if (col.placeCount > 0)
+              const ChoiceItem<String>(
+                value: 'places',
+                label: 'places',
+                icon: 'world',
+              ),
+          ],
+          selected: sel,
+          onChanged: (v) => setState(() => _cLang = v),
+        ),
         sort: _sortButton(
           c,
           key: const ValueKey('collected-sort'),
@@ -428,7 +398,7 @@ class _WordsPageState extends State<WordsPage> {
           ),
         ),
       ),
-      const SizedBox(height: 14),
+      const SizedBox(height: 12),
       Semantics(
         label: 'search collected words',
         textField: true,
@@ -440,20 +410,34 @@ class _WordsPageState extends State<WordsPage> {
           decoration: _searchDecoration(c, 'search collected words'),
         ),
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 16),
+      if (summary != null) ...[
+        Text(
+          summary,
+          style: TextStyle(
+            fontSize: 12,
+            color: c.onSurface.withValues(alpha: dimAlpha),
+          ),
+        ),
+        const SizedBox(height: 12),
+      ],
       if (keys.isEmpty)
-        const Padding(
-          padding: EdgeInsets.only(top: 16),
-          child: Caption('no collected word matches.'),
-        )
+        const Caption('no collected word matches.')
       else
-        for (var i = 0; i < keys.length; i++) ...[
-          if (i > 0) Divider(height: 1, thickness: 1, color: c.outlineVariant),
-          if (sel == 'places')
-            _placeRow(c, keys[i])
-          else
-            _collectedRow(context, c, sel, keys[i]),
-        ],
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: keys.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            mainAxisExtent: 52,
+          ),
+          itemBuilder: (context, i) => sel == 'places'
+              ? _placeTile(context, c, keys[i])
+              : _collectedTile(context, c, sel, keys[i]),
+        ),
     ];
   }
 
@@ -461,7 +445,25 @@ class _WordsPageState extends State<WordsPage> {
     return InputDecoration(
       isDense: true,
       hintText: hint,
-      // the fill and the soft outline come from the theme
+      // the tonal fill comes from the theme; no border
+      prefixIcon: Icon(
+        Icons.search,
+        size: 20,
+        color: c.onSurface.withValues(alpha: dimAlpha),
+      ),
+      contentPadding: const EdgeInsets.symmetric(vertical: 15),
+    );
+  }
+
+  /// The language choice and the sort button, on one centre line.
+  Widget _controlRow({required Widget slider, required Widget sort}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: slider),
+        const SizedBox(width: 8),
+        sort,
+      ],
     );
   }
 
@@ -615,40 +617,8 @@ class _WordsPageState extends State<WordsPage> {
     );
   }
 
-  /// The pills in a sideways row that fades its ends where it scrolls, with the
-  /// sort button at the right, outside the fade.
-  Widget _pillRow(
-    ColorScheme c, {
-    required Key scrollKey,
-    required List<Widget> pills,
-    required Widget sort,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: EdgeFade(
-            scrollKey: scrollKey,
-            fade: 28,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var i = 0; i < pills.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 8),
-                  pills[i],
-                ],
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        sort,
-      ],
-    );
-  }
-
-  /// The sort button: 32 square, tinted when the list is not in its default
-  /// order.
+  /// The sort button: a 48 square at the element radius, green when the list
+  /// is not in its default order.
   Widget _sortButton(
     ColorScheme c, {
     required Key key,
@@ -656,24 +626,27 @@ class _WordsPageState extends State<WordsPage> {
     required bool changed,
     required VoidCallback onTap,
   }) {
-    final fg = changed ? c.onSecondaryContainer : c.onSurface;
     return Semantics(
       label: 'sort',
       button: true,
       child: InkWell(
         key: key,
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(radiusElement),
         child: Container(
           key: buttonKey,
-          width: 32,
-          height: 32,
+          width: 48,
+          height: 48,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            color: changed ? c.secondaryContainer : c.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(radiusElement),
+            color: changed ? c.secondaryContainer : tonesOf(context).s1,
           ),
-          child: TablerIcon('arrows-sort', size: 20, color: fg),
+          child: TablerIcon(
+            'arrows-sort',
+            size: 22,
+            color: changed ? c.onSecondaryContainer : c.onSurface,
+          ),
         ),
       ),
     );
@@ -770,34 +743,9 @@ class _WordsPageState extends State<WordsPage> {
     }
   }
 
-  Widget _pill(
-    ColorScheme c, {
-    required Key key,
-    required bool selected,
-    required VoidCallback onTap,
-    required Widget child,
-  }) {
-    return InkWell(
-      key: key,
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: selected ? c.secondaryContainer : c.surfaceContainerHighest,
-        ),
-        child: DefaultTextStyle.merge(
-          style: TextStyle(
-            color: selected ? c.onSecondaryContainer : c.onSurface,
-            fontWeight: selected ? FontWeight.bold : null,
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-
+  /// One saved word: an open block, no box and no rule. The word in primary
+  /// with its pronunciation, the first meaning, the note, then the language and
+  /// the date, with space after it.
   Widget _row(BuildContext context, ColorScheme c, SavedWord w) {
     final dim = c.onSurface.withValues(alpha: dimAlpha);
     final ipa = w.info?.ipa.firstOrNull;
@@ -806,7 +754,7 @@ class _WordsPageState extends State<WordsPage> {
       key: ValueKey('word-row-${w.lang}-${w.word}'),
       onTap: () => _open(context, w),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.only(bottom: 26),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -816,7 +764,7 @@ class _WordsPageState extends State<WordsPage> {
                   child: Text(
                     w.word,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: c.primary,
                     ),
@@ -832,7 +780,7 @@ class _WordsPageState extends State<WordsPage> {
                 meaning,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12),
+                style: const TextStyle(fontSize: 14),
               ),
             ],
             if (w.note.isNotEmpty) ...[
@@ -843,15 +791,15 @@ class _WordsPageState extends State<WordsPage> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 softWrap: false,
-                style: TextStyle(fontSize: 11, color: c.primary),
+                style: TextStyle(fontSize: 12, color: c.primary),
               ),
             ],
             const SizedBox(height: 6),
             Row(
               children: [
-                languageBadge(w.lang, size: 11),
+                languageBadge(w.lang, size: 12),
                 const SizedBox(width: 8),
-                Text(w.date, style: TextStyle(fontSize: 11, color: dim)),
+                Text(w.date, style: TextStyle(fontSize: 12, color: dim)),
               ],
             ),
           ],
@@ -860,7 +808,9 @@ class _WordsPageState extends State<WordsPage> {
     );
   }
 
-  Widget _collectedRow(
+  /// One collected word in the grid: a 52 tile at the element radius, the word
+  /// in primary and the save bookmark on the right.
+  Widget _collectedTile(
     BuildContext context,
     ColorScheme c,
     String lang,
@@ -869,13 +819,20 @@ class _WordsPageState extends State<WordsPage> {
     return InkWell(
       key: ValueKey('collected-row-$lang-$word'),
       onTap: () => _openCollected(context, lang, word),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+      borderRadius: BorderRadius.circular(radiusElement),
+      child: Ink(
+        padding: const EdgeInsets.only(left: 12, right: 4),
+        decoration: BoxDecoration(
+          color: tonesOf(context).s1,
+          borderRadius: BorderRadius.circular(radiusElement),
+        ),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 word,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -893,19 +850,27 @@ class _WordsPageState extends State<WordsPage> {
     );
   }
 
-  /// A place of the collection: not tappable, its name and, when the places
-  /// are loaded, what it is and where.
-  Widget _placeRow(ColorScheme c, String key) {
+  /// A place of the collection, in the grid: not tappable, its name and, when
+  /// the places are loaded, what it is and where.
+  Widget _placeTile(BuildContext context, ColorScheme c, String key) {
     final dim = c.onSurface.withValues(alpha: dimAlpha);
     final place = _placeOf(key);
-    return Padding(
+    return Container(
       key: ValueKey('collected-place-$key'),
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      alignment: Alignment.centerLeft,
+      decoration: BoxDecoration(
+        color: tonesOf(context).s1,
+        borderRadius: BorderRadius.circular(radiusElement),
+      ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             place?.name ?? key,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -915,6 +880,8 @@ class _WordsPageState extends State<WordsPage> {
           if (place != null)
             Text(
               '${place.kind} · ${place.country}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 11, color: dim),
             ),
         ],
