@@ -1912,6 +1912,8 @@ class _GamePageState extends State<GamePage>
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
+    // no popup once the game is over: nothing is left to take the letter
+    popups: !over,
     numberPad: equations,
     onCursor: _move,
     marks: blind
