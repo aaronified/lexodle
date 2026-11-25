@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- you: solver and diy say what they are
+  Each row has its own short line under its name, like the others in the menu.
+
 - the words header sits on the same line as the settings cog
   The two tabs were pushed to the bottom of the header row; their text is now on the centre line shared by the cog and the other screens' titles.
 

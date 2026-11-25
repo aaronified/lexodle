@@ -101,14 +101,12 @@ void main() {
     expect(row('diy'), findsOneWidget);
   });
 
-  testWidgets('the solver row has no sub-line', (tester) async {
+  testWidgets('solver and diy have their own sub-lines', (tester) async {
     player(played: 500, veteran: true);
     appState.setup(mode: GameMode.quartet);
     await show(tester);
-    expect(
-      find.descendant(of: row('solver'), matching: find.byType(Text)),
-      findsOneWidget,
-    );
+    expect(find.text('enter your colours, see the words left'), findsOneWidget);
+    expect(find.text('make a puzzle and share a link'), findsOneWidget);
     expect(find.text('for quartet'), findsNothing);
   });
 
