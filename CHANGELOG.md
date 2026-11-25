@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- abbreviations and respellings are no guesses and no free play answers
+  The words the English Wiktionary shows as nothing but an abbreviation, an initialism or an acronym (1,044 in all 17 languages: intnl, accts, https, mtdna, the Italian alcun and allor, the German hasts and wills, and so on), the English words spelt as they are said (gonna, wanna, kinda, comin, goin and the rest) and the typo rythm are taken out of the words you can guess and of the words free play and the learn pages draw. Words that are shortenings of a longer word and words in their own right, such as condo, corgi, queso and minke, stay. The dailies keep drawing from the whole list, so the word of a day does not change, and that day's word is always a guess.
+
 ## 0.14.2
 
 - dailies: abbreviations and respellings are never the answer from 27 nov

@@ -190,8 +190,14 @@ class _GamePageState extends State<GamePage>
   /// How many words the answer was drawn from: every word of the length, or for
   /// an old daily the most common [dailyAnswers] of them.
   late final int pool = _daily == null || _curveDaily
-      ? widget.bank.answers(length).length
-      : min(dailyAnswers, widget.bank.answers(length).length);
+      ? _wordsBank.answers(length).length
+      : min(dailyAnswers, _wordsBank.answers(length).length);
+
+  /// The words a daily is drawn from and its replies are worked out against:
+  /// the whole list, not the one without the words that are no words, so the
+  /// day does not change. A game that is not a daily has the bank it was given.
+  WordBank get _wordsBank =>
+      _daily == null || _daily.date.isEmpty ? widget.bank : widget.bank.daily;
   late final List<String> _pool;
   late final Set<String> _letters;
 
@@ -499,8 +505,8 @@ class _GamePageState extends State<GamePage>
     // (against the chance of each possible answer) are of those.
     eligible = List.of(
       _daily == null || _daily.date.isEmpty || _curveDaily
-          ? widget.bank.guessable(length)
-          : widget.bank.answers(length).take(dailyAnswers),
+          ? _wordsBank.guessable(length)
+          : _wordsBank.answers(length).take(dailyAnswers),
     );
     _jobs.close(); // work on the last game's guesses is no longer wanted
     _jobs = JobQueue();

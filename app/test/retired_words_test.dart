@@ -21,13 +21,16 @@ void main() {
 
   test('the retired words are all in the list, so guesses stay valid', () {
     for (final w in retiredEnglish) {
-      expect(en.valid.contains(w), isTrue, reason: w);
+      // (the whole list has them; the bank for guesses and free play does not)
+      expect(en.daily.valid.contains(w), isTrue, reason: w);
+      expect(en.valid.contains(w), isFalse, reason: w);
     }
   });
 
   test('the later retired words are in the list and apart from the first', () {
     for (final w in retiredEnglishLater) {
-      expect(en.valid.contains(w), isTrue, reason: w);
+      expect(en.daily.valid.contains(w), isTrue, reason: w);
+      expect(en.valid.contains(w), isFalse, reason: w);
       expect(retiredEnglish.contains(w), isFalse, reason: w);
     }
     expect(retiredEnglishLater, contains('intnl'));
@@ -84,35 +87,32 @@ void main() {
 }
 
 void abbreviationsMain() {
-  test(
-    'the abbreviations are five letters, in their list, and never a daily',
-    () async {
-      TestWidgetsFlutterBinding.ensureInitialized();
-      final langs = await WordBank.languages();
-      var checked = 0;
-      for (final code in ['en', 'es', 'pt', 'nl']) {
-        final bank = await WordBank.load(
-          langs.firstWhere((l) => l.code == code),
-        );
-        final set = retiredAbbreviations[code]!;
-        expect(set, isNotEmpty, reason: code);
-        for (final w in set) {
-          expect(w.length, 5, reason: '$code $w');
-          expect(bank.valid.contains(w), isTrue, reason: '$code $w');
-        }
-        for (var n = 0; n < 700; n++) {
-          final d = dailyShift(dailyRetireFromLater, n);
-          expect(
-            set,
-            isNot(contains(Daily.of(bank, d)!.answer)),
-            reason: '$code $d',
-          );
-          checked++;
-        }
+  test('the abbreviations are in the whole list, out of the guesses, and never a daily', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final langs = await WordBank.languages();
+    var checked = 0;
+    for (final code in ['en', 'es', 'pt', 'nl']) {
+      final bank = await WordBank.load(langs.firstWhere((l) => l.code == code));
+      final set = retiredAbbreviations[code]!;
+      expect(set, isNotEmpty, reason: code);
+      for (final w in set) {
+        // in the whole list, out of the guesses and of free play
+        expect(bank.daily.valid.contains(w), isTrue, reason: '$code $w');
+        expect(bank.valid.contains(w), isFalse, reason: '$code $w');
+        expect(bank.answers(w.length), isNot(contains(w)), reason: '$code $w');
       }
-      expect(checked, 2800);
-    },
-  );
+      for (var n = 0; n < 700; n++) {
+        final d = dailyShift(dailyRetireFromLater, n);
+        expect(
+          set,
+          isNot(contains(Daily.of(bank, d)!.answer)),
+          reason: '$code $d',
+        );
+        checked++;
+      }
+    }
+    expect(checked, 2800);
+  });
 }
 
 void laterMain() {

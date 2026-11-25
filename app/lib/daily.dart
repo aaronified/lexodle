@@ -286,7 +286,7 @@ class Daily {
     final d = date ?? dailyDate();
     if (mode == GameMode.equations) {
       // the same equation in every language, drawn from all of them
-      final eqs = bank.answers(equationDailyLength);
+      final eqs = bank.daily.answers(equationDailyLength);
       if (eqs.isEmpty) return null;
       return Daily(
         d,
@@ -295,7 +295,7 @@ class Daily {
         tries: equationDailyTries,
       );
     }
-    final all = bank.answers(dailyLength);
+    final all = bank.daily.answers(dailyLength);
     if (all.isEmpty) return null;
     // the mastermind's word is not chosen: what it says to each guess is drawn
     // from the date (see [mastermindDailyReply]), with [mastermindDailyTries] guesses
@@ -305,7 +305,7 @@ class Daily {
     final code = bank.language.code;
     final key = mode == GameMode.classic ? code : '$code|${mode.name}';
     if (dailyUsesCurve(d)) {
-      final w = bank.curveWeights(dailyLength);
+      final w = bank.daily.curveWeights(dailyLength);
       return Daily(
         d,
         all[dailyCurveIndex(
@@ -357,7 +357,7 @@ class DailyMulti {
   /// null when the language has too few words of the daily's length.
   static DailyMulti? of(WordBank bank, GameMode mode, [String? date]) {
     final d = date ?? dailyDate();
-    final all = bank.answers(dailyLength);
+    final all = bank.daily.answers(dailyLength);
     final curve = dailyUsesCurve(d);
     final pool = curve || all.length <= dailyAnswers
         ? all
@@ -365,7 +365,7 @@ class DailyMulti {
     if (pool.length < mode.boards) return null;
     final code = bank.language.code;
     final totals = curve
-        ? _totalsOf(code, bank.curveWeights(dailyLength))
+        ? _totalsOf(code, bank.daily.curveWeights(dailyLength))
         : null;
     String word(int k, int j, int t) {
       final h = dailyHash('lexodle-daily|$code|$d|${mode.name}|$k|$j|$t');

@@ -35,7 +35,7 @@ import 'words.dart';
             key: 's',
           )
         : (
-            eligible: List.of(bank.answers(g.length).take(dailyAnswers)),
+            eligible: List.of(bank.daily.answers(g.length).take(dailyAnswers)),
             law: null,
             key: 'd',
           );

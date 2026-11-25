@@ -121,8 +121,13 @@ class _MultiGamePageState extends State<MultiGamePage> {
   /// How many words the answers were drawn from: every word of the length, and
   /// for an old daily the most common [dailyAnswers] of them.
   late final int pool = _daily == null || _curveDaily
-      ? widget.bank.answers(length).length
-      : min(dailyAnswers, widget.bank.answers(length).length);
+      ? _wordsBank.answers(length).length
+      : min(dailyAnswers, _wordsBank.answers(length).length);
+
+  /// The words a daily is drawn from: the whole list, so the day does not
+  /// change (see GamePage).
+  WordBank get _wordsBank =>
+      _daily == null || _daily.date.isEmpty ? widget.bank : widget.bank.daily;
   late final List<String> _pool;
   late final Set<String> _letters;
 
@@ -369,7 +374,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
       words: widget.bank.guessable(length),
       possible: _daily == null || _curveDaily
           ? null
-          : widget.bank.answers(length).take(dailyAnswers).toList(),
+          : _wordsBank.answers(length).take(dailyAnswers).toList(),
       provisional: analyseWhilePlaying,
       weights: _law,
     );
