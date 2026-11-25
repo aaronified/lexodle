@@ -155,8 +155,10 @@ class LetterKeyboard extends StatelessWidget {
           ),
         );
       }
-      // a key is a tonal fill with no edge; a mark or an action key has its own
-      var (fill, fg) = (tones.s1, c.onSurface);
+      // a key not tried yet is outlined, like an empty tile; a mark or an
+      // action key is a plain fill of its own
+      Color? fill;
+      var fg = c.onSurface;
       if (mark != null) (fill, fg) = markColors(c, mark);
       if (colors != null) (fill, fg) = colors;
       final button = InkWell(
@@ -167,6 +169,7 @@ class LetterKeyboard extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: fill,
+            border: fill == null ? Border.all(color: tones.line) : null,
             borderRadius: BorderRadius.circular(radiusInner),
           ),
           child: Text(

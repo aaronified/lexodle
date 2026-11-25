@@ -13,6 +13,9 @@ it to the version.
 - the words header sits on the same line as the settings cog
   The two tabs were pushed to the bottom of the header row; their text is now on the centre line shared by the cog and the other screens' titles.
 
+- keys not tried yet are outlined again
+  A key you have not used is an outline on the page, like an empty tile, instead of a grey fill; keys that got a colour are filled as before.
+
 ## 0.14.0
 
 - a new look: tonal colours, one slider for every choice, a flat tab bar

@@ -78,4 +78,22 @@ void main() {
     // the three letter rows only
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('a key not tried yet is outlined, not filled', (tester) async {
+    await show(tester, latin.split('').toSet());
+    final box = tester.widget<Container>(
+      find
+          .descendant(
+            of: find.ancestor(
+              of: find.text('q'),
+              matching: find.byType(InkWell),
+            ),
+            matching: find.byType(Container),
+          )
+          .first,
+    );
+    final d = box.decoration! as BoxDecoration;
+    expect(d.color, isNull);
+    expect(d.border, isNotNull);
+  });
 }
