@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- words: the line under the search is below it on both lists
+  The saved list had its count line above the language slider; it is now below the search, in the same small dim type as the collected list.
+
 - the words header sits on the same line as the settings cog
   The two tabs were pushed to the bottom of the header row; their text is now on the centre line shared by the cog and the other screens' titles.
 
