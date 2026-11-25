@@ -208,7 +208,7 @@ class LetterKeyboard extends StatelessWidget {
       // a letter shows a popup above it; the action keys and the space only sink
       final pressed = _Press(
         popup: popup,
-        popupFill: (mark != null || colors != null) ? fill : tones.s3,
+        popupFill: fill ?? tones.s3,
         popupFg: fg,
         pressFill: mark == null && colors == null ? tones.s1 : null,
         child: button,

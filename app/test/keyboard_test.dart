@@ -79,7 +79,6 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-<<<<<<< HEAD
   testWidgets('a key not tried yet is outlined, not filled', (tester) async {
     await show(tester, latin.split('').toSet());
     final box = tester.widget<Container>(
@@ -96,7 +95,8 @@ void main() {
     final d = box.decoration! as BoxDecoration;
     expect(d.color, isNull);
     expect(d.border, isNotNull);
-=======
+  });
+
   group('a key under the finger', () {
     Future<void> shown(WidgetTester tester, {bool popups = true}) async {
       await tester.binding.setSurfaceSize(const Size(420, 700));
@@ -180,6 +180,5 @@ void main() {
       await g.up();
       await tester.pump();
     });
->>>>>>> origin/key-press-popup
   });
 }
