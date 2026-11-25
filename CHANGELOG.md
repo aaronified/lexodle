@@ -13,6 +13,9 @@ it to the version.
 - every board uses the same tile and cursor glow
   The quartet and relay boards, the blind and mastermind boards, the lessons and the learn pages drew an older tile. They now use the one the classic game has: rounded, outlined while empty, filled when marked, and the glowing cursor tile. The glow is also softer and tighter, so the edge of a board no longer clips it.
 
+- keys sink when pressed and a letter pops up above the key
+  A pressed key sinks a little under the finger, and a letter key shows a small key with its letter above it, so the finger does not hide it. Near the edge the popup shifts inward. Enter, delete and the space only sink. There is no popup once the game is over.
+
 - the words header sits on the same line as the settings cog
   The two tabs were pushed to the bottom of the header row; their text is now on the centre line shared by the cog and the other screens' titles.
 

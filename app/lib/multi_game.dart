@@ -1186,6 +1186,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   Widget _keyboard() => LetterKeyboard(
     letters: _letters,
+    popups: !_over,
     // a quartet splits each key by board; a relay race colours the keys by the
     // board that is on, as a single game would
     marks: mode == GameMode.relay
