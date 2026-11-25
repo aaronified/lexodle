@@ -295,10 +295,13 @@ class GroupedList extends StatelessWidget {
 /// A row of big numbers over small labels, on one tonal card: games, won,
 /// streak, best.
 class StatsStrip extends StatelessWidget {
-  const StatsStrip(this.stats, {super.key});
+  const StatsStrip(this.stats, {super.key, this.keyPrefix});
 
   /// Each: the number, its label, and a colour for the number (or null).
   final List<(String, String, Color?)> stats;
+
+  /// When given, each number has the key '$keyPrefix-$label' (the tests find it).
+  final String? keyPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -312,6 +315,7 @@ class StatsStrip extends StatelessWidget {
               children: [
                 Text(
                   number,
+                  key: keyPrefix == null ? null : ValueKey('$keyPrefix-$label'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
