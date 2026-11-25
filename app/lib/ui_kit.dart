@@ -387,7 +387,12 @@ class ChoiceSlider<T> extends StatelessWidget {
     required this.onChanged,
     this.compact = false,
     this.dots = true,
+    this.onTapName,
   });
+
+  /// Called when the name in the middle is tapped (the free play strip starts a
+  /// game with it); null leaves the middle as plain text.
+  final VoidCallback? onTapName;
 
   final String id;
   final List<ChoiceItem<T>> items;
@@ -460,28 +465,33 @@ class ChoiceSlider<T> extends StatelessWidget {
             at > 0,
           ),
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (item.icon != null) ...[
-                  TablerIcon(item.icon!, size: 22, color: c.primary),
-                  const SizedBox(width: 8),
-                ] else if (item.leading != null) ...[
-                  item.leading!,
-                  const SizedBox(width: 8),
-                ],
-                Flexible(
-                  child: Text(
-                    item.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+            child: InkWell(
+              key: ValueKey('$id-name'),
+              borderRadius: BorderRadius.circular(radiusElement),
+              onTap: onTapName,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (item.icon != null) ...[
+                    TablerIcon(item.icon!, size: 22, color: c.primary),
+                    const SizedBox(width: 8),
+                  ] else if (item.leading != null) ...[
+                    item.leading!,
+                    const SizedBox(width: 8),
+                  ],
+                  Flexible(
+                    child: Text(
+                      item.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           arrow(
