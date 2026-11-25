@@ -8,6 +8,7 @@ import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/multi_game.dart';
 import 'package:lexodle/store.dart';
+import 'package:lexodle/ui.dart' show MarkTile;
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -243,6 +244,27 @@ void main() {
       expect(find.byKey(ValueKey('quad-${a[0][0]}')), findsNothing);
       expect(find.text('word 2 of 4 · 9 tries left'), findsOneWidget);
       expect(find.textContaining('1 · solved in 1'), findsOneWidget);
+    });
+
+    testWidgets('the quartet and the relay draw the cursor as classic does', (
+      tester,
+    ) async {
+      for (final mode in [GameMode.quartet, GameMode.relay]) {
+        await open(tester, mode, 5);
+        // the tile being typed into glows and has the ink edge, in the shared tile
+        final glowing = tester
+            .widgetList<Container>(
+              find.descendant(
+                of: find.byType(MarkTile),
+                matching: find.byType(Container),
+              ),
+            )
+            .where((c) {
+              final d = c.decoration;
+              return d is BoxDecoration && (d.boxShadow?.isNotEmpty ?? false);
+            });
+        expect(glowing, isNotEmpty, reason: '$mode');
+      }
     });
 
     testWidgets('a relay race does not carry a lock to the next target', (

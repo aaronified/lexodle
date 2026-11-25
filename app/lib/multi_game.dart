@@ -942,62 +942,14 @@ class _MultiGamePageState extends State<MultiGamePage> {
     bool cursor = false,
     bool locked = false,
     VoidCallback? onTap,
-  }) {
-    Color? fill;
-    Color fg = c.onSurface;
-    Color border = active
-        ? c.onSurface.withValues(alpha: .5)
-        : c.outlineVariant;
-    if (m != null) {
-      (fill, fg) = markColors(c, m);
-      border = markBorder(c, m);
-    } else if (ch.isNotEmpty) {
-      border = locked ? c.primary : c.onSurface;
-    }
-    // the cursor is the ink colour, the lock the pink accent
-    if (cursor) border = c.onSurface;
-    final isBlank = ch == GuessInput.blank;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: fill,
-          border: Border.all(color: border, width: cursor ? 2 : 1),
-          borderRadius: BorderRadius.circular(3),
-        ),
-        // the whole tile, so the lock sits in its corner, not by the letter
-        child: SizedBox.expand(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Text(
-                isBlank ? '_' : ch,
-                style: TextStyle(
-                  fontSize: size * .5,
-                  fontWeight: FontWeight.bold,
-                  color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
-                ),
-              ),
-              if (locked)
-                Positioned(
-                  top: 3,
-                  right: 3,
-                  child: TablerIcon(
-                    'lock',
-                    key: const ValueKey('locked'),
-                    size: size * .22,
-                    color: c.primary,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  }) => MarkTile(
+    ch,
+    mark: m,
+    size: size,
+    onTap: onTap,
+    cursor: cursor,
+    locked: locked,
+  );
 
   /// Whether the player can buy hints here: the game is on and lex is shown.
   bool get _hintable => !_over && appState.lexUnlocked;

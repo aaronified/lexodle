@@ -303,7 +303,10 @@ class TablerIcon extends StatelessWidget {
   );
 }
 
-/// One letter tile, coloured by [mark]; tappable when [onTap] is given.
+/// One letter tile, the one every board draws: filled by its [mark], or an
+/// outline when it has none (the line tone while empty, the faint one with a
+/// letter); the [cursor] tile has the ink edge and a glow, soft on the cream
+/// and stronger on the dark grounds. Tappable when [onTap] is given.
 class MarkTile extends StatelessWidget {
   const MarkTile(
     this.ch, {
@@ -313,49 +316,77 @@ class MarkTile extends StatelessWidget {
     this.onTap,
     this.cursor = false,
     this.locked = false,
+    this.fixed = false,
+    this.helper = false,
   });
   final String ch;
   final Mark? mark;
   final double size;
   final VoidCallback? onTap;
 
-  /// Whether the letter is locked: a thin accent border and a lock in the corner.
+  /// Whether the letter is locked: a thin accent edge and a lock in the corner.
   final bool locked;
+
+  /// Whether the lock is the game's own (a green) and not the player's (pink).
+  final bool fixed;
 
   /// Whether this is the slot the next typed letter goes into.
   final bool cursor;
 
+  /// Whether the helper set this colour: a dot in the corner.
+  final bool helper;
+
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
+    final tones = tonesOf(context);
     Color? fill;
     Color fg = c.onSurface;
-    var border = ch.isEmpty ? c.outlineVariant : c.onSurface;
-    var borderWidth = 1.0;
+    Color? border = ch.isEmpty ? tones.line : tones.faint;
+    var borderWidth = ch.isEmpty ? 1.0 : 1.5;
+    // the game's lock (a green in lockdown) is green; the player's own is pink
+    final lockColor = fixed ? markColors(c, Mark.correct).$1 : c.primary;
     if (mark != null) {
       (fill, fg) = markColors(c, mark!);
-      border = markBorder(c, mark!);
-      borderWidth = markBorderWidth(mark!);
+      border = null;
+    } else if (ch.isNotEmpty && locked) {
+      border = lockColor;
+      borderWidth = 1;
     }
-    if (locked && mark == null) border = c.primary;
     if (cursor) {
-      border = c.primary;
+      border = c.onSurface;
       borderWidth = 2;
     }
     // a blank is a space typed as a pencil mark, shown as a dim underscore
     final isBlank = ch == ' ';
-    return InkWell(
+    final dark = c.brightness == Brightness.dark;
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(3),
       child: Container(
         width: size,
         height: size,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: fill,
-          border: Border.all(color: border, width: borderWidth),
-          borderRadius: BorderRadius.circular(3),
+          border: border == null
+              ? null
+              : Border.all(color: border, width: borderWidth),
+          borderRadius: BorderRadius.circular(
+            size < 30 ? radiusInner : radiusElement,
+          ),
+          boxShadow: cursor
+              ? [
+                  BoxShadow(
+                    // a soft edge that stays inside the gap between tiles, so a
+                    // board's bounds do not clip it
+                    color: c.onSurface.withValues(alpha: dark ? .38 : .24),
+                    blurRadius: dark ? 6 : 5,
+                    spreadRadius: 0,
+                  ),
+                ]
+              : null,
         ),
+        // the whole tile, so the lock sits in its corner, not by the letter
         child: SizedBox.expand(
           child: Stack(
             alignment: Alignment.center,
@@ -368,6 +399,20 @@ class MarkTile extends StatelessWidget {
                   color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
                 ),
               ),
+              if (helper)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    key: const ValueKey('helper-dot'),
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: fg.withValues(alpha: .7),
+                    ),
+                  ),
+                ),
               if (locked)
                 Positioned(
                   top: 3,
@@ -376,7 +421,7 @@ class MarkTile extends StatelessWidget {
                     'lock',
                     key: const ValueKey('locked'),
                     size: size * .22,
-                    color: c.primary,
+                    color: lockColor,
                   ),
                 ),
             ],
