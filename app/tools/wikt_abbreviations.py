@@ -24,7 +24,6 @@ KAIKKI = "https://kaikki.org/dictionary/{n}/kaikki.org-dictionary-{f}.jsonl"
 TAGS = {"abbreviation", "initialism", "acronym"}
 CAT = re.compile(r"(abbreviation|initialism|acronym)s?$", re.I)
 HEAD = re.compile(r'"word": "((?:[^"\\]|\\.)*)", "lang"')
-HEADWORD = re.compile(r"\b(abbreviation|initialism|acronym)\b", re.I)
 
 
 def sense_is_abbr(s):
@@ -52,11 +51,6 @@ def entry_abbr(d):
             why.add(w)
     if n == 0 and d.get("pos") == "abbrev":
         return len(senses) or 1, len(senses) or 1, {"pos"}
-    if n == 0:
-        for t in d.get("head_templates") or []:
-            if HEADWORD.search(t.get("expansion", "") or ""):
-                # the entry says so in its heading line, for every sense
-                return len(senses) or 1, len(senses) or 1, {"head"}
     return n, len(senses), why
 
 

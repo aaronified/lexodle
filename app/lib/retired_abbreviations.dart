@@ -22,13 +22,45 @@ const retiredAbbreviations = <String, Set<String>>{
     'orang', 'otome', 'packa', 'paleo', 'pamby', 'panto', 'partn', 'persp',
     'petri', 'philo', 'posth', 'presh', 'proba', 'proly', 'puter', 'quali',
     'queso', 'recog', 'regex', 'relig', 'repub', 'resub', 'resus', 'sanit',
-    'satis', 'sched', 'sensi', 'shiba', 'socon', 'soman', 'sotto', 'strat',
-    'subsp', 'subst', 'suppl', 'synop', 'tacho', 'teleg', 'theat', 'tippa',
-    'toppa', 'triax', 'undef', 'unsub', 'vanco', 'willo', 'xpost', 'yatch', //
+    'satis', 'sched', 'sensi', 'shiba', 'socon', 'sotto', 'strat', 'subsp',
+    'subst', 'suppl', 'synop', 'tacho', 'teleg', 'theat', 'tippa', 'toppa',
+    'triax', 'undef', 'unsub', 'vanco', 'willo', 'xpost', 'yatch', //
   },
   'es': {
     'algún', 'aprox', 'della', 'diapo', 'hospi', 'kbron', 'melli', 'porfa',
     'publi', 'refri', 'secre', 'servo', 'sobri', 'vitro', //
+  },
+  'fr': {
+    'anniv', 'balek', 'cedex', 'choré', 'circo', 'coloc', 'commu', 'conso',
+    'cyclo', 'diapo', 'dispo', 'dudit', 'encor', 'filmo', 'graff', 'inter',
+    'mammo', 'manif', 'mascu', 'micro', 'philo', 'phyto', 'plaiz', 'polio',
+    'proto', 'récap', 'rédac', //
+  },
+  'de': {
+    'biste', 'bists', 'darfs', 'gings', 'habts', 'hamse', 'hamwa', 'hasts',
+    'hastu', 'isses', 'iwann', 'kanns', 'komma', 'sagts', 'samma', 'seids',
+    'sichs', 'sinds', 'solls', 'wenns', 'wills', 'wirds', 'überm', 'übern',
+    'übers', //
+  },
+  'it': {
+    'alcun', 'allor', 'almen', 'alzan', 'ancor', 'andar', 'aprir', 'apron',
+    'ardor', 'baran', 'bevan', 'cader', 'calar', 'capir', 'cavan', 'cavin',
+    'cenar', 'citar', 'colan', 'colin', 'color', 'cotal', 'dalla', 'daran',
+    'davan', 'degli', 'della', 'delle', 'dello', 'dentr', 'devon', 'dicon',
+    'diran', 'divin', 'domar', 'donan', 'donar', 'dover', 'duran', 'durar',
+    'egual', 'eppur', 'esser', 'facil', 'faran', 'farem', 'final', 'finir',
+    'finor', 'foran', 'furon', 'gliel', 'glien', 'haver', 'inver', 'kyrie',
+    'lavan', 'lavin', 'legan', 'lenci', 'levan', 'levar', 'levin', 'menar',
+    'mentr', 'minor', 'mirar', 'molin', 'morir', 'negli', 'nella', 'nelle',
+    'nello', 'nient', 'nomar', 'notar', 'ognor', 'ognun', 'orror', 'pagan',
+    'pagar', 'paion', 'paran', 'pegli', 'pella', 'pello', 'pesar', 'piang',
+    'popol', 'posar', 'poter', 'pover', 'pulir', 'ragga', 'ridar', 'rider',
+    'rifar', 'rigor', 'riser', 'ruban', 'rubin', 'saper', 'saran', 'segan',
+    'simil', 'soler', 'spron', 'stiam', 'sudar', 'sugli', 'sulle', 'sullo',
+    'tacer', 'talor', 'temer', 'tener', 'timor', 'tiran', 'tirar', 'titol',
+    'uccel', 'ugual', 'unger', 'urlar', 'uscir', 'vadan', 'vagan', 'vagar',
+    'vedea', 'veder', 'vedon', 'venir', 'verun', 'vicin', 'vivan', 'viver',
+    'volan', 'volar', 'voler', 'vostr', 'votan', 'votar', //
   },
   'pt': {
     'ancap', 'black', 'buscá', 'chamá', 'colhê', 'daqui', 'deixá', 'delas',
@@ -40,8 +72,21 @@ const retiredAbbreviations = <String, Set<String>>{
   'nl': {
     'alstu', 'gelee', 'inbus', 'mogge', 'ortho', 'stufi', 'watan', //
   },
+  'pl': {
+    //
+  },
+  'sv': {
+    'herrå', 'kpist', 'labba', 'manus', 'regga', 'serri', 'tablå', 'truck',
+    'venne', //
+  },
   'da': {
     //
+  },
+  'nb': {
+    'truck', 'vettu', //
+  },
+  'tr': {
+    'milim', 'nolur', //
   },
   'ro': {
     //

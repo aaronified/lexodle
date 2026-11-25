@@ -31,7 +31,13 @@ def main():
         if not f.exists():
             continue
         d = json.loads(f.read_text(encoding="utf-8"))
-        words = sorted(w for w, r in d.items() if r["kind"] in ("pure", "caps") and len(w) == LENGTH)
+        # (an entry whose only mention is in its heading line, like the Polish
+        # aleja, "abbreviation: al.", is not an abbreviation: "head" does not count)
+        words = sorted(
+            w
+            for w, r in d.items()
+            if r["kind"] in ("pure", "caps") and len(w) == LENGTH and set(r["why"]) - {"head"}
+        )
         total += len(words)
         lines.append(f"  '{e['code']}': {{")
         row = "   "
