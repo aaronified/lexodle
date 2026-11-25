@@ -17,14 +17,14 @@ import 'open_review.dart';
 import 'period_chart.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'playstyle.dart' show classify, habitsOfGames, hasPlaystyle;
-import 'playstyle_card.dart' show StatTile, hairlineCard, shadeUp;
 import 'puzzle.dart';
 import 'replay.dart';
 import 'routes.dart';
 import 'share_puzzle.dart';
 import 'store.dart' show earnedFrom;
-import 'settings_button.dart';
+import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'words.dart';
 
 /// How many games the list shows at first, and how many more each press adds.
@@ -124,169 +124,195 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('history'),
-        actions: [const SettingsButton()],
-      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
-            child: ListenableBuilder(
-              listenable: appState,
-              builder: (context, _) {
-                final h = appState.history;
-                // the games of the language in view, oldest first
-                final mine = [
-                  for (final g in h.games)
-                    if (g.lang == _lang && (_mode == null || g.mode == _mode))
-                      g,
-                ];
-                final total = mine.length;
-                final shown = min(_shown, total);
-                final more = total - shown;
-                // the cards, the note about the games, then the games (built
-                // as they scroll into view), then the button for more
-                const fixed = 5;
-                return Stack(
-                  children: [
-                    ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
-                      itemCount: fixed + shown + (more > 0 ? 1 : 0),
-                      itemBuilder: (context, row) {
-                        final i = row;
-                        // (these are not const: a const widget is not rebuilt
-                        // when this builder runs, and they must follow the
-                        // history as it changes, after games are scored again)
-                        // ignore: prefer_const_constructors
-                        if (i == 0) {
-                          return _Block(
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                LanguagePicker(
-                                  // (a language only practised is in the list)
-                                  codes: {
-                                    ...appState.playedLanguages,
-                                    for (final g in h.games) g.lang,
-                                  }.toList()..sort(),
-                                  languages: _langs,
-                                  selected: _lang,
-                                  onSelect: (code) => setState(() {
-                                    _lang = code;
-                                    _shown = historyPageSize;
-                                  }),
-                                ),
-                                const SizedBox(height: 10),
-                                ModeFilter(
-                                  selected: _mode,
-                                  onSelect: (m) => setState(() {
-                                    _mode = m;
-                                    _shown = historyPageSize;
-                                  }),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        // ignore: prefer_const_constructors
-                        if (i == 1) return _Block(_Overall(_lang, _mode));
-                        if (i == 3) {
-                          return _Block(_PlaystyleRow(_lang, _mode));
-                        }
-                        if (i == 2) {
-                          return _Block(
-                            _Trend(
-                              _lang,
-                              _mode,
-                              key: ValueKey('trend-$_lang-${_mode?.name}'),
-                            ),
-                          );
-                        }
-                        if (i == 4) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (_total > 0) ...[
-                                  Caption(
-                                    'scoring $_done of $_total older games '
-                                    'again with the current maths…',
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
-                                Caption(
-                                  total == 0
-                                      ? 'no games yet'
-                                      : 'your games, newest first',
-                                ),
-                                if (_error.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _error,
-                                    style: TextStyle(color: c.error),
-                                  ),
-                                ],
-                                if (total == 0)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 12),
-                                    child: Text(
-                                      'finish a game and it will be here, to '
-                                      'look back on step by step.',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: c.onSurface.withValues(
-                                          alpha: dimAlpha,
-                                        ),
+            child: Column(
+              children: [
+                const PageHeader(text: 'history', back: true),
+                Expanded(
+                  child: ListenableBuilder(
+                    listenable: appState,
+                    builder: (context, _) {
+                      final h = appState.history;
+                      // the games of the language in view, oldest first
+                      final mine = [
+                        for (final g in h.games)
+                          if (g.lang == _lang &&
+                              (_mode == null || g.mode == _mode))
+                            g,
+                      ];
+                      final total = mine.length;
+                      final shown = min(_shown, total);
+                      final more = total - shown;
+                      // the cards, the note about the games, then the games (built
+                      // as they scroll into view), then the button for more
+                      const fixed = 5;
+                      return Stack(
+                        children: [
+                          ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                            itemCount: fixed + shown + (more > 0 ? 1 : 0),
+                            itemBuilder: (context, row) {
+                              final i = row;
+                              // (these are not const: a const widget is not rebuilt
+                              // when this builder runs, and they must follow the
+                              // history as it changes, after games are scored again)
+                              // ignore: prefer_const_constructors
+                              if (i == 0) {
+                                return _Block(
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      LanguagePicker(
+                                        // (a language only practised is in the list)
+                                        codes: {
+                                          ...appState.playedLanguages,
+                                          for (final g in h.games) g.lang,
+                                        }.toList()..sort(),
+                                        languages: _langs,
+                                        selected: _lang,
+                                        onSelect: (code) => setState(() {
+                                          _lang = code;
+                                          _shown = historyPageSize;
+                                        }),
                                       ),
+                                      const SizedBox(height: 10),
+                                      ModeFilter(
+                                        selected: _mode,
+                                        onSelect: (m) => setState(() {
+                                          _mode = m;
+                                          _shown = historyPageSize;
+                                        }),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              // ignore: prefer_const_constructors
+                              if (i == 1) return _Block(_Overall(_lang, _mode));
+                              if (i == 3) {
+                                return _Block(_PlaystyleRow(_lang, _mode));
+                              }
+                              if (i == 2) {
+                                return _Block(
+                                  _Trend(
+                                    _lang,
+                                    _mode,
+                                    key: ValueKey(
+                                      'trend-$_lang-${_mode?.name}',
                                     ),
                                   ),
-                              ],
-                            ),
-                          );
-                        }
-                        final k = row - fixed;
-                        if (k < shown) {
-                          // newest first: the list is the history read backwards
-                          final g = mine[total - 1 - k];
-                          return _GameTile(
-                            key: ValueKey('game-${g.id}'),
-                            game: g,
-                            language: _langs[g.lang],
-                            onTap: () => _open(g),
-                          );
-                        }
-                        final next = min(historyPageSize, more);
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Material(
-                            color: shadeUp(c),
-                            borderRadius: BorderRadius.circular(6),
-                            child: InkWell(
-                              key: const ValueKey('load-more'),
-                              borderRadius: BorderRadius.circular(6),
-                              onTap: () =>
-                                  setState(() => _shown += historyPageSize),
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: 48,
-                                child: Center(
-                                  child: Text('load $next more · $more left'),
+                                );
+                              }
+                              if (i == 4) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (_total > 0)
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          2,
+                                          28,
+                                          2,
+                                          0,
+                                        ),
+                                        child: Caption(
+                                          'scoring $_done of $_total older games '
+                                          'again with the current maths…',
+                                        ),
+                                      ),
+                                    SectionLabel(
+                                      total == 0
+                                          ? 'no games yet'
+                                          : 'your games, newest first',
+                                      first: _total > 0,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 6),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          if (_error.isNotEmpty) ...[
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              _error,
+                                              style: TextStyle(color: c.error),
+                                            ),
+                                          ],
+                                          if (total == 0)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 12,
+                                              ),
+                                              child: Text(
+                                                'finish a game and it will be here, to '
+                                                'look back on step by step.',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: c.onSurface.withValues(
+                                                    alpha: dimAlpha,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                              final k = row - fixed;
+                              if (k < shown) {
+                                // newest first: the list is the history read backwards
+                                final g = mine[total - 1 - k];
+                                final last = k == shown - 1;
+                                // the games are one group: 2 px between the rows, the
+                                // first and last with the container's round corners
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: last ? 0 : 2,
+                                  ),
+                                  child: _GameTile(
+                                    key: ValueKey('game-${g.id}'),
+                                    game: g,
+                                    language: _langs[g.lang],
+                                    first: k == 0,
+                                    last: last,
+                                    onTap: () => _open(g),
+                                  ),
+                                );
+                              }
+                              final next = min(historyPageSize, more);
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 48,
+                                  child: OutlinedButton(
+                                    key: const ValueKey('load-more'),
+                                    onPressed: () => setState(
+                                      () => _shown += historyPageSize,
+                                    ),
+                                    child: Text('load $next more · $more left'),
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                    if (_opening)
-                      const Positioned.fill(
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                  ],
-                );
-              },
+                          if (_opening)
+                            const Positioned.fill(
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -302,7 +328,7 @@ class _Block extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      Padding(padding: const EdgeInsets.only(bottom: 18), child: child);
+      Padding(padding: const EdgeInsets.only(bottom: 12), child: child);
 }
 
 /// Every game kept, added up: always there, however many there are.
@@ -339,32 +365,19 @@ class _Overall extends StatelessWidget {
     for (final e in counts.entries) {
       if (top == null || e.value > counts[top]!) top = e.key;
     }
-    return hairlineCard(
-      context,
+    return TonalCard(
       key: const ValueKey('overall'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Caption(mode == null ? 'overall' : 'overall · ${mode!.label}'),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 24,
-            runSpacing: 8,
-            children: [
-              StatTile('games', '${s.games}', prefix: 'overall'),
-              StatTile(
-                'won',
-                s.games == 0 ? '–' : '${s.winRate.round()}%',
-                prefix: 'overall',
-              ),
-              StatTile(
-                'skill',
-                whole(s.scored == 0 ? null : s.skill),
-                prefix: 'overall',
-              ),
-              StatTile('risk', whole(s.risk), prefix: 'overall'),
-            ],
-          ),
+          const SizedBox(height: 12),
+          StatsStrip(keyPrefix: 'overall', [
+            ('${s.games}', 'games', null),
+            (s.games == 0 ? '–' : '${s.winRate.round()}%', 'won', null),
+            (whole(s.scored == 0 ? null : s.skill), 'skill', skillColor(c)),
+            (whole(s.risk), 'risk', riskColor(c)),
+          ]),
           const SizedBox(height: 8),
           s.games == 0 || top == null
               ? Text(
@@ -432,64 +445,31 @@ class _PlaystyleRow extends StatelessWidget {
         : hasPlaystyle(mode!)
         ? appState.styleOf(lang, mode!)
         : null;
-    return Material(
-      color: c.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(6),
-        side: hairline(c),
-      ),
-      child: InkWell(
-        key: const ValueKey('playstyle-row'),
-        borderRadius: BorderRadius.circular(6),
-        onTap: () {
-          try {
-            Navigator.pushNamed(context, Routes.playstyle);
-          } catch (e) {
-            appLog.w('history', 'playstyle: ${e.runtimeType}');
-          }
-        },
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 72),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                TablerIcon(
-                  p?.icon ?? 'puzzle',
-                  size: 44,
-                  color: p == null
-                      ? c.onSurface.withValues(alpha: dimAlpha)
-                      : behaviourColor(c, p.early.label),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        p?.name ?? 'not rated yet',
-                        key: const ValueKey('playstyle-row-name'),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'your playstyle',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: c.onSurface.withValues(alpha: dimAlpha),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
+    return GroupedList(
+      rows: [
+        GroupRow(
+          key: const ValueKey('playstyle-row'),
+          leading: TonalTile(
+            p?.icon ?? 'puzzle',
+            big: true,
+            color: p == null
+                ? c.onSurface.withValues(alpha: dimAlpha)
+                : behaviourColor(c, p.early.label),
           ),
+          title: Text(
+            p?.name ?? 'not rated yet',
+            key: const ValueKey('playstyle-row-name'),
+          ),
+          subtitle: const Text('your playstyle'),
+          onTap: () {
+            try {
+              Navigator.pushNamed(context, Routes.playstyle);
+            } catch (e) {
+              appLog.w('history', 'playstyle: ${e.runtimeType}');
+            }
+          },
         ),
-      ),
+      ],
     );
   }
 }
@@ -645,8 +625,7 @@ class _TrendState extends State<_Trend> {
 
     final s = p.stats;
     String whole(double? v) => v == null ? '–' : v.round().toString();
-    return hairlineCard(
-      context,
+    return TonalCard(
       key: const ValueKey('trend'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -655,8 +634,8 @@ class _TrendState extends State<_Trend> {
             children: [
               Expanded(child: Caption('the last ${periods.length} ${unit}s')),
               for (final (i, r) in _Range.values.indexed) ...[
-                if (i > 0) const SizedBox(width: 6),
-                _Choice(
+                if (i > 0) const SizedBox(width: 4),
+                _RangePill(
                   r.name,
                   selected: _range == r,
                   onTap: () => _setRange(r),
@@ -684,18 +663,17 @@ class _TrendState extends State<_Trend> {
           // the legend, which also switches each line on and off; luck is drawn
           // about the middle line, which is a luck of 0%
           Wrap(
-            spacing: 6,
-            runSpacing: 6,
+            spacing: 8,
             children: [
               for (final series in PeriodSeries.values)
-                _Choice(
+                _SeriesPill(
                   switch (series) {
                     PeriodSeries.luck => 'luck (50 = 0%)',
                     _ => series.label,
                   },
                   key: ValueKey('series-${series.name}'),
-                  selected: _shown.contains(series),
-                  color: seriesColors(c)[series],
+                  shown: _shown.contains(series),
+                  color: seriesColors(c)[series]!,
                   onTap: () => setState(() {
                     if (!_shown.remove(series)) _shown.add(series);
                   }),
@@ -759,61 +737,118 @@ class _TrendState extends State<_Trend> {
   }
 }
 
-/// A small switch of the trend card.
-class _Choice extends StatelessWidget {
-  const _Choice(
-    this.label, {
-    super.key,
-    required this.selected,
-    required this.onTap,
-    this.color,
-  });
+/// The day, week or month of the trend card: a small tonal pill, 30 high, the
+/// one picked in the secondary container.
+class _RangePill extends StatelessWidget {
+  const _RangePill(this.label, {required this.selected, required this.onTap});
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
-  /// A line's colour, shown as a swatch before the name (for the legend).
-  final Color? color;
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return _Pill(
+      label,
+      height: 30,
+      selected: selected,
+      onTap: onTap,
+      fill: selected ? c.secondaryContainer : tonesOf(context).s2,
+      textColor: selected
+          ? c.onSecondaryContainer
+          : c.onSurface.withValues(alpha: dimAlpha),
+      bold: selected,
+    );
+  }
+}
+
+/// A line's switch in the legend: a tonal pill, 36 high, its name in the line's
+/// colour while the line is drawn, dim while it is off.
+class _SeriesPill extends StatelessWidget {
+  const _SeriesPill(
+    this.label, {
+    super.key,
+    required this.shown,
+    required this.color,
+    required this.onTap,
+  });
+  final String label;
+  final bool shown;
+  final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
+    return _Pill(
+      label,
+      height: 36,
+      selected: shown,
+      onTap: onTap,
+      fill: tonesOf(context).s2,
+      textColor: shown ? color : c.onSurface.withValues(alpha: dimAlpha),
+      bold: false,
+    );
+  }
+}
+
+/// A pill of the trend card. Its tap area is 44 high, whatever the pill's
+/// [height], so the target stays large enough to press.
+class _Pill extends StatelessWidget {
+  const _Pill(
+    this.label, {
+    required this.height,
+    required this.selected,
+    required this.onTap,
+    required this.fill,
+    required this.textColor,
+    required this.bold,
+  });
+  final String label;
+  final double height;
+  final bool selected;
+  final VoidCallback onTap;
+  final Color fill;
+  final Color textColor;
+  final bool bold;
+
+  @override
+  Widget build(BuildContext context) {
+    const shape = StadiumBorder();
     return Semantics(
       button: true,
       selected: selected,
       label: label,
       excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(3),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: selected ? c.secondaryContainer : c.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (color != null) ...[
-                Container(
-                  width: 10,
-                  height: 3,
-                  color: selected ? color : c.outlineVariant,
-                ),
-                const SizedBox(width: 6),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                  color: selected
-                      ? c.onSecondaryContainer
-                      : c.onSurface.withValues(alpha: dimAlpha),
+      child: SizedBox(
+        height: 44,
+        child: Center(
+          child: Material(
+            color: fill,
+            shape: shape,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              customBorder: shape,
+              onTap: onTap,
+              child: SizedBox(
+                height: height,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Center(
+                    widthFactor: 1,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -834,10 +869,17 @@ class _GameTile extends StatelessWidget {
     required this.game,
     required this.language,
     required this.onTap,
+    this.first = false,
+    this.last = false,
   });
   final GameRow game;
   final Language? language;
   final VoidCallback onTap;
+
+  /// The first and last rows of the list: they take the container's round
+  /// corners on their outer side, the rows between have nearly square ones.
+  final bool first;
+  final bool last;
 
   @override
   Widget build(BuildContext context) {
@@ -855,27 +897,32 @@ class _GameTile extends StatelessWidget {
       if (game.isDaily) 'daily',
       if (game.mode != GameMode.classic) game.mode.label,
     ].join(' · ');
+    final tones = tonesOf(context);
     final dim = TextStyle(
-      fontSize: 11,
+      fontSize: 12,
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Material(
-        color: c.surfaceContainerHighest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-          side: hairline(c),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(6),
+    const round = Radius.circular(radiusContainer);
+    const inner = Radius.circular(4);
+    return Material(
+      color: tones.s1,
+      borderRadius: BorderRadius.only(
+        topLeft: first ? round : inner,
+        topRight: first ? round : inner,
+        bottomLeft: last ? round : inner,
+        bottomRight: last ? round : inner,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 64),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
             child: Row(
               children: [
                 FlagBadge(language?.flag ?? '', size: 16),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -885,7 +932,7 @@ class _GameTile extends StatelessWidget {
                             ? _date(game.at)
                             : '${_date(game.at)} · $tag',
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -911,7 +958,7 @@ class _GameTile extends StatelessWidget {
                       ].join(' · '),
                       style: TextStyle(
                         fontSize: 13,
-                        color: game.won ? c.secondary : c.error,
+                        color: game.won ? c.onSurface : heartColor(c),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -921,12 +968,12 @@ class _GameTile extends StatelessWidget {
                       Container(
                         key: ValueKey('unscored-${game.id}'),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
+                          horizontal: 8,
+                          vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          border: Border.fromBorderSide(hairline(c)),
-                          borderRadius: BorderRadius.circular(3),
+                          color: tones.s2,
+                          borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text('not scored', style: dim),
                       )

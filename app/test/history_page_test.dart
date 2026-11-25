@@ -797,7 +797,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(HistoryPage), findsOneWidget);
     expect(find.byKey(const ValueKey('profile-name')), findsNothing);
-    await tester.pageBack();
+    await tester.tap(find.byKey(const ValueKey('header-back')));
     await tester.pumpAndSettle();
     expect(find.byType(HistoryPage), findsNothing);
   });
