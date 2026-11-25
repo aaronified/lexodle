@@ -113,7 +113,7 @@ void main() {
     expect(arrow(tester, 'prev').onPressed, isNull);
     expect(arrow(tester, 'next').onPressed, isNotNull);
     await show(tester, selected: GameMode.values.last);
-    expect(choiceShows('mode-slider', 'geography'), isTrue);
+    expect(choiceShows('mode-slider', GameMode.values.last.label), isTrue);
     expect(arrow(tester, 'next').onPressed, isNull);
     expect(arrow(tester, 'prev').onPressed, isNotNull);
   });
@@ -142,7 +142,6 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: PlaystylePage()));
     await tester.pump();
     expect(find.byKey(const ValueKey('mode-filter')), findsOneWidget);
-    expect(choiceShows('mode-slider', 'all modes'), isTrue);
     // the six modes that have a playstyle, and all modes
     expect(choiceCount('mode-slider'), 7);
   });

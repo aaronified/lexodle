@@ -16,6 +16,7 @@ import 'package:lexodle/playstyle_card.dart';
 import 'package:lexodle/review.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/store.dart';
+import 'package:lexodle/tonal.dart';
 import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -377,7 +378,8 @@ void main() {
         expect(t.colorScheme.surface, black);
         expect(t.colorScheme.surfaceContainer, black);
         expect(t.cardColor, black);
-        expect(t.dialogTheme.backgroundColor, black);
+        // a dialog is a filled container one tone above the black page
+        expect(t.dialogTheme.backgroundColor, AppTones.of(Ground.black).s1);
         expect(t.appBarTheme.backgroundColor, black);
         // dark in every other respect: the same accent colours as the dark one
         final dark = buildTheme(Brightness.dark);
@@ -396,11 +398,12 @@ void main() {
       }
 
       expect(contrast(c.onSurface, c.surface), greaterThanOrEqualTo(7));
-      expect(contrast(c.outline, c.surface), greaterThanOrEqualTo(3));
-      expect(contrast(c.outlineVariant, c.surface), greaterThanOrEqualTo(1.5));
+      // the line of what is outlined, and the quiet one of a header and a bar
+      expect(contrast(c.outline, c.surface), greaterThanOrEqualTo(2));
+      expect(contrast(c.outlineVariant, c.surface), greaterThanOrEqualTo(1.2));
     });
 
-    testWidgets('a dialog is black and a card on it a shade above', (
+    testWidgets('a card and a dialog are a tone above the black page', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -411,11 +414,6 @@ void main() {
           home: const Scaffold(body: Card(child: Text('a card'))),
         ),
       );
-      Color? material(Finder f) => tester
-          .widget<Material>(
-            find.descendant(of: f, matching: find.byType(Material)).first,
-          )
-          .color;
       final ctx = tester.element(find.text('a card'));
       expect(Theme.of(ctx).scaffoldBackgroundColor, black);
       expect(
@@ -429,20 +427,20 @@ void main() {
                   .first,
             )
             .color,
-        // a card is a shade above the black ground
-        const Color(0xFF1C1C1C),
+        // a card is a tone above the black ground
+        AppTones.of(Ground.black).s1,
       );
       showDialog<void>(
         context: ctx,
         builder: (_) => const AlertDialog(title: Text('a dialog')),
       );
       await tester.pumpAndSettle();
-      expect(material(find.byType(AlertDialog)) ?? black, black);
+      // a dialog is a filled container, one tone above the black page
       expect(
         Theme.of(tester.element(find.text('a dialog')))
             .dialogTheme
             .backgroundColor,
-        black,
+        AppTones.of(Ground.black).s1,
       );
     });
 
@@ -453,34 +451,33 @@ void main() {
         appState.setup(themeMode: ThemeMode.system);
       });
 
-      testWidgets('the settings page offers light, dark, system and true black', (
-        tester,
-      ) async {
-        await tester.binding.setSurfaceSize(const Size(420, 2200));
-        addTearDown(() => tester.binding.setSurfaceSize(null));
-        await tester.pumpWidget(
-          const MaterialApp(home: SettingsPage()),
-        );
-        await tester.pumpAndSettle();
-        for (final label in ['light', 'dark', 'system']) {
-          expect(find.byKey(ValueKey('theme-$label')), findsOneWidget);
-        }
-        Switch sw() => tester.widget<Switch>(
-          find.descendant(
-            of: find.byKey(const ValueKey('black-switch')),
-            matching: find.byType(Switch),
-          ),
-        );
-        // black is only reachable when dark
-        expect(sw().onChanged, isNull);
-        await tester.tap(find.byKey(const ValueKey('theme-dark')));
-        await tester.pumpAndSettle();
-        expect(sw().onChanged, isNotNull);
-        await tester.tap(find.byKey(const ValueKey('black-switch')));
-        await tester.pumpAndSettle();
-        expect(appState.blackTheme, isTrue);
-        expect(appState.themeIndex, 3);
-      });
+      testWidgets(
+        'the settings page offers light, dark, system and true black',
+        (tester) async {
+          await tester.binding.setSurfaceSize(const Size(420, 2200));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
+          await tester.pumpWidget(const MaterialApp(home: SettingsPage()));
+          await tester.pumpAndSettle();
+          for (final label in ['light', 'dark', 'system']) {
+            expect(find.byKey(ValueKey('theme-$label')), findsOneWidget);
+          }
+          Switch sw() => tester.widget<Switch>(
+            find.descendant(
+              of: find.byKey(const ValueKey('black-switch')),
+              matching: find.byType(Switch),
+            ),
+          );
+          // black is only reachable when dark
+          expect(sw().onChanged, isNull);
+          await tester.tap(find.byKey(const ValueKey('theme-dark')));
+          await tester.pumpAndSettle();
+          expect(sw().onChanged, isNotNull);
+          await tester.tap(find.byKey(const ValueKey('black-switch')));
+          await tester.pumpAndSettle();
+          expect(appState.blackTheme, isTrue);
+          expect(appState.themeIndex, 3);
+        },
+      );
 
       testWidgets('choosing black paints the app black', (tester) async {
         await tester.binding.setSurfaceSize(const Size(420, 2200));

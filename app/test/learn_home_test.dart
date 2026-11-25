@@ -47,7 +47,7 @@ void main() {
   );
 
   Future<List<String>> open(WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(420, 1100));
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
     appState.setup(lang: 'fr', length: 4);
     final bank = (await tester.runAsync(
       () async => WordBank.load(

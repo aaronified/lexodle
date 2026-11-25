@@ -72,7 +72,7 @@ Color yellowOf(ColorScheme c) =>
   Mark.absent =>
     c.brightness == Brightness.dark
         ? (Tonal.neutral(25), Tonal.neutral(60))
-        : (Tonal.neutral(90), Tonal.neutral(50)),
+        : (Tonal.neutral(85), Tonal.neutral(45)),
 };
 
 /// The edge of a feedback tile: the fill itself, so it shows no edge.

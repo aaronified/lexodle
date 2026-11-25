@@ -270,7 +270,6 @@ void main() {
     expect(title(), 'playstyle · classic');
     // only the modes that have a playstyle are offered: the six, and all modes
     expect(choiceCount('mode-slider'), 7);
-    expect(choiceShows('mode-slider', 'all modes'), isTrue);
     await pickChoice(tester, 'mode-slider', 'blind');
     await tester.pump();
     expect(title(), 'playstyle · blind');

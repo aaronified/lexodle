@@ -419,17 +419,23 @@ class ChoiceSlider<T> extends StatelessWidget {
     final at = _at;
     final item = items[at];
     Widget arrow(Key key, IconData icon, String label, int by, bool on) {
-      return SizedBox(
-        width: 44,
-        height: 44,
-        child: IconButton(
-          key: key,
-          tooltip: label,
-          padding: EdgeInsets.zero,
-          icon: Icon(icon, size: 22),
-          color: c.onSurface,
-          disabledColor: tones.s3,
-          onPressed: on ? () => _go(by) : null,
+      // (no tooltip: a phone has no hover, and a long press is hidden)
+      return Semantics(
+        button: true,
+        label: label,
+        enabled: on,
+        excludeSemantics: true,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: IconButton(
+            key: key,
+            padding: EdgeInsets.zero,
+            icon: Icon(icon, size: 22),
+            color: c.onSurface,
+            disabledColor: tones.s3,
+            onPressed: on ? () => _go(by) : null,
+          ),
         ),
       );
     }

@@ -128,6 +128,6 @@ void main() {
     expect(t.trackOutlineWidth!.resolve({}), 0);
     expect(t.trackColor!.resolve({WidgetState.selected}), c.secondary);
     expect(t.thumbColor!.resolve({WidgetState.selected}), c.onSecondary);
-    expect(t.thumbColor!.resolve({}), c.onSurface.withValues(alpha: .6));
+    expect(t.thumbColor!.resolve({}), c.onSurfaceVariant);
   });
 }
