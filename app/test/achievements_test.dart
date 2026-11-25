@@ -14,6 +14,8 @@ import 'package:lexodle/store.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'choice_helpers.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -233,7 +235,7 @@ void main() {
       );
       expect(shared, findsNWidgets(3));
       // picking French shows French's
-      await tester.tap(find.byKey(const ValueKey('lang-fr')));
+      await pickChoice(tester, 'language-slider', 'fr');
       await tester.pump();
       expect(find.byKey(const ValueKey('count-wins')), findsOneWidget);
       expect(find.byKey(const ValueKey('count-quick')), findsNothing);
@@ -262,7 +264,7 @@ void main() {
     );
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('lang-all')));
+    await pickChoice(tester, 'language-slider', 'all');
     await tester.pump();
     // the furthest level of any language shows
     expect(

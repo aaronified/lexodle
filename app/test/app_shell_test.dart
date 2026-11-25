@@ -6,6 +6,7 @@ import 'package:lexodle/app_shell.dart';
 import 'package:lexodle/home.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/today_page.dart';
+import 'package:lexodle/ui_kit.dart';
 import 'package:lexodle/you_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,17 +66,38 @@ void main() {
     }
   });
 
-  testWidgets('the tab bar casts a soft upward shadow', (tester) async {
-    appState.newUi = true;
-    addTearDown(() => appState.newUi = false);
-    await show(tester);
-    final box = tester.widget<DecoratedBox>(
-      find.byKey(const ValueKey('tabs-shadow')),
-    );
-    final shadows = (box.decoration as BoxDecoration).boxShadow!;
-    expect(shadows, hasLength(2));
-    expect(shadows.every((s) => s.offset.dy < 0), isTrue);
-  });
+  testWidgets(
+    'the tab bar is flat: the chosen label is bold, a tap shows its page',
+    (tester) async {
+      appState.newUi = true;
+      addTearDown(() => appState.newUi = false);
+      appState.lex.veteran = false;
+      appState.stats.played = 1;
+      await show(tester);
+      expect(find.byKey(const ValueKey('tabs')), findsOneWidget);
+      expect(
+        tester.widget(find.byKey(const ValueKey('tabs'))),
+        isA<FlatTabBar>(),
+      );
+      FontWeight? weight(String id) => tester
+          .widget<Text>(
+            find.descendant(
+              of: find.byKey(ValueKey('tab-$id-button')),
+              matching: find.text(id),
+            ),
+          )
+          .style
+          ?.fontWeight;
+      expect(find.byType(TodayPage), findsOneWidget);
+      expect(weight('today'), FontWeight.w700);
+      expect(weight('you'), isNot(FontWeight.w700));
+      await tester.tap(find.byKey(const ValueKey('tab-you-button')));
+      await tester.pump();
+      expect(find.byType(YouPage), findsOneWidget);
+      expect(weight('you'), FontWeight.w700);
+      expect(weight('today'), isNot(FontWeight.w700));
+    },
+  );
 
   testWidgets('every scrollable stretches at its ends, on any platform', (
     tester,

@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'logic.dart';
 import 'medal.dart';
 import 'words.dart';
+import 'tonal.dart';
 
 export 'medal.dart' show Medal;
 
@@ -43,6 +44,14 @@ const chooserIconSize = 24.0;
 /// The mode icon in the title of a game screen.
 const headerIconSize = 20.0;
 
+/// Radius by role: inner marks and keys, elements (buttons, fields, tiles, icon
+/// tiles), containers (groups, cards), and the top of a sheet. Pills, chips and
+/// switches are fully round.
+const radiusInner = 6.0;
+const radiusElement = 10.0;
+const radiusContainer = 12.0;
+const radiusSheet = 28.0;
+
 /// How strongly secondary text (captions, notes) shows against the page: dim,
 /// but still readable (4.5:1) in both themes.
 const dimAlpha = .66;
@@ -51,12 +60,8 @@ const dimAlpha = .66;
 /// a muted Material You palette, so the yellow is its own warm hue, kept at a
 /// lightness that reads in both themes: a bright yellow on the dark page, and
 /// a deeper amber on the light one, where a pale yellow would vanish.
-Color yellowOf(ColorScheme c) => HSLColor.fromAHSL(
-  1,
-  47,
-  .88,
-  c.brightness == Brightness.dark ? .52 : .42,
-).toColor();
+Color yellowOf(ColorScheme c) =>
+    c.brightness == Brightness.dark ? Tonal.yellow(85) : Tonal.yellow(70);
 
 /// Feedback colours. Green (secondary) is the right letter in the right place,
 /// yellow the right letter in the wrong place; both are solid tiles with no
@@ -64,10 +69,10 @@ Color yellowOf(ColorScheme c) => HSLColor.fromAHSL(
 (Color fill, Color fg) markColors(ColorScheme c, Mark m) => switch (m) {
   Mark.correct => (c.secondary, c.onSecondary),
   Mark.present => (yellowOf(c), onColor(c, yellowOf(c))),
-  Mark.absent => (
-    Color.alphaBlend(c.onSurface.withValues(alpha: .14), c.surface),
-    c.onSurface.withValues(alpha: .55),
-  ),
+  Mark.absent =>
+    c.brightness == Brightness.dark
+        ? (Tonal.neutral(25), Tonal.neutral(60))
+        : (Tonal.neutral(90), Tonal.neutral(50)),
 };
 
 /// The edge of a feedback tile: the fill itself, so it shows no edge.
@@ -79,22 +84,18 @@ double markBorderWidth(Mark m) => 1;
 /// yellow, risk green, bits violet. A number keeps its colour whatever its sign or size;
 /// for luck the +/- sign carries the direction. The shades are brighter on the
 /// dark and black pages and deeper on the light one, so they read on all three.
-Color skillColor(ColorScheme c) => c.brightness == Brightness.dark
-    ? const Color(0xFF4C8DFF)
-    : const Color(0xFF1F5FD0);
+Color skillColor(ColorScheme c) =>
+    c.brightness == Brightness.dark ? Tonal.blue(70) : Tonal.blue(40);
 
-Color luckColor(ColorScheme c) => c.brightness == Brightness.dark
-    ? const Color(0xFFF2C230)
-    : const Color(0xFF9A7400);
+Color luckColor(ColorScheme c) =>
+    c.brightness == Brightness.dark ? Tonal.yellow(85) : Tonal.yellow(50);
 
-Color riskColor(ColorScheme c) => c.brightness == Brightness.dark
-    ? const Color(0xFF5CB85C)
-    : const Color(0xFF2E7D32);
+Color riskColor(ColorScheme c) =>
+    c.brightness == Brightness.dark ? Tonal.green(70) : Tonal.green(40);
 
 /// The red of a heart, brighter on the dark and black pages, deeper on the light.
-Color heartColor(ColorScheme c) => c.brightness == Brightness.dark
-    ? const Color(0xFFFF7A66)
-    : const Color(0xFFC0392B);
+Color heartColor(ColorScheme c) =>
+    c.brightness == Brightness.dark ? Tonal.red(70) : Tonal.red(40);
 
 Color bitsColor(ColorScheme c) => c.brightness == Brightness.dark
     ? const Color(0xFFA98BFF)

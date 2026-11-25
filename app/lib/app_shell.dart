@@ -13,6 +13,7 @@ import 'update_check.dart' show appVersion;
 import 'today_page.dart';
 import 'words_page.dart';
 import 'you_page.dart';
+import 'ui_kit.dart';
 
 /// The home route: the new four-tab shell unless the player turned the new look
 /// off in the settings, which gives the old home page.
@@ -135,7 +136,6 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
     return ListenableBuilder(
       listenable: appState,
       builder: (context, _) {
@@ -158,43 +158,14 @@ class _AppShellState extends State<AppShell> {
               children: [for (final id in tabs) page(id)],
             ),
           ),
-          // a soft shadow cast upwards, so what scrolls under the bar reads as
-          // behind it (and the bar sits above any pinned action row)
-          bottomNavigationBar: DecoratedBox(
-            key: const ValueKey('tabs-shadow'),
-            decoration: BoxDecoration(
-              color: c.surfaceContainerHighest,
-              boxShadow: [
-                BoxShadow(
-                  color: c.shadow.withValues(alpha: .2),
-                  offset: const Offset(0, -2),
-                  blurRadius: 6,
-                ),
-                BoxShadow(
-                  color: c.shadow.withValues(alpha: .18),
-                  offset: const Offset(0, -10),
-                  blurRadius: 24,
-                ),
-              ],
-            ),
-            child: NavigationBar(
-              key: const ValueKey('tabs'),
-              height: 60,
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              selectedIndex: at,
-              onDestinationSelected: (i) => setState(() => _tab = tabs[i]),
-              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-              destinations: [
-                for (final id in tabs)
-                  NavigationDestination(
-                    icon: Icon(_icons[id]!.$1),
-                    selectedIcon: Icon(_icons[id]!.$2),
-                    label: id,
-                  ),
-              ],
-            ),
+          // flat: the page colour with a hairline above, the tab on show bold
+          // with a line in the accent
+          bottomNavigationBar: FlatTabBar(
+            key: const ValueKey('tabs'),
+            ids: tabs,
+            icons: _icons,
+            selected: at,
+            onSelect: (i) => setState(() => _tab = tabs[i]),
           ),
         );
       },

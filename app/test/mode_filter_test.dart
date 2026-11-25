@@ -1,30 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lexodle/edge_fade.dart';
 import 'package:lexodle/mode_filter.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/playstyle_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'choice_helpers.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
 
+  /// Shows a [ModeFilter] that keeps its own selection, so the arrows and the
+  /// swipe move it; every selection is also passed to [onSelect].
   Future<void> show(
-    WidgetTester tester,
-    double width, {
+    WidgetTester tester, {
     GameMode? selected,
     bool showAll = true,
+    List<GameMode> modes = GameMode.values,
     ValueChanged<GameMode?>? onSelect,
   }) async {
-    await tester.binding.setSurfaceSize(Size(width, 600));
+    await tester.binding.setSurfaceSize(const Size(320, 600));
+    var now = selected;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: ModeFilter(
-            selected: selected,
-            showAll: showAll,
-            onSelect: onSelect ?? (_) {},
+          body: StatefulBuilder(
+            builder: (context, setLocal) => ModeFilter(
+              selected: now,
+              showAll: showAll,
+              modes: modes,
+              onSelect: (m) {
+                setLocal(() => now = m);
+                onSelect?.call(m);
+              },
+            ),
           ),
         ),
       ),
@@ -33,72 +43,98 @@ void main() {
     await tester.pump();
   }
 
-  EdgeFadeState fade(WidgetTester t) => t.state(find.byType(EdgeFade));
+  IconButton arrow(WidgetTester tester, String way) =>
+      tester.widget<IconButton>(find.byKey(ValueKey('mode-slider-$way')));
 
-  testWidgets('one scrolling row, faded only where there is more', (
+  testWidgets('the slider offers all modes first, then each mode in order', (
     tester,
   ) async {
-    await show(tester, 320);
-    expect(find.byType(Wrap), findsNothing);
-    final scroll = find.byKey(const ValueKey('mode-filter-scroll'));
-    expect(
-      tester.widget<SingleChildScrollView>(scroll).scrollDirection,
-      Axis.horizontal,
-    );
-    // one line: every chip at the same height, at least 36
-    final top = tester.getTopLeft(find.byKey(const ValueKey('mode-all'))).dy;
-    for (final m in GameMode.values) {
-      final k = find.byKey(ValueKey('mode-${m.name}'));
-      expect(tester.getTopLeft(k).dy, top);
-      expect(tester.getSize(k).height, greaterThanOrEqualTo(36));
+    await show(tester);
+    final labels = ['all modes', for (final m in GameMode.values) m.label];
+    expect(choiceCount('mode-slider'), labels.length);
+    for (var i = 0; i < labels.length; i++) {
+      expect(choiceShows('mode-slider', labels[i]), isTrue, reason: labels[i]);
+      if (i < labels.length - 1) {
+        await tester.tap(find.byKey(const ValueKey('mode-slider-next')));
+        await tester.pumpAndSettle();
+      }
     }
-    expect(fade(tester).fadeLeft, isFalse);
-    expect(fade(tester).fadeRight, isTrue);
-    await tester.drag(scroll, const Offset(-2000, 0));
-    await tester.pump();
-    expect(fade(tester).fadeLeft, isTrue);
-    expect(fade(tester).fadeRight, isFalse);
   });
 
-  testWidgets('no fade when it fits', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(2400, 600));
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: ModeFilter(
-            selected: null,
-            modes: const [GameMode.classic],
-            onSelect: (_) {},
-          ),
-        ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
-    expect(fade(tester).fadeLeft, isFalse);
-    expect(fade(tester).fadeRight, isFalse);
-  });
-
-  testWidgets('showAll false hides all; a tap selects the mode', (
+  testWidgets('a list of modes is offered in the order given, without all', (
     tester,
   ) async {
-    GameMode? got;
-    await show(tester, 320, showAll: false, onSelect: (m) => got = m);
-    expect(find.byKey(const ValueKey('mode-all')), findsNothing);
-    await tester.tap(find.byKey(const ValueKey('mode-classic')));
-    expect(got, GameMode.classic);
+    await show(
+      tester,
+      showAll: false,
+      modes: const [GameMode.quartet, GameMode.blind],
+    );
+    expect(choiceCount('mode-slider'), 2);
+    expect(choiceShows('mode-slider', 'all modes'), isFalse);
+    expect(choiceShows('mode-slider', 'quartet'), isTrue);
+    expect(arrow(tester, 'prev').onPressed, isNull);
+    await tester.tap(find.byKey(const ValueKey('mode-slider-next')));
+    await tester.pumpAndSettle();
+    expect(choiceShows('mode-slider', 'blind'), isTrue);
+    expect(arrow(tester, 'next').onPressed, isNull);
   });
 
-  testWidgets('a selected chip off screen is scrolled into view', (
+  testWidgets('showAll adds all modes first, as a null value', (tester) async {
+    final calls = <GameMode?>[];
+    await show(tester, onSelect: calls.add);
+    expect(choiceShows('mode-slider', 'all modes'), isTrue);
+    expect(arrow(tester, 'prev').onPressed, isNull);
+    await tester.tap(find.byKey(const ValueKey('mode-slider-next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('mode-slider-prev')));
+    await tester.pumpAndSettle();
+    expect(calls, [GameMode.classic, null]);
+  });
+
+  testWidgets('next and prev call onSelect with the neighbouring mode', (
     tester,
   ) async {
-    await show(tester, 320, selected: GameMode.values.last);
-    await tester.pump(const Duration(milliseconds: 400));
-    final r = tester.getRect(
-      find.byKey(ValueKey('mode-${GameMode.values.last.name}')),
+    final calls = <GameMode?>[];
+    await show(tester, selected: GameMode.quartet, onSelect: calls.add);
+    expect(choiceShows('mode-slider', 'quartet'), isTrue);
+    await tester.tap(find.byKey(const ValueKey('mode-slider-next')));
+    await tester.pumpAndSettle();
+    expect(choiceShows('mode-slider', 'relay race'), isTrue);
+    await tester.tap(find.byKey(const ValueKey('mode-slider-prev')));
+    await tester.pumpAndSettle();
+    expect(choiceShows('mode-slider', 'quartet'), isTrue);
+    expect(calls, [GameMode.relay, GameMode.quartet]);
+  });
+
+  testWidgets('the prev arrow is off at the first item, next at the last', (
+    tester,
+  ) async {
+    await show(tester);
+    expect(arrow(tester, 'prev').onPressed, isNull);
+    expect(arrow(tester, 'next').onPressed, isNotNull);
+    await show(tester, selected: GameMode.values.last);
+    expect(choiceShows('mode-slider', 'geography'), isTrue);
+    expect(arrow(tester, 'next').onPressed, isNull);
+    expect(arrow(tester, 'prev').onPressed, isNotNull);
+  });
+
+  testWidgets('a swipe to the left moves to the next one', (tester) async {
+    final calls = <GameMode?>[];
+    await show(tester, onSelect: calls.add);
+    await tester.fling(
+      find.byKey(const ValueKey('mode-slider')),
+      const Offset(-300, 0),
+      1000,
     );
-    expect(r.right, lessThanOrEqualTo(320));
-    expect(fade(tester).fadeLeft, isTrue);
+    await tester.pumpAndSettle();
+    expect(calls, [GameMode.classic]);
+    expect(choiceShows('mode-slider', 'classic'), isTrue);
+  });
+
+  testWidgets('the slider shows the selected mode', (tester) async {
+    await show(tester, selected: GameMode.blind);
+    expect(choiceShows('mode-slider', 'blind'), isTrue);
+    expect(choiceShows('mode-slider', 'all modes'), isFalse);
   });
 
   testWidgets('the playstyle page shows the filter once', (tester) async {
@@ -106,6 +142,8 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: PlaystylePage()));
     await tester.pump();
     expect(find.byKey(const ValueKey('mode-filter')), findsOneWidget);
-    expect(find.byKey(const ValueKey('mode-all')), findsOneWidget);
+    expect(choiceShows('mode-slider', 'all modes'), isTrue);
+    // the six modes that have a playstyle, and all modes
+    expect(choiceCount('mode-slider'), 7);
   });
 }
