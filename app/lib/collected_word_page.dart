@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'app_log.dart';
 import 'collection.dart';
 import 'save_word_button.dart';
-import 'settings_button.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'word_info.dart';
 import 'words.dart';
 
 /// A collected word, with its entry fetched as it is looked at. The bookmark
-/// keeps a copy of the entry in the personal dictionary.
+/// in the header keeps a copy of the entry in the personal dictionary.
 class CollectedWordPage extends StatefulWidget {
   const CollectedWordPage({super.key, required this.ref});
   final CollectedRef ref;
@@ -38,63 +38,66 @@ class _CollectedWordPageState extends State<CollectedWordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            languageBadge(widget.ref.lang, size: 16),
-            const SizedBox(width: 8),
-            const Text('my words'),
-          ],
-        ),
-        actions: [const SettingsButton()],
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: FutureBuilder<Language?>(
-            future: _language,
-            builder: (context, snap) {
-              if (snap.connectionState != ConnectionState.done) {
-                return const SizedBox.shrink();
-              }
-              final language = snap.data;
-              if (language == null) {
-                return const Center(
-                  child: Caption('this language could not be loaded'),
-                );
-              }
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(19, 4, 19, 32),
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.ref.word,
-                          style: TextStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.bold,
-                            color: c.primary,
-                          ),
-                        ),
-                      ),
+      body: SafeArea(
+        child: FutureBuilder<Language?>(
+          future: _language,
+          builder: (context, snap) {
+            final done = snap.connectionState == ConnectionState.done;
+            final language = done ? snap.data : null;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                PageHeader(
+                  title: const SizedBox.shrink(),
+                  back: true,
+                  settings: false,
+                  actions: [
+                    if (language != null)
                       SaveWordButton(word: widget.ref.word, language: language),
-                    ],
+                  ],
+                ),
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: _body(context, done, language),
+                    ),
                   ),
-                  const Caption(
-                    'collected · the entry is looked up as you read it. tap the bookmark to keep a copy that opens without a connection.',
-                  ),
-                  const SizedBox(height: 12),
-                  WordInfoView(word: widget.ref.word, language: language),
-                ],
-              );
-            },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context, bool done, Language? language) {
+    if (!done) return const SizedBox.shrink();
+    if (language == null) {
+      return const Center(child: Caption('this language could not be loaded'));
+    }
+    final c = Theme.of(context).colorScheme;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+      children: [
+        Text(
+          widget.ref.word,
+          style: TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+            height: 1.1,
+            color: c.primary,
           ),
         ),
-      ),
+        const SizedBox(height: 10),
+        const Caption(
+          'collected · the entry is looked up as you read it. tap the bookmark to keep a copy that opens without a connection.',
+        ),
+        const SizedBox(height: 12),
+        WordInfoView(word: widget.ref.word, language: language),
+      ],
     );
   }
 }

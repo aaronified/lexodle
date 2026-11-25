@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'app_log.dart';
 import 'main.dart';
 import 'saved_words.dart';
-import 'settings_button.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'word_info.dart';
 import 'wiktionary.dart';
 import 'words.dart';
@@ -84,9 +84,9 @@ class _WordPageState extends State<WordPage> {
   }
 
   /// The entry copy, or a caption when building it throws (the error is logged).
-  Widget _entryBody(WordInfo info) {
+  Widget _entryBody(WordInfo info, Widget saved) {
     try {
-      return WordInfoBody(info: info);
+      return WordInfoBody(info: info, saved: saved);
     } catch (e) {
       appLog.w('word', 'the entry could not be shown: ${e.runtimeType}');
       return const Caption('could not show this entry');
@@ -99,122 +99,139 @@ class _WordPageState extends State<WordPage> {
     final c = Theme.of(context).colorScheme;
     final info = entry.info;
     final hasInfo = info != null && !info.isEmpty;
+    final saved = HeaderInfo(
+      'saved ${entry.date}',
+      leading: languageBadge(entry.lang, size: 14),
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            languageBadge(entry.lang, size: 16),
-            const SizedBox(width: 8),
-            const Text('my words'),
+            PageHeader(
+              title: const SizedBox.shrink(),
+              back: true,
+              settings: false,
+            ),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+                    children: [
+                      Text(
+                        entry.word,
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
+                          color: c.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      if (hasInfo)
+                        _entryBody(info, saved)
+                      else ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: saved,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Caption(
+                          'no entry was kept. add your own notes below.',
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            key: const ValueKey('word-retry'),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(0, 36),
+                            ),
+                            onPressed: _retrying ? null : _retry,
+                            child: Text(
+                              _retrying
+                                  ? 'looking it up…'
+                                  : 'try the lookup again',
+                              style: TextStyle(color: c.primary),
+                            ),
+                          ),
+                        ),
+                        if (_retryNote.isNotEmpty) Caption(_retryNote),
+                      ],
+                      const SectionLabel('your note'),
+                      TextField(
+                        key: const ValueKey('word-note'),
+                        controller: _note,
+                        minLines: 3,
+                        maxLines: 6,
+                        decoration: const InputDecoration(
+                          hintText: 'a line to remember it by',
+                        ),
+                        onChanged: _onNoteChanged,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Caption('kept as you type'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 14),
+                        child: Text(
+                          'this is a copy of the wiktionary entry from the day it was saved, so it opens without a connection. only listening needs one.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: c.onSurface.withValues(alpha: dimAlpha),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      OutlinedButton.icon(
+                        key: const ValueKey('word-remove'),
+                        onPressed: () => setState(() => _confirming = true),
+                        icon: TablerIcon(
+                          'trash-x',
+                          size: 18,
+                          color: c.onSurface,
+                        ),
+                        label: const Text('remove from my words'),
+                      ),
+                      if (_confirming) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                key: const ValueKey('word-remove-yes'),
+                                onPressed: _remove,
+                                child: const Text('remove it'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton(
+                                key: const ValueKey('word-remove-no'),
+                                onPressed: () =>
+                                    setState(() => _confirming = false),
+                                child: const Text('keep it'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
-        ),
-        actions: [const SettingsButton()],
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(19, 4, 19, 32),
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Expanded(
-                    child: Text(
-                      entry.word,
-                      style: TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                        color: c.primary,
-                      ),
-                    ),
-                  ),
-                  Caption('saved ${entry.date}'),
-                ],
-              ),
-              if (hasInfo) ...[
-                const SizedBox(height: 8),
-                _entryBody(info),
-              ] else ...[
-                const Caption('no entry was kept. add your own notes below.'),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    key: const ValueKey('word-retry'),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 36),
-                    ),
-                    onPressed: _retrying ? null : _retry,
-                    child: Text(
-                      _retrying ? 'looking it up…' : 'try the lookup again',
-                      style: TextStyle(color: c.primary),
-                    ),
-                  ),
-                ),
-                if (_retryNote.isNotEmpty) Caption(_retryNote),
-              ],
-              const SizedBox(height: 18),
-              Caption('your note'),
-              const SizedBox(height: 6),
-              TextField(
-                key: const ValueKey('word-note'),
-                controller: _note,
-                minLines: 3,
-                maxLines: 6,
-                decoration: const InputDecoration(
-                  hintText: 'a line to remember it by',
-                ),
-                onChanged: _onNoteChanged,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Caption('kept as you type'),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 14),
-                child: Text(
-                  'this is a copy of the wiktionary entry from the day it was saved, so it opens without a connection. only listening needs one.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: c.onSurface.withValues(alpha: dimAlpha),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 22),
-              OutlinedButton.icon(
-                key: const ValueKey('word-remove'),
-                onPressed: () => setState(() => _confirming = true),
-                icon: TablerIcon('trash-x', size: 18, color: c.onSurface),
-                label: const Text('remove from my words'),
-              ),
-              if (_confirming) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        key: const ValueKey('word-remove-yes'),
-                        onPressed: _remove,
-                        child: const Text('remove it'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton(
-                        key: const ValueKey('word-remove-no'),
-                        onPressed: () => setState(() => _confirming = false),
-                        child: const Text('keep it'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
         ),
       ),
     );
