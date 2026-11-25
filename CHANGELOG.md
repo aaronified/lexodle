@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- words: the collected list has an all stop too
+  Like the saved list, the collected one can show every language at once: the words of each language one after another, with the flag of its language on each tile. The count line says how many words were won and how many are saved.
+
 ## 0.14.1
 
 - a language switcher on today and learn, and several languages in you
