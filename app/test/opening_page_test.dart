@@ -38,8 +38,18 @@ void main() {
     await waitFor(tester, find.byKey(const ValueKey('opening-first')));
   }
 
-  String text(WidgetTester tester, String key) =>
-      textOf(tester.widget<Text>(find.byKey(ValueKey(key))))!;
+  // a word is a row of letter tiles: its text is the letters, in order
+  String text(WidgetTester tester, String key) {
+    final f = find.byKey(ValueKey(key));
+    if (tester.widget(f) is Text) {
+      return textOf(tester.widget<Text>(f))!;
+    }
+    return find
+        .descendant(of: f, matching: find.byType(Text))
+        .evaluate()
+        .map((e) => textOf(e.widget as Text)!)
+        .join();
+  }
 
   Future<void> settle(WidgetTester tester) async {
     for (var i = 0; i < 300; i++) {
@@ -55,10 +65,22 @@ void main() {
     await open(tester);
     final first = text(tester, 'opening-first');
     expect(first.length, 4);
-    expect(
-      text(tester, 'opening-stats'),
-      matches(r'^\d+\.\d\d bits · \d+ outcomes$'),
-    );
+    // the stats strip: number and label pairs, the bits first
+    final stats = [
+      for (final e
+          in find
+              .descendant(
+                of: find.byKey(const ValueKey('opening-stats')),
+                matching: find.byType(Text),
+              )
+              .evaluate())
+        textOf(e.widget as Text)!,
+    ];
+    expect(stats, hasLength(6));
+    expect(stats[0], matches(r'^\d+\.\d\d$'));
+    expect(stats[1], 'bits expected');
+    expect(stats[2], matches(r'^\d+$'));
+    expect(stats[4], matches(r'^\d+%$'));
     for (var i = 0; i < 5; i++) {
       expect(find.byKey(ValueKey('opening-reply-0-$i')), findsOneWidget);
     }
@@ -151,6 +173,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('the best first guess'), findsOneWidget);
     expect(find.textContaining('bits it gains on average'), findsOneWidget);
-    expect(find.textContaining('words left on average'), findsOneWidget);
+    // the dialog and the stats strip both say it
+    expect(find.textContaining('words left on average'), findsWidgets);
   });
 }

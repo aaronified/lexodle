@@ -20,9 +20,7 @@ void main() {
     ))!;
     await appState.load();
     appState.setup(lang: 'en', length: 5);
-    await tester.pumpWidget(
-      MaterialApp(home: GuessPage(bank: bank, seed: 3)),
-    );
+    await tester.pumpWidget(MaterialApp(home: GuessPage(bank: bank, seed: 3)));
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.byKey(const ValueKey('guess-option-3')), findsOneWidget);
     expect(find.byKey(const ValueKey('guess-verdict')), findsNothing);

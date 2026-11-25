@@ -14,6 +14,8 @@ import 'precomputed.dart';
 import 'precomputed_local.dart';
 import 'review_plots.dart';
 import 'ui.dart';
+import 'tonal.dart';
+import 'ui_kit.dart';
 import 'words.dart';
 
 /// How many of the likeliest replies a level lists.
@@ -249,41 +251,35 @@ class _OpeningPageState extends State<OpeningPage> {
       color: c.onSurface.withValues(alpha: dimAlpha),
     );
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FlagBadge(widget.bank.language.flag, size: 16),
-            const SizedBox(width: 8),
-            // the graduation hat: this is learn
-            TablerIcon('school', size: headerIconSize, color: c.primary),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                'the opening · $lang · $length',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14, letterSpacing: 1.5),
-              ),
-            ),
-          ],
-        ),
-      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(19, 4, 19, 24),
+              padding: const EdgeInsets.only(bottom: 24),
               children: [
-                Text('three guesses to open with', style: dim),
-                const SizedBox(height: 14),
-                if (_walks[0] == null)
-                  const Text(
-                    'working out the best first guess…',
-                    key: ValueKey('opening-loading'),
-                  )
-                else
-                  ..._levels(c, dim),
+                PageHeader(
+                  text: 'the opening · $lang · $length',
+                  back: true,
+                  settings: false,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('three guesses to open with', style: dim),
+                      const SizedBox(height: 14),
+                      if (_walks[0] == null)
+                        const Text(
+                          'working out the best first guess…',
+                          key: ValueKey('opening-loading'),
+                        )
+                      else
+                        ..._levels(context, c, dim),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -292,7 +288,7 @@ class _OpeningPageState extends State<OpeningPage> {
     );
   }
 
-  List<Widget> _levels(ColorScheme c, TextStyle dim) {
+  List<Widget> _levels(BuildContext context, ColorScheme c, TextStyle dim) {
     final out = <Widget>[];
     for (var k = 0; k < 3; k++) {
       final w = _walks[k];
@@ -309,7 +305,7 @@ class _OpeningPageState extends State<OpeningPage> {
         );
         break;
       }
-      out.add(_level(c, dim, k, w));
+      out.add(_level(context, c, dim, k, w));
       if (k == 2) {
         final thing = thingOf(appState.mode);
         out.add(
@@ -324,7 +320,7 @@ class _OpeningPageState extends State<OpeningPage> {
         );
         break;
       }
-      out.addAll(_replies(c, dim, k, w));
+      out.addAll(_replies(context, c, dim, k, w));
       if (_sel[k] == null) {
         if (_noWord == k && _edit != k) out.add(_noWordText(dim));
         break;
@@ -379,70 +375,143 @@ class _OpeningPageState extends State<OpeningPage> {
     );
   }
 
-  Widget _level(ColorScheme c, TextStyle dim, int k, GroupWalk w) {
-    final thing = thingOf(appState.mode);
+  /// The share of the words the five likeliest replies cover.
+  double _coverOf(GroupWalk w) =>
+      w.groups.take(openingReplyCount).fold<double>(0, (s, g) => s + g.chance);
+
+  /// The colour of one letter of a reply: green right, yellow wrong place, and
+  /// the absent grey.
+  Color _squareOf(ColorScheme c, Mark m) => switch (m) {
+    Mark.correct => c.secondary,
+    Mark.present => yellowOf(c),
+    Mark.absent => markColors(c, Mark.absent).$1,
+  };
+
+  /// A letter of a word, as a square tile on the tone above the group.
+  Widget _tile(BuildContext context, String ch, double size, double font) =>
+      Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: tonesOf(context).s2,
+          borderRadius: BorderRadius.circular(radiusElement),
+        ),
+        child: Text(
+          ch,
+          style: TextStyle(
+            fontSize: font,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      );
+
+  /// A bar of [f] (0 to 1) of the width, on the tone three above the page.
+  Widget _bar(BuildContext context, ColorScheme c, double f) {
+    final v = f > 1 ? 1.0 : (f < 0 ? 0.0 : f);
+    return Container(
+      height: 6,
+      decoration: BoxDecoration(
+        color: tonesOf(context).s3,
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: FractionallySizedBox(
+          widthFactor: v,
+          child: Container(
+            height: 6,
+            decoration: BoxDecoration(
+              color: c.primary,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _level(
+    BuildContext context,
+    ColorScheme c,
+    TextStyle dim,
+    int k,
+    GroupWalk w,
+  ) {
     final key = ['opening-first', 'opening-second', 'opening-third'][k];
+    final strip = StatsStrip([
+      (w.expectedBits.toStringAsFixed(2), 'bits expected', skillColor(c)),
+      ('${_left(w)}', 'words left on average', null),
+      ('${(_coverOf(w) * 100).round()}%', 'in these five replies', null),
+    ]);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: k == 0 ? 0 : 22),
-        Caption('${_ords[k]} guess'),
-        const SizedBox(height: 8),
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 12,
-          runSpacing: 4,
-          children: [
-            Text(
-              w.guess,
-              key: ValueKey(key),
-              style: TextStyle(
-                fontSize: 32,
-                letterSpacing: 4,
-                fontWeight: FontWeight.bold,
-                color: c.primary,
+        if (k > 0) SectionLabel('${_ords[k]} guess'),
+        if (k == 0) const SizedBox(height: 4),
+        TonalCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text('best ${_ords[k]} guess', style: dim)),
+                  CalcDot(_levelSpec(k, w), key: ValueKey('opening-dot-$k')),
+                ],
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text.rich(
-                    key: k == 0 ? const ValueKey('opening-stats') : null,
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '${w.expectedBits.toStringAsFixed(2)} bits',
-                          style: TextStyle(
-                            color: skillColor(c),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextSpan(
-                          text:
-                              ' · ${w.groups.length} outcomes'
-                              '${k > 0 ? ' · ${w.words} $thing fit' : ''}',
-                        ),
-                      ],
-                    ),
-                    style: dim,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                CalcDot(_levelSpec(k, w), key: ValueKey('opening-dot-$k')),
-              ],
-            ),
-          ],
+              const SizedBox(height: 10),
+              Row(
+                key: ValueKey(key),
+                children: [
+                  for (var i = 0; i < w.guess.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 6),
+                    _tile(context, w.guess[i], 36, 18),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 16),
+              KeyedSubtree(
+                key: k == 0 ? const ValueKey('opening-stats') : null,
+                child: strip,
+              ),
+            ],
+          ),
         ),
-        const Divider(height: 24),
       ],
     );
   }
 
-  List<Widget> _replies(ColorScheme c, TextStyle dim, int k, GroupWalk w) {
+  /// The square row of one reply: a letter's colour per square.
+  Widget _squares(ColorScheme c, GroupLine g) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      for (var i = 0; i < g.marks.length; i++)
+        Padding(
+          padding: EdgeInsets.only(left: i == 0 ? 0 : 4),
+          child: Container(
+            width: 18,
+            height: 18,
+            decoration: BoxDecoration(
+              color: _squareOf(c, g.marks[i]),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+    ],
+  );
+
+  List<Widget> _replies(
+    BuildContext context,
+    ColorScheme c,
+    TextStyle dim,
+    int k,
+    GroupWalk w,
+  ) {
     final thing = thingOf(appState.mode);
     final top = w.groups.take(openingReplyCount).toList();
-    final cover = top.fold<double>(0, (s, g) => s + g.chance);
+    final cover = _coverOf(w);
+    final most = top.isEmpty ? 1.0 : top.first.chance;
     final cur = _sel[k];
     final curCode = cur == null ? null : markCode(cur);
     final custom = cur != null && !top.any((g) => markCode(g.marks) == curCode)
@@ -465,45 +534,58 @@ class _OpeningPageState extends State<OpeningPage> {
           'below, set any colours yourself, or draw a reply by chance (each '
           'as likely as its share of the $thing).',
     );
-    Widget row(GroupLine g, String key) {
-      final on = curCode == markCode(g.marks);
+
+    // the best second guess and its words left, under a reply that is picked
+    Widget then() {
+      final next = k < 2 ? _walks[k + 1] : null;
+      final word = k < 2 ? _guess[k + 1] : null;
+      if (next == null || word == null || _sel[k] == null) {
+        return const SizedBox.shrink();
+      }
       return Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: InkWell(
-          key: ValueKey(key),
-          onTap: () => _select(k, g.marks),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(6, 5, 6, 5),
-            color: on ? c.secondaryContainer : null,
-            child: Row(
+        padding: const EdgeInsets.only(top: 10),
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          runSpacing: 6,
+          children: [
+            Text('then', style: dim),
+            Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                for (var i = 0; i < w.guess.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 3),
-                    child: MarkTile(w.guess[i], mark: g.marks[i], size: 22),
-                  ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '${g.words.length}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        TextSpan(
-                          text:
-                              ' ${thingOf(appState.mode, plural: g.words.length != 1)}'
-                              ' · ${_pc(g.chance)}',
-                        ),
-                      ],
-                    ),
-                    style: dim.copyWith(fontSize: 12),
-                  ),
-                ),
+                for (var i = 0; i < word.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 4),
+                  _tile(context, word[i], 28, 15),
+                ],
               ],
             ),
-          ),
+            Text('${_left(next)} $thing left on average', style: dim),
+          ],
+        ),
+      );
+    }
+
+    GroupRow row(GroupLine g, String key) {
+      final on = curCode == markCode(g.marks);
+      final share = most > 0 ? g.chance / most : 0.0;
+      return GroupRow(
+        key: ValueKey(key),
+        onTap: () => _select(k, g.marks),
+        title: _squares(c, g),
+        below: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            _bar(context, c, share),
+            const SizedBox(height: 6),
+            Text(
+              '${g.words.length} '
+              '${thingOf(appState.mode, plural: g.words.length != 1)}'
+              ' · ${_pc(g.chance)}',
+              style: dim.copyWith(fontSize: 12),
+            ),
+            if (on) then(),
+          ],
         ),
       );
     }
@@ -511,16 +593,21 @@ class _OpeningPageState extends State<OpeningPage> {
     return [
       Row(
         children: [
-          const Flexible(child: Caption('the five likeliest replies')),
-          const SizedBox(width: 8),
+          Expanded(
+            child: SectionLabel('the five likeliest replies', first: k == 0),
+          ),
           CalcDot(spec, key: ValueKey('opening-replies-dot-$k')),
         ],
       ),
-      const SizedBox(height: 8),
-      for (var i = 0; i < top.length; i++) row(top[i], 'opening-reply-$k-$i'),
-      if (custom != null) row(custom, 'opening-reply-$k-custom'),
+      GroupedList(
+        rows: [
+          for (var i = 0; i < top.length; i++)
+            row(top[i], 'opening-reply-$k-$i'),
+          if (custom != null) row(custom, 'opening-reply-$k-custom'),
+        ],
+      ),
       Padding(
-        padding: const EdgeInsets.only(top: 4, bottom: 8),
+        padding: const EdgeInsets.only(top: 8, bottom: 12),
         child: Text(
           'the five cover ${_pc(cover)} of the $thing.',
           key: ValueKey('opening-cover-$k'),
@@ -529,7 +616,7 @@ class _OpeningPageState extends State<OpeningPage> {
       ),
       Wrap(
         spacing: 8,
-        runSpacing: 6,
+        runSpacing: 8,
         children: [
           _pill(c, 'set colours', 'opening-set-$k', () => _toggleEdit(k)),
           _pill(c, 'randomise', 'opening-random-$k', () => _randomise(k)),
@@ -537,50 +624,43 @@ class _OpeningPageState extends State<OpeningPage> {
       ),
       if (_edit == k) ...[
         const SizedBox(height: 8),
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 3,
-          runSpacing: 6,
-          children: [
-            for (var i = 0; i < _editMarks.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(right: 0),
-                child: MarkTile(
-                  '',
-                  key: ValueKey('opening-tile-$k-$i'),
-                  mark: _editMarks[i],
-                  size: 30,
-                  onTap: () => _cycle(i),
-                ),
+        TonalCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (var i = 0; i < _editMarks.length; i++)
+                    MarkTile(
+                      '',
+                      key: ValueKey('opening-tile-$k-$i'),
+                      mark: _editMarks[i],
+                      size: 36,
+                      onTap: () => _cycle(i),
+                    ),
+                ],
               ),
-            const SizedBox(width: 8),
-            _pill(
-              c,
-              'use these',
-              'opening-use-$k',
-              () => _select(k, List<Mark>.of(_editMarks)),
-            ),
-          ],
+              const SizedBox(height: 12),
+              _pill(
+                c,
+                'use these',
+                'opening-use-$k',
+                () => _select(k, List<Mark>.of(_editMarks)),
+              ),
+              if (_noWord == k) _noWordText(dim),
+            ],
+          ),
         ),
-        if (_noWord == k) _noWordText(dim),
       ],
     ];
   }
 
+  /// A low-emphasis button of the tonal kind (no edge), 48 high.
   Widget _pill(ColorScheme c, String text, String key, VoidCallback onTap) =>
-      InkWell(
-        key: ValueKey(key),
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(3),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            border: Border.fromBorderSide(hairline(c)),
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Text(text, style: const TextStyle(fontSize: 12)),
-        ),
-      );
+      OutlinedButton(key: ValueKey(key), onPressed: onTap, child: Text(text));
 
   String _pc(double q) => '${(q * 100).toStringAsFixed(1)}%';
 }
