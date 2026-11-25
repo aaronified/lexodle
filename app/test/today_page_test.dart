@@ -562,7 +562,9 @@ void main() {
       expect(arguments[Routes.daily], GameMode.lockdown);
     });
 
-    testWidgets('8 tiles fit a phone without scrolling', (tester) async {
+    testWidgets('8 tiles keep room to read, and the list scrolls', (
+      tester,
+    ) async {
       veteran();
       final eight = [
         GameMode.classic, GameMode.quartet, GameMode.relay, //
@@ -581,11 +583,23 @@ void main() {
       );
       await tester.pump();
       final list = tester.getRect(find.byKey(const ValueKey('today-list')));
+      // a tile is never squeezed below what its icon, name and state need
       for (final m in appState.dailiesOf('en')) {
-        final r = tester.getRect(row(m));
-        expect(r.bottom, lessThanOrEqualTo(list.bottom), reason: m.name);
-        expect(r.top, greaterThanOrEqualTo(list.top), reason: m.name);
+        expect(
+          tester.getSize(row(m)).height,
+          greaterThanOrEqualTo(128),
+          reason: m.name,
+        );
       }
+      // the rows that do not fit are a scroll away
+      await tester.drag(
+        find.byKey(const ValueKey('today-list')),
+        const Offset(0, -600),
+      );
+      await tester.pump();
+      final last = tester.getRect(row(appState.dailiesOf('en').last));
+      expect(last.bottom, lessThanOrEqualTo(list.bottom));
+      expect(list.height, greaterThan(0));
       expect(tester.takeException(), isNull);
     });
 
