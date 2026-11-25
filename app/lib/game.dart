@@ -1835,6 +1835,10 @@ class _GamePageState extends State<GamePage>
     marks: blind
         ? (_assist ? _keys() : const {})
         : {
+            // once every letter of the word is found the others are grey
+            if (!mastermind)
+              for (final l in ruledOut(guesses, marks, length, _letters))
+                l: Mark.absent,
             // a grey hint rules its letter out on the keys too
             for (final h in _picks)
               if (h.kind == HintKind.grey) h.letter: Mark.absent,

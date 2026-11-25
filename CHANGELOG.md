@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- once every letter is found, the other keys go grey, in every mode
+  When the letters found (green or yellow, counting a repeated letter as often as one guess showed it) make up the whole word, no other letter can be in it, so their keys turn grey on the classic, lockdown, equations, quartet and relay boards (the blind game already did). On a quartet each board greys its own quarter of a key.
+
 - today: the tiles keep their room
   The tiles of the dailies were squeezed to fit the screen and clipped their state line. They keep at least 128 px now, and the list scrolls when there are many. The free play strip shows the mode's name under a free play label instead of a clipped one-line text.
 

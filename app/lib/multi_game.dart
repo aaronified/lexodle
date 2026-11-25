@@ -1164,6 +1164,21 @@ class _MultiGamePageState extends State<MultiGamePage> {
     }
   }
 
+  /// The letters ruled out on the board that is on, once its word is found.
+  Map<String, Mark> get _ruledOutKeys {
+    final a = game.active;
+    if (a == null) return const {};
+    return {
+      for (final l in ruledOut(
+        game.guesses,
+        game.boards[a].marks,
+        game.boards[a].answer.length,
+        _letters,
+      ))
+        l: Mark.absent,
+    };
+  }
+
   /// A grey hint rules its letter out on the keys of its board.
   Map<String, Mark> get _greyKeys => {
     for (final h in _picks)
@@ -1173,6 +1188,19 @@ class _MultiGamePageState extends State<MultiGamePage> {
 
   Map<String, List<Mark?>> get _quadMarks {
     final out = game.letterMarks();
+    // once every letter of a board's word is found, the others are grey on it
+    for (var b = 0; b < game.boards.length; b++) {
+      if (game.boards[b].solved) continue;
+      for (final l in ruledOut(
+        game.guesses,
+        game.boards[b].marks,
+        game.boards[b].answer.length,
+        _letters,
+      )) {
+        final per = out[l] ??= List<Mark?>.filled(game.boards.length, null);
+        per[b] ??= Mark.absent;
+      }
+    }
     for (final h in _picks) {
       if (h.kind != HintKind.grey || !game.isLive(h.board)) continue;
       final per = out[h.letter] ??= List<Mark?>.filled(
@@ -1190,7 +1218,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
     // a quartet splits each key by board; a relay race colours the keys by the
     // board that is on, as a single game would
     marks: mode == GameMode.relay
-        ? {..._greyKeys, ...game.marksOf(game.active!)}
+        ? {..._greyKeys, ..._ruledOutKeys, ...game.marksOf(game.active!)}
         : const {},
     quadMarks: mode == GameMode.relay ? const {} : _quadMarks,
     onLetter: _type,
