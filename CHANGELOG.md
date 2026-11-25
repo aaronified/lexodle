@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.14.1
+
 - a language switcher on today and learn, and several languages in you
   The language slider of the words page is now on today and learn too. In you, the language row is now languages: tick the ones you play and they are the stops of every language slider (at least one stays ticked). Tapping the name on any slider opens a popup list of its choices, and the language popup ends with a choose languages row. The free play strip has a play button beside it, since a tap on its name opens the popup.
 - one sheet for every picker
