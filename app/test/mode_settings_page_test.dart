@@ -40,9 +40,15 @@ void main() {
     tester,
   ) async {
     await show(tester);
-    await tester.ensureVisible(find.byKey(const ValueKey('pill-blind')));
-    await tester.tap(find.byKey(const ValueKey('pill-blind')));
-    await tester.pump();
+    // the mode slider moves along to the blind mode
+    for (
+      var i = 0;
+      i < 20 && find.byKey(const ValueKey('settings-blind')).evaluate().isEmpty;
+      i++
+    ) {
+      await tester.tap(find.byKey(const ValueKey('mode-slider-next')));
+      await tester.pump();
+    }
     expect(find.byKey(const ValueKey('settings-blind')), findsOneWidget);
     expect(find.byKey(const ValueKey('assist-choice')), findsOneWidget);
     await tester.tap(
@@ -65,8 +71,9 @@ void main() {
     appState.lex.veteran = false;
     appState.stats.played = 0;
     await show(tester);
-    expect(find.byKey(const ValueKey('pill-classic')), findsOneWidget);
-    expect(find.byKey(const ValueKey('pill-quartet')), findsNothing);
+    expect(find.byKey(const ValueKey('mode-filter')), findsOneWidget);
+    expect(find.byKey(const ValueKey('settings-classic')), findsOneWidget);
+    expect(find.byKey(const ValueKey('daily-row-quartet')), findsNothing);
     expect(find.textContaining('times to change'), findsNothing);
   });
 }

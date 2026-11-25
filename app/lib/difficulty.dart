@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'tonal.dart';
 import 'ui.dart';
 
 /// The difficulty has two dimensions. Tries run from easy to brutal, and the
@@ -21,7 +22,7 @@ String _thousands(int n) => n.toString().replaceAllMapped(
 
 /// A matrix to choose the difficulty from: tries across (easy to brutal), word
 /// length down (longest, the easiest, first). The colour of a cell runs from
-/// green at the easy corner to purple at the hard one, from the theme.
+/// blue at the easy corner to pink at the hard one, from the tonal ramps.
 class DifficultyMatrix extends StatelessWidget {
   const DifficultyMatrix({
     super.key,
@@ -83,7 +84,7 @@ class DifficultyMatrix extends StatelessWidget {
     }
     final selRow = rows.indexOf(length).clamp(0, rows.length - 1);
     final span = (rows.length - 1 + cols - 1).clamp(1, 100);
-    final selected = difficultyColor(c, (selCol + selRow) / span);
+    final selected = Tonal.blue(85);
     final head = TextStyle(
       fontSize: 10,
       letterSpacing: .8,
@@ -135,7 +136,11 @@ class DifficultyMatrix extends StatelessWidget {
               for (var col = 0; col < cols; col++)
                 Expanded(
                   child: _Cell(
-                    color: difficultyColor(c, (r + col) / span),
+                    color: Color.lerp(
+                      Tonal.blue(60),
+                      Tonal.pink(50),
+                      (r + col) / span,
+                    )!,
                     selected: r == selRow && col == selCol,
                     label: '${counted(levels[col].$2)}, ${rows[r]} $lengthUnit',
                     onTap: () => onChanged(levels[col].$2, rows[r]),
@@ -188,7 +193,6 @@ class _Cell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
       selected: selected,
@@ -197,16 +201,16 @@ class _Cell extends StatelessWidget {
         padding: const EdgeInsets.all(2),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(radiusInner),
           child: Container(
             height: 46,
             decoration: BoxDecoration(
-              color: selected ? color : color.withValues(alpha: .32),
-              borderRadius: BorderRadius.circular(3),
+              color: color,
+              borderRadius: BorderRadius.circular(radiusInner),
             ),
             alignment: Alignment.center,
             child: selected
-                ? Icon(Icons.check, size: 18, color: onColor(c, color))
+                ? Icon(Icons.check, size: 18, color: Tonal.neutral(0))
                 : null,
           ),
         ),

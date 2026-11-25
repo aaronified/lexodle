@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'tonal.dart';
 import 'ui.dart';
 
 /// A one-at-a-time slider, `‹ skill only ›`, with a label and a subtitle.
@@ -186,10 +187,7 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: chooserLabelSize,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           if (sub != null)
             Text(
@@ -198,7 +196,7 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: chooserSubSize,
+                fontSize: 13,
                 color: c.onSurface.withValues(alpha: dimAlpha),
               ),
             ),
@@ -236,8 +234,8 @@ class _StepperChoiceState<T> extends State<StepperChoice<T>>
             Container(
               height: 64,
               decoration: BoxDecoration(
-                color: c.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(3),
+                color: tonesOf(context).s1,
+                borderRadius: BorderRadius.circular(radiusContainer),
               ),
               child: Row(
                 children: [

@@ -7,12 +7,12 @@ import 'equations.dart';
 import 'geography.dart';
 import 'ladder.dart';
 import 'main.dart';
-import 'mode_wheel.dart';
+import 'mode_filter.dart';
 import 'modes.dart';
 import 'stepper_choice.dart';
 import 'store.dart' show Helper;
-import 'settings_button.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'words.dart';
 
 /// The modes the player has opened, in the swipe's order.
@@ -102,44 +102,54 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('mode settings'),
-        actions: [const SettingsButton()],
-      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
-            child: ListenableBuilder(
-              listenable: appState,
-              builder: (context, _) {
-                final known = knownModes();
-                final opened = openedModes();
-                final mode = known.contains(_picked)
-                    ? _picked!
-                    : (known.isEmpty ? null : known.first);
-                return ListView(
-                  padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
-                  children: [
-                    if (_showNote) ...[
-                      _firstNote(c),
-                      const SizedBox(height: 12),
-                    ],
-                    _card(c, opened),
-                    const SizedBox(height: 12),
-                    if (mode == null)
-                      Text(
-                        'open a mode to change its settings here',
-                        style: _note(c),
-                      )
-                    else ...[
-                      _pills(c, known, mode),
-                      const SizedBox(height: 12),
-                      _settings(c, mode),
-                    ],
-                  ],
-                );
-              },
+            child: Column(
+              children: [
+                const PageHeader(text: 'mode settings', back: true),
+                Expanded(
+                  child: ListenableBuilder(
+                    listenable: appState,
+                    builder: (context, _) {
+                      final known = knownModes();
+                      final opened = openedModes();
+                      final mode = known.contains(_picked)
+                          ? _picked!
+                          : (known.isEmpty ? null : known.first);
+                      return ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                        children: [
+                          if (_showNote) ...[
+                            _firstNote(c),
+                            const SizedBox(height: 12),
+                          ],
+                          _daily(c, opened),
+                          if (mode == null)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(2, 28, 2, 0),
+                              child: Text(
+                                'open a mode to change its settings here',
+                                style: _note(c),
+                              ),
+                            )
+                          else ...[
+                            const SizedBox(height: 28),
+                            ModeFilter(
+                              showAll: false,
+                              modes: known,
+                              selected: mode,
+                              onSelect: (m) => setState(() => _picked = m),
+                            ),
+                            _settings(c, mode),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -147,131 +157,59 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
     );
   }
 
-  Widget _firstNote(ColorScheme c) => Material(
+  Widget _firstNote(ColorScheme c) => TonalCard(
     key: const ValueKey('mode-settings-first-note'),
     color: c.secondaryContainer,
-    borderRadius: BorderRadius.circular(6),
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              'these change free play only: the daily never changes',
-              style: TextStyle(fontSize: 13, color: c.onSecondaryContainer),
-            ),
+    padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            'these change free play only: the daily never changes',
+            style: TextStyle(fontSize: 13, color: c.onSecondaryContainer),
           ),
-          IconButton(
-            key: const ValueKey('mode-settings-note-close'),
-            tooltip: 'dismiss',
-            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-            onPressed: () => setState(() => _showNote = false),
-            icon: Icon(Icons.close, size: 18, color: c.onSecondaryContainer),
-          ),
-        ],
-      ),
+        ),
+        IconButton(
+          key: const ValueKey('mode-settings-note-close'),
+          tooltip: 'dismiss',
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          onPressed: () => setState(() => _showNote = false),
+          icon: Icon(Icons.close, size: 18, color: c.onSecondaryContainer),
+        ),
+      ],
     ),
   );
 
   TextStyle _note(ColorScheme c) =>
-      TextStyle(fontSize: 11, color: c.onSurface.withValues(alpha: dimAlpha));
+      TextStyle(fontSize: 13, color: c.onSurface.withValues(alpha: dimAlpha));
 
-  Widget _card(ColorScheme c, List<GameMode> opened) {
-    return Material(
-      color: c.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(6),
-        side: hairline(c),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('these change free play only'),
-            const SizedBox(height: 4),
-            Text(
-              'the daily is the same for everyone, and always uses:',
-              style: _note(c),
-            ),
-            const SizedBox(height: 8),
-            for (final m in opened)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(
-                  key: ValueKey('daily-row-${m.name}'),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: Text(m.label)),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        dailySettingsOf(m),
-                        textAlign: TextAlign.right,
-                        style: _note(c),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+  Widget _daily(ColorScheme c, List<GameMode> opened) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SectionLabel('these change free play only', first: true),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(2, 0, 2, 8),
+        child: Text(
+          'the daily is the same for everyone, and always uses:',
+          style: _note(c),
         ),
       ),
-    );
-  }
-
-  Widget _pills(ColorScheme c, List<GameMode> known, GameMode mode) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (final m in known)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Material(
-                color: m == mode
-                    ? c.secondaryContainer
-                    : c.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(6),
-                child: InkWell(
-                  key: ValueKey('pill-${m.name}'),
-                  borderRadius: BorderRadius.circular(6),
-                  onTap: () => setState(() => _picked = m),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 44),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TablerIcon(
-                            modeIconName(m),
-                            size: 18,
-                            color: m == mode
-                                ? c.onSecondaryContainer
-                                : c.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            m.label,
-                            style: TextStyle(
-                              fontWeight: m == mode ? FontWeight.bold : null,
-                              color: m == mode
-                                  ? c.onSecondaryContainer
-                                  : c.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+      GroupedList(
+        rows: [
+          for (final m in opened)
+            GroupRow(
+              key: ValueKey('daily-row-${m.name}'),
+              title: Text(m.label),
+              trailing: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 200),
+                child: Text(dailySettingsOf(m), textAlign: TextAlign.right),
               ),
+              chevron: false,
             ),
         ],
       ),
-    );
-  }
+    ],
+  );
 
   Widget _settings(ColorScheme c, GameMode mode) {
     final langs = _langs;
@@ -285,142 +223,116 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
         ? appState.length
         : lang.lengths.first;
     final draw = appState.drawOf(mode);
-    return Material(
-      color: c.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(6),
-        side: hairline(c),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          key: ValueKey('settings-${mode.name}'),
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (mode != GameMode.equations)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  mode == GameMode.classic ||
-                          mode.multi ||
-                          mode == GameMode.themed
-                      ? 'shared by ${_sharers()}'
-                      : 'the word length is shared with the other modes',
-                  key: const ValueKey('shared-note'),
-                  style: _note(c),
-                ),
+    return Column(
+      key: ValueKey('settings-${mode.name}'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (mode != GameMode.equations)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(2, 8, 2, 0),
+            child: Text(
+              mode == GameMode.classic || mode.multi || mode == GameMode.themed
+                  ? 'shared by ${_sharers()}'
+                  : 'the word length is shared with the other modes',
+              key: const ValueKey('shared-note'),
+              style: TextStyle(
+                fontSize: 13,
+                color: c.onSurface.withValues(alpha: dimAlpha),
               ),
-            if (mode.multi) ...[
-              const Caption('shared letters'),
-              const SizedBox(height: 10),
-              StepperChoice<int>(
-                key: const ValueKey('share-stepper'),
-                semanticLabel: 'shared letters',
-                items: [
-                  for (var p = 0; p <= maxShare; p += 5)
+            ),
+          ),
+        if (mode.multi) ...[
+          const SectionLabel('shared letters'),
+          StepperChoice<int>(
+            key: const ValueKey('share-stepper'),
+            semanticLabel: 'shared letters',
+            items: [
+              for (var p = 0; p <= maxShare; p += 5)
+                (
+                  p,
+                  '$p%',
+                  p == 0
+                      ? 'the words never share a letter'
+                      : 'the chance that the words share a letter',
+                ),
+            ],
+            selected: (appState.share / 5).round() * 5,
+            onChanged: (p) => appState.setup(share: p),
+          ),
+        ],
+        if (mode == GameMode.mastermind) ...[
+          const SectionLabel('pool choice'),
+          StepperChoice<bool>(
+            key: const ValueKey('largest-choice'),
+            semanticLabel: 'pool choice',
+            items: const [
+              (false, 'random', 'bigger pools are likelier'),
+              (true, 'largest', 'always the biggest pool'),
+            ],
+            selected: appState.mastermindLargest,
+            onChanged: (on) => appState.setup(mastermindLargest: on),
+          ),
+        ],
+        if (lang != null) ...[
+          const SectionLabel('difficulty'),
+          _difficulty(mode, lang, length),
+        ],
+        if (!mode.endless && !mode.isEquations) ...[
+          const SectionLabel('word draw'),
+          StepperChoice<Draw>(
+            key: ValueKey(
+              mode == GameMode.themed ? 'draw-stepper-themed' : 'draw-stepper',
+            ),
+            semanticLabel: 'word draw',
+            items: mode == GameMode.themed
+                ? const [
                     (
-                      p,
-                      '$p%',
-                      p == 0
-                          ? 'the words never share a letter'
-                          : 'the chance that the words share a letter',
+                      Draw.sigmoid,
+                      'well known',
+                      'the best known places about equally likely',
                     ),
-                ],
-                selected: (appState.share / 5).round() * 5,
-                onChanged: (p) => appState.setup(share: p),
-              ),
-              const SizedBox(height: 24),
-            ],
-            if (mode == GameMode.mastermind) ...[
-              const Caption('pool choice'),
-              const SizedBox(height: 10),
-              StepperChoice<bool>(
-                key: const ValueKey('largest-choice'),
-                semanticLabel: 'pool choice',
-                items: const [
-                  (false, 'random', 'bigger pools are likelier'),
-                  (true, 'largest', 'always the biggest pool'),
-                ],
-                selected: appState.mastermindLargest,
-                onChanged: (on) => appState.setup(mastermindLargest: on),
-              ),
-              const SizedBox(height: 24),
-            ],
-            if (lang != null) ...[
-              const Caption('difficulty'),
-              const SizedBox(height: 10),
-              _difficulty(mode, lang, length),
-            ],
-            if (!mode.endless && !mode.isEquations) ...[
-              const SizedBox(height: 24),
-              const Caption('word draw'),
-              const SizedBox(height: 10),
-              StepperChoice<Draw>(
-                key: ValueKey(
-                  mode == GameMode.themed
-                      ? 'draw-stepper-themed'
-                      : 'draw-stepper',
-                ),
-                semanticLabel: 'word draw',
-                items: mode == GameMode.themed
-                    ? const [
-                        (
-                          Draw.sigmoid,
-                          'well known',
-                          'the best known places about equally likely',
-                        ),
-                        (
-                          Draw.equal,
-                          'all places',
-                          'every place equally likely',
-                        ),
-                      ]
-                    : [for (final d in Draw.values) (d, d.label, d.sub)],
-                selected: mode == GameMode.themed && draw == Draw.frequency
-                    ? Draw.sigmoid
-                    : draw,
-                onChanged: (d) => appState.setDrawOf(mode, d),
-              ),
-              const SizedBox(height: 24),
-              Caption(mode == GameMode.blind ? 'colour logic' : 'helper'),
-              const SizedBox(height: 10),
-              if (mode == GameMode.blind)
-                StepperChoice<bool>(
-                  key: const ValueKey('assist-choice'),
-                  semanticLabel: 'colour logic',
-                  items: const [
-                    (true, 'on', 'marks what the counts settle'),
-                    (false, 'off', 'you mark everything'),
-                  ],
-                  selected: appState.blindAssist,
-                  onChanged: (on) => appState.setup(blindAssist: on),
-                )
-              else
-                // the helper only shows in classic, so for the other modes it
-                // is greyed out and out of reach, as in the game modes popup
-                Opacity(
-                  key: const ValueKey('helper-fade'),
-                  opacity: _noHelper(mode) ? .38 : 1,
-                  child: AbsorbPointer(
-                    absorbing: _noHelper(mode),
-                    child: ExcludeFocus(
-                      excluding: _noHelper(mode),
-                      child: StepperChoice<Helper>(
-                        key: const ValueKey('helper-stepper'),
-                        semanticLabel: 'helper',
-                        items: [
-                          for (final h in Helper.values) (h, h.label, h.sub),
-                        ],
-                        selected: appState.helper,
-                        onChanged: (h) => appState.setup(helper: h),
-                      ),
-                    ),
+                    (Draw.equal, 'all places', 'every place equally likely'),
+                  ]
+                : [for (final d in Draw.values) (d, d.label, d.sub)],
+            selected: mode == GameMode.themed && draw == Draw.frequency
+                ? Draw.sigmoid
+                : draw,
+            onChanged: (d) => appState.setDrawOf(mode, d),
+          ),
+          SectionLabel(mode == GameMode.blind ? 'colour logic' : 'helper'),
+          if (mode == GameMode.blind)
+            StepperChoice<bool>(
+              key: const ValueKey('assist-choice'),
+              semanticLabel: 'colour logic',
+              items: const [
+                (true, 'on', 'marks what the counts settle'),
+                (false, 'off', 'you mark everything'),
+              ],
+              selected: appState.blindAssist,
+              onChanged: (on) => appState.setup(blindAssist: on),
+            )
+          else
+            // the helper only shows in classic, so for the other modes it
+            // is greyed out and out of reach, as in the game modes popup
+            Opacity(
+              key: const ValueKey('helper-fade'),
+              opacity: _noHelper(mode) ? .38 : 1,
+              child: AbsorbPointer(
+                absorbing: _noHelper(mode),
+                child: ExcludeFocus(
+                  excluding: _noHelper(mode),
+                  child: StepperChoice<Helper>(
+                    key: const ValueKey('helper-stepper'),
+                    semanticLabel: 'helper',
+                    items: [for (final h in Helper.values) (h, h.label, h.sub)],
+                    selected: appState.helper,
+                    onChanged: (h) => appState.setup(helper: h),
                   ),
                 ),
-            ],
-          ],
-        ),
-      ),
+              ),
+            ),
+        ],
+      ],
     );
   }
 
