@@ -279,8 +279,6 @@ class _WordsPageState extends State<WordsPage> {
     );
 
     return [
-      Caption('${all.length} saved · tap a word for its entry'),
-      const SizedBox(height: 12),
       _controlRow(
         slider: ChoiceSlider<String?>(
           id: 'words-language',
@@ -324,6 +322,8 @@ class _WordsPageState extends State<WordsPage> {
         ),
       ),
       const SizedBox(height: 16),
+      // the line under the search, the same on both lists
+      _subtext(c, '${all.length} saved · tap a word for its entry'),
       if (rows.isEmpty)
         const Caption('no saved word matches.')
       else
@@ -414,16 +414,7 @@ class _WordsPageState extends State<WordsPage> {
         ),
       ),
       const SizedBox(height: 16),
-      if (summary != null) ...[
-        Text(
-          summary,
-          style: TextStyle(
-            fontSize: 12,
-            color: c.onSurface.withValues(alpha: dimAlpha),
-          ),
-        ),
-        const SizedBox(height: 12),
-      ],
+      if (summary != null) _subtext(c, summary),
       if (keys.isEmpty)
         const Caption('no collected word matches.')
       else
@@ -443,6 +434,18 @@ class _WordsPageState extends State<WordsPage> {
         ),
     ];
   }
+
+  /// The dim line under the search: what the list holds.
+  Widget _subtext(ColorScheme c, String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        color: c.onSurface.withValues(alpha: dimAlpha),
+      ),
+    ),
+  );
 
   InputDecoration _searchDecoration(ColorScheme c, String hint) {
     return InputDecoration(
