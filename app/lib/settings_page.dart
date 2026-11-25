@@ -15,7 +15,9 @@ import 'precomputed_section.dart';
 import 'main.dart';
 import 'routes.dart';
 import 'update_section.dart';
+import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'wiki_links.dart';
 
 /// The settings page: theme, touch, reminders, backup, updates, log, support,
@@ -46,55 +48,11 @@ class SettingsPage extends StatelessWidget {
     }
   }
 
-  Widget _row(
-    BuildContext context,
-    String id,
-    String title,
-    String sub,
-    VoidCallback onTap,
-  ) {
-    final c = Theme.of(context).colorScheme;
-    return InkWell(
-      key: ValueKey('settings-row-$id'),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: c.outlineVariant)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title),
-                  Text(
-                    sub,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: c.onSurface.withValues(alpha: dimAlpha),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: c.onSurface.withValues(alpha: dimAlpha),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
+    final tones = tonesOf(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('settings')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -104,173 +62,177 @@ class SettingsPage extends StatelessWidget {
               builder: (context, _) {
                 final dark = appState.themeMode == ThemeMode.dark;
                 return ListView(
-                  padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                   children: [
+                    const PageHeader(
+                      text: 'settings',
+                      back: true,
+                      settings: false,
+                    ),
                     if (appState.stepOpen('theme')) ...[
-                      const Caption('theme'),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          for (final (m, label) in const [
-                            (ThemeMode.light, 'light'),
-                            (ThemeMode.dark, 'dark'),
-                            (ThemeMode.system, 'system'),
-                          ])
-                            Expanded(
-                              child: InkWell(
-                                key: ValueKey('theme-$label'),
-                                onTap: () => appState.setup(
-                                  themeMode: m,
-                                  black:
-                                      m == ThemeMode.dark &&
-                                      appState.blackTheme,
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
+                      const SectionLabel('theme', first: true),
+                      // a tonal track; the chosen one is the green
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: tones.s1,
+                          borderRadius: BorderRadius.circular(radiusElement),
+                        ),
+                        child: Row(
+                          children: [
+                            for (final (m, label) in const [
+                              (ThemeMode.light, 'light'),
+                              (ThemeMode.dark, 'dark'),
+                              (ThemeMode.system, 'system'),
+                            ])
+                              Expanded(
+                                child: InkWell(
+                                  key: ValueKey('theme-$label'),
+                                  borderRadius: BorderRadius.circular(
+                                    radiusInner,
                                   ),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: appState.themeMode == m
-                                        ? c.secondaryContainer
-                                        : c.surfaceContainerHighest,
+                                  onTap: () => appState.setup(
+                                    themeMode: m,
+                                    black:
+                                        m == ThemeMode.dark &&
+                                        appState.blackTheme,
                                   ),
-                                  child: Text(
-                                    label,
-                                    style: TextStyle(
-                                      fontWeight: appState.themeMode == m
-                                          ? FontWeight.bold
-                                          : null,
+                                  child: Container(
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
                                       color: appState.themeMode == m
-                                          ? c.onSecondaryContainer
-                                          : c.onSurface,
+                                          ? c.secondaryContainer
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(
+                                        radiusInner,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      label,
+                                      style: TextStyle(
+                                        fontWeight: appState.themeMode == m
+                                            ? FontWeight.bold
+                                            : null,
+                                        color: appState.themeMode == m
+                                            ? c.onSecondaryContainer
+                                            : c.onSurface,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      GroupedList(
+                        rows: [
+                          GroupRow(
+                            title: const Text('true black'),
+                            subtitle: const Text(
+                              'for OLED screens: pure #000000 when dark',
                             ),
+                            trailing: KeyedSubtree(
+                              key: const ValueKey('black-switch'),
+                              child: Switch(
+                                value: appState.blackTheme,
+                                onChanged: dark
+                                    ? (on) => appState.setup(
+                                        themeMode: ThemeMode.dark,
+                                        black: on,
+                                      )
+                                    : null,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      SwitchListTile(
-                        key: const ValueKey('black-switch'),
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                        title: const Text('true black'),
-                        subtitle: Text(
-                          'for OLED screens: pure #000000 when dark',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: c.onSurface.withValues(alpha: dimAlpha),
+                    ],
+                    const SectionLabel('touch'),
+                    GroupedList(
+                      rows: [
+                        GroupRow(
+                          title: const Text('vibrate on press'),
+                          subtitle: const Text('a tap of feedback on phones.'),
+                          trailing: Switch(
+                            key: const ValueKey('haptics-switch'),
+                            value: appState.haptics,
+                            onChanged: (on) {
+                              appState.setHaptics(on);
+                              // so the player feels what was just turned on
+                              if (on) Haptics.fire(Haptic.submit);
+                            },
                           ),
                         ),
-                        value: appState.blackTheme,
-                        onChanged: dark
-                            ? (on) => appState.setup(
-                                themeMode: ThemeMode.dark,
-                                black: on,
-                              )
-                            : null,
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                    const Caption('touch'),
-                    const SizedBox(height: 6),
-                    SwitchListTile(
-                      key: const ValueKey('haptics-switch'),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: const Text('vibrate on press'),
-                      subtitle: Text(
-                        'a tap of feedback on phones.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: c.onSurface.withValues(alpha: dimAlpha),
+                        GroupRow(
+                          title: const Text('sound'),
+                          subtitle: const Text(
+                            'the crack of a heart in lockdown.',
+                          ),
+                          trailing: Switch(
+                            key: const ValueKey('sound-switch'),
+                            value: appState.sound,
+                            onChanged: (on) {
+                              appState.setSound(on);
+                              if (on) Sounds.crack();
+                            },
+                          ),
                         ),
-                      ),
-                      value: appState.haptics,
-                      onChanged: (on) {
-                        appState.setHaptics(on);
-                        // so the player feels what was just turned on
-                        if (on) Haptics.fire(Haptic.submit);
-                      },
+                      ],
                     ),
-                    SwitchListTile(
-                      key: const ValueKey('sound-switch'),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: const Text('sound'),
-                      subtitle: Text(
-                        'the crack of a heart in lockdown.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: c.onSurface.withValues(alpha: dimAlpha),
-                        ),
-                      ),
-                      value: appState.sound,
-                      onChanged: (on) {
-                        appState.setSound(on);
-                        if (on) Sounds.crack();
-                      },
-                    ),
-                    const SizedBox(height: 24),
                     if (appState.stepOpen('reminders')) ...[
-                      _row(
-                        context,
-                        'reminders',
-                        'reminders',
-                        'a ping when your dailies open',
-                        () => _push(context, Routes.reminders),
+                      const SizedBox(height: 12),
+                      GroupedList(
+                        rows: [
+                          GroupRow(
+                            key: const ValueKey('settings-row-reminders'),
+                            title: const Text('reminders'),
+                            subtitle: const Text(
+                              'a ping when your dailies open',
+                            ),
+                            onTap: () => _push(context, Routes.reminders),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
                     ],
                     if (appState.stepOpen('backup')) ...[
-                      const Caption('backup'),
-                      const SizedBox(height: 10),
+                      const SectionLabel('backup'),
                       const _BackupSection(),
-                      const SizedBox(height: 24),
                     ],
                     if (updatesSupported) ...[
-                      const Caption('updates'),
-                      const SizedBox(height: 10),
+                      const SectionLabel('updates'),
                       const UpdateSection(),
-                      const SizedBox(height: 24),
                     ],
                     if (PrecomputedLocal.supported) ...[
-                      const Caption('faster openings'),
-                      const SizedBox(height: 10),
+                      const SectionLabel('faster openings'),
                       const PrecomputedSection(),
-                      const SizedBox(height: 24),
                     ],
-                    const Caption('log'),
-                    const SizedBox(height: 10),
+                    const SectionLabel('log'),
                     const LogSection(),
-                    const SizedBox(height: 24),
                     if (appState.stepOpen('support')) ...[
-                      const Caption('support lexodle'),
-                      const SizedBox(height: 10),
+                      const SectionLabel('support lexodle'),
                       const DonateSection(),
-                      const SizedBox(height: 24),
                     ],
-                    if (appState.stepOpen("what's new")) ...[
-                      _row(
-                        context,
-                        'whatsnew',
-                        "what's new",
-                        'what changed in this version',
-                        () => _showChanges(context),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                    const Caption('about'),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        key: const ValueKey('licences-button'),
-                        onPressed: () =>
-                            Navigator.pushNamed(context, Routes.about),
-                        child: const Text('about and licences'),
-                      ),
+                    const SectionLabel('about'),
+                    GroupedList(
+                      rows: [
+                        if (appState.stepOpen("what's new"))
+                          GroupRow(
+                            key: const ValueKey('settings-row-whatsnew'),
+                            title: const Text("what's new"),
+                            subtitle: const Text(
+                              'what changed in this version',
+                            ),
+                            onTap: () => _showChanges(context),
+                          ),
+                        GroupRow(
+                          key: const ValueKey('licences-button'),
+                          title: const Text('about and licences'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, Routes.about),
+                        ),
+                      ],
                     ),
                   ],
                 );
@@ -438,17 +400,14 @@ class _BackupSectionState extends State<_BackupSection> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final dim = TextStyle(
-      fontSize: 11,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
+    final dim = TextStyle(fontSize: 13, color: c.onSurfaceVariant);
     final pending = _pending;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('your progress lives on this device. keep a copy.', style: dim),
         const WikiLink(WikiPage.updatesAndSupport),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
@@ -513,7 +472,6 @@ class _BackupSectionState extends State<_BackupSection> {
               Expanded(
                 child: FilledButton(
                   key: const ValueKey('backup-confirm'),
-                  style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
                   onPressed: () => _restore(pending),
                   child: const Text('replace my progress'),
                 ),

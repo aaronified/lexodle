@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'apk_install.dart';
 import 'auto_backup.dart';
 import 'main.dart';
-import 'ui.dart';
+import 'ui_kit.dart';
 import 'update_check.dart';
 import 'app_log.dart';
 import 'wiki_links.dart';
@@ -387,10 +387,7 @@ class _UpdateSectionState extends State<UpdateSection>
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final dim = TextStyle(
-      fontSize: 12,
-      color: c.onSurface.withValues(alpha: dimAlpha),
-    );
+    final dim = TextStyle(fontSize: 13, color: c.onSurfaceVariant);
     return ListenableBuilder(
       listenable: Listenable.merge([_c, appState]),
       builder: (context, _) {
@@ -423,7 +420,7 @@ class _UpdateSectionState extends State<UpdateSection>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('version $appVersion', key: const ValueKey('app-version')),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text('check for a new version.', style: dim),
             const WikiLink(WikiPage.updatesAndSupport),
             if (message.isNotEmpty) ...[
@@ -450,7 +447,7 @@ class _UpdateSectionState extends State<UpdateSection>
               const SizedBox(height: 8),
               LinearProgressIndicator(value: _c.percent / 100),
             ],
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -467,7 +464,7 @@ class _UpdateSectionState extends State<UpdateSection>
                         ),
                 ),
                 if (newer != null) ...[
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton(
                       key: const ValueKey('update-install'),
@@ -489,30 +486,32 @@ class _UpdateSectionState extends State<UpdateSection>
                 ],
               ],
             ),
-            const SizedBox(height: 4),
-            SwitchListTile(
-              key: const ValueKey('update-downloads-backup'),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: const Text('also back up to downloads'),
-              subtitle: Text(
-                'a copy outside the app, kept after any update.',
-                style: dim.copyWith(fontSize: 11),
-              ),
-              value: appState.downloadsBackup,
-              onChanged: appState.setDownloadsBackup,
-            ),
-            SwitchListTile(
-              key: const ValueKey('update-auto'),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: const Text('check automatically'),
-              subtitle: Text(
-                'at every launch, with a toast if one is out.',
-                style: dim.copyWith(fontSize: 11),
-              ),
-              value: appState.autoUpdateCheck,
-              onChanged: appState.setAutoUpdateCheck,
+            const SizedBox(height: 12),
+            GroupedList(
+              rows: [
+                GroupRow(
+                  title: const Text('also back up to downloads'),
+                  subtitle: const Text(
+                    'a copy outside the app, kept after any update.',
+                  ),
+                  trailing: Switch(
+                    key: const ValueKey('update-downloads-backup'),
+                    value: appState.downloadsBackup,
+                    onChanged: appState.setDownloadsBackup,
+                  ),
+                ),
+                GroupRow(
+                  title: const Text('check automatically'),
+                  subtitle: const Text(
+                    'at every launch, with a toast if one is out.',
+                  ),
+                  trailing: Switch(
+                    key: const ValueKey('update-auto'),
+                    value: appState.autoUpdateCheck,
+                    onChanged: appState.setAutoUpdateCheck,
+                  ),
+                ),
+              ],
             ),
           ],
         );
