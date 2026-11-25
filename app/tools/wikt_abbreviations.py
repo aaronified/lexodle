@@ -23,7 +23,7 @@ OUT = Path(sys.argv[0]).resolve().parent / "wikt_abbr_out"
 KAIKKI = "https://kaikki.org/dictionary/{n}/kaikki.org-dictionary-{n}.jsonl"
 TAGS = {"abbreviation", "initialism", "acronym"}
 CAT = re.compile(r"(abbreviation|initialism|acronym)s?$", re.I)
-HEAD = re.compile(r'\{"word": "((?:[^"\\]|\\.)*)"')
+HEAD = re.compile(r'"word": "((?:[^"\\]|\\.)*)", "lang"')
 HEADWORD = re.compile(r"\b(abbreviation|initialism|acronym)\b", re.I)
 
 
@@ -68,7 +68,7 @@ def scan(code, name, words):
     for raw in p.stdout:
         lines += 1
         line = raw.decode("utf-8", "replace")
-        m = HEAD.match(line)
+        m = HEAD.search(line)
         if not m:
             continue
         try:
@@ -91,7 +91,8 @@ def scan(code, name, words):
             rec["pos"].add(d.get("pos", ""))
         else:
             rec["caps"] += 1
-            if n:
+            # (only an all-capitals page counts: NATO, not Arab)
+            if n and w == w.upper() and len(w) > 1:
                 rec["capsabbr"] += 1
         rec["why"] |= why
     p.wait()
