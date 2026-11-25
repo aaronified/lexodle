@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
 import 'app_log.dart';
-import 'edge_fade.dart';
 import 'ladder.dart';
 import 'main.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart';
 import 'today_prefs.dart';
+import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 
 /// Opens the sheet where the player chooses their dailies: one row per game
 /// mode with a daily, a switch that shows or hides it on Today, a handle to put
-/// the rows in their own order, and the pills that say how Today is sorted. The
+/// the rows in their own order, and a slider that says how Today is sorted. The
 /// switches apply at once; there is no "done" button. [play] starts a daily the
 /// player has hidden (the sheet closes first); without it no "play" is offered.
 Future<void> showChooseDailies(
@@ -65,7 +66,7 @@ class _ChooseDailiesSheet extends StatelessWidget {
                   child: Text(
                     'choose your dailies',
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -89,11 +90,15 @@ class _ChooseDailiesSheet extends StatelessWidget {
                       'the ones you add are on today and in your reminders. a '
                       'daily you hide keeps its streak: it is only off today. '
                       'you can still play it from here.',
-                      style: text.bodySmall?.copyWith(height: 1.6, color: dim),
+                      style: text.bodySmall?.copyWith(
+                        fontSize: 13,
+                        height: 1.6,
+                        color: dim,
+                      ),
                     ),
                   ),
                   caption('sort today by'),
-                  _pills(c),
+                  _sortSlider(),
                   caption('dailies'),
                   ReorderableListView.builder(
                     shrinkWrap: true,
@@ -105,6 +110,7 @@ class _ChooseDailiesSheet extends StatelessWidget {
                       context,
                       shown[i],
                       index: i,
+                      count: shown.length,
                       chosen: chosen,
                       level: level,
                     ),
@@ -118,33 +124,19 @@ class _ChooseDailiesSheet extends StatelessWidget {
     );
   }
 
-  /// The sort pills: the look of the mode filter, one row that scrolls sideways.
-  Widget _pills(ColorScheme c) {
-    return EdgeFade(
-      key: const ValueKey('sort-pills'),
+  /// The sort slider: one control to choose how Today is sorted.
+  Widget _sortSlider() {
+    return Padding(
       padding: const EdgeInsets.fromLTRB(19, 4, 19, 12),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final s in TodaySort.values) ...[
-            if (s != TodaySort.values.first) const SizedBox(width: 6),
-            _pill(c, s),
-          ],
+      child: ChoiceSlider<TodaySort>(
+        id: 'sort',
+        compact: true,
+        items: [
+          for (final s in TodaySort.values)
+            ChoiceItem(value: s, label: s.label),
         ],
-      ),
-    );
-  }
-
-  Widget _pill(ColorScheme c, TodaySort s) {
-    final on = appState.todaySort == s;
-    return Semantics(
-      button: true,
-      selected: on,
-      label: 'sort by ${s.label}',
-      excludeSemantics: true,
-      child: InkWell(
-        key: ValueKey('sort-${s.name}'),
-        onTap: () {
+        selected: appState.todaySort,
+        onChanged: (s) {
           try {
             appState.setTodaySort(s);
           } catch (e) {
@@ -154,26 +146,6 @@ class _ChooseDailiesSheet extends StatelessWidget {
             );
           }
         },
-        borderRadius: BorderRadius.circular(3),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 36),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: on ? c.secondaryContainer : c.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Center(
-            widthFactor: 1,
-            child: Text(
-              s.label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: on ? FontWeight.bold : null,
-                color: on ? c.onSecondaryContainer : null,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -196,10 +168,12 @@ class _ChooseDailiesSheet extends StatelessWidget {
     BuildContext context,
     GameMode m, {
     required int index,
+    required int count,
     required List<GameMode> chosen,
     required int level,
   }) {
     final c = Theme.of(context).colorScheme;
+    final tones = tonesOf(context);
     final text = Theme.of(context).textTheme;
     final lang = appState.lang;
     final streak = appState.dailyStreakFor(lang, m);
@@ -213,13 +187,24 @@ class _ChooseDailiesSheet extends StatelessWidget {
         ? '${m.sub}$tail'
         : 'hidden$tail';
     final play = this.play;
+    final first = index == 0;
+    final last = index == count - 1;
+    // rows of one group: 2 px apart, round outer corners, near-square inner ones
+    const outer = Radius.circular(radiusContainer);
+    const inner = Radius.circular(4);
 
     return Container(
       key: ValueKey('daily-row-${m.name}'),
-      padding: const EdgeInsets.fromLTRB(11, 10, 19, 10),
+      margin: EdgeInsets.only(bottom: last ? 0 : 2),
+      padding: const EdgeInsets.fromLTRB(4, 12, 12, 12),
       decoration: BoxDecoration(
-        color: c.surface,
-        border: Border(bottom: BorderSide(color: c.outlineVariant)),
+        color: tones.s1,
+        borderRadius: BorderRadius.only(
+          topLeft: first ? outer : inner,
+          topRight: first ? outer : inner,
+          bottomLeft: last ? outer : inner,
+          bottomRight: last ? outer : inner,
+        ),
       ),
       child: Row(
         children: [
@@ -234,12 +219,8 @@ class _ChooseDailiesSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 5),
-          TablerIcon(
-            modeIconName(m),
-            size: chooserIconSize,
-            color: open ? c.primary : dim,
-          ),
+          const SizedBox(width: 4),
+          TonalTile(modeIconName(m), color: open ? c.primary : dim),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

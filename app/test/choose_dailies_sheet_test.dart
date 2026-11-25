@@ -79,15 +79,16 @@ void main() {
     expect(find.text('hidden · streak $streak'), findsOneWidget);
   });
 
-  testWidgets('the pills change how today is sorted', (tester) async {
+  testWidgets('the sort slider changes how today is sorted', (tester) async {
     await _open(tester);
     expect(find.text('sort today by'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('sort-name')));
+    final start = TodaySort.values.indexOf(appState.todaySort);
+    await tester.tap(find.byKey(const ValueKey('sort-next')));
     await tester.pumpAndSettle();
-    expect(appState.todaySort, TodaySort.name);
-    await tester.tap(find.byKey(const ValueKey('sort-streak')));
+    expect(appState.todaySort, TodaySort.values[start + 1]);
+    await tester.tap(find.byKey(const ValueKey('sort-prev')));
     await tester.pumpAndSettle();
-    expect(appState.todaySort, TodaySort.streak);
+    expect(appState.todaySort, TodaySort.values[start]);
   });
 
   testWidgets('dragging a handle stores the order and sets my order', (
