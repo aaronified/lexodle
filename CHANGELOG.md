@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- you: solver and diy say what they are
+  Each row has its own short line under its name, like the others in the menu.
+
 ## 0.14.0
 
 - a new look: tonal colours, one slider for every choice, a flat tab bar

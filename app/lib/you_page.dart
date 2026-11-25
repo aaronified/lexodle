@@ -128,7 +128,7 @@ class _YouPageState extends State<YouPage> {
             _row(
               'solver',
               'solver',
-              null,
+              'enter your colours, see the words left',
               icon: 'calculator',
               onTap: () => _push(context, Routes.solver),
             ),
@@ -136,7 +136,7 @@ class _YouPageState extends State<YouPage> {
             _row(
               'diy',
               'diy',
-              null,
+              'make a puzzle and share a link',
               icon: 'puzzle',
               onTap: () => _push(context, Routes.diy),
             ),
