@@ -74,7 +74,9 @@ void main() {
   Finder row(String lang, String word) =>
       find.byKey(ValueKey('word-row-$lang-$word'));
 
-  Finder lang(String code) => find.byKey(ValueKey('words-lang-$code'));
+  Finder langNext() => find.byKey(const ValueKey('words-language-next'));
+
+  Finder langPrev() => find.byKey(const ValueKey('words-language-prev'));
 
   Finder search() => find.byKey(const ValueKey('words-search'));
 
@@ -135,12 +137,17 @@ void main() {
       expect(row('en', 'alpha'), findsOneWidget);
       expect(row('fr', 'bonjour'), findsOneWidget);
 
-      await tester.tap(lang('fr'));
+      // the choice runs all, en, fr: two steps on, then two back
+      await tester.tap(langNext());
+      await tester.pump();
+      await tester.tap(langNext());
       await tester.pump();
       expect(row('fr', 'bonjour'), findsOneWidget);
       expect(row('en', 'alpha'), findsNothing);
 
-      await tester.tap(lang('all'));
+      await tester.tap(langPrev());
+      await tester.pump();
+      await tester.tap(langPrev());
       await tester.pump();
       expect(row('en', 'alpha'), findsOneWidget);
       expect(row('fr', 'bonjour'), findsOneWidget);
@@ -223,9 +230,19 @@ void main() {
     Finder crow(String lang, String word) =>
         find.byKey(ValueKey('collected-row-$lang-$word'));
 
-    Finder cpill(String code) => find.byKey(ValueKey('collected-lang-$code'));
+    Finder cnext() => find.byKey(const ValueKey('collected-language-next'));
+
+    Finder cprev() => find.byKey(const ValueKey('collected-language-prev'));
 
     Finder csearch() => find.byKey(const ValueKey('collected-search'));
+
+    // the collected words are a two-column grid: a word comes before another
+    // when it is on a row above, or on the same row to the left
+    bool before(WidgetTester t, Finder a, Finder b) {
+      final pa = t.getTopLeft(a);
+      final pb = t.getTopLeft(b);
+      return pa.dy < pb.dy || (pa.dy == pb.dy && pa.dx < pb.dx);
+    }
 
     Finder saveBtn(String lang, String word) => find.descendant(
       of: crow(lang, word),
@@ -263,10 +280,7 @@ void main() {
       await openCollected(tester);
       expect(find.text('collected 4'), findsOneWidget);
       expect(find.textContaining('collected · tap'), findsNothing);
-      final y = [
-        for (final w in ['tours', 'clubs']) tester.getTopLeft(crow('en', w)).dy,
-      ];
-      expect(y[0], lessThan(y[1]));
+      expect(before(tester, crow('en', 'tours'), crow('en', 'clubs')), isTrue);
       expect(row('en', 'alpha'), findsNothing);
 
       await tester.tap(stab());
@@ -284,12 +298,13 @@ void main() {
       expect(crow('en', 'clubs'), findsOneWidget);
       expect(crow('fr', 'cloche'), findsNothing);
 
-      await tester.tap(cpill('fr'));
+      // the choice runs en, fr, places
+      await tester.tap(cnext());
       await tester.pumpAndSettle();
       expect(crow('fr', 'cloche'), findsOneWidget);
       expect(crow('en', 'clubs'), findsNothing);
 
-      await tester.tap(cpill('places'));
+      await tester.tap(cnext());
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('collected-place-paris')),
@@ -297,7 +312,9 @@ void main() {
       );
       expect(crow('fr', 'cloche'), findsNothing);
 
-      await tester.tap(cpill('en'));
+      await tester.tap(cprev());
+      await tester.pumpAndSettle();
+      await tester.tap(cprev());
       await tester.pumpAndSettle();
       expect(crow('en', 'clubs'), findsOneWidget);
     });
@@ -365,20 +382,14 @@ void main() {
     ) async {
       seed();
       await openCollected(tester);
-      expect(
-        tester.getTopLeft(crow('en', 'tours')).dy,
-        lessThan(tester.getTopLeft(crow('en', 'clubs')).dy),
-      );
+      expect(before(tester, crow('en', 'tours'), crow('en', 'clubs')), isTrue);
 
       await tester.tap(find.byKey(const ValueKey('collected-sort')));
       await tester.pumpAndSettle();
       expect(find.text('sort collected'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('sort-oldest')));
       await tester.pumpAndSettle();
-      expect(
-        tester.getTopLeft(crow('en', 'clubs')).dy,
-        lessThan(tester.getTopLeft(crow('en', 'tours')).dy),
-      );
+      expect(before(tester, crow('en', 'clubs'), crow('en', 'tours')), isTrue);
     });
 
     testWidgets('an empty collection shows only its caption', (tester) async {
