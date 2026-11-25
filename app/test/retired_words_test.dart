@@ -21,13 +21,16 @@ void main() {
 
   test('the retired words are all in the list, so guesses stay valid', () {
     for (final w in retiredEnglish) {
-      expect(en.valid.contains(w), isTrue, reason: w);
+      // (the whole list has them; the bank for guesses and free play does not)
+      expect(en.daily.valid.contains(w), isTrue, reason: w);
+      expect(en.valid.contains(w), isFalse, reason: w);
     }
   });
 
   test('the later retired words are in the list and apart from the first', () {
     for (final w in retiredEnglishLater) {
-      expect(en.valid.contains(w), isTrue, reason: w);
+      expect(en.daily.valid.contains(w), isTrue, reason: w);
+      expect(en.valid.contains(w), isFalse, reason: w);
       expect(retiredEnglish.contains(w), isFalse, reason: w);
     }
     expect(retiredEnglishLater, contains('intnl'));
@@ -85,7 +88,7 @@ void main() {
 
 void abbreviationsMain() {
   test(
-    'the abbreviations are five letters, in their list, and never a daily',
+    'the abbreviations are in the whole list, out of the guesses, and never a daily',
     () async {
       TestWidgetsFlutterBinding.ensureInitialized();
       final langs = await WordBank.languages();

@@ -161,14 +161,24 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           builder: (bank) {
             if (dailyMode.multi) {
               final m = DailyMulti.of(bank, dailyMode);
+              // (an answer of a day before the words that are no words were
+              // taken out is still a guess for that day)
+              var b = bank;
+              for (final a in m?.answers ?? const <String>[]) {
+                b = b.withWord(a);
+              }
               return m == null
                   ? const HomeSwitch()
-                  : MultiGamePage(bank: bank, daily: m);
+                  : MultiGamePage(bank: b, daily: m);
             }
             final d = Daily.of(bank, null, dailyMode);
             return d == null
                 ? const HomeSwitch()
-                : GamePage(bank: bank, daily: d, mode: dailyMode);
+                : GamePage(
+                    bank: d.answer.isEmpty ? bank : bank.withWord(d.answer),
+                    daily: d,
+                    mode: dailyMode,
+                  );
           },
         ),
       );

@@ -49,3 +49,13 @@ bool retiredAnswer(String code, String word, String date) =>
     (date.compareTo(dailyRetireFromLater) >= 0 &&
         ((code == 'en' && retiredEnglishLater.contains(word)) ||
             (retiredAbbreviations[code]?.contains(word) ?? false)));
+
+/// Every word of the language [code] that is no word to guess: the g-dropped
+/// English ones, the other English abbreviations and respellings and, in every
+/// language, the ones the Wiktionary shows as nothing but an abbreviation. They
+/// are taken out of the guesses and of free play from [dailyRetireFromLater].
+Set<String> removedWords(String code) => {
+  if (code == 'en') ...retiredEnglish,
+  if (code == 'en') ...retiredEnglishLater,
+  ...?retiredAbbreviations[code],
+};

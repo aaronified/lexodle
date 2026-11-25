@@ -4,6 +4,7 @@ import 'dart:math' show exp, max;
 import 'package:flutter/services.dart';
 
 import 'modes.dart' show Draw;
+import 'retired_words.dart' show removedWords;
 
 class Language {
   const Language(
@@ -34,11 +35,19 @@ class WordBank {
     this._words,
     this._weights,
     this.valid, {
+    WordBank? full,
     this.curveOrigin = defaultCurveOrigin,
     this.curveWidth = defaultCurveWidth,
     this.curveFloor = 1,
     this.anyChar = false,
-  });
+  }) : _full = full;
+
+  /// The bank before the words that are no words (the abbreviations, the
+  /// respellings) were taken out, or null when none were. The dailies are drawn
+  /// from it, so the draw of a day does not move when the list does; everything
+  /// else (the guesses, free play, the solvers) uses this bank.
+  final WordBank? _full;
+  WordBank get daily => _full ?? this;
 
   /// A bank of other words than a language's list (the places of the themed
   /// wordle): [words] by length, most famous first, with their [weights]. Its
@@ -93,6 +102,7 @@ class WordBank {
       words,
       weights,
       {...valid, word},
+      full: _full,
       curveOrigin: curveOrigin,
       curveWidth: curveWidth,
       curveFloor: curveFloor,
@@ -248,6 +258,25 @@ class WordBank {
       (weights[w.length] ??= []).add(int.parse(line.substring(tab + 1)));
       valid.add(w);
     }
-    return _cache[lang.code] = WordBank._(lang, words, weights, valid);
+    final full = WordBank._(lang, words, weights, valid);
+    // the words that are only abbreviations or respellings are no guesses and
+    // no free play answers: a copy of the lists without them
+    final out = removedWords(lang.code);
+    if (out.isEmpty || !valid.any(out.contains)) {
+      return _cache[lang.code] = full;
+    }
+    final fw = <int, List<String>>{};
+    final fwt = <int, List<int>>{};
+    for (final e in words.entries) {
+      for (var i = 0; i < e.value.length; i++) {
+        if (out.contains(e.value[i])) continue;
+        (fw[e.key] ??= []).add(e.value[i]);
+        (fwt[e.key] ??= []).add(weights[e.key]![i]);
+      }
+    }
+    return _cache[lang.code] = WordBank._(lang, fw, fwt, {
+      for (final w in valid)
+        if (!out.contains(w)) w,
+    }, full: full);
   }
 }

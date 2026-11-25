@@ -91,7 +91,8 @@ class Puzzle {
   /// found among the words of the length (null when one is not there: a link
   /// from a newer word list, or a damaged one).
   List<String>? answersIn(WordBank bank) {
-    final byHash = {for (final w in bank.answers(length)) wordHash(w): w};
+    // (from the full list: a link made with a word since taken out still opens)
+    final byHash = {for (final w in bank.daily.answers(length)) wordHash(w): w};
     final out = <String>[];
     for (final h in hashes) {
       final w = byHash[h];
