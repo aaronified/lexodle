@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.14.0
+
 - a new look: tonal colours, one slider for every choice, a flat tab bar
   The colours now come from generated tonal ramps (an olive grey, pink, green, yellow, red, blue) instead of a Material You scheme: every surface, text and edge is one tone of them, on the black, night and cream grounds. Groups, fields, chips and keys are filled with a tone and have no border; corners follow their role (6, 10, 12, 28). Choosing a mode or a language is always the same slider (arrows, the name with its icon, dots, a swipe) and the rows of chips that scrolled under a fade are gone. The tab bar is flat, on the page colour, with a line in the accent over the tab you are on.
 
