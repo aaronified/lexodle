@@ -204,13 +204,13 @@ List<int> _totalsOf(String key, List<int> weights) =>
 /// Which word the curve daily of [key] (the language, and the mode when it is
 /// not classic) on [date] is, among words with [weights]. Like [dailyIndex],
 /// a word that was a daily in the last [dailyNoRepeat] days is drawn again; the
-/// days are replayed from [dailyCurveFrom]. From [dailyRetireFrom] a pick for
-/// which [retired] says yes is drawn again too.
+/// days are replayed from [dailyCurveFrom]. A pick for which [retired] says yes
+/// (it is given the index and the day) is drawn again too.
 int dailyCurveIndex(
   String key,
   String date,
   List<int> weights, {
-  bool Function(int index)? retired,
+  bool Function(int index, String date)? retired,
 }) {
   final d = DateTime.tryParse(date);
   final a = DateTime.utc(2026, 10, 30);
@@ -232,7 +232,7 @@ int dailyCurveIndex(
       p = pick(ds, k);
       k++;
     } while (picks.indexOf(p, from < 0 ? 0 : from) >= 0 ||
-        (retired != null && ds.compareTo(dailyRetireFrom) >= 0 && retired(p)));
+        (retired != null && retired(p, ds)));
     picks.add(p);
   }
   return picks[day];
@@ -312,7 +312,7 @@ class Daily {
           key,
           d,
           w,
-          retired: code == 'en' ? (i) => retiredEnglish.contains(all[i]) : null,
+          retired: code == 'en' ? (i, ds) => retiredAnswer(all[i], ds) : null,
         )],
         tries: mode == GameMode.lockdown ? lockdownTries : dailyTriesOf(mode),
       );
@@ -377,11 +377,7 @@ class DailyMulti {
     final mayShare = d.length == 10 && d.compareTo(dailyShareFrom) >= 0;
     bool keeps(List<String> chosen, String w, int k, int j, int t) {
       if (chosen.contains(w)) return false;
-      if (code == 'en' &&
-          d.compareTo(dailyRetireFrom) >= 0 &&
-          retiredEnglish.contains(w)) {
-        return false;
-      }
+      if (code == 'en' && retiredAnswer(w, d)) return false;
       if (!mayShare) return chosen.every((o) => !sharesLetter(o, w));
       final shared =
           chosen.where((o) => sharesLetter(o, w)).length +

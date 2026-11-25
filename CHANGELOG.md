@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- dailies: abbreviations and respellings are never the answer from 27 nov
+  intnl was in the pool, with accts, apprx, instr, mtdna, https, rythm and the stretched sounds of chat (whyyy, grrrr, mmhmm), and so were words spelt as they are said (gonna, wanna, gotta, kinda, sorta, outta, dunno, gimme, lemme and a few more). They stay valid guesses, but no daily answer is one from 27 nov; earlier days keep their word.
+
 - once every letter is found, the other keys go grey, in every mode
   When the letters found (green or yellow, counting a repeated letter as often as one guess showed it) make up the whole word, no other letter can be in it, so their keys turn grey on the classic, lockdown, equations, quartet and relay boards (the blind game already did). On a quartet each board greys its own quarter of a key.
 
