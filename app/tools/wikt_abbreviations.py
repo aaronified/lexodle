@@ -44,14 +44,16 @@ def entry_abbr(d):
     senses = d.get("senses") or []
     n = 0
     why = set()
+    tagsets = []
     for s in senses:
         w = sense_is_abbr(s)
         if w:
             n += 1
             why.add(w)
+            tagsets.append(sorted(set(s.get("tags") or [])))
     if n == 0 and d.get("pos") == "abbrev":
-        return len(senses) or 1, len(senses) or 1, {"pos"}
-    return n, len(senses), why
+        return len(senses) or 1, len(senses) or 1, {"pos"}, []
+    return n, len(senses), why, tagsets
 
 
 def scan(code, name, words):
@@ -77,8 +79,8 @@ def scan(code, name, words):
             d = json.loads(line)
         except ValueError:
             continue
-        n, total, why = entry_abbr(d)
-        rec = found.setdefault(lw, {"lower": 0, "caps": 0, "abbr": 0, "senses": 0, "capsabbr": 0, "why": set(), "pos": set()})
+        n, total, why, tagsets = entry_abbr(d)
+        rec = found.setdefault(lw, {"lower": 0, "caps": 0, "abbr": 0, "senses": 0, "capsabbr": 0, "why": set(), "pos": set(), "tagsets": []})
         if w == lw:
             rec["lower"] += 1
             rec["abbr"] += n
@@ -90,6 +92,8 @@ def scan(code, name, words):
             if n and w == w.upper() and len(w) > 1:
                 rec["capsabbr"] += 1
         rec["why"] |= why
+        if w == lw:
+            rec["tagsets"] += tagsets
     p.wait()
     out = {}
     for lw, r in found.items():
@@ -101,7 +105,7 @@ def scan(code, name, words):
             kind = "caps"
         else:
             continue
-        out[lw] = {"kind": kind, "abbr": r["abbr"], "senses": r["senses"], "why": sorted(r["why"]), "pos": sorted(r["pos"])}
+        out[lw] = {"kind": kind, "abbr": r["abbr"], "senses": r["senses"], "why": sorted(r["why"]), "pos": sorted(r["pos"]), "tagsets": r["tagsets"]}
     return out, lines, p.returncode
 
 
