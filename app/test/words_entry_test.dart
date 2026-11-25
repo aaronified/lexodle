@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lexodle/learn_home.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/modes.dart';
-import 'package:lexodle/routes.dart';
 import 'package:lexodle/saved_words.dart';
-import 'package:lexodle/words.dart';
 import 'package:lexodle/words_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -68,38 +65,6 @@ void main() {
       appState.saveWord('en', 'clubs', null, today: '2026-11-12');
       await tester.pumpAndSettle();
       expect(labelOf(tester, 'words-button'), contains('1'));
-    });
-  });
-
-  group('learn page entry', () {
-    testWidgets('the my words card opens the words page', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(420, 1100));
-      appState.setup(lang: 'fr', length: 4, mode: GameMode.lockdown);
-      final bank = (await tester.runAsync(
-        () async => WordBank.load(
-          (await WordBank.languages()).firstWhere((l) => l.code == 'fr'),
-        ),
-      ))!;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: LearnHomePage(bank: bank),
-          onGenerateRoute: onGenerateRoute,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      final card = find.byKey(const ValueKey('learn-card-words'));
-      await tester.scrollUntilVisible(
-        card,
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(card, findsOneWidget);
-      await tester.ensureVisible(card);
-      await tester.pumpAndSettle();
-      await tester.tap(card);
-      await tester.pumpAndSettle();
-      expect(find.byType(WordsPage), findsOneWidget);
     });
   });
 }

@@ -56,7 +56,7 @@ void main() {
     tester,
   ) async {
     await open(tester, GameMode.equations);
-    expect(find.text('equations: how to play it well'), findsOneWidget);
+    expect(find.text('how to master equations'), findsOneWidget);
     expect(find.byKey(const ValueKey('learn-card-opening')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('learn-card-guide')));
     await tester.pumpAndSettle();
