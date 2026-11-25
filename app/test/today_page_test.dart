@@ -80,12 +80,10 @@ void main() {
   ) async {
     veteran();
     appState.chooseDaily('en', GameMode.mastermind, on: true);
-    appState.saveDaily(
-      'en',
-      today,
-      ['crane', 'sloth'],
-      mode: GameMode.mastermind,
-    );
+    appState.saveDaily('en', today, [
+      'crane',
+      'sloth',
+    ], mode: GameMode.mastermind);
     await show(tester);
     expect(find.text('2 of 6 tries used'), findsOneWidget);
   });
@@ -526,7 +524,7 @@ void main() {
       expect(find.text('choose dailies'), findsNothing);
       expect(find.byKey(const ValueKey('today-more')), findsNothing);
       final t = tester.widget<Text>(find.byKey(const ValueKey('today-count')));
-      expect(t.style!.fontSize, 20);
+      expect(t.style!.fontSize, 28);
     });
 
     testWidgets('the choose button opens the sheet', (tester) async {

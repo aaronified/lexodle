@@ -11,9 +11,10 @@ import 'mode_strip.dart';
 import 'mode_wheel.dart';
 import 'modes.dart';
 import 'routes.dart';
-import 'settings_button.dart';
 import 'today_prefs.dart';
+import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 
 /// Where one chosen daily stands today.
 enum _State { progress, fresh, solved, lost }
@@ -149,100 +150,99 @@ class TodayPage extends StatelessWidget {
         Expanded(
           child: LayoutBuilder(
             builder: (context, box) {
-              // the tiles share the free height: 8 fit on a phone
+              // the tiles share the free height: 8 fit on a phone (212 is the
+              // header, the count, the label and the bottom gap)
               final n = (rows.length + 1) ~/ 2;
-              final free = box.maxHeight - 32 - 150 - 8 * (n - 1);
+              final free = box.maxHeight - 212 - 8 * (n - 1);
               final tileHeight = n == 0
                   ? 84.0
                   : (free / n).clamp(84.0, 128.0).toDouble();
               return ListView(
                 key: const ValueKey('today-list'),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                padding: const EdgeInsets.only(bottom: 16),
                 children: [
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'today',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        date,
-                        key: const ValueKey('today-date'),
-                        style: TextStyle(fontSize: 12, color: dim),
-                      ),
-                      const SettingsButton(),
-                    ],
+                  PageHeader(
+                    text: 'today',
+                    info: Text(
+                      date,
+                      key: const ValueKey('today-date'),
+                      style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(
-                              '$done of ${rows.length}',
-                              key: const ValueKey('today-count'),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '$done of ${rows.length}',
+                                    key: const ValueKey('today-count'),
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    rows.length == 1
+                                        ? 'daily done today'
+                                        : 'dailies done today',
+                                    style: TextStyle(fontSize: 13, color: dim),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              rows.length == 1
-                                  ? 'daily done today'
-                                  : 'dailies done today',
-                              style: TextStyle(fontSize: 12, color: dim),
-                            ),
+                            if (canChoose) ...[
+                              _switch(context, [
+                                _switchButton(
+                                  context,
+                                  key: const ValueKey('today-choose'),
+                                  icon: 'adjustments-horizontal',
+                                  label: 'choose, sort and more dailies',
+                                  selected: false,
+                                  onTap: () => _choose(context),
+                                ),
+                              ]),
+                              const SizedBox(width: 8),
+                            ],
+                            _switch(context, [
+                              _switchButton(
+                                context,
+                                key: const ValueKey('today-view-list'),
+                                icon: 'list',
+                                label: 'list',
+                                selected: !appState.todayTiles,
+                                onTap: () => appState.setTodayTiles(false),
+                              ),
+                              _switchButton(
+                                context,
+                                key: const ValueKey('today-view-tiles'),
+                                icon: 'layout-grid',
+                                label: 'tiles',
+                                selected: appState.todayTiles,
+                                onTap: () => appState.setTodayTiles(true),
+                              ),
+                            ]),
                           ],
                         ),
-                      ),
-                      if (canChoose) ...[
-                        _switch(c, [
-                          _switchButton(
-                            c,
-                            key: const ValueKey('today-choose'),
-                            icon: 'adjustments-horizontal',
-                            label: 'choose, sort and more dailies',
-                            selected: false,
-                            onTap: () => _choose(context),
+                        const SectionLabel('your dailies'),
+                        if (appState.todayTiles)
+                          _tiles(context, rows, tileHeight)
+                        else
+                          GroupedList(
+                            rows: [for (final r in rows) _groupRow(context, r)],
                           ),
-                        ]),
-                        const SizedBox(width: 8),
+                        if (newPlayer) ..._cards(context, lang),
                       ],
-                      _switch(c, [
-                        _switchButton(
-                          c,
-                          key: const ValueKey('today-view-list'),
-                          icon: 'list',
-                          label: 'list',
-                          selected: !appState.todayTiles,
-                          onTap: () => appState.setTodayTiles(false),
-                        ),
-                        _switchButton(
-                          c,
-                          key: const ValueKey('today-view-tiles'),
-                          icon: 'layout-grid',
-                          label: 'tiles',
-                          selected: appState.todayTiles,
-                          onTap: () => appState.setTodayTiles(true),
-                        ),
-                      ]),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  if (appState.todayTiles)
-                    _tiles(context, rows, tileHeight)
-                  else
-                    for (final r in rows) _rowTile(context, r),
-                  if (newPlayer) ..._cards(context, lang),
                 ],
               );
             },
@@ -253,34 +253,27 @@ class TodayPage extends StatelessWidget {
     );
   }
 
-  /// A hairline-bordered group of flat icon buttons.
-  Widget _switch(ColorScheme c, List<Widget> buttons) {
+  /// A group of flat icon buttons on one tonal fill, with no edge.
+  Widget _switch(BuildContext context, List<Widget> buttons) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: c.outlineVariant),
-        borderRadius: BorderRadius.circular(6),
+        color: tonesOf(context).s1,
+        borderRadius: BorderRadius.circular(radiusElement),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < buttons.length; i++) ...[
-            if (i > 0) Container(width: 1, height: 40, color: c.outlineVariant),
-            buttons[i],
-          ],
-        ],
-      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: buttons),
     );
   }
 
   Widget _switchButton(
-    ColorScheme c, {
+    BuildContext context, {
     required Key key,
     required String icon,
     required String label,
     required bool selected,
     required VoidCallback onTap,
   }) {
+    final c = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
       selected: selected,
@@ -298,9 +291,12 @@ class TodayPage extends StatelessWidget {
           },
           child: Container(
             width: 44,
-            height: 40,
+            height: 44,
             alignment: Alignment.center,
-            color: selected ? c.surfaceContainerHighest : null,
+            decoration: BoxDecoration(
+              color: selected ? tonesOf(context).s2 : null,
+              borderRadius: BorderRadius.circular(radiusElement),
+            ),
             child: TablerIcon(
               icon,
               size: 22,
@@ -351,9 +347,8 @@ class TodayPage extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
-          color: c.surfaceContainerHighest.withValues(alpha: 0.4),
-          border: Border.all(color: c.outlineVariant),
-          borderRadius: BorderRadius.circular(6),
+          color: tonesOf(context).s1,
+          borderRadius: BorderRadius.circular(radiusContainer),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -369,7 +364,7 @@ class TodayPage extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: look.fill,
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: BorderRadius.circular(radiusElement),
                   ),
                   child: look.icon(22),
                 ),
@@ -508,113 +503,55 @@ class TodayPage extends StatelessWidget {
     }
   }
 
-  Widget _rowTile(BuildContext context, _Row r, {Key? key}) {
+  /// One daily as a row of its [GroupedList]: the mode's icon on the fill of
+  /// its state, the name, the state line with the streak, and the verb.
+  GroupRow _groupRow(BuildContext context, _Row r) {
     final c = Theme.of(context).colorScheme;
-    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    final look = _look(c, r);
     final m = r.mode;
-    final yellow = yellowOf(c);
-    final lost = r.state == _State.lost;
-
-    // the mode's icon sits in the square; the state is its colour: green when
-    // solved, yellow in progress, a red icon when missed
-    TablerIcon icon(Color color) =>
-        TablerIcon(modeIconName(m), size: 26, color: color);
-    final (Color fill, Widget mark) = switch (r.state) {
-      _State.solved => (c.secondary, icon(c.onSecondary)),
-      _State.progress => (yellow, icon(onColor(c, yellow))),
-      _State.lost => (c.surfaceContainerHighest, icon(heartColor(c))),
-      _State.fresh => (c.surfaceContainerHighest, icon(c.onSurface)),
-    };
-
-    final String stateText = switch (r.state) {
-      _State.fresh => 'not started',
-      _State.progress => '${r.tries ?? 0} of ${dailyTriesOf(m)} tries used',
-      _State.solved =>
-        r.tries == null || r.tries == 0 ? 'solved' : 'solved in ${r.tries}',
-      _State.lost => 'missed',
-    };
-
-    final flame = switch (r.state) {
-      _State.solved => c.secondary,
-      _State.progress => yellow,
-      _ => dim,
-    };
-    final verb = switch (r.state) {
-      _State.fresh => 'play',
-      _State.progress => 'continue',
-      _ => 'view',
-    };
-
-    return InkWell(
-      key: key ?? ValueKey('today-row-${m.name}'),
+    return GroupRow(
+      key: ValueKey('today-row-${m.name}'),
       // a finished daily opens its game over screen, as it always did
       onTap: () => _play(context, m),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: c.outlineVariant)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: fill,
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: mark,
+      leading: TonalTile(
+        look.iconName,
+        big: true,
+        fill: look.fill,
+        color: look.mark,
+      ),
+      title: Text(m.label, overflow: TextOverflow.ellipsis),
+      subtitle: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            look.stateText,
+            style: TextStyle(
+              fontSize: 13,
+              color: look.lost ? heartColor(c) : look.dim,
+              fontWeight: look.lost ? FontWeight.w700 : null,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    m.label,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        stateText,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: lost ? heartColor(c) : dim,
-                          fontWeight: lost ? FontWeight.w700 : null,
-                        ),
-                      ),
-                      if (lost)
-                        Text(
-                          ' · streak ended',
-                          style: TextStyle(fontSize: 12, color: dim),
-                        )
-                      else ...[
-                        Text(' · ', style: TextStyle(fontSize: 12, color: dim)),
-                        TablerIcon('flame', size: 14, color: flame),
-                        Text(
-                          ' ${r.streak}',
-                          style: TextStyle(fontSize: 12, color: flame),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
+          ),
+          if (look.lost)
             Text(
-              '$verb ›',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ' · streak ended',
+              style: TextStyle(fontSize: 13, color: look.dim),
+            )
+          else ...[
+            Text(' · ', style: TextStyle(fontSize: 13, color: look.dim)),
+            TablerIcon('flame', size: 14, color: look.flame),
+            Text(
+              ' ${r.streak}',
+              style: TextStyle(fontSize: 13, color: look.flame),
             ),
           ],
+        ],
+      ),
+      trailing: Text(
+        look.verb,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          color: c.onSurface,
         ),
       ),
     );
@@ -788,10 +725,7 @@ class TodayPage extends StatelessWidget {
     return Container(
       key: const ValueKey('today-bar'),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      decoration: BoxDecoration(
-        color: c.surface,
-        border: Border(top: BorderSide(color: c.outlineVariant)),
-      ),
+      decoration: BoxDecoration(color: c.surface),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
