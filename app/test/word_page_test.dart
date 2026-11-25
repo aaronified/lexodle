@@ -149,6 +149,8 @@ void main() {
     tester,
   ) async {
     final entry = saveClub();
+    tester.view.physicalSize = const Size(800, 2400);
+    addTearDown(tester.view.resetPhysicalSize);
     await pumpPage(tester, entry);
     expect(find.byKey(const ValueKey('word-remove-yes')), findsNothing);
     await tester.tap(find.byKey(const ValueKey('word-remove')));
@@ -163,6 +165,8 @@ void main() {
 
   testWidgets('remove it removes the word and leaves the page', (tester) async {
     final entry = saveClub();
+    tester.view.physicalSize = const Size(800, 2400);
+    addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(

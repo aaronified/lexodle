@@ -28,7 +28,7 @@ final _formOf = RegExp(
 /// ("plural of deke"): the root's senses of the same part of speech as the form
 /// (a plural noun's root as a noun), or its first part of speech when it has
 /// none of that kind. Nothing while it loads or when there is no entry; a
-/// failure is logged.
+/// failure is logged. It is drawn dim, under the sense, with no edge.
 class RootSenses extends StatefulWidget {
   const RootSenses({
     super.key,
@@ -69,16 +69,16 @@ class _RootSensesState extends State<RootSenses> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    final dim = c.onSurface.withValues(alpha: dimAlpha);
+    final dim = c.onSurfaceVariant;
     return FutureBuilder<WordInfo?>(
       future: _future,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
           return Padding(
-            padding: const EdgeInsets.only(left: 14, top: 4),
+            padding: const EdgeInsets.only(top: 4),
             child: Text(
               'looking up ${widget.root}…',
-              style: TextStyle(fontSize: 12, color: dim),
+              style: TextStyle(fontSize: 13, color: dim),
             ),
           );
         }
@@ -88,13 +88,9 @@ class _RootSensesState extends State<RootSenses> {
         final blocks = same.isEmpty ? [info.blocks.first] : same;
         final senses = [for (final b in blocks) ...b.senses].take(3).toList();
         if (senses.isEmpty) return const SizedBox.shrink();
-        return Container(
+        return Padding(
           key: ValueKey('root-${widget.root}'),
-          margin: const EdgeInsets.only(left: 14, top: 4),
-          padding: const EdgeInsets.only(left: 8),
-          decoration: BoxDecoration(
-            border: Border(left: BorderSide(color: c.primary, width: 2)),
-          ),
+          padding: const EdgeInsets.only(top: 4),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -103,7 +99,7 @@ class _RootSensesState extends State<RootSenses> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: c.primary,
+                  color: dim,
                 ),
               ),
               for (var i = 0; i < senses.length; i++)
@@ -115,7 +111,7 @@ class _RootSensesState extends State<RootSenses> {
                         TextSpan(
                           text: '${i + 1}  ',
                           style: TextStyle(
-                            color: c.primary,
+                            color: dim,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -130,7 +126,7 @@ class _RootSensesState extends State<RootSenses> {
                         TextSpan(text: senses[i].text),
                       ],
                     ),
-                    style: const TextStyle(fontSize: 13),
+                    style: TextStyle(fontSize: 13, color: dim),
                   ),
                 ),
             ],
