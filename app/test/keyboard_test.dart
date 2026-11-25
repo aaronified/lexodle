@@ -78,4 +78,107 @@ void main() {
     // the three letter rows only
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('a key not tried yet is outlined, not filled', (tester) async {
+    await show(tester, latin.split('').toSet());
+    final box = tester.widget<Container>(
+      find
+          .descendant(
+            of: find.ancestor(
+              of: find.text('q'),
+              matching: find.byType(InkWell),
+            ),
+            matching: find.byType(Container),
+          )
+          .first,
+    );
+    final d = box.decoration! as BoxDecoration;
+    expect(d.color, isNull);
+    expect(d.border, isNotNull);
+  });
+
+  group('a key under the finger', () {
+    Future<void> shown(WidgetTester tester, {bool popups = true}) async {
+      await tester.binding.setSurfaceSize(const Size(420, 700));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: LetterKeyboard(
+                letters: latin.split('').toSet(),
+                onLetter: (_) {},
+                onEnter: () {},
+                onBack: () {},
+                onBlank: () {},
+                popups: popups,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final popup = find.byKey(const ValueKey('key-popup'));
+
+    testWidgets('a letter shows a popup with its letter, gone when let go', (
+      tester,
+    ) async {
+      await shown(tester);
+      expect(popup, findsNothing);
+      final g = await tester.startGesture(tester.getCenter(find.text('g')));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(popup, findsOneWidget);
+      expect(
+        find.descendant(of: popup, matching: find.text('g')),
+        findsOneWidget,
+      );
+      // above the key it was pressed on
+      expect(
+        tester.getCenter(popup).dy,
+        lessThan(tester.getCenter(find.text('g').first).dy),
+      );
+      await g.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(popup, findsNothing);
+    });
+
+    testWidgets('the key at the edge keeps its popup on the screen', (
+      tester,
+    ) async {
+      await shown(tester);
+      final g = await tester.startGesture(tester.getCenter(find.text('q')));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(popup, findsOneWidget);
+      expect(tester.getTopLeft(popup).dx, greaterThanOrEqualTo(4));
+      await g.up();
+      await tester.pump();
+    });
+
+    testWidgets('enter, delete and the space sink without a popup', (
+      tester,
+    ) async {
+      await shown(tester);
+      for (final label in ['enter', '_']) {
+        final f = find.text(label);
+        if (f.evaluate().isEmpty) continue;
+        final g = await tester.startGesture(tester.getCenter(f.first));
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(popup, findsNothing, reason: label);
+        await g.up();
+        await tester.pump();
+      }
+    });
+
+    testWidgets('with popups off nothing shows, the key still works', (
+      tester,
+    ) async {
+      await shown(tester, popups: false);
+      final g = await tester.startGesture(tester.getCenter(find.text('g')));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(popup, findsNothing);
+      await g.up();
+      await tester.pump();
+    });
+  });
 }

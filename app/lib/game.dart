@@ -38,7 +38,6 @@ import 'save_word_button.dart';
 import 'sounds.dart';
 import 'swipe_clear.dart';
 import 'store.dart';
-import 'tonal.dart';
 import 'ui.dart';
 import 'wiktionary.dart';
 import 'word_info.dart';
@@ -1425,100 +1424,17 @@ class _GamePageState extends State<GamePage>
     bool helper = false,
     Key? key,
     VoidCallback? onTap,
-  }) {
-    Color? fill;
-    Color fg = c.onSurface;
-    // an empty tile is outlined in the line tone, a typed letter in the faint
-    // one; a marked tile is a plain fill with no edge
-    final tones = tonesOf(context);
-    Color? border = ch.isEmpty ? tones.line : tones.faint;
-    var borderWidth = ch.isEmpty ? 1.0 : 1.5;
-    // the game's lock (a green in lockdown) is green; the player's own is pink
-    final lockColor = fixed ? markColors(c, Mark.correct).$1 : c.primary;
-    if (m != null) {
-      (fill, fg) = markColors(c, m);
-      border = null;
-    } else if (ch.isNotEmpty && locked) {
-      border = lockColor;
-      borderWidth = 1;
-    }
-    // the cursor is the ink colour, the lock the pink accent
-    if (cursor) {
-      border = c.onSurface;
-      borderWidth = 2;
-    }
-    final isBlank = ch == GuessInput.blank;
-    return GestureDetector(
-      key: key,
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: fill,
-          border: border == null
-              ? null
-              : Border.all(color: border, width: borderWidth),
-          borderRadius: BorderRadius.circular(radiusElement),
-          // the cursor glows: soft on the cream, stronger on the dark grounds
-          boxShadow: cursor
-              ? [
-                  BoxShadow(
-                    color: c.onSurface.withValues(
-                      alpha: c.brightness == Brightness.dark ? .55 : .38,
-                    ),
-                    blurRadius: c.brightness == Brightness.dark ? 12 : 8,
-                    spreadRadius: c.brightness == Brightness.dark ? 2 : 1,
-                  ),
-                ]
-              : null,
-        ),
-        // the whole tile, so the lock sits in its corner, not by the letter
-        child: SizedBox.expand(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Text(
-                isBlank ? '_' : faceOf(ch),
-                style: TextStyle(
-                  fontSize: size * .5,
-                  fontWeight: FontWeight.bold,
-                  color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
-                ),
-              ),
-              // the helper set this colour: it is the only one possible
-              if (helper)
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: Container(
-                    key: const ValueKey('helper-dot'),
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: fg.withValues(alpha: .7),
-                    ),
-                  ),
-                ),
-              if (locked)
-                Positioned(
-                  top: 3,
-                  right: 3,
-                  child: TablerIcon(
-                    'lock',
-                    key: const ValueKey('locked'),
-                    size: size * .22,
-                    color: lockColor,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  }) => MarkTile(
+    ch,
+    key: key,
+    mark: m,
+    size: size,
+    onTap: onTap,
+    cursor: cursor,
+    locked: locked,
+    fixed: fixed,
+    helper: helper,
+  );
 
   /// The status line under the boards: 14, dim, centred.
   TextStyle _lineStyle() => TextStyle(
@@ -1912,6 +1828,8 @@ class _GamePageState extends State<GamePage>
 
   Widget _keyboard(ColorScheme c) => LetterKeyboard(
     letters: _letters,
+    // no popup once the game is over: nothing is left to take the letter
+    popups: !over,
     numberPad: equations,
     onCursor: _move,
     marks: blind

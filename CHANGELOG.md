@@ -10,8 +10,23 @@ it to the version.
 - you: solver and diy say what they are
   Each row has its own short line under its name, like the others in the menu.
 
+- every board uses the same tile and cursor glow
+  The quartet and relay boards, the blind and mastermind boards, the lessons and the learn pages drew an older tile. They now use the one the classic game has: rounded, outlined while empty, filled when marked, and the glowing cursor tile. The glow is also softer and tighter, so the edge of a board no longer clips it.
+
+- keys sink when pressed and a letter pops up above the key
+  A pressed key sinks a little under the finger, and a letter key shows a small key with its letter above it, so the finger does not hide it. Near the edge the popup shifts inward. Enter, delete and the space only sink. There is no popup once the game is over.
+
+- words: the line under the search is below it on both lists
+  The saved list had its count line above the language slider; it is now below the search, in the same small dim type as the collected list.
+
 - the words header sits on the same line as the settings cog
   The two tabs were pushed to the bottom of the header row; their text is now on the centre line shared by the cog and the other screens' titles.
+
+- keys not tried yet are outlined again
+  A key you have not used is an outline on the page, like an empty tile, instead of a grey fill; keys that got a colour are filled as before.
+
+- sliders follow your finger
+  Dragging a slider (modes, languages, medals, sort) moves the name with the finger and brings the next one in from the side. Let go past a third of the way, or with a flick, and it settles on the next choice; otherwise it slides back. At the first and last choice the drag is held back.
 
 ## 0.14.0
 

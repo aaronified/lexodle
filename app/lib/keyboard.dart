@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'app_log.dart';
 import 'equations.dart' show faceOf;
 import 'swipe_clear.dart' show CursorDrag;
 import 'haptics.dart';
@@ -31,6 +32,7 @@ class LetterKeyboard extends StatelessWidget {
     this.faces = faceOf,
     this.onCursor,
     this.chances = const {},
+    this.popups = true,
   });
 
   /// Per letter, the chance that a copy is in place (green) and that a copy is
@@ -52,6 +54,11 @@ class LetterKeyboard extends StatelessWidget {
 
   /// What a key is drawn as.
   final String Function(String) faces;
+
+  /// Whether a pressed letter key shows a small popup with its letter above it.
+  /// The games turn it off when nothing could take the letter (the game is
+  /// over): the key still sinks under the finger.
+  final bool popups;
 
   final Set<String> letters;
   final Map<String, Mark> marks;
@@ -118,6 +125,9 @@ class LetterKeyboard extends StatelessWidget {
       void Function(int by)? drag,
       bool space = false,
     }) {
+      // a single letter, digit or sign shows a popup; enter, delete, the space and
+      // the words on the action keys do not
+      final popup = popups && label.length == 1 && label != '_' && drag == null;
       // each press has its own feel (see [Haptic])
       void press() {
         Haptics.fire(feel);
@@ -129,10 +139,15 @@ class LetterKeyboard extends StatelessWidget {
           flex: (flex * 10).round(),
           child: Padding(
             padding: EdgeInsets.all(gap),
-            child: InkWell(
-              onTap: press,
-              borderRadius: BorderRadius.circular(radiusInner),
-              child: _QuadKey(label: label, marks: quad, height: keyHeight),
+            child: _Press(
+              popup: popup,
+              popupFill: tones.s3,
+              popupFg: c.onSurface,
+              child: InkWell(
+                onTap: press,
+                borderRadius: BorderRadius.circular(radiusInner),
+                child: _QuadKey(label: label, marks: quad, height: keyHeight),
+              ),
             ),
           ),
         );
@@ -142,21 +157,28 @@ class LetterKeyboard extends StatelessWidget {
           flex: (flex * 10).round(),
           child: Padding(
             padding: EdgeInsets.all(gap),
-            child: InkWell(
-              onTap: press,
-              borderRadius: BorderRadius.circular(radiusInner),
-              child: _ChanceKey(
-                label: label,
-                green: chance.$1,
-                yellow: chance.$2,
-                height: keyHeight,
+            child: _Press(
+              popup: popup,
+              popupFill: tones.s3,
+              popupFg: c.onSurface,
+              child: InkWell(
+                onTap: press,
+                borderRadius: BorderRadius.circular(radiusInner),
+                child: _ChanceKey(
+                  label: label,
+                  green: chance.$1,
+                  yellow: chance.$2,
+                  height: keyHeight,
+                ),
               ),
             ),
           ),
         );
       }
-      // a key is a tonal fill with no edge; a mark or an action key has its own
-      var (fill, fg) = (tones.s1, c.onSurface);
+      // a key not tried yet is outlined, like an empty tile; a mark or an
+      // action key is a plain fill of its own
+      Color? fill;
+      var fg = c.onSurface;
       if (mark != null) (fill, fg) = markColors(c, mark);
       if (colors != null) (fill, fg) = colors;
       final button = InkWell(
@@ -167,6 +189,7 @@ class LetterKeyboard extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: fill,
+            border: fill == null ? Border.all(color: tones.line) : null,
             borderRadius: BorderRadius.circular(radiusInner),
           ),
           child: Text(
@@ -181,14 +204,23 @@ class LetterKeyboard extends StatelessWidget {
           ),
         ),
       );
+      // the key sinks under the finger (an untried one takes the tonal fill) and
+      // a letter shows a popup above it; the action keys and the space only sink
+      final pressed = _Press(
+        popup: popup,
+        popupFill: fill ?? tones.s3,
+        popupFg: fg,
+        pressFill: mark == null && colors == null ? tones.s1 : null,
+        child: button,
+      );
       return Expanded(
         flex: (flex * 10).round(),
         child: Padding(
           padding: EdgeInsets.all(gap),
           // a drag along the key (the space) moves the cursor; a tap presses it
           child: drag == null
-              ? button
-              : CursorDrag(onMove: drag, child: button),
+              ? pressed
+              : CursorDrag(onMove: drag, child: pressed),
         ),
       );
     }
@@ -332,6 +364,153 @@ class LetterKeyboard extends StatelessWidget {
 /// over it in whichever of the page's two text colours reads best on their
 /// average. The parts are painted without anti-aliasing at their shared edges,
 /// so no seam shows between them.
+/// A key under the finger: it sinks to 93% in 90 ms (an untried key takes the
+/// [pressFill] tone under it), and a key with a [popup] shows a small key with
+/// its letter above it, so the finger does not hide the letter. The popup stays
+/// inside the screen (the keys at the edge shift it inward). Reduced motion
+/// shows the same without the animation.
+class _Press extends StatefulWidget {
+  const _Press({
+    required this.child,
+    required this.popup,
+    required this.popupFill,
+    required this.popupFg,
+    this.pressFill,
+  });
+  final Widget child;
+  final bool popup;
+  final Color popupFill, popupFg;
+  final Color? pressFill;
+
+  @override
+  State<_Press> createState() => _PressState();
+}
+
+class _PressState extends State<_Press> {
+  bool _down = false;
+  OverlayEntry? _entry;
+  static const _popupWidth = 44.0, _popupHeight = 56.0, _gap = 6.0;
+
+  void _on(PointerDownEvent e) {
+    setState(() => _down = true);
+    if (!widget.popup) return;
+    try {
+      final box = context.findRenderObject() as RenderBox?;
+      final overlay = Overlay.maybeOf(context);
+      if (box == null || !box.attached || overlay == null) return;
+      final at = box.localToGlobal(Offset.zero);
+      final screen = MediaQuery.sizeOf(context).width;
+      final left = (at.dx + box.size.width / 2 - _popupWidth / 2).clamp(
+        4.0,
+        screen - _popupWidth - 4,
+      );
+      final top = at.dy - _popupHeight - _gap;
+      final label = _label(widget.child);
+      if (label == null) return;
+      final still = MediaQuery.disableAnimationsOf(context);
+      _entry = OverlayEntry(
+        builder: (_) => Positioned(
+          left: left,
+          top: top,
+          child: IgnorePointer(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: still ? 1 : 0, end: 1),
+              duration: still
+                  ? Duration.zero
+                  : const Duration(milliseconds: 110),
+              curve: Curves.easeOut,
+              builder: (context, t, child) => Opacity(
+                opacity: t,
+                child: Transform.translate(
+                  offset: Offset(0, (1 - t) * 6),
+                  child: Transform.scale(scale: .9 + .1 * t, child: child),
+                ),
+              ),
+              child: Container(
+                key: const ValueKey('key-popup'),
+                width: _popupWidth,
+                height: _popupHeight,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: widget.popupFill,
+                  borderRadius: BorderRadius.circular(radiusElement),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: widget.popupFg,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      overlay.insert(_entry!);
+    } catch (e) {
+      appLog.w('keyboard', 'popup failed ${e.runtimeType}');
+      _hide();
+    }
+  }
+
+  /// The letter on the key: the first [Text] under it.
+  String? _label(Widget w) {
+    String? found;
+    void visit(Element el) {
+      if (found != null) return;
+      final wd = el.widget;
+      if (wd is Text && wd.data != null) {
+        found = wd.data;
+        return;
+      }
+      el.visitChildren(visit);
+    }
+
+    (context as Element).visitChildren(visit);
+    return found;
+  }
+
+  void _hide() {
+    _entry?.remove();
+    _entry = null;
+  }
+
+  void _off([PointerEvent? e]) {
+    _hide();
+    if (mounted && _down) setState(() => _down = false);
+  }
+
+  @override
+  void dispose() {
+    _hide();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final still = MediaQuery.disableAnimationsOf(context);
+    return Listener(
+      onPointerDown: _on,
+      onPointerUp: _off,
+      onPointerCancel: _off,
+      child: AnimatedScale(
+        scale: _down ? .93 : 1,
+        duration: still ? Duration.zero : const Duration(milliseconds: 90),
+        curve: Curves.easeOut,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: _down ? widget.pressFill : null,
+            borderRadius: BorderRadius.circular(radiusInner),
+          ),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
 class _QuadKey extends StatelessWidget {
   const _QuadKey({
     required this.label,
