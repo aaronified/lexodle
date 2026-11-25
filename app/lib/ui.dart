@@ -377,9 +377,11 @@ class MarkTile extends StatelessWidget {
           boxShadow: cursor
               ? [
                   BoxShadow(
-                    color: c.onSurface.withValues(alpha: dark ? .55 : .38),
-                    blurRadius: dark ? 12 : 8,
-                    spreadRadius: dark ? 2 : 1,
+                    // a soft edge that stays inside the gap between tiles, so a
+                    // board's bounds do not clip it
+                    color: c.onSurface.withValues(alpha: dark ? .38 : .24),
+                    blurRadius: dark ? 6 : 5,
+                    spreadRadius: 0,
                   ),
                 ]
               : null,
