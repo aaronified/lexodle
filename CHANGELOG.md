@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- keys not tried yet are outlined again
+  A key you have not used is an outline on the page, like an empty tile, instead of a grey fill; keys that got a colour are filled as before.
+
 ## 0.14.0
 
 - a new look: tonal colours, one slider for every choice, a flat tab bar
