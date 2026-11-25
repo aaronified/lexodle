@@ -11,10 +11,23 @@ import 'package:lexodle/main.dart';
 import 'package:lexodle/medal.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/store.dart';
+import 'package:lexodle/tonal.dart';
+import 'package:lexodle/ui_kit.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'choice_helpers.dart';
+
+/// Moves the medal filter to the item of [name] ('all', 'bronze', ...).
+Future<void> pickMedal(WidgetTester tester, String name) async {
+  final slider = tester.widget<ChoiceSlider<Medal?>>(
+    find.byType(ChoiceSlider<Medal?>),
+  );
+  final label = slider.items
+      .firstWhere((i) => i.label.split(' ').first == name)
+      .label;
+  await pickChoice(tester, 'achievements-medal', label);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -117,8 +130,10 @@ void main() {
                     .decoration!
                 as BoxDecoration)
             .color;
+    // an earned level is lit; one not yet earned is the tone of the three above
+    final tones = tonesOf(tester.element(find.byType(AchievementsPage)));
     expect(pip('quick', 2), isNotNull);
-    expect(pip('quick', 3), isNull);
+    expect(pip('quick', 3), tones.s3);
 
     // only the streaks show an icon for each level
     expect(
@@ -127,11 +142,18 @@ void main() {
     );
     expect(find.byKey(const ValueKey('streak-icon-wins-0')), findsNothing);
 
-    // the medal chips count the levels earned of each
-    expect(find.text('all 7/$levelCount'), findsOneWidget);
-    expect(find.text('bronze 3/${achievements.length}'), findsOneWidget);
-    expect(find.text('silver 3/${achievements.length}'), findsOneWidget);
-    expect(find.text('gold 1/${achievements.length}'), findsOneWidget);
+    // the medal filter counts the levels earned of each (it shows one at a time)
+    const medalSlider = 'achievements-medal';
+    expect(choiceShows(medalSlider, 'all 7/$levelCount'), isTrue);
+    final total = achievements.length;
+    for (final label in [
+      'bronze 3/$total',
+      'silver 3/$total',
+      'gold 1/$total',
+    ]) {
+      await pickChoice(tester, medalSlider, label);
+    }
+    await pickChoice(tester, medalSlider, 'all 7/$levelCount');
 
     // a tap lists every level, its name and what it asks
     await tester.tap(find.byKey(const ValueKey('wins-row')));
@@ -177,12 +199,10 @@ void main() {
     );
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('medal-filter-gold')));
-    await tester.pump();
+    await pickMedal(tester, 'gold');
     expect(find.byKey(const ValueKey('quick-row')), findsOneWidget);
     expect(find.byKey(const ValueKey('wins-row')), findsNothing);
-    await tester.tap(find.byKey(const ValueKey('medal-filter-all')));
-    await tester.pump();
+    await pickMedal(tester, 'all');
     expect(find.byKey(const ValueKey('wins-row')), findsOneWidget);
   });
 

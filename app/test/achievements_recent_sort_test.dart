@@ -5,12 +5,26 @@ import 'package:lexodle/main.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/store.dart';
 import 'package:lexodle/ui.dart';
+import 'package:lexodle/ui_kit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'choice_helpers.dart';
 
 String _day(int ago) => DateTime.now()
     .subtract(Duration(days: ago))
     .toIso8601String()
     .substring(0, 10);
+
+/// Moves the medal filter to the item of [name] ('all', 'bronze', ...).
+Future<void> _pickMedal(WidgetTester tester, String name) async {
+  final slider = tester.widget<ChoiceSlider<Medal?>>(
+    find.byType(ChoiceSlider<Medal?>),
+  );
+  final label = slider.items
+      .firstWhere((i) => i.label.split(' ').first == name)
+      .label;
+  await pickChoice(tester, 'achievements-medal', label);
+}
 
 void _prepare() {
   appState.lang = 'en';
@@ -78,14 +92,18 @@ void main() {
     expect(when('skill_avg'), '2 days ago');
     // the level reached: its name and medal
     final wins = achievements.firstWhere((a) => a.id == 'wins');
+    // the title and the medal are one line: the name, then the medal's name
     expect(
-      find.descendant(of: recent, matching: find.text(wins.levels[1].name)),
+      find.descendant(
+        of: recent,
+        matching: find.textContaining(wins.levels[1].name),
+      ),
       findsOneWidget,
     );
     expect(
       find.descendant(
         of: recent,
-        matching: find.text(wins.levels[1].medal.name),
+        matching: find.textContaining(wins.levels[1].medal.name),
       ),
       findsWidgets,
     );
@@ -178,8 +196,7 @@ void main() {
   testWidgets('the sort works within the medal filter', (tester) async {
     _prepare();
     await _open(tester);
-    await tester.tap(find.byKey(const ValueKey('medal-filter-bronze')));
-    await tester.pump();
+    await _pickMedal(tester, 'bronze');
     expect(_listed(tester), ['played', 'last_try']);
     await tester.tap(find.byKey(const ValueKey('sort-a to z')));
     await tester.pump();
@@ -188,8 +205,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('sort-closest')));
     await tester.pump();
     expect(_listed(tester), ['played', 'last_try']);
-    await tester.tap(find.byKey(const ValueKey('medal-filter-silver')));
-    await tester.pump();
+    await _pickMedal(tester, 'silver');
     expect(_listed(tester), ['wins', 'skill_avg']);
   });
 }
