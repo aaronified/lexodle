@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.14.2
+
 - dailies: abbreviations and respellings are never the answer from 27 nov
   intnl was in the pool, with accts, apprx, instr, mtdna, https, rythm and the stretched sounds of chat (whyyy, grrrr, mmhmm), and so were words spelt as they are said (gonna, wanna, gotta, kinda, sorta, outta, dunno, gimme, lemme and a few more). Beyond those, in every language, the five-letter words the English Wiktionary shows as nothing but an abbreviation, an initialism or an acronym (427 of them: 152 English, 142 Italian, 39 Portuguese, 27 French, 25 German and so on) are never the answer either. A word that is only partly an abbreviation (Indonesian buku, one sense in ten) is kept. They stay valid guesses, and earlier days keep their word.
 
