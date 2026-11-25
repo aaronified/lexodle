@@ -33,7 +33,7 @@ void main() {
       expect(tester.getSize(find.byType(LexChip)).height, 28);
     });
 
-    testWidgets('HintBar looks 28px, taps 44px, and calls back', (
+    testWidgets('HintBar looks 40px, taps 44px, and calls back', (
       tester,
     ) async {
       var taps = 0;
@@ -45,7 +45,7 @@ void main() {
       expect(find.text('1 free'), findsOneWidget);
       expect(find.text('12'), findsOneWidget);
       expect(tester.getSize(find.byType(HintBar)).height, 44);
-      expect(tester.getSize(find.byType(LexChip)).height, 28);
+      expect(tester.getSize(find.byType(LexChip)).height, 40);
       await tester.tapAt(
         tester.getTopRight(find.byType(HintBar)) + const Offset(-4, 40),
       );
