@@ -15,6 +15,8 @@ import 'package:lexodle/ui.dart' show FlagBadge;
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'choice_helpers.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
@@ -298,7 +300,7 @@ void main() {
     ) async {
       await open(tester);
       expect(find.byKey(const ValueKey('mode-filter')), findsNothing);
-      expect(find.byKey(const ValueKey('mode-classic')), findsNothing);
+      expect(choiceShows('mode-slider', 'classic'), isFalse);
       expect(find.text('make your own'), findsOneWidget);
       // the defaults
       expect(on(tester, 'board-classic'), isTrue);

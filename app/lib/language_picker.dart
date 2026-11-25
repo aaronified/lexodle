@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'words.dart';
 
 /// What [LanguagePicker.selected] is when every language is picked.
 const allLanguages = '*';
 
-/// A row of language badges (the flags) to pick which language a page is about.
+/// Picks which language a page is about: the one slider of the app
+/// ([ChoiceSlider], compact), with the flag and the code of the language on show.
 /// Each language has its own history, playstyle, streak and achievements, so the
 /// pages that show them say which it is and let the player look at another.
 class LanguagePicker extends StatelessWidget {
@@ -33,80 +35,22 @@ class LanguagePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: [
+    return ChoiceSlider<String>(
+      key: const ValueKey('language-picker'),
+      id: 'language-slider',
+      compact: true,
+      selected: selected,
+      onChanged: onSelect,
+      items: [
         if (showAll)
-          Semantics(
-            button: true,
-            selected: selected == allLanguages,
-            label: 'all languages',
-            excludeSemantics: true,
-            child: InkWell(
-              key: const ValueKey('lang-all'),
-              onTap: () => onSelect(allLanguages),
-              borderRadius: BorderRadius.circular(3),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: selected == allLanguages
-                      ? c.secondaryContainer
-                      : c.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: Text(
-                  'all',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: selected == allLanguages
-                        ? FontWeight.bold
-                        : null,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          const ChoiceItem<String>(value: allLanguages, label: 'all'),
         for (final code in codes)
-          Semantics(
-            button: true,
-            selected: code == selected,
-            label: languages[code]?.name ?? code,
-            excludeSemantics: true,
-            child: InkWell(
-              key: ValueKey('lang-$code'),
-              onTap: () => onSelect(code),
-              borderRadius: BorderRadius.circular(3),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                decoration: BoxDecoration(
-                  color: code == selected
-                      ? c.secondaryContainer
-                      : c.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (languages[code] case final l?) ...[
-                      FlagBadge(l.flag, size: 14),
-                      const SizedBox(width: 6),
-                    ],
-                    Text(
-                      code,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: code == selected ? FontWeight.bold : null,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          ChoiceItem<String>(
+            value: code,
+            label: code,
+            leading: languages[code] == null
+                ? null
+                : FlagBadge(languages[code]!.flag, size: 14),
           ),
       ],
     );

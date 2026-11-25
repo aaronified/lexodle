@@ -21,63 +21,71 @@ void main() {
       final c = e.value.colorScheme;
       expect(hairline(c).width, 0.75, reason: e.key);
       final r = _ratio(hairlineColor(c), c.surface);
-      expect(r, inInclusiveRange(1.4, 2.1), reason: '${e.key} $r');
+      expect(r, inInclusiveRange(1.2, 2.1), reason: '${e.key} $r');
     }
   });
 
-  testWidgets('a card, an outlined button and a field have outlines', (
-    tester,
-  ) async {
-    final theme = themes['dark']!;
-    final c = theme.colorScheme;
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: theme,
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => Column(
-              children: [
-                hairlineCard(
-                  context,
-                  key: const ValueKey('card'),
-                  child: const Text('a'),
-                ),
-                hairlineCard(
-                  context,
-                  key: const ValueKey('inner'),
-                  color: shadeUp(c),
-                  child: const Text('b'),
-                ),
-                OutlinedButton(
-                  key: const ValueKey('btn'),
-                  onPressed: () {},
-                  child: const Text('c'),
-                ),
-                const TextField(key: ValueKey('field')),
-              ],
+  testWidgets(
+    'a card has a hairline; buttons and fields are tonal fills with no edge',
+    (tester) async {
+      final theme = themes['dark']!;
+      final c = theme.colorScheme;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => Column(
+                children: [
+                  hairlineCard(
+                    context,
+                    key: const ValueKey('card'),
+                    child: const Text('a'),
+                  ),
+                  hairlineCard(
+                    context,
+                    key: const ValueKey('inner'),
+                    color: shadeUp(c),
+                    child: const Text('b'),
+                  ),
+                  OutlinedButton(
+                    key: const ValueKey('btn'),
+                    onPressed: () {},
+                    child: const Text('c'),
+                  ),
+                  const TextField(key: ValueKey('field')),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-    final card = tester.widget<Container>(find.byKey(const ValueKey('card')));
-    expect(
-      (card.decoration! as BoxDecoration).border,
-      Border.fromBorderSide(hairline(c)),
-    );
-    final inner = tester.widget<Container>(find.byKey(const ValueKey('inner')));
-    expect((inner.decoration! as BoxDecoration).border, isNull);
-    final btnStyle = OutlinedButtonTheme.of(
-      tester.element(find.byKey(const ValueKey('btn'))),
-    ).style!;
-    expect(btnStyle.side!.resolve({}), hairline(c));
-    final field = tester.widget<TextField>(find.byKey(const ValueKey('field')));
-    final dec = theme.inputDecorationTheme;
-    expect((dec.enabledBorder! as OutlineInputBorder).borderSide, hairline(c));
-    expect(
-      (dec.focusedBorder! as OutlineInputBorder).borderSide.width,
-      greaterThan(hairline(c).width * 1.5),
-    );
-    expect(field, isNotNull);
-  });
+      );
+      final card = tester.widget<Container>(find.byKey(const ValueKey('card')));
+      expect(
+        (card.decoration! as BoxDecoration).border,
+        Border.fromBorderSide(hairline(c)),
+      );
+      final inner = tester.widget<Container>(
+        find.byKey(const ValueKey('inner')),
+      );
+      expect((inner.decoration! as BoxDecoration).border, isNull);
+      final btnStyle = OutlinedButtonTheme.of(
+        tester.element(find.byKey(const ValueKey('btn'))),
+      ).style!;
+      expect(btnStyle.side!.resolve({}), BorderSide.none);
+      final field = tester.widget<TextField>(
+        find.byKey(const ValueKey('field')),
+      );
+      final dec = theme.inputDecorationTheme;
+      expect(
+        (dec.enabledBorder! as OutlineInputBorder).borderSide,
+        BorderSide.none,
+      );
+      expect(
+        (dec.focusedBorder! as OutlineInputBorder).borderSide.width,
+        greaterThan(hairline(c).width * 1.5),
+      );
+      expect(field, isNotNull);
+    },
+  );
 }

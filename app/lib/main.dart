@@ -18,65 +18,66 @@ import 'store.dart';
 import 'update_check.dart';
 import 'update_section.dart';
 import 'app_log.dart';
-import 'ui.dart' show hairline;
+import 'tonal.dart';
+import 'ui.dart' show radiusContainer, radiusElement, radiusSheet;
 
-/// Dustland-style minimalism on Material 3: flat surfaces, soft hairline borders where they are needed,
-/// near-square corners, lowercase monospace text. Every colour comes from the
-/// generated Material You scheme and nothing is hard-coded.
+/// The look of the app: flat tonal surfaces on a generated tonal ramp (see
+/// tonal.dart), lowercase monospace text. Four rules shape every widget: space
+/// before containment (groups are told apart by distance and tone, not lines),
+/// one edge language (a surface is filled or outlined, not both), a control
+/// rhythm (heights 36, 40, 48, 56) and radius by role (see ui.dart).
 ///
-/// The seed and the `expressive` variant are chosen for the hues they give the
-/// roles: secondary is green (right place) and primary purple (the hardest
-/// difficulty); the wrong-place yellow is its own hue, see ui.dart. On Android
-/// the same roles would come from the wallpaper instead.
-final _seed = HSLColor.fromAHSL(1, 48, .7, .5).toColor();
-const _radius = BorderRadius.all(Radius.circular(6));
+/// The scheme, and the tones above the page, come from [schemeOf] and
+/// [AppTones]; nothing here is written as a colour.
+const _radius = BorderRadius.all(Radius.circular(radiusElement));
 
 /// The app's one font (assets/fonts).
 const _font = 'JetBrainsMono';
 
-/// The theme for [b]; [black] is the dark one on true black (for OLED screens):
-/// the scaffold, surfaces and dialogs are #000000, and the outline colours are
-/// kept light enough to read against it.
+/// The theme for [b]; [black] is the dark one on true black (for OLED screens).
 ThemeData buildTheme(Brightness b, {bool black = false}) {
-  var scheme = ColorScheme.fromSeed(
-    seedColor: _seed,
-    dynamicSchemeVariant: DynamicSchemeVariant.expressive,
-    brightness: b,
-  );
-  if (black && b == Brightness.dark) {
-    const k = Color(0xFF000000);
-    scheme = scheme.copyWith(
-      surface: k,
-      surfaceDim: k,
-      surfaceBright: const Color(0xFF1A1A1A),
-      surfaceContainerLowest: k,
-      surfaceContainerLow: k,
-      surfaceContainer: k,
-      surfaceContainerHigh: const Color(0xFF141414),
-      surfaceContainerHighest: const Color(0xFF1C1C1C),
-      // the variants stay visible on black
-      outlineVariant: const Color(0xFF3A3A3A),
-    );
-  }
+  final ground = b == Brightness.light
+      ? Ground.cream
+      : (black ? Ground.black : Ground.night);
+  final scheme = schemeOf(ground);
+  final tones = AppTones.of(ground);
   const shape = RoundedRectangleBorder(borderRadius: _radius);
-  final line = hairline(scheme);
+  const container = RoundedRectangleBorder(
+    borderRadius: BorderRadius.all(Radius.circular(radiusContainer)),
+  );
+  const labelStyle = TextStyle(
+    fontFamily: _font,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 1,
+    fontSize: 15,
+  );
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
+    extensions: [tones],
     scaffoldBackgroundColor: scheme.surface,
     canvasColor: scheme.surface,
     cardColor: scheme.surface,
+    // a dialog is a filled container with no edge
     dialogTheme: DialogThemeData(
-      backgroundColor: scheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: _radius, side: line),
-    ),
-    bottomSheetTheme: BottomSheetThemeData(
-      backgroundColor: scheme.surface,
+      backgroundColor: tones.s1,
       surfaceTintColor: Colors.transparent,
+      shape: container,
+    ),
+    // a sheet is the page colour, raised by a shadow, rounded at the top
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: null,
+      surfaceTintColor: Colors.transparent,
+      elevation: 8,
+      showDragHandle: true,
       shape: RoundedRectangleBorder(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
-        side: line,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(radiusSheet)),
       ),
+    ),
+    popupMenuTheme: PopupMenuThemeData(
+      color: tones.s1,
+      surfaceTintColor: Colors.transparent,
+      shape: container,
     ),
     fontFamily: _font,
     dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
@@ -84,89 +85,96 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
       backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
+      centerTitle: false,
+      titleTextStyle: TextStyle(
+        fontFamily: _font,
+        fontWeight: FontWeight.bold,
+        fontSize: 22,
+        color: scheme.onSurface,
+      ),
     ),
+    // the action of a screen: the pink fill
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         shape: shape,
-        minimumSize: const Size(0, 52),
-        // a button's text style replaces the theme's whole, so the family is
-        // named here too, or the labels are drawn in the platform's own font
-        textStyle: const TextStyle(
-          fontFamily: _font,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
-          fontSize: 15,
-        ),
+        minimumSize: const Size(0, 48),
+        textStyle: labelStyle,
       ),
     ),
+    // every other button is a tonal fill with no edge
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         shape: shape,
         minimumSize: const Size(0, 48),
-        side: line,
-        backgroundColor: scheme.surfaceContainerHighest,
+        side: BorderSide.none,
+        backgroundColor: tones.s2,
         foregroundColor: scheme.onSurface,
-        textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1.2),
+        textStyle: labelStyle,
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         shape: shape,
-        textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1.2),
+        textStyle: const TextStyle(fontFamily: _font, letterSpacing: 1),
       ),
     ),
-    // a field is delimited by the soft line; focused, it is clearly thicker
+    // a field is a tonal fill; focused, it gets the pink ring
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: scheme.surfaceContainerHighest,
-      border: OutlineInputBorder(borderRadius: _radius, borderSide: line),
-      enabledBorder: OutlineInputBorder(
+      fillColor: tones.s1,
+      border: const OutlineInputBorder(
         borderRadius: _radius,
-        borderSide: line,
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderRadius: _radius,
+        borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: _radius,
         borderSide: BorderSide(color: scheme.primary, width: 1.5),
       ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     ),
     cardTheme: CardThemeData(
-      color: scheme.surfaceContainerHighest,
+      color: tones.s1,
       elevation: 0,
-      shape: shape,
+      margin: EdgeInsets.zero,
+      shape: container,
     ),
     chipTheme: ChipThemeData(
-      shape: shape,
+      shape: const StadiumBorder(),
       side: BorderSide.none,
-      backgroundColor: scheme.surfaceContainerHighest,
+      backgroundColor: tones.s1,
       selectedColor: scheme.secondaryContainer,
     ),
-    // high contrast, no outline: off is a track a shade above the card with a
-    // visible knob, on is the secondary track with its own knob
+    // off is a track a tone above the card with a dim knob, on is the green
+    // track with its own knob
     switchTheme: SwitchThemeData(
       trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
       trackOutlineWidth: const WidgetStatePropertyAll(0),
       trackColor: WidgetStateProperty.resolveWith(
-        (s) => s.contains(WidgetState.selected)
-            ? scheme.secondary
-            : Color.alphaBlend(
-                scheme.onSurface.withValues(alpha: .08),
-                scheme.surfaceContainerHighest,
-              ),
+        (s) => s.contains(WidgetState.selected) ? scheme.secondary : tones.s3,
       ),
       thumbColor: WidgetStateProperty.resolveWith(
         (s) => s.contains(WidgetState.selected)
             ? scheme.onSecondary
-            : scheme.onSurface.withValues(alpha: .6),
+            : scheme.onSurfaceVariant,
       ),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
         shape: shape,
         side: BorderSide.none,
-        backgroundColor: scheme.surfaceContainerHighest,
+        backgroundColor: tones.s1,
         selectedBackgroundColor: scheme.secondaryContainer,
         selectedForegroundColor: scheme.onSecondaryContainer,
       ),
+    ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: scheme.primary,
+      linearTrackColor: tones.s3,
+      linearMinHeight: 6,
     ),
   );
 }

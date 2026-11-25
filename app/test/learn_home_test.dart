@@ -10,6 +10,7 @@ import 'package:lexodle/routes.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'choice_helpers.dart';
 import 'support/text_of.dart';
 
 void main() {
@@ -46,7 +47,7 @@ void main() {
   );
 
   Future<List<String>> open(WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(420, 1100));
+    await tester.binding.setSurfaceSize(const Size(420, 1700));
     appState.setup(lang: 'fr', length: 4);
     final bank = (await tester.runAsync(
       () async => WordBank.load(
@@ -230,23 +231,22 @@ void main() {
     appState.setup(mode: GameMode.classic);
     await tester.pump();
     expect(find.byKey(const ValueKey('learn-modes')), findsOneWidget);
-    expect(find.byKey(const ValueKey('mode-all')), findsNothing);
+    expect(choiceShows('mode-slider', 'all modes'), isFalse);
     final open_ = openModes(
       appState.stats.played,
       veteran: appState.lex.veteran,
     ).where((m) => GameMode.loopFor(appState.lang).contains(m));
-    for (final m in GameMode.values) {
-      expect(
-        find.byKey(ValueKey('mode-${m.name}')),
-        open_.contains(m) ? findsOneWidget : findsNothing,
-      );
+    // the slider offers exactly the open modes (its dots), and each one shows
+    expect(choiceCount('mode-slider'), open_.length);
+    for (final m in open_) {
+      await pickChoice(tester, 'mode-slider', m.label);
     }
     final other = open_.firstWhere(
       (m) => m != GameMode.classic,
       orElse: () => GameMode.classic,
     );
     if (other != GameMode.classic) {
-      await tester.tap(find.byKey(ValueKey('mode-${other.name}')));
+      await pickChoice(tester, 'mode-slider', other.label);
       await tester.pump();
       expect(appState.mode, other);
       appState.setup(mode: GameMode.classic);

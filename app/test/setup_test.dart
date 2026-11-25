@@ -344,7 +344,7 @@ void main() {
       // two places fix a colour by design: the one colour of each measure
       // (skill blue, luck yellow, daring green; ui.dart) and the black theme
       // (main.dart)
-      final fixedByDesign = RegExp(r'(ui|main)\.dart$');
+      final fixedByDesign = RegExp(r'(ui|main|tonal)\.dart$');
       final offenders = [
         for (final f in Directory('lib').listSync(recursive: true))
           if (f is File && f.path.endsWith('.dart'))

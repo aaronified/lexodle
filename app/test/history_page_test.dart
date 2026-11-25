@@ -18,6 +18,7 @@ import 'package:lexodle/ui.dart';
 import 'package:lexodle/words.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'choice_helpers.dart';
 import 'support/text_of.dart';
 
 int ms(int day, [int hour = 12]) =>
@@ -241,26 +242,20 @@ void main() {
     expect(games(), '3');
     expect(find.text('overall'), findsOneWidget);
 
-    await tester.ensureVisible(find.byKey(const ValueKey('mode-quartet')));
-
-    await tester.tap(find.byKey(const ValueKey('mode-quartet')));
+    await pickChoice(tester, 'mode-slider', 'quartet');
     await tester.pump();
     expect(games(), '1');
     expect(find.text('overall · quartet'), findsOneWidget);
     expect(find.byKey(ValueKey('game-${q.id}')), findsOneWidget);
     expect(find.byKey(ValueKey('game-${a.id}')), findsNothing);
 
-    await tester.ensureVisible(find.byKey(const ValueKey('mode-classic')));
-
-    await tester.tap(find.byKey(const ValueKey('mode-classic')));
+    await pickChoice(tester, 'mode-slider', 'classic');
     await tester.pump();
     expect(games(), '2');
     expect(find.byKey(ValueKey('game-${b.id}')), findsOneWidget);
     expect(find.byKey(ValueKey('game-${q.id}')), findsNothing);
 
-    await tester.ensureVisible(find.byKey(const ValueKey('mode-all')));
-
-    await tester.tap(find.byKey(const ValueKey('mode-all')));
+    await pickChoice(tester, 'mode-slider', 'all modes');
     await tester.pump();
     expect(games(), '3');
   });
@@ -273,15 +268,12 @@ void main() {
     String title() =>
         tester.widget<Caption>(find.byKey(const ValueKey('profile-mode'))).text;
     expect(title(), 'playstyle · classic');
-    // only the modes that have a playstyle are offered
-    expect(find.byKey(const ValueKey('mode-blind')), findsOneWidget);
-    expect(find.byKey(const ValueKey('mode-quartet')), findsNothing);
-    await tester.ensureVisible(find.byKey(const ValueKey('mode-blind')));
-    await tester.tap(find.byKey(const ValueKey('mode-blind')));
+    // only the modes that have a playstyle are offered: the six, and all modes
+    expect(choiceCount('mode-slider'), 7);
+    await pickChoice(tester, 'mode-slider', 'blind');
     await tester.pump();
     expect(title(), 'playstyle · blind');
-    await tester.ensureVisible(find.byKey(const ValueKey('mode-all')));
-    await tester.tap(find.byKey(const ValueKey('mode-all')));
+    await pickChoice(tester, 'mode-slider', 'all modes');
     await tester.pump();
     expect(title(), 'playstyle · all modes');
   });
@@ -619,12 +611,13 @@ void main() {
     )!;
     // the language being played to begin with
     expect(overall(), '2');
-    expect(find.byKey(const ValueKey('lang-fr')), findsOneWidget);
-    expect(find.byKey(const ValueKey('lang-xx')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('lang-xx')));
+    expect(choiceShows('language-slider', 'fr'), isTrue);
+    await pickChoice(tester, 'language-slider', 'xx');
+    expect(choiceShows('language-slider', 'xx'), isTrue);
     await tester.pump();
     expect(overall(), '1');
-    await tester.tap(find.byKey(const ValueKey('lang-fr')));
+    await pickChoice(tester, 'language-slider', 'fr');
+    expect(choiceShows('language-slider', 'fr'), isTrue);
     await tester.pump();
     expect(overall(), '2');
   });
