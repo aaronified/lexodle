@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- the words header sits on the same line as the settings cog
+  The two tabs were pushed to the bottom of the header row; their text is now on the centre line shared by the cog and the other screens' titles.
+
 ## 0.14.0
 
 - a new look: tonal colours, one slider for every choice, a flat tab bar
