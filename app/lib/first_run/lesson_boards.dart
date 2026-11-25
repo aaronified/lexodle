@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../equations.dart' show faceOf;
 import '../geography.dart';
 import '../guess_input.dart';
 import '../logic.dart';
@@ -35,66 +34,15 @@ class LessonTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    Color? fill;
-    Color fg = c.onSurface;
-    Color border = active
-        ? c.onSurface.withValues(alpha: .5)
-        : c.outlineVariant;
-    final lockColor = fixed ? markColors(c, Mark.correct).$1 : c.primary;
-    if (mark != null) {
-      (fill, fg) = markColors(c, mark!);
-      border = markBorder(c, mark!);
-    } else if (ch.isNotEmpty) {
-      border = locked ? lockColor : c.onSurface;
-    }
-    var borderWidth = 1.0;
-    if (cursor) {
-      border = c.onSurface;
-      borderWidth = 2;
-    }
-    final isBlank = ch == GuessInput.blank;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: fill,
-          border: Border.all(color: border, width: borderWidth),
-          borderRadius: BorderRadius.circular(3),
-        ),
-        child: SizedBox.expand(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Text(
-                isBlank ? '_' : faceOf(ch),
-                style: TextStyle(
-                  fontSize: size * .5,
-                  fontWeight: FontWeight.bold,
-                  color: isBlank ? fg.withValues(alpha: dimAlpha) : fg,
-                ),
-              ),
-              if (locked)
-                Positioned(
-                  top: 3,
-                  right: 3,
-                  child: TablerIcon(
-                    'lock',
-                    key: const ValueKey('locked'),
-                    size: size * .22,
-                    color: lockColor,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => MarkTile(
+    ch,
+    mark: mark,
+    size: size,
+    onTap: onTap,
+    cursor: cursor,
+    locked: locked,
+    fixed: fixed,
+  );
 }
 
 /// The board of the one-board lessons: lockdown, blind, equations, mastermind

@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 
 import 'app_log.dart';
 import 'calc_dialog.dart';
-import 'equations.dart' show faceOf;
 import 'keyboard.dart';
 import 'logic.dart';
 import 'main.dart';
@@ -93,7 +92,8 @@ class _MasterPageState extends State<MasterPage> {
   }
 
   KeyEventResult _onKey(FocusNode node, KeyEvent e) {
-    if (e is! KeyDownEvent && e is! KeyRepeatEvent) return KeyEventResult.ignored;
+    if (e is! KeyDownEvent && e is! KeyRepeatEvent)
+      return KeyEventResult.ignored;
     if (HardwareKeyboard.instance.isControlPressed ||
         HardwareKeyboard.instance.isMetaPressed ||
         HardwareKeyboard.instance.isAltPressed) {
@@ -354,8 +354,7 @@ class _MasterPageState extends State<MasterPage> {
 
   Widget _poolBlock(ColorScheme c) {
     final n = game.pool.length;
-    final list =
-        game.pool.take(24).join(' ') + (n > 24 ? ' …' : '');
+    final list = game.pool.take(24).join(' ') + (n > 24 ? ' …' : '');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -462,10 +461,7 @@ class _MasterPageState extends State<MasterPage> {
         for (final w in game.likeliest)
           _optionRow(
             word: w,
-            line: Text(
-              '${_pc(_chanceOf(w))} chance',
-              style: _dimStyle(c),
-            ),
+            line: Text('${_pc(_chanceOf(w))} chance', style: _dimStyle(c)),
           ),
       ],
     );
@@ -543,7 +539,10 @@ class _MasterPageState extends State<MasterPage> {
           style: _dimStyle(c),
         ),
       );
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: lines);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: lines,
+      );
     }
     final bits = n > 0 ? log(n) / ln2 : 0.0;
     if (skill) {
@@ -564,7 +563,9 @@ class _MasterPageState extends State<MasterPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  TextSpan(text: ' · $groups groups · skill ${r.skill.round()}'),
+                  TextSpan(
+                    text: ' · $groups groups · skill ${r.skill.round()}',
+                  ),
                 ],
               ),
               style: _dimStyle(c),
@@ -616,7 +617,8 @@ class _MasterPageState extends State<MasterPage> {
                     ),
                   ),
                   TextSpan(
-                    text: ' · ${plot.expected.toStringAsFixed(2)} bits on '
+                    text:
+                        ' · ${plot.expected.toStringAsFixed(2)} bits on '
                         'average',
                   ),
                 ],
@@ -631,7 +633,10 @@ class _MasterPageState extends State<MasterPage> {
                   'average ${_pc(up)} of the time. the rest of the time it '
                   'gains less, sometimes much less.',
               rows: [
-                ('its average gain (H)', '${plot.expected.toStringAsFixed(2)} bits'),
+                (
+                  'its average gain (H)',
+                  '${plot.expected.toStringAsFixed(2)} bits',
+                ),
                 ('chance of gaining more than H', _pc(up)),
                 ('chance of gaining less than H', _pc(1 - up)),
                 ('groups it makes', '${plot.outcomes.length}'),
@@ -646,12 +651,19 @@ class _MasterPageState extends State<MasterPage> {
         );
       }
     }
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: lines);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: lines,
+    );
   }
 
   /// One candidate: its word, a line about it, an info dot when it has a
   /// calculation, and "use".
-  Widget _optionRow({required String word, required Widget line, CalcSpec? dot}) {
+  Widget _optionRow({
+    required String word,
+    required Widget line,
+    CalcSpec? dot,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -846,7 +858,8 @@ class _MasterPageState extends State<MasterPage> {
       final full = rows.indexWhere(
         (x) => x.green + x.yellow == len && !x.word.contains(ch),
       );
-      if (z >= 0) return 'grey: guess ${z + 1} found no right letter, so $ch is out.';
+      if (z >= 0)
+        return 'grey: guess ${z + 1} found no right letter, so $ch is out.';
       if (full >= 0) {
         return 'grey: guess ${full + 1} has all $len right letters, and $ch '
             'is not among them.';
@@ -965,54 +978,6 @@ class _BlindTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    Color? fill;
-    var fg = c.onSurface;
-    var border = c.onSurface;
-    if (mark != null) {
-      (fill, fg) = markColors(c, mark!);
-      border = markBorder(c, mark!);
-    }
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(3),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: fill,
-          border: Border.all(color: border),
-          borderRadius: BorderRadius.circular(3),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Text(
-              faceOf(ch),
-              style: TextStyle(
-                fontSize: size * .5,
-                fontWeight: FontWeight.bold,
-                color: fg,
-              ),
-            ),
-            if (helper)
-              Positioned(
-                top: 3,
-                right: 3,
-                child: Container(
-                  key: const ValueKey('helper-dot'),
-                  width: 5,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: fg.withValues(alpha: .7),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      MarkTile(ch, mark: mark, size: size, onTap: onTap, helper: helper);
 }
