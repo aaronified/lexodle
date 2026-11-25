@@ -159,15 +159,108 @@ void main() {
         const Offset(-300, 0),
         1000,
       );
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(got, 'three');
       await tester.fling(
         find.byKey(const ValueKey('s')),
         const Offset(300, 0),
         1000,
       );
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(got, 'two');
+    });
+
+    testWidgets('the name follows the finger, and the next one comes in', (
+      tester,
+    ) async {
+      var got = 'two';
+      await tester.pumpWidget(
+        _app(
+          StatefulBuilder(
+            builder: (context, set) => ChoiceSlider<String>(
+              id: 's',
+              items: items,
+              selected: got,
+              onChanged: (v) => set(() => got = v),
+            ),
+          ),
+        ),
+      );
+      final x0 = tester.getCenter(find.text('two')).dx;
+      final g = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('s'))),
+      );
+      await g.moveBy(const Offset(-30, 0));
+      await g.moveBy(const Offset(-30, 0));
+      await tester.pump();
+      // 60 px of drag: the name has moved with it, nothing is chosen yet
+      expect(tester.getCenter(find.text('two')).dx, closeTo(x0 - 60, 1));
+      expect(find.text('three'), findsOneWidget);
+      expect(got, 'two');
+      // let go short of a third of the way: it slides back
+      await g.up();
+      await tester.pumpAndSettle();
+      expect(got, 'two');
+      expect(tester.getCenter(find.text('two')).dx, closeTo(x0, 1));
+      expect(find.text('three'), findsNothing);
+    });
+
+    testWidgets('a drag past a third of the way, slowly, still chooses', (
+      tester,
+    ) async {
+      var got = 'two';
+      await tester.pumpWidget(
+        _app(
+          StatefulBuilder(
+            builder: (context, set) => ChoiceSlider<String>(
+              id: 's',
+              items: items,
+              selected: got,
+              onChanged: (v) => set(() => got = v),
+            ),
+          ),
+        ),
+      );
+      final g = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('s'))),
+      );
+      for (var i = 0; i < 16; i++) {
+        await g.moveBy(const Offset(25, 0));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await g.up();
+      await tester.pumpAndSettle();
+      expect(got, 'one');
+    });
+
+    testWidgets('at an end the drag is resisted and nothing is chosen', (
+      tester,
+    ) async {
+      var got = 'one';
+      await tester.pumpWidget(
+        _app(
+          StatefulBuilder(
+            builder: (context, set) => ChoiceSlider<String>(
+              id: 's',
+              items: items,
+              selected: got,
+              onChanged: (v) => set(() => got = v),
+            ),
+          ),
+        ),
+      );
+      final x0 = tester.getCenter(find.text('one')).dx;
+      final g = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('s'))),
+      );
+      await g.moveBy(const Offset(60, 0));
+      await g.moveBy(const Offset(60, 0));
+      await tester.pump();
+      expect(tester.getCenter(find.text('one')).dx, closeTo(x0 + 40, 1));
+      await g.up();
+      await tester.pumpAndSettle();
+      expect(got, 'one');
+      expect(tester.getCenter(find.text('one')).dx, closeTo(x0, 1));
     });
 
     testWidgets('one item has no dots and a long name does not overflow', (
