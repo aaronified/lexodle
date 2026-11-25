@@ -6,7 +6,9 @@ import 'main.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart';
 import 'open_review.dart';
+import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart';
 import 'words.dart';
 
 /// How a day of a daily log looks in the streak week and its month.
@@ -163,14 +165,9 @@ class _StreakWeekState extends State<StreakWeek>
       ],
     );
 
-    return Container(
+    return TonalCard(
       key: const ValueKey('streak-week'),
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      decoration: BoxDecoration(
-        color: c.surfaceContainerHighest,
-        border: Border.fromBorderSide(hairline(c)),
-        borderRadius: BorderRadius.circular(3),
-      ),
+      padding: const EdgeInsets.all(12),
       child: LayoutBuilder(
         builder: (context, box) {
           final width = box.maxWidth;
@@ -276,7 +273,7 @@ class _StreakWeekState extends State<StreakWeek>
     );
   }
 
-  /// One of the two arrows beside the month name: a hairline square, dim when
+  /// One of the two arrows beside the month name: a tonal square, dim when
   /// there is no month that way.
   Widget _monthArrow(
     ColorScheme c,
@@ -293,13 +290,13 @@ class _StreakWeekState extends State<StreakWeek>
       child: InkWell(
         key: key,
         onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(radiusElement),
         child: Container(
           width: 36,
-          height: 32,
+          height: 40,
           decoration: BoxDecoration(
-            border: Border.all(color: c.outlineVariant),
-            borderRadius: BorderRadius.circular(4),
+            color: tonesOf(context).s2,
+            borderRadius: BorderRadius.circular(radiusElement),
           ),
           child: Icon(
             icon,
@@ -407,7 +404,6 @@ class _StreakWeekState extends State<StreakWeek>
       required Widget top,
       required Widget bottom,
       required bool mark,
-      bool bordered = false,
       VoidCallback? onTap,
     }) {
       final m = markOf(date);
@@ -418,11 +414,7 @@ class _StreakWeekState extends State<StreakWeek>
         padding: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           color: isToday ? c.secondaryContainer : null,
-          // the month's days are the only bordered thing in the app
-          border: bordered && !isToday
-              ? Border.all(color: c.outlineVariant)
-              : null,
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(radiusInner),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -439,7 +431,7 @@ class _StreakWeekState extends State<StreakWeek>
             ? box
             : InkWell(
                 key: ValueKey('sw-open-$date'),
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: BorderRadius.circular(radiusInner),
                 onTap: onTap,
                 child: box,
               ),
@@ -548,7 +540,6 @@ class _StreakWeekState extends State<StreakWeek>
                         'month',
                         date,
                         mark: past,
-                        bordered: true,
                         onTap: canOpen
                             ? () => _openDay(lang, mode, date)
                             : null,
