@@ -261,7 +261,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('history-button')));
       await tester.pumpAndSettle();
       expect(find.byType(HistoryPage), findsOneWidget);
-      await tester.pageBack();
+      await tester.tap(find.byKey(const ValueKey('header-back')));
       await tester.pumpAndSettle();
       expect(find.byType(HistoryPage), findsNothing);
     });

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/ui_kit.dart';
 import 'package:lexodle/game_modes_dialog.dart';
 import 'package:lexodle/learn_guide.dart';
 import 'package:lexodle/learn_home.dart';
@@ -44,8 +45,12 @@ void main() {
     ))!;
     await tester.pumpWidget(MaterialApp(home: LearnHomePage(bank: bank)));
     await tester.pump();
+    // the learn home's header is text only, like every tab screen
     expect(
-      find.descendant(of: find.byType(AppBar), matching: hat()),
+      find.descendant(
+        of: find.byType(PageHeader),
+        matching: find.text('learn'),
+      ),
       findsOneWidget,
     );
     await tester.pumpWidget(
