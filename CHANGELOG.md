@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- collected words: a lighter bookmark on every tile
+  Each tile of the collected grid carried a full button with a tooltip and a listener of its own. A tile has a light bookmark now, and the grid draws about a quarter faster.
+
 - words: the lists scroll smoothly
   Both lists built every row at once, however long: the collected grid was drawn whole, and with the all stop that was every word of every language. The rows are built as they scroll into view now.
 
