@@ -10,9 +10,19 @@ import 'words.dart';
 /// The bookmark on an end screen: saves the answer word to the personal
 /// dictionary with its Wiktionary entry, or removes it again.
 class SaveWordButton extends StatefulWidget {
-  const SaveWordButton({super.key, required this.word, required this.language});
+  const SaveWordButton({
+    super.key,
+    required this.word,
+    required this.language,
+    this.compact = false,
+  });
   final String word;
   final Language language;
+
+  /// For a list of many: a light bookmark with no tooltip and no listener of its
+  /// own (the list rebuilds its rows when the saved words change), so a long
+  /// list scrolls smoothly. The bookmark of an end screen is the full button.
+  final bool compact;
 
   @override
   State<SaveWordButton> createState() => _SaveWordButtonState();
@@ -77,6 +87,30 @@ class _SaveWordButtonState extends State<SaveWordButton> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.compact) {
+      final saved = appState.isWordSaved(widget.language.code, widget.word);
+      return Semantics(
+        button: true,
+        label: saved ? 'remove from my words' : 'save to my words',
+        excludeSemantics: true,
+        child: InkResponse(
+          key: const ValueKey('save-word'),
+          onTap: _tap,
+          radius: 22,
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: TablerIcon(
+                saved ? 'bookmark-filled' : 'bookmark',
+                size: 24,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return ListenableBuilder(
       listenable: appState,
       builder: (context, _) {

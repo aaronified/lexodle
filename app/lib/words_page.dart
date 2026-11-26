@@ -941,7 +941,7 @@ class _WordsPageState extends State<WordsPage> {
               ),
             ),
             if (_langByCode?[lang] case final language?)
-              SaveWordButton(word: word, language: language)
+              SaveWordButton(word: word, language: language, compact: true)
             else if (_saved(lang, word))
               TablerIcon('bookmark-filled', size: 16, color: c.primary),
           ],
