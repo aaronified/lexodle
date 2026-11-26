@@ -29,6 +29,14 @@ class WordsPage extends StatefulWidget {
   State<WordsPage> createState() => _WordsPageState();
 }
 
+/// One list of the words page: what is above the rows, and the rows as a lazy
+/// sliver, so only the rows on screen are built however long the list is.
+class _Page {
+  const _Page(this.top, [this.sliver]);
+  final List<Widget> top;
+  final Widget? sliver;
+}
+
 class _WordsPageState extends State<WordsPage> {
   /// The language choice; null is all of them.
   String? _lang;
@@ -148,11 +156,25 @@ class _WordsPageState extends State<WordsPage> {
     );
   }
 
-  /// One page: its content, and the goal card of its list at the end.
-  Widget _list(List<Widget> children) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-      children: [...children, _banner()],
+  /// One page: its content, the rows built as they scroll into view, and the
+  /// goal card of its list at the end.
+  Widget _list(_Page p) {
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          sliver: SliverList(delegate: SliverChildListDelegate(p.top)),
+        ),
+        if (p.sliver != null)
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: p.sliver!,
+          ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          sliver: SliverToBoxAdapter(child: _banner()),
+        ),
+      ],
     );
   }
 
@@ -262,14 +284,14 @@ class _WordsPageState extends State<WordsPage> {
     );
   }
 
-  List<Widget> _savedBody(BuildContext context, ColorScheme c) {
+  _Page _savedBody(BuildContext context, ColorScheme c) {
     final all = _all();
     if (all.isEmpty) {
-      return const [
+      return const _Page([
         Caption(
           'no words saved yet. tap the bookmark on the end screen of a game.',
         ),
-      ];
+      ]);
     }
 
     // a choice whose language has no saved word left is no choice
@@ -281,7 +303,7 @@ class _WordsPageState extends State<WordsPage> {
       _savedSort,
     );
 
-    return [
+    final top = <Widget>[
       _controlRow(
         slider: ChoiceSlider<String?>(
           id: 'words-language',
@@ -339,21 +361,27 @@ class _WordsPageState extends State<WordsPage> {
       const SizedBox(height: 16),
       // the line under the search, the same on both lists
       _subtext(c, '${all.length} saved · tap a word for its entry'),
-      if (rows.isEmpty)
-        const Caption('no saved word matches.')
-      else
-        for (final w in rows) _row(context, c, w),
+      if (rows.isEmpty) const Caption('no saved word matches.'),
     ];
+    return _Page(
+      top,
+      rows.isEmpty
+          ? null
+          : SliverList.builder(
+              itemCount: rows.length,
+              itemBuilder: (context, i) => _row(context, c, rows[i]),
+            ),
+    );
   }
 
-  List<Widget> _collectedBody(BuildContext context, ColorScheme c) {
+  _Page _collectedBody(BuildContext context, ColorScheme c) {
     final col = _collection();
     if (col == null || col.total == 0) {
-      return const [
+      return const _Page([
         Caption(
           'no words collected yet. every word you win is collected here.',
         ),
-      ];
+      ]);
     }
 
     final langs = col.languages;
@@ -387,7 +415,7 @@ class _WordsPageState extends State<WordsPage> {
       summary = '${won.length} words won in $name · $savedHere saved here';
     }
 
-    return [
+    final top = <Widget>[
       _controlRow(
         slider: ChoiceSlider<String>(
           id: 'collected-language',
@@ -450,35 +478,36 @@ class _WordsPageState extends State<WordsPage> {
       ),
       const SizedBox(height: 16),
       if (summary != null) _subtext(c, summary),
-      if (keys.isEmpty)
-        const Caption('no collected word matches.')
-      else
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: keys.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            mainAxisExtent: 52,
-          ),
-          itemBuilder: (context, i) {
-            if (sel == 'places') return _placeTile(context, c, keys[i]);
-            if (sel == allLanguages) {
-              final t = keys[i].indexOf('\t');
-              return _collectedTile(
-                context,
-                c,
-                keys[i].substring(0, t),
-                keys[i].substring(t + 1),
-                flag: true,
-              );
-            }
-            return _collectedTile(context, c, sel, keys[i]);
-          },
-        ),
+      if (keys.isEmpty) const Caption('no collected word matches.'),
     ];
+    return _Page(
+      top,
+      keys.isEmpty
+          ? null
+          : SliverGrid.builder(
+              itemCount: keys.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                mainAxisExtent: 52,
+              ),
+              itemBuilder: (context, i) {
+                if (sel == 'places') return _placeTile(context, c, keys[i]);
+                if (sel == allLanguages) {
+                  final t = keys[i].indexOf('\t');
+                  return _collectedTile(
+                    context,
+                    c,
+                    keys[i].substring(0, t),
+                    keys[i].substring(t + 1),
+                    flag: true,
+                  );
+                }
+                return _collectedTile(context, c, sel, keys[i]);
+              },
+            ),
+    );
   }
 
   /// The dim line under the search: what the list holds.
