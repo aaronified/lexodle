@@ -341,6 +341,22 @@ void main() {
       expect(crow('en', 'clubs'), findsNothing);
     });
 
+    testWidgets('a long list builds only the rows on screen', (tester) async {
+      for (var i = 0; i < 600; i++) {
+        appState.collection.addWord('en', 'w${i.toString().padLeft(4, 'a')}');
+      }
+      appState.refresh();
+      await openCollected(tester);
+      final built = find.byWidgetPredicate(
+        (w) =>
+            w.key is ValueKey &&
+            '${(w.key! as ValueKey).value}'.startsWith('collected-row-'),
+      );
+      // 600 words, a couple of dozen of them built
+      expect(built.evaluate().length, lessThan(60));
+      expect(built.evaluate().length, greaterThan(0));
+    });
+
     testWidgets('search narrows the collected rows', (tester) async {
       seed();
       await openCollected(tester);
