@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.14.3
+
 - words: the lists scroll smoothly
   Both lists built every row at once, however long: the collected grid was drawn whole, and with the all stop that was every word of every language. The rows are built as they scroll into view now.
 
