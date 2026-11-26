@@ -176,24 +176,21 @@ GuessQuestion? buildGuessQuestion({
     final eligible = filterEligible(answers, first, marks);
     if (eligible.length < 40 || eligible.length > 500) continue;
     final context = SplitContext(eligible, weights);
-    final candidates = <String>{
-      ...guessable.take(3000),
-      ...eligible,
-    }..remove(first);
-    final scored = <(String, double)>[
-      for (final w in candidates) (w, context.stats(w).h),
-    ]..sort((a, b) {
-      final c = b.$2.compareTo(a.$2);
-      return c != 0 ? c : a.$1.compareTo(b.$1);
-    });
+    final candidates = <String>{...guessable.take(3000), ...eligible}
+      ..remove(first);
+    final scored =
+        <(String, double)>[for (final w in candidates) (w, context.stats(w).h)]
+          ..sort((a, b) {
+            final c = b.$2.compareTo(a.$2);
+            return c != 0 ? c : a.$1.compareTo(b.$1);
+          });
     final bestH = scored.first.$2;
     final words = kind == GuessKind.skill
         ? _skillWords(scored, bestH, rng)
         : _luckWords(scored, context, answer, rng);
     if (words == null) continue;
     final options = [
-      for (final w in words)
-        _option(context, eligible, w, answer, bestH),
+      for (final w in words) _option(context, eligible, w, answer, bestH),
     ]..shuffle(rng);
     return GuessQuestion(
       kind: kind,

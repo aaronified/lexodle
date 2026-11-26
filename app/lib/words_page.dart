@@ -23,7 +23,11 @@ enum _Sort { newest, oldest, az, za }
 /// a sort menu and a search over the word, the note and the first meaning.
 /// A second tab shows the words and places won (see collection.dart).
 class WordsPage extends StatefulWidget {
-  const WordsPage({super.key});
+  const WordsPage({super.key, this.back = false});
+
+  /// Whether the page was opened as a screen of its own (a back arrow), and
+  /// not as the words tab.
+  final bool back;
 
   @override
   State<WordsPage> createState() => _WordsPageState();
@@ -128,9 +132,9 @@ class _WordsPageState extends State<WordsPage> {
     return Column(
       children: [
         // the two lists are the header: their tabs sit in the shared title row.
-        // A back arrow shows only when the page was opened on top of another.
+        // A back arrow shows only when the page was opened as a screen of its own.
         PageHeader(
-          back: Navigator.of(context).canPop(),
+          back: widget.back,
           title: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: _tabs(c),

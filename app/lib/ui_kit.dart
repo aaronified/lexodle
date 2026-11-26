@@ -607,7 +607,15 @@ class ChoiceSlider<T> extends StatefulWidget {
     this.onTapName,
     this.title = 'choose',
     this.footer,
+    this.caption,
+    this.float = false,
   });
+
+  /// A small line under every name in the bar (what the slider is for).
+  final String? caption;
+
+  /// Whether the bar floats: a soft shadow under it.
+  final bool float;
 
   /// Called when the name in the middle is tapped; without it a tap opens the
   /// popup list of the choices.
@@ -766,12 +774,27 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
         ),
       ],
     );
-    if (!tap) return row;
+    final cap = widget.caption;
+    final shown = cap == null
+        ? row
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              row,
+              Text(
+                cap,
+                maxLines: 1,
+                style: TextStyle(fontSize: 11, color: c.onSurfaceVariant),
+              ),
+            ],
+          );
+    if (!tap) return shown;
     return InkWell(
       key: ValueKey('${widget.id}-name'),
       borderRadius: BorderRadius.circular(radiusElement),
       onTap: widget.onTapName ?? _openPicker,
-      child: row,
+      child: shown,
     );
   }
 
@@ -815,6 +838,7 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
         borderRadius: BorderRadius.circular(
           widget.compact ? radiusElement : radiusContainer,
         ),
+        boxShadow: widget.float ? floatShadow(context) : null,
       ),
       child: Row(
         children: [
@@ -922,6 +946,19 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
       ),
     );
   }
+}
+
+/// The soft shadow of a control that floats over the page: dark and wide on a
+/// dark page, lighter on a light one.
+List<BoxShadow> floatShadow(BuildContext context) {
+  final dark = Theme.of(context).brightness == Brightness.dark;
+  return [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: dark ? .55 : .16),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
 }
 
 /// The bar at the foot of the shell: flat, on the page colour, a hairline above

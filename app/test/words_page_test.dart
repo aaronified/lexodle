@@ -71,6 +71,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('the words tab has no back arrow, even with a route under it', (
+    tester,
+  ) async {
+    await page(tester);
+    expect(find.byIcon(Icons.arrow_back), findsNothing);
+  });
+
   Finder row(String lang, String word) =>
       find.byKey(ValueKey('word-row-$lang-$word'));
 

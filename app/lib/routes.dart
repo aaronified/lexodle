@@ -195,7 +195,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case Routes.history:
       return page(const HistoryPage());
     case Routes.words:
-      return page(const WordsPage());
+      return page(const WordsPage(back: true));
     case Routes.collected:
       final ref = settings.arguments;
       return page(
