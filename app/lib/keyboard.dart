@@ -546,24 +546,35 @@ class _QuadKey extends StatelessWidget {
     final halo = ink == c.surface ? c.onSurface : c.surface;
     // the key's fill is the tonal one, so a key the boards have all greyed (or
     // left clear) still stands out from the page, with no shadow or edge
+    // a quarter no board has marked is untried: the key is outlined like any
+    // untried key, and filled only when every board has marked it
+    final untried = colors.any((x) => x == null);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: base,
+        color: untried ? null : base,
         borderRadius: BorderRadius.circular(radiusInner),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radiusInner),
-        child: SizedBox(
-          height: height,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CustomPaint(
-                key: ValueKey('quad-$label'),
-                painter: QuadPainter(colors),
-              ),
-              Center(child: _HaloText(label, ink, halo)),
-            ],
+      position: DecorationPosition.background,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: untried ? Border.all(color: tonesOf(context).line) : null,
+          borderRadius: BorderRadius.circular(radiusInner),
+        ),
+        position: DecorationPosition.foreground,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radiusInner),
+          child: SizedBox(
+            height: height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CustomPaint(
+                  key: ValueKey('quad-$label'),
+                  painter: QuadPainter(colors),
+                ),
+                Center(child: _HaloText(label, ink, halo)),
+              ],
+            ),
           ),
         ),
       ),
