@@ -7,6 +7,15 @@ it to the version.
 
 ## Unreleased
 
+- quartet: keys no board has marked are outlined
+  A key greyed on one board only was drawn as a filled key, so it looked tried. It is outlined like any untried key, and filled only once every board has marked it.
+
+- words: no back arrow on the tab
+  The arrow showed when any screen lay under the tab. It shows only when words is opened as a screen of its own.
+
+- today: all done at the foot of the list, free play in the slider
+  The all done line is the last row of the scrolled area. The slider says free play under every mode, and floats on a soft shadow, like its play button. Dialogs, sheets, menus and the key popups have a deeper shadow too.
+
 ## 0.14.3
 
 - words: the lists scroll smoothly

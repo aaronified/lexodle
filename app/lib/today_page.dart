@@ -154,7 +154,7 @@ class TodayPage extends StatelessWidget {
               // read: with many dailies the list scrolls (128 holds the icon, the
               // name and the state line with room around them)
               final n = (rows.length + 1) ~/ 2;
-              final free = box.maxHeight - 268 - 8 * (n - 1);
+              final free = box.maxHeight - 244 - 8 * (n - 1);
               final tileHeight = n == 0
                   ? 128.0
                   : (free / n).clamp(128.0, 148.0).toDouble();
@@ -245,6 +245,17 @@ class TodayPage extends StatelessWidget {
                             rows: [for (final r in rows) _groupRow(context, r)],
                           ),
                         if (newPlayer) ..._cards(context, lang),
+                        // all done: the last row of the scrolled area
+                        if (next == null) ...[
+                          const SizedBox(height: 16),
+                          Center(
+                            child: Text(
+                              'all done · the next dailies open in ${_untilNext()}',
+                              key: const ValueKey('today-all-done'),
+                              style: TextStyle(fontSize: 12, color: dim),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -253,7 +264,7 @@ class TodayPage extends StatelessWidget {
             },
           ),
         ),
-        _bottomBar(context, c, next),
+        _bottomBar(context, c),
       ],
     );
   }
@@ -705,16 +716,6 @@ class TodayPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(2, 0, 2, 6),
-            child: Text(
-              'free play',
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -722,6 +723,8 @@ class TodayPage extends StatelessWidget {
                 child: ChoiceSlider<GameMode>(
                   id: 'free-play',
                   title: 'free play',
+                  caption: 'free play',
+                  float: true,
                   compact: true,
                   items: [
                     for (final m in open)
@@ -746,27 +749,33 @@ class TodayPage extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               // the name opens the list of modes, so the game starts from here
-              SizedBox(
-                width: 48,
-                height: 48,
-                child: FilledButton(
-                  key: const ValueKey('free-play-start'),
-                  style: FilledButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(48, 48),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(radiusElement),
+                  boxShadow: floatShadow(context),
+                ),
+                child: SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: FilledButton(
+                    key: const ValueKey('free-play-start'),
+                    style: FilledButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(48, 48),
+                    ),
+                    onPressed: () {
+                      try {
+                        if (shown != appState.mode) appState.setup(mode: shown);
+                      } catch (e) {
+                        appLog.w(
+                          'today',
+                          'could not set the mode: ${e.runtimeType}',
+                        );
+                      }
+                      _freePlay(context);
+                    },
+                    child: const Icon(Icons.play_arrow),
                   ),
-                  onPressed: () {
-                    try {
-                      if (shown != appState.mode) appState.setup(mode: shown);
-                    } catch (e) {
-                      appLog.w(
-                        'today',
-                        'could not set the mode: ${e.runtimeType}',
-                      );
-                    }
-                    _freePlay(context);
-                  },
-                  child: const Icon(Icons.play_arrow),
                 ),
               ),
             ],
@@ -776,28 +785,14 @@ class TodayPage extends StatelessWidget {
     );
   }
 
-  Widget _bottomBar(BuildContext context, ColorScheme c, _Row? next) {
-    final allDone = next == null;
+  Widget _bottomBar(BuildContext context, ColorScheme c) {
     return Container(
       key: const ValueKey('today-bar'),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(color: c.surface),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          if (allDone) ...[
-            Text(
-              'all done · the next dailies open in ${_untilNext()}',
-              key: const ValueKey('today-all-done'),
-              style: TextStyle(
-                fontSize: 12,
-                color: c.onSurface.withValues(alpha: dimAlpha),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          _modeButton(context),
-        ],
+        children: [_modeButton(context)],
       ),
     );
   }
