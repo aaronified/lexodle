@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- reminders are per language
+  Each language has its own reminders: on or off, the time the dailies open, the nudge times and days. While the reminders sheet is open, the pill in the top bar picks the language you are editing, and a notification names only that language's dailies. The reminders you had become those of the language you were using.
+
 - history, achievements and the playstyle take the top bar's language pill
   While one of these sheets is open, the pill in the top bar is its language choice: it has an all stop, and all is where it starts. The sheets no longer carry a language slider of their own, and choosing a language there does not change the language of the app. History and the playstyle can now be read for all languages together.
 

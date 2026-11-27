@@ -60,7 +60,7 @@ void main() {
     test('they are saved and read back', () async {
       appState.setReminders(rs(minutes: 8 * 60 + 5, days: {1, 3}));
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('reminders'), contains('"on":true'));
+      expect(prefs.getString('remindersByLang'), contains('"on":true'));
       await appState.load();
       expect(appState.reminders.on, isTrue);
       expect(appState.reminders.reminders.single.hour, 8);
@@ -121,7 +121,7 @@ void main() {
     test('a backup keeps them', () {
       appState.setReminders(rs(minutes: 7 * 60, days: {2, 4}));
       final json = appState.settingsJson();
-      expect(json['reminders'], isA<Map>());
+      expect(json['remindersByLang'], isA<Map>());
       appState.setReminders(const ReminderSettings());
       expect(appState.reminders.on, isFalse);
       appState.restore(settings: json, stats: appState.stats, ach: const {});

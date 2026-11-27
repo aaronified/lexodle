@@ -90,7 +90,7 @@ void main() {
           'share',
           'theme',
           'seenHowTo',
-          'reminders',
+          'remindersByLang',
           'modesTaught',
           'dailyIntroSeen',
           'introCardsDone',
@@ -113,17 +113,20 @@ void main() {
 
     test('two reminders and the open notification round trip', () {
       final st = sample()
-        ..reminders = const ReminderSettings(
-          on: true,
-          reminders: [
-            ReminderTime(minutes: 600, days: {1, 2}),
-            ReminderTime(minutes: 1200, days: {6}),
-          ],
-          available: true,
-          availableMinutes: 450,
+        ..setReminders(
+          const ReminderSettings(
+            on: true,
+            reminders: [
+              ReminderTime(minutes: 600, days: {1, 2}),
+              ReminderTime(minutes: 1200, days: {6}),
+            ],
+            available: true,
+            availableMinutes: 450,
+          ),
         );
       final b = parseBackup(backupToText(st));
-      expect(ReminderSettings.fromJson(b.settings['reminders']), st.reminders);
+      final byLang = b.settings['remindersByLang'] as Map;
+      expect(ReminderSettings.fromJson(byLang[st.lang]), st.reminders);
     });
 
     test('a backup with the old single time becomes the first reminder', () {
