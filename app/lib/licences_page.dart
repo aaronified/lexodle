@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart' show LicenseRegistry;
 import 'package:flutter/material.dart';
 
+import 'page_sheet.dart';
 import 'routes.dart';
 
 import 'ui.dart';
@@ -253,91 +254,84 @@ class _LicencesPageState extends State<LicencesPage> {
       },
     );
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('about and licences')),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return PageSheet(
+      title: 'about and licences',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.about.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(19, 0, 19, 10),
+              child: Text(
+                widget.about,
+                key: const ValueKey('about-text'),
+                style: dim,
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(19, 0, 19, 6),
+            child: TextField(
+              key: const ValueKey('licences-search'),
+              controller: _search,
+              decoration: InputDecoration(
+                hintText: 'search the licences',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        key: const ValueKey('licences-search-clear'),
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          _search.clear();
+                          setState(() => _query = '');
+                        },
+                      ),
+                isDense: true,
+              ),
+              onChanged: (v) => setState(() => _query = v),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(19, 0, 19, 4),
+            child: Text(
+              _all == null
+                  ? 'reading the licences…'
+                  : '${shown.length} of ${_all!.length}',
+              key: const ValueKey('licences-count'),
+              style: dim,
+            ),
+          ),
+          Expanded(
+            child: Stack(
               children: [
-                if (widget.about.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(19, 0, 19, 10),
-                    child: Text(
-                      widget.about,
-                      key: const ValueKey('about-text'),
-                      style: dim,
-                    ),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(19, 0, 19, 6),
-                  child: TextField(
-                    key: const ValueKey('licences-search'),
-                    controller: _search,
-                    decoration: InputDecoration(
-                      hintText: 'search the licences',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _query.isEmpty
-                          ? null
-                          : IconButton(
-                              key: const ValueKey('licences-search-clear'),
-                              icon: const Icon(Icons.close),
-                              onPressed: () {
-                                _search.clear();
-                                setState(() => _query = '');
-                              },
-                            ),
-                      isDense: true,
-                    ),
-                    onChanged: (v) => setState(() => _query = v),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(19, 0, 19, 4),
-                  child: Text(
-                    _all == null
-                        ? 'reading the licences…'
-                        : '${shown.length} of ${_all!.length}',
-                    key: const ValueKey('licences-count'),
-                    style: dim,
-                  ),
-                ),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      list(),
-                      if (letters.isNotEmpty)
-                        Positioned(right: 0, top: 4, bottom: 4, child: strip()),
-                      if (_bubble != null)
-                        Center(
-                          child: Container(
-                            key: const ValueKey('licences-bubble'),
-                            width: 72,
-                            height: 72,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: c.primary,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Text(
-                              _bubble!,
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: c.onPrimary,
-                              ),
-                            ),
-                          ),
+                list(),
+                if (letters.isNotEmpty)
+                  Positioned(right: 0, top: 4, bottom: 4, child: strip()),
+                if (_bubble != null)
+                  Center(
+                    child: Container(
+                      key: const ValueKey('licences-bubble'),
+                      width: 72,
+                      height: 72,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: c.primary,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        _bubble!,
+                        style: TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: c.onPrimary,
                         ),
-                    ],
+                      ),
+                    ),
                   ),
-                ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

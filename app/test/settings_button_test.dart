@@ -46,11 +46,8 @@ void main() {
   final pages = <String, Widget>{
     'today': const Scaffold(body: TodayPage()),
     'words': const WordsPage(),
-    'achievements': const AchievementsPage(),
     'mastery': const MasteryPage(),
-    'history': const HistoryPage(),
     'playstyle': const PlaystylePage(),
-    'mode settings': const ModeSettingsPage(),
   };
 
   for (final e in pages.entries) {

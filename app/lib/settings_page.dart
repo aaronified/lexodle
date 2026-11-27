@@ -13,6 +13,7 @@ import 'log_section.dart';
 import 'precomputed_local.dart';
 import 'precomputed_section.dart';
 import 'main.dart';
+import 'page_sheet.dart';
 import 'routes.dart';
 import 'update_section.dart';
 import 'tonal.dart';
@@ -52,194 +53,172 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final tones = tonesOf(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListenableBuilder(
-              listenable: appState,
-              builder: (context, _) {
-                final dark = appState.themeMode == ThemeMode.dark;
-                return ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                  children: [
-                    const PageHeader(
-                      text: 'settings',
-                      back: true,
-                      settings: false,
-                    ),
-                    if (appState.stepOpen('theme')) ...[
-                      const SectionLabel('theme', first: true),
-                      // a tonal track; the chosen one is the green
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: tones.s1,
-                          borderRadius: BorderRadius.circular(radiusElement),
-                        ),
-                        child: Row(
-                          children: [
-                            for (final (m, label) in const [
-                              (ThemeMode.light, 'light'),
-                              (ThemeMode.dark, 'dark'),
-                              (ThemeMode.system, 'system'),
-                            ])
-                              Expanded(
-                                child: InkWell(
-                                  key: ValueKey('theme-$label'),
-                                  borderRadius: BorderRadius.circular(
-                                    radiusInner,
-                                  ),
-                                  onTap: () => appState.setup(
-                                    themeMode: m,
-                                    black:
-                                        m == ThemeMode.dark &&
-                                        appState.blackTheme,
-                                  ),
-                                  child: Container(
-                                    height: 40,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: appState.themeMode == m
-                                          ? c.secondaryContainer
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(
-                                        radiusInner,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      label,
-                                      style: TextStyle(
-                                        fontWeight: appState.themeMode == m
-                                            ? FontWeight.bold
-                                            : null,
-                                        color: appState.themeMode == m
-                                            ? c.onSecondaryContainer
-                                            : c.onSurface,
-                                      ),
-                                    ),
-                                  ),
+    return PageSheet(
+      title: 'settings',
+      child: ListenableBuilder(
+        listenable: appState,
+        builder: (context, _) {
+          final dark = appState.themeMode == ThemeMode.dark;
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            children: [
+              if (appState.stepOpen('theme')) ...[
+                const SectionLabel('theme', first: true),
+                // a tonal track; the chosen one is the green
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: tones.s1,
+                    borderRadius: BorderRadius.circular(radiusElement),
+                  ),
+                  child: Row(
+                    children: [
+                      for (final (m, label) in const [
+                        (ThemeMode.light, 'light'),
+                        (ThemeMode.dark, 'dark'),
+                        (ThemeMode.system, 'system'),
+                      ])
+                        Expanded(
+                          child: InkWell(
+                            key: ValueKey('theme-$label'),
+                            borderRadius: BorderRadius.circular(radiusInner),
+                            onTap: () => appState.setup(
+                              themeMode: m,
+                              black: m == ThemeMode.dark && appState.blackTheme,
+                            ),
+                            child: Container(
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: appState.themeMode == m
+                                    ? c.secondaryContainer
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(
+                                  radiusInner,
                                 ),
                               ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      GroupedList(
-                        rows: [
-                          GroupRow(
-                            title: const Text('true black'),
-                            subtitle: const Text(
-                              'for OLED screens: pure #000000 when dark',
-                            ),
-                            trailing: KeyedSubtree(
-                              key: const ValueKey('black-switch'),
-                              child: Switch(
-                                value: appState.blackTheme,
-                                onChanged: dark
-                                    ? (on) => appState.setup(
-                                        themeMode: ThemeMode.dark,
-                                        black: on,
-                                      )
-                                    : null,
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  fontWeight: appState.themeMode == m
+                                      ? FontWeight.bold
+                                      : null,
+                                  color: appState.themeMode == m
+                                      ? c.onSecondaryContainer
+                                      : c.onSurface,
+                                ),
                               ),
                             ),
                           ),
-                        ],
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                GroupedList(
+                  rows: [
+                    GroupRow(
+                      title: const Text('true black'),
+                      subtitle: const Text(
+                        'for OLED screens: pure #000000 when dark',
                       ),
-                    ],
-                    const SectionLabel('touch'),
-                    GroupedList(
-                      rows: [
-                        GroupRow(
-                          title: const Text('vibrate on press'),
-                          subtitle: const Text('a tap of feedback on phones.'),
-                          trailing: Switch(
-                            key: const ValueKey('haptics-switch'),
-                            value: appState.haptics,
-                            onChanged: (on) {
-                              appState.setHaptics(on);
-                              // so the player feels what was just turned on
-                              if (on) Haptics.fire(Haptic.submit);
-                            },
-                          ),
+                      trailing: KeyedSubtree(
+                        key: const ValueKey('black-switch'),
+                        child: Switch(
+                          value: appState.blackTheme,
+                          onChanged: dark
+                              ? (on) => appState.setup(
+                                  themeMode: ThemeMode.dark,
+                                  black: on,
+                                )
+                              : null,
                         ),
-                        GroupRow(
-                          title: const Text('sound'),
-                          subtitle: const Text(
-                            'the crack of a heart in lockdown.',
-                          ),
-                          trailing: Switch(
-                            key: const ValueKey('sound-switch'),
-                            value: appState.sound,
-                            onChanged: (on) {
-                              appState.setSound(on);
-                              if (on) Sounds.crack();
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (appState.stepOpen('reminders')) ...[
-                      const SizedBox(height: 12),
-                      GroupedList(
-                        rows: [
-                          GroupRow(
-                            key: const ValueKey('settings-row-reminders'),
-                            title: const Text('reminders'),
-                            subtitle: const Text(
-                              'a ping when your dailies open',
-                            ),
-                            onTap: () => _push(context, Routes.reminders),
-                          ),
-                        ],
                       ),
-                    ],
-                    if (appState.stepOpen('backup')) ...[
-                      const SectionLabel('backup'),
-                      const _BackupSection(),
-                    ],
-                    if (updatesSupported) ...[
-                      const SectionLabel('updates'),
-                      const UpdateSection(),
-                    ],
-                    if (PrecomputedLocal.supported) ...[
-                      const SectionLabel('faster openings'),
-                      const PrecomputedSection(),
-                    ],
-                    const SectionLabel('log'),
-                    const LogSection(),
-                    if (appState.stepOpen('support')) ...[
-                      const SectionLabel('support lexodle'),
-                      const DonateSection(),
-                    ],
-                    const SectionLabel('about'),
-                    GroupedList(
-                      rows: [
-                        if (appState.stepOpen("what's new"))
-                          GroupRow(
-                            key: const ValueKey('settings-row-whatsnew'),
-                            title: const Text("what's new"),
-                            subtitle: const Text(
-                              'what changed in this version',
-                            ),
-                            onTap: () => _showChanges(context),
-                          ),
-                        GroupRow(
-                          key: const ValueKey('licences-button'),
-                          title: const Text('about and licences'),
-                          onTap: () =>
-                              Navigator.pushNamed(context, Routes.about),
-                        ),
-                      ],
                     ),
                   ],
-                );
-              },
-            ),
-          ),
-        ),
+                ),
+              ],
+              const SectionLabel('touch'),
+              GroupedList(
+                rows: [
+                  GroupRow(
+                    title: const Text('vibrate on press'),
+                    subtitle: const Text('a tap of feedback on phones.'),
+                    trailing: Switch(
+                      key: const ValueKey('haptics-switch'),
+                      value: appState.haptics,
+                      onChanged: (on) {
+                        appState.setHaptics(on);
+                        // so the player feels what was just turned on
+                        if (on) Haptics.fire(Haptic.submit);
+                      },
+                    ),
+                  ),
+                  GroupRow(
+                    title: const Text('sound'),
+                    subtitle: const Text('the crack of a heart in lockdown.'),
+                    trailing: Switch(
+                      key: const ValueKey('sound-switch'),
+                      value: appState.sound,
+                      onChanged: (on) {
+                        appState.setSound(on);
+                        if (on) Sounds.crack();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              if (appState.stepOpen('reminders')) ...[
+                const SizedBox(height: 12),
+                GroupedList(
+                  rows: [
+                    GroupRow(
+                      key: const ValueKey('settings-row-reminders'),
+                      title: const Text('reminders'),
+                      subtitle: const Text('a ping when your dailies open'),
+                      onTap: () => _push(context, Routes.reminders),
+                    ),
+                  ],
+                ),
+              ],
+              if (appState.stepOpen('backup')) ...[
+                const SectionLabel('backup'),
+                const _BackupSection(),
+              ],
+              if (updatesSupported) ...[
+                const SectionLabel('updates'),
+                const UpdateSection(),
+              ],
+              if (PrecomputedLocal.supported) ...[
+                const SectionLabel('faster openings'),
+                const PrecomputedSection(),
+              ],
+              const SectionLabel('log'),
+              const LogSection(),
+              if (appState.stepOpen('support')) ...[
+                const SectionLabel('support lexodle'),
+                const DonateSection(),
+              ],
+              const SectionLabel('about'),
+              GroupedList(
+                rows: [
+                  if (appState.stepOpen("what's new"))
+                    GroupRow(
+                      key: const ValueKey('settings-row-whatsnew'),
+                      title: const Text("what's new"),
+                      subtitle: const Text('what changed in this version'),
+                      onTap: () => _showChanges(context),
+                    ),
+                  GroupRow(
+                    key: const ValueKey('licences-button'),
+                    title: const Text('about and licences'),
+                    onTap: () => Navigator.pushNamed(context, Routes.about),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }

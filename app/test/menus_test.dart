@@ -49,9 +49,7 @@ void main() {
       expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
     });
 
-    testWidgets('the language opens a sheet of every language', (
-      tester,
-    ) async {
+    testWidgets('the language opens a sheet of every language', (tester) async {
       await home(tester);
       expect(find.byKey(const ValueKey('language-sheet')), findsNothing);
       await tester.tap(find.byKey(const ValueKey('language-button')));

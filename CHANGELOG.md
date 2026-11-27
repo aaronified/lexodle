@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- settings, mode settings, history, achievements, reminders, what's new and about open as sheets from the bottom
+  Each rises to just below the top bar, which stays on show and live (the language pill and the cog work while a sheet is open), and has its own top bar with the title and a close button. Reminders, what's new and about open on top of settings as sheets of their own. What the daily always uses is no longer a list on the mode settings page: one info button in its top bar opens it as a sheet.
+
 - the language slider is the top bar
   The title row is gone from today, words, learn and you: a small round pill with the language's full name takes its place, as wide as the longest name the app shows, with the settings cog at its right. The top bar has no background: the pill and the cog float on shadows, and a strong shadow from the top edge of the screen darkens what scrolls under them. Words puts its tabs under the bar and the sort button beside the search field; you moves the player chip into the page; today shows the date on the "your dailies" line, and its free play strip floats over the list with no background.
 

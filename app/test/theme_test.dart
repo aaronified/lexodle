@@ -164,9 +164,7 @@ void main() {
 
     testWidgets('it is chosen on the settings page and kept', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 2200));
-      await tester.pumpWidget(
-        const MaterialApp(home: SettingsPage()),
-      );
+      await tester.pumpWidget(const MaterialApp(home: SettingsPage()));
       await tester.pumpAndSettle();
       expect(find.text('theme'), findsOneWidget);
       expect(find.text('system'), findsOneWidget);

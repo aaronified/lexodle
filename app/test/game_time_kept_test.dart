@@ -42,7 +42,10 @@ void main() {
   group('the time of a game row', () {
     test('round trips as a row and as a map', () {
       for (final largest in [false, true]) {
-        for (final earned in [const <String>[], const ['wins:0']]) {
+        for (final earned in [
+          const <String>[],
+          const ['wins:0'],
+        ]) {
           final r = row(ms: 83000, largest: largest, earned: earned);
           final a = GameRow.fromAny(r.toRow());
           expect(a.ms, 83000);

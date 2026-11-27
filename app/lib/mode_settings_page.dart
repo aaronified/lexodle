@@ -9,6 +9,7 @@ import 'ladder.dart';
 import 'main.dart';
 import 'mode_filter.dart';
 import 'modes.dart';
+import 'page_sheet.dart';
 import 'stepper_choice.dart';
 import 'store.dart' show Helper;
 import 'ui.dart';
@@ -66,18 +67,9 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
   List<Language>? _langs = WordBank.loadedLanguages;
   GameMode? _picked;
 
-  /// The one-time line at the top: shown the first time this page opens.
-  bool _showNote = false;
-
   @override
   void initState() {
     super.initState();
-    try {
-      _showNote = !appState.modeSettingsNoteSeen;
-      appState.markModeSettingsNoteSeen();
-    } catch (e) {
-      appLog.w('modeset', 'could not read the note ${e.runtimeType}');
-    }
     if (_langs == null) {
       try {
         WordBank.languages().then(
@@ -101,115 +93,53 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              children: [
-                const PageHeader(text: 'mode settings', back: true),
-                Expanded(
-                  child: ListenableBuilder(
-                    listenable: appState,
-                    builder: (context, _) {
-                      final known = knownModes();
-                      final opened = openedModes();
-                      final mode = known.contains(_picked)
-                          ? _picked!
-                          : (known.isEmpty ? null : known.first);
-                      return ListView(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                        children: [
-                          if (_showNote) ...[
-                            _firstNote(c),
-                            const SizedBox(height: 12),
-                          ],
-                          _daily(c, opened),
-                          if (mode == null)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(2, 28, 2, 0),
-                              child: Text(
-                                'open a mode to change its settings here',
-                                style: _note(c),
-                              ),
-                            )
-                          else ...[
-                            const SizedBox(height: 28),
-                            ModeFilter(
-                              showAll: false,
-                              modes: known,
-                              selected: mode,
-                              onSelect: (m) => setState(() => _picked = m),
-                            ),
-                            _settings(c, mode),
-                          ],
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
+    return PageSheet(
+      title: 'mode settings',
+      // one button opens what the daily always uses, as a sheet of its own
+      trailing: [
+        IconButton(
+          key: const ValueKey('mode-settings-daily-info'),
+          tooltip: 'what the daily uses',
+          icon: TablerIcon('info-circle', size: 24, color: c.onSurface),
+          onPressed: () => showDailyInfo(context),
         ),
+      ],
+      child: ListenableBuilder(
+        listenable: appState,
+        builder: (context, _) {
+          final known = knownModes();
+          final mode = known.contains(_picked)
+              ? _picked!
+              : (known.isEmpty ? null : known.first);
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+            children: [
+              if (mode == null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(2, 28, 2, 0),
+                  child: Text(
+                    'open a mode to change its settings here',
+                    style: _note(c),
+                  ),
+                )
+              else ...[
+                ModeFilter(
+                  showAll: false,
+                  modes: known,
+                  selected: mode,
+                  onSelect: (m) => setState(() => _picked = m),
+                ),
+                _settings(c, mode),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _firstNote(ColorScheme c) => TonalCard(
-    key: const ValueKey('mode-settings-first-note'),
-    color: c.secondaryContainer,
-    padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
-    child: Row(
-      children: [
-        Expanded(
-          child: Text(
-            'these change free play only: the daily never changes',
-            style: TextStyle(fontSize: 13, color: c.onSecondaryContainer),
-          ),
-        ),
-        IconButton(
-          key: const ValueKey('mode-settings-note-close'),
-          tooltip: 'dismiss',
-          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-          onPressed: () => setState(() => _showNote = false),
-          icon: Icon(Icons.close, size: 18, color: c.onSecondaryContainer),
-        ),
-      ],
-    ),
-  );
-
   TextStyle _note(ColorScheme c) =>
       TextStyle(fontSize: 13, color: c.onSurface.withValues(alpha: dimAlpha));
-
-  Widget _daily(ColorScheme c, List<GameMode> opened) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SectionLabel('these change free play only', first: true),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(2, 0, 2, 8),
-        child: Text(
-          'the daily is the same for everyone, and always uses:',
-          style: _note(c),
-        ),
-      ),
-      GroupedList(
-        rows: [
-          for (final m in opened)
-            GroupRow(
-              key: ValueKey('daily-row-${m.name}'),
-              title: Text(m.label),
-              trailing: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 200),
-                child: Text(dailySettingsOf(m), textAlign: TextAlign.right),
-              ),
-              chevron: false,
-            ),
-        ],
-      ),
-    ],
-  );
 
   Widget _settings(ColorScheme c, GameMode mode) {
     final langs = _langs;
@@ -402,5 +332,59 @@ class _ModeSettingsPageState extends State<ModeSettingsPage> {
           onChanged: (t, n) => appState.setup(tries: t, length: n),
         );
     }
+  }
+}
+
+/// Opens what each daily always uses, as a sheet of its own on top of the page.
+void showDailyInfo(BuildContext context) {
+  try {
+    Navigator.of(context)
+        .push(PageSheetRoute<void>(builder: (_) => const DailyInfoSheet()));
+  } catch (e) {
+    appLog.w('modeset', 'could not open the daily info ${e.runtimeType}');
+  }
+}
+
+/// The note that the mode settings change free play only, and the settings
+/// each daily always uses, from the daily's own constants.
+class DailyInfoSheet extends StatelessWidget {
+  const DailyInfoSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    return PageSheet(
+      title: 'the daily',
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(2, 0, 2, 12),
+            child: Text(
+              'these settings change free play only: the daily never changes. '
+              'it is the same for everyone, and always uses:',
+              style: TextStyle(
+                fontSize: 13,
+                color: c.onSurface.withValues(alpha: dimAlpha),
+              ),
+            ),
+          ),
+          GroupedList(
+            rows: [
+              for (final m in openedModes())
+                GroupRow(
+                  key: ValueKey('daily-row-${m.name}'),
+                  title: Text(m.label),
+                  trailing: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 200),
+                    child: Text(dailySettingsOf(m), textAlign: TextAlign.right),
+                  ),
+                  chevron: false,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -464,9 +464,7 @@ void main() {
 
     Future<void> open(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 3000));
-      await tester.pumpWidget(
-        const MaterialApp(home: SettingsPage()),
-      );
+      await tester.pumpWidget(const MaterialApp(home: SettingsPage()));
       await tester.pumpAndSettle();
     }
 

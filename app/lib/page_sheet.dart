@@ -7,7 +7,7 @@ import 'ui_kit.dart';
 /// The route of a settings or history page: a sheet that rises from the bottom
 /// to just below the app's top bar. The top bar stays on show and live (a tap
 /// on it reaches the page under, so the language pill and the cog still work);
-/// the page under is dimmed below it, and a tap there closes the sheet. A sheet
+/// the page under is dimmed as the sheet rises. A sheet
 /// opened on top of another (reminders from settings) has no dimming of its own.
 class PageSheetRoute<T> extends PopupRoute<T> {
   PageSheetRoute({required this.builder, super.settings});
@@ -130,52 +130,57 @@ class PageSheet extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(radiusSheet)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: SafeArea(
-        top: false,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 12),
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: tonesOf(context).s3,
-                      borderRadius: BorderRadius.circular(2),
+      // a Scaffold of its own: a toast shown from a sheet appears on the sheet,
+      // not behind it, and the sheet rises above the keyboard
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          top: false,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: tonesOf(context).s3,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(19, 4, 8, 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(19, 4, 8, 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                      ...trailing,
-                      IconButton(
-                        key: const ValueKey('sheet-close'),
-                        tooltip: 'close',
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.maybePop(context),
-                      ),
-                    ],
+                        ...trailing,
+                        IconButton(
+                          key: const ValueKey('sheet-close'),
+                          tooltip: 'close',
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.maybePop(context),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(child: child),
-              ],
+                  Expanded(child: child),
+                ],
+              ),
             ),
           ),
         ),

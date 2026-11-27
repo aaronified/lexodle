@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'main.dart';
+import 'page_sheet.dart';
 import 'reminders.dart';
+import 'tonal.dart';
 import 'ui.dart';
 
 /// Opens a time picker; tests replace it.
@@ -135,57 +137,48 @@ class _RemindersPageState extends State<RemindersPage> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Scaffold(
-      appBar: AppBar(title: const Text('reminders')),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListenableBuilder(
-              listenable: appState,
-              builder: (context, _) {
-                if (!Reminders.supported) {
-                  return ListView(
-                    padding: const EdgeInsets.fromLTRB(19, 16, 19, 32),
-                    children: const [
-                      Text(
-                        'reminders work on the phone app',
-                        key: ValueKey('reminders-unsupported'),
-                      ),
-                    ],
-                  );
-                }
-                final r = appState.reminders;
-                return ListView(
-                  padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
-                  children: [
-                    SwitchListTile(
-                      key: const ValueKey('reminders-switch'),
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('remind me'),
-                      subtitle: const Text(
-                        'when a daily you chose is still waiting',
-                      ),
-                      value: r.on,
-                      onChanged: _switch,
-                    ),
-                    if (_denied)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          'notifications are not allowed. turn them on in the '
-                          'phone settings.',
-                          key: const ValueKey('reminders-denied'),
-                          style: TextStyle(color: c.error),
-                        ),
-                      ),
-                    if (r.on) ..._controls(c, r),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
+    return PageSheet(
+      title: 'reminders',
+      child: ListenableBuilder(
+        listenable: appState,
+        builder: (context, _) {
+          if (!Reminders.supported) {
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(19, 16, 19, 32),
+              children: const [
+                Text(
+                  'reminders work on the phone app',
+                  key: ValueKey('reminders-unsupported'),
+                ),
+              ],
+            );
+          }
+          final r = appState.reminders;
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
+            children: [
+              SwitchListTile(
+                key: const ValueKey('reminders-switch'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('remind me'),
+                subtitle: const Text('when a daily you chose is still waiting'),
+                value: r.on,
+                onChanged: _switch,
+              ),
+              if (_denied)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'notifications are not allowed. turn them on in the '
+                    'phone settings.',
+                    key: const ValueKey('reminders-denied'),
+                    style: TextStyle(color: c.error),
+                  ),
+                ),
+              if (r.on) ..._controls(c, r),
+            ],
+          );
+        },
       ),
     );
   }
@@ -212,7 +205,7 @@ class _RemindersPageState extends State<RemindersPage> {
       ),
       if (r.available)
         _card(
-          c,
+          context,
           Row(
             children: [
               Text(
@@ -225,7 +218,7 @@ class _RemindersPageState extends State<RemindersPage> {
               ),
               const Spacer(),
               _button(
-                c,
+                context,
                 const ValueKey('reminders-available-change-time'),
                 'change time',
                 () => _time(null),
@@ -235,7 +228,7 @@ class _RemindersPageState extends State<RemindersPage> {
         ),
       const SizedBox(height: 16),
       _card(
-        c,
+        context,
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -265,7 +258,7 @@ class _RemindersPageState extends State<RemindersPage> {
       for (var i = 0; i < r.reminders.length; i++) ...[
         const SizedBox(height: 8),
         _card(
-          c,
+          context,
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -286,7 +279,7 @@ class _RemindersPageState extends State<RemindersPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _button(
-                        c,
+                        context,
                         ValueKey('reminders-change-time-$i'),
                         'change time',
                         () => _time(i),
@@ -294,7 +287,7 @@ class _RemindersPageState extends State<RemindersPage> {
                       if (i > 0) ...[
                         const SizedBox(width: 8),
                         _button(
-                          c,
+                          context,
                           ValueKey('reminders-remove-$i'),
                           'remove',
                           () => _remove(i),
@@ -311,6 +304,7 @@ class _RemindersPageState extends State<RemindersPage> {
                     if (d > 1) const SizedBox(width: 4),
                     Expanded(
                       child: _dayButton(
+                        context,
                         c,
                         i,
                         d,
@@ -327,7 +321,7 @@ class _RemindersPageState extends State<RemindersPage> {
       if (r.reminders.length < ReminderSettings.maxReminders) ...[
         const SizedBox(height: 8),
         _button(
-          c,
+          context,
           const ValueKey('reminders-add'),
           'add a second reminder',
           _add,
@@ -337,7 +331,7 @@ class _RemindersPageState extends State<RemindersPage> {
       const Caption('what it might say'),
       const SizedBox(height: 8),
       _card(
-        c,
+        context,
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -356,7 +350,7 @@ class _RemindersPageState extends State<RemindersPage> {
       ),
       const SizedBox(height: 8),
       _button(
-        c,
+        context,
         const ValueKey('reminders-another'),
         'another',
         () => setState(() => _sample++),
@@ -376,61 +370,69 @@ class _RemindersPageState extends State<RemindersPage> {
   String _hhmm(int m) =>
       '${(m ~/ 60).toString().padLeft(2, '0')}:${(m % 60).toString().padLeft(2, '0')}';
 
-  Widget _card(ColorScheme c, Widget child) => Container(
+  Widget _card(BuildContext context, Widget child) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: c.surfaceContainerHighest,
-      border: Border.fromBorderSide(hairline(c)),
-      borderRadius: BorderRadius.circular(6),
+      color: tonesOf(context).s1,
+      borderRadius: BorderRadius.circular(radiusContainer),
     ),
     child: child,
   );
 
   /// A control inside a card: one shade up.
-  Widget _button(ColorScheme c, Key key, String label, VoidCallback onTap) =>
-      Material(
-        color: c.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(6),
-        child: InkWell(
-          key: key,
-          borderRadius: BorderRadius.circular(6),
-          onTap: onTap,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            alignment: Alignment.center,
-            child: Text(label),
-          ),
-        ),
-      );
+  Widget _button(
+    BuildContext context,
+    Key key,
+    String label,
+    VoidCallback onTap,
+  ) => Material(
+    color: tonesOf(context).s2,
+    borderRadius: BorderRadius.circular(radiusElement),
+    child: InkWell(
+      key: key,
+      borderRadius: BorderRadius.circular(radiusElement),
+      onTap: onTap,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: Alignment.center,
+        child: Text(label),
+      ),
+    ),
+  );
 
-  Widget _dayButton(ColorScheme c, int index, int weekday, bool on) =>
-      Semantics(
-        button: true,
-        selected: on,
-        label: _days[weekday - 1],
-        excludeSemantics: true,
-        child: Material(
-          color: on ? c.secondaryContainer : c.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(6),
-          child: InkWell(
-            key: ValueKey('reminders-day-$index-$weekday'),
-            borderRadius: BorderRadius.circular(6),
-            onTap: () => _day(index, weekday),
-            child: Container(
-              height: 44,
-              alignment: Alignment.center,
-              child: Text(
-                _days[weekday - 1].substring(0, 3),
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: on ? c.onSecondaryContainer : c.onSurface,
-                  fontWeight: on ? FontWeight.bold : null,
-                ),
-              ),
+  Widget _dayButton(
+    BuildContext context,
+    ColorScheme c,
+    int index,
+    int weekday,
+    bool on,
+  ) => Semantics(
+    button: true,
+    selected: on,
+    label: _days[weekday - 1],
+    excludeSemantics: true,
+    child: Material(
+      color: on ? c.secondaryContainer : tonesOf(context).s2,
+      borderRadius: BorderRadius.circular(6),
+      child: InkWell(
+        key: ValueKey('reminders-day-$index-$weekday'),
+        borderRadius: BorderRadius.circular(6),
+        onTap: () => _day(index, weekday),
+        child: Container(
+          height: 44,
+          alignment: Alignment.center,
+          child: Text(
+            _days[weekday - 1].substring(0, 3),
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 12,
+              color: on ? c.onSecondaryContainer : c.onSurface,
+              fontWeight: on ? FontWeight.bold : null,
             ),
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
