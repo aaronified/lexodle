@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/lex_widgets.dart';
 import 'package:lexodle/game.dart';
 import 'package:lexodle/logic.dart';
 import 'package:lexodle/main.dart';
@@ -66,7 +67,8 @@ void main() {
   }
 
   Finder measure(String which) => find.byKey(ValueKey('measure-$which'));
-  final medal = find.textContaining('  —  ');
+  // an earned achievement's row (with lex it is the name and the gain)
+  final medal = find.byType(EarnedRow);
   final bookmark = find.byKey(const ValueKey('save-word'));
 
   testWidgets('before skill, luck and risk, none of it is shown', (

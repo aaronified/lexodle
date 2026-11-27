@@ -1631,22 +1631,7 @@ class _GamePageState extends State<GamePage>
             ),
           const SizedBox(height: 10),
           if (appState.stepOpen('achievements'))
-            for (final a in unlocked)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    TablerIcon(a.icon, size: 30, color: c.primary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        '${a.title}  —  ${a.description}',
-                        style: TextStyle(color: c.primary, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            for (final a in unlocked) EarnedRow(a),
           const SizedBox(height: 10),
           const Divider(),
           const SizedBox(height: 10),

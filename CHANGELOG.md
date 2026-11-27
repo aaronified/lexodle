@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- the game summary names the lex an achievement paid
+  Each earned achievement row is its icon, its name and the lex it paid (+5), instead of its description. A game with hints, or an achievement already paid that day, shows no number. Before lex is unlocked the row says what the achievement asks, as before.
+
 ## 0.15.0
 
 - you: the player is the hero of the page

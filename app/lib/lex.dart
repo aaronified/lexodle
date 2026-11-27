@@ -132,6 +132,10 @@ class Lex {
 
   final ledger = <LexEntry>[];
 
+  /// What the last finished game paid for each achievement (by id): the lex
+  /// its summary names. Empty when it paid nothing. Not kept between runs.
+  final lastPaid = <String, int>{};
+
   /// The day each achievement last paid, per language (`lang|id` -> date): an
   /// achievement pays once a day in a language.
   final _paid = <String, String>{};
@@ -168,6 +172,7 @@ class Lex {
     required bool hinted,
     int? now,
   }) {
+    lastPaid.clear();
     if (hinted) return 0;
     var paid = 0;
     final at = now ?? DateTime.now().millisecondsSinceEpoch;
@@ -178,6 +183,7 @@ class Lex {
       _paid[key] = today;
       balance += v;
       paid += v;
+      lastPaid[a.id] = (lastPaid[a.id] ?? 0) + v;
       _log(at, v, 'earn:${a.id}:${a.level}', lang);
     }
     return paid;
