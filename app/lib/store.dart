@@ -1104,7 +1104,7 @@ final achievements = <Achievement>[
   ),
   Achievement.leveled(
     'blind_wins',
-    'zoom-question',
+    'blindfold',
     'blind faith',
     (n) => n == 1 ? 'win a blind game' : 'win $n blind games',
     'blindWins',

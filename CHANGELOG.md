@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- blind is a blindfold
+  The magnifier with a question mark is a head with a band over its eyes, drawn for Lexodle in the style of the Tabler outline icons (Tabler has none), wherever blind's icon shows: the mode slider, the daily tile, the learn pages and the blind wins achievement. The magnifier stays for the read the clue lesson and the detective playstyle.
+
 - mastermind is a brain
   The ghost is the brain everywhere the mode's icon shows: the mode slider, the daily tile, the learn pages and the mastermind wins achievement. The player's default avatar is still the ghost.
 

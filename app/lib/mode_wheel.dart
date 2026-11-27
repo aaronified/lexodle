@@ -23,7 +23,7 @@ String modeIconName(GameMode m) => switch (m) {
   GameMode.relay => 'chess-knight',
   GameMode.lockdown => 'lock',
   GameMode.themed => 'world',
-  GameMode.blind => 'zoom-question',
+  GameMode.blind => 'blindfold',
   GameMode.equations => 'calculator',
   GameMode.mastermind => 'brain',
 };
