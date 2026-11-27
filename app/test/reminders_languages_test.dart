@@ -84,7 +84,6 @@ void main() {
         plan.every((n) => n.id >= 9100 + languageSlot('fr') * 100),
         isTrue,
       );
-      expect(plan.every((n) => n.mode != GameMode.themed || true), isTrue);
     },
   );
 }
