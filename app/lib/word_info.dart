@@ -14,9 +14,22 @@ import 'app_log.dart';
 /// the Wiktionary of the word's language. Shown after the game ends; every failure degrades to a
 /// one-line note, since the game itself never depends on the network.
 class WordInfoView extends StatefulWidget {
-  const WordInfoView({super.key, required this.word, required this.language});
+  const WordInfoView({
+    super.key,
+    required this.word,
+    required this.language,
+    this.showWord = false,
+    this.trailing,
+  });
   final String word;
   final Language language;
+
+  /// Whether the word leads the pronunciation row (the end screen, where the
+  /// word is named there and nowhere else).
+  final bool showWord;
+
+  /// At the right of that row: the bookmark that saves the word.
+  final Widget? trailing;
 
   @override
   State<WordInfoView> createState() => _WordInfoViewState();
@@ -29,23 +42,66 @@ class _WordInfoViewState extends State<WordInfoView> {
     widget.language.wikt,
   );
 
+  /// The word and the bookmark on their own row, for while the entry loads and
+  /// when there is none.
+  Widget _row(BuildContext context, Widget below) {
+    if (!widget.showWord && widget.trailing == null) return below;
+    final c = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (widget.showWord)
+              Flexible(
+                child: Text(
+                  widget.word,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: c.primary,
+                  ),
+                ),
+              ),
+            if (widget.trailing != null)
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: widget.trailing,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        below,
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<WordInfo?>(
       future: _future,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Caption('looking up in wiktionary…');
+          return _row(context, const Caption('looking up in wiktionary…'));
         }
         final info = snap.data;
         if (snap.hasError) {
-          return const Caption('could not reach wiktionary');
+          return _row(context, const Caption('could not reach wiktionary'));
         }
         if (info == null || info.isEmpty) {
-          return const Caption('no wiktionary entry for this word');
+          return _row(
+            context,
+            const Caption('no wiktionary entry for this word'),
+          );
         }
         return WordInfoBody(
           info: info,
+          word: widget.showWord ? widget.word : null,
+          saved: widget.trailing,
           underSense: (b, s) {
             final root = rootOfSense(s.text, widget.word);
             return root == null
@@ -68,8 +124,12 @@ class WordInfoBody extends StatefulWidget {
     required this.info,
     this.underSense,
     this.saved,
+    this.word,
   });
   final WordInfo info;
+
+  /// The word, which leads the pronunciation row, before the pronunciation.
+  final String? word;
 
   /// Shown under a meaning, if it gives something: the meaning of the root
   /// when the sense says it is a form of another word.
@@ -112,7 +172,10 @@ class _WordInfoBodyState extends State<WordInfoBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (info.ipa.isNotEmpty || info.audio != null || widget.saved != null)
+        if (info.ipa.isNotEmpty ||
+            info.audio != null ||
+            widget.saved != null ||
+            widget.word != null)
           _pronunciation(context, c, info),
         for (var i = 0; i < info.blocks.length; i++) ...[
           SectionLabel(_posLabel(info.blocks[i]), first: i == 0),
@@ -168,37 +231,59 @@ class _WordInfoBodyState extends State<WordInfoBody> {
   /// info at the right of the same row.
   Widget _pronunciation(BuildContext context, ColorScheme c, WordInfo info) {
     final saved = widget.saved;
+    // the word, the pronunciation and the listen button on the left (they take
+    // the room that is left), what is saved of it (the bookmark, the date) at
+    // the right end
     return Row(
       children: [
-        if (info.ipa.isNotEmpty)
-          Flexible(
-            child: Text(
-              info.ipa.join('   '),
-              style: TextStyle(color: c.onSurfaceVariant, fontSize: 16),
-            ),
+        Expanded(
+          child: Row(
+            children: [
+              if (widget.word != null) ...[
+                Flexible(
+                  child: Text(
+                    widget.word!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: c.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              if (info.ipa.isNotEmpty)
+                Flexible(
+                  child: Text(
+                    info.ipa.join('   '),
+                    style: TextStyle(color: c.onSurfaceVariant, fontSize: 16),
+                  ),
+                ),
+              if (info.audio != null) ...[
+                const SizedBox(width: 12),
+                IconButton(
+                  key: const ValueKey('word-listen'),
+                  tooltip: 'listen',
+                  style: IconButton.styleFrom(
+                    backgroundColor: tonesOf(context).s1,
+                    shape: const CircleBorder(),
+                    fixedSize: const Size(44, 44),
+                    padding: EdgeInsets.zero,
+                  ),
+                  color: c.primary,
+                  icon: const Icon(Icons.volume_up_outlined, size: 22),
+                  onPressed: () => _play(info.audio!),
+                ),
+              ],
+            ],
           ),
-        if (info.audio != null) ...[
-          const SizedBox(width: 12),
-          IconButton(
-            key: const ValueKey('word-listen'),
-            tooltip: 'listen',
-            style: IconButton.styleFrom(
-              backgroundColor: tonesOf(context).s1,
-              shape: const CircleBorder(),
-              fixedSize: const Size(44, 44),
-              padding: EdgeInsets.zero,
-            ),
-            color: c.primary,
-            icon: const Icon(Icons.volume_up_outlined, size: 22),
-            onPressed: () => _play(info.audio!),
-          ),
-        ],
+        ),
         if (saved != null)
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: FittedBox(fit: BoxFit.scaleDown, child: saved),
-            ),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 200),
+            child: FittedBox(fit: BoxFit.scaleDown, child: saved),
           ),
       ],
     );
