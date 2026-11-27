@@ -18,7 +18,7 @@ const modeSwipeSpeed = 700.0;
 /// The name of the Tabler filled icon of each game mode: one piece, four
 /// tiles, a knight, a lock.
 String modeIconName(GameMode m) => switch (m) {
-  GameMode.classic => 'puzzle',
+  GameMode.classic => 'target',
   GameMode.quartet => 'layout-grid',
   GameMode.relay => 'chess-knight',
   GameMode.lockdown => 'lock',

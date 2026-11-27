@@ -19,6 +19,12 @@ it to the version.
 - the game summary names the lex an achievement paid
   Each earned achievement row is its icon, its name and the lex it paid (+5), instead of its description. A game with hints, or an achievement already paid that day, shows no number. Before lex is unlocked the row says what the achievement asks, as before.
 
+- classic is a target
+  The puzzle piece is a target wherever classic's icon shows: the mode slider, the daily tile, and the how to play row of the learn page (which now wears the icon of the mode it is for).
+
+- the sheets can be dragged by their handle
+  The handle at the top of settings, history, achievements and the other sheets now pulls the sheet down: a drag of a third of its height, or a fling, closes it, and a short drag settles it back. The target is the width of the sheet and 44 high, much more than the drawn handle.
+
 ## 0.15.0
 
 - you: the player is the hero of the page
