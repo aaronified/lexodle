@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 
@@ -384,6 +386,7 @@ class ChoiceItem<T> {
     this.sub,
     this.name,
     this.popupLeading,
+    this.pill,
   });
 
   final T value;
@@ -401,6 +404,10 @@ class ChoiceItem<T> {
   /// What leads the row in the popup when it is not the slider's [leading]
   /// (a bigger flag).
   final Widget? popupLeading;
+
+  /// The text in a [ChoiceSlider.pill] when it is not the label (a language's
+  /// full name, lower case).
+  final String? pill;
 }
 
 /// A tick box at the right of a row: filled green with a check when on.
@@ -609,6 +616,7 @@ class ChoiceSlider<T> extends StatefulWidget {
     this.footer,
     this.caption,
     this.float = false,
+    this.pill = false,
   });
 
   /// A small line under every name in the bar (what the slider is for).
@@ -616,6 +624,11 @@ class ChoiceSlider<T> extends StatefulWidget {
 
   /// Whether the bar floats: a soft shadow under it.
   final bool float;
+
+  /// The slider as a small round pill for the top bar: 44 high, fully round, the
+  /// full name of the choice, floating on the top bar's shadows. It is as wide
+  /// as its parent makes it ([pillWidth] in a [TopBar]).
+  final bool pill;
 
   /// Called when the name in the middle is tapped; without it a tap opens the
   /// popup list of the choices.
@@ -766,10 +779,13 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
         ],
         Flexible(
           child: Text(
-            item.label,
+            widget.pill ? (item.pill ?? item.label) : item.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: widget.pill ? 15 : 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -815,8 +831,8 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
         enabled: on,
         excludeSemantics: true,
         child: SizedBox(
-          width: 44,
-          height: 44,
+          width: widget.pill ? 36 : 44,
+          height: widget.pill ? 40 : 44,
           child: IconButton(
             key: key,
             padding: EdgeInsets.zero,
@@ -831,14 +847,16 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
 
     final bar = Container(
       key: ValueKey(id),
-      height: widget.compact ? 48 : 52,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      height: widget.pill ? 44 : (widget.compact ? 48 : 52),
+      padding: EdgeInsets.symmetric(horizontal: widget.pill ? 2 : 4),
       decoration: BoxDecoration(
         color: tones.s1,
         borderRadius: BorderRadius.circular(
-          widget.compact ? radiusElement : radiusContainer,
+          widget.pill ? 22 : (widget.compact ? radiusElement : radiusContainer),
         ),
-        boxShadow: widget.float ? floatShadow(context) : null,
+        boxShadow: widget.pill
+            ? topBarShadow(context)
+            : (widget.float ? stripShadow(context) : null),
       ),
       child: Row(
         children: [
@@ -962,6 +980,146 @@ List<BoxShadow> floatShadow(BuildContext context) {
   ];
 }
 
+/// The shadows of the free play strip: a darker one above, a soft one, and a
+/// long one below in the page colour so the dots under it read over the list.
+List<BoxShadow> stripShadow(BuildContext context) {
+  final theme = Theme.of(context);
+  final dark = theme.brightness == Brightness.dark;
+  final c = theme.colorScheme;
+  return [
+    BoxShadow(
+      color: c.shadow.withValues(alpha: dark ? .75 : .24),
+      blurRadius: 24,
+      spreadRadius: -6,
+      offset: const Offset(0, -12),
+    ),
+    BoxShadow(
+      color: c.shadow.withValues(alpha: dark ? .55 : .16),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+    BoxShadow(
+      color: c.surface.withValues(alpha: .92),
+      blurRadius: 26,
+      spreadRadius: 8,
+      offset: const Offset(0, 34),
+    ),
+  ];
+}
+
+/// The shadows of the top bar's pill and cog: a small soft one and a short one
+/// below in the page colour, lighter than the strip's.
+List<BoxShadow> topBarShadow(BuildContext context) {
+  final theme = Theme.of(context);
+  final dark = theme.brightness == Brightness.dark;
+  final c = theme.colorScheme;
+  return [
+    BoxShadow(
+      color: c.shadow.withValues(alpha: (dark ? .55 : .16) * .55),
+      blurRadius: 8,
+      offset: const Offset(0, 2),
+    ),
+    BoxShadow(
+      color: c.surface.withValues(alpha: .7),
+      blurRadius: 12,
+      spreadRadius: -2,
+      offset: const Offset(0, 10),
+    ),
+  ];
+}
+
+/// The width of the language pill: the full name of the longest language the
+/// app has (Nederlands, 10 characters) with its flag and both arrows.
+const pillWidth = 204.0;
+
+/// What a page's list leaves clear at the top for the [TopBar] it scrolls under:
+/// 16 above the row, 48 for the row, 8 below.
+const topBarInset = 72.0;
+
+/// The top bar of the tab screens and the sheets: no background. The [slider]
+/// (a [ChoiceSlider] pill, [pillWidth] wide) on the left and, at the right, the
+/// [trailing] widgets and the settings cog float on shadows; a strong shadow
+/// from the very top of the screen darkens what scrolls under them. The page
+/// puts it over its list with [UnderTopBar].
+class TopBar extends StatelessWidget {
+  const TopBar({
+    super.key,
+    required this.slider,
+    this.trailing = const [],
+    this.settings = true,
+  });
+
+  final Widget slider;
+  final List<Widget> trailing;
+  final bool settings;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final edge = theme.colorScheme.shadow.withValues(alpha: dark ? .88 : .34);
+    return SizedBox(
+      height: topBarInset - 8,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // the strong shadow at the top edge of the screen
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 110,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                key: const ValueKey('top-edge-shadow'),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      edge,
+                      edge.withValues(alpha: edge.a * .45),
+                      Colors.transparent,
+                    ],
+                    stops: const [0, .45, 1],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Row(
+              children: [
+                SizedBox(width: pillWidth, child: slider),
+                const Spacer(),
+                ...trailing,
+                if (settings) const SettingsButton(floating: true),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// [child] filling the page with [bar] floating over its top: the child's list
+/// starts [topBarInset] down and scrolls under the bar.
+class UnderTopBar extends StatelessWidget {
+  const UnderTopBar({super.key, required this.bar, required this.child});
+  final Widget bar;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    children: [
+      Positioned.fill(child: child),
+      Positioned(left: 0, right: 0, top: 0, child: bar),
+    ],
+  );
+}
+
 /// The bar at the foot of the shell: flat, on the page colour, a hairline above
 /// it; the tab on show is bold with a 2 pixel line in the accent on the hairline.
 /// [icons] gives each tab its outlined and its filled icon.
@@ -982,79 +1140,85 @@ class FlatTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: c.surface,
-        border: Border(top: BorderSide(color: c.outlineVariant)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 62,
-          child: Row(
-            children: [
-              for (var i = 0; i < ids.length; i++)
-                Expanded(
-                  child: Semantics(
-                    button: true,
-                    selected: i == selected,
-                    label: ids[i],
-                    excludeSemantics: true,
-                    child: InkWell(
-                      key: ValueKey('tab-${ids[i]}-button'),
-                      onTap: () => onSelect(i),
-                      child: Stack(
-                        alignment: Alignment.topCenter,
-                        children: [
-                          if (i == selected)
-                            Positioned(
-                              top: -1,
-                              left: 14,
-                              right: 14,
-                              child: Container(
-                                height: 2,
-                                decoration: BoxDecoration(
-                                  color: c.primary,
-                                  borderRadius: BorderRadius.circular(1),
-                                ),
-                              ),
-                            ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 9),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  i == selected
-                                      ? icons[ids[i]]!.$2
-                                      : icons[ids[i]]!.$1,
-                                  size: 24,
-                                  color: i == selected
-                                      ? c.onSurface
-                                      : c.onSurfaceVariant,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  ids[i],
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    letterSpacing: .5,
-                                    fontWeight: i == selected
-                                        ? FontWeight.w700
-                                        : null,
-                                    color: i == selected
-                                        ? c.onSurface
-                                        : c.onSurfaceVariant,
+    // frosted glass: the page scrolls under it (the shell extends the body)
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: c.surface.withValues(alpha: .58),
+            border: Border(top: BorderSide(color: c.outlineVariant)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 62,
+              child: Row(
+                children: [
+                  for (var i = 0; i < ids.length; i++)
+                    Expanded(
+                      child: Semantics(
+                        button: true,
+                        selected: i == selected,
+                        label: ids[i],
+                        excludeSemantics: true,
+                        child: InkWell(
+                          key: ValueKey('tab-${ids[i]}-button'),
+                          onTap: () => onSelect(i),
+                          child: Stack(
+                            alignment: Alignment.topCenter,
+                            children: [
+                              if (i == selected)
+                                Positioned(
+                                  top: -1,
+                                  left: 14,
+                                  right: 14,
+                                  child: Container(
+                                    height: 2,
+                                    decoration: BoxDecoration(
+                                      color: c.primary,
+                                      borderRadius: BorderRadius.circular(1),
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 9),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      i == selected
+                                          ? icons[ids[i]]!.$2
+                                          : icons[ids[i]]!.$1,
+                                      size: 24,
+                                      color: i == selected
+                                          ? c.onSurface
+                                          : c.onSurfaceVariant,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      ids[i],
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        letterSpacing: .5,
+                                        fontWeight: i == selected
+                                            ? FontWeight.w700
+                                            : null,
+                                        color: i == selected
+                                            ? c.onSurface
+                                            : c.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

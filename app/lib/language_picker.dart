@@ -23,7 +23,11 @@ class LanguagePicker extends StatelessWidget {
     required this.onSelect,
     this.showAll = false,
     this.dots = true,
+    this.pill = false,
   });
+
+  /// The slider as the round pill of the top bar (see [ChoiceSlider.pill]).
+  final bool pill;
 
   /// Whether the dots show under the slider.
   final bool dots;
@@ -46,7 +50,8 @@ class LanguagePicker extends StatelessWidget {
       key: const ValueKey('language-picker'),
       id: 'language-slider',
       compact: true,
-      dots: dots,
+      pill: pill,
+      dots: dots && !pill,
       selected: selected,
       onChanged: onSelect,
       title: 'language',
@@ -68,7 +73,10 @@ class LanguagePicker extends StatelessWidget {
 /// the You tab, the one in use on show. Choosing another makes it the language
 /// in use, for the dailies, free play and learn alike.
 class LanguageBar extends StatefulWidget {
-  const LanguageBar({super.key});
+  const LanguageBar({super.key, this.pill = false});
+
+  /// As the pill of the top bar.
+  final bool pill;
 
   @override
   State<LanguageBar> createState() => _LanguageBarState();
@@ -97,6 +105,7 @@ class _LanguageBarState extends State<LanguageBar> {
       languages: _langs,
       selected: appState.lang,
       dots: false,
+      pill: widget.pill,
       onSelect: switchLanguage,
     ),
   );

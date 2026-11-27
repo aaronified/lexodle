@@ -145,127 +145,145 @@ class TodayPage extends StatelessWidget {
     final next = pending.isEmpty ? null : pending.first;
 
     final date = _date(today);
-    return Column(
-      children: [
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, box) {
-              // the tiles share the free height, but never less than they need to
-              // read: with many dailies the list scrolls (128 holds the icon, the
-              // name and the state line with room around them)
-              final n = (rows.length + 1) ~/ 2;
-              final free = box.maxHeight - 244 - 8 * (n - 1);
-              final tileHeight = n == 0
-                  ? 128.0
-                  : (free / n).clamp(128.0, 148.0).toDouble();
-              return ListView(
-                key: const ValueKey('today-list'),
-                padding: const EdgeInsets.only(bottom: 16),
+    return LayoutBuilder(
+      builder: (context, box) {
+        // the tiles share the free height, but never less than they need to
+        // read: with many dailies the list scrolls (128 holds the icon, the
+        // name and the state line with room around them)
+        final n = (rows.length + 1) ~/ 2;
+        final free = box.maxHeight - 244 - 8 * (n - 1);
+        final tileHeight = n == 0
+            ? 128.0
+            : (free / n).clamp(128.0, 148.0).toDouble();
+        // the list scrolls under the top bar and under the free play
+        // strip, which float over it
+        final inset = MediaQuery.paddingOf(context).bottom;
+        final list = ListView(
+          key: const ValueKey('today-list'),
+          padding: EdgeInsets.only(top: topBarInset, bottom: 104 + inset),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  PageHeader(
-                    text: 'today',
-                    info: Text(
-                      date,
-                      key: const ValueKey('today-date'),
-                      style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: LanguageBar(),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '$done of ${rows.length}',
-                                    key: const ValueKey('today-count'),
-                                    style: const TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    rows.length == 1
-                                        ? 'daily done today'
-                                        : 'dailies done today',
-                                    style: TextStyle(fontSize: 13, color: dim),
-                                  ),
-                                ],
+                            Text(
+                              '$done of ${rows.length}',
+                              key: const ValueKey('today-count'),
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                            if (canChoose) ...[
-                              _switch(context, [
-                                _switchButton(
-                                  context,
-                                  key: const ValueKey('today-choose'),
-                                  icon: 'adjustments-horizontal',
-                                  label: 'choose, sort and more dailies',
-                                  selected: false,
-                                  onTap: () => _choose(context),
-                                ),
-                              ]),
-                              const SizedBox(width: 8),
-                            ],
-                            _switch(context, [
-                              _switchButton(
-                                context,
-                                key: const ValueKey('today-view-list'),
-                                icon: 'list',
-                                label: 'list',
-                                selected: !appState.todayTiles,
-                                onTap: () => appState.setTodayTiles(false),
-                              ),
-                              _switchButton(
-                                context,
-                                key: const ValueKey('today-view-tiles'),
-                                icon: 'layout-grid',
-                                label: 'tiles',
-                                selected: appState.todayTiles,
-                                onTap: () => appState.setTodayTiles(true),
-                              ),
-                            ]),
+                            const SizedBox(height: 2),
+                            Text(
+                              rows.length == 1
+                                  ? 'daily done today'
+                                  : 'dailies done today',
+                              style: TextStyle(fontSize: 13, color: dim),
+                            ),
                           ],
                         ),
-                        const SectionLabel('your dailies'),
-                        if (appState.todayTiles)
-                          _tiles(context, rows, tileHeight)
-                        else
-                          GroupedList(
-                            rows: [for (final r in rows) _groupRow(context, r)],
+                      ),
+                      if (canChoose) ...[
+                        _switch(context, [
+                          _switchButton(
+                            context,
+                            key: const ValueKey('today-choose'),
+                            icon: 'adjustments-horizontal',
+                            label: 'choose, sort and more dailies',
+                            selected: false,
+                            onTap: () => _choose(context),
                           ),
-                        if (newPlayer) ..._cards(context, lang),
-                        // all done: the last row of the scrolled area
-                        if (next == null) ...[
-                          const SizedBox(height: 16),
-                          Center(
-                            child: Text(
-                              'all done · the next dailies open in ${_untilNext()}',
-                              key: const ValueKey('today-all-done'),
-                              style: TextStyle(fontSize: 12, color: dim),
-                            ),
-                          ),
-                        ],
+                        ]),
+                        const SizedBox(width: 8),
                       ],
-                    ),
+                      _switch(context, [
+                        _switchButton(
+                          context,
+                          key: const ValueKey('today-view-list'),
+                          icon: 'list',
+                          label: 'list',
+                          selected: !appState.todayTiles,
+                          onTap: () => appState.setTodayTiles(false),
+                        ),
+                        _switchButton(
+                          context,
+                          key: const ValueKey('today-view-tiles'),
+                          icon: 'layout-grid',
+                          label: 'tiles',
+                          selected: appState.todayTiles,
+                          onTap: () => appState.setTodayTiles(true),
+                        ),
+                      ]),
+                    ],
                   ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const Expanded(child: SectionLabel('your dailies')),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(2, 28, 2, 8),
+                        child: Text(
+                          date,
+                          key: const ValueKey('today-date'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            letterSpacing: 1,
+                            color: c.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (appState.todayTiles)
+                    _tiles(context, rows, tileHeight)
+                  else
+                    GroupedList(
+                      rows: [for (final r in rows) _groupRow(context, r)],
+                    ),
+                  if (newPlayer) ..._cards(context, lang),
+                  // all done: the last row of the scrolled area
+                  if (next == null) ...[
+                    const SizedBox(height: 16),
+                    Center(
+                      child: Text(
+                        'all done · the next dailies open in ${_untilNext()}',
+                        key: const ValueKey('today-all-done'),
+                        style: TextStyle(fontSize: 12, color: dim),
+                      ),
+                    ),
+                  ],
                 ],
-              );
-            },
-          ),
-        ),
-        _bottomBar(context, c),
-      ],
+              ),
+            ),
+          ],
+        );
+        return Stack(
+          children: [
+            Positioned.fill(child: list),
+            const Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: TopBar(slider: LanguageBar(pill: true)),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: inset,
+              child: _bottomBar(context, c),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -788,8 +806,8 @@ class TodayPage extends StatelessWidget {
   Widget _bottomBar(BuildContext context, ColorScheme c) {
     return Container(
       key: const ValueKey('today-bar'),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      decoration: BoxDecoration(color: c.surface),
+      // no background: the strip floats on its shadows over the list
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [_modeButton(context)],

@@ -151,6 +151,8 @@ class _AppShellState extends State<AppShell> {
           _ => const YouPage(key: ValueKey('tab-you')),
         };
         return Scaffold(
+          // the pages scroll under the frosted tab bar
+          extendBody: true,
           body: SafeArea(
             bottom: false,
             child: IndexedStack(

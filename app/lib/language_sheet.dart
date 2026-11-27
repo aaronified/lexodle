@@ -17,6 +17,7 @@ List<ChoiceItem<String>> languageItems(
     ChoiceItem<String>(
       value: code,
       label: code,
+      pill: (languages[code]?.name ?? code).toLowerCase(),
       name: languages[code]?.name ?? code,
       sub:
           languages[code] == null ||

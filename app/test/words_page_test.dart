@@ -470,16 +470,21 @@ void main() {
       expect(find.byKey(const ValueKey('collected-search')), findsOneWidget);
     });
 
-    testWidgets('the tab text is on the centre line of the cog', (
-      tester,
-    ) async {
-      await page(tester);
-      final text = tester.getCenter(find.text('saved 0')).dy;
-      final cog = tester.getCenter(
-        find.byKey(const ValueKey('settings-button')),
-      );
-      expect((text - cog.dy).abs(), lessThan(1.5));
-    });
+    testWidgets(
+      'the top bar is the language pill and the cog, above the tabs',
+      (tester) async {
+        await page(tester);
+        final pill = tester.getCenter(
+          find.byKey(const ValueKey('language-slider')),
+        );
+        final cog = tester.getCenter(
+          find.byKey(const ValueKey('settings-button')),
+        );
+        final tabs = tester.getCenter(find.text('saved 0'));
+        expect((pill.dy - cog.dy).abs(), lessThan(1.5));
+        expect(tabs.dy, greaterThan(cog.dy));
+      },
+    );
 
     testWidgets('the header tabs switch the lists', (tester) async {
       appState.saveWord('en', 'alpha', null, today: '2026-11-01');

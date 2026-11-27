@@ -7,6 +7,12 @@ it to the version.
 
 ## Unreleased
 
+- the language slider is the top bar
+  The title row is gone from today, words, learn and you: a small round pill with the language's full name takes its place, as wide as the longest name the app shows, with the settings cog at its right. The top bar has no background: the pill and the cog float on shadows, and a strong shadow from the top edge of the screen darkens what scrolls under them. Words puts its tabs under the bar and the sort button beside the search field; you moves the player chip into the page; today shows the date on the "your dailies" line, and its free play strip floats over the list with no background.
+
+- frosted tab bar
+  The bottom tab bar is frosted glass, and the pages scroll under it.
+
 ## 0.14.4
 
 - quartet: keys no board has marked are outlined
