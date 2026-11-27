@@ -62,7 +62,7 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
     dialogTheme: DialogThemeData(
       backgroundColor: tones.s1,
       surfaceTintColor: Colors.transparent,
-      shadowColor: Colors.black,
+      shadowColor: scheme.shadow,
       elevation: 12,
       shape: container,
     ),
@@ -70,7 +70,7 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: null,
       surfaceTintColor: Colors.transparent,
-      shadowColor: Colors.black,
+      shadowColor: scheme.shadow,
       elevation: 16,
       showDragHandle: true,
       shape: RoundedRectangleBorder(
@@ -80,7 +80,7 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
     popupMenuTheme: PopupMenuThemeData(
       color: tones.s1,
       surfaceTintColor: Colors.transparent,
-      shadowColor: Colors.black,
+      shadowColor: scheme.shadow,
       elevation: 8,
       shape: container,
     ),

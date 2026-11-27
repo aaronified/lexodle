@@ -951,10 +951,11 @@ class _ChoiceSliderState<T> extends State<ChoiceSlider<T>>
 /// The soft shadow of a control that floats over the page: dark and wide on a
 /// dark page, lighter on a light one.
 List<BoxShadow> floatShadow(BuildContext context) {
-  final dark = Theme.of(context).brightness == Brightness.dark;
+  final theme = Theme.of(context);
+  final dark = theme.brightness == Brightness.dark;
   return [
     BoxShadow(
-      color: Colors.black.withValues(alpha: dark ? .55 : .16),
+      color: theme.colorScheme.shadow.withValues(alpha: dark ? .55 : .16),
       blurRadius: 16,
       offset: const Offset(0, 4),
     ),
