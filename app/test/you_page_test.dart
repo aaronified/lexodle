@@ -41,6 +41,43 @@ void main() {
     expect(find.text('coming in an upcoming release'), findsOneWidget);
   });
 
+  testWidgets('the player is the hero of the page, with no games yet', (
+    tester,
+  ) async {
+    player(played: 500, veteran: true);
+    await show(tester);
+    expect(find.byKey(const ValueKey('you-chip')), findsOneWidget);
+    expect(find.text(appState.profile.name), findsOneWidget);
+    // no game in the history: no line of games and a date
+    expect(find.byKey(const ValueKey('you-since')), findsNothing);
+  });
+
+  testWidgets('mode settings says only that it is for free play', (
+    tester,
+  ) async {
+    player(played: 500, veteran: true);
+    await show(tester);
+    expect(
+      find.descendant(of: row('modeset'), matching: find.text('for free play')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('classic, '), findsNothing);
+  });
+
+  testWidgets('the languages row shows the ticked flags and their count', (
+    tester,
+  ) async {
+    player(played: 500, veteran: true);
+    await show(tester);
+    expect(
+      find.descendant(
+        of: row('language'),
+        matching: find.text('${appState.playLangs.length} ticked'),
+      ),
+      findsOneWidget,
+    );
+  });
+
   Future<void> gated(
     WidgetTester tester,
     int played,

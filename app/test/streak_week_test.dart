@@ -75,8 +75,20 @@ void main() {
       colorOf(tester, const ValueKey('sw-flame-w-2026-11-13-0')),
       yellowOf(c),
     );
-    expect(find.text('2'), findsOneWidget);
-    expect(find.text('best 2'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('sw-streak-count'))).data,
+      '2',
+    );
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('sw-streak-best'))).data,
+      '2',
+    );
+    // no game in the history: the won and skill stand at a dash
+    expect(tester.widget<Text>(find.byKey(const ValueKey('sw-won'))).data, '–');
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('sw-skill'))).data,
+      '–',
+    );
     expect(find.byKey(const ValueKey('sw-month-2026-11-01')), findsNothing);
   });
 
@@ -116,7 +128,10 @@ void main() {
           .color;
 
   void expectQuartet(WidgetTester tester) {
-    expect(find.text('best 0'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('sw-streak-best'))).data,
+      '0',
+    );
     expect(find.text('quartet'), findsWidgets);
     final c = Theme.of(tester.element(find.byType(StreakWeek))).colorScheme;
     expect(dot(tester, 1), c.onSurface);
@@ -132,7 +147,10 @@ void main() {
     tester,
   ) async {
     await show(tester);
-    expect(find.text('best 2'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('sw-streak-best'))).data,
+      '2',
+    );
     await tester.drag(
       find.byKey(const ValueKey('sw-swipe')),
       const Offset(-300, 0),
@@ -151,7 +169,10 @@ void main() {
       const Offset(300, 0),
     );
     await tester.pumpAndSettle();
-    expect(find.text('best 2'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('sw-streak-best'))).data,
+      '2',
+    );
   });
 
   testWidgets('a short drag settles back on the same mode', (tester) async {
@@ -161,7 +182,10 @@ void main() {
       const Offset(-40, 0),
     );
     await tester.pumpAndSettle();
-    expect(find.text('best 2'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('sw-streak-best'))).data,
+      '2',
+    );
   });
 
   testWidgets('the header, the streak and the week follow the finger', (

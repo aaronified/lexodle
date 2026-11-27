@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'analysis.dart' show summarise;
 import 'app_log.dart';
 import 'daily.dart';
 import 'main.dart';
@@ -310,6 +311,38 @@ class _StreakWeekState extends State<StreakWeek>
     );
   }
 
+  /// One number of the card's strip with its small label under it.
+  Widget _stat(
+    ColorScheme c,
+    String value,
+    String label,
+    Key key, {
+    Color? color,
+  }) => Expanded(
+    flex: 2,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          key: key,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: c.onSurface.withValues(alpha: dimAlpha),
+          ),
+        ),
+      ],
+    ),
+  );
+
   /// The content of the card for one mode, in the two parts that move with the
   /// finger: the mode's name, the streak line and the week (top), and the month with its legend
   /// (bottom). The month button between them stays where it is.
@@ -318,6 +351,12 @@ class _StreakWeekState extends State<StreakWeek>
     final log = appState.dailyLogOf(lang, mode);
     final streak = appState.dailyStreakFor(lang, mode);
     final best = appState.dailyBestOf(lang, mode);
+    // what is won and how well it is played, in this language and mode
+    final h = appState.history;
+    final played = summarise(h, [
+      for (final g in h.scoredGames)
+        if (g.lang == lang && g.mode == mode) g,
+    ]);
 
     var underWay = false;
     try {
@@ -617,26 +656,28 @@ class _StreakWeekState extends State<StreakWeek>
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               const Expanded(
+                flex: 3,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Caption('day streak'),
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'best $best',
-                    key: const ValueKey('sw-streak-best'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: c.onSurface.withValues(alpha: dimAlpha),
-                    ),
-                  ),
-                ],
+              _stat(c, '$best', 'best', const ValueKey('sw-streak-best')),
+              _stat(
+                c,
+                played.isEmpty ? '–' : '${played.winRate.round()}%',
+                'won',
+                const ValueKey('sw-won'),
+              ),
+              _stat(
+                c,
+                played.scored == 0 ? '–' : '${played.skill.round()}',
+                'skill',
+                const ValueKey('sw-skill'),
+                color: skillColor(c),
               ),
             ],
           ),
