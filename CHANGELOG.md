@@ -7,8 +7,8 @@ it to the version.
 
 ## Unreleased
 
-- blind is an eye off, relay race a baton
-  Blind's icon is Tabler's eye off, in place of the magnifier with a question mark (which stays for the read the clue lesson and the detective playstyle). Relay race's icon is a baton held between two hands, drawn for Lexodle in the style of the Tabler outline icons, in place of the knight (which stays for the maverick playstyle and the avatars). Both show wherever the mode's icon does: the mode slider, the daily tile, the learn pages and the mode's wins achievement.
+- blind is an eye off, the knight has an eye
+  Blind's icon is Tabler's eye off, in place of the magnifier with a question mark (which stays for the read the clue lesson and the detective playstyle). The knight, the icon of the relay race, the maverick playstyle and an avatar, has an eye: a dot in its head.
 
 - mastermind is a brain
   The ghost is the brain everywhere the mode's icon shows: the mode slider, the daily tile, the learn pages and the mastermind wins achievement. The player's default avatar is still the ghost.

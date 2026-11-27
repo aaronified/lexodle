@@ -6,7 +6,10 @@ import 'package:lexodle/modes.dart';
 import 'package:lexodle/store.dart';
 
 void main() {
-  test('mastermind is a brain, and every mode icon has its file', () {
+  test('each mode has its icon, and the file is there', () {
+    expect(modeIconName(GameMode.classic), 'target');
+    expect(modeIconName(GameMode.relay), 'chess-knight');
+    expect(modeIconName(GameMode.blind), 'eye-off');
     expect(modeIconName(GameMode.mastermind), 'brain');
     for (final m in GameMode.values) {
       expect(
@@ -17,9 +20,20 @@ void main() {
     }
   });
 
-  test('the mastermind wins achievement wears the same brain', () {
-    final a = achievements.firstWhere((a) => a.id == 'mastermind_wins');
-    expect(a.icon, 'brain');
-    expect(File('assets/icons/${a.icon}.svg').existsSync(), isTrue);
+  test('the knight has an eye: a hole in its head', () {
+    final svg = File('assets/icons/chess-knight.svg').readAsStringSync();
+    expect(svg, contains('fill-rule="evenodd"'));
+  });
+
+  test('the wins achievements wear their mode\'s icon', () {
+    for (final (id, icon) in [
+      ('blind_wins', 'eye-off'),
+      ('mastermind_wins', 'brain'),
+      ('relay_wins', 'chess-knight'),
+    ]) {
+      final a = achievements.firstWhere((a) => a.id == id);
+      expect(a.icon, icon, reason: id);
+      expect(File('assets/icons/${a.icon}.svg').existsSync(), isTrue);
+    }
   });
 }
