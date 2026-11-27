@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.14.4
+
 - quartet: keys no board has marked are outlined
   A key greyed on one board only was drawn as a filled key, so it looked tried. It is outlined like any untried key, and filled only once every board has marked it.
 
