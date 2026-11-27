@@ -67,7 +67,7 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
       shape: container,
     ),
     // a sheet is the page colour, raised by a shadow, rounded at the top
-    bottomSheetTheme: const BottomSheetThemeData(
+    bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: null,
       surfaceTintColor: Colors.transparent,
       shadowColor: scheme.shadow,
