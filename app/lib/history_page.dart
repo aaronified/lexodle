@@ -9,12 +9,12 @@ import 'earned_rows.dart';
 import 'game_timer.dart' show formatElapsed;
 import 'history.dart';
 import 'logic.dart';
-import 'language_picker.dart';
-import 'language_switch.dart';
 import 'mode_filter.dart';
 import 'main.dart';
 import 'modes.dart';
 import 'open_review.dart';
+import 'page_sheet.dart';
+import 'sheet_language.dart';
 import 'period_chart.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'playstyle.dart' show classify, habitsOfGames, hasPlaystyle;
@@ -55,7 +55,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   /// The language the page is about: each has its own games, playstyle and
   /// calendar. The one being played to begin with.
-  String _lang = appState.lang;
+  String? get _lang => sheetLanguage.language;
 
   /// The mode the page is limited to (null: all of them).
   GameMode? _mode;
@@ -124,200 +124,159 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
+    return SheetLanguageScope(
+      child: PageSheet(
+        title: 'history',
+        child: ListenableBuilder(
+          listenable: Listenable.merge([appState, sheetLanguage]),
+          builder: (context, _) {
+            final h = appState.history;
+            // the games of the language in view, oldest first
+            final mine = [
+              for (final g in h.games)
+                if ((_lang == null || g.lang == _lang) &&
+                    (_mode == null || g.mode == _mode))
+                  g,
+            ];
+            final total = mine.length;
+            final shown = min(_shown, total);
+            final more = total - shown;
+            // the cards, the note about the games, then the games (built
+            // as they scroll into view), then the button for more
+            const fixed = 5;
+            return Stack(
               children: [
-                const PageHeader(text: 'history', back: true),
-                Expanded(
-                  child: ListenableBuilder(
-                    listenable: appState,
-                    builder: (context, _) {
-                      final h = appState.history;
-                      // the games of the language in view, oldest first
-                      final mine = [
-                        for (final g in h.games)
-                          if (g.lang == _lang &&
-                              (_mode == null || g.mode == _mode))
-                            g,
-                      ];
-                      final total = mine.length;
-                      final shown = min(_shown, total);
-                      final more = total - shown;
-                      // the cards, the note about the games, then the games (built
-                      // as they scroll into view), then the button for more
-                      const fixed = 5;
-                      return Stack(
-                        children: [
-                          ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                            itemCount: fixed + shown + (more > 0 ? 1 : 0),
-                            itemBuilder: (context, row) {
-                              final i = row;
-                              // (these are not const: a const widget is not rebuilt
-                              // when this builder runs, and they must follow the
-                              // history as it changes, after games are scored again)
-                              // ignore: prefer_const_constructors
-                              if (i == 0) {
-                                return _Block(
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      LanguagePicker(
-                                        // (a language only practised is in the list)
-                                        codes: languageStops(
-                                          {
-                                            ...appState.playedLanguages,
-                                            for (final g in h.games) g.lang,
-                                          }.toList()..sort(),
-                                        ),
-                                        languages: _langs,
-                                        selected: _lang,
-                                        onSelect: (code) => setState(() {
-                                          _lang = code;
-                                          _shown = historyPageSize;
-                                        }),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      ModeFilter(
-                                        selected: _mode,
-                                        onSelect: (m) => setState(() {
-                                          _mode = m;
-                                          _shown = historyPageSize;
-                                        }),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                              // ignore: prefer_const_constructors
-                              if (i == 1) return _Block(_Overall(_lang, _mode));
-                              if (i == 3) {
-                                return _Block(_PlaystyleRow(_lang, _mode));
-                              }
-                              if (i == 2) {
-                                return _Block(
-                                  _Trend(
-                                    _lang,
-                                    _mode,
-                                    key: ValueKey(
-                                      'trend-$_lang-${_mode?.name}',
-                                    ),
-                                  ),
-                                );
-                              }
-                              if (i == 4) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (_total > 0)
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          2,
-                                          28,
-                                          2,
-                                          0,
-                                        ),
-                                        child: Caption(
-                                          'scoring $_done of $_total older games '
-                                          'again with the current maths…',
-                                        ),
-                                      ),
-                                    SectionLabel(
-                                      total == 0
-                                          ? 'no games yet'
-                                          : 'your games, newest first',
-                                      first: _total > 0,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 6),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          if (_error.isNotEmpty) ...[
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              _error,
-                                              style: TextStyle(color: c.error),
-                                            ),
-                                          ],
-                                          if (total == 0)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 12,
-                                              ),
-                                              child: Text(
-                                                'finish a game and it will be here, to '
-                                                'look back on step by step.',
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  color: c.onSurface.withValues(
-                                                    alpha: dimAlpha,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }
-                              final k = row - fixed;
-                              if (k < shown) {
-                                // newest first: the list is the history read backwards
-                                final g = mine[total - 1 - k];
-                                final last = k == shown - 1;
-                                // the games are one group: 2 px between the rows, the
-                                // first and last with the container's round corners
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom: last ? 0 : 2,
-                                  ),
-                                  child: _GameTile(
-                                    key: ValueKey('game-${g.id}'),
-                                    game: g,
-                                    language: _langs[g.lang],
-                                    first: k == 0,
-                                    last: last,
-                                    onTap: () => _open(g),
-                                  ),
-                                );
-                              }
-                              final next = min(historyPageSize, more);
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: 48,
-                                  child: OutlinedButton(
-                                    key: const ValueKey('load-more'),
-                                    onPressed: () => setState(
-                                      () => _shown += historyPageSize,
-                                    ),
-                                    child: Text('load $next more · $more left'),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          if (_opening)
-                            const Positioned.fill(
-                              child: Center(child: CircularProgressIndicator()),
+                ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  itemCount: fixed + shown + (more > 0 ? 1 : 0),
+                  itemBuilder: (context, row) {
+                    final i = row;
+                    // (these are not const: a const widget is not rebuilt
+                    // when this builder runs, and they must follow the
+                    // history as it changes, after games are scored again)
+                    // ignore: prefer_const_constructors
+                    if (i == 0) {
+                      return _Block(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ModeFilter(
+                              selected: _mode,
+                              onSelect: (m) => setState(() {
+                                _mode = m;
+                                _shown = historyPageSize;
+                              }),
                             ),
+                          ],
+                        ),
+                      );
+                    }
+                    // ignore: prefer_const_constructors
+                    if (i == 1) return _Block(_Overall(_lang, _mode));
+                    if (i == 3) {
+                      return _Block(_PlaystyleRow(_lang, _mode));
+                    }
+                    if (i == 2) {
+                      return _Block(
+                        _Trend(
+                          _lang,
+                          _mode,
+                          key: ValueKey('trend-$_lang-${_mode?.name}'),
+                        ),
+                      );
+                    }
+                    if (i == 4) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_total > 0)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(2, 28, 2, 0),
+                              child: Caption(
+                                'scoring $_done of $_total older games '
+                                'again with the current maths…',
+                              ),
+                            ),
+                          SectionLabel(
+                            total == 0
+                                ? 'no games yet'
+                                : 'your games, newest first',
+                            first: _total > 0,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (_error.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _error,
+                                    style: TextStyle(color: c.error),
+                                  ),
+                                ],
+                                if (total == 0)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: Text(
+                                      'finish a game and it will be here, to '
+                                      'look back on step by step.',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: c.onSurface.withValues(
+                                          alpha: dimAlpha,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ],
                       );
-                    },
-                  ),
+                    }
+                    final k = row - fixed;
+                    if (k < shown) {
+                      // newest first: the list is the history read backwards
+                      final g = mine[total - 1 - k];
+                      final last = k == shown - 1;
+                      // the games are one group: 2 px between the rows, the
+                      // first and last with the container's round corners
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: last ? 0 : 2),
+                        child: _GameTile(
+                          key: ValueKey('game-${g.id}'),
+                          game: g,
+                          language: _langs[g.lang],
+                          first: k == 0,
+                          last: last,
+                          onTap: () => _open(g),
+                        ),
+                      );
+                    }
+                    final next = min(historyPageSize, more);
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton(
+                          key: const ValueKey('load-more'),
+                          onPressed: () =>
+                              setState(() => _shown += historyPageSize),
+                          child: Text('load $next more · $more left'),
+                        ),
+                      ),
+                    );
+                  },
                 ),
+                if (_opening)
+                  const Positioned.fill(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
               ],
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
@@ -338,8 +297,8 @@ class _Block extends StatelessWidget {
 class _Overall extends StatelessWidget {
   const _Overall(this.lang, this.mode);
 
-  /// The language it adds up, and the mode (null: all of them).
-  final String lang;
+  /// The language it adds up (null: all of them), and the mode (null: all of them).
+  final String? lang;
   final GameMode? mode;
 
   @override
@@ -348,7 +307,9 @@ class _Overall extends StatelessWidget {
     final h = appState.history;
     final s = summarise(h, [
       for (final g in h.scoredGames)
-        if (g.lang == lang && (mode == null || g.mode == mode)) g,
+        if ((lang == null || g.lang == lang) &&
+            (mode == null || g.mode == mode))
+          g,
     ]);
     final dim = TextStyle(
       fontSize: 11,
@@ -358,7 +319,9 @@ class _Overall extends StatelessWidget {
     // the mode with the most games, and how many of the games are in it
     final games = [
       for (final g in h.scoredGames)
-        if (g.lang == lang && (mode == null || g.mode == mode)) g,
+        if ((lang == null || g.lang == lang) &&
+            (mode == null || g.mode == mode))
+          g,
     ];
     final counts = <GameMode, int>{};
     for (final g in games) {
@@ -436,7 +399,7 @@ class _Overall extends StatelessWidget {
 /// the plot: its icon, name and a chevron. It opens the playstyle screen.
 class _PlaystyleRow extends StatelessWidget {
   const _PlaystyleRow(this.lang, this.mode);
-  final String lang;
+  final String? lang;
   final GameMode? mode;
 
   @override
@@ -446,7 +409,9 @@ class _PlaystyleRow extends StatelessWidget {
     final p = mode == null
         ? classify(habitsOfGames(h, h.recent(null, 100, lang)))
         : hasPlaystyle(mode!)
-        ? appState.styleOf(lang, mode!)
+        ? (lang == null
+              ? classify(habitsOfGames(h, h.recent(mode, 100, null)))
+              : appState.styleOf(lang!, mode!))
         : null;
     return GroupedList(
       rows: [
@@ -526,7 +491,7 @@ class _Trend extends StatefulWidget {
   const _Trend(this.lang, this.mode, {super.key});
 
   /// The language whose periods it draws, and the mode (null: all of them).
-  final String lang;
+  final String? lang;
   final GameMode? mode;
 
   @override

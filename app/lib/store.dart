@@ -2614,25 +2614,61 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The reminders: on or off, the time and the weekdays (see reminders.dart).
-  ReminderSettings reminders = const ReminderSettings();
+  /// The reminders of each language: on or off, the times and the weekdays
+  /// (see reminders.dart). A language not in the map has them off.
+  final Map<String, ReminderSettings> remindersByLang = {};
 
-  void setReminders(ReminderSettings r) {
-    if (r == reminders) return;
-    reminders = r;
-    try {
-      _w('reminders', _prefs?.setString('reminders', jsonEncode(r.toJson())));
-    } catch (e) {
-      appLog.w('store', 'reminders not saved ${e.runtimeType}');
-    }
+  ReminderSettings remindersOf(String lang) =>
+      remindersByLang[lang] ?? const ReminderSettings();
+
+  void setRemindersOf(String lang, ReminderSettings r) {
+    if (r == remindersOf(lang)) return;
+    remindersByLang[lang] = r;
+    _saveReminders();
     notifyListeners();
   }
 
-  void _readReminders(Object? raw) {
+  /// The reminders of the language in use.
+  ReminderSettings get reminders => remindersOf(lang);
+
+  void setReminders(ReminderSettings r) => setRemindersOf(lang, r);
+
+  void _saveReminders() {
     try {
-      reminders = ReminderSettings.fromJson(
-        raw is String ? jsonDecode(raw) : raw,
+      _w(
+        'remindersByLang',
+        _prefs?.setString('remindersByLang', jsonEncode(_remindersJson())),
       );
+    } catch (e) {
+      appLog.w('store', 'reminders not saved ${e.runtimeType}');
+    }
+  }
+
+  Map<String, Object> _remindersJson() => {
+    for (final e in remindersByLang.entries) e.key: e.value.toJson(),
+  };
+
+  /// Reads the reminders of every language from [byLang] (what
+  /// [_remindersJson] wrote). Settings saved before they were per language
+  /// ([legacy], one set) become those of [lang], the language they were for.
+  void _readReminders(Object? byLang, Object? legacy, String lang) {
+    try {
+      final raw = byLang is String ? jsonDecode(byLang) : byLang;
+      if (raw is Map) {
+        remindersByLang
+          ..clear()
+          ..addAll({
+            for (final e in raw.entries)
+              if (e.key is String)
+                e.key as String: ReminderSettings.fromJson(e.value),
+          });
+      } else if (legacy != null) {
+        remindersByLang
+          ..clear()
+          ..[lang] = ReminderSettings.fromJson(
+            legacy is String ? jsonDecode(legacy) : legacy,
+          );
+      }
     } catch (e) {
       appLog.w('store', 'reminders not read ${e.runtimeType}');
     }
@@ -4030,7 +4066,11 @@ class AppState extends ChangeNotifier {
         lastRunVersion = p.getString('lastRunVersion');
         changelogSeen = p.getString('changelogSeen');
         autoUpdateCheck = p.getBool('autoUpdateCheck') ?? true;
-        _readReminders(p.getString('reminders'));
+        _readReminders(
+          p.getString('remindersByLang'),
+          p.getString('reminders'),
+          p.getString('lang') ?? 'en',
+        );
         final last = p.getInt('lastUpdateCheck');
         if (last != null) {
           lastUpdateCheck = DateTime.fromMillisecondsSinceEpoch(last);
@@ -4403,7 +4443,7 @@ class AppState extends ChangeNotifier {
     'share': share,
     'theme': themeIndex,
     'seenHowTo': seenHowTo,
-    'reminders': reminders.toJson(),
+    'remindersByLang': _remindersJson(),
     'modesTaught': [for (final m in modesTaught) m.name],
     'dailyIntroSeen': dailyIntroSeen,
     'introCardsDone': introCardsDone.toList(),
@@ -4535,16 +4575,9 @@ class AppState extends ChangeNotifier {
         ..addAll(l.whereType<String>());
       _saveIntroCards();
     }
-    if (settings['reminders'] != null) {
-      _readReminders(settings['reminders']);
-      try {
-        _w(
-          'reminders',
-          _prefs?.setString('reminders', jsonEncode(reminders.toJson())),
-        );
-      } catch (e) {
-        appLog.w('store', 'could not save reminders: ${e.runtimeType}');
-      }
+    if (settings['remindersByLang'] != null || settings['reminders'] != null) {
+      _readReminders(settings['remindersByLang'], settings['reminders'], lang);
+      _saveReminders();
     }
     this.stats = stats;
     try {

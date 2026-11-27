@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'settings_button.dart';
+import 'sheet_language.dart';
 import 'tonal.dart';
 import 'ui.dart';
 
@@ -1091,7 +1092,17 @@ class TopBar extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: Row(
               children: [
-                SizedBox(width: pillWidth, child: slider),
+                SizedBox(
+                  width: pillWidth,
+                  // a history, achievements or playstyle sheet takes the pill
+                  // over as its language choice, with an all stop
+                  child: ListenableBuilder(
+                    listenable: sheetLanguage,
+                    builder: (context, _) => sheetLanguage.active
+                        ? const SheetLanguagePill()
+                        : slider,
+                  ),
+                ),
                 const Spacer(),
                 ...trailing,
                 if (settings) const SettingsButton(floating: true),

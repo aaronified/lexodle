@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/achievements_page.dart';
+import 'package:lexodle/sheet_language.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/routes.dart';
 import 'package:lexodle/store.dart';
@@ -47,6 +48,9 @@ Future<void> _open(WidgetTester tester) async {
     ),
   );
   await tester.pump();
+  // all languages to begin with; these are about the language in use
+  sheetLanguage.select(appState.lang);
+  await tester.pump();
 }
 
 /// The listed achievements, top to bottom.
@@ -60,6 +64,7 @@ List<String> _listed(WidgetTester tester) {
 }
 
 void main() {
+  setUp(sheetLanguage.reset);
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {

@@ -30,6 +30,7 @@ import 'multi_review.dart';
 import 'review.dart';
 import 'game_modes_dialog.dart';
 import 'playstyle_card.dart';
+import 'page_sheet.dart';
 import 'puzzle.dart';
 import 'reminders_page.dart';
 import 'settings_page.dart';
@@ -137,6 +138,9 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
   );
   Route<dynamic> page(Widget w) =>
       MaterialPageRoute<void>(settings: s, builder: (_) => w);
+  // a sheet from the bottom, up to just below the top bar
+  Route<dynamic> sheet(Widget w) =>
+      PageSheetRoute<void>(settings: s, builder: (_) => w);
   switch (name) {
     case Routes.play:
       return page(
@@ -193,7 +197,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         puzzle == null ? const HomeSwitch() : PuzzleGate(puzzle: puzzle),
       );
     case Routes.history:
-      return page(const HistoryPage());
+      return sheet(const HistoryPage());
     case Routes.words:
       return page(const WordsPage(back: true));
     case Routes.collected:
@@ -291,7 +295,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case Routes.solver:
       return page(const SolverHubPage());
     case Routes.achievements:
-      return page(const AchievementsPage());
+      return sheet(const AchievementsPage());
     case Routes.mastery:
       return page(const MasteryPage());
     case Routes.howTo:
@@ -299,17 +303,17 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         HowToPage(onboarding: settings.arguments == onboardingArgument),
       );
     case Routes.settings:
-      return page(const SettingsPage());
+      return sheet(const SettingsPage());
     case Routes.modeSettings:
-      return page(const ModeSettingsPage());
+      return sheet(const ModeSettingsPage());
     case Routes.gameModes:
       return _dialog(s, const GameModesDialog());
     case Routes.playstyle:
-      return page(const PlaystylePage());
+      return sheet(const PlaystylePage());
     case Routes.reminders:
-      return page(const RemindersPage());
+      return sheet(const RemindersPage());
     case Routes.about:
-      return page(const LicencesPage(about: aboutText));
+      return sheet(const LicencesPage(about: aboutText));
     case Routes.firstGame:
       return practiceRoute();
     default:

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/achievements_page.dart';
+import 'package:lexodle/sheet_language.dart';
 import 'package:lexodle/learn_log.dart';
 import 'package:lexodle/lex.dart';
 import 'package:lexodle/lex_widgets.dart';
@@ -33,6 +34,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
+    sheetLanguage.reset();
     SharedPreferences.setMockInitialValues({});
     appState.ach = {};
     appState.stats = Stats();
@@ -83,6 +85,9 @@ void main() {
     );
     // SVG assets are read with real file IO, which fake-async cannot await
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
+    await tester.pump();
+    // all to begin with: this one is about the language in use
+    sheetLanguage.select(appState.lang);
     await tester.pump();
 
     // one row for each achievement, with a glyph
@@ -241,6 +246,9 @@ void main() {
       );
       await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
       await tester.pump();
+      // all to begin with; the top bar's pill picks English
+      sheetLanguage.select('en');
+      await tester.pump();
       // English: its fastest win, not French's wins
       expect(find.byKey(const ValueKey('count-quick')), findsOneWidget);
       expect(find.byKey(const ValueKey('count-wins')), findsNothing);
@@ -255,7 +263,7 @@ void main() {
       );
       expect(shared, findsNWidgets(3));
       // picking French shows French's
-      await pickChoice(tester, 'language-slider', 'fr');
+      sheetLanguage.select('fr');
       await tester.pump();
       expect(find.byKey(const ValueKey('count-wins')), findsOneWidget);
       expect(find.byKey(const ValueKey('count-quick')), findsNothing);
@@ -284,7 +292,6 @@ void main() {
     );
     await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
     await tester.pump();
-    await pickChoice(tester, 'language-slider', 'all');
     await tester.pump();
     // the furthest level of any language shows
     expect(

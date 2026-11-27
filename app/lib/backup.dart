@@ -365,6 +365,16 @@ Map<String, Object> _settings(Object? raw) {
     if (reminders is! Map) _bad('reminders');
     out['reminders'] = ReminderSettings.fromJson(reminders).toJson();
   }
+  // the reminders of each language
+  final byLang = raw['remindersByLang'];
+  if (byLang != null) {
+    if (byLang is! Map) _bad('remindersByLang');
+    out['remindersByLang'] = {
+      for (final e in byLang.entries)
+        if (e.key is String && _langCode.hasMatch(e.key as String))
+          e.key as String: ReminderSettings.fromJson(e.value).toJson(),
+    };
+  }
   return out;
 }
 

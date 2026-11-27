@@ -22,11 +22,19 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('the note and the daily settings show', (tester) async {
+  testWidgets('one button opens the note and the daily settings', (
+    tester,
+  ) async {
     await show(tester);
-    expect(find.text('these change free play only'), findsOneWidget);
+    // not on the page itself
+    expect(find.byKey(const ValueKey('daily-row-classic')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('mode-settings-daily-info')));
+    await tester.pumpAndSettle();
     expect(
-      find.text('the daily is the same for everyone, and always uses:'),
+      find.text(
+        'these settings change free play only: the daily never changes. '
+        'it is the same for everyone, and always uses:',
+      ),
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('daily-row-classic')), findsOneWidget);

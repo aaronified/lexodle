@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/page_sheet.dart';
 import 'package:lexodle/difficulty.dart';
 import 'package:lexodle/licences_page.dart';
 import 'package:lexodle/modes.dart';
@@ -49,9 +50,7 @@ void main() {
       expect(find.byKey(const ValueKey('daily-button')), findsOneWidget);
     });
 
-    testWidgets('the language opens a sheet of every language', (
-      tester,
-    ) async {
+    testWidgets('the language opens a sheet of every language', (tester) async {
       await home(tester);
       expect(find.byKey(const ValueKey('language-sheet')), findsNothing);
       await tester.tap(find.byKey(const ValueKey('language-button')));
@@ -117,8 +116,17 @@ void main() {
         await tester.scrollUntilVisible(
           find.byKey(const ValueKey('licences-button')),
           300,
-          scrollable: find.byType(Scrollable).first,
+          scrollable: find
+              .descendant(
+                of: find.byType(PageSheet),
+                matching: find.byType(Scrollable),
+              )
+              .first,
         );
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('licences-button')),
+        );
+        await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('licences-button')));
         await tester.pumpAndSettle();
         expect(find.byType(LicencesPage), findsOneWidget);

@@ -255,9 +255,7 @@ void main() {
       expect(find.textContaining('type a guess'), findsNothing);
       expect(
         tester
-            .widget<OutlinedButton>(
-              find.widgetWithText(OutlinedButton, 'undo'),
-            )
+            .widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'undo'))
             .onPressed,
         isNotNull,
       );

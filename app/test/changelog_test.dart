@@ -23,7 +23,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('· one'), findsOneWidget);
     expect(find.text('· two'), findsOneWidget);
-    await tester.tap(find.text('ok'));
+    await tester.tap(find.byKey(const ValueKey('sheet-close')));
     await tester.pumpAndSettle();
     expect(find.text('· one'), findsNothing);
   });
