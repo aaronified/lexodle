@@ -47,190 +47,190 @@ class LearnHomePage extends StatelessWidget {
         ];
         return Scaffold(
           body: SafeArea(
+            bottom: false,
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    PageHeader(
-                      text: 'learn',
-                      // the language is the slider below; classic adds its length
-                      info: mode == GameMode.classic
-                          ? HeaderInfo('$length letters')
-                          : null,
+                // the language slider is the top bar; classic adds its length
+                // to the line under it
+                child: UnderTopBar(
+                  bar: const TopBar(slider: LanguageBar(pill: true)),
+                  child: ListView(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      topBarInset,
+                      16,
+                      24 + MediaQuery.paddingOf(context).bottom,
                     ),
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                        children: [
-                          const LanguageBar(),
-                          const SizedBox(height: 8),
-                          if (full) ...[
-                            Caption(
-                              'get better at the first guesses, and at seeing '
-                              'which ${thingOf(mode, plural: false)} splits the rest best',
-                            ),
-                            const SizedBox(height: 10),
-                          ],
-                          if (modes.length > 1)
-                            ModeFilter(
-                              key: const ValueKey('learn-modes'),
-                              showAll: false,
-                              selected: mode,
-                              modes: modes,
-                              onSelect: (m) {
-                                if (m == null) return;
-                                try {
-                                  appState.setup(mode: m);
-                                } catch (e) {
-                                  appLog.w(
-                                    'learn',
-                                    'could not switch mode: ${e.runtimeType}',
-                                  );
-                                }
-                              },
-                            ),
-                          const SectionLabel('start here', first: true),
-                          GroupedList(rows: [_howToPlay(context, mode)]),
-                          if (full) ...[
-                            const SectionLabel('train'),
-                            GroupedList(
-                              rows: [
-                                // the master page for the modes with a board
-                                // of one word, else the strategy guide
-                                if (four)
-                                  _lesson(
-                                    context,
-                                    title: 'how to master ${mode.label}',
-                                    about:
-                                        'play a word with every number to hand: '
-                                        'the words that fit, the best guesses and '
-                                        'the logic of each colour',
-                                    route: Routes.learnMaster,
-                                    key: 'learn-card-master',
-                                    icon: 'school',
-                                  )
-                                else
-                                  _lesson(
-                                    context,
-                                    title: 'how to master ${mode.label}',
-                                    about: 'strategy for the mode you have selected',
-                                    route: Routes.learnGuide,
-                                    key: 'learn-card-guide',
-                                    icon: 'school',
-                                  ),
-                                _lesson(
-                                  context,
-                                  title: 'the opening',
-                                  about: four
-                                      ? 'the best first guess, then the best '
-                                            'second and third for any colours it '
-                                            'can show'
-                                      : 'the best first guess, then the best '
-                                            'second guess for each colour it can '
-                                            'show',
-                                  route: Routes.learnOpening,
-                                  key: 'learn-card-opening',
-                                  icon: 'bolt',
-                                ),
-                                if (four)
-                                  _lesson(
-                                    context,
-                                    title: 'guess the best',
-                                    about:
-                                        'four guesses: which splits the rest best, '
-                                        'or got the luckiest reply',
-                                    route: Routes.learnGuess,
-                                    key: 'learn-card-guess',
-                                    icon: 'bulb',
-                                  ),
-                                if (!four) ...[
-                                  _lesson(
-                                    context,
-                                    title: 'the styles',
-                                    about:
-                                        'the three habits of the opening and the '
-                                        'two of the end, and luck, explained',
-                                    route: Routes.learnStyles,
-                                    key: 'learn-card-styles',
-                                    icon: 'sparkles',
-                                  ),
-                                  _card(
-                                    context,
-                                    LearnKind.clue,
-                                    'read the clue',
-                                    'a guess and its clues, four ${thingOf(mode)}: which one fits',
-                                    Routes.learnClue,
-                                    log,
-                                    'zoom-question',
-                                  ),
-                                  _card(
-                                    context,
-                                    LearnKind.free,
-                                    'practise ${mode == GameMode.equations ? 'an equation' : 'a ${thingOf(mode, plural: false)}'}',
-                                    mode == GameMode.mastermind
-                                        ? 'the opponent answers as in the game. '
-                                              'find the best split at each step'
-                                        : 'the answer is shown. find the best '
-                                              'guess at each step',
-                                    Routes.learnFree,
-                                    log,
-                                    'dice-5',
-                                  ),
-                                  _card(
-                                    context,
-                                    LearnKind.choose,
-                                    'choose the best',
-                                    'ten positions, four ${thingOf(mode)} each: which splits the rest best',
-                                    Routes.learnChoose,
-                                    log,
-                                    'scale',
-                                  ),
-                                  _card(
-                                    context,
-                                    LearnKind.closing,
-                                    'closing',
-                                    mode == GameMode.mastermind
-                                        ? 'ten endgames: few words left. which '
-                                              'guess splits them best'
-                                        : 'ten endgames: few ${thingOf(mode)} left, '
-                                              'few tries. which guess wins in time',
-                                    Routes.learnClosing,
-                                    log,
-                                    'shield-check',
-                                  ),
-                                  _card(
-                                    context,
-                                    LearnKind.sequence,
-                                    'three ${thingOf(mode)}',
-                                    'find three ${thingOf(mode)} to play first that '
-                                        'tell the answers apart best',
-                                    Routes.learnSequence,
-                                    log,
-                                    'square-number-3',
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ],
-                          if (full && streak > 0) ...[
-                            const SizedBox(height: 12),
-                            TonalCard(
-                              child: Text(
-                                '$streak ${streak == 1 ? 'day' : 'days'} in a row',
-                                key: const ValueKey('learn-streak'),
-                                style: TextStyle(
-                                  color: c.primary,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                    children: [
+                      if (full) ...[
+                        Caption(
+                          'get better at the first guesses, and at seeing '
+                          'which ${thingOf(mode, plural: false)} splits the rest best'
+                          '${mode == GameMode.classic ? ' · $length letters' : ''}',
+                        ),
+                        const SizedBox(height: 10),
+                      ] else if (mode == GameMode.classic) ...[
+                        Caption('$length letters'),
+                        const SizedBox(height: 10),
+                      ],
+                      if (modes.length > 1)
+                        ModeFilter(
+                          key: const ValueKey('learn-modes'),
+                          showAll: false,
+                          selected: mode,
+                          modes: modes,
+                          onSelect: (m) {
+                            if (m == null) return;
+                            try {
+                              appState.setup(mode: m);
+                            } catch (e) {
+                              appLog.w(
+                                'learn',
+                                'could not switch mode: ${e.runtimeType}',
+                              );
+                            }
+                          },
+                        ),
+                      const SectionLabel('start here', first: true),
+                      GroupedList(rows: [_howToPlay(context, mode)]),
+                      if (full) ...[
+                        const SectionLabel('train'),
+                        GroupedList(
+                          rows: [
+                            // the master page for the modes with a board
+                            // of one word, else the strategy guide
+                            if (four)
+                              _lesson(
+                                context,
+                                title: 'how to master ${mode.label}',
+                                about:
+                                    'play a word with every number to hand: '
+                                    'the words that fit, the best guesses and '
+                                    'the logic of each colour',
+                                route: Routes.learnMaster,
+                                key: 'learn-card-master',
+                                icon: 'school',
+                              )
+                            else
+                              _lesson(
+                                context,
+                                title: 'how to master ${mode.label}',
+                                about:
+                                    'strategy for the mode you have selected',
+                                route: Routes.learnGuide,
+                                key: 'learn-card-guide',
+                                icon: 'school',
                               ),
+                            _lesson(
+                              context,
+                              title: 'the opening',
+                              about: four
+                                  ? 'the best first guess, then the best '
+                                        'second and third for any colours it '
+                                        'can show'
+                                  : 'the best first guess, then the best '
+                                        'second guess for each colour it can '
+                                        'show',
+                              route: Routes.learnOpening,
+                              key: 'learn-card-opening',
+                              icon: 'bolt',
                             ),
+                            if (four)
+                              _lesson(
+                                context,
+                                title: 'guess the best',
+                                about:
+                                    'four guesses: which splits the rest best, '
+                                    'or got the luckiest reply',
+                                route: Routes.learnGuess,
+                                key: 'learn-card-guess',
+                                icon: 'bulb',
+                              ),
+                            if (!four) ...[
+                              _lesson(
+                                context,
+                                title: 'the styles',
+                                about:
+                                    'the three habits of the opening and the '
+                                    'two of the end, and luck, explained',
+                                route: Routes.learnStyles,
+                                key: 'learn-card-styles',
+                                icon: 'sparkles',
+                              ),
+                              _card(
+                                context,
+                                LearnKind.clue,
+                                'read the clue',
+                                'a guess and its clues, four ${thingOf(mode)}: which one fits',
+                                Routes.learnClue,
+                                log,
+                                'zoom-question',
+                              ),
+                              _card(
+                                context,
+                                LearnKind.free,
+                                'practise ${mode == GameMode.equations ? 'an equation' : 'a ${thingOf(mode, plural: false)}'}',
+                                mode == GameMode.mastermind
+                                    ? 'the opponent answers as in the game. '
+                                          'find the best split at each step'
+                                    : 'the answer is shown. find the best '
+                                          'guess at each step',
+                                Routes.learnFree,
+                                log,
+                                'dice-5',
+                              ),
+                              _card(
+                                context,
+                                LearnKind.choose,
+                                'choose the best',
+                                'ten positions, four ${thingOf(mode)} each: which splits the rest best',
+                                Routes.learnChoose,
+                                log,
+                                'scale',
+                              ),
+                              _card(
+                                context,
+                                LearnKind.closing,
+                                'closing',
+                                mode == GameMode.mastermind
+                                    ? 'ten endgames: few words left. which '
+                                          'guess splits them best'
+                                    : 'ten endgames: few ${thingOf(mode)} left, '
+                                          'few tries. which guess wins in time',
+                                Routes.learnClosing,
+                                log,
+                                'shield-check',
+                              ),
+                              _card(
+                                context,
+                                LearnKind.sequence,
+                                'three ${thingOf(mode)}',
+                                'find three ${thingOf(mode)} to play first that '
+                                    'tell the answers apart best',
+                                Routes.learnSequence,
+                                log,
+                                'square-number-3',
+                              ),
+                            ],
                           ],
-                        ],
-                      ),
-                    ),
-                  ],
+                        ),
+                      ],
+                      if (full && streak > 0) ...[
+                        const SizedBox(height: 12),
+                        TonalCard(
+                          child: Text(
+                            '$streak ${streak == 1 ? 'day' : 'days'} in a row',
+                            key: const ValueKey('learn-streak'),
+                            style: TextStyle(
+                              color: c.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),

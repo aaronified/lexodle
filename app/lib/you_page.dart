@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'achievements_page.dart' show achievementCount;
 import 'app_log.dart';
+import 'language_picker.dart' show LanguageBar;
 import 'language_sheet.dart';
 import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
@@ -140,39 +141,42 @@ class _YouPageState extends State<YouPage> {
             ),
         ];
         return SafeArea(
+          bottom: false,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PageHeader(
-                    title: Align(
+              // the language slider is the top bar; the player chip, which was
+              // the header, is the first row of the page
+              child: UnderTopBar(
+                bar: const TopBar(slider: LanguageBar(pill: true)),
+                child: ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    topBarInset,
+                    16,
+                    32 + MediaQuery.paddingOf(context).bottom,
+                  ),
+                  children: [
+                    Align(
                       alignment: Alignment.centerLeft,
                       child: _playerChip(context),
                     ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                      children: [
-                        const StreakWeek(),
-                        if (progress.isNotEmpty) ...[
-                          const SectionLabel('progress'),
-                          GroupedList(rows: progress),
-                        ],
-                        if (play.isNotEmpty) ...[
-                          const SectionLabel('play'),
-                          GroupedList(rows: play),
-                        ],
-                        if (you.isNotEmpty) ...[
-                          const SectionLabel('you'),
-                          GroupedList(rows: you),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    const StreakWeek(),
+                    if (progress.isNotEmpty) ...[
+                      const SectionLabel('progress'),
+                      GroupedList(rows: progress),
+                    ],
+                    if (play.isNotEmpty) ...[
+                      const SectionLabel('play'),
+                      GroupedList(rows: play),
+                    ],
+                    if (you.isNotEmpty) ...[
+                      const SectionLabel('you'),
+                      GroupedList(rows: you),
+                    ],
+                  ],
+                ),
               ),
             ),
           ),

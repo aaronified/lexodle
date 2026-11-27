@@ -143,16 +143,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the bar is pinned with a solid background and a next button', (
-    tester,
-  ) async {
+  testWidgets('the bar floats at the foot with no background', (tester) async {
     veteran();
     await show(tester);
     final bar = find.byKey(const ValueKey('today-bar'));
     expect(tester.getBottomLeft(bar).dy, 1400);
-    final box = tester.widget<Container>(bar).decoration! as BoxDecoration;
-    expect(box.color, isNotNull);
-    expect(box.color!.a, 1);
+    expect(tester.widget<Container>(bar).decoration, isNull);
     expect(find.byKey(const ValueKey('today-free-play')), findsOneWidget);
     expect(find.byKey(const ValueKey('today-primary')), findsNothing);
     expect(

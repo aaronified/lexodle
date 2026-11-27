@@ -11,7 +11,7 @@ import 'tonal.dart';
 import 'ui.dart';
 import 'ui_kit.dart';
 import 'words.dart';
-import 'language_picker.dart' show allLanguages;
+import 'language_picker.dart' show LanguageBar, allLanguages;
 import 'language_sheet.dart';
 import 'language_switch.dart';
 import 'words_banner.dart';
@@ -36,9 +36,13 @@ class WordsPage extends StatefulWidget {
 /// One list of the words page: what is above the rows, and the rows as a lazy
 /// sliver, so only the rows on screen are built however long the list is.
 class _Page {
-  const _Page(this.top, [this.sliver]);
+  const _Page(this.top, [this.sliver, this.slider]);
   final List<Widget> top;
   final Widget? sliver;
+
+  /// The language pill of the top bar while this list is on show; none for an
+  /// empty list, whose top bar shows the language in use.
+  final Widget? slider;
 }
 
 class _WordsPageState extends State<WordsPage> {
@@ -114,6 +118,7 @@ class _WordsPageState extends State<WordsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
@@ -129,40 +134,49 @@ class _WordsPageState extends State<WordsPage> {
 
   Widget _body(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        // the two lists are the header: their tabs sit in the shared title row.
-        // A back arrow shows only when the page was opened as a screen of its own.
-        PageHeader(
-          back: widget.back,
-          title: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: _tabs(c),
+    final saved = _savedBody(context, c);
+    final collected = _collectedBody(context, c);
+    // the language pill of the top bar is the one of the list on show
+    final slider =
+        (_page == 0 ? saved.slider : collected.slider) ??
+        const LanguageBar(pill: true);
+    return UnderTopBar(
+      bar: TopBar(slider: slider),
+      child: Column(
+        children: [
+          const SizedBox(height: topBarInset),
+          // the two lists are the header: their tabs sit in the shared title
+          // row under the top bar. A back arrow shows only when the page was
+          // opened as a screen of its own.
+          PageHeader(
+            back: widget.back,
+            settings: false,
+            title: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: _tabs(c),
+            ),
           ),
-        ),
-        Container(
-          height: 1,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          color: tonesOf(context).line,
-        ),
-        Expanded(
-          child: PageView(
-            key: const ValueKey('words-pages'),
-            controller: _pages,
-            onPageChanged: (i) => setState(() => _page = i),
-            children: [
-              _list(_savedBody(context, c)),
-              _list(_collectedBody(context, c)),
-            ],
+          Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            color: tonesOf(context).line,
           ),
-        ),
-      ],
+          Expanded(
+            child: PageView(
+              key: const ValueKey('words-pages'),
+              controller: _pages,
+              onPageChanged: (i) => setState(() => _page = i),
+              children: [_list(context, saved), _list(context, collected)],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   /// One page: its content, the rows built as they scroll into view, and the
   /// goal card of its list at the end.
-  Widget _list(_Page p) {
+  Widget _list(BuildContext context, _Page p) {
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -175,7 +189,12 @@ class _WordsPageState extends State<WordsPage> {
             sliver: p.sliver!,
           ),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            24 + MediaQuery.paddingOf(context).bottom,
+          ),
           sliver: SliverToBoxAdapter(child: _banner()),
         ),
       ],
@@ -307,35 +326,48 @@ class _WordsPageState extends State<WordsPage> {
       _savedSort,
     );
 
+    final slider = ChoiceSlider<String?>(
+      id: 'words-language',
+      compact: true,
+      pill: true,
+      dots: false,
+      title: 'language',
+      footer: languagesFooter(context),
+      items: [
+        const ChoiceItem<String?>(
+          value: null,
+          label: 'all',
+          name: 'all languages',
+        ),
+        for (final it in languageItems(
+          languageStops(langs),
+          _langByCode ?? const {},
+        ))
+          ChoiceItem<String?>(
+            value: it.value,
+            label: it.label,
+            pill: it.pill,
+            name: it.name,
+            sub: it.sub,
+            leading: languageBadge(it.value, size: 14),
+            popupLeading: languageBadge(it.value, size: 22),
+          ),
+      ],
+      selected: lang,
+      onChanged: (v) => setState(() => _lang = v),
+    );
     final top = <Widget>[
-      _controlRow(
-        slider: ChoiceSlider<String?>(
-          id: 'words-language',
-          compact: true,
-          dots: false,
-          title: 'language',
-          footer: languagesFooter(context),
-          items: [
-            const ChoiceItem<String?>(
-              value: null,
-              label: 'all',
-              name: 'all languages',
-            ),
-            for (final it in languageItems(
-              languageStops(langs),
-              _langByCode ?? const {},
-            ))
-              ChoiceItem<String?>(
-                value: it.value,
-                label: it.label,
-                name: it.name,
-                sub: it.sub,
-                leading: languageBadge(it.value, size: 14),
-                popupLeading: languageBadge(it.value, size: 22),
-              ),
-          ],
-          selected: lang,
-          onChanged: (v) => setState(() => _lang = v),
+      _searchRow(
+        search: Semantics(
+          label: 'search words and notes',
+          textField: true,
+          child: TextField(
+            key: const ValueKey('words-search'),
+            controller: _search,
+            onChanged: (v) => setState(() => _query = v),
+            style: const TextStyle(fontSize: 14),
+            decoration: _searchDecoration(c, 'search words and notes'),
+          ),
         ),
         sort: _sortButton(
           c,
@@ -348,18 +380,6 @@ class _WordsPageState extends State<WordsPage> {
             current: _savedSort,
             onPick: (s) => _savedSort = s,
           ),
-        ),
-      ),
-      const SizedBox(height: 12),
-      Semantics(
-        label: 'search words and notes',
-        textField: true,
-        child: TextField(
-          key: const ValueKey('words-search'),
-          controller: _search,
-          onChanged: (v) => setState(() => _query = v),
-          style: const TextStyle(fontSize: 14),
-          decoration: _searchDecoration(c, 'search words and notes'),
         ),
       ),
       const SizedBox(height: 16),
@@ -375,6 +395,7 @@ class _WordsPageState extends State<WordsPage> {
               itemCount: rows.length,
               itemBuilder: (context, i) => _row(context, c, rows[i]),
             ),
+      slider,
     );
   }
 
@@ -419,41 +440,54 @@ class _WordsPageState extends State<WordsPage> {
       summary = '${won.length} words won in $name · $savedHere saved here';
     }
 
+    final slider = ChoiceSlider<String>(
+      id: 'collected-language',
+      compact: true,
+      pill: true,
+      dots: false,
+      title: 'language',
+      footer: languagesFooter(context),
+      items: [
+        const ChoiceItem<String>(
+          value: allLanguages,
+          label: 'all',
+          name: 'all languages',
+        ),
+        for (final it in languageItems(
+          languageStops(langs),
+          _langByCode ?? const {},
+        ))
+          ChoiceItem<String>(
+            value: it.value,
+            label: it.label,
+            pill: it.pill,
+            name: it.name,
+            sub: it.sub,
+            leading: languageBadge(it.value, size: 14),
+            popupLeading: languageBadge(it.value, size: 22),
+          ),
+        if (col.placeCount > 0)
+          const ChoiceItem<String>(
+            value: 'places',
+            label: 'places',
+            icon: 'world',
+          ),
+      ],
+      selected: sel,
+      onChanged: (v) => setState(() => _cLang = v),
+    );
     final top = <Widget>[
-      _controlRow(
-        slider: ChoiceSlider<String>(
-          id: 'collected-language',
-          compact: true,
-          dots: false,
-          title: 'language',
-          footer: languagesFooter(context),
-          items: [
-            const ChoiceItem<String>(
-              value: allLanguages,
-              label: 'all',
-              name: 'all languages',
-            ),
-            for (final it in languageItems(
-              languageStops(langs),
-              _langByCode ?? const {},
-            ))
-              ChoiceItem<String>(
-                value: it.value,
-                label: it.label,
-                name: it.name,
-                sub: it.sub,
-                leading: languageBadge(it.value, size: 14),
-                popupLeading: languageBadge(it.value, size: 22),
-              ),
-            if (col.placeCount > 0)
-              const ChoiceItem<String>(
-                value: 'places',
-                label: 'places',
-                icon: 'world',
-              ),
-          ],
-          selected: sel,
-          onChanged: (v) => setState(() => _cLang = v),
+      _searchRow(
+        search: Semantics(
+          label: 'search collected words',
+          textField: true,
+          child: TextField(
+            key: const ValueKey('collected-search'),
+            controller: _cSearch,
+            onChanged: (v) => setState(() => _cQuery = v),
+            style: const TextStyle(fontSize: 14),
+            decoration: _searchDecoration(c, 'search collected words'),
+          ),
         ),
         sort: _sortButton(
           c,
@@ -466,18 +500,6 @@ class _WordsPageState extends State<WordsPage> {
             current: _collectedSort,
             onPick: (s) => _collectedSort = s,
           ),
-        ),
-      ),
-      const SizedBox(height: 12),
-      Semantics(
-        label: 'search collected words',
-        textField: true,
-        child: TextField(
-          key: const ValueKey('collected-search'),
-          controller: _cSearch,
-          onChanged: (v) => setState(() => _cQuery = v),
-          style: const TextStyle(fontSize: 14),
-          decoration: _searchDecoration(c, 'search collected words'),
         ),
       ),
       const SizedBox(height: 16),
@@ -511,6 +533,7 @@ class _WordsPageState extends State<WordsPage> {
                 return _collectedTile(context, c, sel, keys[i]);
               },
             ),
+      slider,
     );
   }
 
@@ -540,12 +563,12 @@ class _WordsPageState extends State<WordsPage> {
     );
   }
 
-  /// The language choice and the sort button, on one centre line.
-  Widget _controlRow({required Widget slider, required Widget sort}) {
+  /// The search field and the sort button, on one centre line.
+  Widget _searchRow({required Widget search, required Widget sort}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(child: slider),
+        Expanded(child: search),
         const SizedBox(width: 8),
         sort,
       ],
