@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- you: the player is the hero of the page
+  A large avatar with the name and "113 games · since 2026-09-02", on a card of its own, replaces the player chip. The streak card carries the numbers of the mode on show (streak, best, won, skill) above the week. The rows say something: achievements shows its medals (7 bronze · 2 silver · 1 gold), history the last game, the playstyle is a row of its own, languages shows the ticked flags, and mode settings just says it is for free play.
+
 - reminders are per language
   Each language has its own reminders: on or off, the time the dailies open, the nudge times and days. While the reminders sheet is open, the pill in the top bar picks the language you are editing, and a notification names only that language's dailies. The reminders you had become those of the language you were using.
 

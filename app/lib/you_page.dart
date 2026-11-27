@@ -6,11 +6,13 @@ import 'language_picker.dart' show LanguageBar;
 import 'language_sheet.dart';
 import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
+import 'medal.dart';
 import 'mode_settings_page.dart' show knownModes;
 import 'profile_sheet.dart';
 import 'routes.dart';
-import 'streak_week.dart';
+import 'store.dart' show achievements;
 import 'tonal.dart';
+import 'streak_week.dart';
 import 'ui_kit.dart';
 import 'ui.dart';
 import 'words.dart';
@@ -27,8 +29,6 @@ class YouPage extends StatefulWidget {
 }
 
 class _YouPageState extends State<YouPage> {
-  List<Language>? _langs;
-
   @override
   void initState() {
     super.initState();
@@ -37,8 +37,9 @@ class _YouPageState extends State<YouPage> {
 
   Future<void> _loadLangs() async {
     try {
-      final l = await WordBank.languages();
-      if (mounted) setState(() => _langs = l);
+      // read once, so the flags of the languages are known: draw them again
+      await WordBank.languages();
+      if (mounted) setState(() {});
     } catch (e) {
       appLog.w('you', 'languages failed ${e.runtimeType}');
     }
@@ -47,14 +48,59 @@ class _YouPageState extends State<YouPage> {
   /// The sheet where the languages of the switchers are ticked.
   void _pickLanguages() => showLanguagesChooser(context);
 
-  /// The names of the ticked languages, in English, for the line under the row.
-  String? get _langName {
-    final langs = _langs;
-    if (langs == null || langs.isEmpty) return null;
+  /// The medals earned in this language: "7 bronze · 2 silver · 1 gold".
+  String _medals() {
+    final n = {for (final m in Medal.values) m: 0};
+    for (final a in achievements) {
+      final t = (appState.ach[a.id]?.times ?? 0).clamp(0, a.count);
+      for (var i = 0; i < t; i++) {
+        final m = a.levels[i].medal;
+        n[m] = n[m]! + 1;
+      }
+    }
     return [
-      for (final c in appState.playLangs)
-        (langs.where((l) => l.code == c).firstOrNull?.wikt ?? c).toLowerCase(),
-    ].join(', ');
+      for (final m in Medal.values)
+        if (n[m]! > 0) '${n[m]} ${m.name}',
+    ].join(' · ');
+  }
+
+  /// The last game, in a line: how it went and when.
+  String? _lastGame() {
+    try {
+      final h = appState.history;
+      if (h.games.isEmpty) return null;
+      final g = h.games.last;
+      final day = DateTime.fromMillisecondsSinceEpoch(g.at);
+      final now = DateTime.now();
+      String two(int v) => v.toString().padLeft(2, '0');
+      final date = DateUtils.isSameDay(day, now)
+          ? 'today'
+          : DateUtils.isSameDay(day, now.subtract(const Duration(days: 1)))
+          ? 'yesterday'
+          : '${day.year}-${two(day.month)}-${two(day.day)}';
+      final how = g.won
+          ? 'solved in ${h.guessesOf(g.id).length}/${g.tries}'
+          : 'missed';
+      return 'last: $how · $date';
+    } catch (e) {
+      appLog.w('you', 'last game failed ${e.runtimeType}');
+      return null;
+    }
+  }
+
+  /// "113 games · since 2026-09-02", or nothing before the first game.
+  String? _since() {
+    try {
+      final h = appState.history;
+      if (h.games.isEmpty) return null;
+      final d = DateTime.fromMillisecondsSinceEpoch(h.games.first.at);
+      String two(int v) => v.toString().padLeft(2, '0');
+      return '${h.games.length} ${h.games.length == 1 ? 'game' : 'games'}'
+          ' · since ${d.year}-${two(d.month)}-${two(d.day)}';
+    } catch (e) {
+      appLog.w('you', 'since failed ${e.runtimeType}');
+      return null;
+    }
   }
 
   void _push(BuildContext context, String route, {Object? arguments}) {
@@ -77,7 +123,7 @@ class _YouPageState extends State<YouPage> {
               'achievements',
               'achievements',
               '${appState.unlockedCount} of ${achievementCount()} earned'
-                  '${appState.lexUnlocked ? ' · lex and hints' : ''}',
+                  '${_medals().isEmpty ? '' : ' · ${_medals()}'}',
               icon: 'trophy',
               trailingWidget: appState.lexUnlocked
                   ? LexChip(appState.lexBalance)
@@ -88,11 +134,17 @@ class _YouPageState extends State<YouPage> {
             _row(
               'history',
               'history',
-              style == null
-                  ? 'and your playstyle'
-                  : 'your playstyle: ${style.name}',
+              _lastGame() ?? 'every game you play',
               icon: 'hourglass',
               onTap: () => _push(context, Routes.history),
+            ),
+          if (appState.stepOpen('your numbers') && style != null)
+            _row(
+              'playstyle',
+              'playstyle',
+              style.name,
+              icon: style.icon,
+              onTap: () => _push(context, Routes.playstyle),
             ),
         ];
         final play = <GroupRow>[
@@ -100,8 +152,7 @@ class _YouPageState extends State<YouPage> {
             _row(
               'modeset',
               'mode settings',
-              'free play settings · '
-                  '${[for (final m in knownModes()) m.label].join(', ')}',
+              'for free play',
               icon: 'settings',
               onTap: () => _push(context, Routes.modeSettings),
             ),
@@ -127,7 +178,16 @@ class _YouPageState extends State<YouPage> {
             _row(
               'language',
               'languages',
-              _langName,
+              null,
+              subtitle: Row(
+                children: [
+                  for (final c in appState.playLangs) ...[
+                    languageBadge(c, size: 14),
+                    const SizedBox(width: 6),
+                  ],
+                  Text('${appState.playLangs.length} ticked'),
+                ],
+              ),
               icon: 'world',
               onTap: _pickLanguages,
             ),
@@ -157,14 +217,11 @@ class _YouPageState extends State<YouPage> {
                     32 + MediaQuery.paddingOf(context).bottom,
                   ),
                   children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: _playerChip(context),
-                    ),
+                    _hero(context),
                     const SizedBox(height: 12),
                     const StreakWeek(),
                     if (progress.isNotEmpty) ...[
-                      const SectionLabel('progress'),
+                      const SectionLabel('your record'),
                       GroupedList(rows: progress),
                     ],
                     if (play.isNotEmpty) ...[
@@ -185,30 +242,53 @@ class _YouPageState extends State<YouPage> {
     );
   }
 
-  /// The player: the avatar and the name on a tonal pill, a chevron after them.
-  /// Tapping it opens the profile sheet.
-  Widget _playerChip(BuildContext context) {
+  /// The player, the hero of the page: a large avatar, the name, and how many
+  /// games since when. Tapping it opens the profile sheet.
+  Widget _hero(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return InkWell(
-      key: const ValueKey('you-chip'),
-      borderRadius: BorderRadius.circular(999),
-      onTap: () => showProfileSheet(context),
-      child: Container(
-        height: 44,
-        padding: const EdgeInsets.only(left: 8, right: 16),
-        decoration: BoxDecoration(
-          color: tonesOf(context).s1,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ProfileAvatar(appState.profile, size: 30),
-            const SizedBox(width: 10),
-            Text(appState.profile.name),
-            const SizedBox(width: 2),
-            Icon(Icons.chevron_right, size: 20, color: c.onSurfaceVariant),
-          ],
+    final since = _since();
+    // the player has a card of its own
+    return Material(
+      color: tonesOf(context).s1,
+      borderRadius: BorderRadius.circular(radiusContainer),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: const ValueKey('you-chip'),
+        onTap: () => showProfileSheet(context),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              ProfileAvatar(appState.profile, size: 64),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      appState.profile.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (since != null)
+                      Text(
+                        since,
+                        key: const ValueKey('you-since'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: c.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, size: 22, color: c.onSurfaceVariant),
+            ],
+          ),
         ),
       ),
     );
@@ -221,12 +301,13 @@ class _YouPageState extends State<YouPage> {
     required VoidCallback onTap,
     required String icon,
     Widget? trailingWidget,
+    Widget? subtitle,
   }) {
     return GroupRow(
       key: ValueKey('you-row-$id'),
       leading: TonalTile(icon),
       title: Text(title),
-      subtitle: sub == null ? null : Text(sub),
+      subtitle: subtitle ?? (sub == null ? null : Text(sub)),
       trailing: trailingWidget,
       onTap: onTap,
     );
