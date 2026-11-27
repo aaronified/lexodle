@@ -44,6 +44,8 @@ void main() {
     for (final a in achievements) {
       final f = File('assets/icons/${a.icon}.svg');
       expect(f.existsSync(), isTrue, reason: '${a.id}: ${a.icon}.svg');
+      // (Tabler has no filled brain: it is its outline, the one exception)
+      if (a.icon == 'brain') continue;
       expect(
         f.readAsStringSync(),
         contains('icons-tabler-filled'),
