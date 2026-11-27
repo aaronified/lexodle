@@ -47,7 +47,6 @@ void main() {
     'today': const Scaffold(body: TodayPage()),
     'words': const WordsPage(),
     'mastery': const MasteryPage(),
-    'playstyle': const PlaystylePage(),
   };
 
   for (final e in pages.entries) {

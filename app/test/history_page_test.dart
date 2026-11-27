@@ -5,6 +5,7 @@ import 'package:lexodle/analysis.dart';
 import 'package:lexodle/daily.dart';
 import 'package:lexodle/equations.dart';
 import 'package:lexodle/history.dart';
+import 'package:lexodle/sheet_language.dart';
 import 'package:lexodle/history_page.dart';
 import 'package:lexodle/main.dart';
 import 'package:lexodle/playstyle_card.dart';
@@ -30,7 +31,10 @@ void main() {
   late WordBank bank;
   late List<String> pool;
 
-  setUp(() => SharedPreferences.setMockInitialValues({'seenHowTo': true}));
+  setUp(() {
+    SharedPreferences.setMockInitialValues({'seenHowTo': true});
+    sheetLanguage.reset();
+  });
 
   /// The French list read (and cached) before a test pumps a page: assets are
   /// read with real file IO, which fake-async cannot wait for.
@@ -587,7 +591,7 @@ void main() {
     expect(page.record.guesses, [pool[100], pool[101]]);
   });
 
-  testWidgets('each language has its own page: picking one shows its games', (
+  testWidgets('the language pill picks the games shown, all to begin with', (
     tester,
   ) async {
     await load(tester);
@@ -609,15 +613,12 @@ void main() {
     String overall() => textOf(
       tester.widget<Text>(find.byKey(const ValueKey('overall-games'))),
     )!;
-    // the language being played to begin with
-    expect(overall(), '2');
-    expect(choiceShows('language-slider', 'fr'), isTrue);
-    await pickChoice(tester, 'language-slider', 'xx');
-    expect(choiceShows('language-slider', 'xx'), isTrue);
+    // every language to begin with: the top bar's pill is the choice
+    expect(overall(), '3');
+    sheetLanguage.select('xx');
     await tester.pump();
     expect(overall(), '1');
-    await pickChoice(tester, 'language-slider', 'fr');
-    expect(choiceShows('language-slider', 'fr'), isTrue);
+    sheetLanguage.select('fr');
     await tester.pump();
     expect(overall(), '2');
   });
@@ -789,6 +790,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('style-chip')));
     await tester.pumpAndSettle();
     expect(find.byType(HistoryPage), findsNothing);
+    // all languages to begin with; the stored style is the language in use's
+    sheetLanguage.select(appState.lang);
+    await tester.pump();
     expect(
       textOf(tester.widget<Text>(find.byKey(const ValueKey('profile-name')))),
       'maverick',
@@ -833,8 +837,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(PlaystylePage), findsOneWidget);
       expect(find.byKey(const ValueKey('profile')), findsOneWidget);
-      expect(find.byType(BackButton), findsOneWidget);
-      await tester.pageBack();
+      // the history sheet is still under the playstyle sheet
+      expect(find.byKey(const ValueKey('sheet-close')), findsNWidgets(2));
+      await tester.tap(find.byKey(const ValueKey('sheet-close')).last);
       await tester.pumpAndSettle();
       expect(find.byType(PlaystylePage), findsNothing);
       expect(find.byType(HistoryPage), findsOneWidget);

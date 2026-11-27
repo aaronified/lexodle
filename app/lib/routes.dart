@@ -309,7 +309,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case Routes.gameModes:
       return _dialog(s, const GameModesDialog());
     case Routes.playstyle:
-      return page(const PlaystylePage());
+      return sheet(const PlaystylePage());
     case Routes.reminders:
       return sheet(const RemindersPage());
     case Routes.about:

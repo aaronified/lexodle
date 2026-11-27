@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'language_picker.dart';
-import 'language_switch.dart';
 import 'lex.dart';
 import 'lex_widgets.dart' show LexChip;
 import 'main.dart';
 import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart' show GameMode;
 import 'page_sheet.dart';
+import 'sheet_language.dart';
 import 'routes.dart';
 import 'store.dart';
 import 'settings_button.dart';
@@ -37,7 +37,7 @@ class AchievementsPage extends StatefulWidget {
 }
 
 class _AchievementsPageState extends State<AchievementsPage> {
-  String _lang = appState.lang;
+  String get _lang => sheetLanguage.selected;
   Map<String, Language> _langs = {};
   Medal? _medal;
 
@@ -202,143 +202,137 @@ class _AchievementsPageState extends State<AchievementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: appState,
-      builder: (context, _) {
-        final all = _lang == allLanguages;
-        final codes = appState.playedLanguages.toList()..sort();
-        final s = _record(all ? null : _lang);
-        final mine = all ? _merged(codes) : appState.achOf(_lang);
-        final won = appState.stats.langsWon.toList()..sort();
-        final learned = {
-          for (final e in appState.learnLog.events) e.language,
-        }.toList()..sort();
-        final shown = _shown(
-          mine,
-          languages: _langs.length,
-          words: all ? 0 : appState.wordsOf(_lang),
-        );
-        return PageSheet(
-          title: 'achievements',
-          trailing: [
-            if (appState.lexUnlocked)
-              InkResponse(
-                key: const ValueKey('lex-chip'),
-                onTap: () => setState(() => _lexOpen = !_lexOpen),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: 44,
-                    minHeight: 44,
-                  ),
-                  child: Center(child: LexChip(appState.lexBalance)),
-                ),
-              ),
-            IconButton(
-              key: const ValueKey('achievement-history'),
-              tooltip: 'history',
-              icon: TablerIcon(
-                'clock',
-                size: 22,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => _HistoryPage(
-                    () => _lang == allLanguages
-                        ? _merged(appState.playedLanguages.toList()..sort())
-                        : appState.achOf(_lang),
+    return SheetLanguageScope(
+      child: ListenableBuilder(
+        listenable: Listenable.merge([appState, sheetLanguage]),
+        builder: (context, _) {
+          final all = _lang == allLanguages;
+          final codes = appState.playedLanguages.toList()..sort();
+          final s = _record(all ? null : _lang);
+          final mine = all ? _merged(codes) : appState.achOf(_lang);
+          final won = appState.stats.langsWon.toList()..sort();
+          final learned = {
+            for (final e in appState.learnLog.events) e.language,
+          }.toList()..sort();
+          final shown = _shown(
+            mine,
+            languages: _langs.length,
+            words: all ? 0 : appState.wordsOf(_lang),
+          );
+          return PageSheet(
+            title: 'achievements',
+            trailing: [
+              if (appState.lexUnlocked)
+                InkResponse(
+                  key: const ValueKey('lex-chip'),
+                  onTap: () => setState(() => _lexOpen = !_lexOpen),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: 44,
+                      minHeight: 44,
+                    ),
+                    child: Center(child: LexChip(appState.lexBalance)),
                   ),
                 ),
-              ),
-            ),
-          ],
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                  children: [
-                    if (appState.lexUnlocked && _lexOpen) ...[
-                      const _LexDrop(),
-                      const SizedBox(height: 16),
-                    ],
-                    LanguagePicker(
-                      codes: languageStops(codes),
-                      languages: _langs,
-                      selected: _lang,
-                      showAll: true,
-                      onSelect: (code) => setState(() => _lang = code),
+              IconButton(
+                key: const ValueKey('achievement-history'),
+                tooltip: 'history',
+                icon: TablerIcon(
+                  'clock',
+                  size: 22,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => _HistoryPage(
+                      () => _lang == allLanguages
+                          ? _merged(appState.playedLanguages.toList()..sort())
+                          : appState.achOf(_lang),
                     ),
-                    const SizedBox(height: 12),
-                    TonalCard(
-                      child: StatsStrip([
-                        ('${s.played}', 'played', null),
-                        ('${s.wins}', 'won', null),
-                        ('${s.streak}', 'streak', null),
-                        ('${s.best}', 'best', null),
-                      ]),
-                    ),
-                    _Recent(mine, DateTime.now(), all ? null : _lang),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(2, 20, 2, 8),
-                      child: Caption(
-                        '${achievements.fold(0, (n, a) => n + (mine[a.id]?.times ?? 0))} of '
-                        '$levelCount levels earned '
-                        '${all ? 'in any language' : 'in $_lang'}',
-                      ),
-                    ),
-                    ChoiceSlider<Medal?>(
-                      id: 'achievements-medal',
-                      compact: true,
-                      selected: _medal,
-                      onChanged: (m) => setState(() => _medal = m),
-                      items: [
-                        ChoiceItem<Medal?>(
-                          value: null,
-                          label: 'all ${_earnedAt(mine, null)}/$levelCount',
-                        ),
-                        for (final m in Medal.values)
-                          ChoiceItem<Medal?>(
-                            value: m,
-                            label:
-                                '${m.name} ${_earnedAt(mine, m)}/'
-                                '${achievements.length}',
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        const Caption('sort'),
-                        for (final o in _sorts)
-                          _SortPill(
-                            o,
-                            on: _sort == o,
-                            onTap: () =>
-                                setState(() => _sort = _sort == o ? null : o),
-                          ),
-                      ],
-                    ),
-                    ..._list(
-                      context,
-                      shown,
-                      mine,
-                      all: all,
-                      codes: codes,
-                      learned: learned,
-                      won: won,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
-          ),
-        );
-      },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    children: [
+                      if (appState.lexUnlocked && _lexOpen) ...[
+                        const _LexDrop(),
+                        const SizedBox(height: 16),
+                      ],
+                      TonalCard(
+                        child: StatsStrip([
+                          ('${s.played}', 'played', null),
+                          ('${s.wins}', 'won', null),
+                          ('${s.streak}', 'streak', null),
+                          ('${s.best}', 'best', null),
+                        ]),
+                      ),
+                      _Recent(mine, DateTime.now(), all ? null : _lang),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(2, 20, 2, 8),
+                        child: Caption(
+                          '${achievements.fold(0, (n, a) => n + (mine[a.id]?.times ?? 0))} of '
+                          '$levelCount levels earned '
+                          '${all ? 'in any language' : 'in $_lang'}',
+                        ),
+                      ),
+                      ChoiceSlider<Medal?>(
+                        id: 'achievements-medal',
+                        compact: true,
+                        selected: _medal,
+                        onChanged: (m) => setState(() => _medal = m),
+                        items: [
+                          ChoiceItem<Medal?>(
+                            value: null,
+                            label: 'all ${_earnedAt(mine, null)}/$levelCount',
+                          ),
+                          for (final m in Medal.values)
+                            ChoiceItem<Medal?>(
+                              value: m,
+                              label:
+                                  '${m.name} ${_earnedAt(mine, m)}/'
+                                  '${achievements.length}',
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          const Caption('sort'),
+                          for (final o in _sorts)
+                            _SortPill(
+                              o,
+                              on: _sort == o,
+                              onTap: () =>
+                                  setState(() => _sort = _sort == o ? null : o),
+                            ),
+                        ],
+                      ),
+                      ..._list(
+                        context,
+                        shown,
+                        mine,
+                        all: all,
+                        codes: codes,
+                        learned: learned,
+                        won: won,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

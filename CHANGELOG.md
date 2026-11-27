@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- history, achievements and the playstyle take the top bar's language pill
+  While one of these sheets is open, the pill in the top bar is its language choice: it has an all stop, and all is where it starts. The sheets no longer carry a language slider of their own, and choosing a language there does not change the language of the app. History and the playstyle can now be read for all languages together.
+
 - settings, mode settings, history, achievements, reminders, what's new and about open as sheets from the bottom
   Each rises to just below the top bar, which stays on show and live (the language pill and the cog work while a sheet is open), and has its own top bar with the title and a close button. Reminders, what's new and about open on top of settings as sheets of their own. What the daily always uses is no longer a list on the mode settings page: one info button in its top bar opens it as a sheet.
 

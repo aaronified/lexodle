@@ -7,7 +7,8 @@ import 'mode_filter.dart';
 import 'modes.dart';
 import 'playstyle.dart';
 import 'routes.dart';
-import 'settings_button.dart';
+import 'page_sheet.dart';
+import 'sheet_language.dart';
 import 'ui.dart';
 
 /// A shaded card, as those of the history page: radius 6. On the page's ground
@@ -46,8 +47,8 @@ Color shadeUp(ColorScheme c) => Color.alphaBlend(
 class PlaystyleCard extends StatefulWidget {
   const PlaystyleCard(this.lang, {super.key});
 
-  /// The language it is for.
-  final String lang;
+  /// The language it is for (null: all of them together).
+  final String? lang;
 
   @override
   State<PlaystyleCard> createState() => _PlaystyleCardState();
@@ -144,15 +145,21 @@ class _PlaystyleCardState extends State<PlaystyleCard> {
       for (final m in GameMode.values)
         if (hasPlaystyle(m)) m,
     ];
-    final p = mode == null
-        ? classify(habitsOf(appState.history, mode: null, lang: lang))
+    // all languages: read from their games together; what was held and how
+    // often it changed is kept per language, so those are added up
+    final langs = lang == null ? appState.playedLanguages : {lang};
+    final ofModes = mode == null ? modes : [mode];
+    final p = mode == null || lang == null
+        ? classify(habitsOf(appState.history, mode: mode, lang: lang))
         : appState.styleOf(lang, mode);
-    final held = mode == null
-        ? {for (final m in modes) ...appState.stylesHeldOf(lang, m)}
-        : appState.stylesHeldOf(lang, mode);
-    final changes = mode == null
-        ? modes.fold(0, (n, m) => n + appState.styleChangesOf(lang, m))
-        : appState.styleChangesOf(lang, mode);
+    final held = {
+      for (final l in langs)
+        for (final m in ofModes) ...appState.stylesHeldOf(l, m),
+    };
+    final changes = [
+      for (final l in langs)
+        for (final m in ofModes) appState.styleChangesOf(l, m),
+    ].fold(0, (n, c) => n + c);
     final t = traitsOf(appState.history, mode: mode, lang: lang);
     final h = habitsOf(appState.history, mode: mode, lang: lang);
     final label = mode == null ? 'all modes' : mode.label;
@@ -429,47 +436,40 @@ class PlaystylePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('playstyle'),
-        actions: [const SettingsButton()],
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
-              children: [
-                // it listens, so a game finished behind it is read at once
-                ListenableBuilder(
-                  listenable: appState,
-                  builder: (context, _) => PlaystyleCard(appState.lang),
-                ),
-                const SizedBox(height: 6),
-                Material(
-                  color: shadeUp(c),
-                  borderRadius: BorderRadius.circular(6),
-                  child: InkWell(
-                    key: const ValueKey('playstyle-history'),
-                    borderRadius: BorderRadius.circular(6),
-                    // replaces this page, so back from the history is home
-                    onTap: () {
-                      try {
-                        Navigator.pushReplacementNamed(context, Routes.history);
-                      } catch (e) {
-                        appLog.w('playstyle', 'history: ${e.runtimeType}');
-                      }
-                    },
-                    child: const SizedBox(
-                      height: 48,
-                      child: Center(child: Text('history')),
-                    ),
-                  ),
-                ),
-              ],
+    // a sheet; the language is the top bar's pill, all by default
+    return SheetLanguageScope(
+      child: PageSheet(
+        title: 'playstyle',
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
+          children: [
+            // it listens, so a game finished behind it is read at once
+            ListenableBuilder(
+              listenable: Listenable.merge([appState, sheetLanguage]),
+              builder: (context, _) => PlaystyleCard(sheetLanguage.language),
             ),
-          ),
+            const SizedBox(height: 6),
+            Material(
+              color: shadeUp(c),
+              borderRadius: BorderRadius.circular(6),
+              child: InkWell(
+                key: const ValueKey('playstyle-history'),
+                borderRadius: BorderRadius.circular(6),
+                // replaces this page, so back from the history is home
+                onTap: () {
+                  try {
+                    Navigator.pushReplacementNamed(context, Routes.history);
+                  } catch (e) {
+                    appLog.w('playstyle', 'history: ${e.runtimeType}');
+                  }
+                },
+                child: const SizedBox(
+                  height: 48,
+                  child: Center(child: Text('history')),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
