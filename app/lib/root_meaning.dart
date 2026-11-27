@@ -24,6 +24,55 @@ final _formOf = RegExp(
   caseSensitive: false,
 );
 
+/// The root words the senses of [info] name ("plural of gove" names gove), in
+/// order, without repeats.
+List<String> rootsOf(WordInfo info, String word) {
+  final out = <String>[];
+  for (final b in info.blocks) {
+    for (final s in b.senses) {
+      final r = rootOfSense(s.text, word);
+      if (r != null && !out.contains(r)) out.add(r);
+    }
+  }
+  return out;
+}
+
+/// Whether [info] names root words it does not hold the entries of yet.
+bool missingRoots(WordInfo info, String word) =>
+    rootsOf(info, word).any((r) => !info.roots.containsKey(r));
+
+/// [info] with the entries of its root words looked up and kept with it (at
+/// most three, each in the word's own language), so a saved word shows what the
+/// root means without a connection. A root that cannot be had is left out and
+/// logged (only its type); [info] is returned as it was when there is nothing
+/// to add. [lookup] replaces the Wiktionary lookup, for a test.
+Future<WordInfo> withRoots(
+  WordInfo info,
+  String word,
+  Language language, {
+  Future<WordInfo?> Function(String root)? lookup,
+}) async {
+  final found = <String, WordInfo>{...info.roots};
+  try {
+    for (final root in rootsOf(info, word).take(3)) {
+      if (found.containsKey(root)) continue;
+      try {
+        final r = lookup != null
+            ? await lookup(root)
+            : await Wiktionary.shared
+                  .lookup(root, language.code, language.wikt)
+                  .timeout(const Duration(seconds: 12));
+        if (r != null && !r.isEmpty) found[root] = r;
+      } catch (e) {
+        appLog.w('word', 'could not look up a root word: ${e.runtimeType}');
+      }
+    }
+  } catch (e) {
+    appLog.w('word', 'roots failed: ${e.runtimeType}');
+  }
+  return found.length == info.roots.length ? info : info.withRoots(found);
+}
+
 /// What the root of an inflected form means, set under the sense that names it
 /// ("plural of deke"): the root's senses of the same part of speech as the form
 /// (a plural noun's root as a noun), or its first part of speech when it has
@@ -34,15 +83,22 @@ class RootSenses extends StatefulWidget {
     super.key,
     required this.root,
     required this.pos,
-    required this.language,
+    this.language,
     this.lookup,
+    this.known,
   });
   final String root;
   final String pos;
-  final Language language;
+
+  /// The language to look the root up in; not needed with [known].
+  final Language? language;
 
   /// Replaces the Wiktionary lookup, for a test.
   final Future<WordInfo?> Function(String root)? lookup;
+
+  /// The root's entry already in hand (kept with a saved word): shown at once,
+  /// with no lookup.
+  final WordInfo? known;
 
   @override
   State<RootSenses> createState() => _RootSensesState();
@@ -53,13 +109,12 @@ class _RootSensesState extends State<RootSenses> {
 
   Future<WordInfo?> _look() async {
     try {
+      if (widget.known != null) return widget.known;
       final custom = widget.lookup;
       if (custom != null) return await custom(widget.root);
-      return await Wiktionary.shared.lookup(
-        widget.root,
-        widget.language.code,
-        widget.language.wikt,
-      );
+      final lang = widget.language;
+      if (lang == null) return null;
+      return await Wiktionary.shared.lookup(widget.root, lang.code, lang.wikt);
     } catch (e) {
       appLog.w('word', 'could not look up the root word: ${e.runtimeType}');
       return null;

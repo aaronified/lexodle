@@ -103,6 +103,7 @@ class WordInfo {
     this.synonyms = const [],
     this.antonyms = const [],
     this.etymology = '',
+    this.roots = const {},
   });
   final String url;
   final List<String> ipa;
@@ -114,7 +115,23 @@ class WordInfo {
   /// The first paragraph of the etymology, shortened.
   final String etymology;
 
+  /// The entries of the words this one is a form of ("plural of gove"), by the
+  /// root word, kept with a saved word so that they open without a connection.
+  final Map<String, WordInfo> roots;
+
   bool get isEmpty => blocks.isEmpty && ipa.isEmpty;
+
+  /// This entry with [roots] as the entries of its root words.
+  WordInfo withRoots(Map<String, WordInfo> roots) => WordInfo(
+    url: url,
+    ipa: ipa,
+    audio: audio,
+    blocks: blocks,
+    synonyms: synonyms,
+    antonyms: antonyms,
+    etymology: etymology,
+    roots: roots,
+  );
 
   /// The entry as it is kept in a saved word: everything that is shown.
   Map<String, dynamic> toJson() => {
@@ -125,6 +142,8 @@ class WordInfo {
     if (synonyms.isNotEmpty) 'syn': synonyms,
     if (antonyms.isNotEmpty) 'ant': antonyms,
     if (etymology.isNotEmpty) 'etym': etymology,
+    if (roots.isNotEmpty)
+      'roots': {for (final e in roots.entries) e.key: e.value.toJson()},
   };
 
   static WordInfo fromJson(Map<String, dynamic> j) => WordInfo(
@@ -138,6 +157,14 @@ class WordInfo {
     synonyms: [for (final s in j['syn'] ?? []) s as String],
     antonyms: [for (final s in j['ant'] ?? []) s as String],
     etymology: j['etym'] as String? ?? '',
+    roots: {
+      if (j['roots'] is Map)
+        for (final e in (j['roots'] as Map).entries)
+          if (e.key is String && e.value is Map)
+            e.key as String: WordInfo.fromJson(
+              (e.value as Map).cast<String, dynamic>(),
+            ),
+    },
   );
 }
 

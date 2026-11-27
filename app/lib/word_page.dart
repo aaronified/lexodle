@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_log.dart';
 import 'main.dart';
+import 'root_meaning.dart';
 import 'saved_words.dart';
 import 'ui.dart';
 import 'ui_kit.dart';
@@ -47,7 +48,11 @@ class _WordPageState extends State<WordPage> {
       if (info == null || info.isEmpty) {
         note = 'no entry found for this word';
       } else {
-        appState.setWordInfo(entry.lang, entry.word, info);
+        appState.setWordInfo(
+          entry.lang,
+          entry.word,
+          await withRoots(info, entry.word, lang),
+        );
       }
     } catch (e) {
       appLog.w('word', 'the lookup failed again: ${e.runtimeType}');
@@ -58,6 +63,31 @@ class _WordPageState extends State<WordPage> {
       _retrying = false;
       _retryNote = note;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _keepRoots();
+  }
+
+  /// A word saved before the roots were kept: looks them up once, quietly, and
+  /// keeps them with the word (nothing shows or changes when it cannot).
+  Future<void> _keepRoots() async {
+    try {
+      final entry = widget.entry;
+      final info = entry.info;
+      if (info == null || !missingRoots(info, entry.word)) return;
+      final langs = await WordBank.languages();
+      final lang = langs.where((l) => l.code == entry.lang).firstOrNull;
+      if (lang == null) return;
+      final full = await withRoots(info, entry.word, lang);
+      if (identical(full, info) || !mounted) return;
+      appState.setWordInfo(entry.lang, entry.word, full);
+      if (mounted) setState(() {});
+    } catch (e) {
+      appLog.w('word', 'could not keep the roots: ${e.runtimeType}');
+    }
   }
 
   @override
@@ -86,7 +116,17 @@ class _WordPageState extends State<WordPage> {
   /// The entry copy, or a caption when building it throws (the error is logged).
   Widget _entryBody(WordInfo info, Widget saved) {
     try {
-      return WordInfoBody(info: info, saved: saved);
+      return WordInfoBody(
+        info: info,
+        saved: saved,
+        // the root of a form ("plural of gove"), from the copy kept with it
+        underSense: (b, s) {
+          final root = rootOfSense(s.text, widget.entry.word);
+          final known = root == null ? null : info.roots[root];
+          if (root == null || known == null) return null;
+          return RootSenses(root: root, pos: b.pos, known: known);
+        },
+      );
     } catch (e) {
       appLog.w('word', 'the entry could not be shown: ${e.runtimeType}');
       return const Caption('could not show this entry');
