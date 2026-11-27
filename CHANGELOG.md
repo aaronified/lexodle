@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- quartet: a key nobody tried is a plain key
+  A letter ruled out on one board (because that board's letters were all found) was drawn as a grey quarter, the same grey as a letter you guessed that was absent, so an untried key looked tried. A key now shows only what the guesses marked; the whole key goes grey once every board still in play has ruled the letter out, as in the other modes. A grey hint still shows on the board it was bought for.
+
 ## 0.15.0
 
 - you: the player is the hero of the page

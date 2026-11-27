@@ -1430,3 +1430,49 @@ String chooseWord(List<String> words, List<int> weights, Random rng) {
     maxBits: bits,
   );
 }
+
+/// The marks of the keys of a quartet keyboard: for each letter, one mark per
+/// board (null: not marked on that board).
+///
+/// A key shows what the guesses marked, and nothing else, so a letter nobody has
+/// tried stays a plain key. What is only deduced (a board's letters are all
+/// found, so [ruled] has the rest out on it) shows once every board still in
+/// play ([live]) is certain the letter is not in its word: then the whole key
+/// is grey, as in the single board modes. Until then a deduction is not drawn,
+/// except a grey hint ([hinted]: the boards it was bought for), which the player
+/// asked for on that board.
+Map<String, List<Mark?>> quartetKeys({
+  required Map<String, List<Mark?>> guessed,
+  required List<bool> live,
+  required List<Set<String>> ruled,
+  Map<String, Set<int>> hinted = const {},
+}) {
+  final boards = live.length;
+  final out = {
+    for (final e in guessed.entries)
+      e.key: List<Mark?>.of(e.value)
+        ..length = boards, // (a short list gets null parts)
+  };
+  final deduced = <String>{for (final r in ruled) ...r, ...hinted.keys};
+  for (final l in deduced) {
+    final per = out[l] ??= List<Mark?>.filled(boards, null);
+    bool certain(int b) =>
+        per[b] == Mark.absent ||
+        (b < ruled.length && ruled[b].contains(l)) ||
+        (hinted[l]?.contains(b) ?? false);
+    final play = [
+      for (var b = 0; b < boards; b++)
+        if (live[b]) b,
+    ];
+    if (play.isNotEmpty && play.every(certain)) {
+      for (var b = 0; b < boards; b++) {
+        per[b] ??= Mark.absent;
+      }
+    } else {
+      for (final b in hinted[l] ?? const <int>{}) {
+        if (b < boards) per[b] ??= Mark.absent;
+      }
+    }
+  }
+  return out;
+}
