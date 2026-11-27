@@ -4,6 +4,7 @@ import 'app_log.dart';
 import 'main.dart';
 import 'store.dart' show topLevels;
 import 'ui.dart';
+import 'root_meaning.dart';
 import 'wiktionary.dart';
 import 'words.dart';
 
@@ -60,6 +61,8 @@ class _SaveWordButtonState extends State<SaveWordButton> {
         info = null;
       }
       if (info != null && info.isEmpty) info = null;
+      // a form of another word ("plural of gove") keeps the root's entry too
+      if (info != null) info = await withRoots(info, word, widget.language);
       final earned = topLevels(appState.saveWord(code, word, info));
       if (!mounted) return;
       // what saving earned (the keeper's levels, say) is told with it

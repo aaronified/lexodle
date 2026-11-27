@@ -18,6 +18,7 @@ WordInfo _info(List<(String, List<String>)> blocks) {
 }
 
 void main() {
+  keptRootsTests();
   test('the root is read from the sense of a form', () {
     expect(rootOfSense('plural of deke', 'dekes'), 'deke');
     expect(
@@ -76,5 +77,99 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('to feint', findRichText: true), findsNothing);
+  });
+}
+
+void keptRootsTests() {
+  const lang = Language('en', 'English', 'English', [5]);
+
+  test('the roots a form names, once each', () {
+    final info = _info([
+      ('noun', ['plural of gove', 'plural of gove']),
+      ('verb', ['third-person singular simple present indicative of gove']),
+    ]);
+    expect(rootsOf(info, 'goves'), ['gove']);
+    expect(missingRoots(info, 'goves'), isTrue);
+    expect(
+      missingRoots(
+        _info([
+          ('noun', ['a hay stack']),
+        ]),
+        'x',
+      ),
+      isFalse,
+    );
+  });
+
+  test(
+    'the entries of the roots are kept with the entry, and read back',
+    () async {
+      final info = _info([
+        ('noun', ['plural of gove']),
+      ]);
+      final looked = <String>[];
+      final full = await withRoots(
+        info,
+        'goves',
+        lang,
+        lookup: (r) async {
+          looked.add(r);
+          return _info([
+            ('noun', ['a hay stack']),
+          ]);
+        },
+      );
+      expect(looked, ['gove']);
+      expect(missingRoots(full, 'goves'), isFalse);
+      final back = WordInfo.fromJson(full.toJson());
+      expect(
+        back.roots['gove']!.blocks.single.senses.single.text,
+        'a hay stack',
+      );
+      // nothing left to look up the second time
+      final again = await withRoots(
+        back,
+        'goves',
+        lang,
+        lookup: (r) async => fail('looked up $r again'),
+      );
+      expect(identical(again, back), isTrue);
+    },
+  );
+
+  test('a root that cannot be had is left out and the entry stays', () async {
+    final info = _info([
+      ('noun', ['plural of gove']),
+    ]);
+    final a = await withRoots(info, 'goves', lang, lookup: (r) async => null);
+    expect(identical(a, info), isTrue);
+    final b = await withRoots(
+      info,
+      'goves',
+      lang,
+      lookup: (r) async => throw StateError('offline'),
+    );
+    expect(identical(b, info), isTrue);
+  });
+
+  testWidgets('a kept root shows under its sense with no lookup', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RootSenses(
+            root: 'gove',
+            pos: 'noun',
+            known: _info([
+              ('noun', ['a hay stack']),
+            ]),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('gove'), findsOneWidget);
+    expect(find.textContaining('a hay stack'), findsOneWidget);
   });
 }
