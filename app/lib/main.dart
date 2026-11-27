@@ -62,13 +62,16 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
     dialogTheme: DialogThemeData(
       backgroundColor: tones.s1,
       surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black,
+      elevation: 12,
       shape: container,
     ),
     // a sheet is the page colour, raised by a shadow, rounded at the top
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: null,
       surfaceTintColor: Colors.transparent,
-      elevation: 8,
+      shadowColor: Colors.black,
+      elevation: 16,
       showDragHandle: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(radiusSheet)),
@@ -77,6 +80,8 @@ ThemeData buildTheme(Brightness b, {bool black = false}) {
     popupMenuTheme: PopupMenuThemeData(
       color: tones.s1,
       surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black,
+      elevation: 8,
       shape: container,
     ),
     fontFamily: _font,

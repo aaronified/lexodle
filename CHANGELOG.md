@@ -14,7 +14,7 @@ it to the version.
   The arrow showed when any screen lay under the tab. It shows only when words is opened as a screen of its own.
 
 - today: all done at the foot of the list, free play in the slider
-  The all done line is the last row of the scrolled area. The slider says free play under every mode, and floats on a soft shadow, like its play button.
+  The all done line is the last row of the scrolled area. The slider says free play under every mode, and floats on a soft shadow, like its play button. Dialogs, sheets, menus and the key popups have a deeper shadow too.
 
 ## 0.14.3
 

@@ -9,6 +9,7 @@ import 'haptics.dart';
 import 'logic.dart';
 import 'tonal.dart';
 import 'ui.dart';
+import 'ui_kit.dart' show floatShadow;
 
 /// The widest screen that counts as a phone: below it the keyboard is bigger.
 const phoneWidth = 600.0;
@@ -434,6 +435,7 @@ class _PressState extends State<_Press> {
                 decoration: BoxDecoration(
                   color: widget.popupFill,
                   borderRadius: BorderRadius.circular(radiusElement),
+                  boxShadow: floatShadow(context),
                 ),
                 child: Text(
                   label,
