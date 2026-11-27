@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'app_log.dart';
 import 'game_timer.dart';
 import 'lex.dart';
+import 'store.dart' show Achievement;
+import 'main.dart';
 import 'logic.dart';
 import 'tonal.dart';
 import 'ui.dart';
@@ -37,8 +39,17 @@ Mark _markOf(HintKind k) => switch (k) {
 /// yellow. 28px high, no border. [big] is the page's large balance. [joined]
 /// squares its left corners, to sit against the hint part of a [HintBar].
 class LexChip extends StatelessWidget {
-  const LexChip(this.n, {super.key, this.big = false, this.joined = false});
+  const LexChip(
+    this.n, {
+    super.key,
+    this.big = false,
+    this.joined = false,
+    this.plus = false,
+  });
   final int n;
+
+  /// Shows the number as a gain: +5.
+  final bool plus;
   final bool big;
   final bool joined;
 
@@ -80,7 +91,7 @@ class LexChip extends StatelessWidget {
           TablerIcon('diamond', size: big ? 24 : 16, color: y),
           SizedBox(width: big ? 8 : 5),
           Text(
-            '$n',
+            plus ? '+$n' : '$n',
             style: TextStyle(
               fontSize: big ? 26 : 14,
               height: 1,
@@ -541,6 +552,41 @@ class HintMiniRow extends StatelessWidget {
               color: c.onSurface.withValues(alpha: dimAlpha),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// An achievement a finished game earned, in the game's summary: its icon, its
+/// name and, once lex is unlocked, the lex it paid (nothing when it paid none:
+/// a game with hints, or one already paid that day). Before lex it says what the
+/// achievement asks, as it always did.
+class EarnedRow extends StatelessWidget {
+  const EarnedRow(this.a, {super.key});
+  final Achievement a;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final lex = appState.lexUnlocked;
+    final paid = appState.lex.lastPaid[a.id] ?? 0;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          TablerIcon(a.icon, size: 30, color: c.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              lex ? a.title : '${a.title}  —  ${a.description}',
+              style: TextStyle(color: c.primary, fontSize: 13),
+            ),
+          ),
+          if (lex && paid > 0) ...[
+            const SizedBox(width: 8),
+            LexChip(paid, plus: true),
+          ],
         ],
       ),
     );
