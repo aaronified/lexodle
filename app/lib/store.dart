@@ -940,7 +940,7 @@ final achievements = <Achievement>[
   ),
   Achievement.leveled(
     'relay_wins',
-    'chess-knight',
+    'baton',
     'relay wins',
     (n) => n == 1 ? 'win a relay race' : 'win $n relay races',
     'relayWins',
@@ -1104,7 +1104,7 @@ final achievements = <Achievement>[
   ),
   Achievement.leveled(
     'blind_wins',
-    'blindfold',
+    'eye-off',
     'blind faith',
     (n) => n == 1 ? 'win a blind game' : 'win $n blind games',
     'blindWins',

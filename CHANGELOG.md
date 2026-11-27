@@ -7,8 +7,8 @@ it to the version.
 
 ## Unreleased
 
-- blind is a blindfold
-  The magnifier with a question mark is a head with a band over its eyes, drawn for Lexodle in the style of the Tabler outline icons (Tabler has none), wherever blind's icon shows: the mode slider, the daily tile, the learn pages and the blind wins achievement. The magnifier stays for the read the clue lesson and the detective playstyle.
+- blind is an eye off, relay race a baton
+  Blind's icon is Tabler's eye off, in place of the magnifier with a question mark (which stays for the read the clue lesson and the detective playstyle). Relay race's icon is a baton held between two hands, drawn for Lexodle in the style of the Tabler outline icons, in place of the knight (which stays for the maverick playstyle and the avatars). Both show wherever the mode's icon does: the mode slider, the daily tile, the learn pages and the mode's wins achievement.
 
 - mastermind is a brain
   The ghost is the brain everywhere the mode's icon shows: the mode slider, the daily tile, the learn pages and the mastermind wins achievement. The player's default avatar is still the ghost.

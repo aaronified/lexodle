@@ -20,10 +20,10 @@ const modeSwipeSpeed = 700.0;
 String modeIconName(GameMode m) => switch (m) {
   GameMode.classic => 'target',
   GameMode.quartet => 'layout-grid',
-  GameMode.relay => 'chess-knight',
+  GameMode.relay => 'baton',
   GameMode.lockdown => 'lock',
   GameMode.themed => 'world',
-  GameMode.blind => 'blindfold',
+  GameMode.blind => 'eye-off',
   GameMode.equations => 'calculator',
   GameMode.mastermind => 'brain',
 };
