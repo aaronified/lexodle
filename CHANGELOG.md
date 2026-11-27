@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- mastermind is a brain
+  The ghost is the brain everywhere the mode's icon shows: the mode slider, the daily tile, the learn pages and the mastermind wins achievement. The player's default avatar is still the ghost.
+
 - saved words keep the entry of their root word
   A word that is a form of another ("goves: plural of gove") now looks up the root and keeps its entry with the saved word, so the meaning of the root shows under the sense and opens without a connection. Words saved before are filled in the first time they are opened.
 
