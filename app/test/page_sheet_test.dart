@@ -70,4 +70,47 @@ void main() {
     expect(taps, 1);
     expect(find.text('a sheet'), findsOneWidget);
   });
+
+  testWidgets('dragging the handle down pulls the sheet away', (tester) async {
+    await open(tester);
+    await tester.drag(
+      find.byKey(const ValueKey('sheet-handle')),
+      const Offset(0, 500),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('a sheet'), findsNothing);
+  });
+
+  testWidgets('a short drag settles the sheet back open', (tester) async {
+    await open(tester);
+    final top = tester.getTopLeft(find.byType(PageSheet)).dy;
+    final g = await tester.startGesture(
+      tester.getCenter(find.byKey(const ValueKey('sheet-handle'))),
+    );
+    await g.moveBy(const Offset(0, 60));
+    await tester.pump();
+    expect(tester.getTopLeft(find.byType(PageSheet)).dy, greaterThan(top));
+    await g.up();
+    await tester.pumpAndSettle();
+    expect(find.text('a sheet'), findsOneWidget);
+    expect(tester.getTopLeft(find.byType(PageSheet)).dy, top);
+  });
+
+  testWidgets('a fling closes it, and the target is wider than the handle', (
+    tester,
+  ) async {
+    await open(tester);
+    final target = tester.getRect(find.byKey(const ValueKey('sheet-handle')));
+    // the drawn handle is 36 wide: the target is the sheet's width, 44 high
+    expect(target.width, greaterThan(300));
+    expect(target.height, greaterThanOrEqualTo(44));
+    // a fling far from the drawn handle
+    await tester.flingFrom(
+      Offset(target.left + 30, target.center.dy),
+      const Offset(0, 300),
+      1500,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('a sheet'), findsNothing);
+  });
 }
