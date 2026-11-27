@@ -113,37 +113,33 @@ void main() {
   });
 
   group('the list', () {
-    test(
-      'each achievement has levels, a glyph that exists, and a medal each',
-      () {
+    test('each achievement has levels, a glyph that exists, and a medal each', () {
+      expect(achievements.map((a) => a.id).toSet().length, achievements.length);
+      var levels = 0;
+      for (final a in achievements) {
+        expect(a.track, Track.metric, reason: a.id);
+        expect(a.count, 4, reason: a.id);
+        levels += a.count;
         expect(
-          achievements.map((a) => a.id).toSet().length,
-          achievements.length,
+          a.levels.map((l) => l.medal).toList(),
+          Medal.values,
+          reason: '${a.id} climbs from bronze to platinum',
         );
-        var levels = 0;
-        for (final a in achievements) {
-          expect(a.track, Track.metric, reason: a.id);
-          expect(a.count, 4, reason: a.id);
-          levels += a.count;
+        for (final i in [for (var i = 0; i < a.count; i++) i]) {
+          final icon = a.atLevel(i).icon;
+          final f = File('assets/icons/$icon.svg');
+          expect(f.existsSync(), isTrue, reason: '${a.id}: $icon.svg');
+          // (Tabler has no filled brain: it is its outline, the one exception)
+          if (icon == 'brain') continue;
           expect(
-            a.levels.map((l) => l.medal).toList(),
-            Medal.values,
-            reason: '${a.id} climbs from bronze to platinum',
+            f.readAsStringSync(),
+            contains('icons-tabler-filled'),
+            reason: '${a.id} must use a Tabler filled glyph',
           );
-          for (final i in [for (var i = 0; i < a.count; i++) i]) {
-            final icon = a.atLevel(i).icon;
-            final f = File('assets/icons/$icon.svg');
-            expect(f.existsSync(), isTrue, reason: '${a.id}: $icon.svg');
-            expect(
-              f.readAsStringSync(),
-              contains('icons-tabler-filled'),
-              reason: '${a.id} must use a Tabler filled glyph',
-            );
-          }
         }
-        expect(levelCount, levels);
-      },
-    );
+      }
+      expect(levelCount, levels);
+    });
 
     test(
       'a level asks for more of the same: targets climb (fastest falls)',
