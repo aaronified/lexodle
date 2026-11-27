@@ -135,8 +135,8 @@ void main() {
             final f = File('assets/icons/$icon.svg');
             expect(f.existsSync(), isTrue, reason: '${a.id}: $icon.svg');
             // (not every glyph has a filled form: the brain and the eye off are
-            // Tabler outlines, the baton is drawn for Lexodle: the exceptions)
-            if (const {'brain', 'eye-off', 'baton'}.contains(icon)) continue;
+            // Tabler outlines: the exceptions)
+            if (const {'brain', 'eye-off'}.contains(icon)) continue;
             expect(
               f.readAsStringSync(),
               contains('icons-tabler-filled'),
