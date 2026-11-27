@@ -15,6 +15,10 @@ import 'words.dart';
 class SheetLanguage extends ChangeNotifier {
   int _open = 0;
   String _selected = allLanguages;
+  bool _allowAll = true;
+
+  /// Whether the pill has an all stop (the reminders are one language's).
+  bool get allowAll => _allowAll;
 
   bool get active => _open > 0;
   String get selected => _selected;
@@ -22,8 +26,11 @@ class SheetLanguage extends ChangeNotifier {
   /// The language to look at: null for all of them.
   String? get language => _selected == allLanguages ? null : _selected;
 
-  void open() {
-    if (_open == 0) _selected = allLanguages;
+  void open({bool all = true}) {
+    if (_open == 0) {
+      _allowAll = all;
+      _selected = all ? allLanguages : appState.lang;
+    }
     _open++;
     notifyListeners();
   }
@@ -37,6 +44,7 @@ class SheetLanguage extends ChangeNotifier {
   @visibleForTesting
   void reset() {
     _open = 0;
+    _allowAll = true;
     _selected = allLanguages;
   }
 
@@ -50,8 +58,11 @@ final sheetLanguage = SheetLanguage();
 
 /// Makes [sheetLanguage] active for as long as [child] is on screen.
 class SheetLanguageScope extends StatefulWidget {
-  const SheetLanguageScope({super.key, required this.child});
+  const SheetLanguageScope({super.key, required this.child, this.all = true});
   final Widget child;
+
+  /// Whether the pill has an all stop (and starts on it).
+  final bool all;
 
   @override
   State<SheetLanguageScope> createState() => _SheetLanguageScopeState();
@@ -62,7 +73,7 @@ class _SheetLanguageScopeState extends State<SheetLanguageScope> {
   void initState() {
     super.initState();
     // after this frame: opening notifies the top bar, which is being built
-    scheduleMicrotask(sheetLanguage.open);
+    scheduleMicrotask(() => sheetLanguage.open(all: widget.all));
   }
 
   @override
@@ -77,12 +88,14 @@ class _SheetLanguageScopeState extends State<SheetLanguageScope> {
 
 /// The languages a history, achievement or playstyle sheet can look at: the
 /// ticked ones, then any other the player has played.
-List<String> sheetLanguageCodes() => languageStops(
-  {
-    ...appState.playedLanguages,
-    for (final g in appState.history.games) g.lang,
-  }.toList()..sort(),
-);
+List<String> sheetLanguageCodes() => sheetLanguage.allowAll
+    ? languageStops(
+        {
+          ...appState.playedLanguages,
+          for (final g in appState.history.games) g.lang,
+        }.toList()..sort(),
+      )
+    : languageStops();
 
 /// The top bar's pill while a sheet language is active: all, then the languages.
 class SheetLanguagePill extends StatefulWidget {
@@ -116,10 +129,12 @@ class _SheetLanguagePillState extends State<SheetLanguagePill> {
       return LanguagePicker(
         codes: codes,
         languages: _langs,
-        selected: sel == allLanguages || codes.contains(sel)
+        selected:
+            (sel == allLanguages && sheetLanguage.allowAll) ||
+                codes.contains(sel)
             ? sel
-            : allLanguages,
-        showAll: true,
+            : (sheetLanguage.allowAll ? allLanguages : codes.first),
+        showAll: sheetLanguage.allowAll,
         dots: false,
         pill: true,
         onSelect: sheetLanguage.select,

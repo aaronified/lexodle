@@ -242,10 +242,28 @@ class PlannedNudge {
   String toString() => '$id $first $daily $title | $body';
 }
 
-/// The notification id of reminder number [index] (0 or 1) on a weekday.
-int reminderId(int weekday, [int index = 0]) => 9100 + index * 10 + weekday;
+/// The place of a language among the ones the app has: each keeps its own
+/// notification ids, English (slot 0) the ones it always had.
+int languageSlot(String code) {
+  const known = [
+    'en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'pl', 'sv', 'da', 'nb', 'tr',
+    'ro', 'cs', 'id', 'hu', 'ca', //
+  ];
+  final i = known.indexOf(code);
+  if (i >= 0) return i;
+  // a language added later: a slot past the known ones
+  return known.length + code.codeUnits.fold(0, (a, c) => (a * 31 + c) % 40);
+}
 
-/// The id of the "the dailies are open" notification.
+/// The notification id of reminder number [index] (0 or 1) on a weekday, for
+/// the language in [slot].
+int reminderId(int weekday, [int index = 0, int slot = 0]) =>
+    9100 + slot * 100 + index * 10 + weekday;
+
+/// The id of the "the dailies are open" notification of the language in [slot].
+int availableIdOf([int slot = 0]) => slot == 0 ? 9200 : 9100 + slot * 100 + 90;
+
+/// The id of the English "the dailies are open" notification.
 const availableId = 9200;
 
 /// The notifications to schedule: for each reminder, one for each of its
@@ -261,6 +279,7 @@ List<PlannedNudge> planReminders({
   required DateTime now,
   required List<ReminderDaily> dailies,
   int variant = 0,
+  int slot = 0,
 }) {
   if (!settings.on || dailies.isEmpty) return const [];
   final plan = <PlannedNudge>[];
@@ -298,7 +317,7 @@ List<PlannedNudge> planReminders({
       );
       plan.add(
         PlannedNudge(
-          id: reminderId(weekday, index),
+          id: reminderId(weekday, index, slot),
           first: first,
           title: text.$1,
           body: text.$2,
@@ -313,7 +332,7 @@ List<PlannedNudge> planReminders({
     if (!first.isAfter(now)) first = _plusDays(first, 1);
     plan.add(
       PlannedNudge(
-        id: availableId,
+        id: availableIdOf(slot),
         first: first,
         title: 'your dailies are open',
         body: dailies.map((d) => d.mode.label.toLowerCase()).join(', '),
@@ -458,23 +477,29 @@ class Reminders {
   static var _started = false;
   static Future<void> _chain = Future.value();
 
-  /// Plans, from what the app holds now.
+  /// Plans, from what the app holds now: the reminders of every language that
+  /// has them on, each naming that language's own dailies.
   static List<PlannedNudge> plan() {
-    final lang = appState.lang;
     final t = now();
-    return planReminders(
-      settings: appState.reminders,
-      now: t,
-      dailies: [
-        for (final m in appState.dailiesOf(lang))
-          ReminderDaily(
-            m,
-            appState.dailyStreakFor(lang, m),
-            appState.dailyLogOf(lang, m),
+    final variant = t.difference(DateTime(2026)).inDays;
+    return [
+      for (final e in appState.remindersByLang.entries)
+        if (e.value.on)
+          ...planReminders(
+            settings: e.value,
+            now: t,
+            dailies: [
+              for (final m in appState.dailiesOf(e.key))
+                ReminderDaily(
+                  m,
+                  appState.dailyStreakFor(e.key, m),
+                  appState.dailyLogOf(e.key, m),
+                ),
+            ],
+            variant: variant,
+            slot: languageSlot(e.key),
           ),
-      ],
-      variant: t.difference(DateTime(2026)).inDays,
-    );
+    ];
   }
 
   /// Follows the app: call once at start. It schedules now and again whenever
@@ -498,7 +523,9 @@ class Reminders {
     if (!supported) return Future.value();
     return _chain = _chain.then((_) async {
       try {
-        final p = appState.reminders.on ? plan() : const <PlannedNudge>[];
+        final p = appState.remindersByLang.values.any((r) => r.on)
+            ? plan()
+            : const <PlannedNudge>[];
         final sig = p.join('\n');
         if (sig == _last) return;
         await scheduler.replaceAll(p);

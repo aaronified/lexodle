@@ -4,6 +4,7 @@ import 'app_log.dart';
 import 'main.dart';
 import 'page_sheet.dart';
 import 'reminders.dart';
+import 'sheet_language.dart';
 import 'tonal.dart';
 import 'ui.dart';
 
@@ -28,6 +29,9 @@ class _RemindersPageState extends State<RemindersPage> {
   var _denied = false;
   var _sample = 0;
 
+  /// The language the reminders are for: the top bar's pill.
+  String get _lang => sheetLanguage.selected;
+
   static const _days = [
     'monday',
     'tuesday',
@@ -42,13 +46,19 @@ class _RemindersPageState extends State<RemindersPage> {
     try {
       if (!on) {
         setState(() => _denied = false);
-        appState.setReminders(appState.reminders.copyWith(on: false));
+        appState.setRemindersOf(
+          _lang,
+          appState.remindersOf(_lang).copyWith(on: false),
+        );
         return;
       }
       final ok = await Reminders.askPermission();
       if (!mounted) return;
       setState(() => _denied = !ok);
-      appState.setReminders(appState.reminders.copyWith(on: ok));
+      appState.setRemindersOf(
+        _lang,
+        appState.remindersOf(_lang).copyWith(on: ok),
+      );
     } catch (e) {
       appLog.w('reminders', 'switch failed ${e.runtimeType}');
     }
@@ -57,7 +67,7 @@ class _RemindersPageState extends State<RemindersPage> {
   /// Picks a time; [i] is the reminder, or null for the "open" notification.
   Future<void> _time(int? i) async {
     try {
-      final r = appState.reminders;
+      final r = appState.remindersOf(_lang);
       final now = i == null ? r.availableMinutes : r.reminders[i].minutes;
       final t = await widget.pickTime(
         context,
@@ -65,7 +75,8 @@ class _RemindersPageState extends State<RemindersPage> {
       );
       if (t == null) return;
       final m = t.hour * 60 + t.minute;
-      appState.setReminders(
+      appState.setRemindersOf(
+        _lang,
         i == null
             ? r.copyWith(availableMinutes: m)
             : r.withReminder(i, r.reminders[i].copyWith(minutes: m)),
@@ -77,14 +88,15 @@ class _RemindersPageState extends State<RemindersPage> {
 
   void _day(int i, int weekday) {
     try {
-      final r = appState.reminders;
+      final r = appState.remindersOf(_lang);
       final days = {...r.reminders[i].days};
       if (!days.remove(weekday)) {
         days.add(weekday);
       } else if (days.isEmpty) {
         return; // one day stays
       }
-      appState.setReminders(
+      appState.setRemindersOf(
+        _lang,
         r.withReminder(i, r.reminders[i].copyWith(days: days)),
       );
     } catch (e) {
@@ -94,9 +106,10 @@ class _RemindersPageState extends State<RemindersPage> {
 
   void _add() {
     try {
-      final r = appState.reminders;
+      final r = appState.remindersOf(_lang);
       if (r.reminders.length >= ReminderSettings.maxReminders) return;
-      appState.setReminders(
+      appState.setRemindersOf(
+        _lang,
         r.copyWith(
           reminders: [
             ...r.reminders,
@@ -111,9 +124,10 @@ class _RemindersPageState extends State<RemindersPage> {
 
   void _remove(int i) {
     try {
-      final r = appState.reminders;
+      final r = appState.remindersOf(_lang);
       if (i == 0 || i >= r.reminders.length) return; // the first stays
-      appState.setReminders(
+      appState.setRemindersOf(
+        _lang,
         r.copyWith(
           reminders: [
             for (var k = 0; k < r.reminders.length; k++)
@@ -128,7 +142,10 @@ class _RemindersPageState extends State<RemindersPage> {
 
   void _available(bool on) {
     try {
-      appState.setReminders(appState.reminders.copyWith(available: on));
+      appState.setRemindersOf(
+        _lang,
+        appState.remindersOf(_lang).copyWith(available: on),
+      );
     } catch (e) {
       appLog.w('reminders', 'switch failed ${e.runtimeType}');
     }
@@ -137,61 +154,66 @@ class _RemindersPageState extends State<RemindersPage> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return PageSheet(
-      title: 'reminders',
-      child: ListenableBuilder(
-        listenable: appState,
-        builder: (context, _) {
-          if (!Reminders.supported) {
+    return SheetLanguageScope(
+      all: false,
+      child: PageSheet(
+        title: 'reminders',
+        child: ListenableBuilder(
+          listenable: Listenable.merge([appState, sheetLanguage]),
+          builder: (context, _) {
+            if (!Reminders.supported) {
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(19, 16, 19, 32),
+                children: const [
+                  Text(
+                    'reminders work on the phone app',
+                    key: ValueKey('reminders-unsupported'),
+                  ),
+                ],
+              );
+            }
+            final r = appState.remindersOf(_lang);
             return ListView(
-              padding: const EdgeInsets.fromLTRB(19, 16, 19, 32),
-              children: const [
-                Text(
-                  'reminders work on the phone app',
-                  key: ValueKey('reminders-unsupported'),
+              padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
+              children: [
+                SwitchListTile(
+                  key: const ValueKey('reminders-switch'),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('remind me'),
+                  subtitle: const Text(
+                    'when a daily you chose is still waiting',
+                  ),
+                  value: r.on,
+                  onChanged: _switch,
                 ),
+                if (_denied)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'notifications are not allowed. turn them on in the '
+                      'phone settings.',
+                      key: const ValueKey('reminders-denied'),
+                      style: TextStyle(color: c.error),
+                    ),
+                  ),
+                if (r.on) ..._controls(c, r),
               ],
             );
-          }
-          final r = appState.reminders;
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(19, 8, 19, 32),
-            children: [
-              SwitchListTile(
-                key: const ValueKey('reminders-switch'),
-                contentPadding: EdgeInsets.zero,
-                title: const Text('remind me'),
-                subtitle: const Text('when a daily you chose is still waiting'),
-                value: r.on,
-                onChanged: _switch,
-              ),
-              if (_denied)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    'notifications are not allowed. turn them on in the '
-                    'phone settings.',
-                    key: const ValueKey('reminders-denied'),
-                    style: TextStyle(color: c.error),
-                  ),
-                ),
-              if (r.on) ..._controls(c, r),
-            ],
-          );
-        },
+          },
+        ),
       ),
     );
   }
 
   List<Widget> _controls(ColorScheme c, ReminderSettings r) {
     final names = [
-      for (final m in appState.dailiesOf(appState.lang)) m.label.toLowerCase(),
+      for (final m in appState.dailiesOf(_lang)) m.label.toLowerCase(),
     ];
-    final top = appState.dailiesOf(appState.lang).first;
+    final top = appState.dailiesOf(_lang).first;
     final text = nudgeText(
       _sample,
       top.label.toLowerCase(),
-      appState.dailyStreakFor(appState.lang, top),
+      appState.dailyStreakFor(_lang, top),
       names.length - 1,
     );
     return [
