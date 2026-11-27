@@ -1192,29 +1192,34 @@ class _MultiGamePageState extends State<MultiGamePage> {
   };
 
   Map<String, List<Mark?>> get _quadMarks {
-    final out = game.letterMarks();
-    // once every letter of a board's word is found, the others are grey on it
-    for (var b = 0; b < game.boards.length; b++) {
-      if (game.boards[b].solved) continue;
-      for (final l in ruledOut(
-        game.guesses,
-        game.boards[b].marks,
-        game.boards[b].answer.length,
-        _letters,
-      )) {
-        final per = out[l] ??= List<Mark?>.filled(game.boards.length, null);
-        per[b] ??= Mark.absent;
-      }
-    }
-    for (final h in _picks) {
-      if (h.kind != HintKind.grey || !game.isLive(h.board)) continue;
-      final per = out[h.letter] ??= List<Mark?>.filled(
-        game.boards.length,
-        null,
-      );
-      per[h.board] ??= Mark.absent;
-    }
-    return out;
+    final n = game.boards.length;
+    return quartetKeys(
+      guessed: game.letterMarks(),
+      live: [for (var b = 0; b < n; b++) game.isLive(b)],
+      // once every letter of a board's word is found, the others are out on it
+      ruled: [
+        for (var b = 0; b < n; b++)
+          game.isLive(b) && !game.boards[b].solved
+              ? ruledOut(
+                  game.guesses,
+                  game.boards[b].marks,
+                  game.boards[b].answer.length,
+                  _letters,
+                )
+              : <String>{},
+      ],
+      hinted: {
+        for (final h in _picks)
+          if (h.kind == HintKind.grey && game.isLive(h.board))
+            h.letter: {
+              for (final o in _picks)
+                if (o.kind == HintKind.grey &&
+                    o.letter == h.letter &&
+                    game.isLive(o.board))
+                  o.board,
+            },
+      },
+    );
   }
 
   Widget _keyboard() => LetterKeyboard(
