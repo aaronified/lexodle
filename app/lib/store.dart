@@ -1288,7 +1288,7 @@ final achievements = <Achievement>[
   ),
   Achievement.leveled(
     'mastermind_wins',
-    'ghost',
+    'brain',
     'caught the ghost',
     (n) => n == 1 ? 'win a mastermind game' : 'win $n mastermind games',
     'mastermindWins',

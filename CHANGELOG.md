@@ -7,6 +7,9 @@ it to the version.
 
 ## Unreleased
 
+- mastermind is a brain
+  The ghost is the brain everywhere the mode's icon shows: the mode slider, the daily tile, the learn pages and the mastermind wins achievement. The player's default avatar is still the ghost.
+
 ## 0.15.0
 
 - you: the player is the hero of the page
