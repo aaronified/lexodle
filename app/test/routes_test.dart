@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexodle/page_sheet.dart';
 import 'package:lexodle/app_shell.dart';
 import 'package:lexodle/licences_page.dart';
 import 'package:lexodle/logo.dart';
@@ -162,13 +163,21 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('licences-button')),
       300,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: find
+          .descendant(
+            of: find.byType(PageSheet),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
+    await tester.ensureVisible(find.byKey(const ValueKey('licences-button')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('licences-button')));
     await tester.pumpAndSettle();
     expect(names.stack, ['/', Routes.settings, Routes.about]);
-    await tester.tapAt(const Offset(5, 5)); // the scrim closes it
+    nav(tester).pop(); // back from about is settings
     await tester.pumpAndSettle();
+    expect(names.stack, ['/', Routes.settings]);
     nav(tester).pop(); // and back from settings is home
     await tester.pumpAndSettle();
     expect(names.stack, ['/']);

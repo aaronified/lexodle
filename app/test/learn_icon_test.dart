@@ -33,33 +33,29 @@ void main() {
     );
   });
 
-  testWidgets('the learn home and a mode guide have it in the title', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(420, 1100));
-    appState.setup(lang: 'en', length: 5, mode: GameMode.classic);
-    final bank = (await tester.runAsync(
-      () async => WordBank.load(
-        (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
-      ),
-    ))!;
-    await tester.pumpWidget(MaterialApp(home: LearnHomePage(bank: bank)));
-    await tester.pump();
-    // the learn home's header is text only, like every tab screen
-    expect(
-      find.descendant(
-        of: find.byType(PageHeader),
-        matching: find.text('learn'),
-      ),
-      findsOneWidget,
-    );
-    await tester.pumpWidget(
-      const MaterialApp(home: ModeGuidePage(mode: GameMode.equations)),
-    );
-    await tester.pump();
-    expect(
-      find.descendant(of: find.byType(AppBar), matching: hat()),
-      findsOneWidget,
-    );
-  });
+  testWidgets(
+    'the learn home has the top bar, and a mode guide the hat in its title',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(420, 1100));
+      appState.setup(lang: 'en', length: 5, mode: GameMode.classic);
+      final bank = (await tester.runAsync(
+        () async => WordBank.load(
+          (await WordBank.languages()).firstWhere((l) => l.code == 'en'),
+        ),
+      ))!;
+      await tester.pumpWidget(MaterialApp(home: LearnHomePage(bank: bank)));
+      await tester.pump();
+      // the learn home's top bar is the language pill and the cog: no title
+      expect(find.byType(TopBar), findsOneWidget);
+      expect(find.byType(PageHeader), findsNothing);
+      await tester.pumpWidget(
+        const MaterialApp(home: ModeGuidePage(mode: GameMode.equations)),
+      );
+      await tester.pump();
+      expect(
+        find.descendant(of: find.byType(AppBar), matching: hat()),
+        findsOneWidget,
+      );
+    },
+  );
 }

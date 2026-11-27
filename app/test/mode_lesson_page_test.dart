@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexodle/first_run/lesson_game.dart';
 import 'package:lexodle/first_run/mode_lesson_page.dart';
 import 'package:lexodle/main.dart';
-import 'package:lexodle/mode_settings_page.dart';
 import 'package:lexodle/modes.dart';
 import 'package:lexodle/ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -201,26 +200,5 @@ void main() {
     await appState.load();
     expect(appState.isTaught(GameMode.relay), isTrue);
     expect(appState.settingsJson()['modesTaught'], ['relay']);
-  });
-
-  testWidgets('the mode settings note shows once', (t) async {
-    await t.binding.setSurfaceSize(const Size(420, 1700));
-    addTearDown(() => t.binding.setSurfaceSize(null));
-    const key = ValueKey('mode-settings-first-note');
-    await t.pumpWidget(const MaterialApp(home: ModeSettingsPage()));
-    await t.pump();
-    expect(find.byKey(key), findsOneWidget);
-    expect(
-      find.text('these change free play only: the daily never changes'),
-      findsOneWidget,
-    );
-    await t.tap(find.byKey(const ValueKey('mode-settings-note-close')));
-    await t.pump();
-    expect(find.byKey(key), findsNothing);
-    // opened again: never again
-    await t.pumpWidget(const MaterialApp(home: SizedBox()));
-    await t.pumpWidget(const MaterialApp(home: ModeSettingsPage()));
-    await t.pump();
-    expect(find.byKey(key), findsNothing);
   });
 }

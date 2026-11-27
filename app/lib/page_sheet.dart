@@ -84,7 +84,10 @@ class PageSheetRoute<T> extends PopupRoute<T> {
                       key: const ValueKey('sheet-scrim'),
                       behavior: HitTestBehavior.opaque,
                       onTap: () => Navigator.maybePop(context),
-                      child: const ColoredBox(color: Color(0x8C000000)),
+                      child: ColoredBox(
+                        color: Theme.of(context).colorScheme.scrim
+                            .withValues(alpha: .55),
+                      ),
                     ),
                   ),
                 ),
