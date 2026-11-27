@@ -11,6 +11,7 @@ import 'mode_settings_page.dart' show knownModes;
 import 'profile_sheet.dart';
 import 'routes.dart';
 import 'store.dart' show achievements;
+import 'tonal.dart';
 import 'streak_week.dart';
 import 'ui_kit.dart';
 import 'ui.dart';
@@ -217,7 +218,7 @@ class _YouPageState extends State<YouPage> {
                   ),
                   children: [
                     _hero(context),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     const StreakWeek(),
                     if (progress.isNotEmpty) ...[
                       const SectionLabel('your record'),
@@ -246,40 +247,48 @@ class _YouPageState extends State<YouPage> {
   Widget _hero(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     final since = _since();
-    return InkWell(
-      key: const ValueKey('you-chip'),
+    // the player has a card of its own
+    return Material(
+      color: tonesOf(context).s1,
       borderRadius: BorderRadius.circular(radiusContainer),
-      onTap: () => showProfileSheet(context),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-        child: Row(
-          children: [
-            ProfileAvatar(appState.profile, size: 64),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    appState.profile.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (since != null)
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: const ValueKey('you-chip'),
+        onTap: () => showProfileSheet(context),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              ProfileAvatar(appState.profile, size: 64),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      since,
-                      key: const ValueKey('you-since'),
-                      style: TextStyle(fontSize: 13, color: c.onSurfaceVariant),
+                      appState.profile.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                ],
+                    if (since != null)
+                      Text(
+                        since,
+                        key: const ValueKey('you-since'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: c.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            Icon(Icons.chevron_right, size: 22, color: c.onSurfaceVariant),
-          ],
+              Icon(Icons.chevron_right, size: 22, color: c.onSurfaceVariant),
+            ],
+          ),
         ),
       ),
     );
