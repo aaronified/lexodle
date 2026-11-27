@@ -487,8 +487,8 @@ void main() {
         find.textContaining('the next word comes at midnight in India'),
         findsOneWidget,
       );
-      // the answer is said as the answer, not left bare
-      expect(find.text('the word was ${daily.answer}'), findsOneWidget);
+      // the answer is named at the head of its entry
+      expect(find.text(daily.answer), findsOneWidget);
 
       // two guesses is a double fire, and the day is logged
       expect(appState.dailyLog['2026-10-24'], dailyDouble);

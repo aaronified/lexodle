@@ -10,6 +10,9 @@ it to the version.
 - saved words keep the entry of their root word
   A word that is a form of another ("goves: plural of gove") now looks up the root and keeps its entry with the saved word, so the meaning of the root shows under the sense and opens without a connection. Words saved before are filled in the first time they are opened.
 
+- the end screen names the word in the row of its pronunciation
+  The "the word was ..." line is gone. The word leads the row of its pronunciation and listen button, and the bookmark that saves it is at the right end of the same row. While the entry loads, or when there is none, the row is the word and the bookmark alone.
+
 ## 0.15.0
 
 - you: the player is the hero of the page

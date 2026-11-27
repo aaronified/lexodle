@@ -1356,15 +1356,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
                   ),
                 ),
                 children: [
-                  if (appState.stepOpen('my words'))
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: SaveWordButton(
-                        word: b.answer,
-                        language: widget.bank.language,
-                      ),
-                    ),
-                  WordInfoView(word: b.answer, language: widget.bank.language),
+                  WordInfoView(
+                    word: b.answer,
+                    language: widget.bank.language,
+                    trailing: appState.stepOpen('my words')
+                        ? SaveWordButton(
+                            word: b.answer,
+                            language: widget.bank.language,
+                          )
+                        : null,
+                  ),
                 ],
               ),
           ],
