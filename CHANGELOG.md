@@ -7,6 +7,8 @@ it to the version.
 
 ## Unreleased
 
+## 0.15.1
+
 - blind is an eye off, the knight has an eye
   Blind's icon is Tabler's eye off, in place of the magnifier with a question mark (which stays for the read the clue lesson and the detective playstyle). The knight, the icon of the relay race, the maverick playstyle and an avatar, has an eye: a dot in its head.
 
