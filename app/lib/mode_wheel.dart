@@ -15,17 +15,17 @@ const _dotSize = 7.0;
 /// A fling faster than this (logical pixels a second) changes the mode too.
 const modeSwipeSpeed = 700.0;
 
-/// The name of the Tabler filled icon of each game mode: one piece, four
-/// tiles, a knight, a lock.
+/// The name of the Tabler icon of each game mode: one piece, four tiles, a
+/// knight, a lock, a brain (mastermind).
 String modeIconName(GameMode m) => switch (m) {
-  GameMode.classic => 'puzzle',
+  GameMode.classic => 'target',
   GameMode.quartet => 'layout-grid',
   GameMode.relay => 'chess-knight',
   GameMode.lockdown => 'lock',
   GameMode.themed => 'world',
-  GameMode.blind => 'zoom-question',
+  GameMode.blind => 'eye-off',
   GameMode.equations => 'calculator',
-  GameMode.mastermind => 'ghost',
+  GameMode.mastermind => 'brain',
 };
 
 /// The mode under the modes' own line: "four words at once · +3 tries".

@@ -1615,38 +1615,15 @@ class _GamePageState extends State<GamePage>
                   : 'daily ${_daily.date} · streak ${appState.dailyStreak} · '
                         'the next word comes at midnight in India',
             ),
-          // the answer, said as such (a win used to show it bare)
-          // (a lost game names its word here too, for the bookmark)
-          if (won || (!equations && !themed))
-            Row(
-              children: [
-                Expanded(
-                  child: Caption(
-                    'the $_noun was ${equations ? answer.split('').map(faceOf).join() : answer}',
-                  ),
-                ),
-                if (!equations && !themed && appState.stepOpen('my words'))
-                  SaveWordButton(word: answer, language: widget.bank.language),
-              ],
-            ),
+          // the answer, said as such; a word is named in the row of its
+          // pronunciation below, with the bookmark at the right of it
+          if (equations && won)
+            Caption('the $_noun was ${answer.split('').map(faceOf).join()}')
+          else if (themed && won)
+            Caption('the $_noun was $answer'),
           const SizedBox(height: 10),
           if (appState.stepOpen('achievements'))
-            for (final a in unlocked)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    TablerIcon(a.icon, size: 30, color: c.primary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        '${a.title}  —  ${a.description}',
-                        style: TextStyle(color: c.primary, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            for (final a in unlocked) EarnedRow(a),
           const SizedBox(height: 10),
           const Divider(),
           const SizedBox(height: 10),
@@ -1659,7 +1636,14 @@ class _GamePageState extends State<GamePage>
           if (themed && Geography.placeOf(answer) != null)
             PlaceInfoView(place: Geography.placeOf(answer)!)
           else if (!equations)
-            WordInfoView(word: answer, language: widget.bank.language),
+            WordInfoView(
+              word: answer,
+              language: widget.bank.language,
+              showWord: true,
+              trailing: appState.stepOpen('my words')
+                  ? SaveWordButton(word: answer, language: widget.bank.language)
+                  : null,
+            ),
           const SizedBox(height: 12),
         ],
       ),

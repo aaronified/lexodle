@@ -5,6 +5,7 @@ import 'first_run/mode_lesson_page.dart';
 import 'ladder.dart';
 import 'learn_log.dart';
 import 'mode_filter.dart';
+import 'mode_wheel.dart' show modeIconName;
 import 'modes.dart';
 import 'main.dart';
 import 'routes.dart';
@@ -245,7 +246,7 @@ class LearnHomePage extends StatelessWidget {
   GroupRow _howToPlay(BuildContext context, GameMode mode) {
     return GroupRow(
       key: const ValueKey('learn-card-how-to-play'),
-      leading: const TonalTile('puzzle'),
+      leading: TonalTile(modeIconName(mode)),
       title: Text('how to play ${mode.label}'),
       subtitle: const Text('the rules and the screen, as a short game'),
       onTap: () {

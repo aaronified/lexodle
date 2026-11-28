@@ -1104,7 +1104,7 @@ final achievements = <Achievement>[
   ),
   Achievement.leveled(
     'blind_wins',
-    'zoom-question',
+    'eye-off',
     'blind faith',
     (n) => n == 1 ? 'win a blind game' : 'win $n blind games',
     'blindWins',
@@ -1288,7 +1288,7 @@ final achievements = <Achievement>[
   ),
   Achievement.leveled(
     'mastermind_wins',
-    'ghost',
+    'brain',
     'caught the ghost',
     (n) => n == 1 ? 'win a mastermind game' : 'win $n mastermind games',
     'mastermindWins',

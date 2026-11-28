@@ -134,6 +134,9 @@ void main() {
             final icon = a.atLevel(i).icon;
             final f = File('assets/icons/$icon.svg');
             expect(f.existsSync(), isTrue, reason: '${a.id}: $icon.svg');
+            // (not every glyph has a filled form: the brain and the eye off are
+            // Tabler outlines: the exceptions)
+            if (const {'brain', 'eye-off'}.contains(icon)) continue;
             expect(
               f.readAsStringSync(),
               contains('icons-tabler-filled'),

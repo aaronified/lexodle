@@ -30,6 +30,26 @@ class PageSheetRoute<T> extends PopupRoute<T> {
     super.dispose();
   }
 
+  /// The sheet follows the finger on its handle: [dy] down moves it that far
+  /// ([height] is the sheet's own).
+  void dragUpdate(double dy, double height) {
+    final c = controller;
+    if (c == null || height <= 0) return;
+    c.value = (c.value - dy / height).clamp(0.0, 1.0);
+  }
+
+  /// The finger lifts: a fling down or a sheet pulled more than a third of the
+  /// way closes it, any other settles back open.
+  void dragEnd(double velocity) {
+    final c = controller;
+    if (c == null) return;
+    if (velocity > 700 || c.value < 0.66) {
+      if (isCurrent) navigator?.pop();
+    } else {
+      c.forward();
+    }
+  }
+
   @override
   Color? get barrierColor => null;
 
@@ -124,6 +144,12 @@ class PageSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
+    return LayoutBuilder(
+      builder: (context, box) => _frame(context, c, box.maxHeight),
+    );
+  }
+
+  Widget _frame(BuildContext context, ColorScheme c, double height) {
     return Material(
       color: c.surface,
       elevation: 16,
@@ -145,19 +171,11 @@ class PageSheet extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 12),
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: tonesOf(context).s3,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
+                  // the handle, drawn small, with a generous target round it that
+                  // is not drawn: a drag down on it pulls the sheet away
+                  _Handle(color: tonesOf(context).s3, sheetHeight: height),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(19, 4, 8, 8),
+                    padding: const EdgeInsets.fromLTRB(19, 0, 8, 8),
                     child: Row(
                       children: [
                         Expanded(
@@ -184,6 +202,48 @@ class PageSheet extends StatelessWidget {
                   Expanded(child: child),
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The handle of a sheet: 36 by 4, in a target the width of the sheet and 44
+/// high. Dragging it moves the sheet ([PageSheetRoute.dragUpdate]); where there
+/// is no such route (the frame shown alone) it does nothing.
+class _Handle extends StatelessWidget {
+  const _Handle({required this.color, required this.sheetHeight});
+  final Color color;
+
+  /// The height of the sheet, what a drag is measured against.
+  final double sheetHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    PageSheetRoute<dynamic>? route() {
+      final r = ModalRoute.of(context);
+      return r is PageSheetRoute ? r : null;
+    }
+
+    return GestureDetector(
+      key: const ValueKey('sheet-handle'),
+      behavior: HitTestBehavior.opaque,
+      onVerticalDragUpdate: (d) => route()?.dragUpdate(d.delta.dy, sheetHeight),
+      onVerticalDragEnd: (d) => route()?.dragEnd(d.velocity.pixelsPerSecond.dy),
+      onVerticalDragCancel: () => route()?.dragEnd(0),
+      child: SizedBox(
+        height: 44,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
         ),

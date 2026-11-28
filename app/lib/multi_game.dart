@@ -1192,29 +1192,34 @@ class _MultiGamePageState extends State<MultiGamePage> {
   };
 
   Map<String, List<Mark?>> get _quadMarks {
-    final out = game.letterMarks();
-    // once every letter of a board's word is found, the others are grey on it
-    for (var b = 0; b < game.boards.length; b++) {
-      if (game.boards[b].solved) continue;
-      for (final l in ruledOut(
-        game.guesses,
-        game.boards[b].marks,
-        game.boards[b].answer.length,
-        _letters,
-      )) {
-        final per = out[l] ??= List<Mark?>.filled(game.boards.length, null);
-        per[b] ??= Mark.absent;
-      }
-    }
-    for (final h in _picks) {
-      if (h.kind != HintKind.grey || !game.isLive(h.board)) continue;
-      final per = out[h.letter] ??= List<Mark?>.filled(
-        game.boards.length,
-        null,
-      );
-      per[h.board] ??= Mark.absent;
-    }
-    return out;
+    final n = game.boards.length;
+    return quartetKeys(
+      guessed: game.letterMarks(),
+      live: [for (var b = 0; b < n; b++) game.isLive(b)],
+      // once every letter of a board's word is found, the others are out on it
+      ruled: [
+        for (var b = 0; b < n; b++)
+          game.isLive(b) && !game.boards[b].solved
+              ? ruledOut(
+                  game.guesses,
+                  game.boards[b].marks,
+                  game.boards[b].answer.length,
+                  _letters,
+                )
+              : <String>{},
+      ],
+      hinted: {
+        for (final h in _picks)
+          if (h.kind == HintKind.grey && game.isLive(h.board))
+            h.letter: {
+              for (final o in _picks)
+                if (o.kind == HintKind.grey &&
+                    o.letter == h.letter &&
+                    game.isLive(o.board))
+                  o.board,
+            },
+      },
+    );
   }
 
   Widget _keyboard() => LetterKeyboard(
@@ -1318,22 +1323,7 @@ class _MultiGamePageState extends State<MultiGamePage> {
               ),
             const SizedBox(height: 10),
             if (appState.stepOpen('achievements'))
-              for (final a in unlocked)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(
-                    children: [
-                      TablerIcon(a.icon, size: 30, color: c.primary),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          '${a.title}  —  ${a.description}',
-                          style: TextStyle(color: c.primary, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              for (final a in unlocked) EarnedRow(a),
             const Divider(),
             if (_showSummary) ...[
               const SizedBox(height: 10),
@@ -1356,15 +1346,16 @@ class _MultiGamePageState extends State<MultiGamePage> {
                   ),
                 ),
                 children: [
-                  if (appState.stepOpen('my words'))
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: SaveWordButton(
-                        word: b.answer,
-                        language: widget.bank.language,
-                      ),
-                    ),
-                  WordInfoView(word: b.answer, language: widget.bank.language),
+                  WordInfoView(
+                    word: b.answer,
+                    language: widget.bank.language,
+                    trailing: appState.stepOpen('my words')
+                        ? SaveWordButton(
+                            word: b.answer,
+                            language: widget.bank.language,
+                          )
+                        : null,
+                  ),
                 ],
               ),
           ],

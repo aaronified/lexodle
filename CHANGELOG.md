@@ -7,8 +7,29 @@ it to the version.
 
 ## Unreleased
 
+- blind is an eye off, the knight has an eye
+  Blind's icon is Tabler's eye off, in place of the magnifier with a question mark (which stays for the read the clue lesson and the detective playstyle). The knight, the icon of the relay race, the maverick playstyle and an avatar, has an eye: a dot in its head.
+
+- mastermind is a brain
+  The ghost is the brain everywhere the mode's icon shows: the mode slider, the daily tile, the learn pages and the mastermind wins achievement. The player's default avatar is still the ghost.
+
 - saved words keep the entry of their root word
   A word that is a form of another ("goves: plural of gove") now looks up the root and keeps its entry with the saved word, so the meaning of the root shows under the sense and opens without a connection. Words saved before are filled in the first time they are opened.
+
+- the end screen names the word in the row of its pronunciation
+  The "the word was ..." line is gone. The word leads the row of its pronunciation and listen button, and the bookmark that saves it is at the right end of the same row. While the entry loads, or when there is none, the row is the word and the bookmark alone.
+
+- quartet: a key nobody tried is a plain key
+  A letter ruled out on one board (because that board's letters were all found) was drawn as a grey quarter, the same grey as a letter you guessed that was absent, so an untried key looked tried. A key now shows only what the guesses marked; the whole key goes grey once every board still in play has ruled the letter out, as in the other modes. A grey hint still shows on the board it was bought for.
+
+- the game summary names the lex an achievement paid
+  Each earned achievement row is its icon, its name and the lex it paid (+5), instead of its description. A game with hints, or an achievement already paid that day, shows no number. Before lex is unlocked the row says what the achievement asks, as before.
+
+- classic is a target
+  The puzzle piece is a target wherever classic's icon shows: the mode slider, the daily tile, and the how to play row of the learn page (which now wears the icon of the mode it is for).
+
+- the sheets can be dragged by their handle
+  The handle at the top of settings, history, achievements and the other sheets now pulls the sheet down: a drag of a third of its height, or a fling, closes it, and a short drag settles it back. The target is the width of the sheet and 44 high, much more than the drawn handle.
 
 ## 0.15.0
 
